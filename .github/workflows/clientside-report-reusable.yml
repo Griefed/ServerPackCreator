@@ -101,13 +101,6 @@ jobs:
         if: steps.link.outputs.found == 'true'
         run: ./gradlew :serverpackcreator-app:bootJar --no-daemon
 
-      # Best-effort OS deps for the headless browser (boot only; used solely for distribution-locked
-      # CurseForge files). If this fails, non-locked mods still boot and locked ones degrade gracefully.
-      - name: Install browser dependencies
-        if: steps.link.outputs.found == 'true' && inputs.boot
-        continue-on-error: true
-        run: npx --yes playwright install-deps chromium
-
       - name: Run clientside verification
         if: steps.link.outputs.found == 'true'
         env:

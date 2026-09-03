@@ -30,7 +30,8 @@ import java.io.File
  *
  * @param platforms          The supported hosting platforms, tried in order via [ModPlatform.handles].
  * @param metadataScanner    Reads declared sideness out of a downloaded jar.
- * @param jarDownloader      Fetches freely-distributable files for scanning (locked files are deferred).
+ * @param jarDownloader      Fetches published files for scanning; a locked file has no URL and is
+ *                           reported as unverifiable rather than fetched another way.
  * @param workDirectory      Scratch directory for downloaded jars.
  * @param bootVerifierFactory When non-null, builds a [BootVerifier] for the resolved platform to add
  *                            the server-boot signal (Phase 2); when null, the report is metadata-only.
@@ -210,8 +211,9 @@ class ClientsideVerifier(
                 declaresServer && jarClient -> "Platform marks server required but the jar declares client-only."
                 bootResult == BootResult.CRASHED && metadataServer ->
                     "Declared server/both but the server crashed — a strong clientside signal."
-                jarScan == JarScan.DEFERRED && bootResult == null ->
-                    "Distribution-locked file; jar-scan deferred to the boot-phase."
+                jarScan == JarScan.DEFERRED ->
+                    "Distribution-locked file (allowModDistribution=false): CurseForge publishes no " +
+                        "download URL, so neither the jar-scan nor a boot can read this mod."
                 else -> null
             }
 

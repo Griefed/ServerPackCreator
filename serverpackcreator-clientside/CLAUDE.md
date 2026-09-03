@@ -3,7 +3,7 @@
 > The **clientside-mod verification engine**, extracted out of `serverpackcreator-app` so it can be
 > reused by both the app's CLI verbs and the planned standalone Docker "grinder" service. Package
 > `de.griefed.serverpackcreator.clientside`. **Depends only on `serverpackcreator-api`** (plus
-> Playwright + jackson-module-kotlin) — it must never gain a dependency on `-app`, Spring, or Swing.
+> jackson-module-kotlin; Playwright was dropped 2026-09-02) — it must never gain a dependency on `-app`, Spring, or Swing.
 > Not published to Maven Central (unlike `-api`), so it can churn freely without compatibility lock-in.
 
 ## What it does
@@ -393,23 +393,28 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
   one-way and minimal — Fabric cannot load Quilt mods, and NeoForge/Forge cross-loading is version-dependent, so
   guessing there would stage a jar the loader cannot use.
-- **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
-  routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
-  launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**
-  module's build (`com.microsoft.playwright:playwright`), exported `api` so `-app` gets it transitively.
-  **LANDMINE — the `/download` navigation is *supposed* to fail.** CurseForge answers it with a file transfer,
-  and Chromium aborts a navigation that becomes a download, so Playwright throws `net::ERR_ABORTED`. That throw
-  used to escape the `waitForDownload` callback and tear the wait down, discarding a download that had already
-  started (observed 2026-08-23 on bwncr-neoforge, tombstone-neoforge, Structory). `isDownloadAbort` swallows
-  exactly that and nothing else — a timeout or a DNS failure must still fail, or the downloader returns `null`
-  forever in silence. Both navigations also wait for `DOMCONTENTLOADED`, never the default `load`: an ad-laden
-  project page keeps fetching long after it is usable, and the whole 30s default budget was being spent on it.
-  **A staging refusal names the lock** (`BootVerifier.downloadFailureDetail`). 21 live verdicts read only
-  `Could not download <file>`, every one CurseForge and every one from this locked population — a sentence a
-  404, a flaky link and *a host with no Chromium* all produce identically, so nobody could tell a broken host
-  from a broken mod. The locked branch names `allowModDistribution=false` and the Playwright prerequisite;
-  the ordinary branch deliberately does **not** mention the browser, since blaming it for an ordinary
-  download failure sends the operator the wrong way.
+- **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
+  are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
+  `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
+  refusal says so and points at Modrinth, where the same project's files carry a URL.
+  - **HISTORY — Playwright and a headless Chromium used to fetch these anyway, and were removed 2026-09-02
+    (Griefed's call).** The route existed only to circumvent the distribution block, and by the end it did
+    not work at all: CurseForge is behind a Cloudflare challenge the headless browser does not clear, so
+    every attempt died on `Timeout 60000ms exceeded` *after* Chromium had launched, while a plain HTTPS
+    fetch of the same file page returned **403 with challenge markers on any user agent**. The host was
+    never the problem — the installer's launch probe rendered a page as the service account and the cache
+    held both `chromium-1234` and `chromium_headless_shell-1234`.
+  - **What it cost, measured:** `driver-bundle-1.62.0.jar` is **192.9 MB** of bundled node binaries for five
+    platforms, reaching every artifact because this module declared `api(libs.playwright)`. Removing it took
+    `serverpackcreator-app-dev.jar` from **274.7 MB to 77.8 MB** — the driver code itself was only 3 MB; the
+    bundle was purely node runtimes. Every SPC user carried that for one CLI verb.
+  - **Do not reintroduce it.** Regular downloads for non-blocked CurseForge content and all of Modrinth never
+    needed a browser, which is why removing this cost no working coverage. Gone with it:
+    `BrowserDownloader`, `BrowserRouteBreaker` (a circuit breaker added hours earlier to bound the failing
+    route's cost — obsolete once the route went), `selectDownloader` (one route needs no router, so
+    `JarDownloader.kt` now emits no `JarDownloaderKt` facade at all), the installer's browser stage and
+    `--skip-browser` flag, and the CI job's `playwright install-deps`. `JarDownloaderRoutingTest` asserts
+    `BrowserDownloader` is **absent from the classpath**, so a half-revert fails rather than lingering.
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in

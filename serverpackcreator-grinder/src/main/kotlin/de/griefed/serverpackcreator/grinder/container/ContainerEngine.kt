@@ -318,4 +318,16 @@ interface ContainerEngine : AutoCloseable {
      * only thing that ever collects them. Default no-op for engines with no such notion (test fakes).
      */
     fun reapOrphans(): Int = 0
+
+    /**
+     * Whether [image] is available to this engine right now. Defaults to `true`, so an engine with no notion
+     * of images — every test fake here — never blocks a startup it cannot have an opinion about.
+     *
+     * Exists because the answer is knowable in one call and the alternative is discovering it thousands of
+     * verdicts later: with the runtime image absent, every loader install throws, every tuple goes on
+     * cooldown, and every candidate wanting one is scored INCONCLUSIVE about a mod that was never booted
+     * (measured 2026-09-03). `false` also covers a daemon that cannot be reached at all, which is the same
+     * conclusion for the caller — no container is going to run — and implementations log which it was.
+     */
+    fun hasImage(image: String): Boolean = true
 }

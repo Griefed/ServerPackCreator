@@ -4763,3 +4763,88 @@ cites hashes at volume**, so it is the one guaranteed casualty of any history re
 been hit once (the "54 commit hashes killed by a rebase" incident the root `CLAUDE.md` records) before being
 hit again here. Write subjects the first time.
 
+
+# Audit — 2026-09-02, unpushed `develop` (iteration 33)
+
+**Scope:** the twelve commits of 2026-09-02 — two audit-citation repairs, a Chromium launch probe for the
+installer, a circuit breaker for the headless-browser download route, and the removal of that route and all
+of Playwright. **Every finding was actioned, so this is the report and its resolution together: acting on it
+changed the history it described.**
+
+Commits are named by **subject, not hash**. Acting on the findings re-cut six of them, which would have
+orphaned every hash cited here — the defect iteration 32 found twice and the root `CLAUDE.md` convention
+warns about. Written that way the first time.
+
+## HIGH — none
+
+No module boundary crossed (the removal *reduced* `-clientside`'s dependencies). No `-api` change, no
+plugin-API contract touched. The one breaking change is labelled `feat(…)!` with its app-user consequence in
+the body.
+
+## MEDIUM
+
+- **MED-1 — the removal shipped with stale operator documentation. FIXED.**
+  `serverpackcreator-clientside/README.md` listed "Browser system libraries" as a prerequisite, described the
+  headless-browser fallback over a dozen lines, instructed `npx --yes playwright install-deps chromium`, and
+  offered that command in two troubleshooting rows — telling operators to install a capability that had just
+  been deleted, in the user-facing README of that very module.
+  **Root cause, mechanical:** the completeness sweep grepped `"Playwright\|BrowserDownloader"`
+  **case-sensitively**, and the file writes the tool lowercase inside `npx --yes playwright install-deps` —
+  0 matches where `grep -i` finds 3. An earlier sweep *had* listed the file; it was dropped on the strength
+  of the case-sensitive re-check. **Verify a removal with `grep -i`, or the check confirms only what it can
+  see.** Now rewritten to state the limit honestly, with a historical note so a reader of the old version
+  knows why the prerequisite vanished; every tracked `.md` re-swept case-insensitively, leaving two hits that
+  are both historical prose.
+
+- **MED-2 — the removal was one 23-file commit where several would each have compiled. FIXED by re-cutting,
+  possible because none of it was pushed** — `origin/develop` sat at the launch-probe merge, checked *before*
+  touching anything, which is the lesson from yesterday's rebase on a false premise. It is now four commits:
+  the guard (red) → *stop using and delete the route* (code + tests) → *drop the dependency* (build, CI,
+  installer) → *the documentation*. Each compiles; the second onward are green.
+  The re-cut also **relocated the evidence**: 274.7 MB → 77.8 MB is now measured either side of the build
+  commit that causes it, rather than quoted as a whole-session figure in a commit that also moved code. That
+  was the audit's actual objection, and splitting fixed it instead of merely reporting it.
+
+- **MED-3 — a feature was built and deleted inside 34 minutes. The artifact is gone from history; the lesson
+  is a convention.** `BrowserRouteBreaker` was pinned (189 lines of guards), implemented, wired through two
+  modules and documented, then removed when Griefed asked whether Playwright was needed at all. Because it
+  was created *and* deleted inside the unpushed range, the re-cut replays the work without it ever existing,
+  so the record shows the removal rather than the detour.
+  Every commit in the original sequence was correctly shaped, which is precisely why shaping did not save it.
+  Root `CLAUDE.md` now carries **"Question the requirement before you optimise the cost of meeting it"**: the
+  breaker bounded the *cost* of a route whose *existence* had not been questioned, with the evidence to ask
+  the prior question already in hand.
+
+## LOW
+
+- **LOW-1 — a `fix:` commit grouped the breaker with a report-text change. Dissolved by MED-3's re-cut**; the
+  commit no longer exists, nor does the code it carried.
+- **LOW-2 — two existing expectations changed inside the implementation commit. Correct as-is, no action.**
+  `aLockedFileSaysWhyItCouldNotBeDownloaded` stopped asserting the message names a "browser" and now asserts
+  it names Modrinth and mentions neither browser nor Playwright; `BootVerifierSelectionTest` lost a
+  constructor argument with no expectation moved (the reference-only carve-out). The first is a genuine
+  expectation change — correct for `feat!` rather than `refactor`, and unsplittable without a red
+  intermediate. Recorded rather than left implicit.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **Both red pins were run before being committed and each failed only for its stated reason**, per the
+  convention added 2026-09-01. The routing guard failed on exactly its two absence assertions.
+- **The removal is provably complete in code**: `JarDownloaderRoutingTest` asserts `BrowserDownloader` is
+  absent from the classpath, and `playwright` appears in **0** runtime-classpath entries for `-clientside`,
+  `-grinder` and `-app`. MED-1 was a documentation gap, never a code one.
+- **A documented landmine was re-triggered and caught pre-commit** — the breaker's constructor parameter
+  first went in after `bootArtifactSink`, which this module's `CLAUDE.md` warns re-binds trailing-lambda call
+  sites. Disclosed rather than quietly fixed, and now moot.
+- **The launch probe is measurement-verified to the stated ceiling for deploy scripts** (no harness exists,
+  none added): `bash -n`, `--help`, unknown-flag rejection, and the real CLI invocation against the installed
+  dist. It produced the fact that shaped everything after it — headless Chromium is a *separate* binary,
+  `chromium_headless_shell-1234`.
+- **Diagnoses were falsified, not defended.** The opening hypothesis (missing Chromium/OS libraries) was
+  disproved by the probe's own output and abandoned; its replacement (Cloudflare) was tested by direct fetch,
+  403 with challenge markers on two user agents, with the caveat stated that curl's 403 does not by itself
+  prove Chromium is blocked.
+- **Help circumventing the bot challenge was declined**, and what shipped removes the workaround rather than
+  hardening it — consistent with the platform's and the authors' opt-out.
+- Every measurement quoted was re-run for this audit: 192.9 MB `driver-bundle`, 3.0 MB `driver`, 274.7 →
+  77.8 MB app jar, suites 383 / 262 / 434 / 149 / 3.

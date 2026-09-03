@@ -13,7 +13,6 @@ dependencies {
     api(libs.jacksonModuleKotlin)
 
     // Headless-browser download of distribution-locked CurseForge files (locked = no direct URL).
-    api(libs.playwright)
 
     testImplementation(libs.kotlinTestJunit5)
     testRuntimeOnly(libs.junitPlatformLauncher)

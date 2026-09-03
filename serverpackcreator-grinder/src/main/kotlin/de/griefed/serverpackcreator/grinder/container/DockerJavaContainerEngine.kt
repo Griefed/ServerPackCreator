@@ -230,6 +230,18 @@ class DockerJavaContainerEngine(
         }
     }
 
+    /**
+     * Ask the daemon whether [image] is there, treating *any* failure to answer as "no".
+     *
+     * A missing image and an unreachable daemon are different causes with one consequence — nothing can be
+     * booted — so both return `false` and the reason is logged rather than folded into the return type. Only
+     * a `docker pull`/`docker build` or a running daemon fixes either, and the preflight's message names both.
+     */
+    override fun hasImage(image: String): Boolean =
+        runCatching { client.inspectImageCmd(image).exec() }
+            .onFailure { log.warn("Could not confirm the runtime image '$image' with the container daemon: ${it.message}", it) }
+            .isSuccess
+
     /** Translate the platform-agnostic [spec] into a docker-java [HostConfig] with the hardening on. */
     private fun hostConfigFor(spec: ContainerSpec): HostConfig {
         val hostConfig = HostConfig.newHostConfig()

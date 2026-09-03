@@ -229,6 +229,19 @@ though their detail lives deeper:
   only decides when to stop waiting. Verified against a live daemon, not reasoned about: a container trapping
   SIGTERM proves the signal arrives before removal (`DockerJavaContainerEngineIT`, gated on
   `GRINDER_DOCKER_IT=1`).
+- **LANDMINE — a host defect is published as thousands of verdicts about mods unless something stops it.**
+  Measured 2026-09-03: `spc-grinder-runtime:latest` was gone from the Docker daemon (nothing in
+  `install-grinder.sh` removes it; a `docker system prune -a` does, because the image is only in use *during* a
+  boot). Every install threw `Status 404: No such image`, every tuple went on the 60-minute install cooldown,
+  and every candidate wanting one was published INCONCLUSIVE — over a *thousand* of them, each carrying a
+  sentence about a loader tuple. `record()` replaces by identity and the re-verify TTL is 30 days, so projects
+  that held a decisive HIGH lost it, and with it their line in `/as-properties`. This is the loader-cache
+  poisoning lesson one level up: **an environment defect looks exactly like a subject defect unless something
+  distinguishes them**, and the per-tuple cooldown actively disguised it by bookkeeping one host-wide failure
+  as one independent failure per tuple. `RuntimeImagePreflight` now refuses to start (`main`, immediately after
+  the engine is built, exit 1 so `Restart=on-failure` retries and `systemctl status` shows `failed`), and
+  `ContainerEngine.hasImage` defaults to `true` so no test fake is affected. **The recovery is
+  `--requeue-since <the moment it broke>`** — `--requeue-before` selects the exact complement of an outage.
 - **Every container carries `OWNER_LABEL`, and that label is the only way to find an orphan.**
   A SIGKILLed JVM leaves containers running with nothing tracking them — the in-memory set died with the
   process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery, and it
@@ -317,10 +330,12 @@ though their detail lives deeper:
   wrong, and a wrong verdict is usually a *recent* one (engine defects are found by reading verdicts that were
   just produced), so an unforced drain turns straight into `SKIPPED_FRESH` and looks like it worked.
   `aForcedGrindReVerifiesEvenAFreshVerdict` pins it.
-  - Selectors: `--requeue <url>…` for a named handful, `--requeue-before <ISO instant>` for the recurring
-    shape — a defect invalidates a *population*, not a hand-assembled list. One candidate per project
-    (platform + the platform's own id where known), so a rename is still one re-grind and the same slug on
-    two platforms is still two.
+  - Selectors: `--requeue <url>…` for a named handful, `--requeue-before <ISO instant>` when a defect is found
+    in the engine and the past is suspect, `--requeue-since <ISO instant>` when the daemon or its host was
+    broken for a *window* — a defect invalidates a *population*, not a hand-assembled list. The two instant
+    selectors are mirrors and **picking the wrong one queues exactly what you did not mean**: `-since` is
+    inclusive of the instant, so they partition the store. One candidate per project (platform + the platform's
+    own id where known), so a rename is still one re-grind and the same slug on two platforms is still two.
   - **LANDMINE — the CLI path runs *before* `claimSpcPreferencesNode()`/`pinSpcHomeDirectory()` and must never
     use `log`.** It is run by an operator against a service that is already up: claiming or re-pinning would
     move the home out from under the running daemon, and those claims are remembered for every later run. The
@@ -348,39 +363,13 @@ download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`),
 container, so the box running the grinder needs:
 - **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when
   the key is present; without it CurseForge links cannot be resolved at all (Modrinth needs no key).
-- **Playwright + Chromium** — distribution-locked CurseForge files (`allowModDistribution=false`,
-  `downloadUrl=null`) are routed by `clientside.selectDownloader` to the headless-browser
-  `BrowserDownloader`, which runs on the host during staging. The key and the browser are
-  **complementary**: the key resolves the project and reveals the file is locked; the browser fetches
-  the withheld jar. A locked CurseForge mod needs **both**. Wire the `BootVerifier` with a
-  `BrowserDownloader()` (disposed via `use {}`) exactly as `VerifyClientsideCommand` does — locked-file
-  support is then inherited, not reimplemented.
-  - **LANDMINE — the *browser* is not the half that goes missing; the OS libraries are.** Playwright's
-    Java binding downloads browsers itself on the first `Playwright.create()`
-    (`DriverJar.installBrowsers()`, which is why `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` exists), so a host
-    that never ran an install still gets one. It does **not** install the libraries Chromium links
-    against, and on a headless server those are absent by default — Chromium then launches and every
-    navigation times out, which reads as CurseForge being slow. `clientside-boot.yml`'s reusable job
-    installs exactly those and nothing else, which is the shape of the gap. `install-grinder.sh` now
-    does both (`--skip-browser` opts out).
-  - **LANDMINE — headless Chromium is a *different binary*, and an install exit code does not prove it
-    runs.** Since 1.49 Playwright serves `setHeadless(true)` — which is what `BrowserDownloader` uses —
-    from a separate `chrome-headless-shell`, so 1.62.0 wants **`chromium_headless_shell-1234`** and not
-    just `chromium-1234`. `install chromium` fetches both, but a cache holding only the full browser
-    satisfies every path check and still cannot serve one download. `install-grinder.sh` therefore ends
-    with a **launch probe**: it drives `com.microsoft.playwright.CLI screenshot --browser chromium
-    about:blank` as the service account, which needs no network and fails loudly on the three causes
-    nothing else here can see — missing OS libraries, a HOME the service cannot write (Chromium needs its
-    own cache dir), and a sandbox the kernel refuses (the unit sets `NoNewPrivileges=true`, and a host
-    with unprivileged user namespaces disabled leaves Chromium none it can use). A locked CurseForge file
-    still failing *after* the probe passes is a CurseForge or network problem, not a prerequisite.
-  - **Install with Playwright's own CLI, never `npx playwright install`.** Playwright pins one Chromium
-    build per release and looks for that exact directory — 1.62.0 wants `chromium-1234` (Chrome for
-    Testing 151.0.7922.34, in `driver-1.62.0.jar`'s `browsers.json`). `npx` fetches whatever revision
-    the *npm* package pins, landing beside it as `chromium-<other>`, so a check for `chromium-*` reports
-    success while the binding still downloads its own. Driving `com.microsoft.playwright.CLI` from the
-    installed `lib/*` makes the version match by construction: the same driver jar that runs the
-    download decides what to fetch, and a version bump therefore cannot leave it stale.
+- **No browser, and no Playwright.** Distribution-locked CurseForge files (`allowModDistribution=false`,
+  `downloadUrl=null`) are **not obtainable**: the author opted out of third-party distribution. The headless
+  Chromium that used to fetch them anyway was removed 2026-09-02 — it existed only to circumvent that block,
+  CurseForge's Cloudflare challenge had stopped it working entirely, and it cost 192.9 MB of bundled node
+  binaries in every artifact (the app jar went 274.7 MB → 77.8 MB without it). Such a candidate is now
+  reported as unverifiable with a refusal naming the lock and pointing at Modrinth. Do not reintroduce it;
+  detail and the measurements are in `serverpackcreator-clientside/CLAUDE.md`.
 
 ## Testing
 

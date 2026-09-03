@@ -174,15 +174,39 @@ object RequeueSelection {
      * an operator can say "re-grind everything from before the fix" without listing hundreds of projects, and
      * a reader of the log can tell exactly which population was re-verified and why.
      *
-     * One candidate per *project*, not per verdict row: a project carries one verdict per loader and a
-     * re-grind re-verifies all of them, so queueing per row would boot the same pack several times.
-     * Popularity is zero because the queue is not ordered by it — it is ordered by "we know this is wrong".
+     * One candidate per *project*, not per verdict row — see [oneCandidatePerProject].
      */
     fun verifiedBefore(verdicts: Collection<GrindVerdict>, instant: Instant): List<GrindCandidate> =
-        verdicts.filter { it.verifiedAt.isBefore(instant) }
-            .groupBy { it.platform to (it.projectId ?: it.slug) }
-            .map { (_, rows) ->
-                val newest = rows.maxBy { it.verifiedAt }
+        oneCandidatePerProject(verdicts.filter { it.verifiedAt.isBefore(instant) })
+
+    /**
+     * Every project whose verdict was recorded **at or after** [instant], as one candidate each — the mirror of
+     * [verifiedBefore], and the one an outage needs.
+     *
+     * The two are not interchangeable. A defect *found* in the engine invalidates the past, which is
+     * [verifiedBefore]; a host or engine that was **broken for a window** invalidates that window, and asking
+     * for it with [verifiedBefore] selects precisely the verdicts the outage did not touch. Measured
+     * 2026-09-03: the runtime image was absent from the container daemon, so until it was noticed every
+     * candidate was published INCONCLUSIVE about a boot that never happened, overwriting decisive verdicts
+     * that the 30-day re-verify TTL would then have left standing.
+     *
+     * Inclusive of [instant] itself, because the operator passes the moment it broke and a verdict stamped
+     * exactly then is damage rather than history — which also makes the two selectors a partition.
+     */
+    fun verifiedSince(verdicts: Collection<GrindVerdict>, instant: Instant): List<GrindCandidate> =
+        oneCandidatePerProject(verdicts.filterNot { it.verifiedAt.isBefore(instant) })
+
+    /**
+     * Collapse verdict rows onto one candidate per project, identified by platform plus the platform's own id
+     * where it has one. A project carries one verdict per loader and a re-grind re-verifies all of them, so
+     * queueing per row would boot the same pack several times; the newest row supplies the URL and slug, since
+     * a slug is a display name a rename can move. Popularity is zero because this queue is ordered by "we know
+     * this is wrong", not by downloads.
+     */
+    private fun oneCandidatePerProject(rows: List<GrindVerdict>): List<GrindCandidate> =
+        rows.groupBy { it.platform to (it.projectId ?: it.slug) }
+            .map { (_, grouped) ->
+                val newest = grouped.maxBy { it.verifiedAt }
                 GrindCandidate(newest.projectUrl, newest.slug, 0, newest.platform, newest.projectId)
             }
 }

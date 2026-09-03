@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
+import de.griefed.serverpackcreator.grinder.container.RuntimeImagePreflight
 import de.griefed.serverpackcreator.grinder.loader.*
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import de.griefed.serverpackcreator.grinder.report.FallbackLists
@@ -42,6 +43,7 @@ import java.time.Instant
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.system.exitProcess
 
 /**
  * The fire-and-forget entry point. Wires the real chain — a [CatalogCrawler] over the available candidate
@@ -60,8 +62,9 @@ object GrinderApplication {
     private val log by lazy { cachedLoggerOf(GrinderApplication::class.java) }
 
     /**
-     * Entry point. `--requeue <url>…` and `--requeue-before <instant>` add work to the immediate re-grind
-     * queue and exit without grinding, so they can be run against a service that is already up. With project
+     * Entry point. `--requeue <url>…`, `--requeue-before <instant>` and `--requeue-since <instant>` add work to
+     * the immediate re-grind queue and exit without grinding, so they can be run against a service that is
+     * already up. With project
      * URLs as [args] it grinds exactly those once and exits; with none it runs
      * continuously, taking the next catalogue slice each pass and persisting verdicts and crawl position after every
      * step so a restart resumes mid-catalogue. Everything else is read from the environment — see README §5.
@@ -143,6 +146,16 @@ object GrinderApplication {
         // ApiWrapper.api()'s relative default, see resolveSpcPropertiesFile.
         val apiWrapper = ApiWrapper.api(resolveSpcPropertiesFile(config.spcProperties, base))
         val engine = DockerJavaContainerEngine()
+        // Before ANY candidate, because the alternative was measured: with the runtime image gone from the
+        // daemon (2026-09-03), every install throws, every tuple goes on cooldown, and every candidate is
+        // published INCONCLUSIVE about a boot that never happened -- overwriting decisive verdicts that the
+        // 30-day re-verify TTL then leaves wrong. Exits non-zero so `Restart=on-failure` retries every 30s and
+        // the unit sits visibly in `failed` meanwhile, instead of the service looking healthy while it
+        // destroys its own record.
+        RuntimeImagePreflight.refusalFor(engine, image)?.let { refusal ->
+            log.error(refusal)
+            exitProcess(1)
+        }
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
         val installer = DockerLoaderInstaller(
@@ -414,11 +427,14 @@ object GrinderApplication {
     /**
      * Handle `--requeue …` and `--requeue-before …`, print what was queued, and return without grinding.
      *
-     * Two selectors, because two things actually happen. `--requeue <url>…` is a named handful — a report a
-     * user disputed, a project whose verdict looks wrong. `--requeue-before <instant>` is the recurring one:
-     * a defect is found in the engine and *everything verified before the fix* is suspect, which is a
-     * population nobody should have to list by hand. Both are additive and idempotent — queueing an entry
-     * that is already waiting changes nothing.
+     * Three selectors, because three things actually happen. `--requeue <url>…` is a named handful — a report
+     * a user disputed, a project whose verdict looks wrong. `--requeue-before <instant>` is for a defect found
+     * in the engine, where *everything verified before the fix* is suspect. `--requeue-since <instant>` is for
+     * a window in which the daemon or its host was broken — the 2026-09-03 outage, where a missing runtime
+     * image meant every candidate ground during it was published INCONCLUSIVE about a boot that never
+     * happened; `-before` selects the exact complement of that population and would queue the whole store.
+     * None of them should have to be listed by hand. All are additive and idempotent — queueing an entry that
+     * is already waiting changes nothing.
      *
      * The running daemon picks the queue up at the start of its next pass. This process deliberately builds
      * nothing else: no Docker, no loader cache, no report port, because a service is already holding those.
@@ -440,17 +456,21 @@ object GrinderApplication {
                 resolvable
             }
 
-            "--requeue-before" -> {
+            "--requeue-before", "--requeue-since" -> {
                 val instant = rest.firstOrNull()?.let { runCatching { Instant.parse(it) }.getOrNull() }
                 if (instant == null) {
-                    println("--requeue-before needs an ISO-8601 instant, e.g. --requeue-before 2026-08-23T18:00:00Z")
+                    println("$verb needs an ISO-8601 instant, e.g. $verb 2026-08-23T18:00:00Z")
                     return
                 }
-                RequeueSelection.verifiedBefore(store.all(), instant)
+                if (verb == "--requeue-before") RequeueSelection.verifiedBefore(store.all(), instant)
+                else RequeueSelection.verifiedSince(store.all(), instant)
             }
 
             else -> {
-                println("Unknown verb '$verb'. Use --requeue <url>… or --requeue-before <ISO-8601 instant>.")
+                println(
+                    "Unknown verb '$verb'. Use --requeue <url>…, --requeue-before <ISO-8601 instant> or " +
+                        "--requeue-since <ISO-8601 instant>."
+                )
                 return
             }
         }

@@ -16,6 +16,13 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   hardening as defaults**: `networkMode=none`, `readonlyRootfs`, `dropAllCapabilities`,
   `noNewPrivileges`, non-root `user`, tmpfs for `/tmp`, plus memory/cpu/pids caps. **Never mount the
   Docker socket into a boot container.**
+- **`ContainerEngine.hasImage` + `RuntimeImagePreflight` are the startup refusal.** `hasImage` defaults to
+  `true`, so every fake in the suite is unaffected and only `DockerJavaContainerEngine` (via `inspectImageCmd`)
+  really answers; any failure to answer is `false`, because a missing image and an unreachable daemon have one
+  consequence — nothing boots — and the refusal names both. `main` exits 1 on a refusal rather than warning:
+  with no image, grinding on publishes an INCONCLUSIVE verdict about every candidate it touches, replacing the
+  decisive ones already in the store, and the 30-day re-verify TTL then keeps them wrong. Measured 2026-09-03;
+  the full incident is the host-defect landmine in the module `CLAUDE.md`.
 - **`ContainerResources` is set in cores, via `forCpus`** — `SPC_GRINDER_CPUS` (default `2`) is read in
   `GrinderApplication` and reaches both the mod boot and the loader install; `CpuLimitWiringTest` pins that
   join, because `main` boots Docker and no test can execute it. **Send the quota and the period together.**
