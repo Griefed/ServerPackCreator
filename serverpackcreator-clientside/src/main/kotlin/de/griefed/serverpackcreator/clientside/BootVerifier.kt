@@ -513,7 +513,45 @@ class BootVerifier(
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { bootable(loader, it) }
             ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
-        return stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+        val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+        return reselectOnMinecraftContradiction(staged, project, loader, mainFile, loaderVersionOverride, bootable)
+    }
+
+    /**
+     * Answer a "the jar excludes this Minecraft version" refusal by re-staging on the newest version the
+     * jar *does* accept, or hand [staged] back untouched when that is not the refusal or there is no such
+     * version.
+     *
+     * **Why this exists.** Selection can only see platform metadata — the jar is not downloaded yet — so it
+     * takes the newest tagged version, and the descriptor gate may then contradict it. Measured on JEI:
+     * `jei-1.21.1-forge-19.52.0.422.jar` is tagged for 1.21 and 1.21.1 but declares `[1.21, 1.21.1)`, so
+     * the pick was vetoed and the boot lost even though 1.21 satisfies platform and jar alike. A refusal
+     * costs a `BootResult.INCONCLUSIVE`, which overwrites a decisive verdict, so throwing the candidate
+     * away is the expensive outcome, not the safe one.
+     *
+     * Exactly one retry, by calling [stageBootPack] rather than [prepareBootPack]: the re-selected version
+     * satisfies the constraint that caused this refusal, so a second contradiction would be a different
+     * fault and must surface rather than loop.
+     */
+    private fun reselectOnMinecraftContradiction(
+        staged: Prepared,
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        loaderVersionOverride: String?,
+        bootable: (String, String) -> Boolean
+    ): Prepared {
+        if (staged !is Prepared.Failed) {
+            return staged
+        }
+        val constraint = staged.declaredMinecraftConstraint ?: return staged
+        val agreed = BootCandidateSelector.newestVersionSatisfying(mainFile, constraint) { bootable(loader, it) }
+            ?: return staged
+        log.info(
+            "${mainFile.fileName} declares Minecraft '$constraint', so re-staging ${project.slug} on " +
+                "$loader $agreed — the newest version its own descriptor accepts."
+        )
+        return stageBootPack(project, loader, mainFile, agreed, loaderVersionOverride)
     }
 
     /**
@@ -617,7 +655,18 @@ class BootVerifier(
         /** Staging failed (no combo, download or generation failure); [detail] explains why. */
         data class Failed(
             /** The named reason staging stopped, carried into the report instead of a bare "could not boot". */
-            val detail: String
+            val detail: String,
+            /**
+             * The staged jar's own declared Minecraft range, verbatim, set **only** when that range is why
+             * staging stopped — i.e. the jar excludes the version being staged. `null` for every other
+             * refusal, including a loader-descriptor mismatch.
+             *
+             * Carried so [prepareBootPack] can re-select a version the jar *does* accept rather than throw
+             * the candidate away. It is deliberately narrower than "the refusal reason": a jar carrying the
+             * wrong loader's descriptor offers no second version to try, whereas a Minecraft range usually
+             * does, because the platform commonly tags more versions than the descriptor admits.
+             */
+            val declaredMinecraftConstraint: String? = null
         ) : Prepared
     }
 
@@ -728,9 +777,14 @@ class BootVerifier(
             val declared = runCatching { minecraftConstraint(jar) }.getOrNull()
             val contradiction = JarSelfDeclaration.contradiction(jar, loader, minecraftVersion, declared)
                 ?: return null
+            // Re-asked rather than inferred from `contradiction` being non-null: that string is also how a
+            // loader-descriptor mismatch reports itself, and only the Minecraft disagreement can be answered
+            // by trying another version. Getting this wrong would re-select on a refusal re-selection cannot fix.
+            val minecraftDisagreement = declared?.takeIf { !VersionConstraint.satisfies(minecraftVersion, it) }
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
-                    "The platform's declared versions are what its author ticked, not what the jar was built for."
+                    "The platform's declared versions are what its author ticked, not what the jar was built for.",
+                declaredMinecraftConstraint = minecraftDisagreement
             )
         }
 
