@@ -122,6 +122,15 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   version, and `1.21.1 + NeoForge` is one of the most common combinations in the catalogue — every candidate was
   paying a full download-and-boot (~46 s of container time) before failing. A restart retries, which is a
   reasonable moment to find out whether upstream has been fixed.
+  **The candidate that paid for the attempt must not be told it was skipped** — `ContainerCandidateVerifier
+  .installedBase` reads `isInstallOnCooldown` *before* calling `ensureInstalled`, because `ensureInstalled`
+  records the cooldown on its way out of a failure; asking afterwards (as this did until 2026-09-03) answers
+  "on cooldown" for the attempt as well as for the skips behind it, which made the failure branch of
+  `installUnavailableMessage` unreachable and, during an outage, hid how many installs were still being tried.
+  **And a throw is logged by type, not by `message` alone** (`LoaderCache.installThrewMessage`, plus the
+  throwable itself to the logger): interpolating only the message printed a bare `null` for a throwable
+  carrying none, so that tuple's line said an install had failed and nothing else — while the tuple two lines
+  above it in the same journal named `Status 404: No such image` and was diagnosable on sight.
 - **The live install console goes beside the generated pack, NOT into the cache dir** (`install.log`), because
   `LoaderCache` wipes the cache directory when an install fails — which would delete the console exactly when it
   is the only evidence of why. Learned the hard way: the first version of this logging did precisely that.

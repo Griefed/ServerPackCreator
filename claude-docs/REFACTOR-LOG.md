@@ -3349,3 +3349,55 @@ joined `runtimeMismatchMarkers` — a marker, not a rule, because it is the *abs
 
 The markers recover nothing by design; they move verdicts to INCONCLUSIVE, which is the correct answer. Only
 a verified rule recovers, and it recovered exactly the three that were verified.
+
+## 2026-09-03 — the runtime image was gone, and a thousand mods wore the verdict
+
+Griefed reported thousands of live verdicts reading `Pack post-processing failed: Loader install for
+<LOADER> <VERSION> / Minecraft <MC_VERSION> failed recently and is on cooldown, so it was not retried.` The
+sentence is an echo, not a cause: `ContainerCandidateVerifier.overlayLoaderInstall` throws it when
+`LoaderCache.ensureInstalled` returns `null`, and `BootVerifier.runPrepared` reports a thrown
+`packPostProcessor` as INCONCLUSIVE. One broken tuple therefore speaks once per candidate that wants it.
+
+The journal named the cause on the first line the operator pasted:
+
+```
+WARN (LoaderCache.kt:166) - Loader install threw for NeoForge 26.2.0.26-beta / Minecraft 26.2:
+  Status 404: {"message":"No such image: spc-grinder-runtime:latest"}
+```
+
+`spc-grinder-runtime:latest` had been removed from the Docker daemon. Nothing in `install-grinder.sh`
+removes it; `docker system prune -a` does, because the image is only in use *during* a boot. Corroborating
+state from the host: `find <cache> -name .spc-installed | wc -l` = **0** (nothing servable from cache
+either), every `install.log` **zero bytes** (no container ever started), disk 63% used, container DNS fine,
+`work/` owned by `1003:1004` = `grinder` — so neither of the two landmines that usually explain a total
+install failure applied.
+
+The damage is not lost time. `JsonVerdictStore.record` replaces by identity, `FallbackPropertiesRenderer`
+publishes only `HIGH`, and the re-verify TTL is 30 days — so every project ground during the outage lost
+whatever it held, including decisive HIGH entries already being served from `/as-properties`.
+
+**Four fixes, each pinned first and committed red.**
+
+1. **A host defect must not be published as verdicts about mods.** `ContainerEngine.hasImage` (default
+   `true`, so no fake is affected) + `RuntimeImagePreflight`; `main` refuses and exits 1 immediately after
+   building the engine, so `Restart=on-failure` retries every 30s and the unit sits visibly in `failed`.
+   This is the loader-cache-poisoning lesson one level up — *an environment defect looks exactly like a
+   subject defect unless something distinguishes them* — and the per-tuple cooldown had been disguising it,
+   bookkeeping one host-wide failure as one independent failure per tuple.
+2. **An exception is named by its type.** The second tuple in the same journal read `Loader install threw
+   for NeoForge 21.1.23 / Minecraft 1.21.1: null`, because `${'$'}{it.message}` on a throwable carrying none
+   prints exactly that. `LoaderCache.installThrewMessage` names the type and the message where there is one,
+   and the throwable now reaches the logger, so the stack trace is in the journal.
+3. **"Not retried" is only said about an install that was not retried.** `isInstallOnCooldown` was read
+   *after* `ensureInstalled`, which records the cooldown on its way out of a failure, so the candidate that
+   paid for the attempt got the skip message too and the failure branch was unreachable in production.
+   `ContainerCandidateVerifier.installedBase` asks before, which is the only moment the two differ — and
+   during an outage that difference is the diagnosis.
+4. **`--requeue-since <instant>`.** `--requeue-before` answers "a defect was found, the past is suspect"; it
+   selects the exact *complement* of an outage window, so recovering this incident with it would have queued
+   the entire 38k-row store. `RequeueSelection.verifiedSince` is inclusive of the instant, so the two
+   selectors partition the store.
+
+Suite: 434 → **446** (29 skipped, unchanged). Not fixed, and deliberate: `LoaderCache` still logs its
+"not retrying for 60m" notice only on a tuple's first failure per process (`recentFailures.put(...) == null`),
+because the *cause* — the installer's own warning, or the throw above — is logged on every attempt.
