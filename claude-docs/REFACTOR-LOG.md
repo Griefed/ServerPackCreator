@@ -3401,3 +3401,60 @@ whatever it held, including decisive HIGH entries already being served from `/as
 Suite: 434 → **446** (29 skipped, unchanged). Not fixed, and deliberate: `LoaderCache` still logs its
 "not retrying for 60m" notice only on a tuple's first failure per process (`recentFailures.put(...) == null`),
 because the *cause* — the installer's own warning, or the throw above — is logged on every attempt.
+
+---
+
+## 2026-09-03 — a jar's own version range should narrow the pick, not cancel it
+
+Reported from the live grinder: `jei-1.21.1-forge-19.52.0.422.jar` refused with *"declares Minecraft
+'[1.21, 1.21.1)', but the pack is 1.21.1"*, while CurseForge lists 1.21.1 among its game versions.
+
+**The reading was right and the mod is wrong — verified before touching anything.** The jar's
+`META-INF/mods.toml` really does carry `versionRange="[1.21, 1.21.1)"`, space and all, and JEI's
+`gradle.properties` on its 1.21.1 branch pairs `minecraftVersion=1.21.1` with
+`minecraftVersionRange=[1.21, 1.21.1)` — the range is built as `[start, thisVersion)` where it should be
+`[start, nextVersion)`, so the descriptor genuinely excludes the version the file is named after. Both
+halves of our path are correct: `ForgeTomlScanner.getVersionRange` returns the TOML value verbatim, and
+`VersionConstraint.mavenRangeHolds` trims its bounds exactly like Maven's own `parseRestriction`. **The
+parser is not the defect and must not be "fixed".**
+
+**The defect was ours, one level up: the descriptor check was a post-selection veto rather than a
+selection filter.** `pickBootableCandidate` can only see platform metadata, because the jar is not
+downloaded until after selection — so it took 1.21.1, `refuseForSelfDeclaration` contradicted it, and
+staging gave up while **1.21, tagged by the platform and accepted by the jar, sat untried in the same
+list**. That refusal publishes `BootResult.INCONCLUSIVE`, which overwrites a decisive verdict: the same
+harm shape as the missing-runtime-image outage, except permanent rather than windowed, and it fires on
+every project whose newest tagged version its own descriptor excludes — a common shape, since authors
+routinely tick `X` and `X.1` while the toml covers only `X`.
+
+Three commits, and the pin boundary was *checked out and run*, not asserted:
+
+1. `test(clientside): reproduce JEI's refusal …` — fails **behaviourally** at its own commit, reproducing
+   the live message against versions derived from the cached manifest (`'[26.1.2, 26.2)' … pack is 26.2`).
+   It writes a real jar with a real `META-INF/mods.toml` read by the actual `ForgeTomlScanner`; nothing is
+   faked past the network boundary.
+2. `test(clientside): pin the version a jar's own range would have us pick` — three pure pins, red with
+   `Unresolved reference 'newestVersionSatisfying'`.
+3. `fix(clientside): re-select a Minecraft version the jar accepts, don't refuse` — green.
+
+Split into two test commits deliberately: with both pins in one commit the compile error masked the
+behavioural red, and that behavioural red is the most valuable artifact in the branch. Re-cut before
+anything was pushed. Verified by checking out all three in a scratch worktree: **behavioural red →
+compile red → green.**
+
+**Landmine carried into the module file:** `Prepared.Failed.declaredMinecraftConstraint` is set *only* for
+the Minecraft disagreement, and the predicate is re-asked rather than inferred from
+`JarSelfDeclaration.contradiction` being non-null — that same string also reports a jar carrying the wrong
+loader's descriptor, which no other version can fix. Widened, a NeoForge-tagged Forge jar would re-stage
+down its entire version list learning nothing each time. The retry calls `stageBootPack`, never
+`prepareBootPack`, so a second contradiction surfaces instead of looping.
+
+**Open, and deliberately not assumed:** whether Forge *fatally* enforces that range at runtime. JEI
+19.52.0.422 is the canonical 1.21.1 Forge build and is universally used, which is strong circumstantial
+evidence it does not — but it was not demonstrated, and the fix is correct either way because 1.21 is a
+real boot yielding real evidence. If a boot ever shows Forge is lenient here, the gate is additionally too
+strict on the Minecraft axis and should warn rather than refuse. Per the repo's own rule: what only a real
+runtime can answer, ask a real runtime.
+
+Suite: clientside 262 → **266**; grinder 446 and app green, both read from `build/test-results` rather
+than inferred from `BUILD SUCCESSFUL`.

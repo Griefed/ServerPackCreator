@@ -415,6 +415,31 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     `JarDownloader.kt` now emits no `JarDownloaderKt` facade at all), the installer's browser stage and
     `--skip-browser` flag, and the CI job's `playwright install-deps`. `JarDownloaderRoutingTest` asserts
     `BrowserDownloader` is **absent from the classpath**, so a half-revert fails rather than lingering.
+- **The descriptor gate is a *filter*, not a veto — a jar's range that excludes the newest tagged version
+  re-selects rather than refuses (2026-09-03).** `BootCandidateSelector.pickBootableCandidate` can only see
+  platform metadata, because the jar is not downloaded until after selection; `refuseForSelfDeclaration`
+  then reads the descriptor and may contradict the pick. Refusing there threw the whole candidate away even
+  when a version *both* sources accept was sitting in the same list.
+  **The measured case is JEI, and the descriptor is upstream-wrong rather than misread.**
+  `jei-1.21.1-forge-19.52.0.422.jar` is tagged on both platforms for Minecraft 1.21 **and** 1.21.1 while its
+  own `META-INF/mods.toml` declares `versionRange="[1.21, 1.21.1)"` — a Maven range whose `)` excludes the
+  version the file is named after. JEI's `gradle.properties` on its 1.21.1 branch confirms the intent:
+  `minecraftVersion=1.21.1` sits beside `minecraftVersionRange=[1.21, 1.21.1)`, i.e. the range is built as
+  `[start, thisVersion)` where it should be `[start, nextVersion)`. Both halves of our reading are correct —
+  `ForgeTomlScanner.getVersionRange` is verbatim, `VersionConstraint.mavenRangeHolds` trims its bounds exactly
+  like Maven's own `parseRestriction` — so **do not "fix" the parser**; this class of range is genuinely
+  self-excluding and common, since authors routinely tick `X` and `X.1` while the toml covers only `X`.
+  `reselectOnMinecraftContradiction` re-stages once on `BootCandidateSelector.newestVersionSatisfying`, and
+  keeps the original refusal when no tagged version satisfies the jar.
+  **Why it matters more than one lost boot:** a staging refusal publishes `BootResult.INCONCLUSIVE`, which
+  overwrites a decisive verdict — the same harm shape as the missing-runtime-image outage, except permanent
+  instead of windowed.
+  **Landmine — `Prepared.Failed.declaredMinecraftConstraint` is set only for the Minecraft disagreement**, and
+  the predicate is re-asked rather than inferred from `JarSelfDeclaration.contradiction` being non-null: that
+  same string also reports *a jar carrying the wrong loader's descriptor*, which no other version can fix. Widen
+  it and a NeoForge-tagged Forge jar will re-stage down its whole version list, once per version, learning
+  nothing each time. The retry calls `stageBootPack`, never `prepareBootPack`, so a second contradiction
+  surfaces instead of looping.
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in
