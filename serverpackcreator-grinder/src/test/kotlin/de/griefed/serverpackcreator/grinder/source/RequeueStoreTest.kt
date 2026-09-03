@@ -173,6 +173,56 @@ internal class RequeueStoreTest {
         Assertions.assertEquals(listOf(typo), rejected, "the unresolvable link is named back, not queued")
     }
 
+    /**
+     * **The selector for "the host, or the engine, was broken between then and now".**
+     *
+     * `verifiedBefore` cannot express it: it selects the *complement* of an outage window. Measured
+     * 2026-09-03 — the runtime image was gone from the daemon, so for the hours until it was noticed every
+     * candidate was published INCONCLUSIVE about a boot that never happened, replacing whatever the store held.
+     * The population that has to be re-ground is "everything verified **since** it broke", and asking for it
+     * with `--requeue-before <the fix>` queues the entire store instead, including every verdict the outage
+     * never touched.
+     *
+     * Inclusive of the instant itself, because an operator passes the moment the outage started and a verdict
+     * stamped exactly then is damage, not history.
+     */
+    @Test
+    fun verdictsRecordedSinceAGivenInstantBecomeOneCandidatePerProject() {
+        val outage = Instant.parse("2026-09-03T18:00:00Z")
+        val verdicts = listOf(
+            grindVerdict("jei", "Forge", verifiedAt = outage.minusSeconds(1)),
+            grindVerdict("creativecore", "Fabric", verifiedAt = outage),
+            grindVerdict("creativecore", "NeoForge", verifiedAt = outage.plusSeconds(3600)),
+            grindVerdict("yacl", "Fabric", platform = ModPlatforms.CURSEFORGE, verifiedAt = outage.plusSeconds(7200))
+        )
+
+        val queued = RequeueSelection.verifiedSince(verdicts, outage)
+
+        Assertions.assertEquals(
+            listOf(ModPlatforms.CURSEFORGE to "yacl", ModPlatforms.MODRINTH to "creativecore"),
+            queued.map { it.platform to it.slug }.sortedBy { it.first },
+            "everything from the outage onward, one candidate per project; the verdict a second before it stands"
+        )
+    }
+
+    /** The two selectors must not overlap, or an operator cannot reason about which population they queued. */
+    @Test
+    fun theSinceAndBeforeSelectorsPartitionTheStore() {
+        val instant = Instant.parse("2026-09-03T18:00:00Z")
+        val verdicts = listOf(
+            grindVerdict("jei", "Forge", verifiedAt = instant.minusSeconds(1)),
+            grindVerdict("creativecore", "Fabric", verifiedAt = instant),
+            grindVerdict("yacl", "Fabric", verifiedAt = instant.plusSeconds(1))
+        )
+
+        val before = RequeueSelection.verifiedBefore(verdicts, instant).map { it.slug }.toSet()
+        val since = RequeueSelection.verifiedSince(verdicts, instant).map { it.slug }.toSet()
+
+        Assertions.assertEquals(setOf("jei"), before)
+        Assertions.assertEquals(setOf("creativecore", "yacl"), since)
+        Assertions.assertTrue((before intersect since).isEmpty(), "a verdict must not be in both populations")
+    }
+
     /** A CurseForge link resolves too — the guard is about *unknown* hosts, not about Modrinth being special. */
     @Test
     fun aCurseForgeLinkIsQueueable() {

@@ -479,9 +479,17 @@ spc-grinder --requeue https://modrinth.com/mod/creativecore https://www.cursefor
 # Everything verified before a fix landed. This is the one you want after an engine bug:
 # a defect invalidates a *population*, not a list you assemble by hand.
 spc-grinder --requeue-before 2026-08-23T18:00:00Z
+
+# Everything verified since a moment. This is the one you want after an OUTAGE — the daemon or its
+# host was broken from then until you noticed, so everything ground in that window is suspect.
+spc-grinder --requeue-since 2026-09-03T18:00:00Z
 ```
 
-Both commands **queue and exit**, so run them against a service that is already up — the daemon takes the
+The last two are mirrors, and picking the wrong one queues exactly the verdicts you did not mean: `-before`
+is "the past is suspect, we have just fixed it", `-since` is "this window is suspect, it has just ended".
+`-since` includes a verdict stamped at the instant itself, so the two never overlap.
+
+All three commands **queue and exit**, so run them against a service that is already up — the daemon takes the
 queue at the start of its next pass (a stopped one, on its next start). They are additive and idempotent:
 queueing something already waiting changes nothing, and the same slug on the two platforms queues twice
 because it is two projects. Run them **as the same user as the service**, or it will not be able to read the
@@ -803,7 +811,9 @@ Two more things the unit file decides, both worth stating explicitly:
 | `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
 | `FileNotFoundException: /log4j2.xml`, `Could not create directory /logs` | The service ran in `/` and SPC took it for its home. Fixed in the daemon, which now names its home itself; on an older build set `WorkingDirectory=` in the unit (§8) |
 | `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
-| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning above it, and the console it names; note the tuple is then on a 60-minute cooldown, so later candidates repeat this line without a fresh attempt |
+| `Loader install for … failed, so the pack could not be completed` | The one-off install boot failed for **this** candidate — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning, or the `Loader install threw` line, and the `install.log` under `<work>/install/<mc>-<loader>-<version>/` |
+| `Loader install for … was not retried` (on cooldown) | An **echo**, not a cause: that tuple failed within the last 60 minutes and is not being re-attempted, so this appears once per candidate wanting it while the real failure was logged once. Find the cause with `journalctl -u spc-grinder \| grep -E 'Install produced no library layer\|Loader install threw'` |
+| `Runtime image '…' is not available on the container daemon` | The daemon refuses to start, deliberately: nothing could be booted, so every candidate would be scored INCONCLUSIVE about a boot that never happened. Either the image was removed (a `docker system prune -a` does it — it is only in use *during* a boot) or Docker is unreachable. Rebuild it (§2) and start the service again |
 | Installs fail instantly with `Permission denied` inside the pack | The container's `uid:gid` does not own the staging directory, so it can read the pack and write nothing. §5, *Container identity* — check the `containerUser=` value on the startup line |
 | Every locked CurseForge file fails | **Expected, and not a fault.** `allowModDistribution=false` means the author opted out of third-party distribution, so no download URL exists and the mod cannot be boot-verified from CurseForge. The verdict says so and names Modrinth, where the same project is verified from instead. |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |

@@ -229,6 +229,19 @@ though their detail lives deeper:
   only decides when to stop waiting. Verified against a live daemon, not reasoned about: a container trapping
   SIGTERM proves the signal arrives before removal (`DockerJavaContainerEngineIT`, gated on
   `GRINDER_DOCKER_IT=1`).
+- **LANDMINE — a host defect is published as thousands of verdicts about mods unless something stops it.**
+  Measured 2026-09-03: `spc-grinder-runtime:latest` was gone from the Docker daemon (nothing in
+  `install-grinder.sh` removes it; a `docker system prune -a` does, because the image is only in use *during* a
+  boot). Every install threw `Status 404: No such image`, every tuple went on the 60-minute install cooldown,
+  and every candidate wanting one was published INCONCLUSIVE — over a *thousand* of them, each carrying a
+  sentence about a loader tuple. `record()` replaces by identity and the re-verify TTL is 30 days, so projects
+  that held a decisive HIGH lost it, and with it their line in `/as-properties`. This is the loader-cache
+  poisoning lesson one level up: **an environment defect looks exactly like a subject defect unless something
+  distinguishes them**, and the per-tuple cooldown actively disguised it by bookkeeping one host-wide failure
+  as one independent failure per tuple. `RuntimeImagePreflight` now refuses to start (`main`, immediately after
+  the engine is built, exit 1 so `Restart=on-failure` retries and `systemctl status` shows `failed`), and
+  `ContainerEngine.hasImage` defaults to `true` so no test fake is affected. **The recovery is
+  `--requeue-since <the moment it broke>`** — `--requeue-before` selects the exact complement of an outage.
 - **Every container carries `OWNER_LABEL`, and that label is the only way to find an orphan.**
   A SIGKILLed JVM leaves containers running with nothing tracking them — the in-memory set died with the
   process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery, and it
@@ -317,10 +330,12 @@ though their detail lives deeper:
   wrong, and a wrong verdict is usually a *recent* one (engine defects are found by reading verdicts that were
   just produced), so an unforced drain turns straight into `SKIPPED_FRESH` and looks like it worked.
   `aForcedGrindReVerifiesEvenAFreshVerdict` pins it.
-  - Selectors: `--requeue <url>…` for a named handful, `--requeue-before <ISO instant>` for the recurring
-    shape — a defect invalidates a *population*, not a hand-assembled list. One candidate per project
-    (platform + the platform's own id where known), so a rename is still one re-grind and the same slug on
-    two platforms is still two.
+  - Selectors: `--requeue <url>…` for a named handful, `--requeue-before <ISO instant>` when a defect is found
+    in the engine and the past is suspect, `--requeue-since <ISO instant>` when the daemon or its host was
+    broken for a *window* — a defect invalidates a *population*, not a hand-assembled list. The two instant
+    selectors are mirrors and **picking the wrong one queues exactly what you did not mean**: `-since` is
+    inclusive of the instant, so they partition the store. One candidate per project (platform + the platform's
+    own id where known), so a rename is still one re-grind and the same slug on two platforms is still two.
   - **LANDMINE — the CLI path runs *before* `claimSpcPreferencesNode()`/`pinSpcHomeDirectory()` and must never
     use `log`.** It is run by an operator against a service that is already up: claiming or re-pinning would
     move the home out from under the running daemon, and those claims are remembered for every later run. The
