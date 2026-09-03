@@ -435,4 +435,48 @@ internal class BootCandidateSelectorTest {
         loaders: Set<String> = setOf("Fabric"),
         minecraftVersions: Set<String> = setOf("1.20.1")
     ) = ModFile(fileName, loaders, minecraftVersions, "https://example.invalid/$fileName", null, emptyList(), version)
+
+    /**
+     * **JEI's live shape, and the reason this function exists.** `jei-1.21.1-forge-19.52.0.422.jar` is
+     * tagged on both platforms for Minecraft 1.21 *and* 1.21.1, while its own `META-INF/mods.toml`
+     * declares `versionRange="[1.21, 1.21.1)"` — a Maven range whose `)` excludes the very version the
+     * file is named after. JEI's `gradle.properties` builds it as `[start, thisVersion)` where it should
+     * be `[start, nextVersion)`, so the descriptor is upstream-wrong, not misread.
+     *
+     * [BootCandidateSelector.pickBootableCandidate] takes the newest and lands on 1.21.1, which the
+     * descriptor gate then vetoes — and the boot is lost even though **1.21 satisfies both the platform
+     * and the jar**. Picking the newest version the jar itself accepts is what turns that refusal back
+     * into a verification.
+     */
+    @Test
+    fun theNewestVersionTheJarItselfAcceptsIsPickedWhenTheNewestTaggedOneIsExcluded() {
+        val jei = file("jei-1.21.1-forge-19.52.0.422.jar", setOf("Forge"), setOf("1.21", "1.21.1"))
+
+        Assertions.assertEquals(
+            "1.21",
+            BootCandidateSelector.newestVersionSatisfying(jei, "[1.21, 1.21.1)") { true },
+            "1.21 is tagged by the platform and accepted by the jar, so the boot is not lost"
+        )
+    }
+
+    /** The gate still applies: a version the jar accepts but the host cannot boot is not a way out. */
+    @Test
+    fun aVersionTheJarAcceptsButTheHostCannotBootIsNotPicked() {
+        val jei = file("jei-1.21.1-forge-19.52.0.422.jar", setOf("Forge"), setOf("1.21", "1.21.1"))
+
+        Assertions.assertNull(
+            BootCandidateSelector.newestVersionSatisfying(jei, "[1.21, 1.21.1)") { false }
+        )
+    }
+
+    /**
+     * Nothing to fall back to must stay `null` rather than quietly returning the excluded version — the
+     * caller keeps the original refusal, which is the honest outcome when jar and platform truly disagree.
+     */
+    @Test
+    fun aJarThatAcceptsNoTaggedVersionYieldsNothing() {
+        val stale = file("stale.jar", setOf("Forge"), setOf("1.21.1"))
+
+        Assertions.assertNull(BootCandidateSelector.newestVersionSatisfying(stale, "[1.20, 1.20.1)") { true })
+    }
 }
