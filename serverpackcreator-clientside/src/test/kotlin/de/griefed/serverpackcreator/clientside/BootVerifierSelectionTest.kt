@@ -21,9 +21,12 @@ package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 
 /**
  * Characterizes [BootVerifier.prepareBootPack]'s candidate selection against a real (offline)
@@ -132,6 +135,84 @@ internal class BootVerifierSelectionTest {
         Assertions.assertTrue(
             (prepared as BootVerifier.Prepared.Failed).detail.contains("No bootable"),
             "pre-releases must be filtered out, was: ${prepared.detail}"
+        )
+    }
+
+    /**
+     * The two newest Forge-capable releases in the cached metadata, newest first — the stand-ins for
+     * JEI's 1.21.1 and 1.21. Derived rather than hardcoded so this stays version-agnostic as the shipped
+     * manifest moves.
+     */
+    private val twoForgeReleases = apiWrapper.versionMeta.minecraft.serverReleases()
+        .map { it.minecraftVersion }
+        .filter { resolver.latest("Forge", it) != null }
+        .sortedWith { left, right -> BootCandidateSelector.minecraftComparator.compare(right, left) }
+        .take(2)
+
+    /**
+     * A downloader that writes a real jar carrying a real `META-INF/mods.toml` declaring [versionRange]
+     * as its `minecraft` dependency, so the *actual* `ForgeTomlScanner` reads it. Nothing is faked past
+     * the network boundary: the constraint travels the same path a downloaded JEI jar's would.
+     */
+    private fun tomlJarDownloader(versionRange: String) = JarDownloader { modFile, targetDirectory ->
+        File(targetDirectory, modFile.fileName).also { jar ->
+            targetDirectory.mkdirs()
+            JarOutputStream(jar.outputStream()).use { out ->
+                out.putNextEntry(JarEntry("META-INF/mods.toml"))
+                out.write(
+                    ("""
+                    modLoader="javafml"
+                    loaderVersion="[1,)"
+                    license="MIT"
+                    [[mods]]
+                    modId="testmod"
+                    version="1.0.0"
+                    [[dependencies.testmod]]
+                        modId="minecraft"
+                        mandatory=true
+                        versionRange="$versionRange"
+                        ordering="NONE"
+                        side="BOTH"
+                    """.trimIndent()).toByteArray()
+                )
+                out.closeEntry()
+            }
+        }
+    }
+
+    /**
+     * **The JEI regression, end to end.** A project tagged for both releases, whose jar declares a range
+     * excluding the newer one, must not be thrown away: staging picks the newer, the descriptor gate
+     * contradicts it, and the verifier has to re-select the newest version the jar *does* accept rather
+     * than refuse outright.
+     *
+     * Refusing costs a `BootResult.INCONCLUSIVE`, which overwrites a decisive verdict — the same harm
+     * shape as the missing-runtime-image outage, permanent instead of windowed.
+     */
+    @Test
+    fun aJarWhoseRangeExcludesTheNewestIsStagedOnAVersionItAccepts(@TempDir workDir: File) {
+        Assumptions.assumeTrue(twoForgeReleases.size == 2, "needs two Forge-capable releases in the manifest")
+        val (newer, older) = twoForgeReleases
+        val verifier = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = unusedPlatform,
+            httpDownloader = tomlJarDownloader("[$older, $newer)"),
+            loaderVersionPolicy = resolver,
+            workDirectory = workDir,
+            minecraftAcceptable = { true }
+        )
+
+        val prepared = verifier.prepareBootPack(forgeProject(older, newer), "Forge")
+
+        val detail = (prepared as? BootVerifier.Prepared.Failed)?.detail.orEmpty()
+        Assertions.assertFalse(
+            detail.contains("Refusing to boot"),
+            "the jar accepts $older and the platform tags it, so the boot must not be refused: $detail"
+        )
+        Assertions.assertTrue(
+            prepared is BootVerifier.Prepared.Ready && prepared.minecraftVersion == older ||
+                detail.contains(older),
+            "staging must have moved to $older, not stopped at $newer; got: ${prepared::class.simpleName} $detail"
         )
     }
 }
