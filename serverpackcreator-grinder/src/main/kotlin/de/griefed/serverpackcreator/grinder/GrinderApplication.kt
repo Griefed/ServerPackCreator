@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
+import de.griefed.serverpackcreator.grinder.container.RuntimeImagePreflight
 import de.griefed.serverpackcreator.grinder.loader.*
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import de.griefed.serverpackcreator.grinder.report.FallbackLists
@@ -42,6 +43,7 @@ import java.time.Instant
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.system.exitProcess
 
 /**
  * The fire-and-forget entry point. Wires the real chain — a [CatalogCrawler] over the available candidate
@@ -143,6 +145,16 @@ object GrinderApplication {
         // ApiWrapper.api()'s relative default, see resolveSpcPropertiesFile.
         val apiWrapper = ApiWrapper.api(resolveSpcPropertiesFile(config.spcProperties, base))
         val engine = DockerJavaContainerEngine()
+        // Before ANY candidate, because the alternative was measured: with the runtime image gone from the
+        // daemon (2026-09-03), every install throws, every tuple goes on cooldown, and every candidate is
+        // published INCONCLUSIVE about a boot that never happened -- overwriting decisive verdicts that the
+        // 30-day re-verify TTL then leaves wrong. Exits non-zero so `Restart=on-failure` retries every 30s and
+        // the unit sits visibly in `failed` meanwhile, instead of the service looking healthy while it
+        // destroys its own record.
+        RuntimeImagePreflight.refusalFor(engine, image)?.let { refusal ->
+            log.error(refusal)
+            exitProcess(1)
+        }
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
         val installer = DockerLoaderInstaller(
