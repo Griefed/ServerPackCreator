@@ -116,7 +116,7 @@ internal enum class VerdictField(
 
     companion object {
         /**
-         * Confidence ordering, strongest clientside signal first — **the** rank table.
+         * Verdict ordering, the findings first — **the** rank table.
          *
          * Both the report's default order and `/export.csv`'s hand-maintained copy used to declare this
          * separately, so the table and the export could drift into disagreeing about what "highest

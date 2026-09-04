@@ -43,7 +43,7 @@ data class FallbackLists(
  * The point is to take the fallback list off a maintainer's hand-editing loop: the grinder boots mods
  * continuously, and a mod that crashes a server is exactly the evidence the list exists to encode.
  *
- * Only [Confidence.HIGH] is ever published, because only a crash is decisive — a mod that boots cleanly
+ * Only [Verdict.CONFIRMED] is ever published, because only a rule match is decisive — a mod that boots cleanly
  * has proven nothing, and a false entry silently strips a mod out of everybody's server pack. That
  * asymmetry is why the gate is a floor rather than a threshold to tune.
  *
