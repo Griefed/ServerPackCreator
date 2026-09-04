@@ -54,7 +54,8 @@ internal class BootVerifierSelectionTest {
         override val name: String = "unused"
         override fun handles(projectUrl: String): Boolean = false
         override fun resolve(projectUrl: String): ProjectFiles = error("resolve must not be called")
-        override fun resolveDependency(nativeRef: String): ProjectFiles? = error("resolveDependency must not be called")
+        override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? =
+            error("resolveDependency must not be called")
     }
 
     private fun verifier(workDir: File, minecraftAcceptable: (String) -> Boolean) = BootVerifier(

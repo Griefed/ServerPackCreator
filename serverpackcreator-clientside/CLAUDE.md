@@ -538,6 +538,36 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     says `distribution-locked`, which is the same distinction `downloadFailureDetail` draws for the
     candidate; retrying an opt-out never succeeds.
 
+- **A dependency is resolved by NAME and AT THE VERSION BEING BOOTED — two separate defects, one report
+  (2026-09-04).** Both were live on `architectury-api` (Quilt / MC 1.20.4) and `waystones` (Forge /
+  MC 1.21.11), each published `ERROR` reading *"Required dependency unavailable … 306612"* / *"… 531761"*.
+  - **The name.** `unsatisfiedLabel` names a resolved project by `ProjectFiles.slug` and always did — but
+    **both** platforms' `resolveDependency` passed `nativeRef` into that parameter *positionally*, so the
+    label resolved the project and read back the ref it started from. The earlier labelling fix only helped
+    the branches that *append* something (`(unresolved X project)`, `(distribution-locked on X)`); the plain
+    resolved case printed the id. CurseForge's slug was already in the `/mods/{id}` response it fetches for
+    `websiteUrl`; Modrinth costs one extra GET, which falls back to the ref rather than losing the project.
+  - **LANDMINE — the window. `resolveDependency` reads ONE page of 50 files, and must narrow by
+    `gameVersion` or that page is useless for anything but current Minecraft.** CurseForge answers
+    newest-first across every loader *and* every Minecraft version, so a library publishing as often as
+    Fabric API (1000+ files) has nothing older than current Minecraft in its newest 50. Single-page is still
+    correct — a dependency needs *a* usable file, not a history — but only once the query is narrowed.
+    Un-narrowed it refuses boots for files that have existed for years, and a staging refusal publishes
+    ERROR over whatever the store held.
+  - **LANDMINE — `modLoaderType` is supported by the API and must NOT be sent.** Asking CurseForge for
+    Quilt returns nothing for Fabric API and re-creates the same refusal one layer down:
+    `BootCandidateSelector.fallbackLoaders` has to *see* the Fabric builds in order to fall back to them,
+    and Fabric API is its canonical case. Version narrows the set; loader choice stays in the selector,
+    with the obtainability preference. Parameters verified against https://docs.curseforge.com/rest-api/
+    (`gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`, `pageSize`).
+  - Modrinth accepts `minecraftVersion` and ignores it: its version endpoint returns a project's whole
+    version list in one response, so there is no newest-N window to fall outside of.
+  - **The test-boundary lesson, which is the reusable part.** `DependencyLabelTest` proved the labeller
+    correct by handing it a `ProjectFiles` the test built with the slug already right — production never
+    builds one of those. A unit test that *constructs* the value under test cannot see a producer
+    constructing it wrongly. `DependencySlugTest` drives the real `resolveDependency` with canned JSON and
+    asserts the composition; it is the only arrangement in which a positional slip in either platform fails.
+
 - **A dependency the candidate *ships* is never fetched and never missing** (`BundledJars`, 2026-09-04).
   Fabric and Quilt load jar-in-jar libraries, so a `depends` naming one is satisfied before staging looks.
   `xaeros-world-map` was refused for `xaerolib` while carrying
