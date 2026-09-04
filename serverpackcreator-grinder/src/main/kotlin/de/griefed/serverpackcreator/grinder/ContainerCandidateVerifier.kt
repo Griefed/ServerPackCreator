@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.loader.LoaderStepDown
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import java.io.File
@@ -271,8 +272,26 @@ class ContainerCandidateVerifier(
      * these ascending, hence the reversal.
      */
     private fun knownLoaderVersionsNewestFirst(loader: String, minecraftVersion: String): List<String> = when (loader) {
-        "Forge" -> apiWrapper.versionMeta.forge.supportedForgeVersions(minecraftVersion).orElse(emptyList()).reversed()
-        "NeoForge" -> apiWrapper.versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion).orElse(emptyList()).reversed()
+        "Forge" -> LoaderStepDown.newestFirst(
+            apiWrapper.versionMeta.forge.supportedForgeVersions(minecraftVersion).orElse(emptyList())
+        )
+
+        "NeoForge" -> LoaderStepDown.newestFirst(
+            apiWrapper.versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion).orElse(emptyList())
+        )
+
+        // Fabric, Quilt and LegacyFabric publish one Minecraft-independent loader *line* rather than
+        // per-Minecraft builds, which is why this used to return nothing -- read as "no sibling build to
+        // fall back to". The line itself is versioned: Quilt ships 306 builds and Fabric 253, and Quilt's
+        // own `/v3/versions/loader/<mc>` lists all 306 as valid for a given Minecraft, so there are 305
+        // siblings. Quilt 0.31.0-beta.3 / Minecraft 1.20.6 failed to install with no fallback available.
+        //
+        // The Minecraft version is not a parameter here on purpose: for these loaders every build of the
+        // line applies to every Minecraft that has intermediaries, and `LoaderVersionResolver` has already
+        // gated on exactly that before anything reaches this point.
+        "Fabric" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.fabric.loaderVersions())
+        "Quilt" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.quilt.loaderVersions())
+        "LegacyFabric" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.legacyFabric.loaderVersions())
         else -> emptyList()
     }
 
