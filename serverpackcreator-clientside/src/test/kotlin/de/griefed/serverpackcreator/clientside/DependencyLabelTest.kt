@@ -108,4 +108,51 @@ internal class DependencyLabelTest {
         Assertions.assertTrue(detail.contains("bookshelf-lib") && detail.contains("prickle"), detail)
         Assertions.assertFalse(detail.contains("uy4Cnpcm"), "the opaque id must not reach the report: $detail")
     }
+
+    /**
+     * **The path the first fix missed.** A dependency that *resolved* and whose file was *picked* can still
+     * fail to download, and that branch added the raw ref while its two siblings were being taught to say
+     * the slug. Reported live as
+     * *"Required dependency unavailable for Quilt / Minecraft 1.20.4: 306612"* — `306612` being
+     * CurseForge's id for **Fabric API**, the ref this module already documents as the most-dropped one.
+     */
+    @Test
+    fun aDependencyThatResolvedButFailedToDownloadIsStillNamed() {
+        Assertions.assertEquals(
+            "fabric-api",
+            BootVerifier.unsatisfiedLabel("306612", project("fabric-api"), "CurseForge"),
+            "resolution succeeded, so the slug is known whatever happened afterwards"
+        )
+    }
+
+    /**
+     * **A distribution-locked dependency is not a download failure, and saying so matters.** CurseForge
+     * publishes no `downloadUrl` for a file whose author opted out of third-party distribution, so
+     * `JarDownloader` returns `null` and the dependency reads as "could not be downloaded" — the same
+     * sentence a 404 and a flaky link produce. The candidate half of staging learned this distinction when
+     * `downloadFailureDetail` was written; the dependency half never did.
+     */
+    @Test
+    fun aLockedDependencySaysItIsLockedRatherThanUndownloadable() {
+        val locked = ModFile("fabric-api.jar", setOf("Fabric"), setOf("1.20.4"), null, null, emptyList())
+
+        val label = BootVerifier.unsatisfiedLabel("306612", project("fabric-api"), "CurseForge", locked)
+
+        Assertions.assertTrue(label.contains("fabric-api"), label)
+        Assertions.assertTrue(
+            label.contains("distribution-locked"),
+            "a deliberate opt-out must not read as a transient failure: $label"
+        )
+    }
+
+    /** An obtainable file adds no noise — the label stays the bare slug. */
+    @Test
+    fun anObtainableDependencyIsStillJustItsSlug() {
+        val obtainable = ModFile("fabric-api.jar", setOf("Fabric"), setOf("1.20.4"), "https://cdn/fabric-api.jar", null, emptyList())
+
+        Assertions.assertEquals(
+            "fabric-api",
+            BootVerifier.unsatisfiedLabel("306612", project("fabric-api"), "CurseForge", obtainable)
+        )
+    }
 }

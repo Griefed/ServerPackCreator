@@ -393,8 +393,13 @@ class BootVerifier(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
                 )
             ) {
-                log.warn("Required dependency '$dependencyRef' (${dependencyFile.fileName}) could not be downloaded.")
-                unsatisfied.add(dependencyRef)
+                log.warn(
+                    "Required dependency '${dependencyProject.slug}' (${dependencyFile.fileName}) could not be " +
+                        "staged" + (if (dependencyFile.locked) " — the file is distribution-locked." else ".")
+                )
+                unsatisfied.add(
+                    unsatisfiedLabel(dependencyRef, dependencyProject, platform.name, dependencyFile)
+                )
             }
         }
         stageManifestDependencies(staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected)
@@ -828,8 +833,19 @@ class BootVerifier(
          * An unresolved ref keeps the ref — it is all we have — but says which platform it belongs to, so a
          * reader can look it up instead of mistaking it for a strange mod name.
          */
-        internal fun unsatisfiedLabel(ref: String, resolved: ProjectFiles?, platformName: String): String =
-            resolved?.slug?.takeIf { it.isNotBlank() } ?: "$ref (unresolved $platformName project)"
+        internal fun unsatisfiedLabel(
+            ref: String,
+            resolved: ProjectFiles?,
+            platformName: String,
+            file: ModFile? = null
+        ): String {
+            val name = resolved?.slug?.takeIf { it.isNotBlank() }
+                ?: return "$ref (unresolved $platformName project)"
+            // A locked file is not a failed download: the author opted out of third-party distribution, so
+            // there is no URL to fetch and no amount of retrying produces one. Saying "could not be
+            // downloaded" of it is the same conflation `downloadFailureDetail` fixed for the candidate.
+            return if (file?.locked == true) "$name (distribution-locked on $platformName)" else name
+        }
 
         internal fun refuseForMissingDependencies(
             unsatisfied: Set<String>,
