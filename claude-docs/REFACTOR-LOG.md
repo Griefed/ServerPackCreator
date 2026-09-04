@@ -3458,3 +3458,79 @@ runtime can answer, ask a real runtime.
 
 Suite: clientside 262 → **266**; grinder 446 and app green, both read from `build/test-results` rather
 than inferred from `BUILD SUCCESSFUL`.
+
+---
+
+## 2026-09-04 — the result-system redesign: four verdicts, and every clientside rule in a file
+
+Griefed: *"the verdict system is unreliable. We should redesign the result-system. Extract all rules which
+determine a mod to be clientside to the rules-file so users can always edit them, no hardcoded rules."*
+
+Five stages, Strangler-Fig throughout, suite green at every commit.
+
+**The old model conflated two questions.** `BootResult` (what happened) × `Confidence` (how sure) could not
+express the one thing an operator most needed: **whether the grind ran at all**. That is the whole shape of
+the missing-runtime-image outage, where a host-wide defect published as one INCONCLUSIVE per candidate and
+overwrote decisive verdicts the 30-day TTL would have left alone — and of the JEI and `advancement-plaques`
+refusals, one candidate at a time. `Verdict.ERROR` is the verdict whose absence caused all three.
+
+| Stage | What landed |
+|---|---|
+| 1 | `Verdict { CONFIRMED, CLEAR, ERROR, INCONCLUSIVE }` + pure `VerdictPolicy` |
+| 2 | the eleven hardcoded marker groups became `boot-rules.default.json`; the classifier reads its patterns back out |
+| 3 | `RuleSource.METADATA` + `MetadataFacts`, so declared sideness is rule-driven too |
+| 3b | **correction:** the console decides, the metadata only declares |
+| 4 | `verdictOf` replaces `aggregateFor`; publish gate, store, report and CSV move onto the verdict |
+| 5 | `Confidence`, `aggregateFor` and the duplicate `BootObservation` deleted |
+
+**Decisions worth keeping.**
+
+- **Only a rule reaches CONFIRMED, and only from a decisive rung.** A flat reading of "matches a rule means
+  exclusion-worthy" would have inverted the existing ladder and turned missing dependencies into clientside
+  verdicts. The bare exit-code rung — 27 of 43 published HIGHs — can no longer publish anything.
+- **File order is the ladder**, and the two inversions are pinned rather than described: an excuse above the
+  evidence silently discards true positives; the evidence above the fair-run guards publishes host trouble as
+  a mod's fault.
+- **The ladder's order stayed in code; only its content moved.** Re-ordering rungs changes judgment, and the
+  killed-exit-code check sits *between* rungs, so file order alone cannot express it. Stated rather than
+  faked.
+- **Metadata renders as one canonical fact line**, because the platform-vs-jar contradiction is a
+  *conjunction* and a regex matches one line at a time. Losing it would have made the rules *more* confident
+  than the code they replaced — the wrong direction for a redesign premised on the old verdicts being
+  unreliable.
+- **Stage 3 shipped a short-circuit and Griefed caught it.** Metadata rules could reach CONFIRMED on their
+  own, which would have published mods on their own say-so with no boot. The correction is now the design:
+  a `RuleSource.METADATA` rule sets `declares` and **may not** set `verdict`, and a guard fails the build if
+  one does — because that regression is silent. The target case is a mod claiming **server** whose console
+  reaches a client-only class; an honestly-declared client mod is already excludable from its metadata and
+  costs nothing to find.
+- **CONFIRMED keeps its logs, which was not asked for.** A confirmation publishes a mod to the fallback list;
+  the rule id says *which* rule fired, only the console says what it fired on, and a verdict that cannot name
+  its own evidence cannot be audited.
+- **Old stored rows load as INCONCLUSIVE rather than being deleted or translated.** "Start clean" without
+  data loss: the `Confidence` scale has no honest mapping onto four verdicts, so nothing is treated as
+  evidence and each row is re-earned by a real boot.
+
+**Self-inflicted, recorded because the class of mistake matters more than the instances.** A regex that
+double-applied and passed `verdict` twice; a migration pass that crashed part-way leaving a file half-edited;
+new fields inserted mid-constructor, breaking positional call sites; a deletion slice wide enough to take two
+neighbouring helpers with it; `ruleId` appended to a file's last brace instead of its enum's. Every one was
+caught by the compiler or the suite within a minute, and every one was reverted with `git checkout --` and
+redone in a single pass rather than patched on top. A bulk rename across nineteen files is precisely where a
+silent half-edit hides, which is why each step ran the suite instead of trusting the substitution.
+
+**The subtlest trap was in a test, not the code.** `VerdictSortRankTest`'s CSV cross-check matched enum names
+*anywhere in the line*, and `INCONCLUSIVE` belongs to both the old and the new vocabulary — so it would have
+found a stale value and quietly agreed with itself. It now matches the Verdict column's own cell. Where
+fixtures used two confidences to prove a store *replaced* rather than duplicated, the distinguishing values
+were recovered from `git diff` rather than guessed; a sweep that dropped them would have left those tests
+green while proving nothing.
+
+**Left open, deliberately:** `ConsoleRule` (operator file, `BootResult`) and `BootRule` (bundled ladder,
+`Verdict`) are two implementations of one idea. Collapsing them means migrating the operator file's
+documented `CRASHED|SURVIVED|INCONCLUSIVE` vocabulary, which is a breaking change to an operator-facing
+format — deferred rather than done quietly, and recorded in `serverpackcreator-clientside/CLAUDE.md`.
+
+Suites: api 383 (1 skip), clientside 266 → **309**, grinder 446 → **455** (29 skip), app 149,
+plugin-example 3 — **1299 total, zero failures**, re-run with `--rerun-tasks` after wiping
+`build/test-results`.

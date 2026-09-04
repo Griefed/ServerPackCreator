@@ -9,7 +9,7 @@
 ## What it does
 
 Given a Modrinth/CurseForge project-link: pick the platform, resolve the project's files, derive the
-clientside-list file-name stem(s), and combine signals into a per-loader `Confidence`. Driven by the
+clientside-list file-name stem(s), and combine signals into a per-loader `Verdict`. Driven by the
 app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clientsideapply`) and the
 `clientside-*.yml` workflows — see `serverpackcreator-app/CLAUDE.md` for the verb wiring and CI.
 
@@ -61,7 +61,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   | Default | `SERVER` when undetermined, so nothing is dropped | `UNKNOWN` when absent (all of CurseForge) |
 
   `ClientsideVerifier.aggregate` folds this, `JarScan` (where the API's verdict arrives) and `BootResult`
-  into a `Confidence` **precisely because the platform's claim is unreliable** — which is the whole reason
+  into a `Verdict` **precisely because the platform's claim is unreliable** — which is the whole reason
   the expensive boot-test exists. The domains are bridged deliberately at that one call-site, and it takes
   *two* `DeclaredSupport` values to derive one client/server leaning. Merging the enums would collapse the
   distinction the model is built on, and would push a third party's field vocabulary into `-api`, which is
@@ -71,7 +71,8 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
 - **Boot signal** (`BootVerifier`): force-includes the mod (auto-exclude off, empty clientside-list) +
   its recursively-resolved required deps, generates a server pack and boots it via the ServerStarterJar.
   `BootLogClassifier` reads the `Done (…)! For help` ready-line vs a non-zero exit (pure, unit-tested).
-  **Asymmetry baked into the confidence model:** only a CRASH is decisive (→ HIGH, incl. the
+  **Asymmetry baked into the model (see the four-verdict entry below for the current rules):** only a
+  crash a *decisive rung* explained is evidence (→ CONFIRMED, incl. the
   "declares server/both yet crashes" lie); a clean boot does not prove server-safe. **The declared
   sideness is a self-report and is unreliable** — that asymmetry is *why* the expensive boot exists.
   **But "not decisive" is not "not evidence", and `aggregate` conflated the two until 2026-09-01.** It
@@ -222,6 +223,16 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     a phrasing sharing *nothing* with Fabric's, so `dependencyFailureMarkers` never reached it), and
     `runtimeMismatchMarkers` (`Missing language javafml version [46,)`, `java.lang.module.ResolutionException`
     — a Forge jar staged for a NeoForge boot).
+- **OPEN — there are two rule types, and they should become one.** `ConsoleRule`/`ConsoleRuleSet`
+  (`ConsoleRules.kt`, speaking `BootResult`, read from the operator's `SPC_GRINDER_BOOT_RULES` file) and
+  `BootRule`/`BootRuleSet` (`BootRule.kt`, speaking `Verdict`, read from the bundled
+  `boot-rules.default.json`) are two independent implementations of the same idea, introduced by the
+  2026-09-04 redesign as a Strangler-Fig step and *not yet collapsed*. Consequences a reader will hit:
+  an operator's file and the shipped ladder use different vocabularies for `verdict`, and two parsers exist
+  where one would do. Merging them means migrating the operator file's `CRASHED|SURVIVED|INCONCLUSIVE` to
+  the four verdicts, which is a breaking change to a documented operator-facing format — hence deferred
+  rather than done quietly. Do not add a third.
+
 - **Operator console rules are rung 7 of the ladder** (`ConsoleRules.kt`: `ConsoleRule`, `ConsoleRuleSet`,
   `ConsoleRuleFile`; `BootLogClassifier.classify(..., rules)` returning a `Classification`). A rule maps console
   text to a `BootResult`, so a newly-observed clientside signature is a file edit rather than a release. **Where
@@ -440,6 +451,49 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   it and a NeoForge-tagged Forge jar will re-stage down its whole version list, once per version, learning
   nothing each time. The retry calls `stageBootPack`, never `prepareBootPack`, so a second contradiction
   surfaces instead of looping.
+- **THE RESULT SYSTEM IS FOUR VERDICTS, AND EVERY CLIENTSIDE RULE LIVES IN A FILE (2026-09-04).** Read this
+  before touching `BootLogClassifier`, `ClientsideVerifier` or `boot-rules.default.json`.
+  - **`Verdict { CONFIRMED, CLEAR, ERROR, INCONCLUSIVE }`** replaced `BootResult` × `Confidence`. The pairing
+    conflated *what happened* with *how sure are we*, and could not express whether the grind ran at all.
+    **`ERROR` is that missing verdict** — no runtime image, a staging refusal, a failed download — and its
+    absence is what let a host-wide outage publish as one INCONCLUSIVE per candidate, overwriting decisive
+    verdicts. `CLEAR` is the other half: a clean boot that matched nothing is *proven server-safe*, and
+    collapsing it into INCONCLUSIVE throws away the most expensive signal the engine produces.
+  - **Only a rule reaches CONFIRMED, and only from a rung `BootDecision.decisive` marks.** The bare exit-code
+    rung means "exited non-zero, nothing recognised why" and can no longer publish; it is the rung that had
+    27 of 43 published HIGHs resting on no decisive evidence.
+  - **`boot-rules.default.json` (in `src/main/resources`) IS the ladder.** The eleven hardcoded marker groups
+    live there now; `BootLogClassifier` compiles its patterns back out by rule id via `bundledPattern`, so
+    one edit reaches the engine and the two copies cannot drift — the `MetadataScanner`/`ModListCompiler`
+    failure one level up. **Order is precedence**: fair-run guards (setup abort, launch failure, loader
+    bootstrap, OOM), then `client-only-class`, then the excuses. Both inversions are pinned in
+    `DefaultBootRulesTest` — an excuse above the evidence silently discards true positives, the evidence
+    above the fair-run guards publishes host trouble as a mod's fault.
+  - **LANDMINE — the ladder's *order* is still in code, only its *content* moved.** Re-ordering rungs changes
+    judgment, and the killed-exit-code check sits *between* rungs, so file order alone cannot express it.
+    Do not "finish the job" by turning `classify` into a bare loop over the file without solving that.
+  - **LANDMINE — the console decides, the metadata only declares.** A `RuleSource.METADATA` rule sets
+    `declares` (`Declaration { CLIENT, SERVER, CONTRADICTORY }`) and **may not set `verdict`**;
+    `ConsoleOutranksMetadataTest.noMetadataRuleCarriesAVerdict` fails the build if one does, because that
+    regression is silent — the file would simply start publishing mods that were never booted. A declaration
+    never stands in for a boot and never overturns one: **a mod claiming server whose console reaches a
+    client-only class is CONFIRMED client**, and that contradiction is the target. An honestly-declared
+    client mod is already excludable from its metadata and costs nothing to find; the container is paid for
+    the *dishonest* one, which is why the console rules are the ones worth crafting delicately.
+  - **Metadata facts render as ONE canonical line** (`MetadataFacts.line`), not a stream per source, because
+    a regex matches a line at a time and the platform-vs-jar contradiction is a *conjunction*. With every
+    fact on one line a pattern naming two fields is an AND. The field names (`platform_server=`,
+    `platform_client=`, `manifest=`) are an interface operators write patterns against and are pinned; a
+    rename would present as "nothing is clientside any more" rather than as a break.
+  - `VerdictPolicy.decide` takes `declared` and **never consults it** — deliberate, so the signature is
+    honest about what it was given rather than about what it used.
+  - `BootOutcome.stagingPrevented` is what `ERROR` derives from; it is set at the staging-refusal sites and
+    is the only thing distinguishing "prevented" from "learned nothing".
+  - `verdictOf` also produces the report **note**, carrying the two things the verdict alone cannot say: a
+    contradicted server claim, and a distribution-locked file that was never readable at all.
+  - `Confidence` and `aggregateFor` are **gone**. `BootResult` stays: it is the classifier's per-boot
+    reading, not a published verdict, and `VerdictPolicy` consumes it directly.
+
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in
