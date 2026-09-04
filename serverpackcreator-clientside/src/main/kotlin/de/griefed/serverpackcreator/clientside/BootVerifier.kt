@@ -373,7 +373,7 @@ class BootVerifier(
             if (!visited.add(dependencyRef)) {
                 continue
             }
-            val dependencyProject = platform.resolveDependency(dependencyRef)
+            val dependencyProject = platform.resolveDependency(dependencyRef, minecraftVersion)
             if (dependencyProject == null) {
                 // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
@@ -449,7 +449,7 @@ class BootVerifier(
             val plan = planManifestDependency(
                 requirement, loader, minecraftVersion,
                 refFor = { platformRefFor(it) },
-                resolveRef = { platform.resolveDependency(it) }
+                resolveRef = { platform.resolveDependency(it, minecraftVersion) }
             )
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {

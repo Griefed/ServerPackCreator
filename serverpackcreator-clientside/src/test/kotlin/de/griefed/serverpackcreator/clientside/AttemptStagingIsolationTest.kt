@@ -67,7 +67,7 @@ internal class AttemptStagingIsolationTest {
             )
         )
 
-        override fun resolveDependency(nativeRef: String): ProjectFiles? = null
+        override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = null
     }
 
     /**
