@@ -57,7 +57,17 @@ enum class BootDecision(
      * [OPERATOR_RULE] because a rule that reached `CRASHED` said so deliberately — an undecided rule resolves
      * to the ladder or to `INCONCLUSIVE`, never to `CRASHED`.
      */
-    val decisive: Boolean = false
+    val decisive: Boolean = false,
+    /**
+     * Whether this rung proves the **mod** reaches client-only code, rather than merely that this boot
+     * failed. Narrower than [decisive] on purpose: an operator rule reaching `CRASHED` is decisive because
+     * its author said so, but says nothing certain about sideness, so it must not cross builds or loaders.
+     *
+     * What this licenses is strong — no other version and no other loader may clear such a crash, and every
+     * loader of the project inherits it — which is why the set stays the three rungs that are client-only
+     * evidence by construction.
+     */
+    val provesClientOnly: Boolean = false
 ) {
     /** The server reported ready. */
     READY_LINE,
@@ -81,7 +91,7 @@ enum class BootDecision(
     OPERATOR_RULE(decisive = true),
 
     /** The server died reaching for a client-only class. The one signal a broken harness cannot fabricate. */
-    CLIENT_ONLY_CLASS(decisive = true),
+    CLIENT_ONLY_CLASS(decisive = true, provesClientOnly = true),
 
     /**
      * The server died reaching for LWJGL, the client's windowing and OpenGL binding, which a dedicated
@@ -89,14 +99,14 @@ enum class BootDecision(
      * cannot: `iris` scored INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` while this signature
      * lived only in the operator example file.
      */
-    LWJGL_ON_A_DEDICATED_SERVER(decisive = true),
+    LWJGL_ON_A_DEDICATED_SERVER(decisive = true, provesClientOnly = true),
 
     /**
      * FML refused a client-only class on a dedicated server and said so. Decisive, and needed separately
      * because NeoForge's ServerStarterJar can print the crash in full and still **exit 0** — the exit-code
      * rung would call that inconclusive.
      */
-    FML_INVALID_DIST(decisive = true),
+    FML_INVALID_DIST(decisive = true, provesClientOnly = true),
 
     /** A dependency the staging failed to supply, so the mod's own code never ran. */
     DEPENDENCY_FAILURE,
