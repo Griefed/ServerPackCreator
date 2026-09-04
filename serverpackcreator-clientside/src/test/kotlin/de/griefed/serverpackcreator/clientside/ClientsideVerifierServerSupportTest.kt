@@ -84,25 +84,26 @@ internal class ClientsideVerifierServerSupportTest {
 internal class SurvivedBootConfidenceTest {
 
     /**
-     * **A server that started is evidence, and it was being discarded.**
-     *
-     * `aggregate` fell through to `INCONCLUSIVE` whenever the metadata said nothing — and the metadata says
-     * nothing exactly when the jar scan errored *and* the platform declares no sideness, which is every
-     * CurseForge project. So the single most expensive signal the engine produces, a boot that reached its
-     * ready-line, counted for nothing.
+     * A boot that reached its ready-line proves the server started, and that must not read as "we learned
+     * nothing". Under the old scale this was the difference between `LOW` and `INCONCLUSIVE`; it is now the
+     * difference between [Verdict.CLEAR] and [Verdict.INCONCLUSIVE], and it matters for the same reason.
      *
      * Live examples, all `JarSideness = ERROR`, all `SURVIVED (exit 137)`: `better-stats`, `tcdcommons` and
-     * `yacl`, each recorded `INCONCLUSIVE` while 2,318 other survived boots recorded `LOW` or `MEDIUM`.
+     * `yacl`, each once recorded INCONCLUSIVE while the boot had in fact succeeded.
      */
     @Test
-    fun aSurvivedBootIsLowRatherThanInconclusiveWhenTheMetadataSaysNothing() {
-        val verdict = ClientsideVerifier.aggregateFor(
-            serverSide = DeclaredSupport.UNKNOWN, jarScan = JarScan.ERROR, bootResult = BootResult.SURVIVED
+    fun aSurvivedBootIsClearRatherThanInconclusiveWhenTheMetadataSaysNothing() {
+        val assessed = ClientsideVerifier.verdictOf(
+            serverSide = DeclaredSupport.UNKNOWN,
+            clientSide = DeclaredSupport.UNKNOWN,
+            jarScan = JarScan.ERROR,
+            bootOutcome = BootVerifier.BootOutcome(BootResult.SURVIVED, null, "", decidedBy = BootDecision.READY_LINE),
+            bootAttempted = true
         )
 
         Assertions.assertEquals(
-            Confidence.LOW, verdict.first,
-            "a server that started is what LOW means; INCONCLUSIVE claims we learned nothing"
+            Verdict.CLEAR, assessed.verdict,
+            "a server that started is what CLEAR means; INCONCLUSIVE claims we learned nothing"
         )
     }
 
@@ -110,39 +111,66 @@ internal class SurvivedBootConfidenceTest {
     @Test
     fun noBootAndNoMetadataIsStillInconclusive() {
         Assertions.assertEquals(
-            Confidence.INCONCLUSIVE,
-            ClientsideVerifier.aggregateFor(DeclaredSupport.UNKNOWN, JarScan.ERROR, null).first
+            Verdict.INCONCLUSIVE,
+            ClientsideVerifier.verdictOf(
+                DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, JarScan.ERROR,
+                bootOutcome = null, bootAttempted = false
+            ).verdict
         )
     }
 
     /**
-     * **A clean boot must not overturn a client-only declaration.** The asymmetry is the whole confidence
-     * model: a crash is decisive, a clean boot is not proof of server-safety — a client mod can start a
-     * server without being any use on one. So `metadataClient` keeps outranking a survived boot.
+     * **The premise this test used to hold has been deliberately reversed, and that is worth stating rather
+     * than deleting quietly.**
+     *
+     * It asserted that a clean boot must not overturn a client-only declaration — under the old model,
+     * `metadataClient` outranked a survived boot and the row stayed MEDIUM. The redesign inverts the
+     * precedence: *the console decides and the metadata only declares*, because a self-report is the
+     * unreliable half and is the entire reason a container is paid for. So a mod claiming client-only that
+     * boots a server cleanly is now CLEAR, and its claim is recorded beside the verdict rather than
+     * overriding it.
+     *
+     * The claim is not discarded — `Declaration.CLIENT` is still carried — and the case is pinned from the
+     * precedence side in `ConsoleOutranksMetadataTest`.
      */
     @Test
-    fun aSurvivedBootDoesNotOverturnAClientOnlyDeclaration() {
-        Assertions.assertEquals(
-            Confidence.MEDIUM,
-            ClientsideVerifier.aggregateFor(DeclaredSupport.UNSUPPORTED, JarScan.CLIENT, BootResult.SURVIVED).first
+    fun aClientOnlyDeclarationNoLongerOutranksACleanBoot() {
+        val assessed = ClientsideVerifier.verdictOf(
+            serverSide = DeclaredSupport.UNSUPPORTED,
+            clientSide = DeclaredSupport.REQUIRED,
+            jarScan = JarScan.CLIENT,
+            bootOutcome = BootVerifier.BootOutcome(BootResult.SURVIVED, null, "", decidedBy = BootDecision.READY_LINE),
+            bootAttempted = true
         )
+
+        Assertions.assertEquals(Verdict.CLEAR, assessed.verdict, "the boot is the evidence, the claim is not")
+        Assertions.assertEquals(Declaration.CLIENT, assessed.declared, "and the claim is still recorded")
     }
 
-    /** Nor may it soften a crash, which stays decisive above everything. */
+    /**
+     * A crash only outranks things when a *decisive* rung explained it. A bare non-zero exit is the rung
+     * that filled the store with unevidenced findings, so it stays INCONCLUSIVE however the mod is declared.
+     */
     @Test
-    fun aCrashStillOutranksEverything() {
-        Assertions.assertEquals(
-            Confidence.HIGH,
-            ClientsideVerifier.aggregateFor(DeclaredSupport.REQUIRED, JarScan.SERVER_OR_BOTH, BootResult.CRASHED).first
-        )
+    fun aCrashOutranksTheMetadataOnlyWhenARuleExplainedIt() {
+        fun crashDecidedBy(decision: BootDecision) = ClientsideVerifier.verdictOf(
+            DeclaredSupport.REQUIRED, DeclaredSupport.UNKNOWN, JarScan.SERVER_OR_BOTH,
+            BootVerifier.BootOutcome(BootResult.CRASHED, null, "", decidedBy = decision), bootAttempted = true
+        ).verdict
+
+        Assertions.assertEquals(Verdict.CONFIRMED, crashDecidedBy(BootDecision.CLIENT_ONLY_CLASS))
+        Assertions.assertEquals(Verdict.INCONCLUSIVE, crashDecidedBy(BootDecision.EXIT_CODE))
     }
 
     /** An inconclusive boot taught us nothing, so it must not be promoted the way a survived one is. */
     @Test
     fun anInconclusiveBootIsNotEvidence() {
         Assertions.assertEquals(
-            Confidence.INCONCLUSIVE,
-            ClientsideVerifier.aggregateFor(DeclaredSupport.UNKNOWN, JarScan.ERROR, BootResult.INCONCLUSIVE).first
+            Verdict.INCONCLUSIVE,
+            ClientsideVerifier.verdictOf(
+                DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, JarScan.ERROR,
+                BootVerifier.BootOutcome(BootResult.INCONCLUSIVE, null, ""), bootAttempted = true
+            ).verdict
         )
     }
 }

@@ -159,5 +159,11 @@ data class VerdictAssessment(
     /** What the mod claims about itself, or `null` when it claimed nothing recognisable. */
     val declared: Declaration?,
     /** Id of the rule that confirmed, or `null` when nothing did. */
-    val confirmedByRule: String? = null
+    val confirmedByRule: String? = null,
+    /**
+     * The sentence shown beside the verdict, or `null` when the verdict speaks for itself. Carries the two
+     * things the verdict alone cannot: that a *contradicted* server claim is what makes a confirmation
+     * interesting, and that a distribution-locked file was never readable at all.
+     */
+    val note: String? = null
 )

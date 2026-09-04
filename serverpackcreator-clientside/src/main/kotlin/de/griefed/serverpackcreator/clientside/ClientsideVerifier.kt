@@ -25,8 +25,9 @@ import java.io.File
 /**
  * Orchestrates the Phase-1 (metadata-only) clientside verdict: pick the hosting platform for the
  * issue-link, resolve its files, derive a list-entry per loader, and combine the platform-declared
- * sideness with SPC's jar metadata scan into a per-loader [Confidence]. The boot signal is added in
- * Phase 2; until then a clientside-looking mod tops out at [Confidence.MEDIUM].
+ * sideness with SPC's jar metadata scan and the boot's console into a per-loader [Verdict]. The console
+ * decides and the metadata only declares — a self-report is the unreliable half, and is the whole reason
+ * the expensive boot exists.
  *
  * @param platforms          The supported hosting platforms, tried in order via [ModPlatform.handles].
  * @param metadataScanner    Reads declared sideness out of a downloaded jar.
@@ -110,7 +111,10 @@ class ClientsideVerifier(
             supersededByLoader(
                 verdict = assessment.verdict,
                 disproving = disproving,
-                metadataOnly = aggregateFor(project.serverSide, assessment.verdict.jarScan, null),
+                metadataOnly = verdictOf(
+                    project.serverSide, project.clientSide, assessment.verdict.jarScan,
+                    bootOutcome = null, bootAttempted = false
+                ),
                 bootDetail = assessment.bootDetail
             )
         }
@@ -137,11 +141,8 @@ class ClientsideVerifier(
                 .getOrNull()
         }
 
-        val (confidence, note) = aggregateFor(project.serverSide, jarScan, bootOutcome?.result)
-        // The redesigned fold, computed alongside the old one until `Confidence` is retired in stage 5. The
-        // console decides and the metadata only declares; `aggregateFor`'s value is still carried so the
-        // report's existing columns keep rendering while consumers migrate.
         val assessed = verdictOf(project.serverSide, project.clientSide, jarScan, bootOutcome, bootVerifier != null)
+        val note = assessed.note
         return LoaderAssessment(
             verdict = LoaderVerdict(
                 verdict = assessed.verdict,
@@ -159,7 +160,6 @@ class ClientsideVerifier(
                 blamedDependency = bootOutcome?.blamedDependency,
                 blamedDependencyUrl = bootOutcome?.blamedDependencyUrl,
                 stagedDependencies = bootOutcome?.stagedDependencies.orEmpty(),
-                confidence = confidence,
                 sampleFile = sample?.fileName,
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
             ),
@@ -193,14 +193,6 @@ class ClientsideVerifier(
      */
     companion object {
         /**
-         * Combine the platform-declared server-side support, the jar-scan and (when run) the boot-result
-         * into a confidence. A crash is the strongest single signal — it promotes any metadata to
-         * [Confidence.HIGH], including the "declares server/both yet crashes" lie the metadata can't
-         * catch. Without a crash, a client-leaning metadata signal is [Confidence.MEDIUM], a clear
-         * server/both is [Confidence.LOW], a boot that merely *survived* is also [Confidence.LOW], and
-         * everything unknown/deferred is [Confidence.INCONCLUSIVE].
-         */
-        /**
          * One loader's evidence, folded into the four-state [Verdict] plus the [Declaration] it either
          * confirms or contradicts. Pure, so the whole decision is testable without a container.
          *
@@ -230,7 +222,7 @@ class ClientsideVerifier(
             // Nothing was asked to run, so nothing was prevented either. ERROR must keep meaning "a grind
             // that could not be performed", or an operator can no longer act on it.
             if (!bootAttempted) {
-                return VerdictAssessment(Verdict.INCONCLUSIVE, declared, null)
+                return VerdictAssessment(Verdict.INCONCLUSIVE, declared, null, noteFor(declared, jarScan, null))
             }
 
             // A confirmation may only come from a rung that is decisive by construction: the built-in
@@ -251,48 +243,33 @@ class ClientsideVerifier(
                 confirmedByRule = confirmedByRule,
                 declared = declared
             )
-            return VerdictAssessment(verdict, declared, confirmedByRule)
+            return VerdictAssessment(verdict, declared, confirmedByRule, noteFor(declared, jarScan, bootOutcome))
         }
 
-        internal fun aggregateFor(
-            serverSide: DeclaredSupport,
+        /**
+         * The sentence a reader gets beside the verdict, or `null` when the verdict speaks for itself.
+         *
+         * Carries over the two observations the retired `aggregateFor` made that the verdict alone cannot:
+         * that a **contradicted server claim** is what makes a confirmation interesting rather than routine,
+         * and that a distribution-locked file was never readable at all — otherwise indistinguishable from a
+         * mod nobody has got round to.
+         */
+        private fun noteFor(
+            declared: Declaration?,
             jarScan: JarScan,
-            bootResult: BootResult?
-        ): Pair<Confidence, String?> {
-            val declaresClient = serverSide == DeclaredSupport.UNSUPPORTED
-            val declaresServer = serverSide == DeclaredSupport.REQUIRED
-            val jarClient = jarScan == JarScan.CLIENT
-            val jarServer = jarScan == JarScan.SERVER_OR_BOTH
-            val metadataClient = declaresClient || jarClient
-            val metadataServer = declaresServerSupport(serverSide, jarScan)
+            bootOutcome: BootVerifier.BootOutcome?
+        ): String? = when {
+            declared == Declaration.CONTRADICTORY ->
+                "The platform and the jar disagree about server support, so neither is evidence."
 
-            val note = when {
-                declaresClient && jarServer -> "Platform marks server unsupported but the jar declares server/both."
-                declaresServer && jarClient -> "Platform marks server required but the jar declares client-only."
-                bootResult == BootResult.CRASHED && metadataServer ->
-                    "Declared server/both but the server crashed — a strong clientside signal."
-                jarScan == JarScan.DEFERRED ->
-                    "Distribution-locked file (allowModDistribution=false): CurseForge publishes no " +
-                        "download URL, so neither the jar-scan nor a boot can read this mod."
-                else -> null
-            }
+            declared == Declaration.SERVER && bootOutcome?.result == BootResult.CRASHED ->
+                "Declared server/both but the server crashed — the contradiction this engine exists to find."
 
-            // A crash is decisive regardless of declaration; otherwise fall back to the metadata signal, which a
-            // boot can confirm but (short of a crash) not overturn -- hence SURVIVED sitting *below*
-            // metadataClient: a client mod can start a server without being any use on one, so a clean boot is
-            // not proof of server-safety. It is still evidence, though, and it used to be discarded: with the jar
-            // scan errored and the platform declaring nothing (i.e. every CurseForge project), there is no
-            // metadata to fall back TO, and the most expensive signal this engine produces fell into
-            // INCONCLUSIVE -- "we learned nothing" -- when what it learned was that the server started.
-            // Measured 2026-09-01: better-stats, tcdcommons and yacl, all JarSideness=ERROR, all SURVIVED.
-            val confidence = when {
-                bootResult == BootResult.CRASHED -> Confidence.HIGH
-                metadataClient -> Confidence.MEDIUM
-                metadataServer -> Confidence.LOW
-                bootResult == BootResult.SURVIVED -> Confidence.LOW
-                else -> Confidence.INCONCLUSIVE
-            }
-            return confidence to note
+            jarScan == JarScan.DEFERRED ->
+                "Distribution-locked file (allowModDistribution=false): CurseForge publishes no " +
+                    "download URL, so neither the jar-scan nor a boot can read this mod."
+
+            else -> null
         }
 
         /**
@@ -300,11 +277,11 @@ class ClientsideVerifier(
          * scan of the jar reading server/both. Either source is enough; neither is trusted, which is why the
          * boot exists at all.
          *
-         * Shared on purpose between the confidence aggregation and the boot's other-version crash re-check:
-         * the same answer both prints "Declared server/both but the server crashed" and decides whether that
-         * contradiction is worth re-checking, and a report that states the contradiction while the re-check
-         * silently decided there was none would be worse than either behaviour alone. [DeclaredSupport.OPTIONAL]
-         * deliberately does not count — "runs with or without the side" is not a claim that the server works.
+         * Shared on purpose between the report's note and the boot's other-version crash re-check: the same
+         * answer both prints the contradiction and decides whether it is worth re-checking, and a report
+         * stating a contradiction the re-check silently decided did not exist would be worse than either
+         * behaviour alone. [DeclaredSupport.OPTIONAL] deliberately does not count — "runs with or without the
+         * side" is not a claim that the server works.
          */
         internal fun declaresServerSupport(serverSide: DeclaredSupport, jarScan: JarScan): Boolean =
             serverSide == DeclaredSupport.REQUIRED || jarScan == JarScan.SERVER_OR_BOTH
@@ -359,14 +336,15 @@ class ClientsideVerifier(
         internal fun supersededByLoader(
             verdict: LoaderVerdict,
             disproving: LoaderVerdict,
-            metadataOnly: Pair<Confidence, String?>,
+            metadataOnly: VerdictAssessment,
             bootDetail: String?
         ): LoaderVerdict {
-            val (confidence, metadataNote) = metadataOnly
+            val metadataNote = metadataOnly.note
             val supersedes = "Crashed, but ${disproving.loader} booted a server with the same entry " +
                 "'${verdict.suggestedEntry?.trim()}' — the crash belongs to that build, not to the mod's sideness."
             return verdict.copy(
-                confidence = confidence,
+                verdict = metadataOnly.verdict,
+                declared = metadataOnly.declared,
                 note = listOfNotNull(metadataNote, bootDetail, supersedes).joinToString(" ").ifBlank { null }
             )
         }

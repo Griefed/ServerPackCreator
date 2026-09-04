@@ -20,19 +20,6 @@
 package de.griefed.serverpackcreator.clientside
 
 /**
- * How strongly the evidence supports "this mod is clientside-only". Phase 1 (metadata only) reaches
- * at most [MEDIUM]; the boot-test (Phase 2) is what promotes a crashing mod to [HIGH].
- *
- * @author Griefed
- */
-enum class Confidence {
-    HIGH,
-    MEDIUM,
-    LOW,
-    INCONCLUSIVE
-}
-
-/**
  * Result of the jar metadata scan for one loader, including the case where it was deliberately put
  * off because the file is distribution-locked (its jar is only fetched in the boot-phase).
  *
@@ -82,7 +69,6 @@ data class LoaderVerdict(
     val bootResult: BootResult?,
     val bootedLoader: String?,
     val bootCrashExcerpt: String?,
-    val confidence: Confidence,
     val sampleFile: String?,
     val note: String?,
     /**

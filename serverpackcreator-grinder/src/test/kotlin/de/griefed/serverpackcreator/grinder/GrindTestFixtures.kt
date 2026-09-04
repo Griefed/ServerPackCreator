@@ -29,9 +29,6 @@ internal fun loaderVerdict(
     loader: String,
     suggestedEntry: String?,
     verdict: Verdict = Verdict.INCONCLUSIVE,
-    // Bridge only: `LoaderVerdict.confidence` is still required in -clientside at this commit.
-    // The next commit deletes the field and this parameter with it.
-    confidence: Confidence = Confidence.LOW,
     note: String? = null,
     declaredClientSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
     declaredServerSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
@@ -47,7 +44,6 @@ internal fun loaderVerdict(
     bootedLoader = bootedLoader,
     bootCrashExcerpt = null,
     verdict = verdict,
-    confidence = confidence,
     sampleFile = null,
     note = note
 )

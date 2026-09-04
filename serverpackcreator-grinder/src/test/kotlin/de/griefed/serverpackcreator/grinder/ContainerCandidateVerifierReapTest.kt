@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.BootResult
 import de.griefed.serverpackcreator.clientside.BootVerifier
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
 import de.griefed.serverpackcreator.clientside.LoaderVerdict
@@ -73,8 +72,6 @@ internal class ContainerCandidateVerifierReapTest {
         bootResult = bootResult,
         bootedLoader = loader,
         bootCrashExcerpt = null,
-        // Bridge only: the field is deleted in the next commit.
-        confidence = Confidence.LOW,
         sampleFile = null,
         note = null
     )
