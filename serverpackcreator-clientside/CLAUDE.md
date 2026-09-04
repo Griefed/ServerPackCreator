@@ -580,6 +580,25 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
   ServerStarterJar prints the refusal in full and exits 0.
 
+- **Two patterns, and only one of them is publishable** (`LoaderVerdict.filenamePattern`, 2026-09-04).
+  `suggestedEntry` is the longest common prefix over a project's *whole* history and must stay that way —
+  it is what the fallback list matches with `startsWith`, so it has to cover every build ever released.
+  The cost is that any project which renamed its files loses whatever the rename dropped:
+  `iris` published `iris-` for Fabric and Quilt against `iris-neoforge-` for NeoForge, the difference being
+  that its oldest Fabric jars are `iris-mc1.16.5-1.0.0.jar`, from before the loader went into the name,
+  while all 42 NeoForge files carry it.
+  `filenamePattern` runs the same `FilenameStemDeriver.deriveStem` over the **sampled file alone**, so it
+  keeps the token history erodes, and the grinder shows the two side by side.
+  - **LANDMINE — never publish the narrow one.** Serving `filenamePattern` from `/as-properties` would stop
+    excluding every build the narrow form misses, which for `iris` is its entire pre-2022 history. The two
+    are separate fields for that reason and `theFilenamePatternIsNotWhatGetsPublished` fails the build on a
+    swap.
+  - A **Quilt** row reads `iris-fabric-`, which is correct and not a leak: Quilt boots Fabric builds, and
+    this describes the artifact, not the row's label. That is the whole point — it is what a maintainer
+    checks the finding against on the platform page.
+  - `ClientsideReportRenderer` (the CLI's Markdown report) still shows only `Suggested entry`. Same gap,
+    deliberately left: the ask was the grinder's catalog table, where a reader has no other context.
+
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in
