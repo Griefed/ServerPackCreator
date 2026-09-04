@@ -83,6 +83,21 @@ enum class BootDecision(
     /** The server died reaching for a client-only class. The one signal a broken harness cannot fabricate. */
     CLIENT_ONLY_CLASS(decisive = true),
 
+    /**
+     * The server died reaching for LWJGL, the client's windowing and OpenGL binding, which a dedicated
+     * server never ships. Decisive for the same reason as [CLIENT_ONLY_CLASS] and catches what that one
+     * cannot: `iris` scored INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` while this signature
+     * lived only in the operator example file.
+     */
+    LWJGL_ON_A_DEDICATED_SERVER(decisive = true),
+
+    /**
+     * FML refused a client-only class on a dedicated server and said so. Decisive, and needed separately
+     * because NeoForge's ServerStarterJar can print the crash in full and still **exit 0** — the exit-code
+     * rung would call that inconclusive.
+     */
+    FML_INVALID_DIST(decisive = true),
+
     /** A dependency the staging failed to supply, so the mod's own code never ran. */
     DEPENDENCY_FAILURE,
 
@@ -318,6 +333,16 @@ object BootLogClassifier {
     private val clientOnlyClassMarker = bundledPattern("client-only-class")
 
     /**
+     * LWJGL is the client's windowing and OpenGL binding; a dedicated server ships none of it. Sits beside
+     * [clientOnlyClassMarker] rather than below it — both are decisive, and neither can be fabricated by a
+     * broken harness, which is what separates them from every excuse further down.
+     */
+    private val lwjglMarker = bundledPattern("lwjgl-on-a-dedicated-server")
+
+    /** FML's own words for refusing a client-only class on a dedicated server. */
+    private val fmlInvalidDistMarker = bundledPattern("fml-invalid-dist")
+
+    /**
      * Exit codes meaning "terminated from outside" (POSIX `128 + signal`): `SIGKILL` — what Docker reports for an
      * OOM-killed container — and `SIGTERM`. Neither says anything about the mod, so neither may count as a crash.
      * `SIGABRT` (134) is deliberately **not** here: a fatal JVM abort is a real failure of the running server.
@@ -403,6 +428,15 @@ object BootLogClassifier {
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
             return Classification(BootResult.CRASHED, annotating, BootDecision.CLIENT_ONLY_CLASS)
+        }
+        // The rest of the decisive band. Both are as unfakeable as the marker above -- a dedicated server
+        // ships no LWJGL, and FML saying "invalid dist DEDICATED_SERVER" is the loader itself refusing a
+        // client-only class -- so they sit here, above every excuse and below every fair-run guard.
+        if (consoleLines.any { lwjglMarker.containsMatchIn(it) }) {
+            return Classification(BootResult.CRASHED, annotating, BootDecision.LWJGL_ON_A_DEDICATED_SERVER)
+        }
+        if (consoleLines.any { fmlInvalidDistMarker.containsMatchIn(it) }) {
+            return Classification(BootResult.CRASHED, annotating, BootDecision.FML_INVALID_DIST)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {

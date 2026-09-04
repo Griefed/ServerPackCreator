@@ -98,10 +98,20 @@ internal class BootDecisionTest {
      * resolves to the ladder or to INCONCLUSIVE, never to CRASHED).
      */
     @Test
-    fun onlyTwoDecisionsAreDecisiveEvidence() {
+    fun theDecisiveSetIsSmallAndExplicit() {
         Assertions.assertEquals(
-            setOf(BootDecision.CLIENT_ONLY_CLASS, BootDecision.OPERATOR_RULE),
-            BootDecision.entries.filter { it.decisive }.toSet()
+            setOf(
+                BootDecision.CLIENT_ONLY_CLASS,
+                // Both added 2026-09-04, when `iris` scored INCONCLUSIVE on
+                // `NoClassDefFoundError: org/lwjgl/Version`. A dedicated server ships no LWJGL, and FML
+                // saying "invalid dist DEDICATED_SERVER" is the loader itself refusing a client-only
+                // class: neither can be fabricated by a broken harness, which is the bar for this set.
+                BootDecision.LWJGL_ON_A_DEDICATED_SERVER,
+                BootDecision.FML_INVALID_DIST,
+                BootDecision.OPERATOR_RULE
+            ),
+            BootDecision.entries.filter { it.decisive }.toSet(),
+            "this set is what may publish a mod; every addition needs a reason a harness cannot fake"
         )
         Assertions.assertFalse(BootDecision.EXIT_CODE.decisive, "a non-zero exit nobody recognised is not evidence")
     }
