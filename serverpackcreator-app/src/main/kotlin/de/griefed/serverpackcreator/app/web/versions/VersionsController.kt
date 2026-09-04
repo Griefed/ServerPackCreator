@@ -98,7 +98,7 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
      * @author Griefed
      */
     @GetMapping("/forge", produces = ["application/json"])
-    fun availableForgeVersions(): ResponseEntity<HashMap<String, List<String>>> {
+    fun availableForgeVersions(): ResponseEntity<Map<String, List<String>>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(versionMeta.forge.getForgeMeta())
@@ -111,7 +111,7 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
      * @author Griefed
      */
     @GetMapping("/neoforge", produces = ["application/json"])
-    fun availableNeoForgeVersions(): ResponseEntity<HashMap<String,List<String>>> {
+    fun availableNeoForgeVersions(): ResponseEntity<Map<String,List<String>>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(versionMeta.neoForge.getNeoForgeMeta())

@@ -129,5 +129,7 @@ class LegacyFabricMeta(
      * @return All Legacy Fabric supported Minecraft versions.
      * @author Griefed
      */
-    fun supportedMinecraftVersions(): MutableList<String> = gameVersions.allVersions
+    // Narrowed from `MutableList` to `List`: the returned collection is now an immutable snapshot, and
+    // the old type advertised that a caller could mutate the metadata's own state through it.
+    fun supportedMinecraftVersions(): List<String> = gameVersions.allVersions
 }
