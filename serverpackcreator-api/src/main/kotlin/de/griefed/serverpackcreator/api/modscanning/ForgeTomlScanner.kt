@@ -39,6 +39,18 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
 
     /** The key a Forge/NeoForge dependency entry states its Maven version range under. */
     private val versionRange = "versionRange"
+
+    /** Forge's optionality flag in `mods.toml`: `mandatory = true|false`. */
+    private val mandatory = "mandatory"
+
+    /** NeoForge's replacement for [mandatory] in `neoforge.mods.toml`: a `type` string, default `"required"`. */
+    private val dependencyType = "type"
+
+    /**
+     * The `type` values that do **not** oblige the pack to carry the dependency. `"incompatible"` is here
+     * because it means the mod must *not* be present, which is the opposite of something to go and fetch.
+     */
+    private val notRequiredTypes = setOf("optional", "incompatible", "discouraged")
     private val both = "BOTH"
 
     /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
@@ -118,7 +130,10 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                         sidesForModloader.add(dependencySideness)
                     } else {
                         modDependencies.add(
-                            ModDependency(dependencyModId, dependencySideness, getVersionRange(declared))
+                            ModDependency(
+                                dependencyModId, dependencySideness, getVersionRange(declared),
+                                optional = isOptional(declared)
+                            )
                         )
                     }
                 }
@@ -218,6 +233,23 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      */
     private fun getVersionRange(config: CommentedConfig): String? =
         config.valueMap()[versionRange]?.toString()?.takeIf { it.isNotBlank() }
+
+    /**
+     * Whether [config] declares a dependency the mod can load without, reading **both** loader spellings:
+     * Forge's `mandatory = false` and NeoForge's `type` being one of [notRequiredTypes]. `NeoForgeTomlScanner`
+     * overrides only the descriptor's file name, and NeoForge on Minecraft 1.20.2-1.20.4 still ships
+     * `mods.toml` with `mandatory`, so one reader has to serve both rather than each scanner knowing its own.
+     *
+     * Says `false` — required — whenever neither field is present or either is unreadable. That is NeoForge's
+     * documented default for an absent `type`, and the safe direction: see [ModDependency.optional].
+     */
+    private fun isOptional(config: CommentedConfig): Boolean {
+        val declaredType = config.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
+        if (declaredType != null) {
+            return declaredType in notRequiredTypes
+        }
+        return config.valueMap()[mandatory]?.toString()?.trim()?.lowercase() == "false"
+    }
 
     private fun getSide(config: CommentedConfig): String {
         return if (config.valueMap()[side] != null) {
