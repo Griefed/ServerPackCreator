@@ -409,6 +409,16 @@ The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
 **Host prerequisites (apply once `ContainerServerRunner` is wired into a `BootVerifier`):** the
 download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`), *not* in the boot
 container, so the box running the grinder needs:
+- **The report carries two patterns per row, `Name-pattern` and `Filename` (2026-09-04).** They answer
+  different questions and neither replaces the other. `Name-pattern` is `suggestedEntry`, the common prefix
+  over the project's whole history, and is what `/as-properties` publishes — it must stay broad enough for a
+  `startsWith` match against every build ever released. `Filename` is derived from the one artifact the
+  verdict actually sampled. Reported: `iris` rendered `iris-` (Fabric), `iris-neoforge-` (NeoForge) and
+  `iris-` (Quilt), where two rows named no loader and one named a loader its row was not about. Both cells
+  come from `VerdictField`, which is the single source for the HTML header, the CSV, the query, the filters
+  and the sort — a column is one enum entry, never five edits. A Quilt row showing `iris-fabric-` is
+  correct: Quilt boots Fabric builds. **Do not swap the published one for the narrow one** — see the
+  landmine in `serverpackcreator-clientside/CLAUDE.md`.
 - **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when
   the key is present; without it CurseForge links cannot be resolved at all (Modrinth needs no key).
 - **No browser, and no Playwright.** Distribution-locked CurseForge files (`allowModDistribution=false`,

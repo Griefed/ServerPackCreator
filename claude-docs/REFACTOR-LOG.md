@@ -3580,3 +3580,51 @@ format — deferred rather than done quietly, and recorded in `serverpackcreator
 Suites: api 383 (1 skip), clientside 266 → **309**, grinder 446 → **455** (29 skip), app 149,
 plugin-example 3 — **1299 total, zero failures**, re-run with `--rerun-tasks` after wiping
 `build/test-results`.
+
+## 2026-09-04 — `Filename`: the artifact a verdict sampled, beside the pattern it publishes
+
+**Branch:** `claude-filename-column`
+
+Reported from the live grinder: `iris` returns three rows whose patterns are `iris-` (Fabric),
+`iris-neoforge-` (NeoForge) and `iris-` (Quilt). Two name no loader, and the third names one whose
+relationship to the row is not stated.
+
+**Not a bug in the deriver.** `suggestedEntry` is the longest common prefix over a project's *whole*
+published history, which is exactly right for its purpose: `/as-properties` serves it and the fallback
+list matches it with `startsWith`, so it has to cover every build the project ever shipped. Measured
+against the live Modrinth API:
+
+| loader   | files | stem             | why |
+|----------|-------|------------------|-----|
+| Fabric   | 191   | `iris-`          | oldest files are `iris-mc1.16.5-1.0.0.jar`, pre-dating the loader token |
+| NeoForge | 42    | `iris-neoforge-` | no such history — every file carries it |
+| Quilt    | 143   | `iris-`          | Quilt boots Fabric builds; same eroded prefix |
+
+So the loader token is not missing, it is *correctly* absent: no single prefix covers both naming
+conventions, and the broad one is the one that must be published.
+
+**The fix is a second column.** `FilenameStemDeriver.deriveStem` over the sampled file alone keeps
+whatever that file is called, because there is no older convention to erode it against. The deriver
+needed **no change** — a characterization test proved that before any code moved, and corrected one of
+my assumptions in passing (`iris-mc1.16.5-1.0.0.jar` yields `iris-`, not `iris-mc`; `mc` is stripped as
+the Minecraft marker it is). Everything after that is plumbing: `ClientsideVerifier`'s existing `sample`
+→ `LoaderVerdict.filenamePattern` → `GrindVerdict` → one `VerdictField` entry, which the HTML table and
+the CSV both derive their columns from.
+
+**The property worth guarding is that the two never swap.** Publishing the narrow pattern would stop
+excluding every build it misses — for `iris`, its entire pre-2022 history — so
+`theFilenamePatternIsNotWhatGetsPublished` asserts `/as-properties` still serves the broad stem. Pinned
+alongside it: a row with no sampled file renders **blank**, never the historical stem repeated, so the
+column cannot imply an artifact was examined when none was.
+
+**Four existing assertions changed, and that is the label working.** Two CSV header literals, the
+`ReportServer` header prefix, and the renderer's per-column sentinel list all name the column set, so the
+commit is `feat:` rather than `refactor:`. The renderer guard was given its own `SENTINELFILENAME` rather
+than a bumped count — counting cells is precisely the check it exists to be stronger than.
+
+**Deliberately not done:** `ClientsideReportRenderer`, the CLI's Markdown report, still shows only
+`Suggested entry`. Same information gap, but the ask was the grinder's catalog table, where a reader has
+no other context for the row.
+
+Suites from clean (`--rerun-tasks`): clientside **354**, grinder **465** (29 skipped), both green;
+every module compiles.

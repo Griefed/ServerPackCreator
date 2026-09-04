@@ -146,7 +146,7 @@ internal class ReportServerTest {
             val csv = get(server.port, "/export.csv")
             Assertions.assertEquals(200, csv.statusCode())
             Assertions.assertTrue(csv.headers().firstValue("Content-Type").orElse("").contains("text/csv"))
-            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Verdict,Declared,Loader,Platform"))
+            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Filename,Verdict,Declared,Loader,Platform"))
             Assertions.assertTrue(csv.body().contains("jei-"))
         } finally {
             server.stop()

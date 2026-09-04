@@ -138,6 +138,7 @@ class Grinder(
                     projectUrl = report.projectUrl,
                     loader = verdict.loader,
                     suggestedEntry = verdict.suggestedEntry,
+                    filenamePattern = verdict.filenamePattern,
                     // The redesigned verdict and the claim it either confirms or contradicts. Carried
                     // alongside `confidence` until stage 5 retires it; `/as-properties` already gates on this.
                     verdict = verdict.verdict,
