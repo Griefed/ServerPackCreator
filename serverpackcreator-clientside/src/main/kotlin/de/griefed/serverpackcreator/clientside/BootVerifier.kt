@@ -377,13 +377,16 @@ class BootVerifier(
             if (dependencyProject == null) {
                 // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
-                unsatisfied.add(dependencyRef)
+                unsatisfied.add(unsatisfiedLabel(dependencyRef, null, platform.name))
                 continue
             }
             val dependencyFile = BootCandidateSelector.pickDependencyFile(dependencyProject.files, loader, minecraftVersion)
             if (dependencyFile == null) {
-                log.warn("Required dependency '$dependencyRef' publishes no $loader file for Minecraft $minecraftVersion.")
-                unsatisfied.add(dependencyRef)
+                log.warn(
+                    "Required dependency '${dependencyProject.slug}' ($dependencyRef) publishes no $loader " +
+                        "file for Minecraft $minecraftVersion."
+                )
+                unsatisfied.add(unsatisfiedLabel(dependencyRef, dependencyProject, platform.name))
                 continue
             }
             if (!downloadWithDependencies(
@@ -809,6 +812,24 @@ class BootVerifier(
                 declaredMinecraftConstraint = minecraftDisagreement
             )
         }
+
+        /**
+         * How one unmet dependency is named in the refusal an operator reads.
+         *
+         * A platform ref is an *identifier*, not a name: Modrinth's is an opaque base62 `project_id`
+         * (`MBAkmtvl`) and CurseForge's a bare number. Recording the ref made refusals read as gibberish —
+         * `waystones` reported its missing `balm` and `shogi` as `MBAkmtvl` and `bi4iCmsw`, while the very
+         * same two mods came out readably from the manifest half of staging.
+         *
+         * A [resolved] project is named by its slug, which is what the author, the platform page and the
+         * manifest all call it. That also **collapses the duplicate**: `unsatisfied` is a set, so a mod
+         * missing by both routes was two entries and is now one.
+         *
+         * An unresolved ref keeps the ref — it is all we have — but says which platform it belongs to, so a
+         * reader can look it up instead of mistaking it for a strange mod name.
+         */
+        internal fun unsatisfiedLabel(ref: String, resolved: ProjectFiles?, platformName: String): String =
+            resolved?.slug?.takeIf { it.isNotBlank() } ?: "$ref (unresolved $platformName project)"
 
         internal fun refuseForMissingDependencies(
             unsatisfied: Set<String>,

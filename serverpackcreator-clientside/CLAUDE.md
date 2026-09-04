@@ -501,6 +501,19 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   - `Confidence` and `aggregateFor` are **gone**. `BootResult` stays: it is the classifier's per-boot
     reading, not a published verdict, and `VerdictPolicy` consumes it directly.
 
+- **LANDMINE — a platform ref is an identifier, not a name; a refusal must say the slug (2026-09-04).**
+  `ModFile.requiredDependencies` holds Modrinth's opaque base62 `project_id` (`MBAkmtvl`) or CurseForge's
+  bare numeric id, and `unsatisfied` recorded the ref verbatim — so refusals read as gibberish.
+  `architectury-api`, `enchantment-descriptions` and `waystones` were reported that way:
+  `enchantment-descriptions` needs `uy4Cnpcm`/`aaRl8GiW` (**bookshelf-lib**, **prickle**), `waystones` needs
+  `bi4iCmsw`/`MBAkmtvl` (**shogi**, **balm**).
+  **`waystones` shows why this is a defect and not a cosmetic gripe:** its own `neoforge.mods.toml` declares
+  `balm` and `shogi` in words, so the *manifest* half of staging already reported them readably while the
+  *platform* half reported the same two mods as ids. `BootVerifier.unsatisfiedLabel` resolves a ref to the
+  resolved project's slug, and keeps the ref *plus the platform name* only when nothing resolved.
+  **The dedupe matters more than the wording:** `unsatisfied` is a `Set<String>`, so a mod missing by both
+  routes used to be two entries and is now one. Do not "simplify" this back to adding the raw ref.
+
 - **A dependency the candidate *ships* is never fetched and never missing** (`BundledJars`, 2026-09-04).
   Fabric and Quilt load jar-in-jar libraries, so a `depends` naming one is satisfied before staging looks.
   `xaeros-world-map` was refused for `xaerolib` while carrying
