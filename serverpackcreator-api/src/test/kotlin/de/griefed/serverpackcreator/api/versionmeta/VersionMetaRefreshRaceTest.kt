@@ -75,13 +75,17 @@ internal class VersionMetaRefreshRaceTest {
 
         @Suppress("UNCHECKED_CAST")
         val asMutable = releases as? MutableList<Any?>
-        if (asMutable != null) {
-            Assertions.assertThrows(
-                UnsupportedOperationException::class.java,
-                { asMutable.clear() },
-                "callers were handed the metadata's own mutable list; a refresh clears and refills exactly this"
-            )
+        // Asserted, never skipped: a guarded assertion that quietly does nothing when the cast fails is the
+        // defect class iteration 34 found. If an accessor ever stops presenting as MutableList, this must
+        // fail and be re-read, not pass in silence.
+        val mutableView = requireNotNull(asMutable) {
+            "expected a List that presents as MutableList; the check below relies on it"
         }
+        Assertions.assertThrows(
+            UnsupportedOperationException::class.java,
+            { mutableView.clear() },
+            "callers were handed the metadata's own mutable list; a refresh clears and refills exactly this"
+        )
     }
 
     /**
@@ -143,6 +147,10 @@ internal class VersionMetaRefreshRaceTest {
             "minecraft.serverReleases" to { meta.minecraft.serverReleases() },
             "minecraft.clientReleases" to { meta.minecraft.clientReleases() },
             "minecraft.allVersions" to { meta.minecraft.allVersions() },
+            // Listed so the set is "every list accessor on MinecraftMeta" rather than the three that
+            // happened to be written down; an accessor added beside these inherits the guard.
+            "minecraft.clientSnapshots" to { meta.minecraft.clientSnapshots() },
+            "minecraft.serverSnapshots" to { meta.minecraft.serverSnapshots() },
             "forge.forgeVersions" to { meta.forge.forgeVersions() },
             "forge.supportedMinecraftVersions" to { meta.forge.supportedMinecraftVersions() },
             "neoForge.neoForgeVersions" to { meta.neoForge.neoForgeVersions() },
@@ -161,13 +169,14 @@ internal class VersionMetaRefreshRaceTest {
                 val values = read()
                 @Suppress("UNCHECKED_CAST")
                 val asMutable = values as? MutableList<Any?>
-                if (asMutable != null && values.isNotEmpty()) {
-                    Assertions.assertThrows(
-                        UnsupportedOperationException::class.java,
-                        { asMutable.clear() },
-                        "$name hands out the metadata's own mutable list; a refresh clears and refills it"
-                    )
+                val mutableView = requireNotNull(asMutable) {
+                    "$name: expected a List that presents as MutableList"
                 }
+                Assertions.assertThrows(
+                    UnsupportedOperationException::class.java,
+                    { mutableView.clear() },
+                    "$name hands out the metadata's own mutable list; a refresh clears and refills it"
+                )
             }
         }
     }

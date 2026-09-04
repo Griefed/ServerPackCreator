@@ -220,6 +220,15 @@ class VersionMeta(
      * [update] performs, and concurrent re-parse while another thread reads a meta is not new here — the web
      * backend's `VersionRefreshSchedule` has always called [update] on a cron while requests read the metas.
      */
+    /**
+     * Re-parse every manifest and refresh the metas.
+     *
+     * **`@Synchronized` on the same monitor as [update], and that is the point.** This is the path the
+     * background coroutine takes, and it calls each meta's `update()` *directly* rather than going through
+     * [update] — so locking [update] alone left this one unguarded, which is the whole case the lock exists
+     * for. Both are instance methods, so both take `this`.
+     */
+    @Synchronized
     private fun refreshManifests() {
         try {
             checkManifests()
@@ -386,6 +395,16 @@ class VersionMeta(
      * @author Griefed
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
+    /**
+     * Refresh every meta from the manifests on disk.
+     *
+     * **Serialised**, because the metas are refreshed from a background coroutine *and* by callers: each
+     * meta now publishes an internally consistent snapshot, but two overlapping runs could still leave one
+     * meta on generation A beside another on generation B, so a lookup could miss a version its own release
+     * list contained. The lock is uncontended in the normal case — one refresh at startup — and a refresh is
+     * far too coarse to be on any hot path.
+     */
+    @Synchronized
     fun update(): VersionMeta {
         checkManifests()
         minecraft.update()

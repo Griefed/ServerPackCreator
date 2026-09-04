@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 
 /**
  * The mod-ids a jar already carries inside itself, via Fabric/Quilt **jar-in-jar**.
@@ -96,27 +97,32 @@ object BundledJars {
      * file name — names like `xaerolib-fabric-26.2-1.7.1.jar` carry a version and a loader that the declared
      * id does not.
      */
+    /**
+     * The ids the nested jar at [path] provides, read from *its* descriptor rather than guessed from its
+     * file name — names like `xaerolib-fabric-26.2-1.7.1.jar` carry a version and a loader the declared id
+     * does not.
+     *
+     * **Streamed, never spooled to disk.** An earlier cut wrote each nested jar to a temp file with
+     * `deleteOnExit()`; that registers the path in `java.io.DeleteOnExitHook`'s static set, which never
+     * shrinks even after the file is deleted. This runs per staged jar, per boot attempt, for every
+     * candidate of a catalog sweep — `sodium` declares nine nested jars — so a daemon running for weeks
+     * accumulated a dead entry for each. Reading the entry as a [ZipInputStream] needs no file at all.
+     */
     private fun idsOfNested(archive: ZipFile, path: String): Set<String> {
         val entry = archive.getEntry(path) ?: return emptySet()
-        val nested = runCatching {
-            archive.getInputStream(entry).use { stream ->
-                // A nested jar is a zip inside a zip, so it has to be spooled out before it can be opened.
-                val spooled = File.createTempFile("spc-nested-", ".jar").apply { deleteOnExit() }
-                spooled.outputStream().use { stream.copyTo(it) }
-                spooled
+        return runCatching {
+            archive.getInputStream(entry).use { raw ->
+                ZipInputStream(raw).use { nested ->
+                    generateSequence { nested.nextEntry }
+                        .firstOrNull { it.name == "fabric.mod.json" || it.name == "quilt.mod.json" }
+                        ?.let {
+                            // Read from the stream positioned at this entry; `mapper` stops at its end.
+                            idsOf(mapper.readTree(nested))
+                        }
+                        .orEmpty()
+                }
             }
-        }.getOrNull() ?: return emptySet()
-
-        return try {
-            ZipFile(nested).use { inner ->
-                val descriptor = readDescriptor(inner, "fabric.mod.json")
-                    ?: readDescriptor(inner, "quilt.mod.json")
-                    ?: return emptySet()
-                idsOf(descriptor)
-            }
-        } finally {
-            nested.delete()
-        }
+        }.getOrDefault(emptySet())
     }
 
     /** A descriptor's own id plus its `provides` aliases, in either loader's spelling. */

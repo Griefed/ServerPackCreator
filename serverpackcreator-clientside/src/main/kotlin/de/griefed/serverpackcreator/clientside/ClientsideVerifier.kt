@@ -335,6 +335,12 @@ class ClientsideVerifier(
                         verdict = Verdict.CONFIRMED,
                         note = listOfNotNull(
                             verdict.note,
+                            // An ERROR being superseded must not vanish: publishing this entry is right (the
+                            // mod is client-only and the entry comes from platform metadata, not from a
+                            // boot), but the grind still failed and that is an operator's problem to see.
+                            "This loader's own grind did not run (${verdict.verdict}).".takeIf {
+                                verdict.verdict == Verdict.ERROR
+                            },
                             "${proof.loader} proved this mod reaches client-only code " +
                                 "(${proof.decidedBy?.ruleId}); a mod's features do not change with the loader, " +
                                 "so this entry is excluded too."

@@ -5058,3 +5058,183 @@ Both are documentation-only. MED-1 should be fixed by marking the superseded sen
 deleting it — the measured rows behind it (`better-stats`, `tcdcommons`, `yacl`) are still the evidence for
 why a clean boot is worth recording at all, and that reasoning survives the change in what it is recorded
 *as*.
+
+---
+
+## Iteration 37 — the four fixes that followed the redesign (2026-09-04)
+
+**Scope:** everything since iteration 36 — the LWJGL/invalid-dist promotion, the bundled-dependency fix,
+client-only proof crossing loaders, and the version-metadata race. **Method:** code read rather than commit
+messages; pin boundaries verified by checkout; lifetimes and concurrency reasoned through against the
+grinder's actual runtime (a daemon running for weeks, not a CLI invocation).
+
+### HIGH
+
+- **HIGH-1 — `BundledJars` leaks a JVM-lifetime registration per nested jar, per scan.**
+  `idsIn` spools each declared nested jar with
+  `File.createTempFile("spc-nested-", ".jar").apply { deleteOnExit() }` and deletes it in a `finally`. The
+  **`deleteOnExit()` is the leak**: it adds the path to `java.io.DeleteOnExitHook`'s static `LinkedHashSet`,
+  which never shrinks — deleting the file does not deregister it. The `finally` frees the disk and nothing
+  frees the set.
+  **Why it matters here specifically:** this is called from `stageManifestDependencies`, i.e. per staged jar,
+  per boot attempt (three per candidate), for every candidate in a catalog sweep. `sodium` alone declares
+  nine nested jars. A daemon designed to run for weeks accumulates one dead `String` per nested jar per
+  attempt, plus a shutdown hook that eventually walks tens of thousands of already-deleted paths.
+  **And the temp file is not needed at all.** Only the nested descriptor is read; a `ZipInputStream` over the
+  entry's stream gets it without touching disk, which removes both the leak and the I/O.
+
+### MEDIUM
+
+- **MED-1 — `propagateClientOnlyProof` overwrites `Verdict.ERROR`, erasing an operator signal.** It copies
+  `verdict = Verdict.CONFIRMED` onto *every* non-proof verdict, including a loader whose grind was
+  **prevented** — no runtime image, a staging refusal, a failed overlay. Publishing that loader's entry is
+  right (the mod is client-only, and the entry comes from platform metadata rather than from the boot), but
+  the ERROR disappears from the report, so a host defect stops being visible on exactly the projects where a
+  proof happens to exist. `ERROR` exists to be actionable; it should survive in the note even when the
+  verdict is superseded.
+
+- **MED-2 — `VersionMeta.update()` is unsynchronised, so two refreshes can interleave field generations.**
+  The snapshot fix makes each field internally consistent, but nothing serialises `update()` itself:
+  `refreshManifests()` runs on `refreshScope`, and `update()` is public and callable by the app and the
+  grinder. Two overlapping runs can leave `releases` from generation A beside `meta` from generation B.
+  Each is a complete list, so nothing tears — but a lookup can miss a version the release list contains.
+  Strictly narrower than the bug just fixed, and the same class.
+
+### LOW
+
+- **LOW-1 — the immutability pin can pass vacuously.** `theReleaseListHandedToCallersIsNotLiveState` and
+  `noMetaHandsOutLiveState` both guard the assertion with `if (asMutable != null)`. Today the cast always
+  succeeds (`Collections.unmodifiableList` presents as `MutableList` to Kotlin), so the guard never skips —
+  but if an accessor ever returned something that failed the cast, the test would report success while
+  asserting nothing. A guard that can silently assert nothing is the defect class iteration 34 already found
+  once.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **Concern separation is clean across all six non-merge commits**: every one is either wholly test or
+  wholly main, with no mixed commit in the range.
+- **All three pin boundaries hold**, verified by checking each `test(...)` commit out and running its
+  module: `pin that client-only proof is about the mod`, `pin that version metadata is not handed out as
+  live state`, and `pin that no version meta hands out live state` are each RED at their own commit.
+- **The `iron-chests` guard survived the client-only change.** An unexplained crash is still disprovable by
+  another loader's clean boot; only `provesClientOnly` rungs are exempt, and
+  `anUnexplainedCrashIsStillDisprovedByAnotherLoader` pins it.
+- **`OPERATOR_RULE` correctly does not propagate** despite being `decisive` — a rule reaching CRASHED states
+  that *this console* is a crash, not that the mod is client-only.
+- **Only declared nested jars count** in `BundledJars`; a stray file under `META-INF/jars/` is not treated
+  as bundled, which is the direction where generosity would skip staging something genuinely needed.
+- **The three narrowed published signatures are recorded** in `API-BEHAVIOUR-CHANGES.md` with the reason.
+
+### Recommendation
+
+HIGH-1 first, and fix it by removing the temp file rather than by removing `deleteOnExit` — the spool is
+avoidable work on the hot staging path. MED-1 is a two-line change to preserve the error text. MED-2 wants a
+lock around `update()`. LOW-1 is a one-line strengthening.
+
+---
+
+## Iteration 38 — auditing iteration 37's own fixes (2026-09-04)
+
+**Scope:** the commit answering iteration 37, plus the four merges it repaired. **Method:** each fix traced
+to the *path that motivated it* rather than to the symbol it changed; the streamed reader verified against a
+real nine-nested-jar artifact.
+
+### HIGH
+
+- **HIGH-1 — MED-2's fix does not cover the case it was written for.** `VersionMeta.update()` was marked
+  `@Synchronized`, but the background refresh does **not** go through it: `refreshManifests()` calls
+  `minecraft.update()`, `fabric.update()`, `forge.update()` and the rest **directly**. So the lock guards the
+  public caller and leaves the coroutine — the path the finding was about — entirely unguarded, and two
+  refreshes can still interleave field generations.
+  This is iteration 34's HIGH-2 shape exactly: a guard that looks like it covers a case and cannot reach it.
+  Both are instance methods of `VersionMeta`, so marking `refreshManifests()` `@Synchronized` puts them on
+  the same monitor and actually serialises them.
+
+### MEDIUM
+
+- **MED-1 — none of the last four fixes is documented in a module `CLAUDE.md`.** `BundledJars`,
+  `BootDecision.provesClientOnly`, the `lwjgl-on-a-dedicated-server` / `fml-invalid-dist` defaults, and the
+  version-metadata snapshot rule appear in commit messages and nowhere a session will load. Four landmines
+  a reader is expected to respect — *only declared nested jars count*, *client-only proof crosses loaders*,
+  *the parser is not the bug*, *never hand out live metadata* — exist only in history. The repo's own
+  convention is that durable facts live in the module files precisely because commit messages are not read
+  before touching code.
+
+### LOW
+
+- **LOW-1 — two new `!!` in `VersionMetaRefreshRaceTest`.** Introduced while removing the vacuous-pass
+  guard: `assertNotNull(asMutable)` followed by `asMutable!!.clear()`. Correct, but the conventions ask for
+  no new `!!`, and `requireNotNull` returns the narrowed value in one step.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **The streamed nested-jar reader works on a real multi-nested artifact.** Run against the live
+  `sodium` Fabric jar, `BundledJars.idsIn` returns all **nine** declared ids —
+  `fabric-api-base`, `fabric-block-getter-api-v2`, `fabric-lifecycle-events-v1`, `fabric-renderer-api-v1`,
+  `fabric-rendering-fluids-v1`, `fabric-rendering-v1`, `fabric-resource-loader-v0`,
+  `fabric-resource-loader-v1`, `fabric-transitive-access-wideners-v1`. `ZipInputStream` positioned at an
+  entry bounds the read correctly, so `readTree` does not run past it. The temp file and its
+  `deleteOnExit` registration are gone.
+- **That result also shows the bundled-dependency fix has real breadth**: those nine are exactly the Fabric
+  API modules this repo documents as the most-commonly-missing dependency class, so a mod shipping its own
+  copies no longer drags the whole of Fabric API into staging.
+- **MED-1 of iteration 37 is correctly narrow** — a superseded `ERROR` keeps its reason in the note and
+  still publishes its entry, which is right: the entry comes from platform metadata, not from the boot.
+- **No mixed-concern commit** in the range; the fix commit is main-only and its pins pre-date it.
+
+### Recommendation
+
+HIGH-1 is one annotation and must be taken — the finding it answers is otherwise still open while looking
+closed, which is worse than never having fixed it. MED-1 is the documentation pass the four fixes never got.
+LOW-1 is two lines.
+
+---
+
+## Iteration 39 — third pass; verifying that iteration 38's fixes actually reach their targets (2026-09-04)
+
+**Scope:** the commit answering iteration 38. **Method:** deliberately the same method that caught
+iteration 38's HIGH-1 — trace each fix to the *path* it claims to cover, not the symbol it changed — plus a
+sweep for any accessor still handing out live state.
+
+### HIGH — none
+
+`refreshManifests()` and `update()` now both carry `@Synchronized` on `VersionMeta`, so the background
+coroutine and every caller take one monitor. Verified by reading both declarations rather than trusting the
+commit.
+
+**And the race was reachable in production, not merely in theory.** `VersionRefreshSchedule` is a
+Spring `@Scheduled` cron job calling `versionMeta.update()`, so a scheduled refresh could overlap the
+startup coroutine on a running web instance. That validates iteration 37's MED-2 as a real defect rather
+than a speculative one — worth recording, because "could two refreshes really overlap?" is exactly the
+question a future reader will ask before removing the lock.
+
+### MEDIUM — none
+
+### LOW
+
+- **LOW-1 — the pin covers three of the four Minecraft list accessors.** `minecraft.clientSnapshots()` and
+  `minecraft.serverSnapshots()` return the same kind of snapshot and are not asserted, while
+  `clientReleases`, `serverReleases` and `allVersions` are. Nothing is broken — they read the same fields
+  the covered accessors do — but the omission is arbitrary rather than reasoned, and a future accessor
+  added beside them would inherit the gap.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **No accessor in `versionmeta` still returns a mutable collection.** Every `fun x() = loader.field`
+  returns a `@Volatile` field holding a `Collections.unmodifiable*` view, and the public surface has no
+  `MutableList`, `MutableMap`, `HashMap` or `MutableSet` return type left.
+- **`BundledJars` is safe to share.** `DefaultBootRules.cached` is `by lazy` (synchronized by default) and
+  the Jackson `ObjectMapper` is thread-safe for reads after construction, which is all either does — both
+  are reached from grinder worker threads.
+- **`bootableCombination()` copies immediately** (`serverReleases().map { … }.toHashSet()`), so nothing in
+  the boot path holds a metadata list across a refresh even now that holding one would be safe.
+- **The documentation added in iteration 38 is where a session will load it** — the `BundledJars`,
+  `provesClientOnly`, LWJGL-defaults and snapshot landmines are in the two module `CLAUDE.md` files, each
+  with the near-miss mechanism that makes it subtle rather than only the rule.
+- **No `!!` remains** in `VersionMetaRefreshRaceTest`.
+
+### Recommendation
+
+LOW-1 only: extend the pin to the two snapshot accessors so the set is "every list accessor" rather than
+"the ones that happened to be listed". Three passes have now been run over this range; the remaining item is
+a completeness nit rather than a defect.
