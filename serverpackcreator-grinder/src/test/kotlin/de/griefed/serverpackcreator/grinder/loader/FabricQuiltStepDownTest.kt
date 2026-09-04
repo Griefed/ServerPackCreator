@@ -142,4 +142,41 @@ internal class FabricQuiltStepDownTest {
     fun aLoaderWithNoKnownLineIsUnchanged() {
         Assertions.assertEquals(emptyList<String>(), LoaderStepDown.newestFirst(emptyList()))
     }
+
+    /**
+     * **The join the rest of this class does not reach.** Every other test here injects
+     * `availableVersions` directly, so it exercises `CachedLoaderVersions` and never
+     * `knownLoaderVersionsNewestFirst` — which is the only production function the fix changed. Delete those
+     * three `when` branches and nothing else in this file fails.
+     *
+     * `knownLoaderVersionsNewestFirst` needs an `ApiWrapper` and cannot be executed in a unit test, which is
+     * the same situation as the joins inside `main` that `GrinderSpcEnvironmentTest` and
+     * `ReportBindWiringTest` assert against the source text. This uses that established pattern rather than
+     * inventing a seam: it is a wiring assertion, and wiring is what it checks.
+     */
+    @Test
+    fun everyLoaderLineIsWiredIntoTheStepDown() {
+        val source = File("src/main/kotlin/de/griefed/serverpackcreator/grinder/ContainerCandidateVerifier.kt")
+        Assertions.assertTrue(source.isFile, "expected to read ${'$'}{source.absolutePath}")
+        val text = source.readText()
+
+        listOf(
+            "\"Fabric\" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.fabric.loaderVersions())",
+            "\"Quilt\" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.quilt.loaderVersions())",
+            "\"LegacyFabric\" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.legacyFabric.loaderVersions())"
+        ).forEach { wiring ->
+            Assertions.assertTrue(
+                text.contains(wiring),
+                "a loader line lost its step-down; without it that loader has no fallback when the newest " +
+                    "build refuses to install, which is the defect this fixed: " + wiring
+            )
+        }
+
+        listOf("Forge", "NeoForge").forEach { perMinecraft ->
+            Assertions.assertTrue(
+                text.contains("\"" + perMinecraft + "\" -> LoaderStepDown.newestFirst("),
+                perMinecraft + "'s existing step-down must survive the refactor too"
+            )
+        }
+    }
 }

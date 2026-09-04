@@ -5238,3 +5238,62 @@ question a future reader will ask before removing the lock.
 LOW-1 only: extend the pin to the two snapshot accessors so the set is "every list accessor" rather than
 "the ones that happened to be listed". Three passes have now been run over this range; the remaining item is
 a completeness nit rather than a defect.
+
+---
+
+## Iteration 40 — the Fabric/Quilt loader step-down (2026-09-04)
+
+**Scope:** the two unpushed commits, `test(grinder): pin that Fabric and Quilt can step down a loader build`
+and `fix(grinder): let Fabric and Quilt step down a loader build`. **Method:** ask what the pin actually
+executes, rather than what its name claims — the question that caught iterations 34 and 38.
+
+### HIGH
+
+- **HIGH-1 — the pin does not exercise the change.** `FabricQuiltStepDownTest` injects
+  `availableVersions = { _, _ -> LoaderStepDown.newestFirst(quiltAscending) }` straight into
+  `CachedLoaderVersions`, so it never calls `knownLoaderVersionsNewestFirst` — **the only production
+  function the fix modified**. A grep confirms **zero** tests reach it.
+  What the test proves is that `CachedLoaderVersions` steps down when handed a non-empty list, which
+  `CachedLoaderVersionsTest` already proved for Forge, plus that `asReversed()` reverses. Given
+  `LoaderStepDown` existed, **every assertion in it would have passed before the fix**, because the fix is
+  the `when` branch that supplies the list and the test supplies its own.
+  The red at the pin commit was `Unresolved reference 'LoaderStepDown'` — a *compile* error — so the
+  behavioural assertions were never observed failing, which is exactly what hid this. Third occurrence of
+  the same shape in this audit series: a guard that looks like it covers the change and cannot reach it.
+  **The module already has the right pattern for this**: `knownLoaderVersionsNewestFirst` needs an
+  `ApiWrapper` and cannot be executed in a unit test, which is the same situation as the joins inside
+  `main` that `GrinderSpcEnvironmentTest` and `ReportBindWiringTest` assert against the source text. This
+  join deserves the same treatment — the module's own convention, not a new one.
+
+### MEDIUM — none
+
+### LOW
+
+- **LOW-1 — `LegacyFabric` was added beyond the stated request.** The ask was Fabric and Quilt.
+  LegacyFabric shares the loader-line shape exactly, so excluding it would have been arbitrary and left a
+  third loader with a known dead end — but it is scope the request did not name, and the commit message
+  states it only in passing rather than as a decision.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **`asReversed()` is safe here specifically because of the version-metadata fix.** It returns a *view* over
+  the source list, not a copy. That source is now a `Collections.unmodifiable*` snapshot behind `@Volatile`
+  (iteration 37-39), so the view cannot be mutated underneath a caller mid-walk. Before that work this would
+  have been a live view over a list the refresh coroutine clears — the two changes interact correctly, and
+  the cheapness of a view is worth keeping.
+- **`latestVersion` stays truthful**, pinned, so the support gate and the crash re-check still measure
+  against the real newest — a crash on a stepped-down build is not re-checked against itself.
+- **The pin uses a real `LoaderCache` driven through a genuinely failing `LoaderInstaller`**, so the cooldown
+  under test is the production one rather than a fake asserting agreement with itself.
+- **Prevention was ruled out by measurement before recovery was built**, and the numbers are recorded in the
+  grinder module doc so the question is not reopened from scratch: the failing combination answers 200 on
+  Quilt's `server/json`, and Fabric's 400 tracks Minecraft support rather than the loader pairing.
+- **No filtering in `LoaderStepDown`** is a stated decision, not an omission: Quilt's manifest marks the beta
+  as both `latest` and `release`, so stability is not derivable, and a pre-release filter could empty the
+  line precisely when the fallback is needed.
+
+### Recommendation
+
+HIGH-1 only: add the source-level wiring guard the module already uses for joins that cannot be executed, so
+the `when` branch that supplies the Fabric/Quilt/LegacyFabric lines is actually held by something. Without
+it, deleting those three branches breaks nothing and no test notices.
