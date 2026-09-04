@@ -479,4 +479,93 @@ internal class BootCandidateSelectorTest {
 
         Assertions.assertNull(BootCandidateSelector.newestVersionSatisfying(stale, "[1.20, 1.20.1)") { true })
     }
+
+    /** A file whose author opted out of third-party distribution: CurseForge publishes no URL for it. */
+    private fun lockedFile(name: String, loaders: Set<String>, mcVersions: Set<String>) =
+        ModFile(name, loaders, mcVersions, null, null, emptyList())
+
+    /**
+     * **A locked file cannot be staged, so it must not be preferred over one that can.**
+     *
+     * `pickForLoader` took the first match by loader and Minecraft version and never asked whether the file
+     * was obtainable. A distribution-locked newest build therefore beat an obtainable older one, the
+     * download returned `null`, and the dependency was reported unmet — the shape behind
+     * *"Required dependency unavailable for Quilt / Minecraft 1.20.4: 306612"*, CurseForge's Fabric API.
+     */
+    @Test
+    fun anObtainableDependencyBeatsALockedNewerOne() {
+        val files = listOf(
+            lockedFile("fabric-api-0.97.jar", setOf("Fabric"), setOf("1.20.4")),
+            file("fabric-api-0.96.jar", setOf("Fabric"), setOf("1.20.4"))
+        )
+
+        Assertions.assertEquals(
+            "fabric-api-0.96.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.4")?.fileName,
+            "the newest file has no download URL; picking it guarantees a refusal"
+        )
+    }
+
+    /**
+     * **And obtainability outranks the loader preference**, which is the half that actually explains the
+     * Quilt report. Quilt runs Fabric mods, so an obtainable Fabric build is a working dependency while a
+     * locked Quilt build is nothing at all — the fallback exists precisely to be used here.
+     */
+    @Test
+    fun anObtainableFabricBuildBeatsALockedQuiltOne() {
+        val files = listOf(
+            lockedFile("lib-quilt.jar", setOf("Quilt"), setOf("1.20.4")),
+            file("lib-fabric.jar", setOf("Fabric"), setOf("1.20.4"))
+        )
+
+        Assertions.assertEquals(
+            "lib-fabric.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.4")?.fileName,
+            "an exact-loader match that cannot be downloaded is worse than a usable fallback"
+        )
+    }
+
+    /**
+     * When **everything** is locked, still return a file rather than `null`. The refusal then reads
+     * "distribution-locked", which is true and actionable; `null` would read "publishes no Quilt file for
+     * Minecraft 1.20.4", which is false. Preference, never filter — the rule this function already follows
+     * for version constraints.
+     */
+    @Test
+    fun anAllLockedProjectStillYieldsAFileSoTheRefusalCanBeHonest() {
+        val files = listOf(lockedFile("lib-quilt.jar", setOf("Quilt"), setOf("1.20.4")))
+
+        Assertions.assertEquals(
+            "lib-quilt.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.4")?.fileName
+        )
+    }
+
+    /** The established preferences survive: an exact loader still wins when both are obtainable. */
+    @Test
+    fun anObtainableExactLoaderStillBeatsAnObtainableFallback() {
+        val files = listOf(
+            file("lib-fabric.jar", setOf("Fabric"), setOf("1.20.4")),
+            file("lib-quilt.jar", setOf("Quilt"), setOf("1.20.4"))
+        )
+
+        Assertions.assertEquals(
+            "lib-quilt.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.4")?.fileName
+        )
+    }
+
+    /** And the version constraint still narrows among obtainable files. */
+    @Test
+    fun theVersionConstraintStillNarrowsAmongObtainableFiles() {
+        val files = listOf(
+            ModFile("lib-2.0.jar", setOf("Fabric"), setOf("1.20.4"), "https://cdn/2", null, emptyList(), "2.0.0"),
+            ModFile("lib-1.0.jar", setOf("Fabric"), setOf("1.20.4"), "https://cdn/1", null, emptyList(), "1.0.0")
+        )
+
+        Assertions.assertEquals(
+            "lib-1.0.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.4", ">=1.0.0 <2.0.0")?.fileName
+        )
+    }
 }
