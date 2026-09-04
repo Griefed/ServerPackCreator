@@ -24,6 +24,61 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 
 /**
+ * Which stream of text a rule's pattern is matched against.
+ *
+ * @author Griefed
+ */
+enum class RuleSource {
+    /** The boot's console output, one line at a time — the ladder the classifier walks. */
+    CONSOLE,
+
+    /**
+     * The single canonical facts line [MetadataFacts] renders, describing what the platform and the jar
+     * *declare* about a mod before anything is booted.
+     */
+    METADATA
+}
+
+/**
+ * Renders what is declared about a mod into one line for [RuleSource.METADATA] rules to match.
+ *
+ * **One line, deliberately.** A regex matches a line at a time, so facts on separate lines could never
+ * express a conjunction — and the most careful judgment the old hardcoded fold made was exactly that: the
+ * platform marking the server unsupported *while* the jar declares server/both is a contradiction, and the
+ * case where confidence must fall rather than rise. With every fact on one line a pattern naming two fields
+ * is an AND, and that caution survives into the rules.
+ *
+ * The field names are an interface operators write patterns against; `MetadataRuleTest` pins them, because a
+ * rename would present as "nothing is clientside any more" rather than as a break.
+ *
+ * @author Griefed
+ */
+object MetadataFacts {
+
+    /**
+     * The facts line for one candidate: what the platform declares of each side, and what reading the jar's
+     * own descriptor concluded. Values are lower-cased enum names, so they read as they are written in the
+     * platforms' own vocabulary.
+     */
+    fun line(serverSide: DeclaredSupport, clientSide: DeclaredSupport, jarScan: JarScan): String =
+        "platform_server=${serverSide.name.lowercase()} " +
+            "platform_client=${clientSide.name.lowercase()} " +
+            "manifest=${manifestValue(jarScan)}"
+
+    /**
+     * The jar-scan's outcome as a rule-facing word. [JarScan.SERVER_OR_BOTH] becomes `server_or_both` and
+     * [JarScan.DEFERRED] `deferred` — the latter mattering because a distribution-locked file could be
+     * neither scanned nor booted, so nothing is known about it and no rule may confirm from it.
+     */
+    private fun manifestValue(jarScan: JarScan): String = when (jarScan) {
+        JarScan.CLIENT -> "client"
+        JarScan.SERVER_OR_BOTH -> "server_or_both"
+        JarScan.DEFERRED -> "deferred"
+        else -> jarScan.name.lowercase()
+    }
+}
+
+/**
  * One console signature and what matching it means.
  *
  * The redesign's rule, distinct from the older `ConsoleRule` because it speaks [Verdict] rather than
@@ -48,7 +103,13 @@ data class BootRule(
     /** Why this signature means what it does. Carried into the verdict detail an operator reads. */
     val note: String? = null,
     /** `false` parks a rule without deleting it, so a suspected over-match can be tested by removal. */
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    /**
+     * Which stream this rule reads. Defaults to [RuleSource.CONSOLE], so an operator's existing console
+     * rule needs no edit and a rule that forgets the field reads the console rather than silently matching
+     * nothing.
+     */
+    val source: RuleSource = RuleSource.CONSOLE
 ) {
     /**
      * The compiled pattern, or `null` when it does not compile.
@@ -90,11 +151,17 @@ data class BootRuleSet(
     /** Where these came from, so a report can say whether defaults or an operator's file decided. */
     val source: String
 ) {
-    /** The first rule matching any line, in order, or `null` when none does. */
-    fun firstMatch(consoleLines: List<String>): BootRuleMatch? =
-        rules.firstNotNullOfOrNull { rule ->
-            rule.firstMatch(consoleLines)?.let { BootRuleMatch(rule, it) }
-        }
+    /**
+     * The first rule of [source] matching any of [lines], in order, or `null` when none does.
+     *
+     * Scoped by source so the two streams cannot decide each other's questions: a metadata rule must never
+     * be tried against a console, nor a console rule against the facts line. Defaults to
+     * [RuleSource.CONSOLE], which is the stream every caller before stage 3 meant.
+     */
+    fun firstMatch(lines: List<String>, source: RuleSource = RuleSource.CONSOLE): BootRuleMatch? =
+        rules.asSequence()
+            .filter { it.source == source }
+            .firstNotNullOfOrNull { rule -> rule.firstMatch(lines)?.let { BootRuleMatch(rule, it) } }
 
     companion object {
         /** Nothing matches; used where a caller deliberately classifies without rules. */

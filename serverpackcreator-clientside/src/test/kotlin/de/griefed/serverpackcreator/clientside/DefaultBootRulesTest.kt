@@ -132,14 +132,23 @@ internal class DefaultBootRulesTest {
         )
     }
 
-    /** Only the decisive rule confirms; every other extracted group is an excuse worth no verdict. */
+    /**
+     * Only the decisive rule confirms **from a console**; every other extracted group means the mod got no
+     * fair run and is worth no verdict.
+     *
+     * Scoped to [RuleSource.CONSOLE] since stage 3, which added metadata rules that also confirm — from what
+     * a mod *declares* rather than from what a boot *did*. That is a different question with its own guards
+     * in `MetadataRuleTest`, and folding the two sets together here would let a metadata rule silently
+     * satisfy a console assertion.
+     */
     @Test
-    fun onlyTheClientOnlyRuleConfirms() {
-        val confirming = DefaultBootRules.bundled().rules.filter { it.verdict == Verdict.CONFIRMED }
+    fun onlyTheClientOnlyRuleConfirmsFromAConsole() {
+        val confirming = DefaultBootRules.bundled().rules
+            .filter { it.source == RuleSource.CONSOLE && it.verdict == Verdict.CONFIRMED }
 
         Assertions.assertEquals(
             listOf("client-only-class"), confirming.map { it.id },
-            "exactly one extracted rule may confirm — every other group means the mod got no fair run"
+            "exactly one console rule may confirm — every other group means the mod got no fair run"
         )
     }
 
