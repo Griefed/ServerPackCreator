@@ -40,6 +40,26 @@ enum class RuleSource {
 }
 
 /**
+ * What a mod's own metadata *claims* about the side it belongs on — a self-report, never a verdict.
+ *
+ * Deliberately a separate vocabulary from [Verdict]. A metadata rule cannot reach CONFIRMED, CLEAR or ERROR,
+ * because a declaration is the unreliable half of the evidence and is the entire reason the expensive boot
+ * exists. Giving the two streams one codomain is what would let a self-report be published as a finding.
+ *
+ * @author Griefed
+ */
+enum class Declaration {
+    /** The mod says it is client-only — the platform marks the server unsupported, or the jar says client. */
+    CLIENT,
+
+    /** The mod says it runs on a server. The interesting case when the console then disagrees. */
+    SERVER,
+
+    /** The platform and the jar disagree, so the mod declared nothing usable. */
+    CONTRADICTORY
+}
+
+/**
  * Renders what is declared about a mod into one line for [RuleSource.METADATA] rules to match.
  *
  * **One line, deliberately.** A regex matches a line at a time, so facts on separate lines could never
@@ -109,7 +129,16 @@ data class BootRule(
      * rule needs no edit and a rule that forgets the field reads the console rather than silently matching
      * nothing.
      */
-    val source: RuleSource = RuleSource.CONSOLE
+    val source: RuleSource = RuleSource.CONSOLE,
+    /**
+     * For a [RuleSource.METADATA] rule, what the mod thereby claims about itself.
+     *
+     * Separate from [verdict] on purpose, and a metadata rule may only ever set this one: a declaration is a
+     * self-report, so it may inform a report and never decide a verdict. `ConsoleOutranksMetadataTest` fails
+     * the build if a metadata rule carries a verdict, because that regression would be silent — the file
+     * would simply start publishing mods that were never booted.
+     */
+    val declares: Declaration? = null
 ) {
     /**
      * The compiled pattern, or `null` when it does not compile.

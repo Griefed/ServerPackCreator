@@ -73,28 +73,42 @@
     "id": "metadata-contradiction-platform-client-jar-server",
     "source": "METADATA",
     "pattern": "platform_server=unsupported.*manifest=server_or_both",
-    "verdict": "INCONCLUSIVE",
-    "note": "The platform marks the server unsupported while the jar's own descriptor declares server/both. The two disagree, so neither is evidence -- this is the caution the old hardcoded fold carried as a report note, and it must outrank both confirming rules below."
+    "declares": "CONTRADICTORY",
+    "note": "The platform marks the server unsupported while the jar declares server/both. They disagree, so the mod declared nothing usable -- the boot decides, as it does in every case."
   },
   {
     "id": "metadata-contradiction-platform-server-jar-client",
     "source": "METADATA",
     "pattern": "platform_server=required.*manifest=client(\\s|$)",
-    "verdict": "INCONCLUSIVE",
-    "note": "The mirror image: the platform marks the server required while the jar declares client-only. Same reasoning, opposite direction."
+    "declares": "CONTRADICTORY",
+    "note": "The mirror image: the platform marks the server required while the jar declares client-only."
   },
   {
     "id": "manifest-client-only",
     "source": "METADATA",
     "pattern": "manifest=client(\\s|$)",
-    "verdict": "CONFIRMED",
-    "note": "The jar's own descriptor says client-only -- Fabric's environment=client, or a Forge/NeoForge dependency demanding side=CLIENT of the platform. The mod's own author said it, which is why this confirms without a boot."
+    "declares": "CLIENT",
+    "note": "The jar's own descriptor says client-only. A declaration, not a verdict: the mod is still booted and the console still decides. An honestly-declared client mod is the cheap case; the boot exists for the dishonest one."
   },
   {
     "id": "platform-server-unsupported",
     "source": "METADATA",
     "pattern": "platform_server=unsupported",
-    "verdict": "CONFIRMED",
+    "declares": "CLIENT",
     "note": "Modrinth declares server_side: unsupported. CurseForge has no such field and always reads 'unknown', so this only ever fires for Modrinth projects."
+  },
+  {
+    "id": "platform-server-required",
+    "source": "METADATA",
+    "pattern": "platform_server=required",
+    "declares": "SERVER",
+    "note": "The mod claims it runs on a server. Recorded because it is the claim worth contradicting: a SERVER declaration whose console then reaches a client-only class is exactly the unclean mod this engine hunts."
+  },
+  {
+    "id": "manifest-server-or-both",
+    "source": "METADATA",
+    "pattern": "manifest=server_or_both",
+    "declares": "SERVER",
+    "note": "The jar's descriptor says server or both. Same reasoning as platform-server-required, from the other source."
   }
 ]

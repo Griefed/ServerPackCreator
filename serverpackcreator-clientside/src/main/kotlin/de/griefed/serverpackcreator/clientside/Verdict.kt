@@ -121,14 +121,23 @@ object VerdictPolicy {
      * that no rule explained landing on [Verdict.INCONCLUSIVE] rather than [Verdict.CONFIRMED]: a crash on
      * its own has never been evidence of sideness.
      *
+     * **[declared] is accepted and deliberately never consulted.** It is here so the decision is honest
+     * about what it was given rather than about what it used: the console outranks the metadata absolutely,
+     * so a mod claiming server-side that reaches a client-only class is CONFIRMED, and a mod claiming
+     * client-only that boots clean is CLEAR. That asymmetry is the point of booting at all — an honestly
+     * declared client mod is already excludable from its metadata and costs nothing to find, while the ones
+     * worth a container are those coded unclean, claiming the server and calling the client.
+     *
      * @param staging         Whether a pack reached the container, and why not when it did not.
      * @param boot            What the boot did, or `null` when none was observed despite staging succeeding.
-     * @param confirmedByRule Id of the rule that proved exclusion-worthiness, or `null` if none matched.
+     * @param confirmedByRule Id of the console rule that proved exclusion-worthiness, or `null` if none matched.
+     * @param declared        What the mod claims about itself; carried for the report, never for the verdict.
      */
     fun decide(
         staging: StagingOutcome,
         boot: BootObservation?,
-        confirmedByRule: String?
+        confirmedByRule: String?,
+        declared: Declaration? = null
     ): Verdict {
         if (staging is StagingOutcome.Prevented) {
             return Verdict.ERROR

@@ -66,26 +66,32 @@ internal class MetadataRuleTest {
         Assertions.assertTrue(facts.contains("manifest=client"), facts)
     }
 
-    /** Modrinth declaring the server unsupported is exclusion-worthy, and now says so through a rule. */
+    /**
+     * Modrinth declaring the server unsupported is a *declaration*, not a verdict. The mod is still booted
+     * and the console still decides — see `ConsoleOutranksMetadataTest` for why a self-report may never
+     * stand in for the evidence it is unreliable about.
+     */
     @Test
-    fun aPlatformDeclaringTheServerUnsupportedConfirms() {
+    fun aPlatformDeclaringTheServerUnsupportedDeclaresClient() {
         val facts = factsFor(DeclaredSupport.UNSUPPORTED, JarScan.CLIENT)
         val fired = metadataRules().firstNotNullOfOrNull { rule ->
             rule.firstMatch(listOf(facts))?.let { rule }
         }
 
-        Assertions.assertEquals(Verdict.CONFIRMED, fired?.verdict, "matched: ${fired?.id}")
+        Assertions.assertEquals(Declaration.CLIENT, fired?.declares, "matched: ${fired?.id}")
+        Assertions.assertNull(fired?.verdict, "a declaration decides nothing on its own")
     }
 
-    /** A jar whose own descriptor says client-only is exclusion-worthy on the manifest alone. */
+    /** A jar whose own descriptor says client-only declares client; it does not thereby confirm. */
     @Test
-    fun aJarDeclaringClientOnlyConfirms() {
+    fun aJarDeclaringClientOnlyDeclaresClient() {
         val facts = factsFor(DeclaredSupport.UNKNOWN, JarScan.CLIENT)
         val fired = metadataRules().firstNotNullOfOrNull { rule ->
             rule.firstMatch(listOf(facts))?.let { rule }
         }
 
-        Assertions.assertEquals(Verdict.CONFIRMED, fired?.verdict, "matched: ${fired?.id}")
+        Assertions.assertEquals(Declaration.CLIENT, fired?.declares, "matched: ${fired?.id}")
+        Assertions.assertNull(fired?.verdict, "a declaration decides nothing on its own")
     }
 
     /**
@@ -104,8 +110,8 @@ internal class MetadataRuleTest {
 
         Assertions.assertNotNull(fired, "the contradiction must be recognised, not fall through silently")
         Assertions.assertEquals(
-            Verdict.INCONCLUSIVE, fired?.verdict,
-            "platform and jar disagree, so this is not evidence of sideness — matched: ${fired?.id}"
+            Declaration.CONTRADICTORY, fired?.declares,
+            "platform and jar disagree, so the mod declared nothing usable — matched: ${fired?.id}"
         )
     }
 
@@ -114,10 +120,10 @@ internal class MetadataRuleTest {
     fun silentMetadataConfirmsNothing() {
         val facts = factsFor(DeclaredSupport.UNKNOWN, JarScan.SERVER_OR_BOTH)
         val confirming = metadataRules().filter { rule ->
-            rule.firstMatch(listOf(facts)) != null && rule.verdict == Verdict.CONFIRMED
+            rule.firstMatch(listOf(facts)) != null && rule.verdict != null
         }
 
-        Assertions.assertTrue(confirming.isEmpty(), "confirmed with no declaration: ${confirming.map { it.id }}")
+        Assertions.assertTrue(confirming.isEmpty(), "decided with no console: ${confirming.map { it.id }}")
     }
 
     /**
@@ -128,10 +134,10 @@ internal class MetadataRuleTest {
     fun aDeferredScanConfirmsNothing() {
         val facts = factsFor(DeclaredSupport.UNKNOWN, JarScan.DEFERRED)
         val confirming = metadataRules().filter { rule ->
-            rule.firstMatch(listOf(facts)) != null && rule.verdict == Verdict.CONFIRMED
+            rule.firstMatch(listOf(facts)) != null && rule.verdict != null
         }
 
-        Assertions.assertTrue(confirming.isEmpty(), "confirmed a mod nothing could read: ${confirming.map { it.id }}")
+        Assertions.assertTrue(confirming.isEmpty(), "decided a mod nothing could read: ${confirming.map { it.id }}")
     }
 
     /** Console rules must never be evaluated against facts, nor metadata rules against a console. */
