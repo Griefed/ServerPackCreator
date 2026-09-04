@@ -159,7 +159,16 @@ class BootVerifier(
          * grinder's publication gate can refuse a `CRASHED` that is not evidence of sideness — a mixin that
          * would not apply, a solver that gave up, a bare non-zero exit — rather than treating every crash alike.
          */
-        val decidedBy: BootDecision? = null
+        val decidedBy: BootDecision? = null,
+        /**
+         * `true` when staging stopped before any container ran, so this outcome describes the *engine*
+         * rather than the mod.
+         *
+         * Without it a refusal and a boot that learned nothing are the same `INCONCLUSIVE`, which is how a
+         * host-wide defect came to be published as one verdict per candidate, overwriting decisive ones
+         * that a TTL would otherwise have left alone. `Verdict.ERROR` is what this feeds.
+         */
+        val stagingPrevented: Boolean = false
     )
 
     /**
@@ -194,7 +203,7 @@ class BootVerifier(
             // *silently un-booted* catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
             log.info("Not booting ${project.slug} on $loader: ${prepared.detail}")
-            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
+            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, stagingPrevented = true)
         }
         val ready = prepared as Prepared.Ready
         val outcome = boot(ready)
@@ -306,7 +315,11 @@ class BootVerifier(
             )
             if (staged is Prepared.Failed) {
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
-                attempts.add(OtherVersionAttempt(label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail)))
+                attempts.add(
+                    OtherVersionAttempt(
+                        label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail, stagingPrevented = true)
+                    )
+                )
                 continue
             }
             val attempt = boot(staged as Prepared.Ready)
@@ -513,7 +526,45 @@ class BootVerifier(
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { bootable(loader, it) }
             ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
-        return stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+        val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+        return reselectOnMinecraftContradiction(staged, project, loader, mainFile, loaderVersionOverride, bootable)
+    }
+
+    /**
+     * Answer a "the jar excludes this Minecraft version" refusal by re-staging on the newest version the
+     * jar *does* accept, or hand [staged] back untouched when that is not the refusal or there is no such
+     * version.
+     *
+     * **Why this exists.** Selection can only see platform metadata — the jar is not downloaded yet — so it
+     * takes the newest tagged version, and the descriptor gate may then contradict it. Measured on JEI:
+     * `jei-1.21.1-forge-19.52.0.422.jar` is tagged for 1.21 and 1.21.1 but declares `[1.21, 1.21.1)`, so
+     * the pick was vetoed and the boot lost even though 1.21 satisfies platform and jar alike. A refusal
+     * costs a `BootResult.INCONCLUSIVE`, which overwrites a decisive verdict, so throwing the candidate
+     * away is the expensive outcome, not the safe one.
+     *
+     * Exactly one retry, by calling [stageBootPack] rather than [prepareBootPack]: the re-selected version
+     * satisfies the constraint that caused this refusal, so a second contradiction would be a different
+     * fault and must surface rather than loop.
+     */
+    private fun reselectOnMinecraftContradiction(
+        staged: Prepared,
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        loaderVersionOverride: String?,
+        bootable: (String, String) -> Boolean
+    ): Prepared {
+        if (staged !is Prepared.Failed) {
+            return staged
+        }
+        val constraint = staged.declaredMinecraftConstraint ?: return staged
+        val agreed = BootCandidateSelector.newestVersionSatisfying(mainFile, constraint) { bootable(loader, it) }
+            ?: return staged
+        log.info(
+            "${mainFile.fileName} declares Minecraft '$constraint', so re-staging ${project.slug} on " +
+                "$loader $agreed — the newest version its own descriptor accepts."
+        )
+        return stageBootPack(project, loader, mainFile, agreed, loaderVersionOverride)
     }
 
     /**
@@ -617,7 +668,18 @@ class BootVerifier(
         /** Staging failed (no combo, download or generation failure); [detail] explains why. */
         data class Failed(
             /** The named reason staging stopped, carried into the report instead of a bare "could not boot". */
-            val detail: String
+            val detail: String,
+            /**
+             * The staged jar's own declared Minecraft range, verbatim, set **only** when that range is why
+             * staging stopped — i.e. the jar excludes the version being staged. `null` for every other
+             * refusal, including a loader-descriptor mismatch.
+             *
+             * Carried so [prepareBootPack] can re-select a version the jar *does* accept rather than throw
+             * the candidate away. It is deliberately narrower than "the refusal reason": a jar carrying the
+             * wrong loader's descriptor offers no second version to try, whereas a Minecraft range usually
+             * does, because the platform commonly tags more versions than the descriptor admits.
+             */
+            val declaredMinecraftConstraint: String? = null
         ) : Prepared
     }
 
@@ -664,7 +726,15 @@ class BootVerifier(
             if (packPostProcessor != null) {
                 val processing = runCatching { packPostProcessor.invoke(pack) }
                 if (processing.isFailure) {
-                    return BootOutcome(BootResult.INCONCLUSIVE, null, "Pack post-processing failed: ${processing.exceptionOrNull()?.message}")
+                    // Nothing booted: the hook runs before the container, and in the grinder it *is* the
+                    // loader-cache overlay -- so this fails when the host is broken, not when the mod is.
+                    // Without `stagingPrevented` a broken cache publishes as a verdict about every mod that
+                    // wanted it, which is the missing-runtime-image outage in miniature.
+                    return BootOutcome(
+                        BootResult.INCONCLUSIVE, null,
+                        "Pack post-processing failed: ${processing.exceptionOrNull()?.message}",
+                        stagingPrevented = true
+                    )
                 }
             }
             log.info(
@@ -728,9 +798,14 @@ class BootVerifier(
             val declared = runCatching { minecraftConstraint(jar) }.getOrNull()
             val contradiction = JarSelfDeclaration.contradiction(jar, loader, minecraftVersion, declared)
                 ?: return null
+            // Re-asked rather than inferred from `contradiction` being non-null: that string is also how a
+            // loader-descriptor mismatch reports itself, and only the Minecraft disagreement can be answered
+            // by trying another version. Getting this wrong would re-select on a refusal re-selection cannot fix.
+            val minecraftDisagreement = declared?.takeIf { !VersionConstraint.satisfies(minecraftVersion, it) }
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
-                    "The platform's declared versions are what its author ticked, not what the jar was built for."
+                    "The platform's declared versions are what its author ticked, not what the jar was built for.",
+                declaredMinecraftConstraint = minecraftDisagreement
             )
         }
 
@@ -814,7 +889,13 @@ class BootVerifier(
             alreadyResolved: Set<String> = emptySet(),
             refFor: (String) -> String? = { it }
         ): List<ModDependency> = requirements.filterNot { requirement ->
-            requirement.modID.lowercase() in environmentProvidedIds ||
+            // An optional dependency is neither staged nor allowed to refuse a boot: the descriptor itself
+            // says the mod loads without it. `advancement-plaques` declares `prism` and `toastcontrol`
+            // `mandatory=false` and was refused for "Required dependency unavailable ... prism", which cost
+            // an INCONCLUSIVE on a mod that never required it. Both platforms already filter their own side
+            // (`dependency_type == "required"`, `relationType == 3`); this is the manifest half of that rule.
+            requirement.optional ||
+                requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
 
@@ -963,7 +1044,8 @@ class BootVerifier(
         }
 
         /**
-         * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
+         * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is a *prevented*
+         * grind (nothing ran, so `Verdict.ERROR`) rather than INCONCLUSIVE
          * with no log; a [RunResult.Completed] is written to [logFile], classified by
          * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
          * human-readable detail. This is the verdict seam every runner (host or container) shares.
@@ -974,7 +1056,10 @@ class BootVerifier(
             label: String,
             rules: ConsoleRuleSet = ConsoleRuleSet.EMPTY
         ): BootOutcome = when (runResult) {
-            is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
+            // The runner never started the server, so there is no console and nothing was learned about the
+            // mod. An operator's problem, however late it surfaced.
+            is RunResult.NotStarted ->
+                BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail, stagingPrevented = true)
             is RunResult.Completed -> {
                 val console = runResult.lines.joinToString("\n")
                 // Persisting the console must never fail the verification: the verdict comes from the lines in

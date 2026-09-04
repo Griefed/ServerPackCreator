@@ -95,11 +95,23 @@ class ModDependency @JvmOverloads constructor(
      * (`>=0.92.0`, `^2.0.0`), Forge and NeoForge use Maven ranges (`[15.2,)`) — and a consumer that wants
      * to match one is better served by the original text than by a lossy normalisation done here.
      */
-    val versionConstraint: String? = null
+    val versionConstraint: String? = null,
+    /**
+     * Whether the descriptor marked this dependency as one the mod can load **without** — Forge's
+     * `mandatory = false`, NeoForge's `type = "optional"` (and `"incompatible"`/`"discouraged"`, neither of
+     * which is a thing to go and fetch).
+     *
+     * Defaults to `false`, i.e. required, which is both NeoForge's own documented default for an absent
+     * `type` and the safe direction: reading a required dependency as optional boots a mod without something
+     * it needs and fails as a crash, which can publish a *wrong* verdict, while reading an optional one as
+     * required merely refuses a boot and learns nothing.
+     */
+    val optional: Boolean = false
 ) {
-    /** One line for a scan log: the id that was depended on, and the side the declaration asked for it on. */
+    /** One line for a scan log: the id that was depended on, the side asked for, and whether it is optional. */
     override fun toString(): String {
-        return "ModDependency(modID='$modID', sideness=$sideness, versionConstraint=$versionConstraint)"
+        return "ModDependency(modID='$modID', sideness=$sideness, versionConstraint=$versionConstraint, " +
+            "optional=$optional)"
     }
 }
 

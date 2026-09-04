@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.ModPlatforms.MODRINTH
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
@@ -38,25 +38,25 @@ internal class JsonVerdictStoreTest {
     fun verdictsSurviveAReopen(@TempDir dir: File) {
         val file = File(dir, "verdicts.json")
         JsonVerdictStore(file).apply {
-            record(grindVerdict("jei", "Forge", confidence = Confidence.HIGH))
-            record(grindVerdict("sodium", "Fabric", confidence = Confidence.MEDIUM))
+            record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
+            record(grindVerdict("sodium", "Fabric", verdict = Verdict.INCONCLUSIVE))
         }
 
         val reopened = JsonVerdictStore(file)
         Assertions.assertEquals(2, reopened.all().size)
         Assertions.assertTrue(reopened.hasVerdictFor(MODRINTH, "jei"))
-        Assertions.assertEquals(Confidence.HIGH, reopened.all().first { it.slug == "jei" }.confidence)
+        Assertions.assertEquals(Verdict.CONFIRMED, reopened.all().first { it.slug == "jei" }.verdict)
     }
 
     @Test
     fun reVerifyReplacesAcrossAReopen(@TempDir dir: File) {
         val file = File(dir, "verdicts.json")
-        JsonVerdictStore(file).record(grindVerdict("jei", "Forge", confidence = Confidence.LOW))
-        JsonVerdictStore(file).record(grindVerdict("jei", "Forge", confidence = Confidence.HIGH))
+        JsonVerdictStore(file).record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
+        JsonVerdictStore(file).record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
 
         val reopened = JsonVerdictStore(file)
         Assertions.assertEquals(1, reopened.all().size)
-        Assertions.assertEquals(Confidence.HIGH, reopened.all().single().confidence)
+        Assertions.assertEquals(Verdict.CONFIRMED, reopened.all().single().verdict)
     }
 
     @Test
@@ -66,7 +66,7 @@ internal class JsonVerdictStoreTest {
         val store = JsonVerdictStore(file)
         Assertions.assertTrue(store.all().isEmpty())
         // ...and the store is still usable (recovers by overwriting on the next record).
-        store.record(grindVerdict("jei", "Forge"))
+        store.record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
         Assertions.assertEquals(1, JsonVerdictStore(file).all().size)
     }
 
@@ -83,7 +83,7 @@ internal class JsonVerdictStoreTest {
         val store = JsonVerdictStore(file)
 
         Assertions.assertEquals(1, store.all().size, "an unknown field must not discard the verdict")
-        Assertions.assertEquals(Confidence.HIGH, store.all().single().confidence)
+        Assertions.assertEquals(Verdict.CONFIRMED, store.all().single().verdict)
     }
 
     /**
@@ -96,7 +96,7 @@ internal class JsonVerdictStoreTest {
         val original = "{ this is not valid json"
         val file = File(dir, "verdicts.json").apply { writeText(original) }
 
-        JsonVerdictStore(file).record(grindVerdict("jei", "Forge"))
+        JsonVerdictStore(file).record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
 
         val preserved = dir.listFiles().orEmpty().filter { it.name.startsWith("verdicts.json.unreadable-") }
         Assertions.assertEquals(1, preserved.size, "the unreadable store must be kept aside, not silently destroyed")
@@ -104,13 +104,13 @@ internal class JsonVerdictStoreTest {
     }
 
     /**
-     * One row this build cannot make sense of — a confidence constant added later, say — must cost that
+     * One row this build cannot make sense of — a verdict constant added later, say — must cost that
      * row and nothing else. Reading the document as a whole makes every row hostage to the worst one.
      */
     @Test
     fun oneUnreadableRowDoesNotDiscardTheOthers(@TempDir dir: File) {
         val file = File(dir, "verdicts.json").apply {
-            writeText("[" + verdictBody("jei") + "," + verdictBody("sodium", confidence = "CERTAIN_FROM_THE_FUTURE") + "]")
+            writeText("[" + verdictBody("jei") + "," + verdictBody("sodium", verdict = "CERTAIN_FROM_THE_FUTURE") + "]")
         }
 
         val store = JsonVerdictStore(file)
@@ -126,9 +126,9 @@ internal class JsonVerdictStoreTest {
     /** One persisted verdict, as an older build would have written it, plus any [extra] trailing fields. */
     private fun verdictJson(extra: String = "") = "[" + verdictBody("jei", extra = extra) + "]"
 
-    private fun verdictBody(slug: String, confidence: String = "HIGH", extra: String = "") = """
+    private fun verdictBody(slug: String, verdict: String = "CONFIRMED", extra: String = "") = """
         {"platform":"Modrinth","slug":"$slug","projectUrl":"https://modrinth.com/mod/$slug",
-         "loader":"Forge","suggestedEntry":"$slug-","confidence":"$confidence","detail":"",
+         "loader":"Forge","suggestedEntry":"$slug-","verdict":"$verdict","detail":"",
          "verifiedAt":"2026-02-01T00:00:00Z"$extra}
     """.trimIndent()
 
@@ -150,7 +150,7 @@ internal class JsonVerdictStoreTest {
         val file = File(dir, "nested/sub/verdicts.json")
         Assertions.assertFalse(file.exists())
 
-        JsonVerdictStore(file).record(grindVerdict("jei", "Forge"))
+        JsonVerdictStore(file).record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
 
         Assertions.assertTrue(file.isFile, "backing file (and parents) must be created")
     }

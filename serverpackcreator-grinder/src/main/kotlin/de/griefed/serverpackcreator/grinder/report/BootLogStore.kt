@@ -31,7 +31,7 @@ import java.io.File
  * **Why staging is not that home.** `BootWorkspaceReaper` already keeps one `boot.log` per attempt
  * directory, but staging *wipes and re-creates* that directory, so the next re-grind of the same
  * `(platform, slug, loader)` destroys the console belonging to the verdict still being published. A crash is
- * the only outcome that reaches [de.griefed.serverpackcreator.clientside.Confidence.HIGH], and its usual
+ * the only outcome that reaches [de.griefed.serverpackcreator.clientside.Verdict.CONFIRMED], and its usual
  * cause — a server loading a mod that reaches for a client-only class, `NoClassDefFoundError:
  * net/minecraft/client/…` — is legible from the console and from nothing else. So the crashing consoles are
  * copied out from under the sweep that produced them.

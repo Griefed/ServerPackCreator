@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import de.griefed.serverpackcreator.grinder.source.CandidatePage
 import de.griefed.serverpackcreator.grinder.source.CandidateSource
@@ -83,7 +83,7 @@ internal class GrindLoopTest {
     ): GrindLoop {
         val verifier = CandidateVerifier { candidate ->
             ground.add(candidate.slug)
-            clientsideReport(candidate.slug, listOf(loaderVerdict("Forge", "${candidate.slug}-", Confidence.LOW)))
+            clientsideReport(candidate.slug, listOf(loaderVerdict("Forge", "${candidate.slug}-", verdict = Verdict.ERROR)))
         }
         return GrindLoop(
             grinder = Grinder(verifier, InMemoryVerdictStore()),
@@ -154,7 +154,7 @@ internal class GrindLoopTest {
         val verifier = CandidateVerifier { candidate ->
             duringFirstGrind.add(status.snapshot().passCandidates)
             ground.add(candidate.slug)
-            clientsideReport(candidate.slug, listOf(loaderVerdict("Forge", "${candidate.slug}-", Confidence.LOW)))
+            clientsideReport(candidate.slug, listOf(loaderVerdict("Forge", "${candidate.slug}-", verdict = Verdict.ERROR)))
         }
         val running = AtomicBoolean(true)
 

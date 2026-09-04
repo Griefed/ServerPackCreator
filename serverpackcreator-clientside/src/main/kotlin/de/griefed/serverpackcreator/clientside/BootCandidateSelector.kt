@@ -55,6 +55,29 @@ object BootCandidateSelector {
             .firstOrNull { loaderVersionAvailable(it.second) }
 
     /**
+     * The newest Minecraft version of [file] that both [loaderVersionAvailable] allows and the jar's own
+     * declared [minecraftConstraint] accepts, or `null` when the file declares none the jar agrees with.
+     *
+     * **Why a second pass instead of folding this into [pickBootableCandidate].** The constraint is the
+     * jar's, and the jar does not exist until it has been downloaded — which happens after selection. So
+     * the first pick is necessarily made from platform metadata alone, and this narrows it once the
+     * descriptor can actually be read.
+     *
+     * Measured on JEI: `jei-1.21.1-forge-19.52.0.422.jar` is tagged for 1.21 and 1.21.1 while declaring
+     * `[1.21, 1.21.1)`, so the newest tagged version is excluded by the jar itself and 1.21 is the answer.
+     * Returning `null` rather than the excluded version is deliberate — the caller then keeps its original
+     * refusal, which is the honest outcome when platform and jar genuinely share no version.
+     */
+    fun newestVersionSatisfying(
+        file: ModFile,
+        minecraftConstraint: String,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): String? =
+        file.minecraftVersions
+            .sortedWith { left, right -> minecraftComparator.compare(right, left) }
+            .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
+
+    /**
      * One member of the sample the other-version crash re-check boots: which file, under which loader, on
      * which Minecraft version. The loader is carried explicitly because the sample deliberately leaves the
      * crashing loader — see [pickRecheckCandidates].

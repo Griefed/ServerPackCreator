@@ -3401,3 +3401,182 @@ whatever it held, including decisive HIGH entries already being served from `/as
 Suite: 434 → **446** (29 skipped, unchanged). Not fixed, and deliberate: `LoaderCache` still logs its
 "not retrying for 60m" notice only on a tuple's first failure per process (`recentFailures.put(...) == null`),
 because the *cause* — the installer's own warning, or the throw above — is logged on every attempt.
+
+---
+
+## 2026-09-03 — a jar's own version range should narrow the pick, not cancel it
+
+Reported from the live grinder: `jei-1.21.1-forge-19.52.0.422.jar` refused with *"declares Minecraft
+'[1.21, 1.21.1)', but the pack is 1.21.1"*, while CurseForge lists 1.21.1 among its game versions.
+
+**The reading was right and the mod is wrong — verified before touching anything.** The jar's
+`META-INF/mods.toml` really does carry `versionRange="[1.21, 1.21.1)"`, space and all, and JEI's
+`gradle.properties` on its 1.21.1 branch pairs `minecraftVersion=1.21.1` with
+`minecraftVersionRange=[1.21, 1.21.1)` — the range is built as `[start, thisVersion)` where it should be
+`[start, nextVersion)`, so the descriptor genuinely excludes the version the file is named after. Both
+halves of our path are correct: `ForgeTomlScanner.getVersionRange` returns the TOML value verbatim, and
+`VersionConstraint.mavenRangeHolds` trims its bounds exactly like Maven's own `parseRestriction`. **The
+parser is not the defect and must not be "fixed".**
+
+**The defect was ours, one level up: the descriptor check was a post-selection veto rather than a
+selection filter.** `pickBootableCandidate` can only see platform metadata, because the jar is not
+downloaded until after selection — so it took 1.21.1, `refuseForSelfDeclaration` contradicted it, and
+staging gave up while **1.21, tagged by the platform and accepted by the jar, sat untried in the same
+list**. That refusal publishes `BootResult.INCONCLUSIVE`, which overwrites a decisive verdict: the same
+harm shape as the missing-runtime-image outage, except permanent rather than windowed, and it fires on
+every project whose newest tagged version its own descriptor excludes — a common shape, since authors
+routinely tick `X` and `X.1` while the toml covers only `X`.
+
+Three commits, and the pin boundary was *checked out and run*, not asserted:
+
+1. `test(clientside): reproduce JEI's refusal …` — fails **behaviourally** at its own commit, reproducing
+   the live message against versions derived from the cached manifest (`'[26.1.2, 26.2)' … pack is 26.2`).
+   It writes a real jar with a real `META-INF/mods.toml` read by the actual `ForgeTomlScanner`; nothing is
+   faked past the network boundary.
+2. `test(clientside): pin the version a jar's own range would have us pick` — three pure pins, red with
+   `Unresolved reference 'newestVersionSatisfying'`.
+3. `fix(clientside): re-select a Minecraft version the jar accepts, don't refuse` — green.
+
+Split into two test commits deliberately: with both pins in one commit the compile error masked the
+behavioural red, and that behavioural red is the most valuable artifact in the branch. Re-cut before
+anything was pushed. Verified by checking out all three in a scratch worktree: **behavioural red →
+compile red → green.**
+
+**Landmine carried into the module file:** `Prepared.Failed.declaredMinecraftConstraint` is set *only* for
+the Minecraft disagreement, and the predicate is re-asked rather than inferred from
+`JarSelfDeclaration.contradiction` being non-null — that same string also reports a jar carrying the wrong
+loader's descriptor, which no other version can fix. Widened, a NeoForge-tagged Forge jar would re-stage
+down its entire version list learning nothing each time. The retry calls `stageBootPack`, never
+`prepareBootPack`, so a second contradiction surfaces instead of looping.
+
+**Open, and deliberately not assumed:** whether Forge *fatally* enforces that range at runtime. JEI
+19.52.0.422 is the canonical 1.21.1 Forge build and is universally used, which is strong circumstantial
+evidence it does not — but it was not demonstrated, and the fix is correct either way because 1.21 is a
+real boot yielding real evidence. If a boot ever shows Forge is lenient here, the gate is additionally too
+strict on the Minecraft axis and should warn rather than refuse. Per the repo's own rule: what only a real
+runtime can answer, ask a real runtime.
+
+Suite: clientside 262 → **266**; grinder 446 and app green, both read from `build/test-results` rather
+than inferred from `BUILD SUCCESSFUL`.
+
+---
+
+## 2026-09-04 — an optional dependency was a hard requirement, because nothing ever read the word
+
+Reported from the live grinder: `advancement-plaques` refused with *"Required dependency unavailable for
+Forge / Minecraft 26.2: prism. Not booting — a mod refused for missing dependencies says nothing about
+sideness."* — while Modrinth lists prism as **optional**, with a specific version linked.
+
+**Verified against the artifacts before writing any code.** `AdvancementPlaques-26.2-forge-1.7.2.jar`'s own
+`META-INF/mods.toml` declares `iceberg` `mandatory=true`, and both `prism` and `toastcontrol`
+`mandatory=false`; Modrinth's API agrees, giving prism (`1OE8wbN0`) `dependency_type: optional` against
+iceberg (`5faXoLqX`) `required`.
+
+**The platform half was already right; the manifest half never existed.** `ModrinthPlatform` keeps only
+`dependency_type == "required"` and `CurseForgePlatform` only `relationType == 3`. But *neither* `mandatory`
+nor `type` appeared anywhere in `-api`'s main source, so `ModDependency` had no field to carry optionality
+and `stageableRequirements` had nothing to filter on. Every declared entry was a hard requirement whatever
+the author wrote, and an unmet one refuses the boot as `INCONCLUSIVE`.
+
+**Two spellings, one reader.** Forge's `mods.toml` uses `mandatory = true|false`. NeoForge's
+`neoforge.mods.toml` dropped that field for `type`, a string defaulting to `"required"` and also taking
+`"optional"`, `"incompatible"` and `"discouraged"` — verified against NeoForged's own mod-files
+documentation rather than assumed from Forge's shape. `NeoForgeTomlScanner` overrides only the descriptor's
+file name, and NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml`, so `ForgeTomlScanner.isOptional`
+has to read both. `"incompatible"` counts as not-required deliberately: it means the mod must *not* be
+present.
+
+**Absent means required**, which is NeoForge's documented default and the safe direction — a required
+dependency read as optional boots a mod without what it needs, fails as a crash and can publish a *wrong*
+verdict, whereas the reverse only refuses a boot and learns nothing.
+
+**Optional dependencies are still recorded, only flagged — and that is a decision, not an oversight.** The
+instruction was "do not include optional dependencies", and the literal reading (drop them at scan time)
+would also drop them from `ModListCompiler`'s dependency rescue, which keeps a mod on the server because
+something declares it. That could *remove* mods from users' server packs, against this module's own stated
+rule that dropping a mod which does belong on the server breaks the pack while keeping a superfluous one
+costs a few megabytes. So the filter lives at the boot-staging consumer, `stageableRequirements`, which
+fixes the grinder and leaves generation untouched. Flagged rather than dropped is also what lets a future
+consumer choose differently.
+
+Two commits, pin then fix; both pins run before committing and red only for the missing field
+(`Unresolved reference 'optional'`, `No parameter with name 'optional' found`).
+
+Suite: api 383 → **387**, clientside 266 → **267**, both read from `build/test-results` after
+`--rerun-tasks` with the previous results wiped.
+
+---
+
+## 2026-09-04 — the result-system redesign: four verdicts, and every clientside rule in a file
+
+Griefed: *"the verdict system is unreliable. We should redesign the result-system. Extract all rules which
+determine a mod to be clientside to the rules-file so users can always edit them, no hardcoded rules."*
+
+Five stages, Strangler-Fig throughout, suite green at every commit.
+
+**The old model conflated two questions.** `BootResult` (what happened) × `Confidence` (how sure) could not
+express the one thing an operator most needed: **whether the grind ran at all**. That is the whole shape of
+the missing-runtime-image outage, where a host-wide defect published as one INCONCLUSIVE per candidate and
+overwrote decisive verdicts the 30-day TTL would have left alone — and of the JEI and `advancement-plaques`
+refusals, one candidate at a time. `Verdict.ERROR` is the verdict whose absence caused all three.
+
+| Stage | What landed |
+|---|---|
+| 1 | `Verdict { CONFIRMED, CLEAR, ERROR, INCONCLUSIVE }` + pure `VerdictPolicy` |
+| 2 | the eleven hardcoded marker groups became `boot-rules.default.json`; the classifier reads its patterns back out |
+| 3 | `RuleSource.METADATA` + `MetadataFacts`, so declared sideness is rule-driven too |
+| 3b | **correction:** the console decides, the metadata only declares |
+| 4 | `verdictOf` replaces `aggregateFor`; publish gate, store, report and CSV move onto the verdict |
+| 5 | `Confidence`, `aggregateFor` and the duplicate `BootObservation` deleted |
+
+**Decisions worth keeping.**
+
+- **Only a rule reaches CONFIRMED, and only from a decisive rung.** A flat reading of "matches a rule means
+  exclusion-worthy" would have inverted the existing ladder and turned missing dependencies into clientside
+  verdicts. The bare exit-code rung — 27 of 43 published HIGHs — can no longer publish anything.
+- **File order is the ladder**, and the two inversions are pinned rather than described: an excuse above the
+  evidence silently discards true positives; the evidence above the fair-run guards publishes host trouble as
+  a mod's fault.
+- **The ladder's order stayed in code; only its content moved.** Re-ordering rungs changes judgment, and the
+  killed-exit-code check sits *between* rungs, so file order alone cannot express it. Stated rather than
+  faked.
+- **Metadata renders as one canonical fact line**, because the platform-vs-jar contradiction is a
+  *conjunction* and a regex matches one line at a time. Losing it would have made the rules *more* confident
+  than the code they replaced — the wrong direction for a redesign premised on the old verdicts being
+  unreliable.
+- **Stage 3 shipped a short-circuit and Griefed caught it.** Metadata rules could reach CONFIRMED on their
+  own, which would have published mods on their own say-so with no boot. The correction is now the design:
+  a `RuleSource.METADATA` rule sets `declares` and **may not** set `verdict`, and a guard fails the build if
+  one does — because that regression is silent. The target case is a mod claiming **server** whose console
+  reaches a client-only class; an honestly-declared client mod is already excludable from its metadata and
+  costs nothing to find.
+- **CONFIRMED keeps its logs, which was not asked for.** A confirmation publishes a mod to the fallback list;
+  the rule id says *which* rule fired, only the console says what it fired on, and a verdict that cannot name
+  its own evidence cannot be audited.
+- **Old stored rows load as INCONCLUSIVE rather than being deleted or translated.** "Start clean" without
+  data loss: the `Confidence` scale has no honest mapping onto four verdicts, so nothing is treated as
+  evidence and each row is re-earned by a real boot.
+
+**Self-inflicted, recorded because the class of mistake matters more than the instances.** A regex that
+double-applied and passed `verdict` twice; a migration pass that crashed part-way leaving a file half-edited;
+new fields inserted mid-constructor, breaking positional call sites; a deletion slice wide enough to take two
+neighbouring helpers with it; `ruleId` appended to a file's last brace instead of its enum's. Every one was
+caught by the compiler or the suite within a minute, and every one was reverted with `git checkout --` and
+redone in a single pass rather than patched on top. A bulk rename across nineteen files is precisely where a
+silent half-edit hides, which is why each step ran the suite instead of trusting the substitution.
+
+**The subtlest trap was in a test, not the code.** `VerdictSortRankTest`'s CSV cross-check matched enum names
+*anywhere in the line*, and `INCONCLUSIVE` belongs to both the old and the new vocabulary — so it would have
+found a stale value and quietly agreed with itself. It now matches the Verdict column's own cell. Where
+fixtures used two confidences to prove a store *replaced* rather than duplicated, the distinguishing values
+were recovered from `git diff` rather than guessed; a sweep that dropped them would have left those tests
+green while proving nothing.
+
+**Left open, deliberately:** `ConsoleRule` (operator file, `BootResult`) and `BootRule` (bundled ladder,
+`Verdict`) are two implementations of one idea. Collapsing them means migrating the operator file's
+documented `CRASHED|SURVIVED|INCONCLUSIVE` vocabulary, which is a breaking change to an operator-facing
+format — deferred rather than done quietly, and recorded in `serverpackcreator-clientside/CLAUDE.md`.
+
+Suites: api 383 (1 skip), clientside 266 → **309**, grinder 446 → **455** (29 skip), app 149,
+plugin-example 3 — **1299 total, zero failures**, re-run with `--rerun-tasks` after wiping
+`build/test-results`.

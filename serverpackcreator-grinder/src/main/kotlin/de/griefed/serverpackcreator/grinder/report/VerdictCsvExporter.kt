@@ -50,7 +50,7 @@ object VerdictCsvExporter {
             // The table's own ordering, through the same key rather than a second rank table kept in step
             // by hand -- the two used to declare confidence order separately.
             verdicts.sortedWith(
-                compareBy({ VerdictField.CONFIDENCE.sortKey(it) }, { it.slug }, { it.loader })
+                compareBy({ VerdictField.VERDICT.sortKey(it) }, { it.slug }, { it.loader })
             )
         }
         // Cells come from the same VerdictField list the table renders from, so the two cannot describe

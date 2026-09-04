@@ -20,6 +20,21 @@
   `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
   before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
 
+- **LANDMINE — dependency optionality has two spellings, and reading only one silently makes every
+  dependency required (fixed 2026-09-04).** Forge's `mods.toml` marks it `mandatory = true|false`;
+  NeoForge's `neoforge.mods.toml` dropped that field entirely for `type`, a string defaulting to
+  `"required"` and also taking `"optional"`, `"incompatible"` and `"discouraged"`. `ForgeTomlScanner.isOptional`
+  reads **both**, and must keep doing so: `NeoForgeTomlScanner` overrides only the descriptor's file name, and
+  NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml` with `mandatory`, so a per-scanner split would
+  miss that overlap. `"incompatible"` counts as not-required on purpose — it means the mod must *not* be
+  present, which is the opposite of something to fetch.
+  **Absent or unreadable means required**, deliberately: reading a required dependency as optional boots a mod
+  without something it needs, which fails as a crash and can publish a *wrong* verdict, whereas reading an
+  optional one as required only refuses a boot and learns nothing. It is also NeoForge's own documented default.
+  Neither word appeared anywhere in this module before, so `ModDependency` had no field to carry the answer and
+  no consumer could respect it — `advancement-plaques` was refused for `prism`, which its toml marks
+  `mandatory=false`.
+
 ## Established patterns
 
 - **Settings-group extraction** (used to break up `ApiProperties`): (1) write group tests first

@@ -19,7 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Declaration
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
@@ -41,14 +42,14 @@ internal class VerdictReportRendererTest {
     @Test
     fun rendersSortableHeadersAndADataRow() {
         val html = VerdictReportRenderer.toHtml(
-            pageOf(listOf(grindVerdict("jei", "Forge", confidence = Confidence.HIGH, suggestedEntry = "jei-")))
+            pageOf(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-", verdict = Verdict.CONFIRMED)))
         )
         Assertions.assertTrue(html.contains("<table"), "needs a table")
         Assertions.assertTrue(html.contains("""href="/?sort=name"""), "a header must link its sorted view")
         Assertions.assertFalse(html.contains("function sortBy("), "sorting is server-side now, not a DOM sort")
         Assertions.assertTrue(html.contains(">jei<"), "the project name")
         Assertions.assertTrue(html.contains(">jei-<"), "the clientside-list name-pattern column")
-        Assertions.assertTrue(html.contains(">HIGH<"), "the confidence")
+        Assertions.assertTrue(html.contains(">CONFIRMED<"), "the verdict")
         Assertions.assertTrue(html.contains("""href="https://modrinth.com/mod/jei""""), "a link to the project")
     }
 
@@ -134,8 +135,8 @@ internal class VerdictReportRendererTest {
      */
     @Test
     fun onlyARowWithKeptLogsGetsLinks() {
-        val crashed = grindVerdict("creativecore", "Fabric", confidence = Confidence.HIGH)
-        val clean = grindVerdict("jei", "Forge", confidence = Confidence.LOW)
+        val crashed = grindVerdict("creativecore", "Fabric", verdict = Verdict.CONFIRMED)
+        val clean = grindVerdict("jei", "Forge", verdict = Verdict.ERROR)
         val kept = listOf(
             "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~console.log",
             "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
@@ -157,11 +158,11 @@ internal class VerdictReportRendererTest {
     @Test
     fun theDownloadButtonLinksTheFilteredCsvExport() {
         val html = VerdictReportRenderer.toHtml(
-            pageOf(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")), "f.confidence=HIGH&sort=name")
+            pageOf(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")), "f.verdict=HIGH&sort=name")
         )
 
         Assertions.assertTrue(html.contains("/export.csv?"), "the button links the export rather than embedding it")
-        Assertions.assertTrue(html.contains("f.confidence=HIGH"), "carrying the current filter")
+        Assertions.assertTrue(html.contains("f.verdict=HIGH"), "carrying the current filter")
         Assertions.assertTrue(html.contains("sort=name"), "and the current sort")
         // Pins the REMOVAL. An embedded copy would silently disagree with a filtered export, and dropping it
         // also stops the page putting mod-supplied text inside a <script> block at all.
@@ -195,9 +196,8 @@ internal class VerdictReportRendererTest {
             loader = "SENTINELLOADER",
             suggestedEntry = "SENTINELPATTERN",
             projectUrl = "https://example.invalid/SENTINELPROJECT",
-            detail = "SENTINELDETAIL",
-            confidence = Confidence.HIGH
-        ).copy(
+            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED).copy(
+            declared = Declaration.SERVER,
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
             decidedBy = "SENTINELDECISION"
@@ -208,7 +208,7 @@ internal class VerdictReportRendererTest {
         val cells = row.split("</td>").dropLast(1)
 
         val expected = listOf(
-            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "HIGH", "SENTINELLOADER",
+            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "CONFIRMED", "SERVER", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
             "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
         )

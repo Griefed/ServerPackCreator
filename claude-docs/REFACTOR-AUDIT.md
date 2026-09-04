@@ -4848,3 +4848,213 @@ the body.
   hardening it — consistent with the platform's and the authors' opt-out.
 - Every measurement quoted was re-run for this audit: 192.9 MB `driver-bundle`, 3.0 MB `driver`, 274.7 →
   77.8 MB app jar, suites 383 / 262 / 434 / 149 / 3.
+
+---
+
+## Iteration 34 — the result-system redesign, plus the JEI and optional-dependency fixes (2026-09-04)
+
+**Scope:** the commits of 2026-09-03 and 2026-09-04 across three branches — `claude-verdict-redesign`
+(17 commits, `develop..HEAD`), `claude-optional-dependencies` (3), and the JEI work merged into `develop`
+(4). Commits are named by **subject**, not hash, per the repo's own convention.
+
+**Method:** commit-by-commit against the refactoring conventions; the pin boundary verified by *checking
+out each commit in a scratch worktree and running the suites*, not by trusting the commit messages; every
+"never ran" code path traced by hand against `Verdict.ERROR`'s stated meaning.
+
+**Method note worth keeping — the first pass produced a false result.** Detecting failure by grepping the
+Gradle output for `FAILED` reported **every** commit red, including ones known green. The grinder's own test
+fixtures log `Done Modrinth/mod50 → FAILED after 0s`, so the marker appears in passing runs. Re-run on the
+build's **exit status**, the picture was clean. A detector that cannot tell its subject from its subject's
+log output is worse than no detector, because it produces confident nonsense.
+
+### HIGH
+
+- **HIGH-1 — `packPostProcessor` failure is reported as INCONCLUSIVE, re-creating the exact conflation the
+  redesign exists to remove.** `BootVerifier.runPrepared` returns
+  `BootOutcome(BootResult.INCONCLUSIVE, null, "Pack post-processing failed: …")` without
+  `stagingPrevented = true`. The post-processor is the grinder's `overlayLoaderInstall`: when it throws, **no
+  container ever runs**, so this is a grind that could not be performed — `Verdict.ERROR` by the definition
+  committed in *"pin the four-state verdict, and that a prevented grind is an Error"*. It currently publishes
+  as "the boot ran and taught us nothing".
+  **Why this is the worst possible site for the bug:** the overlay is a *loader-cache* operation, so it fails
+  exactly when the host is broken — the same class of event as the missing-runtime-image outage, whose whole
+  lesson was that a host defect must not be published as thousands of verdicts about mods. The redesign fixed
+  the staging refusal and left this one.
+
+- **HIGH-2 — `RunResult.NotStarted` is reported as INCONCLUSIVE for the same reason.**
+  `BootVerifier.outcomeFor` maps it to a plain INCONCLUSIVE. `NotStarted` means the runner never started the
+  server at all (`ServerRunner.kt:98`: *"No start.sh in the generated server pack."*), which is definitionally
+  a prevented grind.
+  The stage-1 pin `aStagedGrindWithNoObservationIsAnError` looks like it covers this, and does not: it
+  asserts on `boot == null`, whereas `NotStarted` yields a **non-null** outcome carrying INCONCLUSIVE, so
+  `verdictOf` never reaches that branch. **A guard that appears to cover a case it cannot reach is worse than
+  an absent one**, because it stops anyone looking.
+
+### MEDIUM
+
+- **MED-1 — the `Confidence` deletion is one 33-file commit where three would each have compiled.**
+  *"retire Confidence and aggregateFor"* changes 11 main and 22 test files at once, spanning two modules. It
+  was separable with no red intermediate: (1) `-clientside` (delete the enum, move the note into `verdictOf`,
+  migrate `supersededByLoader`), (2) `-grinder` (drop the field, migrate the fixtures), (3) the stale-prose
+  and `GrinderAuditIT` sweep. The conventions ask for incremental change behind stable interfaces.
+  **Honest counter-argument, recorded so this is not re-litigated as clear-cut:** deleting a type that two
+  modules reference cannot leave a compiling intermediate *unless* the field is removed last, which is what
+  the split above does — so the objection stands, but it is about reviewability rather than about the result.
+
+- **MED-2 — `GrinderAuditIT`'s repair is a behaviour fix buried in a deletion commit.** The same 33-file
+  commit changes the IT from reading the CSV's `Confidence` column and `HIGH` value to `Verdict`/`CONFIRMED`.
+  That is not part of retiring a type — it is fixing a test that would have **failed against a live daemon
+  while compiling perfectly**, which is precisely the "surface it explicitly, in its own commit" case. It was
+  surfaced in the message, so this is a labelling failure, not a hidden one.
+
+### LOW
+
+- **LOW-1 — `DefaultBootRules` declares `private val bundled` and `fun bundled()`.** Legal Kotlin, but a
+  property and a function of the same name in one object reads as a typo at the call site and gives no hint
+  which is being invoked. `cached` / `bundled()` would say what each is.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **The pin boundary holds for all six `test(…)` commits on the verdict branch**, verified by checkout in a
+  scratch worktree: `pin the four-state verdict`, `pin that extracting the ladder into rules changes no
+  verdict`, `pin that metadata sideness is decided by rules too`, `pin the fold that replaces aggregateFor`,
+  `pin that only a confirmation is published`, `pin that the report and CSV speak the four verdicts` — all
+  RED at their own commit. All ten answering `feat`/`fix`/`refactor` commits are GREEN at theirs. The JEI and
+  optional-dependency branches were verified the same way when they landed.
+- **Both `refactor:` labels are honest.** *"the ladder reads its patterns from the rules file"* touches one
+  main file and zero tests, with the 46 pre-existing classifier guards green — the equivalence evidence the
+  extraction needed. *"one type for what a boot did, not two"* changes two test files, and its **entire** test
+  diff is one method **rename**; no assertion, argument or expected value moved. That is the documented
+  reference-only carve-out.
+- **No new `!!` and no new `var`** in `Verdict.kt` or `BootRule.kt`.
+- **The duplicated-`noteFor` hazard did not survive.** An editing slip inserted it twice and removed two
+  neighbouring helpers; both were caught by the compiler and repaired before the commit. Exactly one
+  definition exists.
+- **Metadata cannot decide.** `noMetadataRuleCarriesAVerdict` fails the build if a `RuleSource.METADATA` rule
+  ever carries a `verdict`, which is the guard that keeps stage 3's original short-circuit from returning.
+- **`ERROR` never publishes**, pinned across twenty rows rather than one, because the failure mode is a flood.
+
+### Recommendation
+
+HIGH-1 and HIGH-2 are the same defect in two places and should be fixed together, in one `fix:` commit
+preceded by its own red pin — the pin matters more than usual here, because HIGH-2 shows an existing guard
+that *looks* like it covers the case. MED-1 and MED-2 are recorded for judgment, not repair: the branch is
+unpushed, so re-cutting is available, but the result is correct and the messages are honest. LOW-1 is a
+rename.
+
+---
+
+## Iteration 35 — re-audit after the iteration-34 fixes (2026-09-04)
+
+**Scope:** the two commits answering iteration 34 — *"pin the two prevented-grind paths the redesign missed"*
+and *"a grind that never ran is an Error, on every path"* — plus a re-check of the branch for anything
+iteration 34 missed.
+
+**Method:** every `BootOutcome` construction in `BootVerifier` traced by hand against `Verdict.ERROR`'s
+definition; the grinder's thrown-verification path read end to end; full tree re-run with `--rerun-tasks`.
+
+### HIGH — none
+
+Both iteration-34 HIGHs are closed and verified structurally, not just by their own tests. `BootVerifier`
+now has **five** `BootOutcome` constructions: four never-ran paths, all carrying `stagingPrevented = true`
+(staging refusal, other-version re-stage refusal, thrown post-processor, `RunResult.NotStarted`), and one
+for `RunResult.Completed` — a boot that actually ran — correctly not marked. There is no sixth.
+
+### MEDIUM
+
+- **MED-1 — the fix left two of its own references stale, which is the defect class the conventions single
+  out.** Both were introduced *by* the fix commit:
+  - `serverpackcreator-clientside/CLAUDE.md` still says `stagingPrevented` "is set at the staging-refusal
+    sites". That was true before the fix and is now wrong in the direction that matters: a reader adding a
+    new never-ran path would conclude the field is not their concern, which is exactly how HIGH-1 and
+    HIGH-2 came to exist in the first place.
+  - `BootVerifierRunPreparedTest.aThrownPostProcessorIsInconclusiveAndSkipsTheBoot` still asserts
+    `BootResult.INCONCLUSIVE` (correct — the *result* is unchanged) but its **name** now describes the old
+    verdict semantics. It passes, so nothing fails; a reader looking for "does a thrown hook produce an
+    error?" would search this name and conclude the opposite of the truth.
+
+### LOW — none new
+
+LOW-1 is closed: `DefaultBootRules`' `private val bundled` is now `cached`, so the property no longer
+shadows `fun bundled()`.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **A thrown verification publishes nothing at all.** `Grinder.grind` wraps `verifier.verify(candidate)` in
+  `runCatching`, and a failure returns `GrindOutcome.FAILED` *before* any `GrindVerdict` is constructed — so
+  no row reaches the store and nothing can reach `/as-properties`. This is the correct shape and is the
+  reason the thrown path needed no `stagingPrevented` equivalent.
+- **A prevented grind keeps no artifacts, and that is right rather than a contradiction of
+  `Verdict.ERROR.keepsLogs`.** Both prevented paths return before `bootArtifactSink` fires, but there is no
+  console to keep — nothing ran. `keepsLogs` governs whether evidence is *retained when it exists*; the
+  operator-facing reason lives in `BootOutcome.detail`, which both paths set.
+- **Retention stays consistent across the two independent expressions of one rule.**
+  `BootArtifacts.worthKeeping(INCONCLUSIVE)` is `true` and `Verdict.ERROR.keepsLogs` is `true`, so a
+  prevented grind that *did* produce output would keep it. `VerdictColumnTest.attemptRetentionAgreesWithVerdictRetention`
+  is the drift guard.
+- **The fix did not over-reach.** `aRealBootThatFailedIsNotMarkedPrevented` passed *before* the fix and
+  still passes: a container that ran and crashed on a client-only class remains evidence. Trading a false
+  INCONCLUSIVE for a lost true positive would have been the worse bargain, since those crashes are what the
+  engine exists to find.
+- **MED-1 and MED-2 of iteration 34 stand as recorded, not repaired.** The 33-file `Confidence` deletion and
+  the `GrinderAuditIT` repair inside it are reviewability faults with a correct result and honest commit
+  messages. Re-cutting is available (the branch is unpushed) but touches 33 files to change no behaviour,
+  and the audit trail already carries the objection.
+
+### Recommendation
+
+MED-1's two stale references are a five-minute fix and should be taken: the module-doc line is the one that
+actively misleads the next person to add a never-ran path, and that is precisely how this defect arose.
+
+---
+
+## Iteration 36 — third pass; the documentation contradicts itself (2026-09-04)
+
+**Scope:** the branch after iterations 34 and 35 were actioned. **Method:** re-grep for every reference the
+two fix rounds could have invalidated; re-derive the documented suite counts from
+`build/test-results` rather than trusting them.
+
+### HIGH — none
+
+### MEDIUM
+
+- **MED-1 — the root `CLAUDE.md` clientside row states two contradictory rules, one of which the redesign
+  deliberately reversed.** The row carries, from 2026-09-01:
+
+  > SURVIVED now yields LOW, ranked below `metadataClient` so a clean boot still cannot overturn a
+  > client-only declaration
+
+  and, from 2026-09-04, a few sentences later:
+
+  > The console decides and the metadata only declares … a mod claiming **server** whose console reaches a
+  > client-only class is CONFIRMED **client**
+
+  The second sentence *replaced* the first — `aClientOnlyDeclarationNoLongerOutranksACleanBoot` pins that a
+  clean boot with a CLIENT declaration is now `CLEAR`, the exact case the older sentence says is impossible.
+  A reader reaching the older text first gets the pre-redesign precedence and no signal it is historical.
+  **This is worse than an ordinary stale line**, because the file is loaded into every session and the two
+  claims sit in the same table cell: whichever is read first looks current.
+
+### LOW
+
+- **LOW-1 — the documented clientside suite count is stale.** The row says 309; the tree reports **313**
+  (the four `PreventedGrindTest` guards added by the iteration-34 fix). The convention the count itself
+  carries — *re-derive it from `build/test-results`, do not trust the sentence* — is what caught it, and
+  it went stale within one commit of being written.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- No source or test still references `staging-refusal sites` or the old
+  `aThrownPostProcessorIsInconclusive…` name; iteration 35's MED-1 is fully closed.
+- The grinder row's count (455) is accurate.
+- The clientside row's older entries that the redesign did **not** invalidate are correct as written and
+  should stay: the fair-run principle, "an excuse may never outrank decisive client-only evidence" (now
+  enforced by file order rather than by rung order, which the newer text says), the `clientOnlyClassMarker`
+  Fabric-intermediary gap, and the JEI descriptor-gate entry.
+
+### Recommendation
+
+Both are documentation-only. MED-1 should be fixed by marking the superseded sentence as history rather than
+deleting it — the measured rows behind it (`better-stats`, `tcdcommons`, `yacl`) are still the evidence for
+why a clean boot is worth recording at all, and that reasoning survives the change in what it is recorded
+*as*.

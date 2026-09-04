@@ -138,7 +138,10 @@ class Grinder(
                     projectUrl = report.projectUrl,
                     loader = verdict.loader,
                     suggestedEntry = verdict.suggestedEntry,
-                    confidence = verdict.confidence,
+                    // The redesigned verdict and the claim it either confirms or contradicts. Carried
+                    // alongside `confidence` until stage 5 retires it; `/as-properties` already gates on this.
+                    verdict = verdict.verdict,
+                    declared = verdict.declared,
                     detail = verdict.note ?: "",
                     verifiedAt = now,
                     // Identity comes from the candidate, not the report: the report echoes the slug, which is the
@@ -162,7 +165,7 @@ class Grinder(
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
                 report.perLoader
-                    .joinToString(", ") { "${it.loader}=${it.confidence}(boot:${it.bootResult ?: "none"})" }
+                    .joinToString(", ") { "${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})" }
                     .ifEmpty { "no loader verdicts" } +
                 " after ${Duration.between(startedAt, clock()).seconds}s"
         )

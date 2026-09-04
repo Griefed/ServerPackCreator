@@ -196,11 +196,35 @@ though their detail lives deeper:
   as `containerUser=` on the startup line, and `InstallFailureDiagnosis` names it in the failure warning.
   **Corollary:** `DockerLoaderInstaller` quoted `output.lines.takeLast(25)`, and this cause sits at the *top* of
   the console — a tail is the wrong slice whenever the first failure is survivable, so the diagnosis scans all of it.
-- **`/as-properties` publishes the fallback clientside list, and only `HIGH` may ever reach it.**
-  `FallbackPropertiesRenderer` merges the list SPC currently holds with every crash-proven verdict and serves it
+- **`/as-properties` publishes the fallback clientside list, and only `Verdict.CONFIRMED` may ever reach
+  it (2026-09-04).** The gate used to be `Confidence.HIGH` **and** a separate decisive-rung check, because
+  HIGH was also reachable from the bare exit-code rung — measured on the live daemon, 27 of 43 published
+  HIGHs rested on no decisive evidence. That second condition is now structural: `ClientsideVerifier.verdictOf`
+  only reaches CONFIRMED from a rung `BootDecision.decisive` marks, so CONFIRMED *means* decisive and the gate
+  asks once. Asking twice would only let the two drift.
+  - **A metadata declaration publishes nothing.** A mod is excluded because a boot's console proved it, never
+    because the mod said so about itself — see the four-verdict entry in `serverpackcreator-clientside/CLAUDE.md`.
+    **Expect a visibly shorter list after deploy**: nothing is translated from the old scale, so the endpoint
+    serves the shipped list until boots accumulate confirmations.
+  - **A stored row from the old schema loads as `INCONCLUSIVE` and publishes nothing.** That is "start clean"
+    without deleting: the `Confidence` scale has no honest mapping onto the four verdicts, so no old row is
+    treated as evidence and each is re-earned by a real boot, with the re-verify TTL doing the rest.
+  - The report table and CSV carry **`Verdict` + `Declared`**, ranked findings-first (CONFIRMED, INCONCLUSIVE,
+    ERROR, CLEAR). `VerdictField` stays the single declaration behind header, CSV header, query key, filter
+    kind and sort key — which is what stops the table and `/export.csv` disagreeing about ordering.
+  - **`ERROR` is why a broken host no longer reads as a page of suspicious mods.** It means the grind could
+    not be performed, and it must never publish; `VerdictPublicationTest` pins that across twenty rows,
+    because the failure mode is a flood rather than a single row.
+  - Log retention is asked of `Verdict.keepsLogs`. Only CLEAR discards; **CONFIRMED keeps its console too**,
+    which the requirement did not ask for and is deliberate — a published exclusion has to stay auditable,
+    and the rule id says *which* rule fired while only the console says what it fired on.
+  - `GrinderAuditIT` reads the CSV's `Verdict` column and grades `CONFIRMED` rows; it was updated with the
+    schema, since it parses the live export and would otherwise fail against a real daemon while compiling.
+
+  `FallbackPropertiesRenderer` merges the list SPC currently holds with every CONFIRMED verdict and serves it
   where an instance's `de.griefed.serverpackcreator.configuration.fallback.updateurl` can poll it. Two things are
   load-bearing. It is written for `Properties.load(InputStream)`, which decodes **ISO-8859-1** — hence `\uXXXX`
-  escaping and an ISO-8859-1 response, the one endpoint that is not UTF-8. And the confidence floor is not a
+  escaping and an ISO-8859-1 response, the one endpoint that is not UTF-8. And the verdict floor is not a
   tunable: a clean boot proves nothing, while a wrong entry silently strips a mod from every server pack built
   against the list. **Never point the grinder's own SPC instance at this endpoint** — its findings would fold back
   into what it publishes as "the shipped list", and an entry could then never leave it. **Second-order:** the
