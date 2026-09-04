@@ -430,7 +430,8 @@ class BootVerifier(
             .onFailure { log.debug("Could not read ${file.fileName}'s manifest dependencies: ${it.message}") }
             .getOrDefault(emptyList())
 
-        for (requirement in stageableRequirements(declared, visited) { platformRefFor(it) }) {
+        val bundled = BundledJars.idsIn(staged)
+        for (requirement in stageableRequirements(declared, visited, bundled) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
@@ -887,6 +888,7 @@ class BootVerifier(
         internal fun stageableRequirements(
             requirements: List<ModDependency>,
             alreadyResolved: Set<String> = emptySet(),
+            bundledIds: Set<String> = emptySet(),
             refFor: (String) -> String? = { it }
         ): List<ModDependency> = requirements.filterNot { requirement ->
             // An optional dependency is neither staged nor allowed to refuse a boot: the descriptor itself
@@ -895,6 +897,14 @@ class BootVerifier(
             // an INCONCLUSIVE on a mod that never required it. Both platforms already filter their own side
             // (`dependency_type == "required"`, `relationType == 3`); this is the manifest half of that rule.
             requirement.optional ||
+                // Already inside the candidate as a nested jar, which the loader puts on the classpath: it
+                // needs no download and can never be missing. `xaeros-world-map` was refused for `xaerolib`
+                // while shipping it, because a Modrinth project of that name exists (so the id *mapped*) but
+                // publishes nothing tagged Quilt or 26.2 (so nothing could be staged) -- and a
+                // mapped-then-unstageable id refuses where an unmappable one would not have. Bundled wins
+                // unconditionally: the author shipped that exact build, and fetching another version of the
+                // same id manufactures a conflict to blame on the mod.
+                requirement.modID in bundledIds ||
                 requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
