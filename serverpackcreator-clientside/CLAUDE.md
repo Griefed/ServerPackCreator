@@ -513,6 +513,16 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   resolved project's slug, and keeps the ref *plus the platform name* only when nothing resolved.
   **The dedupe matters more than the wording:** `unsatisfied` is a `Set<String>`, so a mod missing by both
   routes used to be two entries and is now one. Do not "simplify" this back to adding the raw ref.
+  - **There are THREE branches, and the first fix caught two.** `downloadWithDependencies` records an
+    unmet dependency when the ref does not resolve, when it resolves but publishes no usable file, and
+    when it resolves, a file is picked, and the *download* then fails. The third kept adding the bare ref
+    and produced the follow-up report `... Quilt / Minecraft 1.20.4: 306612` — CurseForge's id for Fabric
+    API. If you add a fourth, label it there too.
+  - **A distribution-locked dependency is not a failed download.** CurseForge publishes no `downloadUrl`
+    for an author who opted out, so `JarDownloader` returns `null` and the dependency read as "could not
+    be downloaded" — the sentence a 404, a flaky link and a deliberate opt-out all produce. The label now
+    says `distribution-locked`, which is the same distinction `downloadFailureDetail` draws for the
+    candidate; retrying an opt-out never succeeds.
 
 - **A dependency the candidate *ships* is never fetched and never missing** (`BundledJars`, 2026-09-04).
   Fabric and Quilt load jar-in-jar libraries, so a `depends` naming one is satisfied before staging looks.
