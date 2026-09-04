@@ -726,7 +726,15 @@ class BootVerifier(
             if (packPostProcessor != null) {
                 val processing = runCatching { packPostProcessor.invoke(pack) }
                 if (processing.isFailure) {
-                    return BootOutcome(BootResult.INCONCLUSIVE, null, "Pack post-processing failed: ${processing.exceptionOrNull()?.message}")
+                    // Nothing booted: the hook runs before the container, and in the grinder it *is* the
+                    // loader-cache overlay -- so this fails when the host is broken, not when the mod is.
+                    // Without `stagingPrevented` a broken cache publishes as a verdict about every mod that
+                    // wanted it, which is the missing-runtime-image outage in miniature.
+                    return BootOutcome(
+                        BootResult.INCONCLUSIVE, null,
+                        "Pack post-processing failed: ${processing.exceptionOrNull()?.message}",
+                        stagingPrevented = true
+                    )
                 }
             }
             log.info(
@@ -1030,7 +1038,8 @@ class BootVerifier(
         }
 
         /**
-         * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
+         * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is a *prevented*
+         * grind (nothing ran, so `Verdict.ERROR`) rather than INCONCLUSIVE
          * with no log; a [RunResult.Completed] is written to [logFile], classified by
          * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
          * human-readable detail. This is the verdict seam every runner (host or container) shares.
@@ -1041,7 +1050,10 @@ class BootVerifier(
             label: String,
             rules: ConsoleRuleSet = ConsoleRuleSet.EMPTY
         ): BootOutcome = when (runResult) {
-            is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
+            // The runner never started the server, so there is no console and nothing was learned about the
+            // mod. An operator's problem, however late it surfaced.
+            is RunResult.NotStarted ->
+                BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail, stagingPrevented = true)
             is RunResult.Completed -> {
                 val console = runResult.lines.joinToString("\n")
                 // Persisting the console must never fail the verification: the verdict comes from the lines in

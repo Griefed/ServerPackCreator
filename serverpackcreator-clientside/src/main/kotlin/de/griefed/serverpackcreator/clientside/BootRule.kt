@@ -249,7 +249,7 @@ object DefaultBootRules {
      * classifier still has its structural readings (ready-line, timeout, exit code), so a broken jar degrades
      * to "no console rules" rather than to no verdicts at all.
      */
-    private val bundled: BootRuleSet by lazy {
+    private val cached: BootRuleSet by lazy {
         val json = runCatching {
             DefaultBootRules::class.java.getResourceAsStream(RESOURCE)?.bufferedReader()?.use { it.readText() }
         }.getOrNull()
@@ -261,5 +261,5 @@ object DefaultBootRules {
     }
 
     /** The shipped ladder. */
-    fun bundled(): BootRuleSet = bundled
+    fun bundled(): BootRuleSet = cached
 }
