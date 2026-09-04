@@ -30,6 +30,7 @@ import java.net.URI
 import java.net.URL
 import java.util.*
 import javax.xml.parsers.ParserConfigurationException
+import java.util.Collections
 
 /**
  * Information about the LegacyFabric installer and versions.
@@ -44,7 +45,15 @@ class LegacyFabricInstaller(
     private val utilities: Utilities
 ) {
     /** Every LegacyFabric *installer* version, newest first. A separate series from the loader versions. */
-    val allVersions: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var allVersions: List<String> = emptyList()
+        private set
 
     @Suppress("MemberVisibilityCanBePrivate")
     /** URL template the installer download is built from, with the version substituted in. */
@@ -67,6 +76,7 @@ class LegacyFabricInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
+        val next_allVersions = ArrayList<String>(100)
         val installerManifest: Document = utilities.xmlUtilities.getXml(installerManifest)
         val latestElements = installerManifest.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -79,15 +89,17 @@ class LegacyFabricInstaller(
         val releaseChildren = releaseNode.childNodes
         val releaseItem = releaseChildren.item(0)
         release = releaseItem.nodeValue
-        allVersions.clear()
         val elements = installerManifest.getElementsByTagName(version)
         for (i in 0 until elements.length) {
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            allVersions.add(item.nodeValue)
+            next_allVersions.add(item.nodeValue)
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        allVersions = Collections.unmodifiableList(next_allVersions)
+}
 
     /**
      * The URL to the latest installer for Legacy Fabric.

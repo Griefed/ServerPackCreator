@@ -36,7 +36,7 @@ class VersionMetaResponse(
     /** Quilt loader versions. */
     val quilt: List<String>,
     /** Minecraft version to the Forge builds available for it. */
-    val forge: HashMap<String, List<String>>,
+    val forge: Map<String, List<String>>,
     /** Minecraft version to the NeoForge builds available for it. */
-    val neoForge: HashMap<String,List<String>>
+    val neoForge: Map<String,List<String>>
 )
