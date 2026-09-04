@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.ClientsideReport
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Declaration
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
 import java.time.Instant
@@ -145,7 +147,20 @@ data class GrindVerdict(
      * non-zero exit can never publish. A `String` rather than the enum, so a rung added by a newer build
      * leaves the store readable to an older one.
      */
-    val decidedBy: String? = null
+    val decidedBy: String? = null,
+    /**
+     * What this engine publishes about the mod. Defaults to [Verdict.INCONCLUSIVE] so a row written by the
+     * old schema loads and claims nothing: the `Confidence` scale has no honest mapping onto these four
+     * states, so an unmigrated row is re-earned by a real boot rather than translated, and publishes nothing
+     * until the re-verify TTL brings it round.
+     */
+    val verdict: Verdict = Verdict.INCONCLUSIVE,
+    /**
+     * What the mod claims about itself, or `null` when it claimed nothing recognisable. Recorded because a
+     * *contradicted* claim is the finding — a mod declaring the server while calling client classes — and it
+     * cannot be reported as one if nothing kept the claim.
+     */
+    val declared: Declaration? = null
 )
 
 /**

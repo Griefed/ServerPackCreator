@@ -104,7 +104,15 @@ data class LoaderVerdict(
      */
     val decidedBy: BootDecision? = null,
     /** The dependency jars staged beside the candidate, so a verdict names the pack it was booted with. */
-    val stagedDependencies: List<String> = emptyList()
+    val stagedDependencies: List<String> = emptyList(),
+    /**
+     * What this engine publishes about the mod on this loader, from `ClientsideVerifier.verdictOf`.
+     *
+     * Defaulted so the many fixtures that predate the redesign keep compiling; production always sets it.
+     */
+    val verdict: Verdict = Verdict.INCONCLUSIVE,
+    /** What the mod claims about itself — recorded because a *contradicted* claim is the finding. */
+    val declared: Declaration? = null
 )
 
 /**

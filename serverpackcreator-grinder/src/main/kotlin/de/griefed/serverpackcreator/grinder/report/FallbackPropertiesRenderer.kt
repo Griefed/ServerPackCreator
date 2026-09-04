@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.BootDecision
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 
 /**
@@ -75,7 +75,12 @@ object FallbackPropertiesRenderer {
         verdicts: Collection<GrindVerdict>
     ): String {
         val proven = verdicts
-            .filter { it.confidence == Confidence.HIGH && decisive(it) }
+            // One condition, where there used to be two. `Confidence.HIGH` was also reachable from the bare
+            // exit-code rung -- "exited non-zero, nothing recognised why" -- so a separate decisive-rung check
+            // had to be bolted alongside it; measured on the live daemon, 27 of 43 published HIGHs rested on no
+            // decisive evidence. `verdictOf` now only ever reaches CONFIRMED from a decisive rung, so CONFIRMED
+            // *means* decisive and asking twice would only invite the two to drift apart.
+            .filter { it.verdict == Verdict.CONFIRMED }
             .mapNotNull { it.suggestedEntry?.trim()?.ifEmpty { null } }
         val shipped = normalise(clientsideMods)
         val merged = normalise(clientsideMods + proven)

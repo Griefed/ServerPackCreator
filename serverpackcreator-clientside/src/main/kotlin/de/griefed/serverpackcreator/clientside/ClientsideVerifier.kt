@@ -138,8 +138,14 @@ class ClientsideVerifier(
         }
 
         val (confidence, note) = aggregateFor(project.serverSide, jarScan, bootOutcome?.result)
+        // The redesigned fold, computed alongside the old one until `Confidence` is retired in stage 5. The
+        // console decides and the metadata only declares; `aggregateFor`'s value is still carried so the
+        // report's existing columns keep rendering while consumers migrate.
+        val assessed = verdictOf(project.serverSide, project.clientSide, jarScan, bootOutcome, bootVerifier != null)
         return LoaderAssessment(
             verdict = LoaderVerdict(
+                verdict = assessed.verdict,
+                declared = assessed.declared,
                 loader = loader,
                 suggestedEntry = stem,
                 declaredClientSide = project.clientSide,

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.BootArtifacts
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
@@ -243,7 +244,7 @@ internal class ReportServerTest {
     @Test
     fun servesTheFallbackListAsPollableProperties() {
         val store = InMemoryVerdictStore().apply {
-            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, suggestedEntry = "entityculling-"))
+            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"))
             record(grindVerdict("inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE, suggestedEntry = "inconclusive-"))
         }
         val server = ReportServer(

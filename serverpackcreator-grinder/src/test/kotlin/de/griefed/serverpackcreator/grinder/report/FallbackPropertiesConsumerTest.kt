@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import de.griefed.serverpackcreator.api.settings.GenerationConfig
 import de.griefed.serverpackcreator.api.settings.UpdateConfig
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -51,7 +52,7 @@ internal class FallbackPropertiesConsumerTest {
     @Test
     fun spcsOwnUpdaterAcceptsTheDocumentAndInstallsTheEntries() {
         val verdicts = InMemoryVerdictStore().apply {
-            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, suggestedEntry = "entityculling-"))
+            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"))
             record(grindVerdict("notclientside", "Forge", confidence = Confidence.INCONCLUSIVE, suggestedEntry = "notclientside-"))
         }
         val server = ReportServer(
