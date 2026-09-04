@@ -60,7 +60,7 @@ internal class ConsoleOutranksMetadataTest {
     fun aModDeclaringServerThatCallsClientClassesIsConfirmedClient() {
         val verdict = VerdictPolicy.decide(
             staging = StagingOutcome.Staged,
-            boot = BootObservation.Crashed(exitCode = 1),
+            boot = BootResult.CRASHED,
             confirmedByRule = "client-only-class",
             declared = Declaration.SERVER
         )
@@ -112,7 +112,7 @@ internal class ConsoleOutranksMetadataTest {
     fun aClientDeclarationDoesNotConfirmWithoutAConsoleMatch() {
         val verdict = VerdictPolicy.decide(
             staging = StagingOutcome.Staged,
-            boot = BootObservation.Survived,
+            boot = BootResult.SURVIVED,
             confirmedByRule = null,
             declared = Declaration.CLIENT
         )
@@ -133,7 +133,7 @@ internal class ConsoleOutranksMetadataTest {
             Assertions.assertEquals(
                 Verdict.CONFIRMED,
                 VerdictPolicy.decide(
-                    StagingOutcome.Staged, BootObservation.Crashed(1), "client-only-class", declared
+                    StagingOutcome.Staged, BootResult.CRASHED, "client-only-class", declared
                 ),
                 "declaration $declared changed a console confirmation"
             )
@@ -149,7 +149,7 @@ internal class ConsoleOutranksMetadataTest {
         listOf(Declaration.SERVER, Declaration.CLIENT, Declaration.CONTRADICTORY, null).forEach { declared ->
             Assertions.assertEquals(
                 Verdict.INCONCLUSIVE,
-                VerdictPolicy.decide(StagingOutcome.Staged, BootObservation.Crashed(1), null, declared),
+                VerdictPolicy.decide(StagingOutcome.Staged, BootResult.CRASHED, null, declared),
                 "declaration $declared decided a crash no rule explained"
             )
         }

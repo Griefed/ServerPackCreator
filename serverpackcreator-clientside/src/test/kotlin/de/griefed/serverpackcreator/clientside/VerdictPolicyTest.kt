@@ -70,7 +70,7 @@ internal class VerdictPolicyTest {
     fun aRuleMatchConfirms() {
         val verdict = VerdictPolicy.decide(
             staging = StagingOutcome.Staged,
-            boot = BootObservation.Crashed(exitCode = 1),
+            boot = BootResult.CRASHED,
             confirmedByRule = "fml-invalid-dist"
         )
 
@@ -87,7 +87,7 @@ internal class VerdictPolicyTest {
     fun aCrashWithNoConfirmingRuleIsInconclusiveNotConfirmed() {
         val verdict = VerdictPolicy.decide(
             staging = StagingOutcome.Staged,
-            boot = BootObservation.Crashed(exitCode = 1),
+            boot = BootResult.CRASHED,
             confirmedByRule = null
         )
 
@@ -102,7 +102,7 @@ internal class VerdictPolicyTest {
     fun aCleanBootThatMatchesNothingIsClear() {
         Assertions.assertEquals(
             Verdict.CLEAR,
-            VerdictPolicy.decide(StagingOutcome.Staged, BootObservation.Survived, confirmedByRule = null)
+            VerdictPolicy.decide(StagingOutcome.Staged, BootResult.SURVIVED, confirmedByRule = null)
         )
     }
 
@@ -111,10 +111,10 @@ internal class VerdictPolicyTest {
      * grind *was* performed, and the log is worth keeping because a rule may yet be extracted from it.
      */
     @Test
-    fun aTimeoutIsInconclusiveBecauseTheGrindDidRun() {
+    fun aBootThatRanButProvedNothingIsInconclusive() {
         Assertions.assertEquals(
             Verdict.INCONCLUSIVE,
-            VerdictPolicy.decide(StagingOutcome.Staged, BootObservation.TimedOut, confirmedByRule = null)
+            VerdictPolicy.decide(StagingOutcome.Staged, BootResult.INCONCLUSIVE, confirmedByRule = null)
         )
     }
 

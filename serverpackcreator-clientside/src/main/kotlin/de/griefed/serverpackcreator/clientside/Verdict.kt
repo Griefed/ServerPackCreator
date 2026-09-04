@@ -86,31 +86,6 @@ sealed interface StagingOutcome {
 }
 
 /**
- * What a boot that actually ran was observed to do. Deliberately coarse: the fine-grained reading of a
- * console is a rule's job, not this type's.
- */
-sealed interface BootObservation {
-    /** The server reached its ready-line. */
-    data object Survived : BootObservation
-
-    /** The server exited non-zero before becoming ready. */
-    data class Crashed(
-        /** The container's exit status, kept because a rule may key on it and an admin will ask. */
-        val exitCode: Int
-    ) : BootObservation
-
-    /** Neither ready nor a clear exit inside the budget — the container ran, so this is not an ERROR. */
-    data object TimedOut : BootObservation
-
-    /**
-     * The boot ran and ended, and nothing recognised what happened — a clean early exit, or a console no
-     * rung matched. Distinct from [TimedOut] only in how it got here; both mean the same thing, that the
-     * grind happened and taught us nothing, which is [Verdict.INCONCLUSIVE] and never [Verdict.ERROR].
-     */
-    data object Unclear : BootObservation
-}
-
-/**
  * Decides the published [Verdict] from what staging did, what the boot was observed to do, and whether a
  * rule confirmed exclusion-worthiness. Pure, so the decision is testable without a container.
  *
@@ -136,13 +111,14 @@ object VerdictPolicy {
      * worth a container are those coded unclean, claiming the server and calling the client.
      *
      * @param staging         Whether a pack reached the container, and why not when it did not.
-     * @param boot            What the boot did, or `null` when none was observed despite staging succeeding.
+     * @param boot            What the classifier made of the boot, or `null` when none was observed despite
+     *                        staging succeeding.
      * @param confirmedByRule Id of the console rule that proved exclusion-worthiness, or `null` if none matched.
      * @param declared        What the mod claims about itself; carried for the report, never for the verdict.
      */
     fun decide(
         staging: StagingOutcome,
-        boot: BootObservation?,
+        boot: BootResult?,
         confirmedByRule: String?,
         declared: Declaration? = null
     ): Verdict {
@@ -158,10 +134,11 @@ object VerdictPolicy {
             return Verdict.CONFIRMED
         }
         return when (boot) {
-            is BootObservation.Survived -> Verdict.CLEAR
-            is BootObservation.Crashed -> Verdict.INCONCLUSIVE
-            is BootObservation.TimedOut -> Verdict.INCONCLUSIVE
-            is BootObservation.Unclear -> Verdict.INCONCLUSIVE
+            // The only outcome that proves anything good: the server reached its ready-line.
+            BootResult.SURVIVED -> Verdict.CLEAR
+            // A crash no rule explained, and a boot that ended without a recognised reason, say the same
+            // thing — the grind happened and taught us nothing. Neither is an ERROR: the container ran.
+            BootResult.CRASHED, BootResult.INCONCLUSIVE -> Verdict.INCONCLUSIVE
         }
     }
 }

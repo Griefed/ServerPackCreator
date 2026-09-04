@@ -247,13 +247,7 @@ class ClientsideVerifier(
                 } else {
                     StagingOutcome.Staged
                 },
-                boot = bootOutcome?.let {
-                    when (it.result) {
-                        BootResult.SURVIVED -> BootObservation.Survived
-                        BootResult.CRASHED -> BootObservation.Crashed(exitCode = 1)
-                        BootResult.INCONCLUSIVE -> BootObservation.Unclear
-                    }
-                },
+                boot = bootOutcome?.result,
                 confirmedByRule = confirmedByRule,
                 declared = declared
             )
