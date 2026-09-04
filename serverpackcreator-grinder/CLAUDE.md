@@ -287,6 +287,30 @@ though their detail lives deeper:
   file the daemon passes in *and* the home candidate SPC looks for, so `Loaded properties from …` appears twice per
   start. Harmless — `PropertyStore.save` collects into a `TreeSet<File>`, so the duplicate collapses and the file is
   written once.
+- **The loader step-down covers Fabric and Quilt too (2026-09-04).** `CachedLoaderVersions` falls back to an
+  older build when the newest is on install cooldown, and `knownLoaderVersionsNewestFirst` used to return
+  `emptyList()` for Fabric/Quilt/LegacyFabric on the reasoning that they "ship a single
+  Minecraft-independent loader line, so there is no sibling build". That conflates *per-Minecraft builds*
+  with the *loader line*: Quilt publishes **306** builds and Fabric **253**, and Quilt's own
+  `/v3/versions/loader/<mc>` lists all 306 as valid for a given Minecraft. Quilt `0.31.0-beta.3` /
+  Minecraft 1.20.6 failed to install with nothing to fall back to, and every candidate wanting that tuple
+  took the failure.
+  - **Prevention was ruled out before recovery was built, and the measurements are worth keeping so nobody
+    re-opens it.** Every published source calls the failing combination valid: it is in the per-Minecraft
+    list, the intermediary exists, and `.../loader/1.20.6/0.31.0-beta.3/server/json` answers **200**. The
+    start scripts' checks (`FABRIC_CHECK_URL`, `QUILT_CHECK_URL`) are the same signal
+    `LoaderVersionResolver` already gates on — Fabric's 400 tracks *Minecraft support*, not the pairing:
+    loader `0.12.12` + Minecraft 1.21.1 → 200, newest `0.19.5` + 1.12.2 → 400. **No pre-check predicts an
+    installer that fails to run.**
+  - **The head of Quilt's line is betas and SPC cannot tell.** The shipped manifest reports
+    `latest: 0.31.0-beta.3` *and* `release: 0.31.0-beta.3` — upstream marks the beta as the release — so
+    "prefer the stable build" is not available from this metadata. `LoaderStepDown.newestFirst` deliberately
+    filters nothing: the caller stops at the first build not on cooldown, and a pre-release filter could
+    empty a line whose head is entirely betas, which is precisely when the step-down is needed.
+  - **`latestVersion` stays truthful** through all of it, so the support gate and the crash re-check keep
+    measuring against the real newest — a crash on a stepped-down build must not be re-checked against
+    itself.
+
 - **A cached install is a product of the templates that built it** (`TemplateProvenance` + the marker's
   `templates=` key). The install boot runs the pack's own `start.sh`, so a template change that alters what an
   install *produces* leaves cached layers stale — and the marker used to record only loader/version/Minecraft, so
