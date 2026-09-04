@@ -28,7 +28,10 @@ import java.time.Instant
 internal fun loaderVerdict(
     loader: String,
     suggestedEntry: String?,
-    confidence: Confidence,
+    verdict: Verdict = Verdict.INCONCLUSIVE,
+    // Bridge only: `LoaderVerdict.confidence` is still required in -clientside at this commit.
+    // The next commit deletes the field and this parameter with it.
+    confidence: Confidence = Confidence.LOW,
     note: String? = null,
     declaredClientSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
     declaredServerSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
@@ -43,6 +46,7 @@ internal fun loaderVerdict(
     bootResult = null,
     bootedLoader = bootedLoader,
     bootCrashExcerpt = null,
+    verdict = verdict,
     confidence = confidence,
     sampleFile = null,
     note = note
@@ -68,7 +72,6 @@ internal fun clientsideReport(
 internal fun grindVerdict(
     slug: String,
     loader: String,
-    confidence: Confidence = Confidence.HIGH,
     // Defaults to the verdict that claims nothing, so a fixture written before the redesign stands for an
     // unmigrated row rather than silently for a finding. Tests about publication state it explicitly.
     verdict: Verdict = Verdict.INCONCLUSIVE,
@@ -77,12 +80,12 @@ internal fun grindVerdict(
     detail: String = "",
     platform: String = "Modrinth",
     verifiedAt: Instant = Instant.EPOCH,
-    // A fixture standing for "a HIGH finding" should stand for a LEGITIMATE one, so it defaults to the
-    // decision that is decisive evidence. The publication gate's refusal of a non-decisive verdict is pinned
-    // explicitly in FallbackPropertiesPublicationGateTest rather than implied by every fixture here.
+    // A fixture standing for a finding should stand for a LEGITIMATE one, so it defaults to the
+    // decision that is decisive evidence. The publication gate's refusal of a non-decisive verdict is
+    // pinned explicitly in VerdictPublicationTest rather than implied by every fixture here.
     decidedBy: String? = BootDecision.CLIENT_ONLY_CLASS.name
 ) = GrindVerdict(
-    platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, verifiedAt,
+    platform, slug, projectUrl, loader, suggestedEntry, detail, verifiedAt,
     decidedBy = decidedBy, verdict = verdict
 )
 

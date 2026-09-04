@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.grinder.report
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.BootArtifacts
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.GrinderStatus
@@ -135,7 +134,7 @@ internal class ReportServerTest {
     @Test
     fun servesTheHtmlTableAndTheCsvExport() {
         val store = InMemoryVerdictStore().apply {
-            record(grindVerdict("jei", "Forge", confidence = Confidence.HIGH, suggestedEntry = "jei-", verdict = Verdict.CONFIRMED))
+            record(grindVerdict("jei", "Forge", suggestedEntry = "jei-", verdict = Verdict.CONFIRMED))
         }
         val server = ReportServer(store, requestedPort = 0).start()
         try {
@@ -244,8 +243,8 @@ internal class ReportServerTest {
     @Test
     fun servesTheFallbackListAsPollableProperties() {
         val store = InMemoryVerdictStore().apply {
-            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"))
-            record(grindVerdict("inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE, suggestedEntry = "inconclusive-", verdict = Verdict.CLEAR))
+            record(grindVerdict("entityculling", "Fabric", verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"))
+            record(grindVerdict("inconclusive", "Forge", suggestedEntry = "inconclusive-", verdict = Verdict.CLEAR))
         }
         val server = ReportServer(
             store,

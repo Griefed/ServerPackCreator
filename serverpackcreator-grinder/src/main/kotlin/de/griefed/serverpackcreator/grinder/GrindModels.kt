@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.ClientsideReport
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.Declaration
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
@@ -102,8 +101,6 @@ data class GrindVerdict(
     val loader: String,
     /** The line to add to the clientside fallback-list if accepted, or `null` when nothing is being suggested. */
     val suggestedEntry: String?,
-    /** How strongly the evidence says "clientside". Only a crash is decisive; a clean boot proves nothing. */
-    val confidence: Confidence,
     /** Human-readable evidence behind [confidence] — the boot outcome and exit detail, as shown in the report. */
     val detail: String,
     /** When this verdict was reached, which the re-verify TTL compares against to decide staleness. */

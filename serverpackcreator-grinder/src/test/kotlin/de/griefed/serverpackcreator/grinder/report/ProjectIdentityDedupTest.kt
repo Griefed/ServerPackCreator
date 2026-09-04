@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -48,7 +48,7 @@ internal class ProjectIdentityDedupTest {
         projectId: String? = null,
         platform: String = "Modrinth",
         loader: String = "Fabric",
-        confidence: Confidence = Confidence.LOW,
+        verdict: Verdict = Verdict.CLEAR,
         verifiedAt: Instant = Instant.parse("2026-07-31T12:00:00Z")
     ) = GrindVerdict(
         platform = platform,
@@ -56,7 +56,7 @@ internal class ProjectIdentityDedupTest {
         projectUrl = "https://modrinth.com/mod/$slug",
         loader = loader,
         suggestedEntry = null,
-        confidence = confidence,
+        verdict = verdict,
         detail = "test",
         verifiedAt = verifiedAt,
         projectId = projectId
@@ -67,14 +67,14 @@ internal class ProjectIdentityDedupTest {
     fun aRenamedProjectReplacesItsVerdictInsteadOfDuplicating() {
         val store = InMemoryVerdictStore()
 
-        store.record(verdict(slug = "old-name", projectId = "AANobbMI", confidence = Confidence.LOW))
-        store.record(verdict(slug = "new-name", projectId = "AANobbMI", confidence = Confidence.HIGH))
+        store.record(verdict(slug = "old-name", projectId = "AANobbMI", verdict = Verdict.ERROR))
+        store.record(verdict(slug = "new-name", projectId = "AANobbMI", verdict = Verdict.CONFIRMED))
 
         Assertions.assertEquals(
             1, store.all().size,
             "the same project on the same loader must hold one verdict however often it renames itself"
         )
-        Assertions.assertEquals(Confidence.HIGH, store.all().single().confidence, "the newer verdict wins")
+        Assertions.assertEquals(Verdict.CONFIRMED, store.all().single().verdict, "the newer verdict wins")
         Assertions.assertEquals("new-name", store.all().single().slug, "and it carries the current slug")
     }
 
@@ -99,8 +99,8 @@ internal class ProjectIdentityDedupTest {
     fun anIdentifiedVerdictSupersedesTheLegacyRowForTheSameSlug() {
         val store = InMemoryVerdictStore()
 
-        store.record(verdict(slug = "balm", projectId = null, confidence = Confidence.LOW))
-        store.record(verdict(slug = "balm", projectId = "MQ4RtcVI", confidence = Confidence.MEDIUM))
+        store.record(verdict(slug = "balm", projectId = null, verdict = Verdict.ERROR))
+        store.record(verdict(slug = "balm", projectId = "MQ4RtcVI", verdict = Verdict.INCONCLUSIVE))
 
         Assertions.assertEquals(
             1, store.all().size,
@@ -114,11 +114,11 @@ internal class ProjectIdentityDedupTest {
     fun verdictsWithoutIdsStillDedupBySlug() {
         val store = InMemoryVerdictStore()
 
-        store.record(verdict(slug = "jei", confidence = Confidence.LOW))
-        store.record(verdict(slug = "jei", confidence = Confidence.HIGH))
+        store.record(verdict(slug = "jei", verdict = Verdict.ERROR))
+        store.record(verdict(slug = "jei", verdict = Verdict.CONFIRMED))
 
         Assertions.assertEquals(1, store.all().size, "slug fallback must still dedup")
-        Assertions.assertEquals(Confidence.HIGH, store.all().single().confidence)
+        Assertions.assertEquals(Verdict.CONFIRMED, store.all().single().verdict)
         Assertions.assertTrue(store.hasVerdictFor("Modrinth", "jei"), "and still be found without an id")
     }
 

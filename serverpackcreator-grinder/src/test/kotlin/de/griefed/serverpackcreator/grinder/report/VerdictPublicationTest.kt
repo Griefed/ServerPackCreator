@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
  * from real server packs. That makes it the highest-stakes output here, and the gate is now exactly one
  * thing: **[Verdict.CONFIRMED]**.
  *
- * The old gate was `Confidence.HIGH` *and* a separate check that the deciding rung was decisive — two
+ * The old gate was `Verdict.CONFIRMED` *and* a separate check that the deciding rung was decisive — two
  * conditions because HIGH alone was reachable from the bare exit-code rung, which means only "exited
  * non-zero, nothing recognised why". Measured against the live daemon, 27 of 43 published HIGH verdicts
  * rested on no decisive evidence at all. Under the redesign that second condition is structural rather than

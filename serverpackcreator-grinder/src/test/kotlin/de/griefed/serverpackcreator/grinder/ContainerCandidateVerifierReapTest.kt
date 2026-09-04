@@ -73,7 +73,8 @@ internal class ContainerCandidateVerifierReapTest {
         bootResult = bootResult,
         bootedLoader = loader,
         bootCrashExcerpt = null,
-        confidence = Confidence.HIGH,
+        // Bridge only: the field is deleted in the next commit.
+        confidence = Confidence.LOW,
         sampleFile = null,
         note = null
     )

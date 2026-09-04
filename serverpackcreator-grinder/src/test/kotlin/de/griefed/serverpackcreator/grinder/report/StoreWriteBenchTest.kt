@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assumptions
@@ -13,7 +13,7 @@ import java.time.Instant
 internal class StoreWriteBenchTest {
     private fun verdict(i: Int) = GrindVerdict(
         "Modrinth", "mod$i", "https://modrinth.com/mod/mod$i", "Forge", "mod$i-",
-        Confidence.LOW, "Forge 47.2.0 / Minecraft 1.20.1 -> SURVIVED (exit 137)", Instant.parse("2026-08-29T00:00:00Z")
+        "Forge 47.2.0 / Minecraft 1.20.1 -> SURVIVED (exit 137)", Instant.parse("2026-08-29T00:00:00Z")
     )
 
     /** Seed the file directly: seeding through record() is itself O(n^2), which is the thing under test. */
@@ -25,7 +25,7 @@ internal class StoreWriteBenchTest {
                 val v = verdict(i)
                 out.write("""{"platform":"${v.platform}","slug":"${v.slug}","projectUrl":"${v.projectUrl}",""")
                 out.write(""""loader":"${v.loader}","suggestedEntry":"${v.suggestedEntry}",""")
-                out.write(""""confidence":"${v.confidence}","detail":"${v.detail}","verifiedAt":"2026-08-29T00:00:00Z"}""")
+                out.write(""""verdict":"${v.verdict}","detail":"${v.detail}","verifiedAt":"2026-08-29T00:00:00Z"}""")
             }
             out.write("]")
         }

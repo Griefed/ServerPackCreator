@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.grinder.source
 
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import de.griefed.serverpackcreator.grinder.grindVerdict
@@ -141,7 +140,7 @@ internal class RequeueStoreTest {
             grindVerdict("creativecore", "Fabric", verifiedAt = before),
             grindVerdict("creativecore", "NeoForge", verifiedAt = before),
             grindVerdict("creativecore", "Fabric", platform = ModPlatforms.CURSEFORGE, verifiedAt = before),
-            grindVerdict("jei", "Forge", confidence = Confidence.LOW, verifiedAt = after)
+            grindVerdict("jei", "Forge", verifiedAt = after)
         )
 
         val queued = RequeueSelection.verifiedBefore(verdicts, fix)

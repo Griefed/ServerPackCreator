@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
@@ -36,9 +35,9 @@ internal class VerdictCsvExporterTest {
     fun emitsHeaderAndOrdersConfirmationsFirst() {
         val csv = VerdictCsvExporter.toCsv(
             listOf(
-                grindVerdict("low-mod", "Forge", confidence = Confidence.LOW, verdict = Verdict.ERROR),
-                grindVerdict("high-mod", "Forge", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED),
-                grindVerdict("medium-mod", "Forge", confidence = Confidence.MEDIUM, verdict = Verdict.INCONCLUSIVE)
+                grindVerdict("low-mod", "Forge", verdict = Verdict.ERROR),
+                grindVerdict("high-mod", "Forge", verdict = Verdict.CONFIRMED),
+                grindVerdict("medium-mod", "Forge", verdict = Verdict.INCONCLUSIVE)
             )
         )
         val lines = csv.lines()

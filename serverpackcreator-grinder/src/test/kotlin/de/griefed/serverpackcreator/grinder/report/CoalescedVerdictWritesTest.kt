@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -46,7 +46,7 @@ internal class CoalescedVerdictWritesTest {
 
     private fun verdict(slug: String) = GrindVerdict(
         "Modrinth", slug, "https://modrinth.com/mod/$slug", "Forge", "$slug-",
-        Confidence.LOW, "Forge 47.2.0 / Minecraft 1.20.1 -> SURVIVED", Instant.parse("2026-08-29T00:00:00Z")
+        "Forge 47.2.0 / Minecraft 1.20.1 -> SURVIVED", Instant.parse("2026-08-29T00:00:00Z")
     )
 
     /** Reload through a plain write-through store, which is what a restart actually does. */

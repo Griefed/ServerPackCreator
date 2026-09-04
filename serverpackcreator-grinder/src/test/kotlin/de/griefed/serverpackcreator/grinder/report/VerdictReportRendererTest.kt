@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.Declaration
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
@@ -43,7 +42,7 @@ internal class VerdictReportRendererTest {
     @Test
     fun rendersSortableHeadersAndADataRow() {
         val html = VerdictReportRenderer.toHtml(
-            pageOf(listOf(grindVerdict("jei", "Forge", confidence = Confidence.HIGH, suggestedEntry = "jei-", verdict = Verdict.CONFIRMED)))
+            pageOf(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-", verdict = Verdict.CONFIRMED)))
         )
         Assertions.assertTrue(html.contains("<table"), "needs a table")
         Assertions.assertTrue(html.contains("""href="/?sort=name"""), "a header must link its sorted view")
@@ -136,8 +135,8 @@ internal class VerdictReportRendererTest {
      */
     @Test
     fun onlyARowWithKeptLogsGetsLinks() {
-        val crashed = grindVerdict("creativecore", "Fabric", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED)
-        val clean = grindVerdict("jei", "Forge", confidence = Confidence.LOW, verdict = Verdict.ERROR)
+        val crashed = grindVerdict("creativecore", "Fabric", verdict = Verdict.CONFIRMED)
+        val clean = grindVerdict("jei", "Forge", verdict = Verdict.ERROR)
         val kept = listOf(
             "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~console.log",
             "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
@@ -197,8 +196,7 @@ internal class VerdictReportRendererTest {
             loader = "SENTINELLOADER",
             suggestedEntry = "SENTINELPATTERN",
             projectUrl = "https://example.invalid/SENTINELPROJECT",
-            detail = "SENTINELDETAIL",
-            confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED).copy(
+            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED).copy(
             declared = Declaration.SERVER,
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),

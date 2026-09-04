@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.BootDecision
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
@@ -49,13 +48,13 @@ internal class FallbackPropertiesRendererTest {
     }
 
     @Test
-    fun addsHighConfidenceFindingsToTheRepositoryList() {
+    fun addsConfirmedFindingsToTheRepositoryList() {
         val document = FallbackPropertiesRenderer.render(
             clientsideMods = listOf("jei-", "journeymap-"),
             whitelist = emptyList(),
             verdicts = listOf(
-                grindVerdict("entityculling", "Fabric", Confidence.HIGH, verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"),
-                grindVerdict("skinlayers3d", "Forge", Confidence.HIGH, verdict = Verdict.CONFIRMED, suggestedEntry = "skinlayers3d-")
+                grindVerdict("entityculling", "Fabric", verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"),
+                grindVerdict("skinlayers3d", "Forge", verdict = Verdict.CONFIRMED, suggestedEntry = "skinlayers3d-")
             )
         )
 
@@ -65,15 +64,15 @@ internal class FallbackPropertiesRendererTest {
     }
 
     @Test
-    fun publishesOnlyHighConfidence() {
+    fun publishesOnlyConfirmed() {
         val document = FallbackPropertiesRenderer.render(
             clientsideMods = listOf("jei-"),
             whitelist = emptyList(),
             verdicts = listOf(
-                grindVerdict("maybe", "Fabric", Confidence.MEDIUM, suggestedEntry = "maybe-"),
-                grindVerdict("unlikely", "Fabric", Confidence.LOW, suggestedEntry = "unlikely-"),
-                grindVerdict("unknown", "Fabric", Confidence.INCONCLUSIVE, suggestedEntry = "unknown-"),
-                grindVerdict("nothingsuggested", "Fabric", Confidence.HIGH, suggestedEntry = null)
+                grindVerdict("maybe", "Fabric", suggestedEntry = "maybe-"),
+                grindVerdict("unlikely", "Fabric", suggestedEntry = "unlikely-"),
+                grindVerdict("unknown", "Fabric", suggestedEntry = "unknown-"),
+                grindVerdict("nothingsuggested", "Fabric", suggestedEntry = null)
             )
         )
 
@@ -88,7 +87,7 @@ internal class FallbackPropertiesRendererTest {
             whitelist = emptyList(),
             // The same mod, ground on three loaders: one entry, not three.
             verdicts = listOf("Fabric", "Forge", "NeoForge").map {
-                grindVerdict("entityculling", it, Confidence.HIGH, suggestedEntry = "entityculling-")
+                grindVerdict("entityculling", it, Verdict.CONFIRMED, suggestedEntry = "entityculling-")
             }
         )
 
@@ -122,7 +121,7 @@ internal class FallbackPropertiesRendererTest {
 
     @Test
     fun isStableAcrossRendersSoPollingDoesNotChurn() {
-        val verdicts = listOf(grindVerdict("zed", "Fabric", Confidence.HIGH, verdict = Verdict.CONFIRMED, suggestedEntry = "zed-"))
+        val verdicts = listOf(grindVerdict("zed", "Fabric", verdict = Verdict.CONFIRMED, suggestedEntry = "zed-"))
         val first = FallbackPropertiesRenderer.render(listOf("beta-", "alpha-"), emptyList(), verdicts)
         val second = FallbackPropertiesRenderer.render(listOf("alpha-", "beta-"), emptyList(), verdicts)
 
@@ -189,7 +188,7 @@ internal class FallbackPropertiesPublicationGateTest {
      * the same end-to-end outcomes: what a decisive rung produced publishes, what an excuse produced does not.
      */
     private fun verdict(slug: String, decidedBy: String?) = grindVerdict(
-        slug, "Fabric", confidence = Confidence.HIGH, suggestedEntry = "$slug-",
+        slug, "Fabric", suggestedEntry = "$slug-",
         verdict = if (BootDecision.entries.firstOrNull { it.name == decidedBy }?.decisive == true) {
             Verdict.CONFIRMED
         } else {

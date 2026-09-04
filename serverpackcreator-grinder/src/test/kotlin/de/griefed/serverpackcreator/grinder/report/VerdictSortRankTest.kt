@@ -19,14 +19,13 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Confidence sorts by **severity**, not by the alphabet.
+ * The verdict sorts by **rank**, not by the alphabet.
  *
  * Observed on the live report 2026-08-29: `?sort=confidence` returned HIGH, HIGH, INCONCLUSIVE,
  * INCONCLUSIVE, INCONCLUSIVE, LOW — alphabetical order, in which INCONCLUSIVE ("nothing was learned")
@@ -40,10 +39,10 @@ import org.junit.jupiter.api.Test
 internal class VerdictSortRankTest {
 
     private val store = listOf(
-        grindVerdict("a-low", "Forge", confidence = Confidence.LOW, verdict = Verdict.ERROR),
-        grindVerdict("b-inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE, verdict = Verdict.CLEAR),
-        grindVerdict("c-high", "Forge", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED),
-        grindVerdict("d-medium", "Forge", confidence = Confidence.MEDIUM, verdict = Verdict.INCONCLUSIVE)
+        grindVerdict("a-low", "Forge", verdict = Verdict.ERROR),
+        grindVerdict("b-inconclusive", "Forge", verdict = Verdict.CLEAR),
+        grindVerdict("c-high", "Forge", verdict = Verdict.CONFIRMED),
+        grindVerdict("d-medium", "Forge", verdict = Verdict.INCONCLUSIVE)
     )
 
     private fun verdictsFor(raw: String) = VerdictSelection
@@ -51,7 +50,7 @@ internal class VerdictSortRankTest {
         .rows.map { it.verdict }
 
     @Test
-    fun sortingByConfidenceRunsStrongestSignalFirst() {
+    fun sortingByVerdictRunsTheFindingsFirst() {
         Assertions.assertEquals(
             listOf(Verdict.CONFIRMED, Verdict.INCONCLUSIVE, Verdict.ERROR, Verdict.CLEAR),
             verdictsFor("sort=verdict"),
@@ -60,7 +59,7 @@ internal class VerdictSortRankTest {
     }
 
     @Test
-    fun sortingByConfidenceDescendingRunsWeakestFirst() {
+    fun sortingByVerdictDescendingRunsTheQuietRowsFirst() {
         Assertions.assertEquals(
             listOf(Verdict.CLEAR, Verdict.ERROR, Verdict.INCONCLUSIVE, Verdict.CONFIRMED),
             verdictsFor("sort=verdict&dir=desc")
