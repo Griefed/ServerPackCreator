@@ -35,6 +35,26 @@
   no consumer could respect it — `advancement-plaques` was refused for `prism`, which its toml marks
   `mandatory=false`.
 
+- **LANDMINE — version metadata is published as immutable snapshots; never hand out a live collection
+  (2026-09-04).** `VersionMeta` refreshes manifests on a **background coroutine** (`refreshScope.launch`,
+  B31's ~392 ms startup win) while callers read. Every `update()` in `versionmeta` used to `clear()` and
+  re-`add()` a plain collection that the accessors returned directly, so a reader got either a
+  `ConcurrentModificationException` or — silently — the empty window between the two.
+  **The silent half is what cost verdicts:** `BootVerifier.bootableCombination()` rebuilds its release set
+  from `serverReleases()` on *every* staging call, so an empty read fails every candidate and the boot is
+  refused with "No bootable file/Minecraft/loader combination for <loader>" — a statement about the engine's
+  own timing wearing the shape of a statement about the mod.
+  All ten classes now build fresh collections and publish each in one assignment to a `@Volatile` field.
+  - **Unmodifiable views, not merely `List`-typed fields.** A `List` field still holds an `ArrayList` at
+    runtime, so a caller can cast and mutate; the first attempt at the fix left the pin red for exactly that.
+  - **`VersionMeta.update()` and `refreshManifests()` share one monitor.** Locking `update()` alone did
+    nothing for the race, because the coroutine calls each meta's `update()` *directly* and never goes
+    through it — a guard that looked applied and was not.
+  - Three published signatures were narrowed (`MutableList`→`List`, `HashMap`→`Map`); see
+    `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  - Two latent bugs fell out: `MinecraftClientMeta.update()` never cleared `allVersions` (unbounded growth
+    on a long-running process), and `NeoForgeLoader.update()` reversed the *published* map while iterating it.
+
 ## Established patterns
 
 - **Settings-group extraction** (used to break up `ApiProperties`): (1) write group tests first

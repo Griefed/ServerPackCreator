@@ -78,10 +78,12 @@ internal class VersionMetaRefreshRaceTest {
         // Asserted, never skipped: a guarded assertion that quietly does nothing when the cast fails is the
         // defect class iteration 34 found. If an accessor ever stops presenting as MutableList, this must
         // fail and be re-read, not pass in silence.
-        Assertions.assertNotNull(asMutable, "expected a List that presents as MutableList; the check below relies on it")
+        val mutableView = requireNotNull(asMutable) {
+            "expected a List that presents as MutableList; the check below relies on it"
+        }
         Assertions.assertThrows(
             UnsupportedOperationException::class.java,
-            { asMutable!!.clear() },
+            { mutableView.clear() },
             "callers were handed the metadata's own mutable list; a refresh clears and refills exactly this"
         )
     }
@@ -163,10 +165,12 @@ internal class VersionMetaRefreshRaceTest {
                 val values = read()
                 @Suppress("UNCHECKED_CAST")
                 val asMutable = values as? MutableList<Any?>
-                Assertions.assertNotNull(asMutable, "$name: expected a List that presents as MutableList")
+                val mutableView = requireNotNull(asMutable) {
+                    "$name: expected a List that presents as MutableList"
+                }
                 Assertions.assertThrows(
                     UnsupportedOperationException::class.java,
-                    { asMutable!!.clear() },
+                    { mutableView.clear() },
                     "$name hands out the metadata's own mutable list; a refresh clears and refills it"
                 )
             }

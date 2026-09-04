@@ -220,6 +220,15 @@ class VersionMeta(
      * [update] performs, and concurrent re-parse while another thread reads a meta is not new here — the web
      * backend's `VersionRefreshSchedule` has always called [update] on a cron while requests read the metas.
      */
+    /**
+     * Re-parse every manifest and refresh the metas.
+     *
+     * **`@Synchronized` on the same monitor as [update], and that is the point.** This is the path the
+     * background coroutine takes, and it calls each meta's `update()` *directly* rather than going through
+     * [update] — so locking [update] alone left this one unguarded, which is the whole case the lock exists
+     * for. Both are instance methods, so both take `this`.
+     */
+    @Synchronized
     private fun refreshManifests() {
         try {
             checkManifests()

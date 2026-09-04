@@ -501,6 +501,48 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   - `Confidence` and `aggregateFor` are **gone**. `BootResult` stays: it is the classifier's per-boot
     reading, not a published verdict, and `VerdictPolicy` consumes it directly.
 
+- **A dependency the candidate *ships* is never fetched and never missing** (`BundledJars`, 2026-09-04).
+  Fabric and Quilt load jar-in-jar libraries, so a `depends` naming one is satisfied before staging looks.
+  `xaeros-world-map` was refused for `xaerolib` while carrying
+  `META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar`.
+  **The near-miss is the mechanism, and it is worth understanding before touching the refusal split:** a
+  Modrinth project `xaerolib` exists, so the manifest id *mapped* — but it publishes nothing tagged Quilt or
+  26.2, so nothing could be staged, and a mapped-then-unstageable id lands in `unsatisfied` (refuses) where an
+  unmappable one lands in `unmapped` (does not). Being *almost* resolvable was worse than being unknown.
+  Not a quirk: `sodium` declares **nine** nested jars, and they are exactly the Fabric API modules this file
+  documents as the most-commonly-missing dependency class.
+  - **LANDMINE — only jars the descriptor *declares* count.** Fabric loads the list in `jars` (Quilt:
+    `quilt_loader.jars`); a stray file under `META-INF/jars/` is not on the classpath. Treating one as
+    satisfied would skip staging something genuinely needed and produce a failure to blame on the mod — the
+    one direction where being generous here is dangerous. Unreadable input yields no ids for the same reason.
+  - **LANDMINE — read the nested jar as a `ZipInputStream`, never spool it to a temp file.** The first cut
+    used `createTempFile(...).apply { deleteOnExit() }`; `deleteOnExit` registers the path in a static set
+    that never shrinks, and this runs per staged jar, per boot attempt, for every candidate of a sweep.
+  - Ids come from each nested descriptor's own `id` and `provides`, never from its file name — a name like
+    `xaerolib-fabric-26.2-1.7.1.jar` carries a version and a loader the id does not.
+
+- **Client-only proof is about the mod, so it crosses builds and loaders** (`BootDecision.provesClientOnly`,
+  2026-09-04). `sodium` — a client renderer Modrinth marks `server_side: unsupported` — published
+  INCONCLUSIVE: its NeoForge boot crashed reaching LWJGL, and the other-version re-check then sampled a
+  Fabric build that booted cleanly, which `reconcileOtherVersionRecheck` treats as replacing the crash.
+  For the three rungs that are client-only evidence **by construction** — `CLIENT_ONLY_CLASS`,
+  `LWJGL_ON_A_DEDICATED_SERVER`, `FML_INVALID_DIST` — the re-check is not run, a survivor cannot clear it,
+  another loader cannot supersede it, and **every loader inherits CONFIRMED**. Features do not change with
+  the loader; only the implementation does. It matters concretely because the stems differ
+  (`sodium-neoforge-` vs `sodium-fabric-`), so excluding only the proving loader leaves half the project
+  shipping into every server pack.
+  - **LANDMINE — an *unexplained* crash is still disprovable**, and that guard is why `iron-chests` stopped
+    publishing off one bad build. Do not widen `provesClientOnly` to cover `OPERATOR_RULE`: a rule reaching
+    CRASHED states that *this console* is a crash, not that the mod is client-only.
+  - A superseded `ERROR` keeps its reason in the note. Publishing the entry is right — it comes from platform
+    metadata, not from the boot — but the grind still failed and an operator has to see that.
+
+- **LWJGL and FML's invalid-dist are shipped defaults, not examples** (2026-09-04). `iris` scored
+  INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` because both signatures lived only in
+  `boot-rules.example.json`, a template the daemon never loads. **Ordering was not the problem** — nothing
+  matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
+  ServerStarterJar prints the refusal in full and exits 0.
+
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in

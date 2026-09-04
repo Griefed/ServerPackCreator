@@ -5130,3 +5130,60 @@ grinder's actual runtime (a daemon running for weeks, not a CLI invocation).
 HIGH-1 first, and fix it by removing the temp file rather than by removing `deleteOnExit` — the spool is
 avoidable work on the hot staging path. MED-1 is a two-line change to preserve the error text. MED-2 wants a
 lock around `update()`. LOW-1 is a one-line strengthening.
+
+---
+
+## Iteration 38 — auditing iteration 37's own fixes (2026-09-04)
+
+**Scope:** the commit answering iteration 37, plus the four merges it repaired. **Method:** each fix traced
+to the *path that motivated it* rather than to the symbol it changed; the streamed reader verified against a
+real nine-nested-jar artifact.
+
+### HIGH
+
+- **HIGH-1 — MED-2's fix does not cover the case it was written for.** `VersionMeta.update()` was marked
+  `@Synchronized`, but the background refresh does **not** go through it: `refreshManifests()` calls
+  `minecraft.update()`, `fabric.update()`, `forge.update()` and the rest **directly**. So the lock guards the
+  public caller and leaves the coroutine — the path the finding was about — entirely unguarded, and two
+  refreshes can still interleave field generations.
+  This is iteration 34's HIGH-2 shape exactly: a guard that looks like it covers a case and cannot reach it.
+  Both are instance methods of `VersionMeta`, so marking `refreshManifests()` `@Synchronized` puts them on
+  the same monitor and actually serialises them.
+
+### MEDIUM
+
+- **MED-1 — none of the last four fixes is documented in a module `CLAUDE.md`.** `BundledJars`,
+  `BootDecision.provesClientOnly`, the `lwjgl-on-a-dedicated-server` / `fml-invalid-dist` defaults, and the
+  version-metadata snapshot rule appear in commit messages and nowhere a session will load. Four landmines
+  a reader is expected to respect — *only declared nested jars count*, *client-only proof crosses loaders*,
+  *the parser is not the bug*, *never hand out live metadata* — exist only in history. The repo's own
+  convention is that durable facts live in the module files precisely because commit messages are not read
+  before touching code.
+
+### LOW
+
+- **LOW-1 — two new `!!` in `VersionMetaRefreshRaceTest`.** Introduced while removing the vacuous-pass
+  guard: `assertNotNull(asMutable)` followed by `asMutable!!.clear()`. Correct, but the conventions ask for
+  no new `!!`, and `requireNotNull` returns the narrowed value in one step.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **The streamed nested-jar reader works on a real multi-nested artifact.** Run against the live
+  `sodium` Fabric jar, `BundledJars.idsIn` returns all **nine** declared ids —
+  `fabric-api-base`, `fabric-block-getter-api-v2`, `fabric-lifecycle-events-v1`, `fabric-renderer-api-v1`,
+  `fabric-rendering-fluids-v1`, `fabric-rendering-v1`, `fabric-resource-loader-v0`,
+  `fabric-resource-loader-v1`, `fabric-transitive-access-wideners-v1`. `ZipInputStream` positioned at an
+  entry bounds the read correctly, so `readTree` does not run past it. The temp file and its
+  `deleteOnExit` registration are gone.
+- **That result also shows the bundled-dependency fix has real breadth**: those nine are exactly the Fabric
+  API modules this repo documents as the most-commonly-missing dependency class, so a mod shipping its own
+  copies no longer drags the whole of Fabric API into staging.
+- **MED-1 of iteration 37 is correctly narrow** — a superseded `ERROR` keeps its reason in the note and
+  still publishes its entry, which is right: the entry comes from platform metadata, not from the boot.
+- **No mixed-concern commit** in the range; the fix commit is main-only and its pins pre-date it.
+
+### Recommendation
+
+HIGH-1 is one annotation and must be taken — the finding it answers is otherwise still open while looking
+closed, which is worse than never having fixed it. MED-1 is the documentation pass the four fixes never got.
+LOW-1 is two lines.
