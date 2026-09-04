@@ -5058,3 +5058,75 @@ Both are documentation-only. MED-1 should be fixed by marking the superseded sen
 deleting it — the measured rows behind it (`better-stats`, `tcdcommons`, `yacl`) are still the evidence for
 why a clean boot is worth recording at all, and that reasoning survives the change in what it is recorded
 *as*.
+
+---
+
+## Iteration 37 — the four fixes that followed the redesign (2026-09-04)
+
+**Scope:** everything since iteration 36 — the LWJGL/invalid-dist promotion, the bundled-dependency fix,
+client-only proof crossing loaders, and the version-metadata race. **Method:** code read rather than commit
+messages; pin boundaries verified by checkout; lifetimes and concurrency reasoned through against the
+grinder's actual runtime (a daemon running for weeks, not a CLI invocation).
+
+### HIGH
+
+- **HIGH-1 — `BundledJars` leaks a JVM-lifetime registration per nested jar, per scan.**
+  `idsIn` spools each declared nested jar with
+  `File.createTempFile("spc-nested-", ".jar").apply { deleteOnExit() }` and deletes it in a `finally`. The
+  **`deleteOnExit()` is the leak**: it adds the path to `java.io.DeleteOnExitHook`'s static `LinkedHashSet`,
+  which never shrinks — deleting the file does not deregister it. The `finally` frees the disk and nothing
+  frees the set.
+  **Why it matters here specifically:** this is called from `stageManifestDependencies`, i.e. per staged jar,
+  per boot attempt (three per candidate), for every candidate in a catalog sweep. `sodium` alone declares
+  nine nested jars. A daemon designed to run for weeks accumulates one dead `String` per nested jar per
+  attempt, plus a shutdown hook that eventually walks tens of thousands of already-deleted paths.
+  **And the temp file is not needed at all.** Only the nested descriptor is read; a `ZipInputStream` over the
+  entry's stream gets it without touching disk, which removes both the leak and the I/O.
+
+### MEDIUM
+
+- **MED-1 — `propagateClientOnlyProof` overwrites `Verdict.ERROR`, erasing an operator signal.** It copies
+  `verdict = Verdict.CONFIRMED` onto *every* non-proof verdict, including a loader whose grind was
+  **prevented** — no runtime image, a staging refusal, a failed overlay. Publishing that loader's entry is
+  right (the mod is client-only, and the entry comes from platform metadata rather than from the boot), but
+  the ERROR disappears from the report, so a host defect stops being visible on exactly the projects where a
+  proof happens to exist. `ERROR` exists to be actionable; it should survive in the note even when the
+  verdict is superseded.
+
+- **MED-2 — `VersionMeta.update()` is unsynchronised, so two refreshes can interleave field generations.**
+  The snapshot fix makes each field internally consistent, but nothing serialises `update()` itself:
+  `refreshManifests()` runs on `refreshScope`, and `update()` is public and callable by the app and the
+  grinder. Two overlapping runs can leave `releases` from generation A beside `meta` from generation B.
+  Each is a complete list, so nothing tears — but a lookup can miss a version the release list contains.
+  Strictly narrower than the bug just fixed, and the same class.
+
+### LOW
+
+- **LOW-1 — the immutability pin can pass vacuously.** `theReleaseListHandedToCallersIsNotLiveState` and
+  `noMetaHandsOutLiveState` both guard the assertion with `if (asMutable != null)`. Today the cast always
+  succeeds (`Collections.unmodifiableList` presents as `MutableList` to Kotlin), so the guard never skips —
+  but if an accessor ever returned something that failed the cast, the test would report success while
+  asserting nothing. A guard that can silently assert nothing is the defect class iteration 34 already found
+  once.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **Concern separation is clean across all six non-merge commits**: every one is either wholly test or
+  wholly main, with no mixed commit in the range.
+- **All three pin boundaries hold**, verified by checking each `test(...)` commit out and running its
+  module: `pin that client-only proof is about the mod`, `pin that version metadata is not handed out as
+  live state`, and `pin that no version meta hands out live state` are each RED at their own commit.
+- **The `iron-chests` guard survived the client-only change.** An unexplained crash is still disprovable by
+  another loader's clean boot; only `provesClientOnly` rungs are exempt, and
+  `anUnexplainedCrashIsStillDisprovedByAnotherLoader` pins it.
+- **`OPERATOR_RULE` correctly does not propagate** despite being `decisive` — a rule reaching CRASHED states
+  that *this console* is a crash, not that the mod is client-only.
+- **Only declared nested jars count** in `BundledJars`; a stray file under `META-INF/jars/` is not treated
+  as bundled, which is the direction where generosity would skip staging something genuinely needed.
+- **The three narrowed published signatures are recorded** in `API-BEHAVIOUR-CHANGES.md` with the reason.
+
+### Recommendation
+
+HIGH-1 first, and fix it by removing the temp file rather than by removing `deleteOnExit` — the spool is
+avoidable work on the hot staging path. MED-1 is a two-line change to preserve the error text. MED-2 wants a
+lock around `update()`. LOW-1 is a one-line strengthening.

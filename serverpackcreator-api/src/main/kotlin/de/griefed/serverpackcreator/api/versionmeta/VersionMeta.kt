@@ -386,6 +386,16 @@ class VersionMeta(
      * @author Griefed
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
+    /**
+     * Refresh every meta from the manifests on disk.
+     *
+     * **Serialised**, because the metas are refreshed from a background coroutine *and* by callers: each
+     * meta now publishes an internally consistent snapshot, but two overlapping runs could still leave one
+     * meta on generation A beside another on generation B, so a lookup could miss a version its own release
+     * list contained. The lock is uncontended in the normal case — one refresh at startup — and a refresh is
+     * far too coarse to be on any hot path.
+     */
+    @Synchronized
     fun update(): VersionMeta {
         checkManifests()
         minecraft.update()
