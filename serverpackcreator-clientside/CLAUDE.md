@@ -487,8 +487,15 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     rename would present as "nothing is clientside any more" rather than as a break.
   - `VerdictPolicy.decide` takes `declared` and **never consults it** — deliberate, so the signature is
     honest about what it was given rather than about what it used.
-  - `BootOutcome.stagingPrevented` is what `ERROR` derives from; it is set at the staging-refusal sites and
-    is the only thing distinguishing "prevented" from "learned nothing".
+  - **`BootOutcome.stagingPrevented` is what `ERROR` derives from, and EVERY path on which no container
+    ran must set it.** There are four: the staging refusal, the other-version re-stage refusal, a thrown
+    `packPostProcessor`, and `RunResult.NotStarted`. The last two were missed when the verdict was
+    introduced and shipped as INCONCLUSIVE (audit iteration 34) — the post-processor one being the worst,
+    since in the grinder that hook *is* `overlayLoaderInstall`, so it fails when the loader cache is
+    broken and was publishing a broken host as a verdict about every mod that wanted the tuple.
+    **If you add a path that returns a `BootOutcome` without a container having run, it belongs in that
+    set** — `PreventedGrindTest` is where to pin it, and `aRealBootThatFailedIsNotMarkedPrevented` is the
+    counterweight that stops the flag swallowing real crashes.
   - `verdictOf` also produces the report **note**, carrying the two things the verdict alone cannot say: a
     contradicted server claim, and a distribution-locked file that was never readable at all.
   - `Confidence` and `aggregateFor` are **gone**. `BootResult` stays: it is the classifier's per-boot
