@@ -44,6 +44,10 @@ internal class ManifestDependencyTest {
     private fun requirement(modId: String, constraint: String? = null) =
         ModDependency(modId, versionConstraint = constraint)
 
+    /** A dependency the descriptor marked optional — Forge's `mandatory=false`, NeoForge's `type="optional"`. */
+    private fun optionalRequirement(modId: String, constraint: String? = null) =
+        ModDependency(modId, versionConstraint = constraint, optional = true)
+
     /**
      * **The guard that keeps B from being a regression, and it is structural.** An unmapped manifest id
      * never even reaches [BootVerifier.refuseForMissingDependencies] — that is the whole point of keeping
@@ -299,5 +303,31 @@ internal class ManifestDependencyTest {
         )
 
         Assertions.assertEquals(ManifestDependencyPlan.Stage("306612", fits), plan)
+    }
+
+    /**
+     * **`advancement-plaques`' live refusal.** Its `META-INF/mods.toml` declares `iceberg` with
+     * `mandatory=true` and both `prism` and `toastcontrol` with `mandatory=false`; Modrinth agrees, listing
+     * prism (`1OE8wbN0`) `optional` against iceberg (`5faXoLqX`) `required`. The grinder nonetheless refused
+     * with *"Required dependency unavailable for Forge / Minecraft 26.2: prism"*, spending a
+     * `BootResult.INCONCLUSIVE` on a mod that never required prism.
+     *
+     * A dependency the author marked optional is not a reason to refuse a boot and not a reason to stage a
+     * jar: the mod loads without it by the descriptor's own statement. Both platforms already filter their
+     * side (`dependency_type == "required"`, `relationType == 3`); this is the manifest half of the same rule.
+     */
+    @Test
+    fun anOptionalRequirementIsNeverStaged() {
+        val requirements = listOf(
+            requirement("iceberg"),
+            optionalRequirement("prism"),
+            optionalRequirement("toastcontrol")
+        )
+
+        Assertions.assertEquals(
+            listOf("iceberg"),
+            BootVerifier.stageableRequirements(requirements).map { it.modID },
+            "only the mandatory=true dependency may gate the boot"
+        )
     }
 }

@@ -868,7 +868,13 @@ class BootVerifier(
             alreadyResolved: Set<String> = emptySet(),
             refFor: (String) -> String? = { it }
         ): List<ModDependency> = requirements.filterNot { requirement ->
-            requirement.modID.lowercase() in environmentProvidedIds ||
+            // An optional dependency is neither staged nor allowed to refuse a boot: the descriptor itself
+            // says the mod loads without it. `advancement-plaques` declares `prism` and `toastcontrol`
+            // `mandatory=false` and was refused for "Required dependency unavailable ... prism", which cost
+            // an INCONCLUSIVE on a mod that never required it. Both platforms already filter their own side
+            // (`dependency_type == "required"`, `relationType == 3`); this is the manifest half of that rule.
+            requirement.optional ||
+                requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
 
