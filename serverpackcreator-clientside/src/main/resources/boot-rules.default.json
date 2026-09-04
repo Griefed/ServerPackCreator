@@ -35,6 +35,20 @@
     "source": "CONSOLE"
   },
   {
+    "id": "lwjgl-on-a-dedicated-server",
+    "pattern": "(NoClassDefFoundError: org/lwjgl|ClassNotFoundException: org\\.lwjgl)",
+    "verdict": "CONFIRMED",
+    "note": "Reached for LWJGL, the client's windowing and OpenGL binding, which a dedicated server never ships. Decisive in a way client-only-class misses, since that one matches only net/minecraft/client -- `iris` scored INCONCLUSIVE on 'NoClassDefFoundError: org/lwjgl/Version' while this rule lived in the operator example file instead of here. Anchored to the two loader-failure spellings, never to the bare string: a server-side mod logging the word must not be caught.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "fml-invalid-dist",
+    "pattern": "for invalid dist DEDICATED_SERVER",
+    "verdict": "CONFIRMED",
+    "note": "FML refused a client-only class on a dedicated server -- it says so in as many words. Worth a rule of its own because NeoForge's ServerStarterJar can print this crash in full and still exit 0, which the exit-code rung reads as inconclusive; the console has to outrank the status here.",
+    "source": "CONSOLE"
+  },
+  {
     "id": "dependency-failure",
     "pattern": "(Missing or unsupported mandatory dependencies|Unmet dependency listing|Incompatible mods found|requires .{1,80} or above|requires any version of|requires version .{1,80} of |ClassMetadataNotFoundException|ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
     "verdict": "INCONCLUSIVE",
