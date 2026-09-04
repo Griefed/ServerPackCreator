@@ -89,7 +89,17 @@ class CurseForgePlatform(
         // catalog sweep spends of the API key's quota for evidence nobody reads.
         val files = objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0), headers))
             .path("data").map { toModFile(it, webBase) }
-        ProjectFiles(name, nativeRef, webBase, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
+        // The project's own slug, not the ref we arrived by: `unsatisfiedLabel` reads this back to name an
+        // unmet dependency, and a bare `306612` in a refusal is unreadable. Free here -- `modNode` is the
+        // `/mods/{id}` response we already fetched for `websiteUrl`.
+        ProjectFiles(
+            name,
+            modNode.textOrNull("slug") ?: nativeRef,
+            webBase,
+            DeclaredSupport.UNKNOWN,
+            DeclaredSupport.UNKNOWN,
+            files
+        )
     } catch (ex: Exception) {
         log.warn("Could not resolve CurseForge dependency '$nativeRef': ${ex.message}")
         null

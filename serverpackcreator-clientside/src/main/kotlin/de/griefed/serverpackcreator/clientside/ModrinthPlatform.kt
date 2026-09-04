@@ -69,14 +69,32 @@ class ModrinthPlatform(
     }
 
     override fun resolveDependency(nativeRef: String): ProjectFiles? = try {
-        val projectUrl = "https://modrinth.com/mod/$nativeRef"
+        val slug = slugOf(nativeRef)
+        val projectUrl = "https://modrinth.com/mod/$slug"
         val versions = objectMapper.readTree(httpFetcher.get("$apiBase/project/$nativeRef/version", headers))
         val files = versions.flatMap { filesOf(it, projectUrl) }
-        ProjectFiles(name, nativeRef, projectUrl, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
+        ProjectFiles(name, slug, projectUrl, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
     } catch (ex: Exception) {
         log.warn("Could not resolve Modrinth dependency '$nativeRef': ${ex.message}")
         null
     }
+
+    /**
+     * The project's own slug for [nativeRef], falling back to the ref when the lookup fails.
+     *
+     * A Modrinth dependency is an opaque base62 `project_id` (`P7dR8mSH`), which is not a name any reader
+     * recognises -- and it is what an unmet-dependency refusal prints. Unlike CurseForge, whose `/mods/{id}`
+     * response is already fetched here for other reasons, this costs **one extra GET per resolved
+     * dependency**: paid on the dependency path only, deduped within a candidate by `visited`, and bounded
+     * by how many distinct dependencies a pass resolves.
+     *
+     * **Falls back rather than failing.** The slug is presentation; the files are the functional half, so a
+     * project lookup that 404s or times out must not lose them. The ref also works as a Modrinth URL, so
+     * the fallback degrades to exactly the previous behaviour.
+     */
+    private fun slugOf(nativeRef: String): String = runCatching {
+        objectMapper.readTree(httpFetcher.get("$apiBase/project/$nativeRef", headers)).textOrNull("slug")
+    }.getOrNull() ?: nativeRef
 
     /**
      * Map a single Modrinth version-node onto our [ModFile]s. A version's `loaders`/`game_versions`
