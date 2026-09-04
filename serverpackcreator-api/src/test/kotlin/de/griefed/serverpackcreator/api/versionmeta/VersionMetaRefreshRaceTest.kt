@@ -147,6 +147,10 @@ internal class VersionMetaRefreshRaceTest {
             "minecraft.serverReleases" to { meta.minecraft.serverReleases() },
             "minecraft.clientReleases" to { meta.minecraft.clientReleases() },
             "minecraft.allVersions" to { meta.minecraft.allVersions() },
+            // Listed so the set is "every list accessor on MinecraftMeta" rather than the three that
+            // happened to be written down; an accessor added beside these inherits the guard.
+            "minecraft.clientSnapshots" to { meta.minecraft.clientSnapshots() },
+            "minecraft.serverSnapshots" to { meta.minecraft.serverSnapshots() },
             "forge.forgeVersions" to { meta.forge.forgeVersions() },
             "forge.supportedMinecraftVersions" to { meta.forge.supportedMinecraftVersions() },
             "neoForge.neoForgeVersions" to { meta.neoForge.neoForgeVersions() },

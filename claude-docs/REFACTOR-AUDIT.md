@@ -5187,3 +5187,54 @@ real nine-nested-jar artifact.
 HIGH-1 is one annotation and must be taken — the finding it answers is otherwise still open while looking
 closed, which is worse than never having fixed it. MED-1 is the documentation pass the four fixes never got.
 LOW-1 is two lines.
+
+---
+
+## Iteration 39 — third pass; verifying that iteration 38's fixes actually reach their targets (2026-09-04)
+
+**Scope:** the commit answering iteration 38. **Method:** deliberately the same method that caught
+iteration 38's HIGH-1 — trace each fix to the *path* it claims to cover, not the symbol it changed — plus a
+sweep for any accessor still handing out live state.
+
+### HIGH — none
+
+`refreshManifests()` and `update()` now both carry `@Synchronized` on `VersionMeta`, so the background
+coroutine and every caller take one monitor. Verified by reading both declarations rather than trusting the
+commit.
+
+**And the race was reachable in production, not merely in theory.** `VersionRefreshSchedule` is a
+Spring `@Scheduled` cron job calling `versionMeta.update()`, so a scheduled refresh could overlap the
+startup coroutine on a running web instance. That validates iteration 37's MED-2 as a real defect rather
+than a speculative one — worth recording, because "could two refreshes really overlap?" is exactly the
+question a future reader will ask before removing the lock.
+
+### MEDIUM — none
+
+### LOW
+
+- **LOW-1 — the pin covers three of the four Minecraft list accessors.** `minecraft.clientSnapshots()` and
+  `minecraft.serverSnapshots()` return the same kind of snapshot and are not asserted, while
+  `clientReleases`, `serverReleases` and `allVersions` are. Nothing is broken — they read the same fields
+  the covered accessors do — but the omission is arbitrary rather than reasoned, and a future accessor
+  added beside them would inherit the gap.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **No accessor in `versionmeta` still returns a mutable collection.** Every `fun x() = loader.field`
+  returns a `@Volatile` field holding a `Collections.unmodifiable*` view, and the public surface has no
+  `MutableList`, `MutableMap`, `HashMap` or `MutableSet` return type left.
+- **`BundledJars` is safe to share.** `DefaultBootRules.cached` is `by lazy` (synchronized by default) and
+  the Jackson `ObjectMapper` is thread-safe for reads after construction, which is all either does — both
+  are reached from grinder worker threads.
+- **`bootableCombination()` copies immediately** (`serverReleases().map { … }.toHashSet()`), so nothing in
+  the boot path holds a metadata list across a refresh even now that holding one would be safe.
+- **The documentation added in iteration 38 is where a session will load it** — the `BundledJars`,
+  `provesClientOnly`, LWJGL-defaults and snapshot landmines are in the two module `CLAUDE.md` files, each
+  with the near-miss mechanism that makes it subtle rather than only the rule.
+- **No `!!` remains** in `VersionMetaRefreshRaceTest`.
+
+### Recommendation
+
+LOW-1 only: extend the pin to the two snapshot accessors so the set is "every list accessor" rather than
+"the ones that happened to be listed". Three passes have now been run over this range; the remaining item is
+a completeness nit rather than a defect.
