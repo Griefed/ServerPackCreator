@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
@@ -38,10 +39,10 @@ import org.junit.jupiter.api.Test
 internal class VerdictQueryTest {
 
     private val store = listOf(
-        grindVerdict("jei", "Forge", confidence = Confidence.HIGH, detail = "crashed hard"),
-        grindVerdict("sodium", "Fabric", confidence = Confidence.LOW, detail = "clean boot"),
-        grindVerdict("iron-chests", "NeoForge", confidence = Confidence.MEDIUM, detail = "declared server"),
-        grindVerdict("jei", "Fabric", confidence = Confidence.LOW, platform = ModPlatforms.CURSEFORGE)
+        grindVerdict("jei", "Forge", confidence = Confidence.HIGH, detail = "crashed hard", verdict = Verdict.CONFIRMED),
+        grindVerdict("sodium", "Fabric", confidence = Confidence.LOW, detail = "clean boot", verdict = Verdict.ERROR),
+        grindVerdict("iron-chests", "NeoForge", confidence = Confidence.MEDIUM, detail = "declared server", verdict = Verdict.INCONCLUSIVE),
+        grindVerdict("jei", "Fabric", confidence = Confidence.LOW, platform = ModPlatforms.CURSEFORGE, verdict = Verdict.ERROR)
     )
 
     private fun select(raw: String?) = VerdictSelection.select(store, VerdictQuery.parse(QueryParams.parse(raw), 250))
@@ -60,7 +61,7 @@ internal class VerdictQueryTest {
     fun aChoiceFilterMatchesExactlyAndCaseInsensitively() {
         Assertions.assertEquals(2, select("f.loader=Fabric").matched)
         Assertions.assertEquals(2, select("f.loader=fabric").matched)
-        Assertions.assertEquals(1, select("f.confidence=HIGH").matched)
+        Assertions.assertEquals(1, select("f.verdict=CONFIRMED").matched)
         Assertions.assertEquals(1, select("f.platform=CurseForge").matched)
     }
 

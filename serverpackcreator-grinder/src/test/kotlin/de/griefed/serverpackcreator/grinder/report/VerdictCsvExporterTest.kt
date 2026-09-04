@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -32,16 +33,16 @@ import java.time.Instant
 internal class VerdictCsvExporterTest {
 
     @Test
-    fun emitsHeaderAndOrdersHighestConfidenceFirst() {
+    fun emitsHeaderAndOrdersConfirmationsFirst() {
         val csv = VerdictCsvExporter.toCsv(
             listOf(
-                grindVerdict("low-mod", "Forge", confidence = Confidence.LOW),
-                grindVerdict("high-mod", "Forge", confidence = Confidence.HIGH),
-                grindVerdict("medium-mod", "Forge", confidence = Confidence.MEDIUM)
+                grindVerdict("low-mod", "Forge", confidence = Confidence.LOW, verdict = Verdict.ERROR),
+                grindVerdict("high-mod", "Forge", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED),
+                grindVerdict("medium-mod", "Forge", confidence = Confidence.MEDIUM, verdict = Verdict.INCONCLUSIVE)
             )
         )
         val lines = csv.lines()
-        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Platform,ProjectSideness,JarSideness,Detail,Rule,Decision,Dependencies,Scanned", lines[0])
+        Assertions.assertEquals("Name,Project,NamePattern,Verdict,Declared,Loader,Platform,ProjectSideness,JarSideness,Detail,Rule,Decision,Dependencies,Scanned", lines[0])
         Assertions.assertTrue(lines[1].startsWith("high-mod,"), "HIGH must come first: ${lines[1]}")
         Assertions.assertTrue(lines[2].startsWith("medium-mod,"))
         Assertions.assertTrue(lines[3].startsWith("low-mod,"))
@@ -77,6 +78,6 @@ internal class VerdictCsvExporterTest {
 
     @Test
     fun emptyVerdictsStillEmitTheHeader() {
-        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Platform,ProjectSideness,JarSideness,Detail,Rule,Decision,Dependencies,Scanned", VerdictCsvExporter.toCsv(emptyList()))
+        Assertions.assertEquals("Name,Project,NamePattern,Verdict,Declared,Loader,Platform,ProjectSideness,JarSideness,Detail,Rule,Decision,Dependencies,Scanned", VerdictCsvExporter.toCsv(emptyList()))
     }
 }

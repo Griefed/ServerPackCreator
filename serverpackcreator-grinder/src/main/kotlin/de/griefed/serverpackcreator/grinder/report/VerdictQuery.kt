@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -73,11 +73,17 @@ internal enum class VerdictField(
     NAME("Name", "Name", "name", FilterKind.TEXT, { it.slug }),
     PROJECT("Project", "Project", "project", FilterKind.TEXT, { it.projectUrl }),
     PATTERN("Name-pattern", "NamePattern", "pattern", FilterKind.TEXT, { it.suggestedEntry ?: "" }),
-    CONFIDENCE(
-        "Confidence", "Confidence", "confidence", FilterKind.CHOICE, { it.confidence.name },
+    VERDICT(
+        "Verdict", "Verdict", "verdict", FilterKind.CHOICE, { it.verdict.name },
         // Zero-padded so the rank sorts as text alongside every other column, without the sorter needing
         // to know this one is numeric. One digit is plenty and the padding keeps it honest past nine.
-        sortKey = { "%02d".format(CONFIDENCE_RANK[it.confidence] ?: 99) }
+        sortKey = { "%02d".format(VERDICT_RANK[it.verdict] ?: 99) }
+    ),
+    DECLARED(
+        "Declared", "Declared", "declared", FilterKind.CHOICE,
+        // Blank, never "UNKNOWN" or "null": every CurseForge project declares nothing at all, and a word
+        // here would tell a reader we asked and were told rather than that nobody ever said.
+        { it.declared?.name ?: "" }
     ),
     LOADER("Loader", "Loader", "loader", FilterKind.CHOICE, { it.loader }),
     PLATFORM("Platform", "Platform", "platform", FilterKind.CHOICE, { it.platform }),
@@ -116,8 +122,10 @@ internal enum class VerdictField(
          * separately, so the table and the export could drift into disagreeing about what "highest
          * confidence first" means. Pinned by `theCsvDefaultOrderIsTheSameOrdering`.
          */
-        val CONFIDENCE_RANK = mapOf(
-            Confidence.HIGH to 0, Confidence.MEDIUM to 1, Confidence.LOW to 2, Confidence.INCONCLUSIVE to 3
+        val VERDICT_RANK = mapOf(
+            // What a maintainer came for, in order: the findings; then the consoles a new rule gets written
+            // from; then the host's own problems; then the rows with nothing left to do.
+            Verdict.CONFIRMED to 0, Verdict.INCONCLUSIVE to 1, Verdict.ERROR to 2, Verdict.CLEAR to 3
         )
 
         /** The column addressed by [param], or `null` — an unknown one is ignored rather than fatal. */
@@ -389,10 +397,10 @@ internal object VerdictSelection {
         query: VerdictQuery,
         logCount: (GrindVerdict) -> Int
     ): List<GrindVerdict> = when (val sort = query.sort) {
-        // The default order IS the confidence sort, expressed through the same key, so the two can never
-        // disagree about what "highest confidence first" means.
+        // The default order IS the verdict sort, expressed through the same key, so the two can never
+        // disagree about what "the findings first" means.
         null -> matched.sortedWith(
-            compareBy({ VerdictField.CONFIDENCE.sortKey(it) }, { it.slug }, { it.loader })
+            compareBy({ VerdictField.VERDICT.sortKey(it) }, { it.slug }, { it.loader })
         )
 
         // Only the COUNT is reversed, and the slug/loader tie-break is appended afterwards so it runs the

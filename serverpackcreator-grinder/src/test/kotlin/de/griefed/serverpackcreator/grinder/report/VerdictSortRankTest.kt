@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -36,33 +37,33 @@ import org.junit.jupiter.api.Test
  * only here — which also collapses the two hand-maintained rank tables (this layer's and the CSV
  * exporter's) onto one declaration.
  */
-internal class ConfidenceSortRankTest {
+internal class VerdictSortRankTest {
 
     private val store = listOf(
-        grindVerdict("a-low", "Forge", confidence = Confidence.LOW),
-        grindVerdict("b-inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE),
-        grindVerdict("c-high", "Forge", confidence = Confidence.HIGH),
-        grindVerdict("d-medium", "Forge", confidence = Confidence.MEDIUM)
+        grindVerdict("a-low", "Forge", confidence = Confidence.LOW, verdict = Verdict.ERROR),
+        grindVerdict("b-inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE, verdict = Verdict.CLEAR),
+        grindVerdict("c-high", "Forge", confidence = Confidence.HIGH, verdict = Verdict.CONFIRMED),
+        grindVerdict("d-medium", "Forge", confidence = Confidence.MEDIUM, verdict = Verdict.INCONCLUSIVE)
     )
 
-    private fun confidencesFor(raw: String) = VerdictSelection
+    private fun verdictsFor(raw: String) = VerdictSelection
         .select(store, VerdictQuery.parse(QueryParams.parse(raw), 250))
-        .rows.map { it.confidence }
+        .rows.map { it.verdict }
 
     @Test
     fun sortingByConfidenceRunsStrongestSignalFirst() {
         Assertions.assertEquals(
-            listOf(Confidence.HIGH, Confidence.MEDIUM, Confidence.LOW, Confidence.INCONCLUSIVE),
-            confidencesFor("sort=confidence"),
-            "a named confidence sort must run by severity; alphabetically INCONCLUSIVE outranks MEDIUM"
+            listOf(Verdict.CONFIRMED, Verdict.INCONCLUSIVE, Verdict.ERROR, Verdict.CLEAR),
+            verdictsFor("sort=verdict"),
+            "a named verdict sort must run by rank; alphabetically CLEAR would outrank CONFIRMED"
         )
     }
 
     @Test
     fun sortingByConfidenceDescendingRunsWeakestFirst() {
         Assertions.assertEquals(
-            listOf(Confidence.INCONCLUSIVE, Confidence.LOW, Confidence.MEDIUM, Confidence.HIGH),
-            confidencesFor("sort=confidence&dir=desc")
+            listOf(Verdict.CLEAR, Verdict.ERROR, Verdict.INCONCLUSIVE, Verdict.CONFIRMED),
+            verdictsFor("sort=verdict&dir=desc")
         )
     }
 
@@ -70,8 +71,8 @@ internal class ConfidenceSortRankTest {
     @Test
     fun theNamedSortAgreesWithTheDefaultOrder() {
         Assertions.assertEquals(
-            confidencesFor(""), confidencesFor("sort=confidence"),
-            "the default order is highest-confidence-first, so an explicit ascending sort must match it"
+            verdictsFor(""), verdictsFor("sort=verdict"),
+            "the default order leads with confirmations, so an explicit ascending sort must match it"
         )
     }
 
@@ -84,12 +85,15 @@ internal class ConfidenceSortRankTest {
     fun theCsvDefaultOrderIsTheSameOrdering() {
         val csvOrder = VerdictCsvExporter.toCsv(store).lineSequence()
             .drop(1).filter { it.isNotBlank() }
-            .map { line -> Confidence.entries.first { line.contains(it.name) } }
+            // Matched on the Verdict column's own cell rather than anywhere in the line: INCONCLUSIVE is
+            // a member of both the old and the new vocabulary, so a loose `contains` would still find a
+            // stale one and quietly agree with itself.
+            .map { line -> Verdict.entries.first { line.split(",").any { cell -> cell == it.name } } }
             .toList()
 
         Assertions.assertEquals(
-            confidencesFor(""), csvOrder,
-            "an unordered /export.csv must use the same confidence ranking the table does"
+            verdictsFor(""), csvOrder,
+            "an unordered /export.csv must use the same verdict ranking the table does"
         )
     }
 }
