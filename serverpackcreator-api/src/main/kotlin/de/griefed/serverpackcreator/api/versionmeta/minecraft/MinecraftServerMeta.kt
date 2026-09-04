@@ -26,28 +26,57 @@ package de.griefed.serverpackcreator.api.versionmeta.minecraft
  *
  * @author Griefed
  */
+import java.util.Collections
+
 internal class MinecraftServerMeta(private val minecraftClientMeta: MinecraftClientMeta) {
 
-    val releases: MutableList<MinecraftServer> = ArrayList(100)
-    val snapshots: MutableList<MinecraftServer> = ArrayList(200)
-    val meta = HashMap<String, MinecraftServer>(300)
+    /**
+     * Published as **immutable snapshots behind `@Volatile`**, not as collections [update] mutates in place.
+     *
+     * `VersionMeta` refreshes on a background coroutine while callers read, and the previous shape —
+     * `clear()` then re-`add()` on a shared `ArrayList` handed straight to callers — let a reader either
+     * throw `ConcurrentModificationException` or, worse, silently observe the empty window between the two.
+     * An empty release list makes `BootVerifier.bootableCombination()` refuse every candidate. Swapping a
+     * finished list into a volatile field means a reader sees the whole previous state or the whole next
+     * one, with no lock on the hot read path.
+     */
+    @Volatile
+    var releases: List<MinecraftServer> = emptyList()
+        private set
+
+    @Volatile
+    var snapshots: List<MinecraftServer> = emptyList()
+        private set
+
+    @Volatile
+    var meta: Map<String, MinecraftServer> = emptyMap()
+        private set
 
     /**
-     * Update this instance of with new information.
+     * Update this instance with new information.
+     *
+     * Builds fresh collections and publishes them in one assignment each; nothing a caller already holds is
+     * touched.
      *
      * @author Griefed
      */
     fun update() {
-        releases.clear()
-        snapshots.clear()
-        meta.clear()
+        val nextReleases = ArrayList<MinecraftServer>(100)
+        val nextSnapshots = ArrayList<MinecraftServer>(200)
+        val nextMeta = HashMap<String, MinecraftServer>(300)
         for (release in minecraftClientMeta.releases) {
-            releases.add(release.minecraftServer)
-            meta[release.version] = release.minecraftServer
+            nextReleases.add(release.minecraftServer)
+            nextMeta[release.version] = release.minecraftServer
         }
         for (snapshot in minecraftClientMeta.snapshots) {
-            snapshots.add(snapshot.minecraftServer)
-            meta[snapshot.version] = snapshot.minecraftServer
+            nextSnapshots.add(snapshot.minecraftServer)
+            nextMeta[snapshot.version] = snapshot.minecraftServer
         }
+        // Unmodifiable views, not the builders themselves: a `List`-typed field still holds an ArrayList at
+        // runtime, so a caller could cast and mutate the metadata's own state. The wrapper makes the
+        // snapshot a snapshot in fact and not merely in the type.
+        releases = Collections.unmodifiableList(nextReleases)
+        snapshots = Collections.unmodifiableList(nextSnapshots)
+        meta = Collections.unmodifiableMap(nextMeta)
     }
 }
