@@ -3628,3 +3628,53 @@ no other context for the row.
 
 Suites from clean (`--rerun-tasks`): clientside **354**, grinder **465** (29 skipped), both green;
 every module compiles.
+
+## 2026-09-04 — one refusal, two defects: the dependency's name and the window it was sought in
+
+**Branch:** `claude-dependency-resolution`
+
+Reported: `architectury-api` publishing `ERROR` with *"Required dependency unavailable for Quilt /
+Minecraft 1.20.4: **306612**"*. Fetched the live store to check rather than trusting the paste — 68
+verdicts, two dependency refusals, both CurseForge, both bare ids:
+
+| mod | loader / MC | ref | actually |
+|---|---|---|---|
+| `architectury-api` | Quilt / 1.20.4 | `306612` | Fabric API |
+| `waystones` | Forge / 1.21.11 | `531761` | Balm |
+
+**Defect 1 — the name, and why the previous fix missed it.** `unsatisfiedLabel` names a resolved project
+by `ProjectFiles.slug`, and `DependencyLabelTest` proves it does. But **both** platforms'
+`resolveDependency` passed `nativeRef` into the `slug` parameter *positionally*, so the label resolved the
+project and read back the ref it started from. The earlier fix therefore only ever helped the branches
+that append something — `(unresolved X project)`, `(distribution-locked on X)` — while the plain resolved
+case, the common one, still printed the id.
+
+The reusable lesson is the test boundary, not the bug: **a unit test that constructs the value under test
+cannot see a producer that constructs it wrongly.** Same shape as the loader step-down, whose pin injected
+the very versions it was meant to prove were fetched. `DependencySlugTest` drives the real
+`resolveDependency` with canned JSON and asserts the composition — the only arrangement in which a
+positional slip in either platform fails a test.
+
+**Defect 2 — the window, which is what actually cost verdicts.** `resolveDependency` reads one page of 50
+files. That is still right (a dependency needs *a* usable file, not a history), but it asked
+**unfiltered**, and CurseForge answers newest-first across every loader and Minecraft version. Fabric API
+has 1000+ files there, so its newest 50 are all current Minecraft and a 1.20.4 boot finds nothing — a
+refusal for a file that has existed since December 2023, published as ERROR over whatever the store held.
+
+`/v1/mods/{modId}/files` takes `gameVersion` (parameters verified against
+https://docs.curseforge.com/rest-api/: `gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`,
+`pageSize`). **`modLoaderType` is deliberately not sent** — asking for Quilt returns nothing for Fabric
+API and re-creates the same refusal one layer down, because `BootCandidateSelector.fallbackLoaders` has to
+*see* the Fabric builds to fall back to them. Version narrows the set; loader choice stays in the
+selector.
+
+Modrinth accepts the parameter and ignores it: its version endpoint returns a whole version list in one
+response, so it has no newest-N window. Its slug, though, costs one extra GET on the dependency path, and
+falls back to the ref rather than losing the project.
+
+**Process note, recorded because it went wrong:** the four commits were made directly on `develop`, against
+this project's one-branch-per-fix rule. Nothing had been pushed, so they were moved onto
+`claude-dependency-resolution` and `develop` was reset to the previous merge — the same shape the rule
+would have produced. Cheap here only because it was caught before a push.
+
+Suites from clean (`--rerun-tasks`): clientside **362**, grinder **465** (29 skipped), app green.
