@@ -21,7 +21,9 @@ package de.griefed.serverpackcreator.api.versionmeta
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
@@ -125,5 +127,48 @@ internal class VersionMetaRefreshRaceTest {
             0, shortReads.get(),
             "a reader saw a partially-filled release list; that is what refuses a good candidate"
         )
+    }
+
+    /**
+     * **Every loader meta, not just Minecraft.** `ForgeLoader`, `NeoForgeLoader`, `FabricLoader`,
+     * `FabricInstaller`, `QuiltLoader`, `QuiltInstaller`, `LegacyFabricInstaller` and
+     * `LegacyFabricVersioning` all share the clear-then-refill shape, and `LoaderVersionResolver` reads them
+     * on the same threads that read the Minecraft metas. A fix that covered only Minecraft would leave the
+     * identical race behind a different accessor.
+     */
+    @TestFactory
+    fun noMetaHandsOutLiveState(): List<DynamicTest> {
+        val meta = apiWrapper.versionMeta
+        val accessors = listOf<Pair<String, () -> List<*>>>(
+            "minecraft.serverReleases" to { meta.minecraft.serverReleases() },
+            "minecraft.clientReleases" to { meta.minecraft.clientReleases() },
+            "minecraft.allVersions" to { meta.minecraft.allVersions() },
+            "forge.forgeVersions" to { meta.forge.forgeVersions() },
+            "forge.supportedMinecraftVersions" to { meta.forge.supportedMinecraftVersions() },
+            "neoForge.neoForgeVersions" to { meta.neoForge.neoForgeVersions() },
+            "neoForge.supportedMinecraftVersions" to { meta.neoForge.supportedMinecraftVersions() },
+            "fabric.loaderVersions" to { meta.fabric.loaderVersions() },
+            "fabric.installerVersions" to { meta.fabric.installerVersions() },
+            "quilt.loaderVersions" to { meta.quilt.loaderVersions() },
+            "quilt.installerVersions" to { meta.quilt.installerVersions() },
+            "legacyFabric.loaderVersions" to { meta.legacyFabric.loaderVersions() },
+            "legacyFabric.installerVersions" to { meta.legacyFabric.installerVersions() },
+            "legacyFabric.supportedMinecraftVersions" to { meta.legacyFabric.supportedMinecraftVersions() }
+        )
+
+        return accessors.map { (name, read) ->
+            DynamicTest.dynamicTest(name) {
+                val values = read()
+                @Suppress("UNCHECKED_CAST")
+                val asMutable = values as? MutableList<Any?>
+                if (asMutable != null && values.isNotEmpty()) {
+                    Assertions.assertThrows(
+                        UnsupportedOperationException::class.java,
+                        { asMutable.clear() },
+                        "$name hands out the metadata's own mutable list; a refresh clears and refills it"
+                    )
+                }
+            }
+        }
     }
 }
