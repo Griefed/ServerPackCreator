@@ -1017,7 +1017,12 @@ class BootVerifier(
             outcome: BootOutcome,
             metadataDeclaresServerSupport: Boolean,
             limit: Int
-        ): Boolean = outcome.result == BootResult.CRASHED && metadataDeclaresServerSupport && limit > 0
+        ): Boolean = outcome.result == BootResult.CRASHED &&
+            // Already answered. The re-check exists to tell "this build crashed" from "this mod cannot
+            // run on a server"; client-only evidence has settled that, so the boots would buy nothing and
+            // a survivor among them would actively discard the proof.
+            outcome.decidedBy?.provesClientOnly != true &&
+            metadataDeclaresServerSupport && limit > 0
 
         /**
          * Fold the other-version [attempts] into the verdict for the crash in [first]. One clean boot wins
@@ -1031,6 +1036,12 @@ class BootVerifier(
          * the detail has to say what actually ran, not merely that something did.
          */
         internal fun reconcileOtherVersionRecheck(first: BootOutcome, attempts: List<OtherVersionAttempt>): BootOutcome {
+            // Defence in depth: `shouldRecheckAgainstOtherVersions` already declines to sample a
+            // client-only-proven crash, but if one is ever reconciled anyway, a clean boot elsewhere must not
+            // erase the proof. `sodium`'s LWJGL crash was discarded exactly here, by a Fabric build starting.
+            if (first.decidedBy?.provesClientOnly == true) {
+                return first
+            }
             val survivor = attempts.firstOrNull { it.outcome.result == BootResult.SURVIVED }
             if (survivor != null) {
                 return survivor.outcome.copy(
