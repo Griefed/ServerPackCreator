@@ -156,18 +156,24 @@ object BootLogClassifier {
      * clientside HIGH. Kept specific so a genuine mod-load crash (a stacktrace, a mixin error) does
      * **not** match.
      */
-    private val setupAbortMarkers = Regex(
-        "(is not available for Minecraft" +
-            "|servers are having trouble" +
-            "|Something went wrong during the server installation" +
-            "|Java install-script failed" +
-            "|Java installation failed" +
-            "|wget or curl is required" +
-            "|variables\\.txt not present" +
-            "|Incorrect modloader specified" +
-            "|did not agree to Mojang's EULA)",
-        RegexOption.IGNORE_CASE
-    )
+    private val setupAbortMarkers = bundledPattern("setup-abort")
+
+    /**
+     * The compiled pattern of a bundled rule, by id — the single source of truth for every signature this
+     * ladder tests.
+     *
+     * The patterns used to be duplicated here as `Regex` literals; they now live in
+     * `boot-rules.default.json`, where an operator can read and edit them, and this reads them back so the
+     * ladder's *order* stays in code while its *content* does not. The KDoc above each field is kept
+     * deliberately: it is the rationale and the measured evidence for the pattern, which the file's `note`
+     * mirrors but which belongs beside the rung that uses it.
+     *
+     * A rule the bundle does not define yields a regex that never matches, which disables that rung rather
+     * than throwing mid-classification. `DefaultBootRulesTest` pins that every id here exists, so this
+     * fallback is a safety net and never the normal path.
+     */
+    private fun bundledPattern(ruleId: String): Regex =
+        DefaultBootRules.bundled().rules.firstOrNull { it.id == ruleId }?.regex ?: Regex("(?!)")
 
     /**
      * Console evidence that the run died for lack of memory rather than because of the mod — the JVM's own
@@ -178,13 +184,7 @@ object BootLogClassifier {
      * at 3 GiB while the host's Docker VM held 1.93 GiB, so the cap could not be honoured and fat mods were killed by
      * the VM — which, without this, scored as a HIGH-confidence clientside crash.
      */
-    private val outOfMemoryMarkers = Regex(
-        $$"(java\\.lang\\.OutOfMemoryError" +
-            "|insufficient memory for the Java Runtime Environment" +
-            "|Cannot allocate memory" +
-            $$"|Killed\\s+\"?\\$?JAVA)",
-        RegexOption.IGNORE_CASE
-    )
+    private val outOfMemoryMarkers = bundledPattern("out-of-memory")
 
     /**
      * The JVM never started: it could not open or identify the jar it was told to run. The server therefore never
@@ -210,17 +210,7 @@ object BootLogClassifier {
      * means "the launcher said it" and nothing else. Lines are matched one at a time, which is what makes the
      * anchor mean line start.
      */
-    private val launchFailureMarkers = Regex(
-        "(Unable to access jarfile" +
-            "|Could not find or load main class" +
-            "|Invalid or corrupt jarfile" +
-            "|^Error: could not open" +
-            // No vanilla server jar means the loader's launcher aborts before Loader itself starts, so no
-            // mod is ever loaded. Both spellings: the shipped template's own message, and Quilt's.
-            "|The Minecraft server \\.JAR is missing" +
-            "|Missing game jar at)",
-        RegexOption.IGNORE_CASE
-    )
+    private val launchFailureMarkers = bundledPattern("launch-failure")
 
     /**
      * The **modloader itself** failed to bootstrap: the JVM started, but the server never did, so no mod was ever
@@ -238,12 +228,7 @@ object BootLogClassifier {
      * The starter jar's own give-ups are the same class of failure and sit here too: an install layer with no
      * run-script leaves it nothing to read launch arguments out of, and it exits before any loader code runs.
      */
-    private val loaderBootstrapFailureMarkers = Regex(
-        "(Could not find parent layer for module" +
-            "|Failed to find run file at" +
-            "|Failed to find startup arguments using run script path)",
-        RegexOption.IGNORE_CASE
-    )
+    private val loaderBootstrapFailureMarkers = bundledPattern("loader-bootstrap-failure")
 
     /**
      * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
@@ -254,24 +239,7 @@ object BootLogClassifier {
      * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
      * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
      */
-    private val dependencyFailureMarkers = Regex(
-        "(Missing or unsupported mandatory dependencies" +
-            "|Unmet dependency listing" +
-            "|Incompatible mods found" +
-            "|requires .{1,80} or above" +
-            "|requires any version of" +
-            // Quilt Loader's solver phrasing, e.g. `requires version [0.19.3, INF) of fabricloader`. The largest
-            // single class in the 2026-08-29 census -- 63 of 200 published crash logs -- and previously read as a
-            // plain non-zero exit, so the *candidate* wore a verdict earned by the pack around it.
-            "|requires version .{1,80} of " +
-            // A mixin refusing because the class it targets is absent: the target belongs to a mod that was not
-            // staged, so nothing of the candidate was exercised. 6 of 200.
-            "|ClassMetadataNotFoundException" +
-            // The Mixin tweaker is part of the pack *we* assemble; without it no mod loads at all. 6 of 200, all
-            // legacy LaunchWrapper-era Forge.
-            "|ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
-        RegexOption.IGNORE_CASE
-    )
+    private val dependencyFailureMarkers = bundledPattern("dependency-failure")
 
     /**
      * The sandbox refusing a mod the network. Boots run `--network none` — that isolation is the entire
@@ -286,12 +254,7 @@ object BootLogClassifier {
      * Subordinate to [clientOnlyClassMarker], like every other excuse: a clientside mod may phone home *and* die
      * on a client class, and the marker must still win.
      */
-    private val sandboxNetworkMarkers = Regex(
-        "(java\\.net\\.UnknownHostException" +
-            "|java\\.net\\.ConnectException" +
-            "|java\\.net\\.NoRouteToHostException" +
-            "|java\\.net\\.SocketTimeoutException)"
-    )
+    private val sandboxNetworkMarkers = bundledPattern("sandbox-network")
 
     /**
      * The decisive clientside signal: the server loaded the mod and then died reaching for a client-only class. This
@@ -310,16 +273,7 @@ object BootLogClassifier {
      * shape. **Stays below [clientOnlyClassMarker]** — a mod reaching a client-only class *through* a mixin
      * is a genuine signal, and outranking it here would discard true positives.
      */
-    private val mixinApplyFailureMarkers = Regex(
-        "(InvalidInjectionException" +
-            "|InvalidMixinException" +
-            "|MixinApplyError" +
-            "|MixinTransformerError" +
-            "|FAILED during APPLY" +
-            "|Critical injection failure" +
-            "|Mixin transformation of .{1,120} failed)",
-        RegexOption.IGNORE_CASE
-    )
+    private val mixinApplyFailureMarkers = bundledPattern("mixin-apply-failure")
 
     /**
      * The modloader's dependency solver giving up, so nothing was loaded to judge.
@@ -330,12 +284,7 @@ object BootLogClassifier {
      * `Unhandled solver error involving the following rules:` with
      * `quilt_resource_loader versions [*] (0 valid options, 0 invalid options)`.
      */
-    private val loaderSolverFailureMarkers = Regex(
-        "(Unhandled solver error" +
-            "|\\(0 valid options, 0 invalid options\\)" +
-            "|Quilt Loader: Failed to load)",
-        RegexOption.IGNORE_CASE
-    )
+    private val loaderSolverFailureMarkers = bundledPattern("loader-solver-failure")
 
     /**
      * The staged jar and the runtime disagree about the loader itself — the wrong jar was staged, so the run
@@ -355,17 +304,9 @@ object BootLogClassifier {
      * false positives across an entire tuple**, which is exactly the failure a bare exit-code verdict cannot
      * distinguish from a mod crashing on its own merits.
      */
-    private val runtimeMismatchMarkers = Regex(
-        "(Missing language .{1,40} version" +
-            "|java\\.lang\\.module\\.ResolutionException" +
-            "|NoClassDefFoundError: org/apache/logging/log4j" +
-            "|ClassNotFoundException: org\\.apache\\.logging\\.log4j)",
-        RegexOption.IGNORE_CASE
-    )
+    private val runtimeMismatchMarkers = bundledPattern("runtime-mismatch")
 
-    private val clientOnlyClassMarker = Regex(
-        "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)"
-    )
+    private val clientOnlyClassMarker = bundledPattern("client-only-class")
 
     /**
      * Exit codes meaning "terminated from outside" (POSIX `128 + signal`): `SIGKILL` — what Docker reports for an
