@@ -163,6 +163,9 @@ class ClientsideVerifier(
                 blamedDependencyUrl = bootOutcome?.blamedDependencyUrl,
                 stagedDependencies = bootOutcome?.stagedDependencies.orEmpty(),
                 sampleFile = sample?.fileName,
+                // From the sampled file alone: one name keeps its loader token, where the whole
+                // history's common prefix loses it for any project that ever renamed its files.
+                filenamePattern = FilenameStemDeriver.deriveStem(listOfNotNull(sample?.fileName)),
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail
