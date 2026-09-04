@@ -3458,3 +3458,49 @@ runtime can answer, ask a real runtime.
 
 Suite: clientside 262 → **266**; grinder 446 and app green, both read from `build/test-results` rather
 than inferred from `BUILD SUCCESSFUL`.
+
+---
+
+## 2026-09-04 — an optional dependency was a hard requirement, because nothing ever read the word
+
+Reported from the live grinder: `advancement-plaques` refused with *"Required dependency unavailable for
+Forge / Minecraft 26.2: prism. Not booting — a mod refused for missing dependencies says nothing about
+sideness."* — while Modrinth lists prism as **optional**, with a specific version linked.
+
+**Verified against the artifacts before writing any code.** `AdvancementPlaques-26.2-forge-1.7.2.jar`'s own
+`META-INF/mods.toml` declares `iceberg` `mandatory=true`, and both `prism` and `toastcontrol`
+`mandatory=false`; Modrinth's API agrees, giving prism (`1OE8wbN0`) `dependency_type: optional` against
+iceberg (`5faXoLqX`) `required`.
+
+**The platform half was already right; the manifest half never existed.** `ModrinthPlatform` keeps only
+`dependency_type == "required"` and `CurseForgePlatform` only `relationType == 3`. But *neither* `mandatory`
+nor `type` appeared anywhere in `-api`'s main source, so `ModDependency` had no field to carry optionality
+and `stageableRequirements` had nothing to filter on. Every declared entry was a hard requirement whatever
+the author wrote, and an unmet one refuses the boot as `INCONCLUSIVE`.
+
+**Two spellings, one reader.** Forge's `mods.toml` uses `mandatory = true|false`. NeoForge's
+`neoforge.mods.toml` dropped that field for `type`, a string defaulting to `"required"` and also taking
+`"optional"`, `"incompatible"` and `"discouraged"` — verified against NeoForged's own mod-files
+documentation rather than assumed from Forge's shape. `NeoForgeTomlScanner` overrides only the descriptor's
+file name, and NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml`, so `ForgeTomlScanner.isOptional`
+has to read both. `"incompatible"` counts as not-required deliberately: it means the mod must *not* be
+present.
+
+**Absent means required**, which is NeoForge's documented default and the safe direction — a required
+dependency read as optional boots a mod without what it needs, fails as a crash and can publish a *wrong*
+verdict, whereas the reverse only refuses a boot and learns nothing.
+
+**Optional dependencies are still recorded, only flagged — and that is a decision, not an oversight.** The
+instruction was "do not include optional dependencies", and the literal reading (drop them at scan time)
+would also drop them from `ModListCompiler`'s dependency rescue, which keeps a mod on the server because
+something declares it. That could *remove* mods from users' server packs, against this module's own stated
+rule that dropping a mod which does belong on the server breaks the pack while keeping a superfluous one
+costs a few megabytes. So the filter lives at the boot-staging consumer, `stageableRequirements`, which
+fixes the grinder and leaves generation untouched. Flagged rather than dropped is also what lets a future
+consumer choose differently.
+
+Two commits, pin then fix; both pins run before committing and red only for the missing field
+(`Unresolved reference 'optional'`, `No parameter with name 'optional' found`).
+
+Suite: api 383 → **387**, clientside 266 → **267**, both read from `build/test-results` after
+`--rerun-tasks` with the previous results wiped.
