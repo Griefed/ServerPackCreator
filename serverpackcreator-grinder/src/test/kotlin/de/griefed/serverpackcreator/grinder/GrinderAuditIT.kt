@@ -45,7 +45,7 @@ import java.time.Duration
  * one question of the whole store at once, and the answer is either an assertion or a distribution a human
  * can read.
  *
- * The question is: **is every published `HIGH` backed by a decision `BootDecision.decisive` marks?** A
+ * The question is: **is every published `CONFIRMED` backed by a decision `BootDecision.decisive` marks?** A
  * `CRASHED` from the bare exit-code rung means only *"the process exited non-zero and nothing recognised
  * why"*, and on 2026-08-31 four of five sampled logs were exactly that — with one of the mods already in the
  * served fallback list.
@@ -87,9 +87,9 @@ internal class GrinderAuditIT {
             ?: ConsoleRuleSet.EMPTY
         println("[audit] $baseUrl, sample $sampleSize, ${rules.rules.size} rule(s) from ${rules.source}")
 
-        val highs = highConfidenceTuples()
-        Assumptions.assumeFalse(highs.isEmpty(), "the store published no HIGH verdicts, so there is nothing to grade")
-        println("[audit] ${highs.size} HIGH verdict(s) in the store")
+        val confirmed = confirmedTuples()
+        Assumptions.assumeFalse(confirmed.isEmpty(), "the store published no CONFIRMED verdicts, so there is nothing to grade")
+        println("[audit] ${confirmed.size} CONFIRMED verdict(s) in the store")
 
         // GROUPED BY TUPLE, not by artifact. A candidate is booted several times -- the first attempt, the
         // newest-build re-check, each other-version re-check -- and every non-survived attempt keeps its own
@@ -97,16 +97,16 @@ internal class GrinderAuditIT {
         // and, worse, count a re-check attempt against a verdict some *other* attempt decided. A verdict is
         // defensible if ANY of its kept consoles carries decisive evidence, which is the charitable reading
         // and the only one that matches what a verdict means.
-        val perTuple = consoleArtifacts().filter { it.owner in highs }.groupBy { it.owner }
+        val perTuple = consoleArtifacts().filter { it.owner in confirmed }.groupBy { it.owner }
         val tuples = perTuple.keys.sorted().take(sampleSize)
-        Assumptions.assumeFalse(tuples.isEmpty(), "no kept console belongs to a published HIGH")
-        println("[audit] grading ${tuples.size} published HIGH verdict(s) over ${perTuple.filterKeys { it in tuples }.values.sumOf { it.size }} console(s)")
+        Assumptions.assumeFalse(tuples.isEmpty(), "no kept console belongs to a published CONFIRMED")
+        println("[audit] grading ${tuples.size} published CONFIRMED verdict(s) over ${perTuple.filterKeys { it in tuples }.values.sumOf { it.size }} console(s)")
 
         val best = LinkedHashMap<String, BootDecision>()
         for (tuple in tuples) {
             for (artifact in perTuple.getValue(tuple)) {
                 val console = fetch("/boot-log?name=${enc(artifact.name)}") ?: continue
-                // The stored exit status is not published, and every rung a HIGH can legitimately come from is
+                // The stored exit status is not published, and every rung a CONFIRMED can legitimately come from is
                 // decided on the console alone. A non-zero exit is assumed so the exit-code rung stays
                 // reachable, and therefore counted -- assuming zero would quietly reclassify the very
                 // population being audited.
@@ -119,7 +119,7 @@ internal class GrinderAuditIT {
         }
 
         val byDecision = best.entries.groupBy({ it.value }, { it.key })
-        println("[audit] decision distribution, one entry per published HIGH verdict:")
+        println("[audit] decision distribution, one entry per published CONFIRMED verdict:")
         byDecision.entries
             .sortedByDescending { it.value.size }
             .forEach { (decision, owners) ->
@@ -135,22 +135,22 @@ internal class GrinderAuditIT {
         )
     }
 
-    /** The `(platform, slug, loader)` tuples the store publishes as `HIGH`, read from the CSV export. */
-    private fun highConfidenceTuples(): Set<String> {
+    /** The `(platform, slug, loader)` tuples the store publishes as CONFIRMED, read from the CSV export. */
+    private fun confirmedTuples(): Set<String> {
         val csv = fetch("/export.csv") ?: return emptySet()
         val rows = csv.lines().filter { it.isNotBlank() }
         val header = rows.firstOrNull()?.split(",") ?: return emptySet()
         val name = header.indexOf("Name")
-        val confidence = header.indexOf("Confidence")
+        val verdict = header.indexOf("Verdict")
         val loader = header.indexOf("Loader")
         val platform = header.indexOf("Platform")
-        if (listOf(name, confidence, loader, platform).any { it < 0 }) {
+        if (listOf(name, verdict, loader, platform).any { it < 0 }) {
             println("[audit] the CSV header does not carry the columns this audit needs: $header")
             return emptySet()
         }
         return rows.drop(1)
             .map { splitCsv(it) }
-            .filter { it.getOrNull(confidence) == "HIGH" }
+            .filter { it.getOrNull(verdict) == "CONFIRMED" }
             .mapNotNull { row ->
                 val parts = listOf(row.getOrNull(platform), row.getOrNull(name), row.getOrNull(loader))
                 if (parts.any { it.isNullOrBlank() }) null else parts.joinToString("-")

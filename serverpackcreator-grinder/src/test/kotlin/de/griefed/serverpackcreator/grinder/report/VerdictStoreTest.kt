@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.ModPlatforms.CURSEFORGE
 import de.griefed.serverpackcreator.grinder.ModPlatforms.MODRINTH
 import de.griefed.serverpackcreator.grinder.grindVerdict
@@ -41,11 +41,11 @@ internal class VerdictStoreTest {
     @Test
     fun reVerifyingSameProjectAndLoaderReplacesTheVerdict() {
         val store = InMemoryVerdictStore()
-        store.record(grindVerdict("jei", "Forge", confidence = Confidence.MEDIUM))
-        store.record(grindVerdict("jei", "Forge", confidence = Confidence.HIGH))
+        store.record(grindVerdict("jei", "Forge", verdict = Verdict.INCONCLUSIVE))
+        store.record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
 
         Assertions.assertEquals(1, store.all().size)
-        Assertions.assertEquals(Confidence.HIGH, store.all().single().confidence)
+        Assertions.assertEquals(Verdict.CONFIRMED, store.all().single().verdict)
     }
 
     @Test
@@ -75,12 +75,12 @@ internal class VerdictStoreTest {
     @Test
     fun theSameSlugOnTwoPlatformsIsTwoProjects() {
         val store = InMemoryVerdictStore()
-        store.record(grindVerdict("jei", "Forge", platform = MODRINTH, confidence = Confidence.LOW))
-        store.record(grindVerdict("jei", "Forge", platform = CURSEFORGE, confidence = Confidence.HIGH))
+        store.record(grindVerdict("jei", "Forge", platform = MODRINTH, verdict = Verdict.ERROR))
+        store.record(grindVerdict("jei", "Forge", platform = CURSEFORGE, verdict = Verdict.CONFIRMED))
 
         Assertions.assertEquals(2, store.all().size, "one row per platform, not one overwriting the other")
-        Assertions.assertEquals(Confidence.LOW, store.all().single { it.platform == MODRINTH }.confidence)
-        Assertions.assertEquals(Confidence.HIGH, store.all().single { it.platform == CURSEFORGE }.confidence)
+        Assertions.assertEquals(Verdict.ERROR, store.all().single { it.platform == MODRINTH }.verdict)
+        Assertions.assertEquals(Verdict.CONFIRMED, store.all().single { it.platform == CURSEFORGE }.verdict)
     }
 
     /** A verdict on one platform must not make the *other* platform's project look already-ground. */

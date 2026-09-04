@@ -53,7 +53,7 @@ internal class BootVerifierRunPreparedTest {
     }
 
     @Test
-    fun aThrownPostProcessorIsInconclusiveAndSkipsTheBoot(@TempDir dir: File) {
+    fun aThrownPostProcessorSkipsTheBootAndSurfacesTheCause(@TempDir dir: File) {
         var booted = false
         val runner = ServerRunner { _, _, _ -> booted = true; RunResult.Completed(emptyList(), 0, false) }
 

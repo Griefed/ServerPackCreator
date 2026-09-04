@@ -32,7 +32,7 @@ package de.griefed.serverpackcreator.clientside
  * That enum is SPC's own *verdict* (`SERVER`/`CLIENT`, one value = the whole answer, defaulting to
  * `SERVER` so nothing is dropped). This one is a third party's *self-report* about one side, and the
  * confidence model is built on keeping the two apart: `ClientsideVerifier.aggregate` folds this,
- * `JarScan` (where SPC's own verdict arrives) and `BootResult` into a [Confidence] precisely because
+ * `JarScan` (where SPC's own verdict arrives) and `BootResult` into a [Verdict] precisely because
  * the platform's claim is unreliable — which is the entire reason the expensive boot-test exists.
  * The translation between the two domains is deliberate and lives at that call-site, taking *two* of
  * these values to derive one client/server leaning.
