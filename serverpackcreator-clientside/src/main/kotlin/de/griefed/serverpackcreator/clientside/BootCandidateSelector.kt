@@ -185,7 +185,19 @@ object BootCandidateSelector {
         // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
         // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
         val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
-        return pickFrom(satisfying, loader, minecraftVersion) ?: pickFrom(files, loader, minecraftVersion)
+        // Obtainability is the strongest preference of the three, and it outranks even the loader match.
+        // A distribution-locked file has no `downloadUrl` at all, so picking one guarantees the dependency
+        // is reported unmet -- whereas Quilt genuinely runs Fabric mods, making an obtainable Fabric build a
+        // working dependency where a locked Quilt build is nothing. `306612` (Fabric API on CurseForge) was
+        // refused for a Quilt boot on exactly that ordering.
+        //
+        // Still a preference and never a filter: when every candidate file is locked the last arm returns
+        // one anyway, so the refusal can say "distribution-locked" -- true and actionable -- instead of
+        // "publishes no <loader> file", which would be false.
+        return pickFrom(satisfying.filterNot { it.locked }, loader, minecraftVersion)
+            ?: pickFrom(files.filterNot { it.locked }, loader, minecraftVersion)
+            ?: pickFrom(satisfying, loader, minecraftVersion)
+            ?: pickFrom(files, loader, minecraftVersion)
     }
 
     /**

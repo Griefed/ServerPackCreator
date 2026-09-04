@@ -398,6 +398,20 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     positive for a *lost true positive*. `attributionNeverChangesTheBootResult` pins it. Blame needs a crash
     marker or stack frame (a name appears in every "loading mod" line) and stands down when the candidate is
     named anywhere in the same crash context.
+- **LANDMINE — `pickDependencyFile` prefers an *obtainable* file, and obtainability outranks the loader
+  match (2026-09-04).** `pickForLoader` was `firstOrNull { loader in it.loaders && mc in it.minecraftVersions }`
+  and never asked whether the file could be downloaded, so a distribution-locked build
+  (`downloadUrl == null` — the author's opt-out) was picked over an obtainable one and the dependency was
+  reported unmet. Reported as *"Required dependency unavailable for Quilt / Minecraft 1.20.4: 306612"*,
+  CurseForge's Fabric API.
+  **Obtainability beats the exact-loader preference on purpose:** Quilt genuinely runs Fabric mods, so an
+  obtainable Fabric build is a working dependency while a locked Quilt build is nothing at all — a locked
+  exact match otherwise shadows the very fallback that exists for libraries publishing Fabric-only files.
+  **Still a preference, never a filter.** The last arm returns a locked file when every candidate is locked,
+  so the refusal reads "distribution-locked" — true and actionable — rather than "publishes no <loader> file
+  for Minecraft X", which would be false. Returning `null` where a file exists turns a diagnosable refusal
+  into a misleading one, which is the same reason the version constraint is a preference here.
+
 - **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
