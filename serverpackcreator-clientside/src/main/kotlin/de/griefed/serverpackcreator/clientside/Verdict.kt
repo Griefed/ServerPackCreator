@@ -101,6 +101,13 @@ sealed interface BootObservation {
 
     /** Neither ready nor a clear exit inside the budget — the container ran, so this is not an ERROR. */
     data object TimedOut : BootObservation
+
+    /**
+     * The boot ran and ended, and nothing recognised what happened — a clean early exit, or a console no
+     * rung matched. Distinct from [TimedOut] only in how it got here; both mean the same thing, that the
+     * grind happened and taught us nothing, which is [Verdict.INCONCLUSIVE] and never [Verdict.ERROR].
+     */
+    data object Unclear : BootObservation
 }
 
 /**
@@ -154,6 +161,26 @@ object VerdictPolicy {
             is BootObservation.Survived -> Verdict.CLEAR
             is BootObservation.Crashed -> Verdict.INCONCLUSIVE
             is BootObservation.TimedOut -> Verdict.INCONCLUSIVE
+            is BootObservation.Unclear -> Verdict.INCONCLUSIVE
         }
     }
 }
+
+/**
+ * One loader's folded evidence: what is published, what the mod claimed, and which rule confirmed it.
+ *
+ * The three travel together because a verdict is only auditable alongside the other two — [confirmedByRule]
+ * is what an operator edits to revoke a confirmation, and [declared] is what makes a confirmation
+ * *interesting*, since a mod claiming the server while calling client classes is the finding this engine
+ * exists to produce.
+ *
+ * @author Griefed
+ */
+data class VerdictAssessment(
+    /** What is published about this loader. */
+    val verdict: Verdict,
+    /** What the mod claims about itself, or `null` when it claimed nothing recognisable. */
+    val declared: Declaration?,
+    /** Id of the rule that confirmed, or `null` when nothing did. */
+    val confirmedByRule: String? = null
+)

@@ -159,7 +159,16 @@ class BootVerifier(
          * grinder's publication gate can refuse a `CRASHED` that is not evidence of sideness — a mixin that
          * would not apply, a solver that gave up, a bare non-zero exit — rather than treating every crash alike.
          */
-        val decidedBy: BootDecision? = null
+        val decidedBy: BootDecision? = null,
+        /**
+         * `true` when staging stopped before any container ran, so this outcome describes the *engine*
+         * rather than the mod.
+         *
+         * Without it a refusal and a boot that learned nothing are the same `INCONCLUSIVE`, which is how a
+         * host-wide defect came to be published as one verdict per candidate, overwriting decisive ones
+         * that a TTL would otherwise have left alone. `Verdict.ERROR` is what this feeds.
+         */
+        val stagingPrevented: Boolean = false
     )
 
     /**
@@ -194,7 +203,7 @@ class BootVerifier(
             // *silently un-booted* catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
             log.info("Not booting ${project.slug} on $loader: ${prepared.detail}")
-            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
+            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, stagingPrevented = true)
         }
         val ready = prepared as Prepared.Ready
         val outcome = boot(ready)
@@ -306,7 +315,11 @@ class BootVerifier(
             )
             if (staged is Prepared.Failed) {
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
-                attempts.add(OtherVersionAttempt(label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail)))
+                attempts.add(
+                    OtherVersionAttempt(
+                        label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail, stagingPrevented = true)
+                    )
+                )
                 continue
             }
             val attempt = boot(staged as Prepared.Ready)

@@ -102,7 +102,16 @@ enum class BootDecision(
     RUNTIME_MISMATCH,
 
     /** Nothing was recognised; the exit status alone decided. **Never** evidence of anything about sideness. */
-    EXIT_CODE
+    EXIT_CODE;
+
+    /**
+     * This rung's identifier in the rules file, derived from the enum name so the two cannot drift apart —
+     * `CLIENT_ONLY_CLASS` becomes `client-only-class`, exactly the id `boot-rules.default.json` ships.
+     *
+     * Used so a confirmation names a rule an operator can actually find and edit, whether it came from
+     * their own rule or from a built-in rung.
+     */
+    val ruleId: String get() = name.lowercase().replace('_', '-')
 }
 
 data class Classification(

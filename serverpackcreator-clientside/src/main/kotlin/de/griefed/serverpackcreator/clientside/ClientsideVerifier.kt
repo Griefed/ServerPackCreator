@@ -194,6 +194,66 @@ class ClientsideVerifier(
          * server/both is [Confidence.LOW], a boot that merely *survived* is also [Confidence.LOW], and
          * everything unknown/deferred is [Confidence.INCONCLUSIVE].
          */
+        /**
+         * One loader's evidence, folded into the four-state [Verdict] plus the [Declaration] it either
+         * confirms or contradicts. Pure, so the whole decision is testable without a container.
+         *
+         * **The console decides and the metadata only declares** — see `ConsoleOutranksMetadataTest`. A
+         * declaration is a self-report and is the unreliable half; it is recorded because a *contradicted*
+         * one is the finding worth having (a mod claiming the server while calling client classes), never
+         * because it can decide anything itself.
+         *
+         * @param serverSide    What the platform declares of the server side.
+         * @param clientSide    What the platform declares of the client side; recorded, not decisive.
+         * @param jarScan       What reading the jar's own descriptor concluded.
+         * @param bootOutcome   The boot's outcome, or `null` when none ran.
+         * @param bootAttempted Whether a boot was even asked for. `false` is the metadata-only report verb
+         *                      and is **not** an error: nothing was prevented, so it stays INCONCLUSIVE.
+         */
+        internal fun verdictOf(
+            serverSide: DeclaredSupport,
+            clientSide: DeclaredSupport,
+            jarScan: JarScan,
+            bootOutcome: BootVerifier.BootOutcome?,
+            bootAttempted: Boolean
+        ): VerdictAssessment {
+            val declared = DefaultBootRules.bundled()
+                .firstMatch(listOf(MetadataFacts.line(serverSide, clientSide, jarScan)), RuleSource.METADATA)
+                ?.rule?.declares
+
+            // Nothing was asked to run, so nothing was prevented either. ERROR must keep meaning "a grind
+            // that could not be performed", or an operator can no longer act on it.
+            if (!bootAttempted) {
+                return VerdictAssessment(Verdict.INCONCLUSIVE, declared, null)
+            }
+
+            // A confirmation may only come from a rung that is decisive by construction: the built-in
+            // client-class marker, which no broken harness can fabricate, or an operator rule that stated
+            // the verdict deliberately. The bare exit-code rung means "nothing recognised why" and is the
+            // one that filled the store with unevidenced HIGHs.
+            val confirmedByRule = bootOutcome
+                ?.takeIf { it.result == BootResult.CRASHED && it.decidedBy?.decisive == true }
+                ?.let { it.firedRule ?: it.decidedBy?.ruleId }
+
+            val verdict = VerdictPolicy.decide(
+                staging = if (bootOutcome?.stagingPrevented == true) {
+                    StagingOutcome.Prevented(bootOutcome.detail)
+                } else {
+                    StagingOutcome.Staged
+                },
+                boot = bootOutcome?.let {
+                    when (it.result) {
+                        BootResult.SURVIVED -> BootObservation.Survived
+                        BootResult.CRASHED -> BootObservation.Crashed(exitCode = 1)
+                        BootResult.INCONCLUSIVE -> BootObservation.Unclear
+                    }
+                },
+                confirmedByRule = confirmedByRule,
+                declared = declared
+            )
+            return VerdictAssessment(verdict, declared, confirmedByRule)
+        }
+
         internal fun aggregateFor(
             serverSide: DeclaredSupport,
             jarScan: JarScan,
