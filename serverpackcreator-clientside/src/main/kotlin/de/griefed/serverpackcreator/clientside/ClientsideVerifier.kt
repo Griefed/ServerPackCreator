@@ -360,7 +360,7 @@ class ClientsideVerifier(
          * enforce: the build that actually booted belongs to a third loader whose stem may differ, so the
          * published entry would strip nothing that was proven bootable — and the note would say
          * "<loader> booted a server" of a loader that did not. `embeddium-` (Forge/NeoForge) versus
-         * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems`
+         * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStem`
          * documents.
          */
         internal fun loaderDisprovingTheCrash(
