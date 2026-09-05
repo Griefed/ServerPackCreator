@@ -115,7 +115,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   order differs per run. The starter jar's own pre-launch give-ups (`Failed to find run file at`, `Failed to find
   startup arguments using run script path`) sit in the same guard, and the JVM's `Error: could not open` for an
   unreadable `@argfile` joined `launchFailureMarkers`, which became reachable once the grinder started booting
-  Forge from `@libraries/.../unix_args.txt`. The ladder is **fourteen** rungs, and
+  Forge from `@libraries/.../unix_args.txt`. The ladder is **sixteen** rungs, and
   `theGuardOrderIsPinnedAsAWhole` is what pins the order as a unit — re-derive the count from `classify`
   rather than trusting this sentence, which has been wrong twice.
 - **A crash that contradicts the metadata is re-checked on the mod's other versions.**
@@ -212,7 +212,8 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   `clientOnlyClassMarker`, which no broken harness can fabricate, *and* from the bare exit-code rung, which
   means only "exited non-zero, nothing recognised why" — and afterwards the two were indistinguishable, so the
   grinder published both alike. `Classification.decidedBy` records the rung; `BootDecision.decisive` marks
-  exactly `CLIENT_ONLY_CLASS` and `OPERATOR_RULE` (a rule reaching CRASHED stated it deliberately), and the
+  exactly four — `CLIENT_ONLY_CLASS`, `LWJGL_ON_A_DEDICATED_SERVER` and `FML_INVALID_DIST` (none of which a
+  broken harness can fabricate), plus `OPERATOR_RULE` (a rule reaching CRASHED stated it deliberately) — and the
   grinder's `/as-properties` gate publishes nothing else. **Measured 2026-08-31 against the deployed
   grinder: four of five published boot logs were decided by the exit-code rung**, and one of those mods was
   already in the served list.
@@ -223,6 +224,34 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     a phrasing sharing *nothing* with Fabric's, so `dependencyFailureMarkers` never reached it), and
     `runtimeMismatchMarkers` (`Missing language javafml version [46,)`, `java.lang.module.ResolutionException`
     — a Forge jar staged for a NeoForge boot).
+- **LANDMINE — a ladder rung whose bundled id does not resolve matches NOTHING, and used to do so silently
+  (2026-09-05).** `BootLogClassifier` holds the ladder's *order* in code and each rung's *pattern* in
+  `boot-rules.default.json`, looked up by id. A renamed or deleted id — or one present carrying a pattern
+  `Regex()` cannot compile, since `BootRule.regex` is `runCatching { … }.getOrNull()` — yielded
+  `Regex("(?!)")` with no log anywhere. Both directions are silent and both are bad: lose a decisive rung and
+  every true positive falls through to the exit-code rung, which cannot publish, so the engine merely looks
+  like it found nothing; lose a fair-run guard and host trouble stops being excused, which is the
+  memory-starved-VM failure already on this engine's record. Now recorded in `missingRuleIds()` and logged at
+  ERROR, and `BundledRuleIdsResolveTest` fails the build — the file ships in our own jar, so an unresolved id
+  is a packaging fault and belongs to the build, not to a verdict store read weeks later. A bundled file that
+  cannot be read *at all* stays a deliberate degradation to "no console rules".
+
+- **A confirmation names the rule that DECIDED it, never one that merely annotated (2026-09-05).**
+  `Classification.firedRule` deliberately carries both — a rule stating no verdict rides along on the
+  ladder's own decision so its author can see the pattern matched — and `verdictOf` read
+  `firedRule ?: decidedBy?.ruleId`, crediting a rule that had declined to state one. The verdict was never
+  wrong (CONFIRMED is gated on `BootDecision.decisive`), but the Rule column sent an operator asking "which
+  rule excluded this mod?" to the wrong rule, against this module's own standard that a verdict which cannot
+  name its evidence cannot be audited. The rule is credited only when `decidedBy == OPERATOR_RULE`.
+
+- **`theGuardOrderIsPinnedAsAWhole` covers all sixteen rungs, and its doc has been wrong three times.**
+  Rungs 9, 10 and 12–15 — the decisive pair below `client-only-class`, and the four excuses below them — were
+  asserted nowhere, so reordering any of them passed. Extended green (the code was right; the guard was
+  absent) and **mutation-verified**: hoisting `mixin-apply-failure` above `client-only-class` now fails. Its
+  doc said "eight ordered guards" while listing fourteen, omitted `lwjgl`/`fml-invalid-dist`, and carried a
+  stray fragment of an older ladder. **Re-derive the count from `classify`** — that instruction is now the
+  first thing the doc says, and this file's own count was wrong for the same reason.
+
 - **OPEN — there are two rule types, and they should become one.** `ConsoleRule`/`ConsoleRuleSet`
   (`ConsoleRules.kt`, speaking `BootResult`, read from the operator's `SPC_GRINDER_BOOT_RULES` file) and
   `BootRule`/`BootRuleSet` (`BootRule.kt`, speaking `Verdict`, read from the bundled
