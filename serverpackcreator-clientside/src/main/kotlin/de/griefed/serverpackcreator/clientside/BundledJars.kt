@@ -94,11 +94,6 @@ object BundledJars {
 
     /**
      * The ids the nested jar at [path] provides, read from *its* descriptor rather than guessed from its
-     * file name — names like `xaerolib-fabric-26.2-1.7.1.jar` carry a version and a loader that the declared
-     * id does not.
-     */
-    /**
-     * The ids the nested jar at [path] provides, read from *its* descriptor rather than guessed from its
      * file name — names like `xaerolib-fabric-26.2-1.7.1.jar` carry a version and a loader the declared id
      * does not.
      *
