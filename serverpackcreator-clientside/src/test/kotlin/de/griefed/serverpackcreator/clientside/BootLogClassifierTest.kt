@@ -395,17 +395,23 @@ internal class BootLogClassifierTest {
     /**
      * Pins the guard order **as a whole**, which no other test in this file does.
      *
-     * `classify` is eight ordered guards, and its correctness rests entirely on that order. They accreted one at a
-     * time, each in reaction to a live false positive, so every constraint is individually covered while the decision
-     * table as a unit never was — reordering two guards could leave every other test in this file green. Each case
-     * below puts a **higher-priority** signal in the same console as a **lower-priority** one and asserts the higher
-     * wins, which is the only way a swap shows up as a failure.
+     * `classify` is **sixteen** ordered guards, and its correctness rests entirely on that order. They accreted
+     * one at a time, each in reaction to a live false positive, so every constraint is individually covered while
+     * the decision table as a unit never was — reordering two guards could leave every other test in this file
+     * green. Each case below puts a **higher-priority** signal in the same console as a **lower-priority** one and
+     * asserts the higher wins, which is the only way a swap shows up as a failure.
      *
-     * The ladder, highest first: ready-line → timeout → setup-abort → launch-failure → loader-bootstrap-failure
-     * → killed/OOM → operator rule → client-only-class → dependency-failure → sandbox-network →
-     * mixin-apply → loader-solver → runtime-mismatch → exit code. (This list omitted the rule rung and the
-     * sandbox rung while asserting both, which is why the count in the module doc was wrong twice.)
-     * → killed/OOM → client-only-class → dependency-failure → exit code.
+     * The ladder, highest first:
+     *
+     *  1. ready-line   2. timeout   3. setup-abort   4. launch-failure   5. loader-bootstrap-failure
+     *  6. killed/OOM   7. operator rule   8. client-only-class   9. lwjgl-on-a-dedicated-server
+     * 10. fml-invalid-dist   11. dependency-failure   12. sandbox-network   13. mixin-apply
+     * 14. loader-solver   15. runtime-mismatch   16. exit code
+     *
+     * **Do not write that count from memory — re-derive it from `classify`.** This list has now been wrong three
+     * times: it once omitted the rule and sandbox rungs, said "eight guards" while listing fourteen, kept a stray
+     * fragment of an older ladder after the closing parenthesis, and left rungs 9, 10 and 12–15 asserted nowhere.
+     * The count in the module `CLAUDE.md` was wrong for the same reason.
      */
     @Test
     fun theGuardOrderIsPinnedAsAWhole() {
@@ -515,6 +521,60 @@ internal class BootLogClassifierTest {
             BootResult.INCONCLUSIVE,
             BootLogClassifier.classify(listOf(dependency), exitCode = 1, timedOut = false),
             "a dependency complaint outranks a non-zero exit"
+        )
+
+        // Rungs 9, 10 and 12-15 were asserted nowhere: the decisive pair below the client-class marker, and
+        // the four excuses below them. Added green -- the code was already right, only the guard was absent --
+        // which is exactly the shape that lets a reorder pass unnoticed.
+        val lwjgl = "java.lang.NoClassDefFoundError: org/lwjgl/Version"
+        val fmlInvalidDist = "Failed to load class net.minecraft.client.Minecraft for invalid dist DEDICATED_SERVER"
+        val sandboxNetwork = "java.net.UnknownHostException: api.polyfrost.org"
+        val mixinApply = "org.spongepowered.asm.mixin.injection.throwables.InvalidInjectionException: @Inject failure"
+        val loaderSolver = "Unhandled solver error involving the following rules:"
+        val runtimeMismatch = "Missing language javafml version [46,)"
+
+        // Every excuse sits BELOW the decisive band -- an excuse outranking the evidence silently discards
+        // true positives, which is the whole reason the band exists.
+        for ((excuse, why) in listOf(
+            sandboxNetwork to "a denied network",
+            mixinApply to "a mixin that could not apply",
+            loaderSolver to "a solver that gave up",
+            runtimeMismatch to "a runtime mismatch"
+        )) {
+            Assertions.assertEquals(
+                BootResult.CRASHED,
+                BootLogClassifier.classify(listOf(excuse, clientClass), exitCode = 1, timedOut = false),
+                "the client-class marker must outrank $why"
+            )
+            Assertions.assertEquals(
+                BootResult.CRASHED,
+                BootLogClassifier.classify(listOf(excuse, lwjgl), exitCode = 1, timedOut = false),
+                "reaching LWJGL on a dedicated server must outrank $why"
+            )
+            // ...and each is still an excuse rather than a crash when it stands alone on a non-zero exit.
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf(excuse), exitCode = 1, timedOut = false),
+                "$why outranks the bare exit code"
+            )
+        }
+
+        // The decisive pair is decisive even where the exit status says otherwise, and still yields to a
+        // fair-run guard -- the two directions that make them decisive rather than merely high-priority.
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(lwjgl), exitCode = 0, timedOut = false),
+            "a zero exit must not hide LWJGL on a dedicated server"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(fmlInvalidDist), exitCode = 0, timedOut = false),
+            "a zero exit must not hide FML refusing a client-only class -- the ServerStarterJar exits 0 on it"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(outOfMemory, lwjgl, fmlInvalidDist), exitCode = 1, timedOut = false),
+            "memory exhaustion outranks the decisive pair, like every other fair-run guard"
         )
 
         // The floor: nothing recognisable, decided by the exit status alone.
