@@ -236,7 +236,17 @@ class ClientsideVerifier(
             // one that filled the store with unevidenced HIGHs.
             val confirmedByRule = bootOutcome
                 ?.takeIf { it.result == BootResult.CRASHED && it.decidedBy?.decisive == true }
-                ?.let { it.firedRule ?: it.decidedBy?.ruleId }
+                ?.let { outcome ->
+                    // Credit the operator's rule only when the *rule* is what decided. `firedRule` also
+                    // carries a rule that merely annotated -- one stating no verdict, riding along on the
+                    // ladder's own decision -- and naming that as the confirming evidence sends an operator
+                    // asking "which rule excluded this mod?" to a rule that declined to.
+                    if (outcome.decidedBy == BootDecision.OPERATOR_RULE) {
+                        outcome.firedRule ?: outcome.decidedBy?.ruleId
+                    } else {
+                        outcome.decidedBy?.ruleId
+                    }
+                }
 
             val verdict = VerdictPolicy.decide(
                 staging = if (bootOutcome?.stagingPrevented == true) {
