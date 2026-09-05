@@ -141,7 +141,12 @@ internal class GrinderConfigurationTest {
         val source = File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderConfiguration.kt")
         Assertions.assertTrue(source.isFile, "configuration source not found at ${source.absolutePath}")
 
-        val read = Regex("""(?:text|optional|under|number)\("([A-Z_]+)"""").findAll(source.readText())
+        // The alphabet of reader functions is explicit, and has to be: `Knob("SPC_GRINDER_HOME", ...)`
+        // declares knobs in this same file, so a regex matching any call with a quoted name would match the
+        // declarations too and this guard would assert nothing. Add a reader here when you add one there --
+        // the range-checking readers below were added exactly that way, and this line is what caught them.
+        val readers = "text|optional|under|number|intIn|longAtLeast|capAtLeastZero"
+        val read = Regex("""(?:$readers)\("([A-Z_]+)"""").findAll(source.readText())
             .map { it.groupValues[1] }.toSet()
         val declared = GrinderConfiguration.KNOBS.map { it.name }.toSet() + "CURSEFORGE_API_KEY"
 
