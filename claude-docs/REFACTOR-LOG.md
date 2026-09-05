@@ -3785,3 +3785,42 @@ propagation mints CONFIRMED for loaders inheriting another loader's proof, and t
 non-decisive `decidedBy`, so re-deriving decisiveness there drops exactly the sodium case.
 
 Suites from clean (`--rerun-tasks`): clientside **368** (up from 362), grinder **490**.
+
+## 2026-09-05 — closing the analysis findings, and sweeping the audit log for anything still open
+
+**Branch:** `claude-audit-followups`
+
+Three findings from `claude-docs/ANALYSIS-AUDIT.md` fixed, and the four candidate open items in
+`claude-docs/REFACTOR-AUDIT.md` checked against the code and found already closed.
+
+**All three fixes were green when written**, because none was a broken behaviour — each was a *missing
+guard* over behaviour that happened to be right. That makes mutation verification the whole point rather
+than a flourish: a guard added green and never mutated is indistinguishable from one that asserts nothing.
+
+| Fix | Mutation applied | Result |
+|---|---|---|
+| M-1 sentinel mapping | `filenamePattern = verdict.suggestedEntry` | `'SENTINEL_FILENAME' was dropped by the mapping` |
+| M-1 sentinel mapping | `declaredClientSide = verdict.declaredServerSide` | `expected: <REQUIRED> but was: <UNSUPPORTED>` |
+| M-2 arm precedence | swap `pickDependencyFile` arms 2 and 3 | `expected: <lib-0.9.0.jar> but was: <lib-1.5.0.jar>` |
+
+**M-1 is the one worth remembering.** `Grinder.grind` assigns eighteen fields by hand from `LoaderVerdict`
+to `GrindVerdict`, and five were asserted end to end. Every report, CSV, query and filter test builds its
+`GrindVerdict` through a fixture, so the producer was untested by construction — the same boundary as the
+dependency-label bug, where both platforms fed a correct labeller the wrong `slug`. The unasserted fields
+were the load-bearing ones: `verdict` gates publication, `declared`/`firedRule`/`decidedBy` make an
+exclusion auditable. Distinct sentinels are the mechanism, since equal values cannot detect a swap.
+
+**L-1 needed care rather than a delete.** `FilenameStemDeriver.deriveStems` had no caller, but its KDoc
+carried the `sodium-fabric-` versus `embeddium-` example that two other files cite as authoritative — the
+explanation lived on the one function nothing ran. It moved onto `deriveStem`, with the consequence now
+stated: that divergence is *why* `loaderDisprovingTheCrash` compares entries rather than loaders. Second
+instance today of dead surface reading as load-bearing because a comment vouches for it.
+
+**The audit sweep found nothing open.** OBS-1's QSL rule, iteration 38's `!!`, iteration 39's two snapshot
+accessors and iteration 40's wiring guard are all in the code; the table in `ANALYSIS-AUDIT.md` records
+where each was verified so they are not re-litigated. Iteration 34's MED-1/MED-2 stay as recorded history —
+that commit was re-cut later, and the audit entry is the remedy the conventions prescribe for a shape found
+after the fact.
+
+Status-table counts refreshed from `build/test-results`: api **387 → 405**, clientside **368 → 369**,
+grinder **490 → 495**. The api number had been stale for some time; it is re-derived, not incremented.
