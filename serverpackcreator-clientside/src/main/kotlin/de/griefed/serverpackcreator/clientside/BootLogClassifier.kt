@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.clientside.BootLogClassifier.clientOnlyClassMarker
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.util.concurrent.ConcurrentHashMap
 import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarkers
 
 
@@ -206,8 +208,41 @@ object BootLogClassifier {
      * than throwing mid-classification. `DefaultBootRulesTest` pins that every id here exists, so this
      * fallback is a safety net and never the normal path.
      */
-    private fun bundledPattern(ruleId: String): Regex =
-        DefaultBootRules.bundled().rules.firstOrNull { it.id == ruleId }?.regex ?: Regex("(?!)")
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Ids [bundledPattern] was asked for and could not find, so a disabled rung is visible rather than silent. */
+    private val unresolvedRuleIds = ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * The pattern rung [ruleId] uses, from the shipped `boot-rules.default.json`.
+     *
+     * A rung's *order* is in code and its *pattern* is in the file, so a renamed or deleted id — or one
+     * present but carrying no usable pattern — leaves the rung with nothing to match. That still yields a never-matching regex — the ladder must keep working —
+     * but it is now **recorded and logged** instead of being invisible: a silently disabled rung either stops
+     * every publication (if it was a decisive one) or stops excusing host trouble (if it was a fair-run
+     * guard), and both look like the engine behaving normally.
+     *
+     * The file is shipped inside this jar, so this is a packaging error rather than an operator's;
+     * `BundledRuleIdsResolveTest` is what catches it at build time, and this is what makes it visible if one
+     * ever reaches a running daemon.
+     */
+    internal fun bundledPattern(ruleId: String): Regex {
+        // Both halves matter and both were silent: an id that is absent, and one that is present carrying no
+        // usable pattern. Either leaves the rung with nothing to match, and the rung cannot tell them apart.
+        val pattern = DefaultBootRules.bundled().rules.firstOrNull { it.id == ruleId }?.regex
+        if (pattern == null) {
+            unresolvedRuleIds.add(ruleId)
+            log.error(
+                "Boot rule '$ruleId' is missing from the bundled rules, or carries no usable pattern; that rung " +
+                    "of the ladder will match nothing. This is a packaging fault, not a configuration one."
+            )
+            return Regex("(?!)")
+        }
+        return pattern
+    }
+
+    /** Rule ids [bundledPattern] could not resolve — empty in a correctly packaged build. */
+    internal fun missingRuleIds(): Set<String> = unresolvedRuleIds.toSet()
 
     /**
      * Console evidence that the run died for lack of memory rather than because of the mod — the JVM's own
