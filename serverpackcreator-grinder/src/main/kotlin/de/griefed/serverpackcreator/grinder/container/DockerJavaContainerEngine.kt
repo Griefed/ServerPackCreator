@@ -31,6 +31,9 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -181,8 +184,13 @@ class DockerJavaContainerEngine(
         // path exists to avoid.
         val stoppers = Executors.newFixedThreadPool(minOf(abandoned.size, MAX_PARALLEL_STOPS))
         try {
-            abandoned.map { containerId -> stoppers.submit { stopThenRemove(containerId) } }
-                .forEach { pending -> runCatching { pending.get() } }
+            val pending = abandoned.map { containerId -> stoppers.submit { stopThenRemove(containerId) } }
+            if (!awaitWithin(pending, shutdownGrace)) {
+                log.warn(
+                    "Some containers did not stop within ${shutdownGrace.seconds}s; abandoning them so shutdown can " +
+                        "finish. They carry the ${OWNER_LABEL} label and are reaped on the next start."
+                )
+            }
         } finally {
             stoppers.shutdownNow()
         }
@@ -303,6 +311,34 @@ class DockerJavaContainerEngine(
         const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
 
 
+
+        /**
+         * Wait for [pending] to finish, but never longer than [budget] **in total**, reporting whether they all
+         * did.
+         *
+         * One budget across the whole set rather than one per task, which is the distinction that matters: a
+         * per-task timeout multiplied by the number of abandoned containers is how a bounded wait becomes an
+         * unbounded one again. A task still running when the budget is spent is simply left — the caller's
+         * `shutdownNow` interrupts it, its container keeps the owner label, and the next start reaps it. That is
+         * strictly better than holding the shutdown hook open until systemd SIGKILLs the process, because a
+         * SIGKILL orphans containers with nothing left to collect them.
+         *
+         * A failing task counts as finished: the drain cares whether it is still *waiting*, and the failure has
+         * already been logged where it happened.
+         */
+        internal fun awaitWithin(pending: List<Future<*>>, budget: Duration): Boolean {
+            val deadline = System.nanoTime() + budget.toNanos()
+            for (task in pending) {
+                val remaining = deadline - System.nanoTime()
+                if (remaining <= 0) {
+                    return pending.all { it.isDone }
+                }
+                // A throwing task is done, not pending, so only a timeout ends the wait early.
+                runCatching { task.get(remaining, TimeUnit.NANOSECONDS) }
+                    .onFailure { if (it is TimeoutException) return pending.all { finished -> finished.isDone } }
+            }
+            return true
+        }
 
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {
