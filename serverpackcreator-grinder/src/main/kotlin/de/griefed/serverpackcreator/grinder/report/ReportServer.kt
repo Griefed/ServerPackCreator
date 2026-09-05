@@ -238,13 +238,6 @@ class ReportServer(
     }
 
     /**
-     * The value of [key] in a raw query string, percent-decoded, or `null` when absent.
-     *
-     * Hand-rolled because the JDK's HTTP server hands over the raw query and this daemon deliberately carries
-     * no web framework to parse one. A malformed escape decodes to `null` rather than throwing — a bad query
-     * is a 404, never a 500 in somebody's log.
-     */
-    /**
      * Serve one kept boot log by its `?name=`, shared by `/boot-log` and its `/crash-log` alias.
      *
      * `read` is what enforces that a name cannot escape the store; a refusal is deliberately
@@ -260,6 +253,13 @@ class ReportServer(
         }
     }
 
+    /**
+     * The value of [key] in a raw query string, percent-decoded, or `null` when absent.
+     *
+     * Hand-rolled because the JDK's HTTP server hands over the raw query and this daemon deliberately carries
+     * no web framework to parse one. A malformed escape decodes to `null` rather than throwing — a bad query
+     * is a 404, never a 500 in somebody's log.
+     */
     private fun queryParameter(rawQuery: String?, key: String): String? =
         rawQuery?.split('&')
             ?.firstOrNull { it.substringBefore('=') == key }

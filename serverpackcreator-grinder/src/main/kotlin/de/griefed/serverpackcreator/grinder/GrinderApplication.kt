@@ -415,13 +415,13 @@ object GrinderApplication {
         }
     }
 
-    /** Read [key] from the environment, falling back to [default] when unset or blank. */
     /**
      * Least time the workers get to notice their interrupt, however long the containers took. Small enough that
      * the worst case (grace + this) stays far inside the unit's stop timeout.
      */
     private val WORKER_STOP_FLOOR: Duration = Duration.ofSeconds(1)
 
+    /** Read [key] from the environment, falling back to [default] when unset or blank. */
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
     /**

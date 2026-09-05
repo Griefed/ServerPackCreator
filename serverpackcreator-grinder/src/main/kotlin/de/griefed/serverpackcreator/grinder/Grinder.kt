@@ -60,16 +60,6 @@ class Grinder(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
-     * Verify [candidate] (unless a fresh verdict exists), record its per-loader verdicts and report what
-     * happened — the daemon paces itself on how much real work a pass did (see [GrindPacing]).
-     *
-     * [force] skips the freshness check, which is what the immediate re-grind queue
-     * ([de.griefed.serverpackcreator.grinder.source.RequeueStore]) runs on. **It is not a convenience.** A
-     * project is queued precisely because its stored verdict is known to be wrong, and a wrong verdict is
-     * usually a recent one — engine defects get found by reading verdicts that were just produced — so an
-     * unforced drain would turn straight into [GrindOutcome.SKIPPED_FRESH] and quietly do nothing.
-     */
-    /**
      * Queue every dependency a loader's crash was attributed to, so it is verified in its own right.
      *
      * Attribution deliberately never changes a verdict — it is a string match over a console — so this is
@@ -95,6 +85,16 @@ class Grinder(
         }
     }
 
+    /**
+     * Verify [candidate] (unless a fresh verdict exists), record its per-loader verdicts and report what
+     * happened — the daemon paces itself on how much real work a pass did (see [GrindPacing]).
+     *
+     * [force] skips the freshness check, which is what the immediate re-grind queue
+     * ([de.griefed.serverpackcreator.grinder.source.RequeueStore]) runs on. **It is not a convenience.** A
+     * project is queued precisely because its stored verdict is known to be wrong, and a wrong verdict is
+     * usually a recent one — engine defects get found by reading verdicts that were just produced — so an
+     * unforced drain would turn straight into [GrindOutcome.SKIPPED_FRESH] and quietly do nothing.
+     */
     fun grind(candidate: GrindCandidate, force: Boolean = false): GrindOutcome {
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
         val lastVerified = store.newestVerification(candidate.platform, candidate.slug, candidate.projectId)
