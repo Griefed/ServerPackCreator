@@ -111,15 +111,6 @@ object FallbackPropertiesRenderer {
     }
 
     /**
-     * Merge, drop blanks and unrepresentable entries, de-duplicate, and sort case-insensitively so the
-     * rendering is input-order independent.
-     *
-     * An entry containing a comma is dropped rather than emitted: the consumer splits the value on commas, so
-     * such an entry would arrive as *two* bogus `startsWith` matchers against real mod filenames. Filenames may
-     * legally contain commas and stems are derived straight from them, so this is reachable — and silent at
-     * both ends, which is why [render] states the count in the document.
-     */
-    /**
      * Whether [verdict]'s crash is **decisive evidence of client-only-ness**, and may therefore be published.
      *
      * `HIGH` alone was never enough. `CRASHED` is reachable from the client-only-class marker, which no
@@ -137,6 +128,15 @@ object FallbackPropertiesRenderer {
     private fun decisive(verdict: GrindVerdict): Boolean =
         BootDecision.entries.firstOrNull { it.name == verdict.decidedBy }?.decisive == true
 
+    /**
+     * Merge, drop blanks and unrepresentable entries, de-duplicate, and sort case-insensitively so the
+     * rendering is input-order independent.
+     *
+     * An entry containing a comma is dropped rather than emitted: the consumer splits the value on commas, so
+     * such an entry would arrive as *two* bogus `startsWith` matchers against real mod filenames. Filenames may
+     * legally contain commas and stems are derived straight from them, so this is reachable — and silent at
+     * both ends, which is why [render] states the count in the document.
+     */
     private fun normalise(entries: Collection<String>): List<String> =
         entries.map { it.trim() }
             .filter { it.isNotEmpty() && !it.contains(',') }

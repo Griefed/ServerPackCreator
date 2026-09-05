@@ -3678,3 +3678,53 @@ this project's one-branch-per-fix rule. Nothing had been pushed, so they were mo
 would have produced. Cheap here only because it was caught before a push.
 
 Suites from clean (`--rerun-tasks`): clientside **362**, grinder **465** (29 skipped), app green.
+
+## 2026-09-05 — grinder audit: eight defects, and one mechanism that was never wired in
+
+**Branch:** `claude-grinder-audit-fixes`
+
+A read-only pass over all 7,915 lines of `serverpackcreator-grinder/src/main`, then every finding fixed.
+
+**The one that mattered: template provenance was write-only.** `LoaderCache.isInstalled` compares a cached
+tuple's recorded start-script digest against the current one, and `TemplateProvenanceTest` proves it does.
+`grep -rn "isInstalled" src/main` returns **nothing** — the production path is `ensureInstalled`, which
+decides a hit with `markUsed`, which only asks whether the marker file exists. So `TemplateProvenance.digestOf`
+ran, the supplier was wired from `GrinderApplication`, the digest was written into every marker, and it was
+never read. A template change was served from the layer the old templates produced, indefinitely — the exact
+failure the mechanism was built to prevent, and one both this log's module file and that test's own class
+comment described as fixed.
+
+The pin had to be an **installer call count**, because a marker assertion passes against the broken code:
+only "did it install again?" separates served-from-cache from rebuilt. One of six cases went red, which is
+what proved the fixture rather than the guard.
+
+**This is the third correct-unit-no-caller-reaches-it defect in two days** — the dependency slug, the loader
+step-down, and now this. The pattern is specific enough to name: *when a mechanism exists to change a
+decision, pin the decision, through the call the daemon actually makes.* A unit test that constructs the
+value under test cannot see a producer that constructs it wrongly, and a unit test of a predicate cannot see
+a caller that never consults it.
+
+**The rest, by what they cost:**
+
+| Finding | Consequence |
+|---|---|
+| `/status` counters lifetime, documented and rendered per-pass | dashboard shows "Pass 12 (25 candidates)" above "Verified 3,140" |
+| `SPC_GRINDER_WORKERS=0` unvalidated | daemon starts healthy, dies on first pass naming an internal parameter; restart loop |
+| `SPC_GRINDER_INTERVAL=-1` unvalidated | no error at all — the loop simply stops pausing |
+| `close()`'s untimed `Future.get()` | a wedged Docker socket holds the shutdown hook to `TimeoutStopSec`, whose SIGKILL orphans containers |
+| 6 dangling KDoc blocks | six declarations undocumented, their prose discarded by the compiler |
+| requeue temp file on failed write | one file leaked per failure, in a directory nothing sweeps |
+| `store` shadowed in `queueBlamedDependencies` | a `RequeueStore` hiding a `VerdictStore` in the class holding both |
+| `JsonVerdictStore.close()` never called | `AutoCloseable` declared and unhonoured; flusher never stopped |
+
+The config fix follows `from`'s documented contract — *never throw, a typo must not stop a service that has
+verdicts to serve* — so it **coerces to the default** rather than rejecting, and leaves boundaries that mean
+something (port 0, 0 cores, 0 budget) inside the allowed range.
+
+**Process note, recorded because it went wrong twice.** A `git add -u` swept the requeue fix into the `docs:`
+commit, putting a behaviour change under a label that denies one. Caught by reading `git log` before merging;
+the three affected commits were rebuilt from deterministic transforms and the resulting tree verified
+byte-identical to the contaminated one (`git rev-parse HEAD^{tree}`). Cheap only because nothing was pushed —
+the same lesson as yesterday's commits-on-develop slip, and the same remedy.
+
+Suites from clean (`--rerun-tasks`): grinder **490** (29 skipped, up from 465), clientside **362**, app **149**.
