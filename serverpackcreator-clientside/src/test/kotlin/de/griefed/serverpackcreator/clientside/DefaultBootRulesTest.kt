@@ -142,13 +142,14 @@ internal class DefaultBootRulesTest {
      * satisfy a console assertion.
      */
     @Test
-    fun onlyTheClientOnlyRuleConfirmsFromAConsole() {
+    fun onlyDecisiveClientEvidenceConfirmsFromAConsole() {
         val confirming = DefaultBootRules.bundled().rules
             .filter { it.source == RuleSource.CONSOLE && it.verdict == Verdict.CONFIRMED }
 
         Assertions.assertEquals(
-            listOf("client-only-class"), confirming.map { it.id },
-            "exactly one console rule may confirm — every other group means the mod got no fair run"
+            listOf("client-only-class", "lwjgl-on-a-dedicated-server", "fml-invalid-dist"),
+            confirming.map { it.id },
+            "only unfakeable client-only evidence may confirm — every other group means no fair run"
         )
     }
 

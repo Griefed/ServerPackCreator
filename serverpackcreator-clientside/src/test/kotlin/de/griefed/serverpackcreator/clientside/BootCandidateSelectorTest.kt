@@ -479,4 +479,146 @@ internal class BootCandidateSelectorTest {
 
         Assertions.assertNull(BootCandidateSelector.newestVersionSatisfying(stale, "[1.20, 1.20.1)") { true })
     }
+
+    /** A file whose author opted out of third-party distribution: CurseForge publishes no URL for it. */
+    private fun lockedFile(name: String, loaders: Set<String>, mcVersions: Set<String>) =
+        ModFile(name, loaders, mcVersions, null, null, emptyList())
+
+    /**
+     * **A locked file cannot be staged, so it must not be preferred over one that can.**
+     *
+     * `pickForLoader` took the first match by loader and Minecraft version and never asked whether the file
+     * was obtainable. A distribution-locked newest build therefore beat an obtainable older one, the
+     * download returned `null`, and the dependency was reported unmet — the shape behind
+     * *"Required dependency unavailable for Quilt / Minecraft 1.20.4: 306612"*, CurseForge's Fabric API.
+     */
+    @Test
+    fun anObtainableDependencyBeatsALockedNewerOne() {
+        val files = listOf(
+            lockedFile("fabric-api-0.97.jar", setOf("Fabric"), setOf("1.20.4")),
+            file("fabric-api-0.96.jar", setOf("Fabric"), setOf("1.20.4"))
+        )
+
+        Assertions.assertEquals(
+            "fabric-api-0.96.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.4")?.fileName,
+            "the newest file has no download URL; picking it guarantees a refusal"
+        )
+    }
+
+    /**
+     * **And obtainability outranks the loader preference**, which is the half that actually explains the
+     * Quilt report. Quilt runs Fabric mods, so an obtainable Fabric build is a working dependency while a
+     * locked Quilt build is nothing at all — the fallback exists precisely to be used here.
+     */
+    @Test
+    fun anObtainableFabricBuildBeatsALockedQuiltOne() {
+        val files = listOf(
+            lockedFile("lib-quilt.jar", setOf("Quilt"), setOf("1.20.4")),
+            file("lib-fabric.jar", setOf("Fabric"), setOf("1.20.4"))
+        )
+
+        Assertions.assertEquals(
+            "lib-fabric.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.4")?.fileName,
+            "an exact-loader match that cannot be downloaded is worse than a usable fallback"
+        )
+    }
+
+    /**
+     * When **everything** is locked, still return a file rather than `null`. The refusal then reads
+     * "distribution-locked", which is true and actionable; `null` would read "publishes no Quilt file for
+     * Minecraft 1.20.4", which is false. Preference, never filter — the rule this function already follows
+     * for version constraints.
+     */
+    @Test
+    fun anAllLockedProjectStillYieldsAFileSoTheRefusalCanBeHonest() {
+        val files = listOf(lockedFile("lib-quilt.jar", setOf("Quilt"), setOf("1.20.4")))
+
+        Assertions.assertEquals(
+            "lib-quilt.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.4")?.fileName
+        )
+    }
+
+    /** The established preferences survive: an exact loader still wins when both are obtainable. */
+    @Test
+    fun anObtainableExactLoaderStillBeatsAnObtainableFallback() {
+        val files = listOf(
+            file("lib-fabric.jar", setOf("Fabric"), setOf("1.20.4")),
+            file("lib-quilt.jar", setOf("Quilt"), setOf("1.20.4"))
+        )
+
+        Assertions.assertEquals(
+            "lib-quilt.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.4")?.fileName
+        )
+    }
+
+    /** And the version constraint still narrows among obtainable files. */
+    @Test
+    fun theVersionConstraintStillNarrowsAmongObtainableFiles() {
+        val files = listOf(
+            ModFile("lib-2.0.jar", setOf("Fabric"), setOf("1.20.4"), "https://cdn/2", null, emptyList(), "2.0.0"),
+            ModFile("lib-1.0.jar", setOf("Fabric"), setOf("1.20.4"), "https://cdn/1", null, emptyList(), "1.0.0")
+        )
+
+        Assertions.assertEquals(
+            "lib-1.0.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.4", ">=1.0.0 <2.0.0")?.fileName
+        )
+    }
+
+    /** A file the author opted out of distributing, carrying a version so a constraint can select it. */
+    private fun lockedAtVersion(name: String, version: String) =
+        ModFile(name, setOf("Fabric"), setOf("1.20.1"), null, null, emptyList(), version)
+
+    /** An ordinary, fetchable file at a given version. */
+    private fun obtainableAtVersion(name: String, version: String) =
+        ModFile(name, setOf("Fabric"), setOf("1.20.1"), "https://example.invalid/$name", null, emptyList(), version)
+
+    /**
+     * **Obtainability outranks the version constraint** — the one pair of preference arms this suite never
+     * separated.
+     *
+     * `pickDependencyFile` narrows four times: satisfying-and-obtainable, then obtainable, then satisfying,
+     * then anything. The middle two are the interesting pair, and every existing test varied one axis at a
+     * time: locked-versus-obtainable with no constraint in play, and constraint-narrowing with nothing
+     * locked. Swapping arms 2 and 3 therefore passed.
+     *
+     * It must prefer the obtainable file even though the locked one is the only version the constraint
+     * accepts, because a locked file has no `downloadUrl` at all: picking it guarantees the dependency is
+     * reported unmet, while a version the constraint dislikes at least stages and boots. This is the
+     * `306612` / Fabric-API refusal fixed on 2026-09-04, one layer down — and a staging refusal publishes
+     * `ERROR` over whatever decisive verdict the store held.
+     */
+    @Test
+    fun anObtainableFileBeatsALockedOneThatSatisfiesTheConstraint() {
+        val files = listOf(
+            lockedAtVersion("lib-1.5.0.jar", "1.5.0"),
+            obtainableAtVersion("lib-0.9.0.jar", "0.9.0")
+        )
+
+        Assertions.assertEquals(
+            "lib-0.9.0.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1", ">=1.0")?.fileName,
+            "the locked file satisfies the constraint but cannot be fetched; an unmet dependency refuses the boot"
+        )
+    }
+
+    /** With both obtainable, the constraint decides again — obtainability narrows, it does not override. */
+    @Test
+    fun betweenTwoObtainableFilesTheConstraintStillDecides() {
+        val files = listOf(
+            obtainableAtVersion("lib-0.9.0.jar", "0.9.0"),
+            obtainableAtVersion("lib-1.5.0.jar", "1.5.0")
+        )
+
+        Assertions.assertEquals(
+            "lib-1.5.0.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1", ">=1.0")?.fileName,
+            "obtainability is the stronger preference, not the only one"
+        )
+    }
+
 }

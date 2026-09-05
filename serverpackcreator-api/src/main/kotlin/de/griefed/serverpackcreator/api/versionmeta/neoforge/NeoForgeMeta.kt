@@ -65,7 +65,9 @@ class NeoForgeMeta(
     }
 
     /** Every supported NeoForge build keyed by Minecraft version, merged across the legacy and current manifests. */
-    fun getNeoForgeMeta(): HashMap<String, List<String>> {
+    // Narrowed from `HashMap` to `Map`: the returned map is now an immutable snapshot, and the old
+    // type advertised that a caller could mutate the metadata's own state through it.
+    fun getNeoForgeMeta(): Map<String, List<String>> {
         return neoForgeLoader!!.versionMeta
     }
 

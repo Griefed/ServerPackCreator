@@ -287,6 +287,30 @@ though their detail lives deeper:
   file the daemon passes in *and* the home candidate SPC looks for, so `Loaded properties from …` appears twice per
   start. Harmless — `PropertyStore.save` collects into a `TreeSet<File>`, so the duplicate collapses and the file is
   written once.
+- **The loader step-down covers Fabric and Quilt too (2026-09-04).** `CachedLoaderVersions` falls back to an
+  older build when the newest is on install cooldown, and `knownLoaderVersionsNewestFirst` used to return
+  `emptyList()` for Fabric/Quilt/LegacyFabric on the reasoning that they "ship a single
+  Minecraft-independent loader line, so there is no sibling build". That conflates *per-Minecraft builds*
+  with the *loader line*: Quilt publishes **306** builds and Fabric **253**, and Quilt's own
+  `/v3/versions/loader/<mc>` lists all 306 as valid for a given Minecraft. Quilt `0.31.0-beta.3` /
+  Minecraft 1.20.6 failed to install with nothing to fall back to, and every candidate wanting that tuple
+  took the failure.
+  - **Prevention was ruled out before recovery was built, and the measurements are worth keeping so nobody
+    re-opens it.** Every published source calls the failing combination valid: it is in the per-Minecraft
+    list, the intermediary exists, and `.../loader/1.20.6/0.31.0-beta.3/server/json` answers **200**. The
+    start scripts' checks (`FABRIC_CHECK_URL`, `QUILT_CHECK_URL`) are the same signal
+    `LoaderVersionResolver` already gates on — Fabric's 400 tracks *Minecraft support*, not the pairing:
+    loader `0.12.12` + Minecraft 1.21.1 → 200, newest `0.19.5` + 1.12.2 → 400. **No pre-check predicts an
+    installer that fails to run.**
+  - **The head of Quilt's line is betas and SPC cannot tell.** The shipped manifest reports
+    `latest: 0.31.0-beta.3` *and* `release: 0.31.0-beta.3` — upstream marks the beta as the release — so
+    "prefer the stable build" is not available from this metadata. `LoaderStepDown.newestFirst` deliberately
+    filters nothing: the caller stops at the first build not on cooldown, and a pre-release filter could
+    empty a line whose head is entirely betas, which is precisely when the step-down is needed.
+  - **`latestVersion` stays truthful** through all of it, so the support gate and the crash re-check keep
+    measuring against the real newest — a crash on a stepped-down build must not be re-checked against
+    itself.
+
 - **A cached install is a product of the templates that built it** (`TemplateProvenance` + the marker's
   `templates=` key). The install boot runs the pack's own `start.sh`, so a template change that alters what an
   install *produces* leaves cached layers stale — and the marker used to record only loader/version/Minecraft, so
@@ -385,6 +409,16 @@ The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
 **Host prerequisites (apply once `ContainerServerRunner` is wired into a `BootVerifier`):** the
 download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`), *not* in the boot
 container, so the box running the grinder needs:
+- **The report carries two patterns per row, `Name-pattern` and `Filename` (2026-09-04).** They answer
+  different questions and neither replaces the other. `Name-pattern` is `suggestedEntry`, the common prefix
+  over the project's whole history, and is what `/as-properties` publishes — it must stay broad enough for a
+  `startsWith` match against every build ever released. `Filename` is derived from the one artifact the
+  verdict actually sampled. Reported: `iris` rendered `iris-` (Fabric), `iris-neoforge-` (NeoForge) and
+  `iris-` (Quilt), where two rows named no loader and one named a loader its row was not about. Both cells
+  come from `VerdictField`, which is the single source for the HTML header, the CSV, the query, the filters
+  and the sort — a column is one enum entry, never five edits. A Quilt row showing `iris-fabric-` is
+  correct: Quilt boots Fabric builds. **Do not swap the published one for the narrow one** — see the
+  landmine in `serverpackcreator-clientside/CLAUDE.md`.
 - **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when
   the key is present; without it CurseForge links cannot be resolved at all (Modrinth needs no key).
 - **No browser, and no Playwright.** Distribution-locked CurseForge files (`allowModDistribution=false`,
@@ -394,6 +428,59 @@ container, so the box running the grinder needs:
   binaries in every artifact (the app jar went 274.7 MB → 77.8 MB without it). Such a candidate is now
   reported as unverifiable with a refusal naming the lock and pointing at Modrinth. Do not reintroduce it;
   detail and the measurements are in `serverpackcreator-clientside/CLAUDE.md`.
+
+- **LANDMINE — a cache-hit check must ask [LoaderCache.isInstalled], never `markUsed` alone (2026-09-05).**
+  `isInstalled` compares the start-script **template digest** recorded in a tuple's marker against the current
+  one; `markUsed` only asks whether the marker exists and stamps its mtime. `ensureInstalled` used `markUsed`,
+  and `isInstalled` had **no production caller at all** — so the digest was written on every install and never
+  read back, and a template change kept being served from the layer the *old* templates produced, forever.
+  The whole `TemplateProvenance` mechanism was write-only, while this file and `TemplateProvenanceTest`'s own
+  class comment both described it as fixed.
+  - The two calls do different jobs and both are needed: `isInstalled` decides whether the layer *may* be
+    served, `markUsed` keeps it alive against `evictUnusedSince`. A hit is `isInstalled(...) && markUsed(...)`.
+  - Template changes fail **silently** — a stale layer boots and yields a plausible verdict rather than an
+    error — which is why this is now pinned through `ensureInstalled` by **installer call count**
+    (`ProvenanceReachesEnsureInstalledTest`). A marker-based assertion passes against the broken code; only
+    "did it install again?" separates served-from-cache from rebuilt.
+  - Accepted: `templateProvenance()` is evaluated per cache lookup (a digest of a few shell files, against a
+    boot measured in minutes), and a rebuilt tuple logs its mismatch twice — once at the racy fast path, once
+    under the lock. A second silent predicate beside the logging one is how the metadata scanners drifted.
+  - **This is the third instance in two days of a correct unit no caller reaches** (the others: the dependency
+    slug, the loader step-down). When a mechanism exists to change a decision, pin the *decision*, through the
+    call the daemon actually makes.
+
+- **`/status`'s `verified`/`failed`/`skippedFresh` are per-pass, and `beginPass` resets them (2026-09-05).**
+  They were lifetime `AtomicInteger`s named `*Total`, published under per-pass documentation and rendered by
+  `StatusDashboardRenderer` directly beneath `Pass N (M candidates)` — so a dashboard read "Pass 12 (25
+  candidates)" above "Verified 3,140" and invited a ratio between a whole run and one slice. `uptimeSeconds`
+  and `startedAt` stay lifetime and are pinned as such, so the reset cannot grow to cover them. A lifetime
+  count of work is still on the same document as `verdicts`, and is better than these ever were because the
+  store survives restarts.
+
+- **A knob the daemon cannot use falls back like one it cannot parse (2026-09-05).** `GrinderConfiguration.from`
+  documents that it never throws, and `"abc"` honoured that while `"0"` did not — it parses and is simply
+  unusable. `SPC_GRINDER_WORKERS=0` reached `GrindPool`'s `require`, built **inside the pass loop**, so the
+  daemon started, bound the port, logged a healthy line and then died mid-run naming `workerCount` rather than
+  the variable an operator set — a `Restart=on-failure` loop shaped like a crash. `SPC_GRINDER_INTERVAL=-1`
+  threw nothing and simply stopped pausing, which is worse because nothing reports it. Three readers —
+  `intIn`, `longAtLeast`, `capAtLeastZero` — coerce to the documented default; `capAtLeastZero` also rejects
+  `NaN`/`Infinity`, which parse and would trip `ContainerResources`' own `require`.
+  - **Boundaries that mean something are inside the allowed range**, not coerced: port `0` (any free port),
+    `0` cores or GiB (uncapped), a `0` log budget (keep nothing), and the flush interval's zero/negative
+    (write-through).
+  - **`everyVariableReadIsDeclaredAsAKnob`'s regex alphabet is explicit and must stay so.** `Knob("SPC_…")`
+    declares knobs in the same file, so a regex matching any call with a quoted name would match the
+    *declarations* and the guard would assert nothing. Add a reader to the alphabet when you add one.
+
+- **LANDMINE — every wait in the shutdown path is budgeted, including the container drain (2026-09-05).**
+  `DockerJavaContainerEngine.close()` blocked on an untimed `Future.get()`. `stopContainerCmd.withTimeout(...)`
+  bounds Docker's *internal* SIGTERM-to-SIGKILL window, not the HTTP call that asks for it, so a wedged daemon
+  socket held the hook open until `TimeoutStopSec` fired — and that SIGKILL orphans the containers `close()`
+  exists to collect, turning the safety net into the failure. It now waits through `awaitWithin(pending,
+  shutdownGrace)`: **one budget across the whole set, never one per task**, which is the distinction that turns
+  a bounded wait back into an unbounded one. A task still running is left to `shutdownNow`; its container keeps
+  the owner label and `reapOrphans` collects it next start. Pinned as a pure helper — this class needs a live
+  daemon and the module carries no mocking library, and the decision needed neither.
 
 ## Testing
 

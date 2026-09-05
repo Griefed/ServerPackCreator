@@ -200,7 +200,8 @@ internal class VerdictReportRendererTest {
             declared = Declaration.SERVER,
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
-            decidedBy = "SENTINELDECISION"
+            decidedBy = "SENTINELDECISION",
+            filenamePattern = "SENTINELFILENAME"
         )
 
         val row = VerdictReportRenderer.toHtml(pageOf(listOf(verdict))) { listOf("SENTINELLOG") }
@@ -208,7 +209,7 @@ internal class VerdictReportRendererTest {
         val cells = row.split("</td>").dropLast(1)
 
         val expected = listOf(
-            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "CONFIRMED", "SERVER", "SENTINELLOADER",
+            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
             "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
         )

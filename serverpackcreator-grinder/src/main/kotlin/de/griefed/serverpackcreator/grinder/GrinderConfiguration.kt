@@ -169,6 +169,24 @@ internal data class GrinderConfiguration(
             fun under(name: String, child: String) = File(text(name, File(home, child).path))
             fun number(name: String, fallback: String) = text(name, fallback)
 
+            // A value the daemon cannot use falls back exactly as an unparseable one does. Parsing was
+            // already tolerant; the range was not, so `0` travelled onward to whatever consumed it -- to
+            // `GrindPool`'s require (built inside the pass loop, so the daemon died mid-run on a message
+            // naming an internal parameter), or, for a negative pause, to no error at all and a loop that
+            // simply stopped pausing. Boundaries that genuinely mean something are inside the allowed
+            // range, never coerced: port 0 is "any free port", 0 cores or GiB is "uncapped", a 0 budget
+            // keeps nothing.
+            fun intIn(name: String, fallback: Int, allowed: IntRange): Int =
+                optional(name)?.toIntOrNull()?.takeIf { it in allowed } ?: fallback
+
+            fun longAtLeast(name: String, fallback: Long, minimum: Long): Long =
+                optional(name)?.toLongOrNull()?.takeIf { it >= minimum } ?: fallback
+
+            // Finiteness as well as sign: "NaN" and "Infinity" both parse, and both reach
+            // `ContainerResources.forLimits`, whose own require would then stop the daemon at startup.
+            fun capAtLeastZero(name: String, fallback: Double): Double =
+                optional(name)?.toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0.0 } ?: fallback
+
             return GrinderConfiguration(
                 home = home,
                 image = text("SPC_GRINDER_IMAGE", "spc-grinder-runtime:latest"),
@@ -178,7 +196,7 @@ internal data class GrinderConfiguration(
                 requeue = under("SPC_GRINDER_REQUEUE", "requeue.json"),
                 cursors = under("SPC_GRINDER_CURSORS", "cursors.json"),
                 bootLogs = under("SPC_GRINDER_BOOT_LOGS", "boot-logs"),
-                bootLogBudgetBytes = (number("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", "2048").toLongOrNull() ?: 2048L) *
+                bootLogBudgetBytes = longAtLeast("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", 2048L, minimum = 0L) *
                     1024 * 1024,
                 bootRules = under("SPC_GRINDER_BOOT_RULES", "boot-rules.json"),
                 ruleFallback = if (text("SPC_GRINDER_RULE_FALLBACK", "grinder").equals("inconclusive", true)) {
@@ -186,18 +204,18 @@ internal data class GrinderConfiguration(
                 } else {
                     null
                 },
-                port = number("SPC_GRINDER_PORT", "8757").toIntOrNull() ?: 8757,
+                port = intIn("SPC_GRINDER_PORT", 8757, allowed = 0..65535),
                 host = text("SPC_GRINDER_HOST", "127.0.0.1"),
-                workers = number("SPC_GRINDER_WORKERS", "2").toIntOrNull() ?: 2,
-                batch = number("SPC_GRINDER_BATCH", "25").toIntOrNull() ?: 25,
-                containerCpus = number("SPC_GRINDER_CPUS", "2").toDoubleOrNull() ?: 2.0,
-                containerMemoryGiB = number("SPC_GRINDER_MEMORY_GIB", "3").toDoubleOrNull() ?: 3.0,
+                workers = intIn("SPC_GRINDER_WORKERS", 2, allowed = 1..Int.MAX_VALUE),
+                batch = intIn("SPC_GRINDER_BATCH", 25, allowed = 1..Int.MAX_VALUE),
+                containerCpus = capAtLeastZero("SPC_GRINDER_CPUS", 2.0),
+                containerMemoryGiB = capAtLeastZero("SPC_GRINDER_MEMORY_GIB", 3.0),
                 containerUser = optional("SPC_GRINDER_CONTAINER_USER"),
                 spcProperties = optional("SPC_GRINDER_SPC_PROPERTIES"),
-                reverifyTtl = Duration.ofDays(number("SPC_GRINDER_REVERIFY_TTL_DAYS", "30").toLongOrNull() ?: 30),
-                cacheTtl = Duration.ofDays(number("SPC_GRINDER_CACHE_TTL_DAYS", "7").toLongOrNull() ?: 7),
-                betweenSweeps = Duration.ofSeconds(number("SPC_GRINDER_INTERVAL", "21600").toLongOrNull() ?: 21600),
-                whileCrawling = Duration.ofSeconds(number("SPC_GRINDER_SCAN_DELAY", "15").toLongOrNull() ?: 15),
+                reverifyTtl = Duration.ofDays(longAtLeast("SPC_GRINDER_REVERIFY_TTL_DAYS", 30L, minimum = 0L)),
+                cacheTtl = Duration.ofDays(longAtLeast("SPC_GRINDER_CACHE_TTL_DAYS", 7L, minimum = 0L)),
+                betweenSweeps = Duration.ofSeconds(longAtLeast("SPC_GRINDER_INTERVAL", 21600L, minimum = 0L)),
+                whileCrawling = Duration.ofSeconds(longAtLeast("SPC_GRINDER_SCAN_DELAY", 15L, minimum = 0L)),
                 storeFlush = Duration.ofSeconds(
                     number("SPC_GRINDER_STORE_FLUSH_SECONDS", "30").toLongOrNull() ?: 30
                 ),

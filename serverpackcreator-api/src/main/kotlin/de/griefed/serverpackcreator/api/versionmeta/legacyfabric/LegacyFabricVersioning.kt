@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import java.io.File
 import java.io.IOException
+import java.util.Collections
 
 /**
  * LegacyFabric version parent-class, implemented by [LegacyFabricGame] and
@@ -37,9 +38,33 @@ internal abstract class LegacyFabricVersioning(
     private val manifest: File,
     private val utilities: Utilities
 ) {
-    val releases: MutableList<String> = ArrayList(100)
-    val snapshots: MutableList<String> = ArrayList(100)
-    val allVersions: MutableList<String> = ArrayList(200)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var releases: List<String> = emptyList()
+        private set
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var snapshots: List<String> = emptyList()
+        private set
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var allVersions: List<String> = emptyList()
+        private set
 
     /**
      * Update all lists of available versions with new information gathered from the manifest.
@@ -49,18 +74,23 @@ internal abstract class LegacyFabricVersioning(
      */
     @Throws(IOException::class)
     fun update() {
-        releases.clear()
-        snapshots.clear()
-        allVersions.clear()
+        val next_releases = ArrayList<String>(100)
+        val next_snapshots = ArrayList<String>(100)
+        val next_allVersions = ArrayList<String>(200)
         for (node in utilities.jsonUtilities.getJson(manifest)) {
             val version: String = node.get(VersionMetaConfig.TAG_VERSION).asText()
             val stable = node.get(VersionMetaConfig.TAG_STABLE).asBoolean()
-            allVersions.add(version)
+            next_allVersions.add(version)
             if (stable) {
-                releases.add(version)
+                next_releases.add(version)
             } else {
-                snapshots.add(version)
+                next_snapshots.add(version)
             }
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        releases = Collections.unmodifiableList(next_releases)
+        snapshots = Collections.unmodifiableList(next_snapshots)
+        allVersions = Collections.unmodifiableList(next_allVersions)
+}
 }

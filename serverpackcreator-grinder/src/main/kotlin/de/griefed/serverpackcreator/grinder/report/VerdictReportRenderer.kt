@@ -120,13 +120,14 @@ internal object VerdictReportRenderer {
     }
 
     /**
-     * A header that links to the same view sorted by its column, toggling direction when it is already the
-     * sort. **The page resets to 1**: keeping it would land the reader on page 40 of a different ordering,
-     * which is not where they were.
-     */
-    /**
-     * One sortable `<th>`. Takes the [key] and its [header] rather than a [VerdictField], because **Logs** is
-     * sortable without being one — it is rendered from a directory listing, not from the verdict.
+     * One sortable `<th>`: a header linking to this same view ordered by its column, toggling direction when
+     * it is already the sort.
+     *
+     * Takes the [key] and its [header] rather than a [VerdictField], because **Logs** is sortable without
+     * being one — it is rendered from a directory listing, not from the verdict.
+     *
+     * **The page resets to 1**: keeping it would land the reader on page 40 of a different ordering, which
+     * is not where they were.
      */
     private fun headerCell(key: SortKey, header: String, query: VerdictQuery): String {
         val descending = query.sort == key && !query.descending

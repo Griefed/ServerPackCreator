@@ -26,6 +26,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
+import java.util.Collections
 
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
@@ -42,22 +43,34 @@ internal class ForgeLoader(
     private val minecraftMeta: MinecraftMeta
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    val minecraftVersions: MutableList<String> = ArrayList(100)
-    val forgeVersions: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place — the refresh runs on a background coroutine while callers read.
+     */
+    @Volatile
+    var minecraftVersions: List<String> = emptyList()
+        private set
+    @Volatile
+    var forgeVersions: List<String> = emptyList()
+        private set
 
     /**
      * 1-n Minecraft version to Forge versions.
      * * `key`: Minecraft version.
      * * `value`: List of Forge versions for said Minecraft versions.
      */
-    val versionMeta: HashMap<String, List<String>> = HashMap(200)
+    @Volatile
+    var versionMeta: Map<String, List<String>> = emptyMap()
+        private set
 
     /**
      * 1-1 Forge version to Minecraft version
      * * `key`: Forge version.
      * * `value`: Minecraft version for said Forge version.
      */
-    val forgeToMinecraftMeta: HashMap<String, String> = HashMap(200)
+    @Volatile
+    var forgeToMinecraftMeta: Map<String, String> = emptyMap()
+        private set
 
     /**
      * 1-1 Minecraft + Forge version combination to [ForgeInstance]
@@ -67,7 +80,9 @@ internal class ForgeLoader(
      * * `1.18.2-40.0.44`
      * + `value`: The [ForgeInstance] for said Minecraft and Forge version combination.
      */
-    val instanceMeta: HashMap<String, ForgeInstance> = HashMap(200)
+    @Volatile
+    var instanceMeta: Map<String, ForgeInstance> = emptyMap()
+        private set
 
     /**
      * Update the available Forge loader information.
@@ -76,11 +91,11 @@ internal class ForgeLoader(
      */
     @Throws(IOException::class)
     fun update() {
-        minecraftVersions.clear()
-        forgeVersions.clear()
-        versionMeta.clear()
-        forgeToMinecraftMeta.clear()
-        instanceMeta.clear()
+        val nextMinecraftVersions = ArrayList<String>(100)
+        val nextForgeVersions = ArrayList<String>(100)
+        val nextVersionMeta = HashMap<String, List<String>>(200)
+        val nextForgeToMinecraftMeta = HashMap<String, String>(200)
+        val nextInstanceMeta = HashMap<String, ForgeInstance>(200)
         val forgeManifest: JsonNode = utilities.jsonUtilities.getJson(loaderManifest)
         for (field in forgeManifest.fieldNames()) {
             /*
@@ -97,10 +112,10 @@ internal class ForgeLoader(
             val client = field.replace("_", "-")
             if (minecraftMeta.getClient(client).isPresent) {
                 mcVersion = client
-                minecraftVersions.add(client)
+                nextMinecraftVersions.add(client)
             } else {
                 mcVersion = field
-                minecraftVersions.add(field)
+                nextMinecraftVersions.add(field)
             }
             val forgeVersionsForMCVer: MutableList<String> = ArrayList(100)
 
@@ -117,7 +132,7 @@ internal class ForgeLoader(
                     log.warn("Skipping malformed Forge manifest entry '${forge.asText()}' under Minecraft $mcVersion.")
                     continue
                 }
-                forgeVersions.add(forgeVersion)
+                nextForgeVersions.add(forgeVersion)
                 forgeVersionsForMCVer.add(forgeVersion)
                 try {
                     val forgeInstance = ForgeInstance(
@@ -125,8 +140,8 @@ internal class ForgeLoader(
                         forgeVersion,
                         minecraftMeta
                     )
-                    instanceMeta[mcVersion + forge.asText().substring(mcVersion.length)] = forgeInstance
-                    forgeToMinecraftMeta[forgeVersion] = mcVersion
+                    nextInstanceMeta[mcVersion + forge.asText().substring(mcVersion.length)] = forgeInstance
+                    nextForgeToMinecraftMeta[forgeVersion] = mcVersion
                 } catch (ex: MalformedURLException) {
 
                     // Well, in THEORY this should never be thrown, so we don't need to bother
@@ -136,8 +151,15 @@ internal class ForgeLoader(
                     log.debug("Could not create Forge instance for Minecraft $mcVersion and Forge $forgeVersion.", ex)
                 }
             }
-            versionMeta[mcVersion] = forgeVersionsForMCVer.asReversed()
+            nextVersionMeta[mcVersion] = forgeVersionsForMCVer.asReversed()
         }
+        // Published in one assignment each, as unmodifiable views: a `List`-typed field still holds an
+        // ArrayList at runtime, so a caller could otherwise cast and mutate the metadata's own state.
+        minecraftVersions = Collections.unmodifiableList(nextMinecraftVersions)
+        forgeVersions = Collections.unmodifiableList(nextForgeVersions)
+        versionMeta = Collections.unmodifiableMap(nextVersionMeta)
+        forgeToMinecraftMeta = Collections.unmodifiableMap(nextForgeToMinecraftMeta)
+        instanceMeta = Collections.unmodifiableMap(nextInstanceMeta)
     }
 
     internal companion object {

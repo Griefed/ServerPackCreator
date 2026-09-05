@@ -86,13 +86,6 @@ class BootVerifier(
     private val maxDependencyDepth = 4
 
     /**
-     * Boot one prepared attempt with this verifier's collaborators. **The single call site of
-     * [runPrepared]**, and deliberately so: an attempt happens three times over — the first boot, the
-     * newest-loader-build re-check and each other-version re-check — and anything that must happen per
-     * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
-     * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
-     */
-    /**
      * [refuseForSelfDeclaration] with this verifier's scanner supplying the jar's declared Minecraft range.
      * Split so the decision itself stays testable without an [ApiWrapper].
      */
@@ -102,6 +95,13 @@ class BootVerifier(
                 ?.scan(listOf(candidate))?.singleOrNull()?.minecraftConstraint
         }
 
+    /**
+     * Boot one prepared attempt with this verifier's collaborators. **The single call site of
+     * [runPrepared]**, and deliberately so: an attempt happens three times over — the first boot, the
+     * newest-loader-build re-check and each other-version re-check — and anything that must happen per
+     * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
+     * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
+     */
     private fun boot(pack: Prepared.Ready): BootOutcome =
         // The rules are asked for per attempt rather than captured once, which is what makes an edit during
         // a multi-day run take effect on the next boot instead of the next restart.
@@ -373,25 +373,33 @@ class BootVerifier(
             if (!visited.add(dependencyRef)) {
                 continue
             }
-            val dependencyProject = platform.resolveDependency(dependencyRef)
+            val dependencyProject = platform.resolveDependency(dependencyRef, minecraftVersion)
             if (dependencyProject == null) {
                 // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
-                unsatisfied.add(dependencyRef)
+                unsatisfied.add(unsatisfiedLabel(dependencyRef, null, platform.name))
                 continue
             }
             val dependencyFile = BootCandidateSelector.pickDependencyFile(dependencyProject.files, loader, minecraftVersion)
             if (dependencyFile == null) {
-                log.warn("Required dependency '$dependencyRef' publishes no $loader file for Minecraft $minecraftVersion.")
-                unsatisfied.add(dependencyRef)
+                log.warn(
+                    "Required dependency '${dependencyProject.slug}' ($dependencyRef) publishes no $loader " +
+                        "file for Minecraft $minecraftVersion."
+                )
+                unsatisfied.add(unsatisfiedLabel(dependencyRef, dependencyProject, platform.name))
                 continue
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
                 )
             ) {
-                log.warn("Required dependency '$dependencyRef' (${dependencyFile.fileName}) could not be downloaded.")
-                unsatisfied.add(dependencyRef)
+                log.warn(
+                    "Required dependency '${dependencyProject.slug}' (${dependencyFile.fileName}) could not be " +
+                        "staged" + (if (dependencyFile.locked) " — the file is distribution-locked." else ".")
+                )
+                unsatisfied.add(
+                    unsatisfiedLabel(dependencyRef, dependencyProject, platform.name, dependencyFile)
+                )
             }
         }
         stageManifestDependencies(staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected)
@@ -430,7 +438,8 @@ class BootVerifier(
             .onFailure { log.debug("Could not read ${file.fileName}'s manifest dependencies: ${it.message}") }
             .getOrDefault(emptyList())
 
-        for (requirement in stageableRequirements(declared, visited) { platformRefFor(it) }) {
+        val bundled = BundledJars.idsIn(staged)
+        for (requirement in stageableRequirements(declared, visited, bundled) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
@@ -440,7 +449,7 @@ class BootVerifier(
             val plan = planManifestDependency(
                 requirement, loader, minecraftVersion,
                 refFor = { platformRefFor(it) },
-                resolveRef = { platform.resolveDependency(it) }
+                resolveRef = { platform.resolveDependency(it, minecraftVersion) }
             )
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {
@@ -772,16 +781,6 @@ class BootVerifier(
         }
 
         /**
-         * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
-         * everything needed is present and the boot may proceed.
-         *
-         * **Why refuse rather than boot anyway:** a loader that rejects a mod for missing dependencies never runs the
-         * mod's code, so the run cannot distinguish client-only from server-safe; it just produces a non-zero exit
-         * that *looks* like a crash. Measured 2026-07-30 across 112 kept boot logs, 36 failed exactly that way — the
-         * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
-         * is both honest and actionable, where a "crash" would have been neither.
-         */
-        /**
          * Refuse a boot the staged jar's own descriptor contradicts, or `null` to go ahead.
          *
          * Scans the jar for its declared Minecraft range and compares that, plus the descriptors it carries,
@@ -809,6 +808,45 @@ class BootVerifier(
             )
         }
 
+        /**
+         * How one unmet dependency is named in the refusal an operator reads.
+         *
+         * A platform ref is an *identifier*, not a name: Modrinth's is an opaque base62 `project_id`
+         * (`MBAkmtvl`) and CurseForge's a bare number. Recording the ref made refusals read as gibberish —
+         * `waystones` reported its missing `balm` and `shogi` as `MBAkmtvl` and `bi4iCmsw`, while the very
+         * same two mods came out readably from the manifest half of staging.
+         *
+         * A [resolved] project is named by its slug, which is what the author, the platform page and the
+         * manifest all call it. That also **collapses the duplicate**: `unsatisfied` is a set, so a mod
+         * missing by both routes was two entries and is now one.
+         *
+         * An unresolved ref keeps the ref — it is all we have — but says which platform it belongs to, so a
+         * reader can look it up instead of mistaking it for a strange mod name.
+         */
+        internal fun unsatisfiedLabel(
+            ref: String,
+            resolved: ProjectFiles?,
+            platformName: String,
+            file: ModFile? = null
+        ): String {
+            val name = resolved?.slug?.takeIf { it.isNotBlank() }
+                ?: return "$ref (unresolved $platformName project)"
+            // A locked file is not a failed download: the author opted out of third-party distribution, so
+            // there is no URL to fetch and no amount of retrying produces one. Saying "could not be
+            // downloaded" of it is the same conflation `downloadFailureDetail` fixed for the candidate.
+            return if (file?.locked == true) "$name (distribution-locked on $platformName)" else name
+        }
+
+        /**
+         * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
+         * everything needed is present and the boot may proceed.
+         *
+         * **Why refuse rather than boot anyway:** a loader that rejects a mod for missing dependencies never runs the
+         * mod's code, so the run cannot distinguish client-only from server-safe; it just produces a non-zero exit
+         * that *looks* like a crash. Measured 2026-07-30 across 112 kept boot logs, 36 failed exactly that way — the
+         * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
+         * is both honest and actionable, where a "crash" would have been neither.
+         */
         internal fun refuseForMissingDependencies(
             unsatisfied: Set<String>,
             loader: String,
@@ -887,6 +925,7 @@ class BootVerifier(
         internal fun stageableRequirements(
             requirements: List<ModDependency>,
             alreadyResolved: Set<String> = emptySet(),
+            bundledIds: Set<String> = emptySet(),
             refFor: (String) -> String? = { it }
         ): List<ModDependency> = requirements.filterNot { requirement ->
             // An optional dependency is neither staged nor allowed to refuse a boot: the descriptor itself
@@ -895,6 +934,14 @@ class BootVerifier(
             // an INCONCLUSIVE on a mod that never required it. Both platforms already filter their own side
             // (`dependency_type == "required"`, `relationType == 3`); this is the manifest half of that rule.
             requirement.optional ||
+                // Already inside the candidate as a nested jar, which the loader puts on the classpath: it
+                // needs no download and can never be missing. `xaeros-world-map` was refused for `xaerolib`
+                // while shipping it, because a Modrinth project of that name exists (so the id *mapped*) but
+                // publishes nothing tagged Quilt or 26.2 (so nothing could be staged) -- and a
+                // mapped-then-unstageable id refuses where an unmappable one would not have. Bundled wins
+                // unconditionally: the author shipped that exact build, and fetching another version of the
+                // same id manufactures a conflict to blame on the mod.
+                requirement.modID in bundledIds ||
                 requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
@@ -1007,7 +1054,12 @@ class BootVerifier(
             outcome: BootOutcome,
             metadataDeclaresServerSupport: Boolean,
             limit: Int
-        ): Boolean = outcome.result == BootResult.CRASHED && metadataDeclaresServerSupport && limit > 0
+        ): Boolean = outcome.result == BootResult.CRASHED &&
+            // Already answered. The re-check exists to tell "this build crashed" from "this mod cannot
+            // run on a server"; client-only evidence has settled that, so the boots would buy nothing and
+            // a survivor among them would actively discard the proof.
+            outcome.decidedBy?.provesClientOnly != true &&
+            metadataDeclaresServerSupport && limit > 0
 
         /**
          * Fold the other-version [attempts] into the verdict for the crash in [first]. One clean boot wins
@@ -1021,6 +1073,12 @@ class BootVerifier(
          * the detail has to say what actually ran, not merely that something did.
          */
         internal fun reconcileOtherVersionRecheck(first: BootOutcome, attempts: List<OtherVersionAttempt>): BootOutcome {
+            // Defence in depth: `shouldRecheckAgainstOtherVersions` already declines to sample a
+            // client-only-proven crash, but if one is ever reconciled anyway, a clean boot elsewhere must not
+            // erase the proof. `sodium`'s LWJGL crash was discarded exactly here, by a Fabric build starting.
+            if (first.decidedBy?.provesClientOnly == true) {
+                return first
+            }
             val survivor = attempts.firstOrNull { it.outcome.result == BootResult.SURVIVED }
             if (survivor != null) {
                 return survivor.outcome.copy(

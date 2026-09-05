@@ -98,7 +98,17 @@ data class LoaderVerdict(
      */
     val verdict: Verdict = Verdict.INCONCLUSIVE,
     /** What the mod claims about itself — recorded because a *contradicted* claim is the finding. */
-    val declared: Declaration? = null
+    val declared: Declaration? = null,
+    /**
+     * The list-entry pattern of the file this verdict actually sampled, or `null` when none was.
+     *
+     * Narrower than [suggestedEntry], which is the common prefix over the project's *whole* history and
+     * must stay broad enough for the published `startsWith` list. A project that renamed its files — iris
+     * shipped `iris-mc1.16.5-…` before it shipped `iris-fabric-…` — collapses that prefix to something with
+     * no loader in it, so this says which artifact was looked at. On a Quilt row it reads `iris-fabric-`,
+     * because Quilt boots Fabric builds and this describes the file, not the row.
+     */
+    val filenamePattern: String? = null
 )
 
 /**

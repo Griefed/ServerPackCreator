@@ -157,7 +157,14 @@ data class GrindVerdict(
      * *contradicted* claim is the finding — a mod declaring the server while calling client classes — and it
      * cannot be reported as one if nothing kept the claim.
      */
-    val declared: Declaration? = null
+    val declared: Declaration? = null,
+    /**
+     * The list-entry pattern of the file this verdict sampled, shown beside [suggestedEntry].
+     *
+     * [suggestedEntry] is what gets published and stays broad; this is what a maintainer checks the finding
+     * against on the platform page, and it keeps the loader token a project's rename history erases.
+     */
+    val filenamePattern: String? = null
 )
 
 /**

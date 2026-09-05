@@ -124,12 +124,19 @@ class JsonRequeueStore(private val file: File) : RequeueStore {
         runCatching {
             file.parentFile?.mkdirs()
             val temporary = File.createTempFile("requeue", ".json", file.parentFile)
-            temporary.writeText(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(candidates))
             try {
-                Files.move(temporary.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-            } catch (unsupported: AtomicMoveNotSupportedException) {
-                log.debug("Atomic replace unavailable for ${file.absolutePath}: ${unsupported.message}")
-                Files.move(temporary.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                temporary.writeText(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(candidates))
+                try {
+                    Files.move(temporary.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+                } catch (unsupported: AtomicMoveNotSupportedException) {
+                    log.debug("Atomic replace unavailable for ${file.absolutePath}: ${unsupported.message}")
+                    Files.move(temporary.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                }
+            } finally {
+                // A no-op once the move succeeded, and the only thing that removes the scratch when it did
+                // not. The name is freshly random per call, so without this every failed write leaves one
+                // more file in a directory nothing sweeps -- the queue is operator state, not scratch.
+                temporary.delete()
             }
         }.onFailure { log.warn("Could not persist the re-grind queue ${file.absolutePath}: ${it.message}") }
     }

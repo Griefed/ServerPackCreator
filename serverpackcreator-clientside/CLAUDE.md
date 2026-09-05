@@ -115,7 +115,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   order differs per run. The starter jar's own pre-launch give-ups (`Failed to find run file at`, `Failed to find
   startup arguments using run script path`) sit in the same guard, and the JVM's `Error: could not open` for an
   unreadable `@argfile` joined `launchFailureMarkers`, which became reachable once the grinder started booting
-  Forge from `@libraries/.../unix_args.txt`. The ladder is **fourteen** rungs, and
+  Forge from `@libraries/.../unix_args.txt`. The ladder is **sixteen** rungs, and
   `theGuardOrderIsPinnedAsAWhole` is what pins the order as a unit — re-derive the count from `classify`
   rather than trusting this sentence, which has been wrong twice.
 - **A crash that contradicts the metadata is re-checked on the mod's other versions.**
@@ -212,7 +212,8 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   `clientOnlyClassMarker`, which no broken harness can fabricate, *and* from the bare exit-code rung, which
   means only "exited non-zero, nothing recognised why" — and afterwards the two were indistinguishable, so the
   grinder published both alike. `Classification.decidedBy` records the rung; `BootDecision.decisive` marks
-  exactly `CLIENT_ONLY_CLASS` and `OPERATOR_RULE` (a rule reaching CRASHED stated it deliberately), and the
+  exactly four — `CLIENT_ONLY_CLASS`, `LWJGL_ON_A_DEDICATED_SERVER` and `FML_INVALID_DIST` (none of which a
+  broken harness can fabricate), plus `OPERATOR_RULE` (a rule reaching CRASHED stated it deliberately) — and the
   grinder's `/as-properties` gate publishes nothing else. **Measured 2026-08-31 against the deployed
   grinder: four of five published boot logs were decided by the exit-code rung**, and one of those mods was
   already in the served list.
@@ -223,6 +224,34 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     a phrasing sharing *nothing* with Fabric's, so `dependencyFailureMarkers` never reached it), and
     `runtimeMismatchMarkers` (`Missing language javafml version [46,)`, `java.lang.module.ResolutionException`
     — a Forge jar staged for a NeoForge boot).
+- **LANDMINE — a ladder rung whose bundled id does not resolve matches NOTHING, and used to do so silently
+  (2026-09-05).** `BootLogClassifier` holds the ladder's *order* in code and each rung's *pattern* in
+  `boot-rules.default.json`, looked up by id. A renamed or deleted id — or one present carrying a pattern
+  `Regex()` cannot compile, since `BootRule.regex` is `runCatching { … }.getOrNull()` — yielded
+  `Regex("(?!)")` with no log anywhere. Both directions are silent and both are bad: lose a decisive rung and
+  every true positive falls through to the exit-code rung, which cannot publish, so the engine merely looks
+  like it found nothing; lose a fair-run guard and host trouble stops being excused, which is the
+  memory-starved-VM failure already on this engine's record. Now recorded in `missingRuleIds()` and logged at
+  ERROR, and `BundledRuleIdsResolveTest` fails the build — the file ships in our own jar, so an unresolved id
+  is a packaging fault and belongs to the build, not to a verdict store read weeks later. A bundled file that
+  cannot be read *at all* stays a deliberate degradation to "no console rules".
+
+- **A confirmation names the rule that DECIDED it, never one that merely annotated (2026-09-05).**
+  `Classification.firedRule` deliberately carries both — a rule stating no verdict rides along on the
+  ladder's own decision so its author can see the pattern matched — and `verdictOf` read
+  `firedRule ?: decidedBy?.ruleId`, crediting a rule that had declined to state one. The verdict was never
+  wrong (CONFIRMED is gated on `BootDecision.decisive`), but the Rule column sent an operator asking "which
+  rule excluded this mod?" to the wrong rule, against this module's own standard that a verdict which cannot
+  name its evidence cannot be audited. The rule is credited only when `decidedBy == OPERATOR_RULE`.
+
+- **`theGuardOrderIsPinnedAsAWhole` covers all sixteen rungs, and its doc has been wrong three times.**
+  Rungs 9, 10 and 12–15 — the decisive pair below `client-only-class`, and the four excuses below them — were
+  asserted nowhere, so reordering any of them passed. Extended green (the code was right; the guard was
+  absent) and **mutation-verified**: hoisting `mixin-apply-failure` above `client-only-class` now fails. Its
+  doc said "eight ordered guards" while listing fourteen, omitted `lwjgl`/`fml-invalid-dist`, and carried a
+  stray fragment of an older ladder. **Re-derive the count from `classify`** — that instruction is now the
+  first thing the doc says, and this file's own count was wrong for the same reason.
+
 - **OPEN — there are two rule types, and they should become one.** `ConsoleRule`/`ConsoleRuleSet`
   (`ConsoleRules.kt`, speaking `BootResult`, read from the operator's `SPC_GRINDER_BOOT_RULES` file) and
   `BootRule`/`BootRuleSet` (`BootRule.kt`, speaking `Verdict`, read from the bundled
@@ -398,6 +427,20 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     positive for a *lost true positive*. `attributionNeverChangesTheBootResult` pins it. Blame needs a crash
     marker or stack frame (a name appears in every "loading mod" line) and stands down when the candidate is
     named anywhere in the same crash context.
+- **LANDMINE — `pickDependencyFile` prefers an *obtainable* file, and obtainability outranks the loader
+  match (2026-09-04).** `pickForLoader` was `firstOrNull { loader in it.loaders && mc in it.minecraftVersions }`
+  and never asked whether the file could be downloaded, so a distribution-locked build
+  (`downloadUrl == null` — the author's opt-out) was picked over an obtainable one and the dependency was
+  reported unmet. Reported as *"Required dependency unavailable for Quilt / Minecraft 1.20.4: 306612"*,
+  CurseForge's Fabric API.
+  **Obtainability beats the exact-loader preference on purpose:** Quilt genuinely runs Fabric mods, so an
+  obtainable Fabric build is a working dependency while a locked Quilt build is nothing at all — a locked
+  exact match otherwise shadows the very fallback that exists for libraries publishing Fabric-only files.
+  **Still a preference, never a filter.** The last arm returns a locked file when every candidate is locked,
+  so the refusal reads "distribution-locked" — true and actionable — rather than "publishes no <loader> file
+  for Minecraft X", which would be false. Returning `null` where a file exists turns a diagnosable refusal
+  into a misleading one, which is the same reason the version constraint is a preference here.
+
 - **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
@@ -500,6 +543,120 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     contradicted server claim, and a distribution-locked file that was never readable at all.
   - `Confidence` and `aggregateFor` are **gone**. `BootResult` stays: it is the classifier's per-boot
     reading, not a published verdict, and `VerdictPolicy` consumes it directly.
+
+- **LANDMINE — a platform ref is an identifier, not a name; a refusal must say the slug (2026-09-04).**
+  `ModFile.requiredDependencies` holds Modrinth's opaque base62 `project_id` (`MBAkmtvl`) or CurseForge's
+  bare numeric id, and `unsatisfied` recorded the ref verbatim — so refusals read as gibberish.
+  `architectury-api`, `enchantment-descriptions` and `waystones` were reported that way:
+  `enchantment-descriptions` needs `uy4Cnpcm`/`aaRl8GiW` (**bookshelf-lib**, **prickle**), `waystones` needs
+  `bi4iCmsw`/`MBAkmtvl` (**shogi**, **balm**).
+  **`waystones` shows why this is a defect and not a cosmetic gripe:** its own `neoforge.mods.toml` declares
+  `balm` and `shogi` in words, so the *manifest* half of staging already reported them readably while the
+  *platform* half reported the same two mods as ids. `BootVerifier.unsatisfiedLabel` resolves a ref to the
+  resolved project's slug, and keeps the ref *plus the platform name* only when nothing resolved.
+  **The dedupe matters more than the wording:** `unsatisfied` is a `Set<String>`, so a mod missing by both
+  routes used to be two entries and is now one. Do not "simplify" this back to adding the raw ref.
+  - **There are THREE branches, and the first fix caught two.** `downloadWithDependencies` records an
+    unmet dependency when the ref does not resolve, when it resolves but publishes no usable file, and
+    when it resolves, a file is picked, and the *download* then fails. The third kept adding the bare ref
+    and produced the follow-up report `... Quilt / Minecraft 1.20.4: 306612` — CurseForge's id for Fabric
+    API. If you add a fourth, label it there too.
+  - **A distribution-locked dependency is not a failed download.** CurseForge publishes no `downloadUrl`
+    for an author who opted out, so `JarDownloader` returns `null` and the dependency read as "could not
+    be downloaded" — the sentence a 404, a flaky link and a deliberate opt-out all produce. The label now
+    says `distribution-locked`, which is the same distinction `downloadFailureDetail` draws for the
+    candidate; retrying an opt-out never succeeds.
+
+- **A dependency is resolved by NAME and AT THE VERSION BEING BOOTED — two separate defects, one report
+  (2026-09-04).** Both were live on `architectury-api` (Quilt / MC 1.20.4) and `waystones` (Forge /
+  MC 1.21.11), each published `ERROR` reading *"Required dependency unavailable … 306612"* / *"… 531761"*.
+  - **The name.** `unsatisfiedLabel` names a resolved project by `ProjectFiles.slug` and always did — but
+    **both** platforms' `resolveDependency` passed `nativeRef` into that parameter *positionally*, so the
+    label resolved the project and read back the ref it started from. The earlier labelling fix only helped
+    the branches that *append* something (`(unresolved X project)`, `(distribution-locked on X)`); the plain
+    resolved case printed the id. CurseForge's slug was already in the `/mods/{id}` response it fetches for
+    `websiteUrl`; Modrinth costs one extra GET, which falls back to the ref rather than losing the project.
+  - **LANDMINE — the window. `resolveDependency` reads ONE page of 50 files, and must narrow by
+    `gameVersion` or that page is useless for anything but current Minecraft.** CurseForge answers
+    newest-first across every loader *and* every Minecraft version, so a library publishing as often as
+    Fabric API (1000+ files) has nothing older than current Minecraft in its newest 50. Single-page is still
+    correct — a dependency needs *a* usable file, not a history — but only once the query is narrowed.
+    Un-narrowed it refuses boots for files that have existed for years, and a staging refusal publishes
+    ERROR over whatever the store held.
+  - **LANDMINE — `modLoaderType` is supported by the API and must NOT be sent.** Asking CurseForge for
+    Quilt returns nothing for Fabric API and re-creates the same refusal one layer down:
+    `BootCandidateSelector.fallbackLoaders` has to *see* the Fabric builds in order to fall back to them,
+    and Fabric API is its canonical case. Version narrows the set; loader choice stays in the selector,
+    with the obtainability preference. Parameters verified against https://docs.curseforge.com/rest-api/
+    (`gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`, `pageSize`).
+  - Modrinth accepts `minecraftVersion` and ignores it: its version endpoint returns a project's whole
+    version list in one response, so there is no newest-N window to fall outside of.
+  - **The test-boundary lesson, which is the reusable part.** `DependencyLabelTest` proved the labeller
+    correct by handing it a `ProjectFiles` the test built with the slug already right — production never
+    builds one of those. A unit test that *constructs* the value under test cannot see a producer
+    constructing it wrongly. `DependencySlugTest` drives the real `resolveDependency` with canned JSON and
+    asserts the composition; it is the only arrangement in which a positional slip in either platform fails.
+
+- **A dependency the candidate *ships* is never fetched and never missing** (`BundledJars`, 2026-09-04).
+  Fabric and Quilt load jar-in-jar libraries, so a `depends` naming one is satisfied before staging looks.
+  `xaeros-world-map` was refused for `xaerolib` while carrying
+  `META-INF/jars/xaerolib-fabric-26.2-1.7.1.jar`.
+  **The near-miss is the mechanism, and it is worth understanding before touching the refusal split:** a
+  Modrinth project `xaerolib` exists, so the manifest id *mapped* — but it publishes nothing tagged Quilt or
+  26.2, so nothing could be staged, and a mapped-then-unstageable id lands in `unsatisfied` (refuses) where an
+  unmappable one lands in `unmapped` (does not). Being *almost* resolvable was worse than being unknown.
+  Not a quirk: `sodium` declares **nine** nested jars, and they are exactly the Fabric API modules this file
+  documents as the most-commonly-missing dependency class.
+  - **LANDMINE — only jars the descriptor *declares* count.** Fabric loads the list in `jars` (Quilt:
+    `quilt_loader.jars`); a stray file under `META-INF/jars/` is not on the classpath. Treating one as
+    satisfied would skip staging something genuinely needed and produce a failure to blame on the mod — the
+    one direction where being generous here is dangerous. Unreadable input yields no ids for the same reason.
+  - **LANDMINE — read the nested jar as a `ZipInputStream`, never spool it to a temp file.** The first cut
+    used `createTempFile(...).apply { deleteOnExit() }`; `deleteOnExit` registers the path in a static set
+    that never shrinks, and this runs per staged jar, per boot attempt, for every candidate of a sweep.
+  - Ids come from each nested descriptor's own `id` and `provides`, never from its file name — a name like
+    `xaerolib-fabric-26.2-1.7.1.jar` carries a version and a loader the id does not.
+
+- **Client-only proof is about the mod, so it crosses builds and loaders** (`BootDecision.provesClientOnly`,
+  2026-09-04). `sodium` — a client renderer Modrinth marks `server_side: unsupported` — published
+  INCONCLUSIVE: its NeoForge boot crashed reaching LWJGL, and the other-version re-check then sampled a
+  Fabric build that booted cleanly, which `reconcileOtherVersionRecheck` treats as replacing the crash.
+  For the three rungs that are client-only evidence **by construction** — `CLIENT_ONLY_CLASS`,
+  `LWJGL_ON_A_DEDICATED_SERVER`, `FML_INVALID_DIST` — the re-check is not run, a survivor cannot clear it,
+  another loader cannot supersede it, and **every loader inherits CONFIRMED**. Features do not change with
+  the loader; only the implementation does. It matters concretely because the stems differ
+  (`sodium-neoforge-` vs `sodium-fabric-`), so excluding only the proving loader leaves half the project
+  shipping into every server pack.
+  - **LANDMINE — an *unexplained* crash is still disprovable**, and that guard is why `iron-chests` stopped
+    publishing off one bad build. Do not widen `provesClientOnly` to cover `OPERATOR_RULE`: a rule reaching
+    CRASHED states that *this console* is a crash, not that the mod is client-only.
+  - A superseded `ERROR` keeps its reason in the note. Publishing the entry is right — it comes from platform
+    metadata, not from the boot — but the grind still failed and an operator has to see that.
+
+- **LWJGL and FML's invalid-dist are shipped defaults, not examples** (2026-09-04). `iris` scored
+  INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` because both signatures lived only in
+  `boot-rules.example.json`, a template the daemon never loads. **Ordering was not the problem** — nothing
+  matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
+  ServerStarterJar prints the refusal in full and exits 0.
+
+- **Two patterns, and only one of them is publishable** (`LoaderVerdict.filenamePattern`, 2026-09-04).
+  `suggestedEntry` is the longest common prefix over a project's *whole* history and must stay that way —
+  it is what the fallback list matches with `startsWith`, so it has to cover every build ever released.
+  The cost is that any project which renamed its files loses whatever the rename dropped:
+  `iris` published `iris-` for Fabric and Quilt against `iris-neoforge-` for NeoForge, the difference being
+  that its oldest Fabric jars are `iris-mc1.16.5-1.0.0.jar`, from before the loader went into the name,
+  while all 42 NeoForge files carry it.
+  `filenamePattern` runs the same `FilenameStemDeriver.deriveStem` over the **sampled file alone**, so it
+  keeps the token history erodes, and the grinder shows the two side by side.
+  - **LANDMINE — never publish the narrow one.** Serving `filenamePattern` from `/as-properties` would stop
+    excluding every build the narrow form misses, which for `iris` is its entire pre-2022 history. The two
+    are separate fields for that reason and `theFilenamePatternIsNotWhatGetsPublished` fails the build on a
+    swap.
+  - A **Quilt** row reads `iris-fabric-`, which is correct and not a leak: Quilt boots Fabric builds, and
+    this describes the artifact, not the row's label. That is the whole point — it is what a maintainer
+    checks the finding against on the platform page.
+  - `ClientsideReportRenderer` (the CLI's Markdown report) still shows only `Suggested entry`. Same gap,
+    deliberately left: the ask was the grinder's catalog table, where a reader has no other context.
 
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned

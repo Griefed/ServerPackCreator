@@ -3580,3 +3580,247 @@ format — deferred rather than done quietly, and recorded in `serverpackcreator
 Suites: api 383 (1 skip), clientside 266 → **309**, grinder 446 → **455** (29 skip), app 149,
 plugin-example 3 — **1299 total, zero failures**, re-run with `--rerun-tasks` after wiping
 `build/test-results`.
+
+## 2026-09-04 — `Filename`: the artifact a verdict sampled, beside the pattern it publishes
+
+**Branch:** `claude-filename-column`
+
+Reported from the live grinder: `iris` returns three rows whose patterns are `iris-` (Fabric),
+`iris-neoforge-` (NeoForge) and `iris-` (Quilt). Two name no loader, and the third names one whose
+relationship to the row is not stated.
+
+**Not a bug in the deriver.** `suggestedEntry` is the longest common prefix over a project's *whole*
+published history, which is exactly right for its purpose: `/as-properties` serves it and the fallback
+list matches it with `startsWith`, so it has to cover every build the project ever shipped. Measured
+against the live Modrinth API:
+
+| loader   | files | stem             | why |
+|----------|-------|------------------|-----|
+| Fabric   | 191   | `iris-`          | oldest files are `iris-mc1.16.5-1.0.0.jar`, pre-dating the loader token |
+| NeoForge | 42    | `iris-neoforge-` | no such history — every file carries it |
+| Quilt    | 143   | `iris-`          | Quilt boots Fabric builds; same eroded prefix |
+
+So the loader token is not missing, it is *correctly* absent: no single prefix covers both naming
+conventions, and the broad one is the one that must be published.
+
+**The fix is a second column.** `FilenameStemDeriver.deriveStem` over the sampled file alone keeps
+whatever that file is called, because there is no older convention to erode it against. The deriver
+needed **no change** — a characterization test proved that before any code moved, and corrected one of
+my assumptions in passing (`iris-mc1.16.5-1.0.0.jar` yields `iris-`, not `iris-mc`; `mc` is stripped as
+the Minecraft marker it is). Everything after that is plumbing: `ClientsideVerifier`'s existing `sample`
+→ `LoaderVerdict.filenamePattern` → `GrindVerdict` → one `VerdictField` entry, which the HTML table and
+the CSV both derive their columns from.
+
+**The property worth guarding is that the two never swap.** Publishing the narrow pattern would stop
+excluding every build it misses — for `iris`, its entire pre-2022 history — so
+`theFilenamePatternIsNotWhatGetsPublished` asserts `/as-properties` still serves the broad stem. Pinned
+alongside it: a row with no sampled file renders **blank**, never the historical stem repeated, so the
+column cannot imply an artifact was examined when none was.
+
+**Four existing assertions changed, and that is the label working.** Two CSV header literals, the
+`ReportServer` header prefix, and the renderer's per-column sentinel list all name the column set, so the
+commit is `feat:` rather than `refactor:`. The renderer guard was given its own `SENTINELFILENAME` rather
+than a bumped count — counting cells is precisely the check it exists to be stronger than.
+
+**Deliberately not done:** `ClientsideReportRenderer`, the CLI's Markdown report, still shows only
+`Suggested entry`. Same information gap, but the ask was the grinder's catalog table, where a reader has
+no other context for the row.
+
+Suites from clean (`--rerun-tasks`): clientside **354**, grinder **465** (29 skipped), both green;
+every module compiles.
+
+## 2026-09-04 — one refusal, two defects: the dependency's name and the window it was sought in
+
+**Branch:** `claude-dependency-resolution`
+
+Reported: `architectury-api` publishing `ERROR` with *"Required dependency unavailable for Quilt /
+Minecraft 1.20.4: **306612**"*. Fetched the live store to check rather than trusting the paste — 68
+verdicts, two dependency refusals, both CurseForge, both bare ids:
+
+| mod | loader / MC | ref | actually |
+|---|---|---|---|
+| `architectury-api` | Quilt / 1.20.4 | `306612` | Fabric API |
+| `waystones` | Forge / 1.21.11 | `531761` | Balm |
+
+**Defect 1 — the name, and why the previous fix missed it.** `unsatisfiedLabel` names a resolved project
+by `ProjectFiles.slug`, and `DependencyLabelTest` proves it does. But **both** platforms'
+`resolveDependency` passed `nativeRef` into the `slug` parameter *positionally*, so the label resolved the
+project and read back the ref it started from. The earlier fix therefore only ever helped the branches
+that append something — `(unresolved X project)`, `(distribution-locked on X)` — while the plain resolved
+case, the common one, still printed the id.
+
+The reusable lesson is the test boundary, not the bug: **a unit test that constructs the value under test
+cannot see a producer that constructs it wrongly.** Same shape as the loader step-down, whose pin injected
+the very versions it was meant to prove were fetched. `DependencySlugTest` drives the real
+`resolveDependency` with canned JSON and asserts the composition — the only arrangement in which a
+positional slip in either platform fails a test.
+
+**Defect 2 — the window, which is what actually cost verdicts.** `resolveDependency` reads one page of 50
+files. That is still right (a dependency needs *a* usable file, not a history), but it asked
+**unfiltered**, and CurseForge answers newest-first across every loader and Minecraft version. Fabric API
+has 1000+ files there, so its newest 50 are all current Minecraft and a 1.20.4 boot finds nothing — a
+refusal for a file that has existed since December 2023, published as ERROR over whatever the store held.
+
+`/v1/mods/{modId}/files` takes `gameVersion` (parameters verified against
+https://docs.curseforge.com/rest-api/: `gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`,
+`pageSize`). **`modLoaderType` is deliberately not sent** — asking for Quilt returns nothing for Fabric
+API and re-creates the same refusal one layer down, because `BootCandidateSelector.fallbackLoaders` has to
+*see* the Fabric builds to fall back to them. Version narrows the set; loader choice stays in the
+selector.
+
+Modrinth accepts the parameter and ignores it: its version endpoint returns a whole version list in one
+response, so it has no newest-N window. Its slug, though, costs one extra GET on the dependency path, and
+falls back to the ref rather than losing the project.
+
+**Process note, recorded because it went wrong:** the four commits were made directly on `develop`, against
+this project's one-branch-per-fix rule. Nothing had been pushed, so they were moved onto
+`claude-dependency-resolution` and `develop` was reset to the previous merge — the same shape the rule
+would have produced. Cheap here only because it was caught before a push.
+
+Suites from clean (`--rerun-tasks`): clientside **362**, grinder **465** (29 skipped), app green.
+
+## 2026-09-05 — grinder audit: eight defects, and one mechanism that was never wired in
+
+**Branch:** `claude-grinder-audit-fixes`
+
+A read-only pass over all 7,915 lines of `serverpackcreator-grinder/src/main`, then every finding fixed.
+
+**The one that mattered: template provenance was write-only.** `LoaderCache.isInstalled` compares a cached
+tuple's recorded start-script digest against the current one, and `TemplateProvenanceTest` proves it does.
+`grep -rn "isInstalled" src/main` returns **nothing** — the production path is `ensureInstalled`, which
+decides a hit with `markUsed`, which only asks whether the marker file exists. So `TemplateProvenance.digestOf`
+ran, the supplier was wired from `GrinderApplication`, the digest was written into every marker, and it was
+never read. A template change was served from the layer the old templates produced, indefinitely — the exact
+failure the mechanism was built to prevent, and one both this log's module file and that test's own class
+comment described as fixed.
+
+The pin had to be an **installer call count**, because a marker assertion passes against the broken code:
+only "did it install again?" separates served-from-cache from rebuilt. One of six cases went red, which is
+what proved the fixture rather than the guard.
+
+**This is the third correct-unit-no-caller-reaches-it defect in two days** — the dependency slug, the loader
+step-down, and now this. The pattern is specific enough to name: *when a mechanism exists to change a
+decision, pin the decision, through the call the daemon actually makes.* A unit test that constructs the
+value under test cannot see a producer that constructs it wrongly, and a unit test of a predicate cannot see
+a caller that never consults it.
+
+**The rest, by what they cost:**
+
+| Finding | Consequence |
+|---|---|
+| `/status` counters lifetime, documented and rendered per-pass | dashboard shows "Pass 12 (25 candidates)" above "Verified 3,140" |
+| `SPC_GRINDER_WORKERS=0` unvalidated | daemon starts healthy, dies on first pass naming an internal parameter; restart loop |
+| `SPC_GRINDER_INTERVAL=-1` unvalidated | no error at all — the loop simply stops pausing |
+| `close()`'s untimed `Future.get()` | a wedged Docker socket holds the shutdown hook to `TimeoutStopSec`, whose SIGKILL orphans containers |
+| 6 dangling KDoc blocks | six declarations undocumented, their prose discarded by the compiler |
+| requeue temp file on failed write | one file leaked per failure, in a directory nothing sweeps |
+| `store` shadowed in `queueBlamedDependencies` | a `RequeueStore` hiding a `VerdictStore` in the class holding both |
+| `JsonVerdictStore.close()` never called | `AutoCloseable` declared and unhonoured; flusher never stopped |
+
+The config fix follows `from`'s documented contract — *never throw, a typo must not stop a service that has
+verdicts to serve* — so it **coerces to the default** rather than rejecting, and leaves boundaries that mean
+something (port 0, 0 cores, 0 budget) inside the allowed range.
+
+**Process note, recorded because it went wrong twice.** A `git add -u` swept the requeue fix into the `docs:`
+commit, putting a behaviour change under a label that denies one. Caught by reading `git log` before merging;
+the three affected commits were rebuilt from deterministic transforms and the resulting tree verified
+byte-identical to the contaminated one (`git rev-parse HEAD^{tree}`). Cheap only because nothing was pushed —
+the same lesson as yesterday's commits-on-develop slip, and the same remedy.
+
+Suites from clean (`--rerun-tasks`): grinder **490** (29 skipped, up from 465), clientside **362**, app **149**.
+
+## 2026-09-05 — clientside audit: a rung that could switch itself off, and docs that had drifted past the code
+
+**Branch:** `claude-clientside-audit-fixes`
+
+A read-only pass over all 5,552 lines of `serverpackcreator-clientside/src/main`, then every finding fixed.
+Same method as the grinder audit earlier the same day, and it found the same *class* of defect twice more.
+
+**The one that could have silenced the engine.** `BootLogClassifier` keeps the ladder's *order* in code and
+each rung's *pattern* in `boot-rules.default.json`, looked up by id. `bundledPattern` resolved a missing id
+to `Regex("(?!)")` — matches nothing — with no log and no guard. `BootRule.regex` is
+`runCatching { Regex(pattern) }.getOrNull()`, so an id that *is* present but carries an uncompilable pattern
+does the same thing; the compiler found that second path when the fix was written.
+
+Neither direction announces itself:
+
+| what goes | what an operator sees |
+|---|---|
+| `client-only-class`, `lwjgl-…` or `fml-invalid-dist` | every true positive falls to the exit-code rung, which cannot publish — the engine looks like it found nothing |
+| `out-of-memory`, `launch-failure`, … | host trouble stops being excused; a starved box publishes its biggest mods as clientside |
+
+The file ships inside our own jar, so an unresolved id is a packaging fault: it is now recorded, logged at
+ERROR, and `BundledRuleIdsResolveTest` fails the build. A bundled file that cannot be read *at all* keeps its
+deliberate degradation to "no console rules".
+
+**Six of sixteen rungs had no position in the guard that exists to pin position.** Rungs 9, 10 and 12–15 —
+the decisive pair below `client-only-class` and the four excuses below them — were asserted nowhere, so
+reordering any of them passed every test. Extended green, because the code was right and only the guard was
+missing, and therefore **mutation-verified**: hoisting `mixin-apply-failure` above `client-only-class` now
+fails with *"the client-class marker must outrank a mixin that could not apply"*, and did not before.
+
+**A confirmation credited a rule that had declined to decide.** `Classification.firedRule` deliberately
+carries both the deciding rule and one that merely annotated, and `verdictOf` read `firedRule ?:
+decidedBy?.ruleId`. The verdict was never wrong — CONFIRMED is gated on `BootDecision.decisive` — but the
+Rule column pointed an operator at a rule that had stated no verdict, against this module's own standard
+that *a verdict which cannot name its own evidence cannot be audited*.
+
+**Documentation that had drifted past the code**, all of it in the safety-critical file:
+
+- `BootDecision.decisive` said "**exactly two** qualify" and there are **four** — it never followed when
+  `lwjgl-on-a-dedicated-server` and `fml-invalid-dist` were promoted from examples to shipped defaults, so
+  it understated what may publish a clientside entry by half. The module `CLAUDE.md` repeated it.
+- `theGuardOrderIsPinnedAsAWhole` said "eight ordered guards" while listing fourteen, omitted two rungs, and
+  kept a stray fragment of an older ladder after a closing parenthesis. The real count is **sixteen**; the
+  module doc said fourteen. Its own note already recorded having been wrong twice.
+- **Seven dangling KDoc blocks**, including three stacked at one point so that `BootResult` and
+  `Classification` were both undocumented while their prose sat sixty lines away on `BootDecision`. One of
+  them was `loaderDisprovingTheCrash`'s, which carries the landmine about checking *whose* boot a SURVIVED
+  belongs to — dokka was dropping it entirely.
+
+**And one piece of dead code in the grinder**, found by following this module's `propagateClientOnlyProof`
+outward: `FallbackPropertiesRenderer.decisive()` was the old second publication gate, uncalled since
+CONFIRMED became structural. Left in place it would have been restored eventually and would now be *wrong* —
+propagation mints CONFIRMED for loaders inheriting another loader's proof, and those rows carry their own
+non-decisive `decidedBy`, so re-deriving decisiveness there drops exactly the sodium case.
+
+Suites from clean (`--rerun-tasks`): clientside **368** (up from 362), grinder **490**.
+
+## 2026-09-05 — closing the analysis findings, and sweeping the audit log for anything still open
+
+**Branch:** `claude-audit-followups`
+
+Three findings from `claude-docs/ANALYSIS-AUDIT.md` fixed, and the four candidate open items in
+`claude-docs/REFACTOR-AUDIT.md` checked against the code and found already closed.
+
+**All three fixes were green when written**, because none was a broken behaviour — each was a *missing
+guard* over behaviour that happened to be right. That makes mutation verification the whole point rather
+than a flourish: a guard added green and never mutated is indistinguishable from one that asserts nothing.
+
+| Fix | Mutation applied | Result |
+|---|---|---|
+| M-1 sentinel mapping | `filenamePattern = verdict.suggestedEntry` | `'SENTINEL_FILENAME' was dropped by the mapping` |
+| M-1 sentinel mapping | `declaredClientSide = verdict.declaredServerSide` | `expected: <REQUIRED> but was: <UNSUPPORTED>` |
+| M-2 arm precedence | swap `pickDependencyFile` arms 2 and 3 | `expected: <lib-0.9.0.jar> but was: <lib-1.5.0.jar>` |
+
+**M-1 is the one worth remembering.** `Grinder.grind` assigns eighteen fields by hand from `LoaderVerdict`
+to `GrindVerdict`, and five were asserted end to end. Every report, CSV, query and filter test builds its
+`GrindVerdict` through a fixture, so the producer was untested by construction — the same boundary as the
+dependency-label bug, where both platforms fed a correct labeller the wrong `slug`. The unasserted fields
+were the load-bearing ones: `verdict` gates publication, `declared`/`firedRule`/`decidedBy` make an
+exclusion auditable. Distinct sentinels are the mechanism, since equal values cannot detect a swap.
+
+**L-1 needed care rather than a delete.** `FilenameStemDeriver.deriveStems` had no caller, but its KDoc
+carried the `sodium-fabric-` versus `embeddium-` example that two other files cite as authoritative — the
+explanation lived on the one function nothing ran. It moved onto `deriveStem`, with the consequence now
+stated: that divergence is *why* `loaderDisprovingTheCrash` compares entries rather than loaders. Second
+instance today of dead surface reading as load-bearing because a comment vouches for it.
+
+**The audit sweep found nothing open.** OBS-1's QSL rule, iteration 38's `!!`, iteration 39's two snapshot
+accessors and iteration 40's wiring guard are all in the code; the table in `ANALYSIS-AUDIT.md` records
+where each was verified so they are not re-litigated. Iteration 34's MED-1/MED-2 stay as recorded history —
+that commit was re-cut later, and the audit entry is the remedy the conventions prescribe for a shape found
+after the fact.
+
+Status-table counts refreshed from `build/test-results`: api **387 → 405**, clientside **368 → 369**,
+grinder **490 → 495**. The api number had been stale for some time; it is re-derived, not incremented.

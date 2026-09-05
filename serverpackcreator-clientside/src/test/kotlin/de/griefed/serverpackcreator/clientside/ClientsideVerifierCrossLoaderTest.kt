@@ -82,7 +82,7 @@ internal class ClientsideVerifierCrossLoaderTest {
      * compared so that the published stem cannot strip a build proven to boot, but the build that actually
      * booted belongs to a loader whose stem may be different.
      *
-     * The shape below is the one `FilenameStemDeriver.deriveStems` documents — a project shipping
+     * The shape below is the one `FilenameStemDeriver.deriveStem` documents — a project shipping
      * `embeddium-` for Forge/NeoForge and `sodium-fabric-` for Fabric. NeoForge's SURVIVED came from a Fabric
      * boot of `sodium-fabric-…jar`, which `embeddium-` would never strip, so publishing the Forge crash
      * endangers nothing and the disproof is unfounded. It would also print "NeoForge booted a server", which

@@ -266,7 +266,9 @@ class ForgeMeta(
         }
 
     /** Every supported Forge version keyed by Minecraft version — the shape the GUI's combo boxes need. */
-    fun getForgeMeta(): HashMap<String,List<String>> {
+    // Narrowed from `HashMap` to `Map`: the returned map is now an immutable snapshot, and the old
+    // type advertised that a caller could mutate the metadata's own state through it.
+    fun getForgeMeta(): Map<String, List<String>> {
         return forgeLoader!!.versionMeta
     }
 

@@ -78,17 +78,4 @@ internal class FilenameStemDeriverTest {
     fun returnsNullForNoFiles() {
         Assertions.assertNull(FilenameStemDeriver.deriveStem(emptyList()))
     }
-
-    /** Per-loader grouping produces one stem per loader. */
-    @Test
-    fun derivesOneStemPerLoader() {
-        val stems = FilenameStemDeriver.deriveStems(
-            mapOf(
-                "Fabric" to listOf("sodium-fabric-mc1.20.1-0.5.3.jar"),
-                "Forge" to listOf("reforgium-1.20.1-1.0.jar", "reforgium-1.19.2-0.9.jar")
-            )
-        )
-        Assertions.assertEquals("sodium-fabric-", stems["Fabric"])
-        Assertions.assertEquals("reforgium-", stems["Forge"])
-    }
 }

@@ -26,6 +26,7 @@ import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import javax.xml.parsers.ParserConfigurationException
+import java.util.Collections
 
 /**
  * Information about releases of the Fabric loader.
@@ -40,7 +41,15 @@ internal class FabricLoader(
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val loaders: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var loaders: List<String> = emptyList()
+        private set
     var latest: String? = null
         private set
     var release: String? = null
@@ -57,6 +66,7 @@ internal class FabricLoader(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
+        val next_loaders = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(loaderManifest)
         val latestElements = document.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -69,16 +79,18 @@ internal class FabricLoader(
         val releaseChildren = releaseNode.childNodes
         val releaseItem = releaseChildren.item(0)
         release = releaseItem.nodeValue
-        loaders.clear()
 
         val elements = document.getElementsByTagName(version)
         for (i in 0 until elements.length) {
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            loaders.add(item.nodeValue)
+            next_loaders.add(item.nodeValue)
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        loaders = Collections.unmodifiableList(next_loaders)
+}
 
     /**
      * Get the latest Fabric loader version.

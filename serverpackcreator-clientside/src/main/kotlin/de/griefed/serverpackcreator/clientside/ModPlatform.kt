@@ -70,7 +70,7 @@ interface ModPlatform {
      * left [DeclaredSupport.UNKNOWN]; the caller picks a file matching the dependent's loader and Minecraft
      * version.
      */
-    fun resolveDependency(nativeRef: String): ProjectFiles?
+    fun resolveDependency(nativeRef: String, minecraftVersion: String? = null): ProjectFiles?
 }
 
 /**

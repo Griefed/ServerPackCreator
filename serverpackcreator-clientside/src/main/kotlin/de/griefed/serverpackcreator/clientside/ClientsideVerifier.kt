@@ -101,7 +101,7 @@ class ClientsideVerifier(
      */
     private fun reconcileAcrossLoaders(project: ProjectFiles, assessed: List<LoaderAssessment>): List<LoaderVerdict> {
         val verdicts = assessed.map { it.verdict }
-        return assessed.map { assessment ->
+        val reconciled = assessed.map { assessment ->
             val disproving = loaderDisprovingTheCrash(assessment.verdict, verdicts)
                 ?: return@map assessment.verdict
             log.info(
@@ -118,6 +118,8 @@ class ClientsideVerifier(
                 bootDetail = assessment.bootDetail
             )
         }
+        // Last, so a proof survives whatever the supersession pass decided about the other loaders.
+        return propagateClientOnlyProof(reconciled)
     }
 
     /** Compute the verdict for a single [loader] of the resolved [project], optionally booting it. */
@@ -161,6 +163,9 @@ class ClientsideVerifier(
                 blamedDependencyUrl = bootOutcome?.blamedDependencyUrl,
                 stagedDependencies = bootOutcome?.stagedDependencies.orEmpty(),
                 sampleFile = sample?.fileName,
+                // From the sampled file alone: one name keeps its loader token, where the whole
+                // history's common prefix loses it for any project that ever renamed its files.
+                filenamePattern = FilenameStemDeriver.deriveStem(listOfNotNull(sample?.fileName)),
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail
@@ -231,7 +236,17 @@ class ClientsideVerifier(
             // one that filled the store with unevidenced HIGHs.
             val confirmedByRule = bootOutcome
                 ?.takeIf { it.result == BootResult.CRASHED && it.decidedBy?.decisive == true }
-                ?.let { it.firedRule ?: it.decidedBy?.ruleId }
+                ?.let { outcome ->
+                    // Credit the operator's rule only when the *rule* is what decided. `firedRule` also
+                    // carries a rule that merely annotated -- one stating no verdict, riding along on the
+                    // ladder's own decision -- and naming that as the confirming evidence sends an operator
+                    // asking "which rule excluded this mod?" to a rule that declined to.
+                    if (outcome.decidedBy == BootDecision.OPERATOR_RULE) {
+                        outcome.firedRule ?: outcome.decidedBy?.ruleId
+                    } else {
+                        outcome.decidedBy?.ruleId
+                    }
+                }
 
             val verdict = VerdictPolicy.decide(
                 staging = if (bootOutcome?.stagingPrevented == true) {
@@ -287,6 +302,48 @@ class ClientsideVerifier(
             serverSide == DeclaredSupport.REQUIRED || jarScan == JarScan.SERVER_OR_BOTH
 
         /**
+         * Carry one loader's client-only proof to every other loader of the same project.
+         *
+         * **A mod's features do not change with the loader; only its implementation does.** So a build that
+         * reached client-only code proves the *mod* is client-only, and every loader's published entry is
+         * exclusion-worthy — including a loader that booted cleanly, whose entry would otherwise stay
+         * publishable and leave half the project un-excluded.
+         *
+         * Reported on `sodium`: its NeoForge build crashed reaching LWJGL while its Fabric build booted, and
+         * the two carry *different* stems (`sodium-neoforge-` and `sodium-fabric-`), so excluding only the
+         * proving loader would have left the other shipping into every server pack.
+         *
+         * Each inheriting verdict **keeps its own `bootResult`** — the report must not claim Fabric crashed
+         * when it did not — and its note names the loader and rung that proved it, because a verdict that
+         * cannot say where its evidence came from cannot be audited. Returns [verdicts] untouched when
+         * nothing proved anything.
+         */
+        internal fun propagateClientOnlyProof(verdicts: List<LoaderVerdict>): List<LoaderVerdict> {
+            val proof = verdicts.firstOrNull { it.decidedBy?.provesClientOnly == true } ?: return verdicts
+            return verdicts.map { verdict ->
+                if (verdict === proof) {
+                    verdict
+                } else {
+                    verdict.copy(
+                        verdict = Verdict.CONFIRMED,
+                        note = listOfNotNull(
+                            verdict.note,
+                            // An ERROR being superseded must not vanish: publishing this entry is right (the
+                            // mod is client-only and the entry comes from platform metadata, not from a
+                            // boot), but the grind still failed and that is an operator's problem to see.
+                            "This loader's own grind did not run (${verdict.verdict}).".takeIf {
+                                verdict.verdict == Verdict.ERROR
+                            },
+                            "${proof.loader} proved this mod reaches client-only code " +
+                                "(${proof.decidedBy?.ruleId}); a mod's features do not change with the loader, " +
+                                "so this entry is excluded too."
+                        ).joinToString(" ")
+                    )
+                }
+            }
+        }
+
+        /**
          * The loader whose clean boot disproves [verdict]'s crash, or `null` when nothing in [allVerdicts]
          * does. Disproof takes all of: [verdict] actually crashed, another loader actually **survived under
          * its own loader**, and the two derive the *same* non-blank list-entry — because that shared entry is
@@ -303,13 +360,19 @@ class ClientsideVerifier(
          * enforce: the build that actually booted belongs to a third loader whose stem may differ, so the
          * published entry would strip nothing that was proven bootable — and the note would say
          * "<loader> booted a server" of a loader that did not. `embeddium-` (Forge/NeoForge) versus
-         * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems`
+         * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStem`
          * documents.
          */
         internal fun loaderDisprovingTheCrash(
             verdict: LoaderVerdict,
             allVerdicts: List<LoaderVerdict>
         ): LoaderVerdict? {
+            // Client-only evidence is about the mod, not the build that produced it, so no other loader's
+            // clean boot disproves it. An *unexplained* crash still is disprovable -- that guard is why
+            // `iron-chests` stopped publishing off one bad build, and it stays.
+            if (verdict.decidedBy?.provesClientOnly == true) {
+                return null
+            }
             if (verdict.bootResult != BootResult.CRASHED) {
                 return null
             }

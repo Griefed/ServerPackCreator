@@ -46,20 +46,23 @@ internal class ConsoleRuleLadderTest {
      */
     @Test
     fun aRuleCrashesAConsoleThatAZeroExitWouldHaveExcused() {
+        // Deliberately a synthetic signature. This test used FML's "for invalid dist DEDICATED_SERVER"
+        // until 2026-09-04, when that became a *built-in* rule — which closed the very gap the test was
+        // demonstrating and broke it. The mechanism is what is being pinned, not any one string, so the
+        // example is one that can never be promoted into the defaults and take this guard with it.
         val console = listOf(
-            "[modloading-worker-0/ERROR]: java.lang.RuntimeException: Attempted to load class " +
-                "net/minecraft/client/gui/screens/Screen for invalid dist DEDICATED_SERVER"
+            "[main/FATAL]: ExampleMod: this build is client-only and refuses to start on a server"
         )
 
         val plain = BootLogClassifier.classify(console, exitCode = 0, timedOut = false)
         val ruled = BootLogClassifier.classify(
             console, exitCode = 0, timedOut = false,
-            rules = rules(rule("fml-invalid-dist", "for invalid dist DEDICATED_SERVER", BootResult.CRASHED))
+            rules = rules(rule("client-only-build", "this build is client-only and refuses to start", BootResult.CRASHED))
         )
 
         Assertions.assertEquals(BootResult.INCONCLUSIVE, plain, "without a rule this is the gap being closed")
         Assertions.assertEquals(BootResult.CRASHED, ruled.result)
-        Assertions.assertEquals("fml-invalid-dist", ruled.firedRule?.rule?.id)
+        Assertions.assertEquals("client-only-build", ruled.firedRule?.rule?.id)
     }
 
     /**
