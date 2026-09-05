@@ -144,12 +144,17 @@ class LoaderCache(
      */
     fun ensureInstalled(loader: String, loaderVersion: String, minecraftVersion: String): File? {
         val baseDir = baseDirFor(loader, loaderVersion, minecraftVersion)
-        if (markUsed(baseDir)) {
+        // [isInstalled], not merely [markUsed]: the marker only says an install once succeeded, while this also
+        // asks whether the templates that produced it are still the ones in force. Consulting it here is the
+        // whole point of recording provenance -- until this call existed the digest was written and never read,
+        // so a template change was served from the stale layer forever. `markUsed` still runs, because stamping
+        // the tuple as used is what keeps it alive against eviction.
+        if (isInstalled(loader, loaderVersion, minecraftVersion) && markUsed(baseDir)) {
             return baseDir
         }
         synchronized(lockFor(baseDir)) {
             // Re-check under the lock: another worker may have installed it while we waited.
-            if (markUsed(baseDir)) {
+            if (isInstalled(loader, loaderVersion, minecraftVersion) && markUsed(baseDir)) {
                 return baseDir
             }
             val failedAt = recentFailures[baseDir.path]
