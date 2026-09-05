@@ -256,7 +256,11 @@ object GrinderApplication {
             // Last, and after the workers are done, so it captures everything they recorded. Writes are
             // coalesced, so without this every verdict since the last flush would be lost on an orderly stop
             // -- the one data-loss path the buffering introduces, and the one it is cheap to close.
-            runCatching { store.flush() }
+            // close(), not flush(): it stops the flusher *before* writing, so the final write cannot race a
+            // scheduled tick, and it is the AutoCloseable contract this store declares and nothing honoured.
+            // The flush itself is the load-bearing half -- writes are coalesced, so without it every verdict
+            // since the last tick is lost on an orderly stop.
+            runCatching { store.close() }
                 .onFailure { log.error("Could not flush the verdict store on shutdown: ${it.message}") }
             mainThread.interrupt()
         })

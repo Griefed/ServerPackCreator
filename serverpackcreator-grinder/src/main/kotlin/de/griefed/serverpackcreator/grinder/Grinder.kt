@@ -67,13 +67,15 @@ class Grinder(
      * Failure here is logged and dropped, because a queueing problem must not cost the verdicts just earned.
      */
     private fun queueBlamedDependencies(report: de.griefed.serverpackcreator.clientside.ClientsideReport, candidate: GrindCandidate) {
-        val store = requeue ?: return
+        // Not `store`: this class already has one, of a different type, and shadowing it here made the two
+        // reads three lines apart look like the same collaborator.
+        val queue = requeue ?: return
         val blamed = report.perLoader.mapNotNull { it.blamedDependencyUrl }.distinct()
         if (blamed.isEmpty()) {
             return
         }
         runCatching {
-            store.add(
+            queue.add(
                 blamed.map { url ->
                     GrindCandidate(url, url.substringAfterLast('/'), 0, ModPlatforms.ofUrl(url))
                 }
