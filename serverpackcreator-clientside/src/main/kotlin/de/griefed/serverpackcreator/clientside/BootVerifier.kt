@@ -86,13 +86,6 @@ class BootVerifier(
     private val maxDependencyDepth = 4
 
     /**
-     * Boot one prepared attempt with this verifier's collaborators. **The single call site of
-     * [runPrepared]**, and deliberately so: an attempt happens three times over — the first boot, the
-     * newest-loader-build re-check and each other-version re-check — and anything that must happen per
-     * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
-     * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
-     */
-    /**
      * [refuseForSelfDeclaration] with this verifier's scanner supplying the jar's declared Minecraft range.
      * Split so the decision itself stays testable without an [ApiWrapper].
      */
@@ -102,6 +95,13 @@ class BootVerifier(
                 ?.scan(listOf(candidate))?.singleOrNull()?.minecraftConstraint
         }
 
+    /**
+     * Boot one prepared attempt with this verifier's collaborators. **The single call site of
+     * [runPrepared]**, and deliberately so: an attempt happens three times over — the first boot, the
+     * newest-loader-build re-check and each other-version re-check — and anything that must happen per
+     * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
+     * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
+     */
     private fun boot(pack: Prepared.Ready): BootOutcome =
         // The rules are asked for per attempt rather than captured once, which is what makes an edit during
         // a multi-day run take effect on the next boot instead of the next restart.
@@ -781,16 +781,6 @@ class BootVerifier(
         }
 
         /**
-         * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
-         * everything needed is present and the boot may proceed.
-         *
-         * **Why refuse rather than boot anyway:** a loader that rejects a mod for missing dependencies never runs the
-         * mod's code, so the run cannot distinguish client-only from server-safe; it just produces a non-zero exit
-         * that *looks* like a crash. Measured 2026-07-30 across 112 kept boot logs, 36 failed exactly that way — the
-         * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
-         * is both honest and actionable, where a "crash" would have been neither.
-         */
-        /**
          * Refuse a boot the staged jar's own descriptor contradicts, or `null` to go ahead.
          *
          * Scans the jar for its declared Minecraft range and compares that, plus the descriptors it carries,
@@ -847,6 +837,16 @@ class BootVerifier(
             return if (file?.locked == true) "$name (distribution-locked on $platformName)" else name
         }
 
+        /**
+         * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
+         * everything needed is present and the boot may proceed.
+         *
+         * **Why refuse rather than boot anyway:** a loader that rejects a mod for missing dependencies never runs the
+         * mod's code, so the run cannot distinguish client-only from server-safe; it just produces a non-zero exit
+         * that *looks* like a crash. Measured 2026-07-30 across 112 kept boot logs, 36 failed exactly that way — the
+         * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
+         * is both honest and actionable, where a "crash" would have been neither.
+         */
         internal fun refuseForMissingDependencies(
             unsatisfied: Set<String>,
             loader: String,

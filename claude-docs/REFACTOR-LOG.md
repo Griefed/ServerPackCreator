@@ -3728,3 +3728,60 @@ byte-identical to the contaminated one (`git rev-parse HEAD^{tree}`). Cheap only
 the same lesson as yesterday's commits-on-develop slip, and the same remedy.
 
 Suites from clean (`--rerun-tasks`): grinder **490** (29 skipped, up from 465), clientside **362**, app **149**.
+
+## 2026-09-05 — clientside audit: a rung that could switch itself off, and docs that had drifted past the code
+
+**Branch:** `claude-clientside-audit-fixes`
+
+A read-only pass over all 5,552 lines of `serverpackcreator-clientside/src/main`, then every finding fixed.
+Same method as the grinder audit earlier the same day, and it found the same *class* of defect twice more.
+
+**The one that could have silenced the engine.** `BootLogClassifier` keeps the ladder's *order* in code and
+each rung's *pattern* in `boot-rules.default.json`, looked up by id. `bundledPattern` resolved a missing id
+to `Regex("(?!)")` — matches nothing — with no log and no guard. `BootRule.regex` is
+`runCatching { Regex(pattern) }.getOrNull()`, so an id that *is* present but carries an uncompilable pattern
+does the same thing; the compiler found that second path when the fix was written.
+
+Neither direction announces itself:
+
+| what goes | what an operator sees |
+|---|---|
+| `client-only-class`, `lwjgl-…` or `fml-invalid-dist` | every true positive falls to the exit-code rung, which cannot publish — the engine looks like it found nothing |
+| `out-of-memory`, `launch-failure`, … | host trouble stops being excused; a starved box publishes its biggest mods as clientside |
+
+The file ships inside our own jar, so an unresolved id is a packaging fault: it is now recorded, logged at
+ERROR, and `BundledRuleIdsResolveTest` fails the build. A bundled file that cannot be read *at all* keeps its
+deliberate degradation to "no console rules".
+
+**Six of sixteen rungs had no position in the guard that exists to pin position.** Rungs 9, 10 and 12–15 —
+the decisive pair below `client-only-class` and the four excuses below them — were asserted nowhere, so
+reordering any of them passed every test. Extended green, because the code was right and only the guard was
+missing, and therefore **mutation-verified**: hoisting `mixin-apply-failure` above `client-only-class` now
+fails with *"the client-class marker must outrank a mixin that could not apply"*, and did not before.
+
+**A confirmation credited a rule that had declined to decide.** `Classification.firedRule` deliberately
+carries both the deciding rule and one that merely annotated, and `verdictOf` read `firedRule ?:
+decidedBy?.ruleId`. The verdict was never wrong — CONFIRMED is gated on `BootDecision.decisive` — but the
+Rule column pointed an operator at a rule that had stated no verdict, against this module's own standard
+that *a verdict which cannot name its own evidence cannot be audited*.
+
+**Documentation that had drifted past the code**, all of it in the safety-critical file:
+
+- `BootDecision.decisive` said "**exactly two** qualify" and there are **four** — it never followed when
+  `lwjgl-on-a-dedicated-server` and `fml-invalid-dist` were promoted from examples to shipped defaults, so
+  it understated what may publish a clientside entry by half. The module `CLAUDE.md` repeated it.
+- `theGuardOrderIsPinnedAsAWhole` said "eight ordered guards" while listing fourteen, omitted two rungs, and
+  kept a stray fragment of an older ladder after a closing parenthesis. The real count is **sixteen**; the
+  module doc said fourteen. Its own note already recorded having been wrong twice.
+- **Seven dangling KDoc blocks**, including three stacked at one point so that `BootResult` and
+  `Classification` were both undocumented while their prose sat sixty lines away on `BootDecision`. One of
+  them was `loaderDisprovingTheCrash`'s, which carries the landmine about checking *whose* boot a SURVIVED
+  belongs to — dokka was dropping it entirely.
+
+**And one piece of dead code in the grinder**, found by following this module's `propagateClientOnlyProof`
+outward: `FallbackPropertiesRenderer.decisive()` was the old second publication gate, uncalled since
+CONFIRMED became structural. Left in place it would have been restored eventually and would now be *wrong* —
+propagation mints CONFIRMED for loaders inheriting another loader's proof, and those rows carry their own
+non-decisive `decidedBy`, so re-deriving decisiveness there drops exactly the sodium case.
+
+Suites from clean (`--rerun-tasks`): clientside **368** (up from 362), grinder **490**.

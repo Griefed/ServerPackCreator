@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.BootDecision
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 
@@ -110,23 +109,6 @@ object FallbackPropertiesRenderer {
         }
     }
 
-    /**
-     * Whether [verdict]'s crash is **decisive evidence of client-only-ness**, and may therefore be published.
-     *
-     * `HIGH` alone was never enough. `CRASHED` is reachable from the client-only-class marker, which no
-     * broken harness can fabricate, *and* from the bare exit-code rung, which means only "the process exited
-     * non-zero and nothing recognised why" — and afterwards the two were indistinguishable. Sampled against
-     * the deployed grinder on 2026-08-31, **four of five** published boot logs were the latter: two mixin
-     * failures, a Quilt solver give-up and a Forge jar staged for a NeoForge boot. One of those mods was
-     * already in the list this function renders.
-     *
-     * A verdict recorded before the rung was tracked reads `null` and does **not** publish. That empties the
-     * grinder's contribution until a sweep re-grinds, which is the intended trade: an empty contribution is
-     * better than a wrong one, and grandfathering the old rows in would keep exactly the entries this gate
-     * exists to remove.
-     */
-    private fun decisive(verdict: GrindVerdict): Boolean =
-        BootDecision.entries.firstOrNull { it.name == verdict.decidedBy }?.decisive == true
 
     /**
      * Merge, drop blanks and unrepresentable entries, de-duplicate, and sort case-insensitively so the
