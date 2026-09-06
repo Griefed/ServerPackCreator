@@ -621,4 +621,64 @@ internal class BootCandidateSelectorTest {
         )
     }
 
+    /**
+     * When **no tagged version** satisfies the jar, fall back to the newest real Minecraft **release** the
+     * jar's own descriptor accepts, and boot there.
+     *
+     * Griefed's call, 2026-09-06, from the live grinder's ERROR rows: `moonlight-1.20.4-2.9.9-forge.jar` is
+     * tagged 1.20.4 and only 1.20.4, while its descriptor declares `[1.20,1.20.2)`. Platform and jar share
+     * no version at all, so `newestVersionSatisfying` returns null and the candidate was refused outright —
+     * "bump the version to the one specced in the JAR, then run the grind."
+     *
+     * The jar is the better authority here, and not merely a different one: the *loader* enforces this
+     * range at runtime, so booting inside it is what actually gets the mod loaded, while booting at a
+     * version the author only ticked on a web form gets it rejected by FML before it runs. The file itself
+     * is unchanged — only the pack's Minecraft version moves.
+     */
+    @Test
+    fun fallsBackToTheNewestReleaseTheJarItselfAccepts() {
+        val releases = listOf("1.21.1", "1.20.6", "1.20.4", "1.20.1", "1.20", "1.19.2")
+
+        Assertions.assertEquals(
+            "1.20.1",
+            BootCandidateSelector.newestReleaseSatisfying("[1.20,1.20.2)", releases) { true },
+            "1.20.1 is the newest release inside the range moonlight's descriptor declares"
+        )
+    }
+
+    /** The loader gate still applies — a version no loader build exists for is not a place to boot. */
+    @Test
+    fun skipsAReleaseTheLoaderCannotBootAndTakesTheNextOne() {
+        val releases = listOf("1.21.1", "1.20.6", "1.20.4", "1.20.1", "1.20")
+
+        Assertions.assertEquals(
+            "1.20",
+            BootCandidateSelector.newestReleaseSatisfying("[1.20,1.20.2)", releases) { it != "1.20.1" }
+        )
+    }
+
+    /** Nothing in the range means nothing to bump to, and the caller keeps its honest refusal. */
+    @Test
+    fun answersNothingWhenNoReleaseSatisfiesTheJar() {
+        Assertions.assertNull(
+            BootCandidateSelector.newestReleaseSatisfying("[1.16,1.17)", listOf("1.21.1", "1.20.4")) { true }
+        )
+    }
+
+    /**
+     * A constraint that accepts everything must not silently relocate a pack to the newest Minecraft in
+     * existence. `VersionConstraint` deliberately accepts anything it cannot read, so an unreadable
+     * descriptor would otherwise bump every candidate to the top of the release list.
+     */
+    @Test
+    fun refusesToBumpOnAConstraintThatConstrainsNothing() {
+        val releases = listOf("1.21.1", "1.20.4")
+
+        for (constraint in listOf("", "   ", "*", "not a version at all")) {
+            Assertions.assertNull(
+                BootCandidateSelector.newestReleaseSatisfying(constraint, releases) { true },
+                "'$constraint' bounds nothing and must not move the pack"
+            )
+        }
+    }
 }
