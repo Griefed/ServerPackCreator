@@ -53,20 +53,6 @@ object JarSelfDeclaration {
     )
 
     /**
-     * Loaders that legitimately run **another** loader's mods, so a descriptor for the value is no
-     * contradiction when booting the key.
-     *
-     * Deliberately one-way and minimal, mirroring `BootCandidateSelector.fallbackLoaders`: Quilt runs Fabric
-     * mods and LegacyFabric reads the same `fabric.mod.json`, while Fabric cannot load a Quilt mod and
-     * Forge/NeoForge cross-loading is version-dependent. Guessing wider here would boot jars the loader
-     * cannot use and score the failure against the mod.
-     */
-    private val alsoRuns = mapOf(
-        "Quilt" to setOf("Fabric"),
-        "LegacyFabric" to setOf("Fabric")
-    )
-
-    /**
      * The loaders whose descriptors [jar] carries. Empty when the jar cannot be opened, has no descriptor, or
      * is not an archive at all — all of which mean *"this says nothing"*, never *"this says no"*.
      */
@@ -90,9 +76,11 @@ object JarSelfDeclaration {
         minecraftConstraint: String?
     ): String? {
         val declared = declaredLoaders(jar)
+        // The cross-loading claim is [LoaderCompatibility]'s, and it needs the Minecraft version: NeoForge
+        // loads a Forge jar on 1.20.1 and on nothing else, so asking without one can only be wrong twice.
         val acceptable = declared.isEmpty() ||
             loader in declared ||
-            alsoRuns[loader].orEmpty().any { it in declared } ||
+            LoaderCompatibility.alsoRuns(loader, minecraftVersion).any { it in declared } ||
             loader !in descriptorLoaders.values
         if (!acceptable) {
             return "${jar.name} carries only ${declared.sorted().joinToString("/")} descriptor(s), " +

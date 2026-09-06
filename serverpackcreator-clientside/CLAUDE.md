@@ -443,7 +443,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   for Minecraft X", which would be false. Returning `null` where a file exists turns a diagnosable refusal
   into a misleading one, which is the same reason the version constraint is a preference here.
 
-- **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
+- **Quilt dependencies fall back to the Fabric build** (`LoaderCompatibility.alsoRuns`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
   dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
@@ -679,7 +679,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     ERROR over whatever the store held.
   - **LANDMINE — `modLoaderType` is supported by the API and must NOT be sent.** Asking CurseForge for
     Quilt returns nothing for Fabric API and re-creates the same refusal one layer down:
-    `BootCandidateSelector.fallbackLoaders` has to *see* the Fabric builds in order to fall back to them,
+    `LoaderCompatibility.alsoRuns` has to *see* the Fabric builds in order to fall back to them,
     and Fabric API is its canonical case. Version narrows the set; loader choice stays in the selector,
     with the obtainability preference. Parameters verified against https://docs.curseforge.com/rest-api/
     (`gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`, `pageSize`).
