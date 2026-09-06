@@ -254,10 +254,28 @@ object BootCandidateSelector {
     private fun pickFrom(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         pickForLoader(files, loader, minecraftVersion)
             ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
+            ?: pickUntagged(files, minecraftVersion)
 
     /** Newest file carrying both [loader] and [minecraftVersion], or `null` when the project publishes none. */
     private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         files.firstOrNull { loader in it.loaders && minecraftVersion in it.minecraftVersions }
+
+    /**
+     * Newest file for [minecraftVersion] that declares **no loader at all**, or `null`.
+     *
+     * CurseForge had no modloader facet before Minecraft 1.13, so a pre-1.13 file carries an empty loader
+     * set and `pickForLoader` — which asks `loader in it.loaders` — can never match one. Measured against
+     * the live API 2026-09-06: all 15 of mtlib's files are untagged, and 106 of iron-chests' 138. That made
+     * every such dependency unpickable and refused the boot, which is what
+     * *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* was.
+     *
+     * **Untagged is unknown, not incompatible**, and it is the *last* arm on purpose: the exact loader and
+     * the cross-loader fallback are both tried first, so a file whose author did state a loader always wins
+     * and this can only add a pick where there was none. A file tagged for a *different* loader is still
+     * refused — that tag is a statement, and an empty set is the absence of one.
+     */
+    private fun pickUntagged(files: List<ModFile>, minecraftVersion: String): ModFile? =
+        files.firstOrNull { it.loaders.isEmpty() && minecraftVersion in it.minecraftVersions }
 
     /**
      * Loaders that can run another loader's mods, used **only** when a dependency publishes nothing for the loader
