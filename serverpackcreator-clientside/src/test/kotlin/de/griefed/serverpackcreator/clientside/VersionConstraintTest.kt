@@ -89,6 +89,46 @@ internal class VersionConstraintTest {
         assertViolates("3.1", "(,3.0]")
     }
 
+    /**
+     * A **comma-separated union of ranges**, which Maven's own specification documents and Forge and
+     * NeoForge therefore accept in a `versionRange`. Every element is an alternative: the constraint holds
+     * if any one of them does.
+     *
+     * Found on the public grinder 2026-09-06, in the ERROR rows. `distanthorizons` declares
+     * `[1.20.3],[1.20.4]` and was refused for a **1.20.4** pack; `mru` declares `26.2,26.3` and was refused
+     * for a **26.2** pack. Executed against the parser, both constraints refused *every* version they list,
+     * and Maven's own documented example `(,1.0],[1.2,)` refused everything — the union was never
+     * satisfiable at all.
+     *
+     * The cause is one comma doing two jobs: inside a single bracketed range it separates lower from upper,
+     * and between ranges it separates alternatives. `mavenRangeHolds` assumed the first reading always, so
+     * `[1.20.3],[1.20.4]` parsed as one range from `1.20.3]` to `[1.20.4` — and `numbersOf("[1.20.4")` maps
+     * the bracketed component to `0`, making the upper bound `0.20.4`.
+     *
+     * This fails **safe** — a refused boot publishes nothing — so no wrong exclusion reached anyone. What it
+     * costs is coverage: those mods are never boot-verified, and the ERROR they produce reads as a statement
+     * about the mod rather than about the parser.
+     */
+    @Test
+    fun readsCommaSeparatedUnionsOfRanges() {
+        // The two observed on the live instance.
+        assertSatisfies("1.20.4", "[1.20.3],[1.20.4]")
+        assertSatisfies("1.20.3", "[1.20.3],[1.20.4]")
+        assertViolates("1.20.5", "[1.20.3],[1.20.4]")
+        assertSatisfies("26.2", "26.2,26.3")
+        assertSatisfies("26.3", "26.2,26.3")
+        assertViolates("26.4", "26.2,26.3")
+
+        // Maven's own documented union example: everything at or below 1.0, or at or above 1.2.
+        assertSatisfies("1.20.4", "(,1.0],[1.2,)")
+        assertSatisfies("0.9", "(,1.0],[1.2,)")
+        assertViolates("1.1", "(,1.0],[1.2,)")
+
+        // A comma *inside* one range still separates its bounds — the reading that was already correct.
+        assertSatisfies("1.20.1", "[1.20,1.20.2)")
+        assertViolates("1.20.4", "[1.20,1.20.2)")
+    }
+
     /** A space-separated conjunction has to hold on both sides; a `||` disjunction on either. */
     @Test
     fun readsConjunctionsAndDisjunctions() {

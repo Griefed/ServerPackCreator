@@ -43,14 +43,38 @@ object BootCandidateSelector {
      * Choose the newest (file, Minecraft-version) pair among [files] for [loader] for which
      * [loaderVersionAvailable] holds, so the boot uses a combination that can actually install.
      * Returns `null` when no such combination exists.
+     *
+     * **A file declaring no loader at all is a fallback, not a match.** CurseForge had no modloader facet
+     * before Minecraft 1.13, so a pre-1.13 file carries an empty loader set — and a project whose files are
+     * *all* untagged was therefore never selected under any loader, i.e. never ground. Measured against the
+     * live API 2026-09-06: all 15 of mtlib's files are untagged and it returned no candidate at all.
+     *
+     * **Why that is safe here, which is a different argument than for a dependency.** Picking an untagged
+     * file for the wrong loader could stage a jar that loader ignores, boot cleanly and publish a false
+     * `CLEAR` — the worst outcome this engine has, since it claims proof about a mod that never loaded. Two
+     * things prevent it: [loaderVersionAvailable] covers the dominant case, because untagged files are
+     * overwhelmingly pre-1.13 where Fabric and Quilt have no builds, so only Forge is reachable and untagged
+     * *means* Forge; and for anything newer, `BootVerifier.refuseForSelfDeclaration` reads the downloaded
+     * jar's own descriptor before the boot and refuses one carrying only another loader's. The cost of being
+     * wrong is a refused attempt, not a wrong verdict.
      */
     fun pickBootableCandidate(
         files: List<ModFile>,
         loader: String,
         loaderVersionAvailable: (minecraftVersion: String) -> Boolean
     ): Pair<ModFile, String>? =
-        files.filter { loader in it.loaders }
-            .flatMap { file -> file.minecraftVersions.map { file to it } }
+        newestOf(files.filter { loader in it.loaders }, loaderVersionAvailable)
+        // An untagged file states no loader rather than stating another one — see [pickUntagged]. Last
+        // resort, so a file whose author did tag it always wins and this only adds a candidate where there
+        // was none: an all-untagged project (every one of mtlib's 15 files) was never ground at all.
+            ?: newestOf(files.filter { it.loaders.isEmpty() }, loaderVersionAvailable)
+
+    /** The newest bootable (file, Minecraft version) pair among [files], or `null`. */
+    private fun newestOf(
+        files: List<ModFile>,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): Pair<ModFile, String>? =
+        files.flatMap { file -> file.minecraftVersions.map { file to it } }
             .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
             .firstOrNull { loaderVersionAvailable(it.second) }
 
@@ -76,6 +100,50 @@ object BootCandidateSelector {
         file.minecraftVersions
             .sortedWith { left, right -> minecraftComparator.compare(right, left) }
             .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
+
+    /**
+     * The newest Minecraft **release** in [releases] that the jar's [minecraftConstraint] accepts and the
+     * loader can boot, or `null` when there is none.
+     *
+     * The wider fallback behind [newestVersionSatisfying]: that one reconsiders only versions the *platform*
+     * tagged, so it rescues a jar tagged for two versions whose descriptor accepts one of them (JEI) and
+     * does nothing for a jar tagged for exactly one version its descriptor excludes.
+     * `moonlight-1.20.4-2.9.9-forge.jar` is tagged 1.20.4 and declares `[1.20,1.20.2)`; platform and jar
+     * share nothing, and the candidate was refused rather than booted at the version it was built for.
+     *
+     * **The jar is the better authority when the two disagree**, because the loader enforces this range at
+     * runtime: booting inside it is what gets the mod loaded, while booting at a version the author merely
+     * ticked on a web form gets the mod rejected by FML before it runs.
+     *
+     * **A constraint that constrains nothing never bumps.** [VersionConstraint] accepts anything it cannot
+     * read — deliberately, so a grammar gap cannot mass-refuse — which means an empty, wildcard or
+     * unparseable descriptor would otherwise "satisfy" the newest release in existence and silently
+     * relocate every candidate there. Such a constraint is answered with `null`, leaving the caller's
+     * original refusal in place.
+     */
+    fun newestReleaseSatisfying(
+        minecraftConstraint: String,
+        releases: Collection<String>,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): String? {
+        if (!constrainsAnything(minecraftConstraint, releases)) {
+            return null
+        }
+        return releases
+            .sortedWith { left, right -> minecraftComparator.compare(right, left) }
+            .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
+    }
+
+    /**
+     * Whether [minecraftConstraint] actually excludes something out of [releases].
+     *
+     * A constraint every candidate satisfies carries no information — it is blank, a wildcard, or a string
+     * the parser could not read and therefore accepted. Asked of the same set the caller is about to search,
+     * so the question is decided by the constraint's observed effect rather than by trying to re-detect the
+     * shapes [VersionConstraint] chooses to tolerate.
+     */
+    private fun constrainsAnything(minecraftConstraint: String, releases: Collection<String>): Boolean =
+        releases.any { !VersionConstraint.satisfies(it, minecraftConstraint) }
 
     /**
      * One member of the sample the other-version crash re-check boots: which file, under which loader, on
@@ -210,10 +278,28 @@ object BootCandidateSelector {
     private fun pickFrom(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         pickForLoader(files, loader, minecraftVersion)
             ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
+            ?: pickUntagged(files, minecraftVersion)
 
     /** Newest file carrying both [loader] and [minecraftVersion], or `null` when the project publishes none. */
     private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         files.firstOrNull { loader in it.loaders && minecraftVersion in it.minecraftVersions }
+
+    /**
+     * Newest file for [minecraftVersion] that declares **no loader at all**, or `null`.
+     *
+     * CurseForge had no modloader facet before Minecraft 1.13, so a pre-1.13 file carries an empty loader
+     * set and `pickForLoader` — which asks `loader in it.loaders` — can never match one. Measured against
+     * the live API 2026-09-06: all 15 of mtlib's files are untagged, and 106 of iron-chests' 138. That made
+     * every such dependency unpickable and refused the boot, which is what
+     * *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* was.
+     *
+     * **Untagged is unknown, not incompatible**, and it is the *last* arm on purpose: the exact loader and
+     * the cross-loader fallback are both tried first, so a file whose author did state a loader always wins
+     * and this can only add a pick where there was none. A file tagged for a *different* loader is still
+     * refused — that tag is a statement, and an empty set is the absence of one.
+     */
+    private fun pickUntagged(files: List<ModFile>, minecraftVersion: String): ModFile? =
+        files.firstOrNull { it.loaders.isEmpty() && minecraftVersion in it.minecraftVersions }
 
     /**
      * Loaders that can run another loader's mods, used **only** when a dependency publishes nothing for the loader

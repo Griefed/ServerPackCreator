@@ -40,6 +40,40 @@ data class PlatformRef(
  *
  * @author Griefed
  */
+/**
+ * How a manifest mod id was turned into a platform ref, which is what decides whether failing to honour it
+ * may refuse a boot.
+ *
+ * The distinction exists because the two are not equally trustworthy and the cost of being wrong is not
+ * symmetric. Refusing a boot publishes `INCONCLUSIVE`, overwriting whatever the store held; letting one run
+ * without a dependency it may not even have needed costs, at worst, the same `INCONCLUSIVE` — and only when
+ * the dependency really was required and really was missing.
+ *
+ * @author Griefed
+ */
+sealed interface ModIdMapping {
+
+    /** The platform ref to resolve, or `null` when there is nothing to try. */
+    val ref: String?
+
+    /**
+     * A ref we **know** names the project — an entry in the alias table, or a module of a family whose
+     * shape is recognised. Failing to stage it is a real gap, so it may refuse a boot.
+     */
+    data class Alias(override val ref: String) : ModIdMapping
+
+    /**
+     * An optimistic guess that the mod id is also the project's slug. Usually right and cheap to try, but it
+     * may name nothing, or something else entirely — so it must **never** refuse a boot, at any stage.
+     */
+    data class Guess(override val ref: String) : ModIdMapping
+
+    /** Nothing to try: a blank id, or a platform this registry knows nothing about. */
+    data object None : ModIdMapping {
+        override val ref: String? get() = null
+    }
+}
+
 object KnownModIds {
 
     /** Modrinth's project name, as the platform classes report it. */
@@ -141,21 +175,40 @@ object KnownModIds {
      * never a valid ref, and searching for one would spend the API key's quota on a match nothing could
      * verify. An id that maps nowhere is *reported*, never fabricated.
      */
-    fun refFor(modId: String, platform: String): String? {
+    /** The ref [mappingFor] arrived at, for callers that only need the string — deduping, mostly. */
+    fun refFor(modId: String, platform: String): String? = mappingFor(modId, platform).ref
+
+    /**
+     * How [modId] maps onto [platform], and how much that mapping can be trusted.
+     *
+     * An alias — the table, or a Fabric API / QSL module shape — is a project we know the id names. Anything
+     * else is guessed to be the project's slug, which **both** platforms accept: Modrinth addresses projects
+     * by slug directly, and CurseForge's search endpoint resolves one to the numeric id its other routes
+     * need.
+     *
+     * CurseForge got no guess at all until 2026-09-06, because a guess that mapped and then failed to stage
+     * used to refuse the boot — so guessing risked converting working boots into refusals. The refusal split
+     * now keys on this type instead, and a [ModIdMapping.Guess] never refuses, which is what makes the guess
+     * safe to offer. Before that, every manifest-declared dependency of a CurseForge candidate was
+     * unresolvable unless it was one of the four aliases: `modtweaker` never staged `mtlib`, a project
+     * CurseForge publishes under exactly that slug.
+     */
+    fun mappingFor(modId: String, platform: String): ModIdMapping {
         val id = modId.trim().lowercase()
         if (id.isEmpty()) {
-            return null
+            return ModIdMapping.None
         }
         val alias = aliases[id]
             ?: fabricApi.takeIf { isFabricApiModule(id) }
             ?: quiltStandardLibraries.takeIf { isQslModule(id) }
         alias?.let {
-            return when (platform) {
+            val ref = when (platform) {
                 MODRINTH -> it.modrinth
                 CURSEFORGE -> it.curseForge
                 else -> null
             }
+            return ref?.let { known -> ModIdMapping.Alias(known) } ?: ModIdMapping.None
         }
-        return if (platform == MODRINTH) id else null
+        return if (platform == MODRINTH || platform == CURSEFORGE) ModIdMapping.Guess(id) else ModIdMapping.None
     }
 }

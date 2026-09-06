@@ -52,8 +52,8 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
     those rows are the majority.
 - **Filtering, sorting and paging are a pure unit** (`QueryParams` → `VerdictQuery` → `VerdictSelection` →
   `VerdictPage`), not handler code. Every edge case is three lines here instead of a socket round trip
-  against a 60 KB blob — and it is what makes `/` and `/export.csv` *provably* agree: they share the
-  function rather than being kept in step by hand.
+  against a 60 KB blob — and it is what makes `/`, `/export.csv` and `/verdicts.json` *provably* agree:
+  all three share the function rather than being kept in step by hand.
   - **Nothing a URL can carry may throw.** Page 0, `size=banana`, a `sort=` naming a dropped column, a
     malformed escape — all fall back. These arrive from bookmarks and address bars, and a report that 500s
     is worse than one that quietly recovers.
@@ -109,6 +109,24 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
+- **`/verdicts.json` is the feed for consumers outside this module, and the reason it exists is *shape*.**
+  `VerdictField`, `VerdictQuery` and `VerdictSelection` are all `internal`, so nothing outside `-grinder`
+  can reuse the selection — it has to travel over the wire. `/export.csv` already does that, but it
+  flattens every field to a string: `stagedDependencies` arrives comma-joined and has to be re-split, and
+  a timestamp is whatever `ScanDate` rendered. The JSON route serialises `GrindVerdict` itself, so an
+  array stays an array. Same query parameters as the table and the CSV, and `defaultSize = null` so a bare
+  call is unpaged exactly as `/export.csv` is; the rows arrive inside
+  `{total, matched, page, pages, verdicts}`, so a consumer can tell *nothing matched* from *nothing
+  recorded*. **This is what the ServerPackCreator grinder plugin reads.**
+  - **LANDMINE — the mapper is shared with `/status` and needs `JavaTimeModule`.** `ReportServer`'s was a
+    bare `jacksonObjectMapper()`, which writes an `Instant` as `{"epochSecond":…,"nano":…}` — parseable,
+    but not a timestamp any client recognises, and not what `JsonVerdictStore` writes to disk. It now
+    registers the module and disables `WRITE_DATES_AS_TIMESTAMPS`, matching the store exactly, so the wire
+    shape *is* the on-disk shape. `/status` writes only primitives and is unaffected — pinned rather than
+    reasoned about (`VerdictsJsonEndpointTest.leavesTheStatusDocumentUntouched`), because reshaping a
+    neighbouring document is how a shared-mapper change goes wrong.
+  - `VerdictsJsonEndpointTest` also pins the agreement directly: for four different queries the JSON and
+    the CSV must return identical rows.
 - **`/dashboard` is the human face of `/status`, and `/status` is unchanged.** `StatusDashboardRenderer`
   serves a hand-written page that polls the JSON endpoint and renders pass, workers, crawl, cache and rule
   health with human durations. A **second route rather than content negotiation**: `/status` is scripted

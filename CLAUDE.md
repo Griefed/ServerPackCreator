@@ -49,6 +49,12 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - **serverpackcreator-plugin-example** — pf4j example plugin exercising every extension point.
   Documentation-by-example: must always reflect current API idiom. See
   `serverpackcreator-plugin-example/CLAUDE.md`.
+- **serverpackcreator-plugin-grinder** — pf4j plugin bridging SPC to a grinder daemon: a GUI tab
+  (Confirmed / Other Verdicts / Dashboard / Settings) over the daemon's `/verdicts.json` and `/status`,
+  and a `PreGenExtension` folding the ticked entries into `packConfig.clientMods` for **every**
+  generation — GUI, CLI and web. Depends on `-api` only; not published. It is the pick-and-choose
+  alternative to `/as-properties`, which publishes every `CONFIRMED` finding or none. See
+  `serverpackcreator-plugin-grinder/CLAUDE.md`.
 - **serverpackcreator-web-frontend** — Quasar 2 / Vue 3 SPA, JavaScript (TS migration planned),
   Pinia stores, built into the app's web backend via the org.siouan frontend Gradle plugin. See
   `serverpackcreator-web-frontend/CLAUDE.md`.
@@ -336,12 +342,13 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 405 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
-| clientside     | 369           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Four verdicts** (`CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE`) since 2026-09-04, and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
+| api            | 409 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
+| clientside     | 390           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Four verdicts** (`CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE`) since 2026-09-04, and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
 | app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
+| plugin-grinder | 69            | GUI plugin over a grinder's `/verdicts.json` + `/status`; ticked entries reach `packConfig.clientMods` through a `PreGenExtension`, so one selection covers GUI, CLI and web. Verified end-to-end 2026-09-06 against a live `ReportServer`. Full state and landmines: **`serverpackcreator-plugin-grinder/CLAUDE.md`**. |
 | web-frontend   | 32 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage; `types/api.ts` mod-lists are `string[]` since the web module embedded them (2026-08-17); `RunConfigurationCard` asserts the *rendered* lists, not the props it passed in — the pass-through version stayed green with the card reverted to the pre-branch object shape (2026-08-18) |
-| grinder        | 495 (29 skip) | Continuous fire-and-forget boot-verification in network-less Docker containers, with a persisted catalog crawl cursor so coverage accumulates. Runs as a systemd service. **The report server carries no authentication** and binds loopback unless `SPC_GRINDER_HOST` says otherwise. **`SPC_GRINDER_MEMORY_GIB` is measured, not arbitrary** — the JVM derives each boot's heap from it, and it is the divisor in the worker-sizing formula. Full state, landmines and measurements: **`serverpackcreator-grinder/CLAUDE.md`**. |
+| grinder        | 503 (29 skip) | Continuous fire-and-forget boot-verification in network-less Docker containers, with a persisted catalog crawl cursor so coverage accumulates. Runs as a systemd service. **The report server carries no authentication** and binds loopback unless `SPC_GRINDER_HOST` says otherwise. **`SPC_GRINDER_MEMORY_GIB` is measured, not arbitrary** — the JVM derives each boot's heap from it, and it is the divisor in the worker-sizing formula. Full state, landmines and measurements: **`serverpackcreator-grinder/CLAUDE.md`**. |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -361,3 +368,20 @@ settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, ver
 (all cards + nav SFCs; suite at 32 across 14 files; tables left untested by design — trivial format-lambda logic vs.
 brittle QTable rendering). The GUI `GlobalScope.launch` anti-pattern is resolved (see Open issues),
 GUI-verified. **Next (optional):** broaden component-test coverage further.
+
+**Since then (2026-09-06): the grinder plugin**, a second pf4j plugin module (`-plugin-grinder`) plus the
+`/verdicts.json` feed it reads. Two things worth carrying forward beyond that module's own docs:
+
+- **`ApiPlugins.getAllExtensionsOfPlugin` ignored its `plugin` argument**, so every tab was added once per
+  *installed plugin* and every generation extension ran that many times. Invisible for as long as this
+  repository shipped exactly one plugin — one times one is one — and visible the first time two were
+  installed together, as a tab strip reading `Grinder | Tetris | Grinder | Tetris`. Fixed, pinned by
+  `ExtensionScopingTest` (which builds its second plugin by cloning the example jar), recorded in
+  `claude-docs/API-BEHAVIOUR-CHANGES.md`. **The general lesson: a defect whose multiplier is the count of
+  something the repo only ever has one of cannot be found by testing what the repo ships.**
+- **Open, pre-existing, and NOT caused by the plugin work:** the *example* plugin dies with a
+  `StackOverflowError` in `CustomPluginFactory` when started in **CLI** mode (`Example`'s `init` calls
+  `ApiWrapper.api()` re-entrantly), leaving `PluginWrapper.getPlugin()` null and logging an NPE. Generation
+  still completes, and the GUI path is unaffected. Confirmed pre-existing by reproducing it against
+  `develop`'s unmodified `ApiPlugins` — worth stating, since it shows up in any CLI log that has plugins
+  installed and reads like a regression.

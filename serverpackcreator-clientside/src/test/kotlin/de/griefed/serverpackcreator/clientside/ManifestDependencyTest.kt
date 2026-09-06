@@ -257,7 +257,8 @@ internal class ManifestDependencyTest {
     fun aMappedDependencyWithNoUsableFileRefusesRatherThanBeingFiledAsAGuess() {
         val plan = BootVerifier.planManifestDependency(
             ModDependency("fabric-api"), "Quilt", "1.21.11",
-            refFor = { "306612" },
+            // An ALIAS: fabric-api is a project we know this id names, so a failure to stage it refuses.
+            mappingFor = { ModIdMapping.Alias("306612") },
             // Resolves, but publishes nothing for this Minecraft version — the live shape.
             resolveRef = { project(file("fabric-api-0.100.8+1.20.6.jar", setOf("Fabric"), setOf("1.20.6"))) }
         )
@@ -273,7 +274,7 @@ internal class ManifestDependencyTest {
     fun anUnmappableIdIsStillOnlyAGuess() {
         val plan = BootVerifier.planManifestDependency(
             ModDependency("some-bundled-thing"), "Quilt", "1.21.11",
-            refFor = { null },
+            mappingFor = { ModIdMapping.None },
             resolveRef = { error("must not be consulted when nothing maps") }
         )
 
@@ -285,7 +286,7 @@ internal class ManifestDependencyTest {
     fun aMappedIdThePlatformDoesNotCarryIsAGuessToo() {
         val plan = BootVerifier.planManifestDependency(
             ModDependency("fabric-api"), "Quilt", "1.21.11",
-            refFor = { "306612" },
+            mappingFor = { ModIdMapping.Alias("306612") },
             resolveRef = { null }
         )
 
@@ -298,11 +299,11 @@ internal class ManifestDependencyTest {
         val fits = file("fabric-api-0.141.6+1.21.11.jar", setOf("Fabric"), setOf("1.21.11"))
         val plan = BootVerifier.planManifestDependency(
             ModDependency("fabric-api"), "Quilt", "1.21.11",
-            refFor = { "306612" },
+            mappingFor = { ModIdMapping.Alias("306612") },
             resolveRef = { project(file("fabric-api-0.100.8+1.20.6.jar", setOf("Fabric"), setOf("1.20.6")), fits) }
         )
 
-        Assertions.assertEquals(ManifestDependencyPlan.Stage("306612", fits), plan)
+        Assertions.assertEquals(ManifestDependencyPlan.Stage("306612", fits, confident = true), plan)
     }
 
     /**
@@ -329,5 +330,95 @@ internal class ManifestDependencyTest {
             BootVerifier.stageableRequirements(requirements).map { it.modID },
             "only the mandatory=true dependency may gate the boot"
         )
+    }
+
+    /**
+     * **The refusal split now keys on how the ref was arrived at, not on how far it got**
+     * (Griefed's call, 2026-09-06).
+     *
+     * The old rule was "mapped and then failed to stage refuses; unmappable does not", which made *being
+     * almost resolvable worse than being unknown* — this file's own `xaerolib` case, where a real Modrinth
+     * project of that name exists but publishes nothing for the pack's loader and Minecraft version, so a
+     * guess that happened to hit refused a boot that an outright miss would have allowed.
+     *
+     * The new rule states the intent directly: an **alias** is a project we know the id names, so failing to
+     * honour it is a real gap and may refuse; a **guess** is an optimistic slug that may name nothing or
+     * something else, so it never refuses at any stage. That is what lets CurseForge guess at all — the
+     * reason `mtlib` was unresolvable for `modtweaker`.
+     */
+    @Test
+    fun anAliasThatResolvesToNothingUsableStillRefuses() {
+        val plan = BootVerifier.planManifestDependency(
+            requirement("fabric"), "Fabric", "1.20.1",
+            mappingFor = { ModIdMapping.Alias("fabric-api") },
+            resolveRef = { project() }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Unsatisfied("fabric"), plan)
+    }
+
+    /** The `xaerolib` case: a guess that hit a real project publishing nothing usable must not refuse. */
+    @Test
+    fun aGuessThatResolvesToNothingUsableDoesNotRefuse() {
+        val plan = BootVerifier.planManifestDependency(
+            requirement("xaerolib"), "Quilt", "26.2",
+            mappingFor = { ModIdMapping.Guess("xaerolib") },
+            resolveRef = { project() }
+        )
+
+        Assertions.assertEquals(
+            ManifestDependencyPlan.Unmapped("xaerolib"), plan,
+            "being almost resolvable must not be worse than being unknown"
+        )
+    }
+
+    /** Nothing to try is unmapped whatever the confidence would have been. */
+    @Test
+    fun anIdThatMapsNowhereIsUnmapped() {
+        Assertions.assertEquals(
+            ManifestDependencyPlan.Unmapped("whatever"),
+            BootVerifier.planManifestDependency(
+                requirement("whatever"), "Fabric", "1.20.1",
+                mappingFor = { ModIdMapping.None },
+                resolveRef = { project() }
+            )
+        )
+    }
+
+    /** A ref the platform does not carry is unmapped too — there is nothing there to have failed. */
+    @Test
+    fun aRefThePlatformDoesNotCarryIsUnmapped() {
+        Assertions.assertEquals(
+            ManifestDependencyPlan.Unmapped("fabric"),
+            BootVerifier.planManifestDependency(
+                requirement("fabric"), "Fabric", "1.20.1",
+                mappingFor = { ModIdMapping.Alias("fabric-api") },
+                resolveRef = { null }
+            )
+        )
+    }
+
+    /**
+     * A staged plan carries its confidence forward, because the *download* can still fail and the same rule
+     * has to apply there — an alias whose jar could not be fetched is a real gap, a guess's is not.
+     */
+    @Test
+    fun aStagedPlanRemembersWhetherItWasTrusted() {
+        val fabricApi = file("fabric-api-0.92.jar", setOf("Fabric"), setOf("1.20.1"))
+        val mtlib = file("MTLib-3.0.6.jar", setOf("Forge"), setOf("1.12.2"))
+
+        val alias = BootVerifier.planManifestDependency(
+            requirement("fabric"), "Fabric", "1.20.1",
+            mappingFor = { ModIdMapping.Alias("fabric-api") },
+            resolveRef = { project(fabricApi) }
+        )
+        val guess = BootVerifier.planManifestDependency(
+            requirement("mtlib"), "Forge", "1.12.2",
+            mappingFor = { ModIdMapping.Guess("mtlib") },
+            resolveRef = { project(mtlib) }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Stage("fabric-api", fabricApi, confident = true), alias)
+        Assertions.assertEquals(ManifestDependencyPlan.Stage("mtlib", mtlib, confident = false), guess)
     }
 }

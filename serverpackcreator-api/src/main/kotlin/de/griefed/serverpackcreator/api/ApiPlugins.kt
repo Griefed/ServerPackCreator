@@ -198,11 +198,17 @@ class ApiPlugins(
     }
 
     /**
-     * Get all extension of the specified [type] for the specified [plugin].
+     * Get all extensions of the specified [type] belonging to the specified [plugin], and to no other.
+     *
+     * The plugin id is passed to pf4j rather than dropped: every caller here loops over the installed
+     * plugins and asks once per plugin, so an answer covering *all* plugins multiplies — each tab would
+     * be added once per installed plugin, and each generation extension would run that many times.
+     * See `ExtensionScopingTest`, which is only meaningful with two plugins installed.
+     *
      * @author Griefed
      */
     fun <T> getAllExtensionsOfPlugin(plugin: PluginWrapper, type: Class<T>): List<T> =
-        plugin.pluginManager.getExtensions(type)
+        plugin.pluginManager.getExtensions(type, plugin.pluginId)
 
     override fun createExtensionFactory(): ExtensionFactory =
         SingletonExtensionFactory(

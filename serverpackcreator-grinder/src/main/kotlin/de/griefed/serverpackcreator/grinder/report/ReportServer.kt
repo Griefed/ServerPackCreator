@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
@@ -91,7 +93,15 @@ class ReportServer(
     }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
     private var pool: ExecutorService? = null
+    /**
+     * Shared by `/status` and `/verdicts.json`. The date module is what keeps a [GrindVerdict]'s
+     * `verifiedAt` an ISO-8601 string rather than the `{"epochSecond":…,"nano":…}` object a bare mapper
+     * writes for an [java.time.Instant] — the same configuration [JsonVerdictStore] uses, so the shape on
+     * the wire is the shape on disk. `/status` writes only primitives, so it is unaffected either way.
+     */
     private val mapper = jacksonObjectMapper()
+        .registerModule(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     /** The actually-bound port (meaningful after [start], especially when an ephemeral `0` was asked). */
     val port: Int get() = server.address.port
@@ -120,6 +130,19 @@ class ReportServer(
             )
             exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
             respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
+        }
+        // The same selection the table and the CSV run, through the same function -- three renderings of
+        // one query cannot disagree when only one of them picks the rows. Unlike the CSV this keeps each
+        // field's own shape (stagedDependencies stays an array), which is why a consumer outside this
+        // module gets a feed of its own rather than a flattened export it has to re-parse.
+        //
+        // `defaultSize = null` matches /export.csv: a bare call returns everything. The paging metadata
+        // still travels, so a client that does ask for a page knows where in the set it landed.
+        server.createContext("/verdicts.json") { exchange ->
+            val selection = VerdictSelection.select(
+                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+            )
+            respond(exchange, "application/json; charset=utf-8", verdictsJson(selection))
         }
         server.createContext("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
@@ -282,6 +305,23 @@ class ReportServer(
      * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
      * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
      */
+    /**
+     * One page of the verdict feed: the rows themselves plus where in the set they sit. `total` is the
+     * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
+     * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
+     */
+    private fun verdictsJson(selection: VerdictPage): String {
+        val document = linkedMapOf(
+            "total" to selection.total,
+            "matched" to selection.matched,
+            "page" to selection.page,
+            "pages" to selection.pages,
+            "verdicts" to selection.rows
+        )
+        return runCatching { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
+            .getOrElse { "{\"error\":\"verdicts unavailable\"}" }
+    }
+
     private fun statusJson(): String {
         val document = linkedMapOf<String, Any?>(
             "verdicts" to store.all().size,

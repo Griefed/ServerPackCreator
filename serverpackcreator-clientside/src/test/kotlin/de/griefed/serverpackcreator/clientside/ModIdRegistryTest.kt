@@ -61,13 +61,58 @@ internal class ModIdRegistryTest {
     }
 
     /**
-     * **CurseForge gets no guess.** It addresses projects by numeric id, so a mod id is never a valid ref;
-     * guessing would mean spending the API key's quota on a search that cannot be verified from the id
-     * alone. An unmappable id is reported rather than fabricated — see the refusal split.
+     * **CurseForge gets a guess too, now that a guess cannot refuse a boot** (Griefed's call, 2026-09-06).
+     *
+     * It used to get none, and the reasoning was sound at the time: CurseForge addresses projects by numeric
+     * id, so a mod id is never a valid ref, and a mapped-then-unstageable id refused the boot — which made
+     * *being almost resolvable worse than being unknown*, the `xaerolib` trap. The cost was that every
+     * manifest-declared dependency of a CurseForge candidate was unresolvable unless it was one of four
+     * hardcoded aliases: `modtweaker` never staged `mtlib`, which CurseForge publishes under that exact slug.
+     *
+     * What changed is the refusal split, not the guess: it now keys on **how the ref was arrived at** rather
+     * than on how far it got. A [ModIdMapping.Guess] never refuses at any stage, so guessing costs at most a
+     * lookup that misses — and CurseForge's search endpoint resolves a slug to the numeric id its other
+     * routes need, which `CurseForgePlatform.resolve` was already doing.
      */
     @Test
-    fun anUnknownIdIsNotGuessedOnCurseForge() {
-        Assertions.assertNull(KnownModIds.refFor("cloth-config", "CurseForge"))
+    fun anUnknownIdIsGuessedOnBothPlatforms() {
+        Assertions.assertEquals("cloth-config", KnownModIds.refFor("cloth-config", "Modrinth"))
+        Assertions.assertEquals("cloth-config", KnownModIds.refFor("cloth-config", "CurseForge"))
+    }
+
+    /**
+     * The distinction the refusal split reads. An alias is a project we *know* the id names — a failure to
+     * honour it is a real gap and may refuse a boot. A guess is an optimistic slug that may name nothing,
+     * or something else entirely, so it must never refuse.
+     */
+    @Test
+    fun anAliasIsConfidentAndAGuessIsNot() {
+        Assertions.assertEquals(ModIdMapping.Alias("306612"), KnownModIds.mappingFor("fabric", "CurseForge"))
+        Assertions.assertEquals(ModIdMapping.Alias("fabric-api"), KnownModIds.mappingFor("fabric", "Modrinth"))
+        Assertions.assertEquals(ModIdMapping.Alias("qsl"), KnownModIds.mappingFor("quilt_resource_loader", "Modrinth"))
+
+        Assertions.assertEquals(ModIdMapping.Guess("mtlib"), KnownModIds.mappingFor("mtlib", "CurseForge"))
+        Assertions.assertEquals(ModIdMapping.Guess("cloth-config"), KnownModIds.mappingFor("cloth-config", "Modrinth"))
+    }
+
+    /** Nothing to try stays nothing to try — a blank id, or a platform the registry has never heard of. */
+    @Test
+    fun nothingToTryIsItsOwnAnswer() {
+        Assertions.assertEquals(ModIdMapping.None, KnownModIds.mappingFor("   ", "Modrinth"))
+        Assertions.assertEquals(ModIdMapping.None, KnownModIds.mappingFor("mtlib", "SomeFuturePlatform"))
+        Assertions.assertNull(KnownModIds.refFor("mtlib", "SomeFuturePlatform"))
+    }
+
+    /** `refFor` is the ref of whatever `mappingFor` decided — one rule, read two ways. */
+    @Test
+    fun refForIsTheMappingsRef() {
+        for (id in listOf("fabric", "quilt_resource_loader", "mtlib", "cloth-config", "   ")) {
+            for (platform in listOf("Modrinth", "CurseForge")) {
+                Assertions.assertEquals(
+                    KnownModIds.mappingFor(id, platform).ref, KnownModIds.refFor(id, platform), "$id / $platform"
+                )
+            }
+        }
     }
 
     /**
@@ -159,9 +204,14 @@ internal class ModIdRegistryTest {
             "fabric-api", KnownModIds.refFor("fabric-permissions-api-v0", "Modrinth"),
             "lucko's permissions library is not Fabric API"
         )
-        Assertions.assertNull(
-            KnownModIds.refFor("fabric-permissions-api-v0", "CurseForge"),
-            "and it must not be fabricated on CurseForge either"
+        Assertions.assertNotEquals(
+            "306612", KnownModIds.refFor("fabric-permissions-api-v0", "CurseForge"),
+            "and it must not be claimed for Fabric API on CurseForge either"
+        )
+        Assertions.assertEquals(
+            ModIdMapping.Guess("fabric-permissions-api-v0"),
+            KnownModIds.mappingFor("fabric-permissions-api-v0", "CurseForge"),
+            "it is its own project, so it is a guess at its own slug and never refuses"
         )
         Assertions.assertEquals(
             "fabric-api", KnownModIds.refFor("fabric-permission-api-v1", "Modrinth"),
@@ -206,7 +256,7 @@ internal class ModIdRegistryTest {
     @Test
     fun theQuiltLoaderItselfIsNotAQslModule() {
         Assertions.assertNotEquals("qsl", KnownModIds.refFor("quilt_loader", "Modrinth"))
-        Assertions.assertNull(KnownModIds.refFor("quilt_loader", "CurseForge"))
+        Assertions.assertNotEquals("634179", KnownModIds.refFor("quilt_loader", "CurseForge"))
     }
 
     /** The two families do not bleed into one another: a QSL id is never Fabric API, nor the reverse. */
@@ -223,6 +273,6 @@ internal class ModIdRegistryTest {
     @Test
     fun aFabricPrefixedProjectIsNotAModule() {
         Assertions.assertEquals("fabric-language-kotlin", KnownModIds.refFor("fabric-language-kotlin", "Modrinth"))
-        Assertions.assertNull(KnownModIds.refFor("fabric-language-kotlin", "CurseForge"))
+        Assertions.assertNotEquals("306612", KnownModIds.refFor("fabric-language-kotlin", "CurseForge"))
     }
 }
