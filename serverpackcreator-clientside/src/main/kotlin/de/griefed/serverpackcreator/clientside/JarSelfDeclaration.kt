@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.clientside
 
+import com.electronwill.nightconfig.core.Config
+import com.electronwill.nightconfig.toml.TomlParser
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -44,11 +46,20 @@ import java.util.zip.ZipFile
  */
 object JarSelfDeclaration {
 
+    /** Where Forge keeps its descriptor — the one entry this object reads rather than merely lists. */
+    private const val FORGE_DESCRIPTOR = "META-INF/mods.toml"
+
+    /** The `mods.toml` table free-form mod properties live under. */
+    private const val TOML_PROPERTIES = "properties"
+
+    /** The property Sinytra Connector stamps into a wrapped Fabric mod's stub descriptor. */
+    private const val CONNECTOR_PLACEHOLDER_PROPERTY = "connector:placeholder"
+
     /** Descriptor path → the loader that reads it. Presence only; the contents are `-api`'s business. */
     private val descriptorLoaders = mapOf(
         "fabric.mod.json" to "Fabric",
         "quilt.mod.json" to "Quilt",
-        "META-INF/mods.toml" to "Forge",
+        FORGE_DESCRIPTOR to "Forge",
         "META-INF/neoforge.mods.toml" to "NeoForge"
     )
 
@@ -62,8 +73,27 @@ object JarSelfDeclaration {
         }
     }.getOrDefault(emptySet())
 
-    /** Not implemented yet — see `JarSelfDeclarationTest.aConnectorPlaceholderNamesItselfInItsModsToml`. */
-    fun isConnectorPlaceholder(jar: File): Boolean = TODO("the placeholder marker is not read yet")
+    /**
+     * Whether [jar] is a **Sinytra Connector placeholder** — a Fabric mod wrapped so a platform can tag it
+     * Forge, whose `META-INF/mods.toml` is a stub existing only to get the file past Forge's mod discovery
+     * until Connector takes it over.
+     *
+     * **Keyed on the marker, never on carrying two descriptors.** A genuine multi-loader jar ships a real
+     * `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; only
+     * `[properties] "connector:placeholder" = true` says *"the Forge descriptor here is not the mod"*.
+     *
+     * Fails toward `false` like everything else in this object: an unopenable jar, an absent descriptor or a
+     * `mods.toml` the parser chokes on all mean *"nothing said so"*.
+     */
+    fun isConnectorPlaceholder(jar: File): Boolean = runCatching {
+        ZipFile(jar).use { archive ->
+            val descriptor = archive.getEntry(FORGE_DESCRIPTOR) ?: return false
+            val properties = archive.getInputStream(descriptor).use { TomlParser().parse(it) }
+                .valueMap()[TOML_PROPERTIES] as? Config
+                ?: return false
+            properties.valueMap()[CONNECTOR_PLACEHOLDER_PROPERTY] == true
+        }
+    }.getOrDefault(false)
 
     /**
      * Why [jar] must not be booted as [loader] on [minecraftVersion], or `null` to go ahead.
