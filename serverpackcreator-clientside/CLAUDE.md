@@ -544,13 +544,20 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     *slug* (`unsatisfiedLabel` resolves the ref), which reads like a manifest mod id — but
     `modtweaker-4.0.20.11` declares `253211`, a **numeric** ref, so it came from the platform path and never
     touched the manifest-id mapping. A cause that survives a code read can still be the wrong one.
-  - **OPEN, and it is a decision rather than an oversight:** `pickBootableCandidate` has the same
-    `loader in it.loaders` test, so a project whose files are *all* untagged is never selected as a
-    candidate at all. Measured: `mtlib` as a candidate for Forge returns **nothing** (never ground), while
-    `iron-chests` and `waystones` are fine because their newer files are tagged. Widening it there decides
-    *which mods get ground*, not merely which dependency is staged — the bounded risk being wasted boots
-    rather than wrong verdicts, since a mod loaded under a loader it does not support fails to load and
-    reads INCONCLUSIVE, never CONFIRMED. Left for Griefed.
+  - **`pickBootableCandidate` got the same fallback** (Griefed's call, same day), so a project whose files
+    are *all* untagged is ground rather than skipped: `mtlib` as a Forge candidate returned **nothing**
+    before and `MTLib-3.0.7.jar @ 1.12.2` after. Both arms go through `newestOf`, sharing the ordering and
+    the availability gate.
+    **The safety argument differs from the dependency half and is worth keeping.** An untagged file picked
+    for the wrong loader could stage a jar that loader ignores, boot cleanly and publish a false `CLEAR` —
+    the worst outcome this engine has, because it claims proof about a mod that never loaded. Two things
+    prevent it: `loaderVersionAvailable` covers the dominant case (untagged is overwhelmingly pre-1.13,
+    where Fabric and Quilt have no builds, so only Forge is reachable and untagged *means* Forge), and for
+    anything newer `refuseForSelfDeclaration` reads the downloaded jar's descriptor before the boot.
+    **Measured consequence, verified live on `iron-chests`:** a Fabric attempt now picks an untagged 1.16.2
+    Forge jar and is refused by the descriptor gate, where before it was refused at selection. Same verdict
+    class, a more precise reason, one download's worth of extra work — and that project publishes no
+    Fabric-tagged file at all, so the attempt was never going to succeed.
 
 - **THE REFUSAL SPLIT KEYS ON MAPPING CONFIDENCE, NOT ON HOW FAR A LOOKUP GOT (2026-09-06).** This
   supersedes the "mapped-then-unstageable refuses, unmappable does not" rule described further down, and it
