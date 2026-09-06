@@ -157,5 +157,10 @@ internal class SelectionStoreTest {
 
         store.refreshIntervalSeconds = 9_999
         Assertions.assertEquals(3_600, SelectionStore(config).refreshIntervalSeconds)
+
+        // The side that matters most: javax.swing.Timer rejects a non-positive delay outright, so a
+        // negative surviving the clamp is a thrown IllegalArgumentException in the tab's constructor.
+        store.refreshIntervalSeconds = -30
+        Assertions.assertEquals(1, SelectionStore(config).refreshIntervalSeconds)
     }
 }

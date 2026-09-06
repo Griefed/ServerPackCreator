@@ -192,4 +192,50 @@ internal class VerdictsJsonEndpointTest {
             server.stop()
         }
     }
+
+    /**
+     * The paging metadata is only meaningful when a page is actually asked for — every other guard here
+     * runs unpaged, where `page` and `pages` are trivially 1 and a renderer emitting constants would
+     * satisfy them. A client that pages needs to know where in the set it landed.
+     */
+    @Test
+    fun reportsWhereInTheSetAPageSits() {
+        val server = ReportServer(populatedStore(), requestedPort = 0).start()
+        try {
+            val second = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=2").body())
+            Assertions.assertEquals(4, second["total"].asInt())
+            Assertions.assertEquals(4, second["matched"].asInt())
+            Assertions.assertEquals(2, second["page"].asInt())
+            Assertions.assertEquals(2, second["pages"].asInt())
+            Assertions.assertEquals(2, second["verdicts"].size())
+
+            // The two pages must partition the set rather than overlap or drop a row.
+            val first = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=1").body())
+            val paged = first["verdicts"].map { it["slug"].asText() } + second["verdicts"].map { it["slug"].asText() }
+            Assertions.assertEquals(
+                mapper.readTree(get(server.port, "/verdicts.json").body())["verdicts"].map { it["slug"].asText() },
+                paged,
+                "paging must slice the same ordering the unpaged call returns"
+            )
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * A page past the end clamps rather than answering with a negative offset or an error. These arrive
+     * from bookmarks and hand-edited URLs, the same reason the table's own query parser never throws.
+     */
+    @Test
+    fun clampsAPageBeyondTheEnd() {
+        val server = ReportServer(populatedStore(), requestedPort = 0).start()
+        try {
+            val document = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=99").body())
+            Assertions.assertEquals(2, document["pages"].asInt())
+            Assertions.assertEquals(2, document["page"].asInt(), "the last page, not page 99")
+            Assertions.assertEquals(2, document["verdicts"].size())
+        } finally {
+            server.stop()
+        }
+    }
 }

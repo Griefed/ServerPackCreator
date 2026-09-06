@@ -42,10 +42,18 @@ internal class GrinderClientTest {
 
     private val mapper = ObjectMapper()
 
+    /**
+     * Every path the fixture was asked for, in order. The context below is registered on `"/"`, which is
+     * a *prefix* match for everything — so without recording this, a client requesting `/nonsense` would
+     * satisfy every guard in this class and a wrong endpoint constant would be invisible.
+     */
+    private val requestedPaths = mutableListOf<String>()
+
     /** A server answering `body` with `status` on every path, on an ephemeral port. */
     private fun serving(status: Int = 200, body: String): HttpServer =
         HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
             createContext("/") { exchange ->
+                requestedPaths += exchange.requestURI.path
                 val bytes = body.toByteArray(StandardCharsets.UTF_8)
                 exchange.sendResponseHeaders(status, bytes.size.toLong())
                 exchange.responseBody.use { it.write(bytes) }
@@ -201,6 +209,70 @@ internal class GrinderClientTest {
             Assertions.assertTrue(result is FetchResult.Ok, "expected Ok, got $result")
             Assertions.assertEquals(1483, (result as FetchResult.Ok).value["verdicts"].asInt())
             Assertions.assertEquals(7, result.value["activity"]["pass"].asInt())
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * The endpoints are only correct if the client actually requests them, and every other guard here
+     * passes whatever path is asked for — the fixture's context matches all of them. `GrinderUrlTest`
+     * pins the derivation as strings; nothing joined that to the client until this.
+     */
+    @Test
+    fun requestsTheDocumentedEndpoints() {
+        val server = serving(body = documentedResponse)
+        try {
+            val client = GrinderClient(mapper)
+            client.fetchVerdicts(server.baseUrl())
+            client.fetchStatus(server.baseUrl())
+            Assertions.assertEquals(listOf("/verdicts.json", "/status"), requestedPaths)
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * A 200 carrying valid JSON that is not a verdict document — a proxy's error envelope, a future
+     * daemon's reshaped answer — must be a failure, not an empty list. Reported as "no verdicts found"
+     * it is indistinguishable from a grinder that has genuinely ground nothing, which is the one thing
+     * an operator debugging an empty tab needs told apart.
+     */
+    @Test
+    fun reportsAWrongShapedDocumentRatherThanNoVerdictsFound() {
+        val server = serving(body = """{"error":"the grinder is starting up"}""")
+        try {
+            val result = GrinderClient(mapper).fetchVerdicts(server.baseUrl())
+            Assertions.assertTrue(result is FetchResult.Failed, "expected Failed, got $result")
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A genuinely empty grinder is still a success carrying nothing — the other half of the guard above. */
+    @Test
+    fun readsAnEmptyVerdictListAsSuccess() {
+        val server = serving(body = """{"total":0,"matched":0,"page":1,"pages":1,"verdicts":[]}""")
+        try {
+            val result = GrinderClient(mapper).fetchVerdicts(server.baseUrl())
+            Assertions.assertTrue(result is FetchResult.Ok, "expected Ok, got $result")
+            Assertions.assertTrue((result as FetchResult.Ok).value.isEmpty())
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * A bare array is accepted too — a daemon publishing the rows without the paging envelope. The
+     * branch is documented in `readVerdicts` and was unreachable from any guard until now.
+     */
+    @Test
+    fun readsABareArrayOfVerdicts() {
+        val server = serving(body = """[{"slug":"creativecore","verdict":"CONFIRMED","suggestedEntry":"creativecore-"}]""")
+        try {
+            val result = GrinderClient(mapper).fetchVerdicts(server.baseUrl())
+            Assertions.assertTrue(result is FetchResult.Ok, "expected Ok, got $result")
+            Assertions.assertEquals("creativecore", (result as FetchResult.Ok).value.single().slug)
         } finally {
             server.stop(0)
         }

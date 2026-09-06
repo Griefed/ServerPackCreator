@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.plugin.grinder.core
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.util.Locale
 
 /**
  * Pins the merge that decides what a server pack ends up excluding. It is a pure function over two lists
@@ -113,5 +114,33 @@ internal class ClientsideEntryInjectorTest {
             listOf("creativecore-"),
             ClientsideEntryInjector.inject(existing = listOf("  creativecore-  "), selected = listOf("creativecore-"))
         )
+    }
+
+    /**
+     * The de-duplication key must not depend on the host's locale, and **this guard was green the day it
+     * was written** — recorded because an audit flagged the opposite and was wrong.
+     *
+     * The hazard is real for Java: measured under a Turkish default locale, `"Iceberg-".toLowerCase()`
+     * returns `"ıceberg-"` with a dotless i, which would hash `Iceberg-` and `iceberg-` apart and let both
+     * into the exclusion list. Kotlin's `lowercase()` is **not** that method — it was introduced in 1.5
+     * precisely to be locale-independent, and compiles to `toLowerCase(Locale.ROOT)`. Same measurement:
+     * `"Iceberg-".toLowerCase(Locale.ROOT)` is `"iceberg-"`.
+     *
+     * So this pins a property the implementation already had, against the two ways it could be lost: a
+     * well-meaning change to `lowercase(Locale.getDefault())`, or the key being computed in Java interop
+     * where the bare method *is* locale-sensitive.
+     */
+    @Test
+    fun deDuplicatesIndependentlyOfTheHostLocale() {
+        val original = Locale.getDefault()
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr"))
+            Assertions.assertEquals(
+                listOf("Iceberg-"),
+                ClientsideEntryInjector.inject(existing = listOf("Iceberg-"), selected = listOf("iceberg-"))
+            )
+        } finally {
+            Locale.setDefault(original)
+        }
     }
 }

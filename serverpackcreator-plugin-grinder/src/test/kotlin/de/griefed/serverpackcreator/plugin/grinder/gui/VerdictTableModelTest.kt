@@ -101,11 +101,23 @@ internal class VerdictTableModelTest {
         }
     }
 
-    /** The tick column reports Boolean, which is what makes JTable render a checkbox rather than "true". */
+    /**
+     * The tick column reports Boolean, which is what makes JTable render a checkbox rather than "true" —
+     * and every other column reports String, so a change making them all Boolean cannot pass by
+     * satisfying only the first half.
+     */
     @Test
-    fun declaresTheTickColumnAsBoolean() {
+    fun declaresTheTickColumnAsBooleanAndTheRestAsText() {
         val model = VerdictTableModel()
         Assertions.assertEquals(java.lang.Boolean::class.java, model.getColumnClass(VerdictTableModel.TICK_COLUMN))
+        for (column in 0 until model.columnCount) {
+            if (column != VerdictTableModel.TICK_COLUMN) {
+                Assertions.assertEquals(
+                    String::class.java, model.getColumnClass(column),
+                    "column ${model.getColumnName(column)} would render with the wrong editor"
+                )
+            }
+        }
     }
 
     /** Select-all ticks what can be ticked and passes over what cannot. */
