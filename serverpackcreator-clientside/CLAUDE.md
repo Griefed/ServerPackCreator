@@ -404,7 +404,9 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
       *ref*, so the first module resolves Fabric API and the rest short-circuit. That matters beyond the
       wasted fetch: it is the B6 shape, where one jar reachable under several names double-counted toward
       `MAX_INJECTED_DEPENDENCIES` and refused packs that were within the cap.
-  - **LANDMINE — the refusal split is the whole safety property, and it is structural.** A platform ref is a
+  - **LANDMINE — the refusal split is the whole safety property, and it is structural.** *(Superseded
+    2026-09-06 — it now keys on mapping **confidence** rather than on how far the lookup got; see the entry
+    above. The reasoning below is why the split exists at all and still holds.)* A platform ref is a
     project the author linked; a manifest id is a bare string that may name something *bundled inside another
     jar* (`fabric-api-base` ships inside Fabric API), provided by the loader, or optional in practice. Since
     `refuseForMissingDependencies` scores a refusal INCONCLUSIVE, treating every unresolvable manifest id as a
@@ -494,6 +496,98 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   it and a NeoForge-tagged Forge jar will re-stage down its whole version list, once per version, learning
   nothing each time. The retry calls `stageBootPack`, never `prepareBootPack`, so a second contradiction
   surfaces instead of looping.
+- **A comma is two different separators in a Maven range, and reading it as one made every union
+  unsatisfiable (2026-09-06).** Inside a bracketed range it separates lower bound from upper; *between*
+  ranges it separates alternatives, which Maven documents (`(,1.0],[1.2,)`) and Forge/NeoForge accept in a
+  `versionRange`. `mavenRangeHolds` assumed the first reading always, so `[1.20.3],[1.20.4]` parsed as one
+  range from `1.20.3]` to `[1.20.4` — and `numbersOf` maps the bracketed component to `0`, making the upper
+  bound `0.20.4`. Executed before it was fixed: that constraint refused **both** versions it lists, `26.2,26.3`
+  refused both of its, and Maven's own example refused everything.
+  Found in the live grinder's ERROR rows — `distanthorizons` refused for a 1.20.4 pack, `mru` for a 26.2 one.
+  `unionMembers` splits on top-level commas by tracking bracket depth, since the two commas are spelled
+  identically and only nesting tells them apart; a bare `26.2,26.3` is read as alternatives too. An unbalanced
+  string still yields one member, so a malformed constraint reaches `mavenRangeHolds` as before and still
+  resolves to accept.
+  **It failed safe** — a refused boot publishes nothing, so no wrong exclusion ever reached a user — and the
+  cost was coverage. Neither `readsMavenRanges` nor `VersionConstraintFuzzTest` caught it: the fuzz test
+  sweeps *malformed* constraints, and this one is well-formed.
+
+- **When the jar and its platform tags share no Minecraft version, the JAR wins and the pack is bumped**
+  (Griefed's call, 2026-09-06). `reselectOnMinecraftContradiction` reconsidered only *tagged* versions, which
+  rescues JEI (tagged 1.21 and 1.21.1, declaring `[1.21, 1.21.1)`) and does nothing for a file tagged for
+  exactly one version its own descriptor excludes — `moonlight-1.20.4-2.9.9-forge.jar` is tagged 1.20.4 and
+  declares `[1.20,1.20.2)`, so the candidate was refused outright. It now falls back to
+  `BootCandidateSelector.newestReleaseSatisfying` over SPC's real Minecraft release list.
+  **The jar is the better authority, not merely a different one:** the loader enforces that range at runtime,
+  so booting inside it is what gets the mod loaded, while booting at a version the author ticked on a web form
+  gets it rejected by FML before it runs. Only the pack's Minecraft version moves.
+  - **LANDMINE — `constrainsAnything` is what stops this relocating every candidate.** `VersionConstraint`
+    accepts anything it cannot parse, deliberately, so an empty, wildcard or unreadable descriptor would
+    otherwise "satisfy" the newest Minecraft in existence. It is decided by asking whether the constraint
+    excludes anything in the set about to be searched — never by re-detecting which shapes the parser
+    tolerates, which would be a second copy of that grammar drifting from the first.
+  - Still exactly one retry, through `stageBootPack`, so a second contradiction surfaces rather than loops.
+
+- **LANDMINE — a CurseForge file with NO loader tag is *unknown*, not incompatible (2026-09-06).**
+  CurseForge had no modloader facet before Minecraft 1.13 — everything was Forge, so nothing was tagged —
+  and `pickForLoader` asks `loader in it.loaders`, which no empty set satisfies. Such a dependency was
+  therefore unpickable and the boot was refused.
+  **Measured against the live API with Griefed's key:** `modtweaker` declares dependency `253211`, which
+  resolves to **mtlib** and returns 7 obtainable 1.12.2 files, *all* carrying `loaders=[]`. That is what
+  *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* was. Not rare: mtlib 15/15 files
+  untagged, `iron-chests` 106/138, `waystones` 70/494, `crafttweaker` 28/500 — essentially all pre-1.13 —
+  plus modern stragglers (`journeymap`, 5 files at 26.1.2). `jei` and `athena` have none.
+  `pickUntagged` is the **last** arm of `pickFrom`, so a file whose author stated a loader always wins and
+  this can only add a pick where there was none. The Minecraft version stays exact, and a file tagged for a
+  *different* loader is still refused — a tag is a statement, an empty set is the absence of one.
+  - **The first diagnosis of this report was wrong, and only the live API showed it.** The refusal names a
+    *slug* (`unsatisfiedLabel` resolves the ref), which reads like a manifest mod id — but
+    `modtweaker-4.0.20.11` declares `253211`, a **numeric** ref, so it came from the platform path and never
+    touched the manifest-id mapping. A cause that survives a code read can still be the wrong one.
+  - **`pickBootableCandidate` got the same fallback** (Griefed's call, same day), so a project whose files
+    are *all* untagged is ground rather than skipped: `mtlib` as a Forge candidate returned **nothing**
+    before and `MTLib-3.0.7.jar @ 1.12.2` after. Both arms go through `newestOf`, sharing the ordering and
+    the availability gate.
+    **The safety argument differs from the dependency half and is worth keeping.** An untagged file picked
+    for the wrong loader could stage a jar that loader ignores, boot cleanly and publish a false `CLEAR` —
+    the worst outcome this engine has, because it claims proof about a mod that never loaded. Two things
+    prevent it: `loaderVersionAvailable` covers the dominant case (untagged is overwhelmingly pre-1.13,
+    where Fabric and Quilt have no builds, so only Forge is reachable and untagged *means* Forge), and for
+    anything newer `refuseForSelfDeclaration` reads the downloaded jar's descriptor before the boot.
+    **Measured consequence, verified live on `iron-chests`:** a Fabric attempt now picks an untagged 1.16.2
+    Forge jar and is refused by the descriptor gate, where before it was refused at selection. Same verdict
+    class, a more precise reason, one download's worth of extra work — and that project publishes no
+    Fabric-tagged file at all, so the attempt was never going to succeed.
+
+- **THE REFUSAL SPLIT KEYS ON MAPPING CONFIDENCE, NOT ON HOW FAR A LOOKUP GOT (2026-09-06).** This
+  supersedes the "mapped-then-unstageable refuses, unmappable does not" rule described further down, and it
+  is the safety property that rule was reaching for — now stated directly instead of emerging from distance.
+  - `KnownModIds.mappingFor` returns a **`ModIdMapping`**: `Alias` (the table, or a recognised Fabric API /
+    QSL module shape — a project we *know* the id names), `Guess` (the optimistic slug), or `None`.
+    `refFor` is just `mappingFor(...).ref`, for the call sites that only dedupe.
+  - **An alias refuses; a guess never does, at any stage** — not when it resolves to a project publishing
+    nothing usable, not when the download then fails. `ManifestDependencyPlan.Stage` carries `confident` so
+    the download branch obeys the same rule as the plan.
+  - **Why: being *almost* resolvable must not be worse than being unknown.** `xaeros-world-map` was refused
+    for `xaerolib` because a real Modrinth project of that name exists but publishes nothing tagged Quilt or
+    26.2 — the guess hit, so it refused, where an outright miss would have been allowed. That trap is now
+    closed by construction.
+  - **And it is what makes a guess safe to offer on CurseForge**, which had none precisely *because* a guess
+    could refuse. Every manifest-declared dependency of a CurseForge candidate was therefore unresolvable
+    unless it was one of four aliases — measured 2026-09-06: `mtlib`, `crafttweaker`, `jei`, `athena`,
+    `flywheel` and `xaerolib` all mapped to nothing. Reported by Griefed via `modtweaker` on Forge/1.12.2,
+    whose `mtlib` CurseForge publishes under exactly that slug.
+  - `CurseForgePlatform.resolveDependency` began with `nativeRef.toLong()`, so any non-numeric ref threw and
+    was caught as unresolvable. It now falls back to `modIdForSlug`, whose request is **byte-identical** to
+    the one `resolve` has always used (`/mods/search?gameId&classId&slug=`) and reads `data[0].id` the same
+    way — so the shape is proven by every CurseForge candidate already resolving through it. Exact-match on
+    the slug, never a text search, so it finds the project the id names or finds nothing.
+  - **The premise that changed, stated so nobody re-litigates it from the old rationale:** CurseForge was
+    given no guess because a guess cost a refusal. It no longer does. The four guards asserting `null` for
+    CurseForge were rewritten, three of them intent-preserving (`fabric-permissions-api-v0`,
+    `fabric-language-kotlin` and `quilt_loader` must not be claimed for Fabric API or QSL — they are now
+    guesses at their own slugs, which refuse nothing).
+
 - **THE RESULT SYSTEM IS FOUR VERDICTS, AND EVERY CLIENTSIDE RULE LIVES IN A FILE (2026-09-04).** Read this
   before touching `BootLogClassifier`, `ClientsideVerifier` or `boot-rules.default.json`.
   - **`Verdict { CONFIRMED, CLEAR, ERROR, INCONCLUSIVE }`** replaced `BootResult` × `Confidence`. The pairing

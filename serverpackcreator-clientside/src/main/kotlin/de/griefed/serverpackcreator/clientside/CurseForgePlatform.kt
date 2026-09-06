@@ -83,7 +83,10 @@ class CurseForgePlatform(
     }
 
     override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = try {
-        val modId = nativeRef.toLong()
+        // Platform-supplied refs are numeric (a file's `dependencies[].modId`); a manifest-declared one is
+        // a mod id like `mtlib`, which used to throw here and be caught as "unresolvable". The slug route is
+        // the same search `resolve` uses, so it costs a request only where there was previously no answer.
+        val modId = nativeRef.toLongOrNull() ?: modIdForSlug(nativeRef) ?: return null
         val modNode = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId", headers)).path("data")
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: "https://www.curseforge.com"
         // Deliberately one page, unlike [resolve]: a dependency only needs *a* usable file for the loader and
@@ -105,6 +108,19 @@ class CurseForgePlatform(
     } catch (ex: Exception) {
         log.warn("Could not resolve CurseForge dependency '$nativeRef': ${ex.message}")
         null
+    }
+
+    /**
+     * The numeric id CurseForge knows [slug] by, or `null` when it carries no such project.
+     *
+     * Exact-match on the slug rather than a text search, so it either finds the project the mod id names or
+     * finds nothing — it cannot quietly substitute a similarly-named one.
+     */
+    private fun modIdForSlug(slug: String): Long? {
+        val search = objectMapper.readTree(
+            httpFetcher.get("$apiBase/mods/search?gameId=$minecraftGameId&classId=$modsClassId&slug=$slug", headers)
+        )
+        return search.path("data").firstOrNull()?.path("id")?.asLong()
     }
 
     /** One page of a project's files, `index` being the offset CurseForge pages on. */

@@ -37,6 +37,7 @@ docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 |---|---|
 | Result table | <http://localhost:8757/> — sortable, highest confidence first |
 | CSV export | <http://localhost:8757/export.csv> |
+| JSON feed | <http://localhost:8757/verdicts.json> — the same rows, each field keeping its own type |
 | What it is doing right now | `http://localhost:8757/dashboard` in a browser, or `curl -s localhost:8757/status` |
 
 **6. Run it continuously.** Once step 4 works, drop the `--args` and the grinder crawls the catalogue on
@@ -427,10 +428,24 @@ While the service runs:
 
 - **Table:** `http://localhost:8757/` — sortable by any column, including **Logs**
 - **CSV:** `http://localhost:8757/export.csv`
+- **JSON:** `http://localhost:8757/verdicts.json`
 
 Table columns are `Name, Project, Name-pattern, Confidence, Loader, Platform, Project sideness, Jar sideness,
 Detail, Rule, Dependencies, Scanned (UTC), Logs`, highest confidence first. The CSV carries the same set
 except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
+
+**JSON (`/verdicts.json`)** serves the same selection as the table and the CSV — same `q`, `f.<field>`,
+`sort`, `dir`, `page` and `size` parameters, and like `/export.csv` a bare call returns everything rather
+than one page. It differs from the CSV in keeping each field's own type: `stagedDependencies` arrives as an
+array instead of a comma-joined string, and `verifiedAt` as an ISO-8601 timestamp. The document wraps the
+rows in the paging metadata, so a consumer can tell "nothing matched" from "nothing recorded":
+
+```json
+{ "total": 1483, "matched": 91, "page": 1, "pages": 1, "verdicts": [ … ] }
+```
+
+This is the endpoint the ServerPackCreator grinder plugin reads. Use `/export.csv` for a spreadsheet and
+`/verdicts.json` for anything that parses the result.
 
 **Logs is sortable but not filterable**, because it is the one column not derived from the verdict — it is a
 listing of the artifacts kept on disk. Not every entry has any: artifacts are kept only for boots that did

@@ -5297,3 +5297,340 @@ executes, rather than what its name claims — the question that caught iteratio
 HIGH-1 only: add the source-level wiring guard the module already uses for joins that cannot be executed, so
 the `when` branch that supplies the Fabric/Quilt/LegacyFabric lines is actually held by something. Without
 it, deleting those three branches breaks nothing and no test notices.
+
+---
+
+# Audit — 2026-09-05, unpushed `develop` (iteration 41)
+
+**Scope:** the day's **26 non-merge commits** and 3 merges on `develop`, all unpushed (`origin/develop`
+sits at `e3cd87eaa`, 34 commits behind). Three branches — `claude-grinder-audit-fixes`,
+`claude-clientside-audit-fixes`, `claude-audit-followups` — plus two documentation commits from a
+`/doctor` run. **Method:** verify the pin-first boundary by *checking out every pin commit in a detached
+worktree and running it*, rather than trusting commit messages; then ask whether each guard is
+load-bearing and whether each commit type is honest.
+
+## HIGH — none
+
+## MEDIUM
+
+- **MED-1 — `7425f2264` (`docs: record the analysis fixes…`) carried an unrelated edit and left it split.**
+  The commit's stated scope is the resolution record plus stale test counts. Its `CLAUDE.md` hunk also
+  removed **21,637 characters** — the `/doctor` run's *Refactor state* migration — whose destination half
+  (`serverpackcreator-clientside/CLAUDE.md`, `serverpackcreator-grinder/CLAUDE.md`) was deliberately left
+  uncommitted for review. The result was one logical edit split across a commit and the working tree: the
+  cells gone from the root file, the text they moved to unstaged. Rule broken: stay within the commit's
+  stated scope. Caused by `git add CLAUDE.md` for the count refresh sweeping a pending edit to the same
+  table. Self-disclosed and remedied by `7e484cc7c`, which committed the destination half — but the remedy
+  is a second commit, where staging the three files together would have been one.
+
+- **MED-2 — `acaf8d704` bundles two concerns under one type.**
+  `fix(grinder): close the verdict store on shutdown, and stop shadowing it` does two unrelated things: a
+  lifecycle change (`store.flush()` → `store.close()`, which also stops the flusher — behavioural) and a
+  local-variable rename in `Grinder.queueBlamedDependencies` (`store` → `queue`, pure refactor). The body
+  says "Two small things", so it is disclosed rather than hidden, but one concern per commit would have
+  split it, and the rename half is a `refactor:` sharing a `fix:` label.
+
+## LOW
+
+- **LOW-1 — `0e6eb1b33` mixes `src/main` and `src/test`.** The knob-coercion fix also edited
+  `GrinderConfigurationTest.everyVariableReadIsDeclaredAsAKnob`. Already recorded as
+  `ANALYSIS-AUDIT.md` L-2 and disclosed in the commit body: the test edit added three reader names
+  (`intIn`, `longAtLeast`, `capAtLeastZero`) to a **source-scanning guard's alphabet**, with every
+  assertion unchanged, so it sits inside the "a reference-only update is not the stop-and-flag signal"
+  carve-out. Recorded here for completeness; not re-litigated.
+
+- **LOW-2 — `850f89c15` (`refactor(clientside)`) deletes two assertions.** Read mechanically, "if an
+  existing test's assertion has to change, the label is already wrong" would flag it. Judged and dismissed:
+  the assertions were removed **with the function they covered** (`deriveStems`, which had no production
+  caller), which is not an expectation change — there is no way to keep a test for a deleted function.
+  Recorded so a later pass does not re-flag it.
+
+## The pin-first boundary — measured, not assumed
+
+Every pin commit checked out in a detached worktree at its own SHA and run:
+
+| Commit | Pin | Expected | Observed |
+|---|---|---|---|
+| `0531ce666` | `ProvenanceReachesEnsureInstalledTest` | red | **red** (assertion; counterweights pass) |
+| `c09749890` | `PassCountersTest` | red | **red** (assertion) |
+| `f433539d2` | `ConfigurationRangesTest` | red | **red** (assertion; 2 pass) |
+| `cdc45ba3f` | `ShutdownWaitBudgetTest` | red | **red** (missing `awaitWithin`) |
+| `c5e1c5620` | `RequeueTempFileTest` | red | **red** (assertion; 2 pass) |
+| `312459e54` | `BundledRuleIdsResolveTest` | red | **red (compile)** — the accepted red for a pin whose subject does not exist yet, and the commit body says so |
+| `9e3982553` | `ConfirmationAttributionTest` | red | **red** (assertion; 2 pass) |
+| `930e2a6ec` | `BootLogClassifierTest` | **green** | **green** — 29 passed, 0 failed |
+| `dbd68642d` | `BootCandidateSelectorTest` | **green** | **green** — 31 passed, 0 failed |
+| `991fea0ee` | `RecordedVerdictMappingTest` | **green** | **green** — 5 passed, 0 failed |
+
+Spot-checked that the following fix turns the pin green: `1ee687325` → 5 passed/0 failed,
+`b5e08ec45` → 3 passed/0 failed.
+
+**The three green-declared pins are load-bearing, and their evidence is in the commits.** Each says in its
+own body that it was green when written and records the mutation that proves it bites:
+
+| Pin | Mutation | Recorded failure |
+|---|---|---|
+| `930e2a6ec` | hoist `mixin-apply-failure` above `client-only-class` | *"the client-class marker must outrank a mixin that could not apply"* |
+| `991fea0ee` | `filenamePattern = verdict.suggestedEntry` | *"'SENTINEL_FILENAME' was dropped by the mapping"* |
+| `991fea0ee` | `declaredClientSide = verdict.declaredServerSide` | `expected: <REQUIRED> but was: <UNSUPPORTED>` |
+| `dbd68642d` | swap `pickDependencyFile` arms 2 and 3 | `expected: <lib-0.9.0.jar> but was: <lib-1.5.0.jar>` |
+
+A guard added green and never mutated is indistinguishable from one asserting nothing; these are the first
+in this series to record the mutation in the commit itself rather than only in a session transcript.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **Every `docs:` commit is genuinely documentation.** `f131d2e8a`, `2ac1d8ee8`, `d72a9490b`, `49ffa7776`,
+  `7425f2264`, `7e484cc7c` change **zero** non-comment Kotlin lines (diff filtered to `*.kt`, stripped of
+  blanks, `//`, `/**`, `*`, `*/`). The KDoc re-attachment commits move text between declarations and
+  change no statement.
+- **Both `refactor:` commits are behaviour-preserving.** `b1746627b` (dead `decisive()`) and `850f89c15`
+  (dead `deriveStems`) each removed a function with **no production caller anywhere in the repo**, verified
+  by counting calls, `::` method references and `override` declarations across every module's `src/main`.
+- **`850f89c15` preserved what it deleted.** `deriveStems`' KDoc carried the `sodium-fabric-` versus
+  `embeddium-` example that two other files cite as authoritative; it moved onto `deriveStem` rather than
+  being lost with the function.
+- **19 of 21 code commits keep test, fix, refactor and docs strictly separate**, with every `fix:` preceded
+  by its own pin commit. The two exceptions are MED-2 and LOW-1 above.
+
+## Method note — the harness produced three false REDs, and this is the third such instance
+
+The first run of the verification loop reported `930e2a6ec`, `dbd68642d` and `991fea0ee` as **red**,
+contradicting their commit messages. They are green. The cause was the harness, not the commits: under
+**zsh**, `"$2:test"` applies the `:t` *path-tail modifier* to `$2`, so the task name resolved to
+`:serverpackcreator-grinderest` and Gradle failed with "Cannot locate tasks that match" — before running
+anything. Exit status was non-zero, so the loop scored it red; `testsPassed=0` was the tell. Writing
+`"${2}:test"` fixes it.
+
+That makes **three distinct verification-harness defects** recorded in this repo: grepping Gradle output
+for `FAILED` (which the grinder's own fixtures print as ordinary log lines), zsh's `:s` modifier mangling a
+ref in a per-commit sweep, and now zsh's `:t` modifier mangling a Gradle task name. The generalisation is
+worth stating once: **a verification harness is itself unpinned code, and a false result from it is
+indistinguishable from a real finding until someone checks by hand.** When a harness contradicts a claim,
+re-run the single case standalone before believing either.
+
+## Recommendation
+
+MED-1 and MED-2 are both **already-shipped commit shapes on an unpushed branch**. The repo's own
+`358675fbf` precedent says a mis-shaped commit is remedied by an audit entry rather than a rewrite once it
+is merged — but here nothing is pushed, so a rewrite is *available*. It is not recommended: MED-1 is
+documentation whose split was already closed by `7e484cc7c`, and MED-2 is disclosed in its own body. This
+entry is the remedy for both. No source change is proposed.
+
+# Audit — 2026-09-06, `claude-grinder-plugin` (iteration 42)
+
+Scope: the 14 commits of `develop..HEAD` — the `/verdicts.json` feed, the new
+`serverpackcreator-plugin-grinder` module, and the `ApiPlugins` extension-scoping fix that the second
+plugin exposed. Read-only pass against the Refactoring Conventions.
+
+## HIGH — none
+
+No behaviour change is mixed into a `refactor:` commit, because **there is no `refactor:` commit on this
+branch**: every commit is `test:`, `feat:`, `fix:`, `chore:` or `docs:`. No module boundary is broken —
+`-plugin-grinder` depends on `:serverpackcreator-api` alone, and the grinder's verdict shape reaches it
+over HTTP rather than by a compile dependency on `-grinder` or `-clientside`, which is exactly why
+`/verdicts.json` had to exist.
+
+The one changed plugin-API contract (`ApiPlugins.getAllExtensionsOfPlugin`) is **not** a HIGH finding: it
+is labelled `fix:`, not `refactor:`, it is pinned by a guard committed red in its own commit, and it
+carries a row in `claude-docs/API-BEHAVIOUR-CHANGES.md`. That is the shape the conventions ask for.
+
+## MEDIUM
+
+- **MED-1 — `a68204a75`, `gui/GrinderTab.kt:181` (`onSelectionChanged`): untested logic, and it is
+  wrong.** The commit landed six files; only `VerdictTableModel` had a pin. The other five were justified
+  as "rendering, untested by design" — but `onSelectionChanged` is not rendering. It decides which of the
+  two config keys each ticked entry is written under:
+
+  ```kotlin
+  val shownInOther = otherPane.shownEntries()
+  val (other, confirmed) = selected.partition { it in shownInOther }
+  ```
+
+  An entry shown in **neither** pane falls into `confirmed`. That is not an edge case, it is the designed
+  steady state: `SelectionStore` and `VerdictTableModel` both deliberately **never prune** an entry the
+  grinder has stopped reporting, so such entries accumulate by design — and then every subsequent tick
+  silently migrates all of them from `selectedOther` into `selectedConfirmed`. Also reachable with a
+  fully-stale set: *Select all* on an unloaded pane publishes the unchanged selection, firing the callback
+  with nothing shown anywhere.
+
+  Exclusion behaviour is unaffected (`allSelected()` is the union), so nothing breaks in a server pack —
+  what is lost is the record of which entries the user accepted **at their own risk**, which is the entire
+  point of the two-pane split. Rule broken: *never refactor untested code blind* applies with more force
+  to code that was never tested at all. The logic is pure over two sets and belongs outside the Swing class.
+
+- **MED-2 — `a68204a75`, `gui/VerdictListPane.kt` + `gui/DashboardPane.kt`: grinder-supplied text reaches
+  Swing components that interpret HTML.** `JLabel` and `DefaultTableCellRenderer` (the `JTable` default)
+  both install an HTML view when the string starts with `<html>`. Measured, headless:
+
+  | Component | HTML interpreted |
+  |---|---|
+  | `JLabel("<html><b>…")` | **true** |
+  | `DefaultTableCellRenderer` cell value | **true** |
+  | `JLabel` with `putClientProperty("html.disable", true)` | false |
+
+  Every verdict field rendered in the table (`slug`, `detail`, `suggestedEntry`, …) and every dashboard
+  label built from `/status` (`worker`, `platform`, rule `errors`) is attacker-influenced: `slug` and
+  `detail` originate in mod metadata the grinder scraped, and the daemon's report server carries **no
+  authentication**. Swing's HTML subset loads remote images, so `<html><img src="http://…">` in a mod name
+  turns an SPC user's GUI into an outbound request. This is the same class the grinder's own web report was
+  explicitly hardened against — `report/CLAUDE.md` records that it "no longer puts mod-supplied text inside
+  a `<script>` block at all" — so the Swing surface **reintroduces a defect this project already paid to
+  remove**, in a different renderer.
+
+- **MED-3 — `bbfdf42f1` / `431f3f874`: the guard pins the cheaper half of the bug.** `ExtensionScopingTest`
+  asserts `addTabExtensionTabs` adds 2 tabs instead of 4, and that the lookup answers per plugin. It does
+  **not** assert that `runPreGenExtensions` runs each extension once. Duplicate tabs are cosmetic; an
+  extension running N times is not — a `PostGenExtension` that uploads an artifact would upload it N times,
+  and a `ConfigCheckExtension` reporting an error reports it N times. The commit message names all four
+  `run*Extensions` methods as affected, so the untested half is the half the message calls damaging.
+
+- **MED-4 — `98ecefce5`, `core/GrinderClientTest.kt:44`: the fixture cannot detect a wrong endpoint.**
+  `serving()` registers `createContext("/")`, which is a prefix match for **every** path, so all eight
+  client guards pass whatever URL the client actually requests. `GrinderUrl.verdicts`/`status` could return
+  `/nonsense` and only `GrinderUrlTest.derivesTheEndpointsFromTheBase` — a string-equality test on the
+  helper, not on the client — would notice. The two are joined by nothing. This is the "asserts shape, not
+  behaviour" failure the conventions name: the guard executes the unit but never observes the one output
+  that reaches the network.
+
+## LOW
+
+- **LOW-1 — `0a0c6e609`, `core/ClientsideEntryInjector.kt:44`: locale-sensitive `lowercase()` as a
+  de-duplication key.** `merged.putIfAbsent(trimmed.lowercase(), trimmed)` uses the default locale. Under
+  a Turkish locale `"Iceberg-".lowercase()` is `"ıceberg-"`, so `Iceberg-` and `iceberg-` hash apart and
+  both land in the exclusion list — the duplicate the function exists to prevent. Everything it is compared
+  against is locale-independent (`String.equals(ignoreCase)` and `startsWith(ignoreCase)` are), so this is
+  the only locale-sensitive operation in the module. `Locale.ROOT`.
+- **LOW-2 — `a68204a75`, `gui/VerdictListPane.kt` (`updateSummary`): O(selection × rows), per keystroke.**
+  A nested `count { … any { … } }` over the selection and every row, re-run by every `DocumentListener`
+  event while typing in the filter field. `shownEntries()` already computes the row-side set in one pass;
+  the answer is a set intersection. Not a measured bottleneck — flagged because the same file already
+  argues a `JTable` was chosen over checkboxes precisely because the store runs to thousands of rows, so
+  the file contradicts itself.
+- **LOW-3 — `a68204a75`, `gui/VerdictTableModel.kt` (`getValueAt`): `exclusionEntry` computed twice per
+  tick cell.** It is a computed property doing `trim()` + `ifEmpty` on each access, and `getValueAt` runs
+  per visible cell per repaint.
+- **LOW-4 — `a68204a75`, `gui/GrinderTab.kt`: unused import `com.fasterxml.jackson.databind.JsonNode`.**
+- **LOW-5 — `a68204a75`, `gui/SettingsPane.kt:124`: `isUsable` is dead.** Never called; `GrinderTab`
+  branches on `SelectionStore.resolvedUrl` instead. Two ways to ask the same question, one of them unused.
+- **LOW-6 — `a68204a75`, `gui/GrinderTab.kt:78`: the dashboard `Timer` outlives the tab.** Nothing stops
+  it when the component is removed, so an SPC instance polls its grinder every N seconds for the life of
+  the JVM whether or not the Dashboard is on screen. Not the `GlobalScope` anti-pattern this project
+  removed from `-app`, but the same shape: a repeating task with no owner and no cancellation.
+- **LOW-7 — `0885d32a6`, `build.gradle.kts:89`: `copyExamplePluginsToApp` now copies two plugins.** The
+  description was updated, the task name was not.
+
+## The pin-first boundary — verified, held
+
+Every code commit is preceded by its own `test:` commit, and each was **run** before being committed red,
+per the convention added after two guards turned out to assert nothing:
+
+| Pin commit | Fix commit | Red for the right reason? |
+|---|---|---|
+| `1b671e65e` | `833846082` | 5 of 6 fail (route falls through to `/`, serving HTML); the 6th is a deliberate "stays unchanged" guard, green both sides |
+| `98ecefce5` | `c17cf9a7d` | unresolved references only — **after** one fixture fault was found and fixed by running it first (`TomlFormat…parse(File)`, an overload that does not exist) |
+| `732fdc7d8` | `0a0c6e609` | unresolved references to the two missing types, plus the inference errors that follow |
+| `758ea95dc` | `a68204a75` | unresolved references to `VerdictTableModel` and its members |
+| `bbfdf42f1` | `431f3f874` | **assertion** failures, not compile errors: `expected: <2> but was: <4>` |
+
+`bbfdf42f1` is the strongest of the five — it fails on a real assertion against real code, which is what
+the convention actually wants and what a new-API pin can rarely give.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **The bug found mid-work was surfaced and fixed in its own commit, not worked around.**
+  `getAllExtensionsOfPlugin` ignoring its argument was pre-existing, was pinned red separately
+  (`bbfdf42f1`), fixed separately (`431f3f874`), and recorded in `API-BEHAVIOUR-CHANGES.md`. This is the
+  convention's stated remedy, followed exactly.
+- **The second pre-existing defect was *not* silently fixed, and that is also correct.** The example
+  plugin's `StackOverflowError` under `-cli` was confirmed pre-existing by reproducing it against
+  `develop`'s unmodified `ApiPlugins`, then written into the root `CLAUDE.md` rather than folded into this
+  branch. Unrelated to the feature, and expanding scope twice would have been the worse call.
+- **`732fdc7d8` adding `libs.mockk` to `build.gradle.kts` inside a `test:` commit is not scope sprawl.**
+  It is the dependency the guard in that same commit needs; the alternative is a build commit that makes
+  no sense on its own.
+- **`a68204a75` is not a big-bang rewrite.** Strangler Fig governs replacing existing behaviour behind a
+  stable interface; there was no prior implementation of a GUI tab to strangle. Its size is a finding only
+  through MED-1 (untested logic inside it), which is filed separately.
+- **`0885d32a6` correctly withholds the new jar from the api test-resources plugins directory**, and says
+  why in a comment at the point somebody would add it. `ApiPluginsTest` asserts every installed plugin
+  provides all six extension points; this one provides two.
+- **The `-cli` end-to-end run is real-runtime verification, not a substitute test.** Ticking three entries
+  and observing exactly those three jars absent from a generated pack — with the GUI never opened — is the
+  only way to prove the headless path, which no unit test reaches.
+
+## Correction to this entry — LOW-1 / A-5 is WITHDRAWN (same day, before any fix landed)
+
+**The finding was wrong, and the guard written for it was green on first run.** It claimed
+`ClientsideEntryInjector`'s `trimmed.lowercase()` was locale-sensitive and would break de-duplication
+under a Turkish locale. Measured under `Locale.forLanguageTag("tr")`:
+
+| Call | Result |
+|---|---|
+| Java `"Iceberg-".toLowerCase()` | `ıceberg-` — dotless i, the hazard is real **for Java** |
+| Java `"Iceberg-".toLowerCase(Locale.ROOT)` | `iceberg-` |
+| Kotlin `"Iceberg-".lowercase()` | `iceberg-` — the guard passed under a `tr` default locale |
+
+Kotlin's `lowercase()` is not `String.toLowerCase()`. It was introduced in 1.5 specifically to be
+locale-independent and compiles to `toLowerCase(Locale.ROOT)`; the locale-sensitive spelling is the
+explicit `lowercase(Locale.getDefault())`. The audit reasoned from the Java API's behaviour and attributed
+it to the Kotlin one.
+
+**The guard is kept** — retitled to say what it actually proves — because the property is worth pinning
+against the two ways it could still be lost: a change to `lowercase(Locale.getDefault())`, or the key
+moving into Java interop where the bare method *is* locale-sensitive. What is *not* kept is the claim that
+anything needed fixing.
+
+**Method note, and the reason this is written down rather than quietly deleted.** This is the same failure
+this log already records three times for verification harnesses, one level up: *an audit is itself unpinned
+reasoning, and a finding from it is indistinguishable from a real defect until something executes it.*
+Writing the guard before the fix is what caught it — a green pin for a claimed bug is a finding about the
+claim. Had the order been reversed, `Locale.ROOT` would have been added, the guard would have passed, and a
+non-bug would be recorded here as fixed forever.
+
+**Also downgraded on the same evidence:** MED-4's sibling guard `requestsTheDocumentedEndpoints` passed on
+first run too. The endpoints were already correct — the finding was that *nothing proved it*, which stands,
+but it is a coverage gap and not a defect. Same for the two `/verdicts.json` paging guards.
+
+## Recommendation
+
+MED-1 and MED-2 are defects in shipped code and should be fixed with pins, not recorded. MED-3 and MED-4
+are missing guards over code that is already correct. LOW-1 is a one-word fix with a real failure mode.
+The rest are tidying. Nothing here warrants rewriting history: every commit's *shape* is correct, and the
+findings are about what the commits contain, not how they were split.
+
+## Resolution — every finding closed the same day
+
+| Finding | Outcome |
+|---|---|
+| MED-1 selection attribution | Fixed. `SelectionAttribution` extracted and pinned by 7 guards; a stale entry keeps the pane it was saved in. |
+| MED-2 Swing HTML | Fixed. `PlainTextRendering` + 4 guards, one of them a control asserting Swing *would* otherwise have parsed the string. |
+| MED-3 extension-run guard | Added, and verified red by reverting the one-line `ApiPlugins` fix — all four guards then report 4 where 2 is correct. |
+| MED-4 endpoint paths | Guard added; the fixture now records request paths. Green on first run — the endpoints were already right, nothing had proved it. |
+| LOW-1 locale | **Withdrawn**, see the correction above. Guard kept, re-documented. |
+| LOW-2/3 efficiency | Fixed: set intersection instead of `selection × rows` per keystroke; `exclusionEntry` read once per tick cell. |
+| LOW-4/5/7 tidying | Fixed: unused import, dead `isUsable`, `copyExamplePluginsToApp` → `copyPluginsToApp`. |
+| LOW-6 timer lifetime | Fixed: `removeNotify` stops the poll, `addNotify` resumes it. |
+
+**One defect was found by the fixes rather than by the audit**, which is worth recording because it is the
+audit's own blind spot: `VerdictTableModel.getColumnClass` used `java.lang.Boolean::class.java`, which the
+Kotlin compiler warns about. The audit never saw it — the warning check had been run after the *core*
+commit, before the GUI commit existed, and was not repeated. `Boolean::class.javaObjectType` is the same
+boxed class without the warning, and still not `Boolean::class.java`, which is primitive `boolean.class`
+and has no `JTable` renderer. **A clean-warnings check is only worth what its most recent run covers.**
+
+**Re-verified against real runtimes after the fixes, not only by suite:**
+
+- One Grinder tab and one Tetris tab in the running GUI — the visual confirmation of the `ApiPlugins`
+  scoping fix, where the same strip read `Grinder | Tetris | Grinder | Tetris` before it.
+- A CLI generation with three entries ticked still produced a pack holding only the unticked `bookshelf`
+  and the grinder-unknown `keepme`, and logged `added 3 ticked entries`.
+- Suites after: api **409**, grinder **503**, plugin-grinder **69** (from 44), app **149**. Zero failures,
+  no compiler warning from the new module.
+
+**Process note on this entry's own commits.** The commit carrying this file's iteration-42 section
+initially also carried iteration 41, which had been sitting uncommitted in the working tree when the
+branch began — precisely the shape iteration 41's own MED-1 reports. Nothing was pushed, so it was split
+rather than disclosed: `e05365433` carries iteration 41 alone and `cf6cdc389` carries iteration 42, with
+the resulting tree byte-identical to the unsplit version.
+

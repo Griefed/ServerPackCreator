@@ -179,7 +179,7 @@ though their detail lives deeper:
   so the daemon was unreachable through any reverse proxy: a proxy in a container dials the host over the Docker
   bridge gateway, never `127.0.0.1`, and a loopback socket refuses that at the TCP layer — the operator sees a 502
   while the report answers fine over an SSH tunnel. Raise the bind to the *gateway address*, not `0.0.0.0`: `/`,
-  `/status` and `/export.csv` all answer unconditionally, with no auth anywhere in `start()`. Pinned two ways,
+  `/status`, `/export.csv` and `/verdicts.json` all answer unconditionally, with no auth anywhere in `start()`. Pinned two ways,
   because neither alone reaches: `ReportServerBindAddressTest` executes the mechanism over a real non-loopback
   IPv4 (skips where the host has none), and `ReportBindWiringTest` asserts against `main`'s source that the
   variable actually reaches `ReportServer`'s `host` — the join no test can execute, because `main` boots Docker.
@@ -196,6 +196,13 @@ though their detail lives deeper:
   as `containerUser=` on the startup line, and `InstallFailureDiagnosis` names it in the failure warning.
   **Corollary:** `DockerLoaderInstaller` quoted `output.lines.takeLast(25)`, and this cause sits at the *top* of
   the console — a tail is the wrong slice whenever the first failure is survivable, so the diagnosis scans all of it.
+- **`/verdicts.json` is the machine-readable feed a consumer outside this module reads** — added
+  2026-09-06 for the ServerPackCreator grinder plugin. `VerdictField`, `VerdictQuery` and
+  `VerdictSelection` are `internal`, so the selection cannot be reused and has to travel over the wire;
+  `/export.csv` already does that but flattens every field to a string, where this serialises
+  `GrindVerdict` itself so `stagedDependencies` stays an array. It shares `VerdictSelection.select` with
+  `/` and `/export.csv`, so all three provably agree, and it is unpaged by default exactly as the CSV is.
+  Detail and the shared-mapper landmine: `grinder/report/CLAUDE.md`.
 - **`/as-properties` publishes the fallback clientside list, and only `Verdict.CONFIRMED` may ever reach
   it (2026-09-04).** The gate used to be `Confidence.HIGH` **and** a separate decisive-rung check, because
   HIGH was also reachable from the bare exit-code rung — measured on the live daemon, 27 of 43 published

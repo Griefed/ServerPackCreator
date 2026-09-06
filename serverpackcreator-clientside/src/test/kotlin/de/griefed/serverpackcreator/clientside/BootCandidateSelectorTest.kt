@@ -621,4 +621,202 @@ internal class BootCandidateSelectorTest {
         )
     }
 
+    /**
+     * When **no tagged version** satisfies the jar, fall back to the newest real Minecraft **release** the
+     * jar's own descriptor accepts, and boot there.
+     *
+     * Griefed's call, 2026-09-06, from the live grinder's ERROR rows: `moonlight-1.20.4-2.9.9-forge.jar` is
+     * tagged 1.20.4 and only 1.20.4, while its descriptor declares `[1.20,1.20.2)`. Platform and jar share
+     * no version at all, so `newestVersionSatisfying` returns null and the candidate was refused outright —
+     * "bump the version to the one specced in the JAR, then run the grind."
+     *
+     * The jar is the better authority here, and not merely a different one: the *loader* enforces this
+     * range at runtime, so booting inside it is what actually gets the mod loaded, while booting at a
+     * version the author only ticked on a web form gets it rejected by FML before it runs. The file itself
+     * is unchanged — only the pack's Minecraft version moves.
+     */
+    @Test
+    fun fallsBackToTheNewestReleaseTheJarItselfAccepts() {
+        val releases = listOf("1.21.1", "1.20.6", "1.20.4", "1.20.1", "1.20", "1.19.2")
+
+        Assertions.assertEquals(
+            "1.20.1",
+            BootCandidateSelector.newestReleaseSatisfying("[1.20,1.20.2)", releases) { true },
+            "1.20.1 is the newest release inside the range moonlight's descriptor declares"
+        )
+    }
+
+    /** The loader gate still applies — a version no loader build exists for is not a place to boot. */
+    @Test
+    fun skipsAReleaseTheLoaderCannotBootAndTakesTheNextOne() {
+        val releases = listOf("1.21.1", "1.20.6", "1.20.4", "1.20.1", "1.20")
+
+        Assertions.assertEquals(
+            "1.20",
+            BootCandidateSelector.newestReleaseSatisfying("[1.20,1.20.2)", releases) { it != "1.20.1" }
+        )
+    }
+
+    /** Nothing in the range means nothing to bump to, and the caller keeps its honest refusal. */
+    @Test
+    fun answersNothingWhenNoReleaseSatisfiesTheJar() {
+        Assertions.assertNull(
+            BootCandidateSelector.newestReleaseSatisfying("[1.16,1.17)", listOf("1.21.1", "1.20.4")) { true }
+        )
+    }
+
+    /**
+     * A constraint that accepts everything must not silently relocate a pack to the newest Minecraft in
+     * existence. `VersionConstraint` deliberately accepts anything it cannot read, so an unreadable
+     * descriptor would otherwise bump every candidate to the top of the release list.
+     */
+    @Test
+    fun refusesToBumpOnAConstraintThatConstrainsNothing() {
+        val releases = listOf("1.21.1", "1.20.4")
+
+        for (constraint in listOf("", "   ", "*", "not a version at all")) {
+            Assertions.assertNull(
+                BootCandidateSelector.newestReleaseSatisfying(constraint, releases) { true },
+                "'$constraint' bounds nothing and must not move the pack"
+            )
+        }
+    }
+
+    /**
+     * **A file carrying no loader tag is *unknown*, not incompatible.**
+     *
+     * CurseForge had no modloader facet before Minecraft 1.13 — everything was Forge, so nothing was
+     * tagged — and `pickForLoader` requires `loader in it.loaders`, which no empty set satisfies. The
+     * dependency was therefore unpickable and the boot refused.
+     *
+     * Measured against the live CurseForge API on 2026-09-06 with Griefed's key, which is what found this:
+     * `modtweaker` declares dependency `253211`, that resolves to **mtlib**, and all **7** of its obtainable
+     * 1.12.2 files carry `loaders=[]`. `pickDependencyFile(files, "Forge", "1.12.2")` returned nothing, and
+     * the refusal read *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* — the exact
+     * line Griefed reported. It is not rare: of the projects sampled, `mtlib` is 15/15 untagged,
+     * `iron-chests` 106/138, `waystones` 70/494 and `crafttweaker` 28/500, essentially all pre-1.13, plus a
+     * handful of modern stragglers (`journeymap`, 5 files at 26.1.2).
+     *
+     * Untagged is the **last** resort, after the exact loader and the Quilt-to-Fabric fallback, so a
+     * properly tagged file always wins and this can only add a pick where there was none.
+     */
+    @Test
+    fun fallsBackToAnUntaggedFileWhenNothingCarriesTheLoader() {
+        val mtlib = listOf(
+            file("MTLib-3.0.7.jar", emptySet(), setOf("1.12.2")),
+            file("MTLib-3.0.6.jar", emptySet(), setOf("1.12.2"))
+        )
+
+        Assertions.assertEquals(
+            "MTLib-3.0.7.jar",
+            BootCandidateSelector.pickDependencyFile(mtlib, "Forge", "1.12.2")?.fileName,
+            "every file mtlib publishes for 1.12.2 is untagged; refusing them refuses the boot"
+        )
+    }
+
+    /** The Minecraft version is still exact — untagged excuses the loader, never the version. */
+    @Test
+    fun anUntaggedFileStillHasToMatchTheMinecraftVersion() {
+        val wrongVersion = listOf(file("MTLib-3.0.7.jar", emptySet(), setOf("1.12.2")))
+
+        Assertions.assertNull(BootCandidateSelector.pickDependencyFile(wrongVersion, "Forge", "1.20.1"))
+    }
+
+    /** A tagged file wins over an untagged one, so this only ever adds a pick where there was none. */
+    @Test
+    fun prefersATaggedFileOverAnUntaggedOne() {
+        val mixed = listOf(
+            file("untagged.jar", emptySet(), setOf("1.20.1")),
+            file("tagged-forge.jar", setOf("Forge"), setOf("1.20.1"))
+        )
+
+        Assertions.assertEquals(
+            "tagged-forge.jar",
+            BootCandidateSelector.pickDependencyFile(mixed, "Forge", "1.20.1")?.fileName
+        )
+    }
+
+    /**
+     * And a file tagged for a *different* loader is still refused — untagged means "the author told us
+     * nothing", which is not the same as "the author told us this is Fabric".
+     */
+    @Test
+    fun stillRefusesAFileTaggedForAnotherLoader() {
+        val fabricOnly = listOf(file("something-fabric.jar", setOf("Fabric"), setOf("1.20.1")))
+
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(fabricOnly, "Forge", "1.20.1"),
+            "a Fabric-tagged jar is a statement, and it says this is not a Forge file"
+        )
+    }
+
+    /**
+     * **The candidate half of the untagged-loader rule** (Griefed's call, 2026-09-06). A project whose files
+     * are *all* untagged was never selected as a candidate at all, so it was never ground under any loader.
+     *
+     * Measured against the live CurseForge API: `pickBootableCandidate(mtlib.files, "Forge")` returned
+     * **nothing** — all 15 of its files carry `loaders=[]`, because CurseForge had no modloader facet before
+     * Minecraft 1.13. `iron-chests` and `waystones` escaped only because their *newer* files are tagged.
+     *
+     * **Why widening it here is safe, and it is a different argument than for a dependency.** Picking an
+     * untagged file for the wrong loader could in principle stage a jar that loader ignores, boot cleanly
+     * and publish a false `CLEAR` — "proven server-safe" for a mod that never loaded. Two things prevent it.
+     * `loaderVersionAvailable` gates the dominant case: untagged files are overwhelmingly pre-1.13, where
+     * Fabric and Quilt have no builds at all, so only Forge is reachable and untagged *means* Forge. And for
+     * anything newer, `BootVerifier.refuseForSelfDeclaration` reads the downloaded jar's own descriptor
+     * before the boat is launched and refuses a jar carrying only another loader's descriptor — the
+     * *"carries only Forge descriptor(s), so it is not a NeoForge mod"* refusal already visible in the live
+     * store. The cost of being wrong is therefore a refused attempt, not a wrong verdict.
+     */
+    @Test
+    fun grindsAProjectWhoseFilesAreAllUntagged() {
+        val mtlib = listOf(
+            file("MTLib-3.0.7.jar", emptySet(), setOf("1.12.2")),
+            file("MTLib-3.0.5.jar", emptySet(), setOf("1.12", "1.12.1", "1.12.2"))
+        )
+
+        val candidate = BootCandidateSelector.pickBootableCandidate(mtlib, "Forge") { true }
+
+        Assertions.assertNotNull(candidate, "an all-untagged project must still be ground")
+        Assertions.assertEquals("MTLib-3.0.7.jar", candidate!!.first.fileName)
+        Assertions.assertEquals("1.12.2", candidate.second, "and still on the newest version it publishes")
+    }
+
+    /** A tagged file wins, so this can only add a candidate where there was none. */
+    @Test
+    fun prefersATaggedCandidateOverAnUntaggedOne() {
+        val mixed = listOf(
+            file("untagged-newer.jar", emptySet(), setOf("1.21.1")),
+            file("tagged-older.jar", setOf("Forge"), setOf("1.20.1"))
+        )
+
+        val candidate = BootCandidateSelector.pickBootableCandidate(mixed, "Forge") { true }
+
+        Assertions.assertEquals(
+            "tagged-older.jar", candidate?.first?.fileName,
+            "a stated loader outranks a newer file that states nothing"
+        )
+    }
+
+    /** A file tagged for another loader is still never a candidate — an empty set is not a Fabric tag. */
+    @Test
+    fun stillRefusesACandidateTaggedForAnotherLoader() {
+        val fabricOnly = listOf(file("something-fabric.jar", setOf("Fabric"), setOf("1.20.1")))
+
+        Assertions.assertNull(BootCandidateSelector.pickBootableCandidate(fabricOnly, "Forge") { true })
+    }
+
+    /**
+     * The loader-availability gate still applies to the untagged fallback, and it is what keeps a pre-1.13
+     * untagged file — which is a Forge file — from being ground under Fabric, which has no build there.
+     */
+    @Test
+    fun theLoaderGateStillAppliesToAnUntaggedCandidate() {
+        val ancient = listOf(file("MTLib-3.0.7.jar", emptySet(), setOf("1.12.2")))
+
+        Assertions.assertNull(
+            BootCandidateSelector.pickBootableCandidate(ancient, "Fabric") { false },
+            "Fabric has no build for 1.12.2, so there is nothing to boot"
+        )
+    }
 }
