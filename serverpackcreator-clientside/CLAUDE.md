@@ -494,6 +494,54 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   it and a NeoForge-tagged Forge jar will re-stage down its whole version list, once per version, learning
   nothing each time. The retry calls `stageBootPack`, never `prepareBootPack`, so a second contradiction
   surfaces instead of looping.
+- **A comma is two different separators in a Maven range, and reading it as one made every union
+  unsatisfiable (2026-09-06).** Inside a bracketed range it separates lower bound from upper; *between*
+  ranges it separates alternatives, which Maven documents (`(,1.0],[1.2,)`) and Forge/NeoForge accept in a
+  `versionRange`. `mavenRangeHolds` assumed the first reading always, so `[1.20.3],[1.20.4]` parsed as one
+  range from `1.20.3]` to `[1.20.4` — and `numbersOf` maps the bracketed component to `0`, making the upper
+  bound `0.20.4`. Executed before it was fixed: that constraint refused **both** versions it lists, `26.2,26.3`
+  refused both of its, and Maven's own example refused everything.
+  Found in the live grinder's ERROR rows — `distanthorizons` refused for a 1.20.4 pack, `mru` for a 26.2 one.
+  `unionMembers` splits on top-level commas by tracking bracket depth, since the two commas are spelled
+  identically and only nesting tells them apart; a bare `26.2,26.3` is read as alternatives too. An unbalanced
+  string still yields one member, so a malformed constraint reaches `mavenRangeHolds` as before and still
+  resolves to accept.
+  **It failed safe** — a refused boot publishes nothing, so no wrong exclusion ever reached a user — and the
+  cost was coverage. Neither `readsMavenRanges` nor `VersionConstraintFuzzTest` caught it: the fuzz test
+  sweeps *malformed* constraints, and this one is well-formed.
+
+- **When the jar and its platform tags share no Minecraft version, the JAR wins and the pack is bumped**
+  (Griefed's call, 2026-09-06). `reselectOnMinecraftContradiction` reconsidered only *tagged* versions, which
+  rescues JEI (tagged 1.21 and 1.21.1, declaring `[1.21, 1.21.1)`) and does nothing for a file tagged for
+  exactly one version its own descriptor excludes — `moonlight-1.20.4-2.9.9-forge.jar` is tagged 1.20.4 and
+  declares `[1.20,1.20.2)`, so the candidate was refused outright. It now falls back to
+  `BootCandidateSelector.newestReleaseSatisfying` over SPC's real Minecraft release list.
+  **The jar is the better authority, not merely a different one:** the loader enforces that range at runtime,
+  so booting inside it is what gets the mod loaded, while booting at a version the author ticked on a web form
+  gets it rejected by FML before it runs. Only the pack's Minecraft version moves.
+  - **LANDMINE — `constrainsAnything` is what stops this relocating every candidate.** `VersionConstraint`
+    accepts anything it cannot parse, deliberately, so an empty, wildcard or unreadable descriptor would
+    otherwise "satisfy" the newest Minecraft in existence. It is decided by asking whether the constraint
+    excludes anything in the set about to be searched — never by re-detecting which shapes the parser
+    tolerates, which would be a second copy of that grammar drifting from the first.
+  - Still exactly one retry, through `stageBootPack`, so a second contradiction surfaces rather than loops.
+
+- **OPEN — a CurseForge candidate's manifest dependencies are unresolvable, and closing it needs a decision.**
+  `KnownModIds.refFor` answers `null` for CurseForge on anything but its four hardcoded aliases, so `mtlib`,
+  `crafttweaker`, `jei`, `athena`, `flywheel` and `xaerolib` all map to nothing (executed 2026-09-06). Reported
+  by Griefed from the live grinder: `modtweaker` on Forge/1.12.2, whose `mtlib` CurseForge publishes under that
+  exact slug. **In current code this no longer refuses** — an unmapped id lands in `unmapped`, not
+  `unsatisfied` — so the deployed daemon's refusal is already gone; what remains is that the dependency is
+  never *staged*, so the mod boots without it.
+  The obvious fix — guess the mod id as a CurseForge slug, resolve it through the search endpoint `resolve`
+  already uses — was implemented and **reverted**, because it fails four deliberate guards
+  (`anUnknownIdIsNotGuessedOnCurseForge` and three siblings) and would move ids that map-then-fail from
+  `unmapped` into `unsatisfied`, which refuses. That is the documented `xaerolib` trap: *being almost
+  resolvable was worse than being unknown*.
+  **The fix that has both is to key the refusal split on how confident the mapping was** — an alias refuses,
+  a guess never does — which also closes the `xaerolib` trap on Modrinth. That changes the split this file
+  calls "the whole safety property", so it is Griefed's call, not a quiet edit.
+
 - **THE RESULT SYSTEM IS FOUR VERDICTS, AND EVERY CLIENTSIDE RULE LIVES IN A FILE (2026-09-04).** Read this
   before touching `BootLogClassifier`, `ClientsideVerifier` or `boot-rules.default.json`.
   - **`Verdict { CONFIRMED, CLEAR, ERROR, INCONCLUSIVE }`** replaced `BootResult` × `Confidence`. The pairing
