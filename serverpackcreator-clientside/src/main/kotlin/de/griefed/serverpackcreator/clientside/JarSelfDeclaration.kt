@@ -62,6 +62,9 @@ object JarSelfDeclaration {
         }
     }.getOrDefault(emptySet())
 
+    /** Not implemented yet — see `JarSelfDeclarationTest.aConnectorPlaceholderNamesItselfInItsModsToml`. */
+    fun isConnectorPlaceholder(jar: File): Boolean = TODO("the placeholder marker is not read yet")
+
     /**
      * Why [jar] must not be booted as [loader] on [minecraftVersion], or `null` to go ahead.
      *

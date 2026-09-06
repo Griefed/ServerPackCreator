@@ -39,6 +39,18 @@ import java.util.jar.JarOutputStream
  */
 internal class JarSelfDeclarationTest {
 
+    /** A jar whose entries carry real content, for the checks that read a descriptor rather than list it. */
+    private fun jarWithContent(dir: File, name: String, vararg entries: Pair<String, String>): File =
+        File(dir, name).also { file ->
+            JarOutputStream(file.outputStream()).use { out ->
+                entries.forEach { (path, body) ->
+                    out.putNextEntry(JarEntry(path))
+                    out.write(body.toByteArray())
+                    out.closeEntry()
+                }
+            }
+        }
+
     private fun jar(dir: File, name: String, vararg entries: String): File =
         File(dir, name).also { file ->
             JarOutputStream(file.outputStream()).use { out ->
@@ -219,5 +231,57 @@ internal class JarSelfDeclarationTest {
                 loader = "Forge", minecraftVersion = "1.20.1", minecraftConstraint = null
             )
         )
+    }
+
+    /**
+     * A Sinytra Connector **placeholder** names itself in its own `mods.toml`, and that marker is the only
+     * thing separating it from a genuine multi-loader jar carrying both descriptors.
+     *
+     * The shape is `continuity-3.0.0+1.20.1.forge.jar`'s, read from the live file: a stub `mods.toml`
+     * carrying `[properties] "connector:placeholder" = true` and version-less dependency entries, beside
+     * the `fabric.mod.json` that holds the actual mod.
+     */
+    @Test
+    fun aConnectorPlaceholderNamesItselfInItsModsToml(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity.forge.jar",
+            "META-INF/mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
+    }
+
+    /** Everything else is not one — including a real multi-loader jar, which carries both descriptors too. */
+    @Test
+    fun anythingWithoutTheMarkerIsNotAConnectorPlaceholder(@TempDir dir: File) {
+        val notPlaceholders = listOf(
+            jarWithContent(
+                dir, "multiloader.jar",
+                "META-INF/mods.toml" to """
+                    modLoader = "javafml"
+                    [[mods]]
+                    modId = "multiloader"
+                """.trimIndent(),
+                "fabric.mod.json" to """{"id":"multiloader"}"""
+            ),
+            jarWithContent(dir, "fabriconly.jar", "fabric.mod.json" to """{"id":"fabriconly"}"""),
+            jarWithContent(dir, "unparseable.jar", "META-INF/mods.toml" to "this is not toml ]["),
+            jar(dir, "empty.jar"),
+            File(dir, "absent.jar")
+        )
+
+        for (candidate in notPlaceholders) {
+            Assertions.assertFalse(
+                JarSelfDeclaration.isConnectorPlaceholder(candidate),
+                "${candidate.name} carries no placeholder marker"
+            )
+        }
     }
 }
