@@ -274,3 +274,17 @@ One inconsistency: `GrinderPreGenExtension` has an `identifiesItself` guard, `Gr
 
 api **407** (1 skipped), grinder **501** (29 skipped), plugin-grinder **44**, app **149**,
 clientside **369**, plugin-example **3**. Zero failures.
+
+## Resolution
+
+A-1, A-2 and A-3 fixed; A-4 and A-6 fixed; A-5 withdrawn. Every "missing edge case" listed above now has
+a guard: the negative poll interval, the JSON route's paging and its clamp past the end, a non-tick
+column's class, a bare-array response, an empty-but-valid response, and `GrinderTabExtension`'s identity.
+
+The three units the coverage map called untested are now extracted and pinned: `SelectionAttribution`
+(7), `PlainTextRendering` (4), `StatusFormatting` (7). plugin-grinder 44 → **69** tests.
+
+`GrinderTab`, `VerdictListPane`, `DashboardPane` and `SettingsPane` remain without guards **by design** —
+what is left in them after the extractions is layout and wiring, which is this project's standing stance
+on view code. What was *not* layout has been moved out of them, which was the finding.
+

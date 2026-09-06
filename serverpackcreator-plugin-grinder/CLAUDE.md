@@ -17,8 +17,8 @@ plus a native view of the daemon's own dashboard.
 | Package | What lives there |
 |---|---|
 | *(root)* | `GrinderPlugin` (the `ServerPackCreatorPlugin`, stateless), `GrinderTabExtension`, `GrinderPreGenExtension` — the two pf4j extension points |
-| `core` | Everything testable without Swing: `GrinderUrl`, `GrinderVerdict`, `GrinderClient` (+ `FetchResult`), `SelectionStore` (+ `SelectionPane`), `ClientsideEntryInjector` |
-| `gui` | `GrinderTab` (the one tab, holding a nested `JTabbedPane`), `VerdictListPane`, `VerdictTableModel`, `DashboardPane`, `SettingsPane` |
+| `core` | Everything testable without Swing: `GrinderUrl`, `GrinderVerdict`, `GrinderClient` (+ `FetchResult`), `SelectionStore` (+ `SelectionPane`), `ClientsideEntryInjector`, `SelectionAttribution` |
+| `gui` | `GrinderTab` (the one tab, holding a nested `JTabbedPane`), `VerdictListPane`, `VerdictTableModel`, `DashboardPane`, `SettingsPane`, plus two pinned non-view units: `PlainTextRendering` and `StatusFormatting` |
 
 ## How the pieces connect (read this before changing any of them)
 
@@ -51,6 +51,31 @@ plus a native view of the daemon's own dashboard.
   name under SPC's `startsWith`/`contains` filters, so one stored by accident empties a server pack's
   mods directory. `SelectionStore` drops blanks on write; `ClientsideEntryInjector` drops them again,
   because the config file is hand-editable and reaches the injector without passing the store's setter.
+- **LANDMINE — every component showing text from outside this plugin must come from `PlainTextRendering`.**
+  `JLabel` and `DefaultTableCellRenderer` install an HTML view for any string starting with `<html>`, and
+  Swing's HTML subset loads remote images — so a mod name was enough to make a user's window fetch a URL.
+  A verdict's `slug` and `detail` are scraped mod metadata and the `/status` strings are the daemon's, and
+  that daemon is unauthenticated. Measured headless: `JLabel` parses it, the table's default renderer
+  parses it, `putClientProperty("html.disable", true)` stops both. Only labels holding a literal written
+  *here* may use `JLabel` directly. The grinder's own web report was hardened against this same input
+  class; this surface had reintroduced it in a different renderer.
+- **Which pane an entry is filed under is `SelectionAttribution`'s decision, and it is not "whichever pane
+  shows it".** Shown wins over stored, so a re-ground verdict moves lists — but an entry **neither** pane
+  shows keeps the pane it was *saved* under. That is not an edge case: the never-prune rule below
+  guarantees such entries accumulate, and filing them all as CONFIRMED (which the first version did, from
+  a bare `partition`) silently reclassifies what the user accepted at their own risk as a proven finding.
+  Generation is unaffected either way — it reads the union — which is exactly why it went unnoticed.
+- **A wrong-shaped 200 is a failure, not an empty list.** `GrinderClient.readVerdicts` returns `null` for
+  a document that is neither an array nor an object carrying a `verdicts` array, and the caller turns that
+  into `Failed`. Reported as "no verdicts found" it is indistinguishable from a grinder that has genuinely
+  ground nothing. An empty `verdicts` array still reaches the success branch.
+- **The dashboard `Timer` is stopped in `removeNotify` and resumed in `addNotify`.** A Swing `Timer` holds
+  its listener and fires for the life of the JVM otherwise, so an unattended ServerPackCreator would poll
+  its grinder every few seconds forever.
+- **`getColumnClass` returns `Boolean::class.javaObjectType`, not `Boolean::class.java`.** The latter is
+  the primitive `boolean.class`, which `JTable` has no renderer for — the column would fall back to the
+  string renderer and show "true"/"false" instead of a checkbox. The `java.lang.Boolean::class.java`
+  spelling picks the right class but raises a compiler warning.
 - **A selection is never pruned — only the user unticks.** An entry the grinder has stopped reporting
   (crawl moved on, store reset, daemon down) stays ticked. The alternative is that a mod the user
   deliberately excluded silently reappears in their next server pack, which is the one failure nobody
@@ -105,7 +130,7 @@ demo strings). The root build copies the jar into `serverpackcreator-app/tests/p
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-grinder:test` — 44 tests. `GrinderClientTest` runs against a real
+`./gradlew :serverpackcreator-plugin-grinder:test` — 69 tests. `GrinderClientTest` runs against a real
 loopback `HttpServer` rather than a mock, the same idiom the grinder's own `ReportServerTest` uses:
 what is under test is behaviour at a socket (refused connection, a 502 from a proxy, a 200 carrying
 HTML), and a mock answers none of it honestly. `SelectionStoreTest` parses the `config.toml` this module

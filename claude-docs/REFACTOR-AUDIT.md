@@ -5598,3 +5598,39 @@ MED-1 and MED-2 are defects in shipped code and should be fixed with pins, not r
 are missing guards over code that is already correct. LOW-1 is a one-word fix with a real failure mode.
 The rest are tidying. Nothing here warrants rewriting history: every commit's *shape* is correct, and the
 findings are about what the commits contain, not how they were split.
+
+## Resolution — every finding closed the same day
+
+| Finding | Outcome |
+|---|---|
+| MED-1 selection attribution | Fixed. `SelectionAttribution` extracted and pinned by 7 guards; a stale entry keeps the pane it was saved in. |
+| MED-2 Swing HTML | Fixed. `PlainTextRendering` + 4 guards, one of them a control asserting Swing *would* otherwise have parsed the string. |
+| MED-3 extension-run guard | Added, and verified red by reverting the one-line `ApiPlugins` fix — all four guards then report 4 where 2 is correct. |
+| MED-4 endpoint paths | Guard added; the fixture now records request paths. Green on first run — the endpoints were already right, nothing had proved it. |
+| LOW-1 locale | **Withdrawn**, see the correction above. Guard kept, re-documented. |
+| LOW-2/3 efficiency | Fixed: set intersection instead of `selection × rows` per keystroke; `exclusionEntry` read once per tick cell. |
+| LOW-4/5/7 tidying | Fixed: unused import, dead `isUsable`, `copyExamplePluginsToApp` → `copyPluginsToApp`. |
+| LOW-6 timer lifetime | Fixed: `removeNotify` stops the poll, `addNotify` resumes it. |
+
+**One defect was found by the fixes rather than by the audit**, which is worth recording because it is the
+audit's own blind spot: `VerdictTableModel.getColumnClass` used `java.lang.Boolean::class.java`, which the
+Kotlin compiler warns about. The audit never saw it — the warning check had been run after the *core*
+commit, before the GUI commit existed, and was not repeated. `Boolean::class.javaObjectType` is the same
+boxed class without the warning, and still not `Boolean::class.java`, which is primitive `boolean.class`
+and has no `JTable` renderer. **A clean-warnings check is only worth what its most recent run covers.**
+
+**Re-verified against real runtimes after the fixes, not only by suite:**
+
+- One Grinder tab and one Tetris tab in the running GUI — the visual confirmation of the `ApiPlugins`
+  scoping fix, where the same strip read `Grinder | Tetris | Grinder | Tetris` before it.
+- A CLI generation with three entries ticked still produced a pack holding only the unticked `bookshelf`
+  and the grinder-unknown `keepme`, and logged `added 3 ticked entries`.
+- Suites after: api **409**, grinder **503**, plugin-grinder **69** (from 44), app **149**. Zero failures,
+  no compiler warning from the new module.
+
+**Process note on this entry's own commits.** The commit carrying this file's iteration-42 section
+initially also carried iteration 41, which had been sitting uncommitted in the working tree when the
+branch began — precisely the shape iteration 41's own MED-1 reports. Nothing was pushed, so it was split
+rather than disclosed: `e05365433` carries iteration 41 alone and `cf6cdc389` carries iteration 42, with
+the resulting tree byte-identical to the unsplit version.
+
