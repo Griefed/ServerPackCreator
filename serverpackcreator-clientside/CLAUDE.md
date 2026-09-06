@@ -447,8 +447,28 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
   dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
-  one-way and minimal — Fabric cannot load Quilt mods, and NeoForge/Forge cross-loading is version-dependent, so
-  guessing there would stage a jar the loader cannot use.
+  one-way and minimal — Fabric cannot load Quilt mods, so guessing wider would stage a jar the loader cannot use.
+- **NeoForge runs Forge builds on Minecraft 1.20.1, and on nothing else** (`LoaderCompatibility`, 2026-09-06).
+  NeoForge 20.1.x is a fork of Forge 47 that kept the `net.minecraftforge` packages, the `javafml` language
+  provider and `META-INF/mods.toml`, so there a Forge jar and a NeoForge jar are *the same file*; the package
+  rename landed with 1.20.2 and ends it. **State it as the one version, never as a lower bound** — a range
+  would boot Forge jars under NeoForge 1.20.2+, where FML rejects them (`Missing language javafml version
+  [46,)`, already a `runtimeMismatchMarkers` entry) and the failure is scored against the *mod*.
+  - **The fact has one home because it used to have two.** `JarSelfDeclaration.alsoRuns` (the pre-boot
+    descriptor gate) and `BootCandidateSelector.fallbackLoaders` (dependency selection) were separate
+    `Quilt to Fabric` maps answering the same question, so only one of them could ever have learned this.
+    `LoaderCompatibility.alsoRuns(loader, minecraftVersion)` is now both. **It takes the Minecraft version on
+    purpose:** the NeoForge claim is meaningless without one, and an overload that omits it would silently
+    re-open the gap.
+  - **What it cost, live 2026-09-06:** `CurseForge/mantle` published an `ERROR` row — *"Refusing to boot
+    NeoForge on Minecraft 1.20.1: `Mantle-1.20.1-1.11.117.jar` carries only Forge descriptor(s), so it is not
+    a NeoForge mod"* — for a file CurseForge ticks Forge **and** NeoForge and which had reached a ready-line
+    under Forge minutes earlier in the same run. A verdict about the grinder's own descriptor table,
+    published as a verdict about the mod. The dependency half was the same gap one step earlier: a dependency
+    publishing only Forge files was unpickable for a NeoForge 1.20.1 boot, and `refuseForMissingDependencies`
+    scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
+  - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
+    a real NeoForge build still beats the Forge fallback wherever a project publishes one.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
   are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
   `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
