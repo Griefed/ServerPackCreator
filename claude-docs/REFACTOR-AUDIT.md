@@ -5297,3 +5297,123 @@ executes, rather than what its name claims — the question that caught iteratio
 HIGH-1 only: add the source-level wiring guard the module already uses for joins that cannot be executed, so
 the `when` branch that supplies the Fabric/Quilt/LegacyFabric lines is actually held by something. Without
 it, deleting those three branches breaks nothing and no test notices.
+
+---
+
+# Audit — 2026-09-05, unpushed `develop` (iteration 41)
+
+**Scope:** the day's **26 non-merge commits** and 3 merges on `develop`, all unpushed (`origin/develop`
+sits at `e3cd87eaa`, 34 commits behind). Three branches — `claude-grinder-audit-fixes`,
+`claude-clientside-audit-fixes`, `claude-audit-followups` — plus two documentation commits from a
+`/doctor` run. **Method:** verify the pin-first boundary by *checking out every pin commit in a detached
+worktree and running it*, rather than trusting commit messages; then ask whether each guard is
+load-bearing and whether each commit type is honest.
+
+## HIGH — none
+
+## MEDIUM
+
+- **MED-1 — `7425f2264` (`docs: record the analysis fixes…`) carried an unrelated edit and left it split.**
+  The commit's stated scope is the resolution record plus stale test counts. Its `CLAUDE.md` hunk also
+  removed **21,637 characters** — the `/doctor` run's *Refactor state* migration — whose destination half
+  (`serverpackcreator-clientside/CLAUDE.md`, `serverpackcreator-grinder/CLAUDE.md`) was deliberately left
+  uncommitted for review. The result was one logical edit split across a commit and the working tree: the
+  cells gone from the root file, the text they moved to unstaged. Rule broken: stay within the commit's
+  stated scope. Caused by `git add CLAUDE.md` for the count refresh sweeping a pending edit to the same
+  table. Self-disclosed and remedied by `7e484cc7c`, which committed the destination half — but the remedy
+  is a second commit, where staging the three files together would have been one.
+
+- **MED-2 — `acaf8d704` bundles two concerns under one type.**
+  `fix(grinder): close the verdict store on shutdown, and stop shadowing it` does two unrelated things: a
+  lifecycle change (`store.flush()` → `store.close()`, which also stops the flusher — behavioural) and a
+  local-variable rename in `Grinder.queueBlamedDependencies` (`store` → `queue`, pure refactor). The body
+  says "Two small things", so it is disclosed rather than hidden, but one concern per commit would have
+  split it, and the rename half is a `refactor:` sharing a `fix:` label.
+
+## LOW
+
+- **LOW-1 — `0e6eb1b33` mixes `src/main` and `src/test`.** The knob-coercion fix also edited
+  `GrinderConfigurationTest.everyVariableReadIsDeclaredAsAKnob`. Already recorded as
+  `ANALYSIS-AUDIT.md` L-2 and disclosed in the commit body: the test edit added three reader names
+  (`intIn`, `longAtLeast`, `capAtLeastZero`) to a **source-scanning guard's alphabet**, with every
+  assertion unchanged, so it sits inside the "a reference-only update is not the stop-and-flag signal"
+  carve-out. Recorded here for completeness; not re-litigated.
+
+- **LOW-2 — `850f89c15` (`refactor(clientside)`) deletes two assertions.** Read mechanically, "if an
+  existing test's assertion has to change, the label is already wrong" would flag it. Judged and dismissed:
+  the assertions were removed **with the function they covered** (`deriveStems`, which had no production
+  caller), which is not an expectation change — there is no way to keep a test for a deleted function.
+  Recorded so a later pass does not re-flag it.
+
+## The pin-first boundary — measured, not assumed
+
+Every pin commit checked out in a detached worktree at its own SHA and run:
+
+| Commit | Pin | Expected | Observed |
+|---|---|---|---|
+| `0531ce666` | `ProvenanceReachesEnsureInstalledTest` | red | **red** (assertion; counterweights pass) |
+| `c09749890` | `PassCountersTest` | red | **red** (assertion) |
+| `f433539d2` | `ConfigurationRangesTest` | red | **red** (assertion; 2 pass) |
+| `cdc45ba3f` | `ShutdownWaitBudgetTest` | red | **red** (missing `awaitWithin`) |
+| `c5e1c5620` | `RequeueTempFileTest` | red | **red** (assertion; 2 pass) |
+| `312459e54` | `BundledRuleIdsResolveTest` | red | **red (compile)** — the accepted red for a pin whose subject does not exist yet, and the commit body says so |
+| `9e3982553` | `ConfirmationAttributionTest` | red | **red** (assertion; 2 pass) |
+| `930e2a6ec` | `BootLogClassifierTest` | **green** | **green** — 29 passed, 0 failed |
+| `dbd68642d` | `BootCandidateSelectorTest` | **green** | **green** — 31 passed, 0 failed |
+| `991fea0ee` | `RecordedVerdictMappingTest` | **green** | **green** — 5 passed, 0 failed |
+
+Spot-checked that the following fix turns the pin green: `1ee687325` → 5 passed/0 failed,
+`b5e08ec45` → 3 passed/0 failed.
+
+**The three green-declared pins are load-bearing, and their evidence is in the commits.** Each says in its
+own body that it was green when written and records the mutation that proves it bites:
+
+| Pin | Mutation | Recorded failure |
+|---|---|---|
+| `930e2a6ec` | hoist `mixin-apply-failure` above `client-only-class` | *"the client-class marker must outrank a mixin that could not apply"* |
+| `991fea0ee` | `filenamePattern = verdict.suggestedEntry` | *"'SENTINEL_FILENAME' was dropped by the mapping"* |
+| `991fea0ee` | `declaredClientSide = verdict.declaredServerSide` | `expected: <REQUIRED> but was: <UNSUPPORTED>` |
+| `dbd68642d` | swap `pickDependencyFile` arms 2 and 3 | `expected: <lib-0.9.0.jar> but was: <lib-1.5.0.jar>` |
+
+A guard added green and never mutated is indistinguishable from one asserting nothing; these are the first
+in this series to record the mutation in the commit itself rather than only in a session transcript.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **Every `docs:` commit is genuinely documentation.** `f131d2e8a`, `2ac1d8ee8`, `d72a9490b`, `49ffa7776`,
+  `7425f2264`, `7e484cc7c` change **zero** non-comment Kotlin lines (diff filtered to `*.kt`, stripped of
+  blanks, `//`, `/**`, `*`, `*/`). The KDoc re-attachment commits move text between declarations and
+  change no statement.
+- **Both `refactor:` commits are behaviour-preserving.** `b1746627b` (dead `decisive()`) and `850f89c15`
+  (dead `deriveStems`) each removed a function with **no production caller anywhere in the repo**, verified
+  by counting calls, `::` method references and `override` declarations across every module's `src/main`.
+- **`850f89c15` preserved what it deleted.** `deriveStems`' KDoc carried the `sodium-fabric-` versus
+  `embeddium-` example that two other files cite as authoritative; it moved onto `deriveStem` rather than
+  being lost with the function.
+- **19 of 21 code commits keep test, fix, refactor and docs strictly separate**, with every `fix:` preceded
+  by its own pin commit. The two exceptions are MED-2 and LOW-1 above.
+
+## Method note — the harness produced three false REDs, and this is the third such instance
+
+The first run of the verification loop reported `930e2a6ec`, `dbd68642d` and `991fea0ee` as **red**,
+contradicting their commit messages. They are green. The cause was the harness, not the commits: under
+**zsh**, `"$2:test"` applies the `:t` *path-tail modifier* to `$2`, so the task name resolved to
+`:serverpackcreator-grinderest` and Gradle failed with "Cannot locate tasks that match" — before running
+anything. Exit status was non-zero, so the loop scored it red; `testsPassed=0` was the tell. Writing
+`"${2}:test"` fixes it.
+
+That makes **three distinct verification-harness defects** recorded in this repo: grepping Gradle output
+for `FAILED` (which the grinder's own fixtures print as ordinary log lines), zsh's `:s` modifier mangling a
+ref in a per-commit sweep, and now zsh's `:t` modifier mangling a Gradle task name. The generalisation is
+worth stating once: **a verification harness is itself unpinned code, and a false result from it is
+indistinguishable from a real finding until someone checks by hand.** When a harness contradicts a claim,
+re-run the single case standalone before believing either.
+
+## Recommendation
+
+MED-1 and MED-2 are both **already-shipped commit shapes on an unpushed branch**. The repo's own
+`358675fbf` precedent says a mis-shaped commit is remedied by an audit entry rather than a rewrite once it
+is merged — but here nothing is pushed, so a rewrite is *available*. It is not recommended: MED-1 is
+documentation whose split was already closed by `7e484cc7c`, and MED-2 is disclosed in its own body. This
+entry is the remedy for both. No source change is proposed.
+
