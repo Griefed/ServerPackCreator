@@ -469,6 +469,30 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
   - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
     a real NeoForge build still beats the Forge fallback wherever a project publishes one.
+- **A Sinytra Connector *placeholder* is a Fabric mod, and the Forge scanner reads a stub** (2026-09-06).
+  `JarSelfDeclaration.isConnectorPlaceholder` reads `[properties] "connector:placeholder" = true` out of
+  `META-INF/mods.toml`, and `MetadataScanner` then scans such a jar as **Fabric**. Read from the live
+  `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past Forge's mod discovery
+  (version-less dependency entries on `connectormod` and `fabric_api`), while the `fabric.mod.json` beside it
+  holds the real mod — `"environment": "client"` included.
+  **Measured live 2026-09-06:** that project's Forge row read `jarScan=SERVER_OR_BOTH` and
+  `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same project's*
+  Fabric row read `CLIENT` off the identical descriptor. The contradiction was manufactured by the scanner
+  choice — and `ClientsideVerifier.declaresServerSupport`, the same predicate, is what arms the other-version
+  crash re-check, so a false one costs up to three boot budgets (~45 min) per armed candidate.
+  - **It substitutes the scanner's *input*, not the dispatch.** The loader→scanner choice still goes through
+    `ModScanner.scannerFor`, so the `MetadataScanner`/`ModListCompiler` drift documented at the top of this
+    file cannot come back; only the question changes, because a placeholder is not the loader it is tagged for.
+  - **Keyed on the marker, never on carrying both descriptors.** A genuine multi-loader jar ships a real
+    `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; hijacking those would
+    answer a Forge question with a Fabric answer.
+  - **The boot is still attempted** (Griefed's call): a working Connector setup should still be verified, and
+    the row's INCONCLUSIVE then stands on its own evidence rather than on a false contradiction.
+  - **Why that boot failed is NOT ours, and the staging was right.** The grinder staged the newest Sinytra
+    Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API (`0.92.6+1.11.15+1.20.1`) — the
+    only ones Modrinth publishes for 1.20.1 — and Connector under Forge 47.4.23 still logged *"Dependency
+    resolution found 0 candidates to load"* and never converted the jar, leaving Forge to read the stub's
+    version-less ranges and refuse. Do not "fix" this by staging more dependencies; they were all there.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
   are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
   `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
