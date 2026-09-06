@@ -448,7 +448,7 @@ class BootVerifier(
             }
             val plan = planManifestDependency(
                 requirement, loader, minecraftVersion,
-                refFor = { platformRefFor(it) },
+                mappingFor = { KnownModIds.mappingFor(it, platform.name) },
                 resolveRef = { platform.resolveDependency(it, minecraftVersion) }
             )
             val dependencyFile = when (plan) {
@@ -459,7 +459,7 @@ class BootVerifier(
                 }
 
                 is ManifestDependencyPlan.Unsatisfied -> {
-                    // Mapped AND resolved, then nothing usable: a case we chose to trust, so it refuses.
+                    // An alias we resolved and then could not stage: a project we know the id names, so it refuses.
                     log.warn("Manifest dependency '${plan.modID}' publishes no $loader file for Minecraft $minecraftVersion.")
                     unsatisfied.add(plan.modID)
                     continue
@@ -471,9 +471,14 @@ class BootVerifier(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
                 )
             ) {
-                // Mapped AND resolved, then failed to stage: a case we chose to trust, so it refuses.
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
-                unsatisfied.add(requirement.modID)
+                // Same rule as the plan itself: an alias's failed download is a real gap and refuses; a
+                // guess's is only a guess that got further than most, and must not cost the boot.
+                if (plan.confident) {
+                    unsatisfied.add(requirement.modID)
+                } else {
+                    unmapped.add(requirement.modID)
+                }
             }
         }
     }
@@ -885,27 +890,37 @@ class BootVerifier(
          * 1.21.11 booted without the Fabric API its manifest hard-requires because of it, and Quilt Loader
          * blamed the mod.
          *
-         * The rule, and it is the one [stageManifestDependencies] documents: an id we mapped to a real
-         * project and then failed to stage is a case we chose to trust, so failing it is a real gap and
-         * refuses. An id that maps to nothing, or to a project this platform does not carry, is only a
-         * guess that missed and never refuses.
+         * **The rule keys on how the ref was arrived at, not on how far it got** (2026-09-06). An
+         * [ModIdMapping.Alias] is a project we know the id names, so failing to stage it is a real gap and
+         * refuses. An [ModIdMapping.Guess] is an optimistic slug that may name nothing or something else, so
+         * it never refuses however far it gets. It used to key on distance — mapped-then-unstageable
+         * refused, unmappable did not — which made *being almost resolvable worse than being unknown*, and
+         * is why CurseForge was given no guess at all.
          *
-         * @param refFor     This platform's ref for a mod id, or `null` when the registry knows none.
+         * @param mappingFor This platform's mapping for a mod id, carrying how much it can be trusted.
          * @param resolveRef The project behind a ref, or `null` when the platform does not carry it.
          */
         internal fun planManifestDependency(
             requirement: ModDependency,
             loader: String,
             minecraftVersion: String,
-            refFor: (String) -> String?,
+            mappingFor: (String) -> ModIdMapping,
             resolveRef: (String) -> ProjectFiles?
         ): ManifestDependencyPlan {
-            val ref = refFor(requirement.modID) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
+            val mapping = mappingFor(requirement.modID)
+            val ref = mapping.ref ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
             val project = resolveRef(ref) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
+            val confident = mapping is ModIdMapping.Alias
             val file = BootCandidateSelector.pickDependencyFile(
                 project.files, loader, minecraftVersion, requirement.versionConstraint
-            ) ?: return ManifestDependencyPlan.Unsatisfied(requirement.modID)
-            return ManifestDependencyPlan.Stage(ref, file)
+            ) ?: return if (confident) {
+                ManifestDependencyPlan.Unsatisfied(requirement.modID)
+            } else {
+                // A guess that hit a real project publishing nothing usable. Being *almost* resolvable must
+                // not be worse than being unknown — the `xaerolib` case — so it is filed, not fatal.
+                ManifestDependencyPlan.Unmapped(requirement.modID)
+            }
+            return ManifestDependencyPlan.Stage(ref, file, confident)
         }
 
         /**
@@ -1188,12 +1203,20 @@ class BootVerifier(
  * @author Griefed
  */
 internal sealed interface ManifestDependencyPlan {
-    /** Stage [file], fetched under [ref]. */
-    data class Stage(val ref: String, val file: ModFile) : ManifestDependencyPlan
+    /**
+     * Stage [file], fetched under [ref].
+     *
+     * [confident] is the mapping's confidence carried forward, because the *download* can still fail and the
+     * same rule has to apply there: an alias whose jar could not be fetched is a real gap, a guess's is not.
+     */
+    data class Stage(val ref: String, val file: ModFile, val confident: Boolean) : ManifestDependencyPlan
 
     /** A guess that missed: nothing maps, or the platform does not carry it. Reported, never fatal. */
     data class Unmapped(val modID: String) : ManifestDependencyPlan
 
-    /** Mapped and resolved, then nothing usable for this loader and Minecraft version. Refuses the boot. */
+    /**
+     * An **alias** we resolved and then could not stage. A project we know the id names, so failing to
+     * honour it is a real gap: this is the only outcome that refuses the boot.
+     */
     data class Unsatisfied(val modID: String) : ManifestDependencyPlan
 }
