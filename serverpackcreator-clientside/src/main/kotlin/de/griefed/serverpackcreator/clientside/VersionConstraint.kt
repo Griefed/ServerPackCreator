@@ -72,9 +72,48 @@ object VersionConstraint {
             return true
         }
         if (alternative.startsWith("[") || alternative.startsWith("(")) {
-            return mavenRangeHolds(version, alternative)
+            // Maven allows a comma-separated *union* of ranges — `(,1.0],[1.2,)` is its own documented
+            // example — so the top-level commas between brackets are alternatives, not bounds. Splitting
+            // on them first is what leaves each element a single range for mavenRangeHolds to read; doing
+            // it the other way round parses `[1.20.3],[1.20.4]` as one range from `1.20.3]` to `[1.20.4`.
+            return unionMembers(alternative).any { member -> mavenRangeHolds(version, member) }
+        }
+        // A bare comma-separated list — `26.2,26.3` — is a list of alternatives too. Maven would call an
+        // unbracketed version a soft requirement rather than a constraint, but mod authors write this
+        // meaning "either", and reading it as one version refuses both.
+        if (alternative.contains(",")) {
+            return alternative.split(",").filter { it.isNotBlank() }
+                .any { member -> conjunctionHolds(version, member.trim()) }
         }
         return alternative.split(" ").filter { it.isNotBlank() }.all { clauseHolds(version, it) }
+    }
+
+    /**
+     * Split a bracketed constraint into its union members on the commas *between* ranges, leaving the ones
+     * *inside* a range alone. Depth is tracked rather than matched by regex because the two commas are
+     * spelled identically and only nesting tells them apart.
+     *
+     * An unbalanced string yields one member — the whole input — so a malformed constraint reaches
+     * [mavenRangeHolds] exactly as it did before and still resolves to accept.
+     */
+    private fun unionMembers(constraint: String): List<String> {
+        val members = mutableListOf<String>()
+        val current = StringBuilder()
+        var depth = 0
+        for (character in constraint) {
+            when (character) {
+                '[', '(' -> depth++
+                ']', ')' -> depth--
+            }
+            if (character == ',' && depth <= 0) {
+                members += current.toString().trim()
+                current.clear()
+            } else {
+                current.append(character)
+            }
+        }
+        members += current.toString().trim()
+        return members.filter { it.isNotBlank() }.ifEmpty { listOf(constraint) }
     }
 
     /**
