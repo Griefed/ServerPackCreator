@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.clientside
 
-import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.toml.TomlParser
 import java.io.File
 import java.util.zip.ZipFile
@@ -88,10 +87,10 @@ object JarSelfDeclaration {
     fun isConnectorPlaceholder(jar: File): Boolean = runCatching {
         ZipFile(jar).use { archive ->
             val descriptor = archive.getEntry(FORGE_DESCRIPTOR) ?: return false
-            val properties = archive.getInputStream(descriptor).use { TomlParser().parse(it) }
-                .valueMap()[TOML_PROPERTIES] as? Config
-                ?: return false
-            properties.valueMap()[CONNECTOR_PLACEHOLDER_PROPERTY] == true
+            // Addressed as a path rather than by walking `valueMap()`: the key carries a colon, not a dot,
+            // so nightconfig's own path splitting cannot mistake it for two segments.
+            archive.getInputStream(descriptor).use { TomlParser().parse(it) }
+                .get<Any?>(listOf(TOML_PROPERTIES, CONNECTOR_PLACEHOLDER_PROPERTY)) == true
         }
     }.getOrDefault(false)
 
