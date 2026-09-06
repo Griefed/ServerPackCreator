@@ -404,7 +404,9 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
       *ref*, so the first module resolves Fabric API and the rest short-circuit. That matters beyond the
       wasted fetch: it is the B6 shape, where one jar reachable under several names double-counted toward
       `MAX_INJECTED_DEPENDENCIES` and refused packs that were within the cap.
-  - **LANDMINE — the refusal split is the whole safety property, and it is structural.** A platform ref is a
+  - **LANDMINE — the refusal split is the whole safety property, and it is structural.** *(Superseded
+    2026-09-06 — it now keys on mapping **confidence** rather than on how far the lookup got; see the entry
+    above. The reasoning below is why the split exists at all and still holds.)* A platform ref is a
     project the author linked; a manifest id is a bare string that may name something *bundled inside another
     jar* (`fabric-api-base` ships inside Fabric API), provided by the loader, or optional in practice. Since
     `refuseForMissingDependencies` scores a refusal INCONCLUSIVE, treating every unresolvable manifest id as a
@@ -526,21 +528,34 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     tolerates, which would be a second copy of that grammar drifting from the first.
   - Still exactly one retry, through `stageBootPack`, so a second contradiction surfaces rather than loops.
 
-- **OPEN — a CurseForge candidate's manifest dependencies are unresolvable, and closing it needs a decision.**
-  `KnownModIds.refFor` answers `null` for CurseForge on anything but its four hardcoded aliases, so `mtlib`,
-  `crafttweaker`, `jei`, `athena`, `flywheel` and `xaerolib` all map to nothing (executed 2026-09-06). Reported
-  by Griefed from the live grinder: `modtweaker` on Forge/1.12.2, whose `mtlib` CurseForge publishes under that
-  exact slug. **In current code this no longer refuses** — an unmapped id lands in `unmapped`, not
-  `unsatisfied` — so the deployed daemon's refusal is already gone; what remains is that the dependency is
-  never *staged*, so the mod boots without it.
-  The obvious fix — guess the mod id as a CurseForge slug, resolve it through the search endpoint `resolve`
-  already uses — was implemented and **reverted**, because it fails four deliberate guards
-  (`anUnknownIdIsNotGuessedOnCurseForge` and three siblings) and would move ids that map-then-fail from
-  `unmapped` into `unsatisfied`, which refuses. That is the documented `xaerolib` trap: *being almost
-  resolvable was worse than being unknown*.
-  **The fix that has both is to key the refusal split on how confident the mapping was** — an alias refuses,
-  a guess never does — which also closes the `xaerolib` trap on Modrinth. That changes the split this file
-  calls "the whole safety property", so it is Griefed's call, not a quiet edit.
+- **THE REFUSAL SPLIT KEYS ON MAPPING CONFIDENCE, NOT ON HOW FAR A LOOKUP GOT (2026-09-06).** This
+  supersedes the "mapped-then-unstageable refuses, unmappable does not" rule described further down, and it
+  is the safety property that rule was reaching for — now stated directly instead of emerging from distance.
+  - `KnownModIds.mappingFor` returns a **`ModIdMapping`**: `Alias` (the table, or a recognised Fabric API /
+    QSL module shape — a project we *know* the id names), `Guess` (the optimistic slug), or `None`.
+    `refFor` is just `mappingFor(...).ref`, for the call sites that only dedupe.
+  - **An alias refuses; a guess never does, at any stage** — not when it resolves to a project publishing
+    nothing usable, not when the download then fails. `ManifestDependencyPlan.Stage` carries `confident` so
+    the download branch obeys the same rule as the plan.
+  - **Why: being *almost* resolvable must not be worse than being unknown.** `xaeros-world-map` was refused
+    for `xaerolib` because a real Modrinth project of that name exists but publishes nothing tagged Quilt or
+    26.2 — the guess hit, so it refused, where an outright miss would have been allowed. That trap is now
+    closed by construction.
+  - **And it is what makes a guess safe to offer on CurseForge**, which had none precisely *because* a guess
+    could refuse. Every manifest-declared dependency of a CurseForge candidate was therefore unresolvable
+    unless it was one of four aliases — measured 2026-09-06: `mtlib`, `crafttweaker`, `jei`, `athena`,
+    `flywheel` and `xaerolib` all mapped to nothing. Reported by Griefed via `modtweaker` on Forge/1.12.2,
+    whose `mtlib` CurseForge publishes under exactly that slug.
+  - `CurseForgePlatform.resolveDependency` began with `nativeRef.toLong()`, so any non-numeric ref threw and
+    was caught as unresolvable. It now falls back to `modIdForSlug`, whose request is **byte-identical** to
+    the one `resolve` has always used (`/mods/search?gameId&classId&slug=`) and reads `data[0].id` the same
+    way — so the shape is proven by every CurseForge candidate already resolving through it. Exact-match on
+    the slug, never a text search, so it finds the project the id names or finds nothing.
+  - **The premise that changed, stated so nobody re-litigates it from the old rationale:** CurseForge was
+    given no guess because a guess cost a refusal. It no longer does. The four guards asserting `null` for
+    CurseForge were rewritten, three of them intent-preserving (`fabric-permissions-api-v0`,
+    `fabric-language-kotlin` and `quilt_loader` must not be claimed for Fabric API or QSL — they are now
+    guesses at their own slugs, which refuse nothing).
 
 - **THE RESULT SYSTEM IS FOUR VERDICTS, AND EVERY CLIENTSIDE RULE LIVES IN A FILE (2026-09-04).** Read this
   before touching `BootLogClassifier`, `ClientsideVerifier` or `boot-rules.default.json`.
