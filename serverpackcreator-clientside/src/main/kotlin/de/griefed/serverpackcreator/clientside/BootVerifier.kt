@@ -567,11 +567,18 @@ class BootVerifier(
             return staged
         }
         val constraint = staged.declaredMinecraftConstraint ?: return staged
-        val agreed = BootCandidateSelector.newestVersionSatisfying(mainFile, constraint) { bootable(loader, it) }
+        // First among the versions the platform tagged — the pick both sources agree on, where one exists.
+        val tagged = BootCandidateSelector.newestVersionSatisfying(mainFile, constraint) { bootable(loader, it) }
+        // Then, when they agree on nothing, bump to a real Minecraft release the *jar* accepts. A file
+        // tagged for exactly one version its own descriptor excludes has no agreed pick to fall back on,
+        // and refusing it throws the candidate away over a web-form tick the loader does not honour.
+        val agreed = tagged
+            ?: BootCandidateSelector.newestReleaseSatisfying(constraint, bootableReleases()) { bootable(loader, it) }
             ?: return staged
         log.info(
             "${mainFile.fileName} declares Minecraft '$constraint', so re-staging ${project.slug} on " +
-                "$loader $agreed — the newest version its own descriptor accepts."
+                "$loader $agreed — the newest version its own descriptor accepts" +
+                (if (tagged == null) ", which its platform never tagged." else ".")
         )
         return stageBootPack(project, loader, mainFile, agreed, loaderVersionOverride)
     }
@@ -586,6 +593,13 @@ class BootVerifier(
      * Takes the loader per call rather than closing over one, because the crash re-check's sample spans
      * loaders and has to gate each candidate against its own.
      */
+    /**
+     * Every stable Minecraft release SPC knows a server for — the set a jar's own declared range is searched
+     * against when its platform tagged nothing the jar accepts.
+     */
+    private fun bootableReleases(): List<String> =
+        apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }
+
     private fun bootableCombination(): (String, String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         return { loader, minecraftVersion ->

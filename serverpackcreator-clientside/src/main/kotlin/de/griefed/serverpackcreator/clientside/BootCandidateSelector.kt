@@ -78,6 +78,50 @@ object BootCandidateSelector {
             .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
 
     /**
+     * The newest Minecraft **release** in [releases] that the jar's [minecraftConstraint] accepts and the
+     * loader can boot, or `null` when there is none.
+     *
+     * The wider fallback behind [newestVersionSatisfying]: that one reconsiders only versions the *platform*
+     * tagged, so it rescues a jar tagged for two versions whose descriptor accepts one of them (JEI) and
+     * does nothing for a jar tagged for exactly one version its descriptor excludes.
+     * `moonlight-1.20.4-2.9.9-forge.jar` is tagged 1.20.4 and declares `[1.20,1.20.2)`; platform and jar
+     * share nothing, and the candidate was refused rather than booted at the version it was built for.
+     *
+     * **The jar is the better authority when the two disagree**, because the loader enforces this range at
+     * runtime: booting inside it is what gets the mod loaded, while booting at a version the author merely
+     * ticked on a web form gets the mod rejected by FML before it runs.
+     *
+     * **A constraint that constrains nothing never bumps.** [VersionConstraint] accepts anything it cannot
+     * read — deliberately, so a grammar gap cannot mass-refuse — which means an empty, wildcard or
+     * unparseable descriptor would otherwise "satisfy" the newest release in existence and silently
+     * relocate every candidate there. Such a constraint is answered with `null`, leaving the caller's
+     * original refusal in place.
+     */
+    fun newestReleaseSatisfying(
+        minecraftConstraint: String,
+        releases: Collection<String>,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): String? {
+        if (!constrainsAnything(minecraftConstraint, releases)) {
+            return null
+        }
+        return releases
+            .sortedWith { left, right -> minecraftComparator.compare(right, left) }
+            .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
+    }
+
+    /**
+     * Whether [minecraftConstraint] actually excludes something out of [releases].
+     *
+     * A constraint every candidate satisfies carries no information — it is blank, a wildcard, or a string
+     * the parser could not read and therefore accepted. Asked of the same set the caller is about to search,
+     * so the question is decided by the constraint's observed effect rather than by trying to re-detect the
+     * shapes [VersionConstraint] chooses to tolerate.
+     */
+    private fun constrainsAnything(minecraftConstraint: String, releases: Collection<String>): Boolean =
+        releases.any { !VersionConstraint.satisfies(it, minecraftConstraint) }
+
+    /**
      * One member of the sample the other-version crash re-check boots: which file, under which loader, on
      * which Minecraft version. The loader is carried explicitly because the sample deliberately leaves the
      * crashing loader — see [pickRecheckCandidates].
