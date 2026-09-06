@@ -5417,3 +5417,184 @@ is merged — but here nothing is pushed, so a rewrite is *available*. It is not
 documentation whose split was already closed by `7e484cc7c`, and MED-2 is disclosed in its own body. This
 entry is the remedy for both. No source change is proposed.
 
+# Audit — 2026-09-06, `claude-grinder-plugin` (iteration 42)
+
+Scope: the 14 commits of `develop..HEAD` — the `/verdicts.json` feed, the new
+`serverpackcreator-plugin-grinder` module, and the `ApiPlugins` extension-scoping fix that the second
+plugin exposed. Read-only pass against the Refactoring Conventions.
+
+## HIGH — none
+
+No behaviour change is mixed into a `refactor:` commit, because **there is no `refactor:` commit on this
+branch**: every commit is `test:`, `feat:`, `fix:`, `chore:` or `docs:`. No module boundary is broken —
+`-plugin-grinder` depends on `:serverpackcreator-api` alone, and the grinder's verdict shape reaches it
+over HTTP rather than by a compile dependency on `-grinder` or `-clientside`, which is exactly why
+`/verdicts.json` had to exist.
+
+The one changed plugin-API contract (`ApiPlugins.getAllExtensionsOfPlugin`) is **not** a HIGH finding: it
+is labelled `fix:`, not `refactor:`, it is pinned by a guard committed red in its own commit, and it
+carries a row in `claude-docs/API-BEHAVIOUR-CHANGES.md`. That is the shape the conventions ask for.
+
+## MEDIUM
+
+- **MED-1 — `a68204a75`, `gui/GrinderTab.kt:181` (`onSelectionChanged`): untested logic, and it is
+  wrong.** The commit landed six files; only `VerdictTableModel` had a pin. The other five were justified
+  as "rendering, untested by design" — but `onSelectionChanged` is not rendering. It decides which of the
+  two config keys each ticked entry is written under:
+
+  ```kotlin
+  val shownInOther = otherPane.shownEntries()
+  val (other, confirmed) = selected.partition { it in shownInOther }
+  ```
+
+  An entry shown in **neither** pane falls into `confirmed`. That is not an edge case, it is the designed
+  steady state: `SelectionStore` and `VerdictTableModel` both deliberately **never prune** an entry the
+  grinder has stopped reporting, so such entries accumulate by design — and then every subsequent tick
+  silently migrates all of them from `selectedOther` into `selectedConfirmed`. Also reachable with a
+  fully-stale set: *Select all* on an unloaded pane publishes the unchanged selection, firing the callback
+  with nothing shown anywhere.
+
+  Exclusion behaviour is unaffected (`allSelected()` is the union), so nothing breaks in a server pack —
+  what is lost is the record of which entries the user accepted **at their own risk**, which is the entire
+  point of the two-pane split. Rule broken: *never refactor untested code blind* applies with more force
+  to code that was never tested at all. The logic is pure over two sets and belongs outside the Swing class.
+
+- **MED-2 — `a68204a75`, `gui/VerdictListPane.kt` + `gui/DashboardPane.kt`: grinder-supplied text reaches
+  Swing components that interpret HTML.** `JLabel` and `DefaultTableCellRenderer` (the `JTable` default)
+  both install an HTML view when the string starts with `<html>`. Measured, headless:
+
+  | Component | HTML interpreted |
+  |---|---|
+  | `JLabel("<html><b>…")` | **true** |
+  | `DefaultTableCellRenderer` cell value | **true** |
+  | `JLabel` with `putClientProperty("html.disable", true)` | false |
+
+  Every verdict field rendered in the table (`slug`, `detail`, `suggestedEntry`, …) and every dashboard
+  label built from `/status` (`worker`, `platform`, rule `errors`) is attacker-influenced: `slug` and
+  `detail` originate in mod metadata the grinder scraped, and the daemon's report server carries **no
+  authentication**. Swing's HTML subset loads remote images, so `<html><img src="http://…">` in a mod name
+  turns an SPC user's GUI into an outbound request. This is the same class the grinder's own web report was
+  explicitly hardened against — `report/CLAUDE.md` records that it "no longer puts mod-supplied text inside
+  a `<script>` block at all" — so the Swing surface **reintroduces a defect this project already paid to
+  remove**, in a different renderer.
+
+- **MED-3 — `bbfdf42f1` / `431f3f874`: the guard pins the cheaper half of the bug.** `ExtensionScopingTest`
+  asserts `addTabExtensionTabs` adds 2 tabs instead of 4, and that the lookup answers per plugin. It does
+  **not** assert that `runPreGenExtensions` runs each extension once. Duplicate tabs are cosmetic; an
+  extension running N times is not — a `PostGenExtension` that uploads an artifact would upload it N times,
+  and a `ConfigCheckExtension` reporting an error reports it N times. The commit message names all four
+  `run*Extensions` methods as affected, so the untested half is the half the message calls damaging.
+
+- **MED-4 — `98ecefce5`, `core/GrinderClientTest.kt:44`: the fixture cannot detect a wrong endpoint.**
+  `serving()` registers `createContext("/")`, which is a prefix match for **every** path, so all eight
+  client guards pass whatever URL the client actually requests. `GrinderUrl.verdicts`/`status` could return
+  `/nonsense` and only `GrinderUrlTest.derivesTheEndpointsFromTheBase` — a string-equality test on the
+  helper, not on the client — would notice. The two are joined by nothing. This is the "asserts shape, not
+  behaviour" failure the conventions name: the guard executes the unit but never observes the one output
+  that reaches the network.
+
+## LOW
+
+- **LOW-1 — `0a0c6e609`, `core/ClientsideEntryInjector.kt:44`: locale-sensitive `lowercase()` as a
+  de-duplication key.** `merged.putIfAbsent(trimmed.lowercase(), trimmed)` uses the default locale. Under
+  a Turkish locale `"Iceberg-".lowercase()` is `"ıceberg-"`, so `Iceberg-` and `iceberg-` hash apart and
+  both land in the exclusion list — the duplicate the function exists to prevent. Everything it is compared
+  against is locale-independent (`String.equals(ignoreCase)` and `startsWith(ignoreCase)` are), so this is
+  the only locale-sensitive operation in the module. `Locale.ROOT`.
+- **LOW-2 — `a68204a75`, `gui/VerdictListPane.kt` (`updateSummary`): O(selection × rows), per keystroke.**
+  A nested `count { … any { … } }` over the selection and every row, re-run by every `DocumentListener`
+  event while typing in the filter field. `shownEntries()` already computes the row-side set in one pass;
+  the answer is a set intersection. Not a measured bottleneck — flagged because the same file already
+  argues a `JTable` was chosen over checkboxes precisely because the store runs to thousands of rows, so
+  the file contradicts itself.
+- **LOW-3 — `a68204a75`, `gui/VerdictTableModel.kt` (`getValueAt`): `exclusionEntry` computed twice per
+  tick cell.** It is a computed property doing `trim()` + `ifEmpty` on each access, and `getValueAt` runs
+  per visible cell per repaint.
+- **LOW-4 — `a68204a75`, `gui/GrinderTab.kt`: unused import `com.fasterxml.jackson.databind.JsonNode`.**
+- **LOW-5 — `a68204a75`, `gui/SettingsPane.kt:124`: `isUsable` is dead.** Never called; `GrinderTab`
+  branches on `SelectionStore.resolvedUrl` instead. Two ways to ask the same question, one of them unused.
+- **LOW-6 — `a68204a75`, `gui/GrinderTab.kt:78`: the dashboard `Timer` outlives the tab.** Nothing stops
+  it when the component is removed, so an SPC instance polls its grinder every N seconds for the life of
+  the JVM whether or not the Dashboard is on screen. Not the `GlobalScope` anti-pattern this project
+  removed from `-app`, but the same shape: a repeating task with no owner and no cancellation.
+- **LOW-7 — `0885d32a6`, `build.gradle.kts:89`: `copyExamplePluginsToApp` now copies two plugins.** The
+  description was updated, the task name was not.
+
+## The pin-first boundary — verified, held
+
+Every code commit is preceded by its own `test:` commit, and each was **run** before being committed red,
+per the convention added after two guards turned out to assert nothing:
+
+| Pin commit | Fix commit | Red for the right reason? |
+|---|---|---|
+| `1b671e65e` | `833846082` | 5 of 6 fail (route falls through to `/`, serving HTML); the 6th is a deliberate "stays unchanged" guard, green both sides |
+| `98ecefce5` | `c17cf9a7d` | unresolved references only — **after** one fixture fault was found and fixed by running it first (`TomlFormat…parse(File)`, an overload that does not exist) |
+| `732fdc7d8` | `0a0c6e609` | unresolved references to the two missing types, plus the inference errors that follow |
+| `758ea95dc` | `a68204a75` | unresolved references to `VerdictTableModel` and its members |
+| `bbfdf42f1` | `431f3f874` | **assertion** failures, not compile errors: `expected: <2> but was: <4>` |
+
+`bbfdf42f1` is the strongest of the five — it fails on a real assertion against real code, which is what
+the convention actually wants and what a new-API pin can rarely give.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **The bug found mid-work was surfaced and fixed in its own commit, not worked around.**
+  `getAllExtensionsOfPlugin` ignoring its argument was pre-existing, was pinned red separately
+  (`bbfdf42f1`), fixed separately (`431f3f874`), and recorded in `API-BEHAVIOUR-CHANGES.md`. This is the
+  convention's stated remedy, followed exactly.
+- **The second pre-existing defect was *not* silently fixed, and that is also correct.** The example
+  plugin's `StackOverflowError` under `-cli` was confirmed pre-existing by reproducing it against
+  `develop`'s unmodified `ApiPlugins`, then written into the root `CLAUDE.md` rather than folded into this
+  branch. Unrelated to the feature, and expanding scope twice would have been the worse call.
+- **`732fdc7d8` adding `libs.mockk` to `build.gradle.kts` inside a `test:` commit is not scope sprawl.**
+  It is the dependency the guard in that same commit needs; the alternative is a build commit that makes
+  no sense on its own.
+- **`a68204a75` is not a big-bang rewrite.** Strangler Fig governs replacing existing behaviour behind a
+  stable interface; there was no prior implementation of a GUI tab to strangle. Its size is a finding only
+  through MED-1 (untested logic inside it), which is filed separately.
+- **`0885d32a6` correctly withholds the new jar from the api test-resources plugins directory**, and says
+  why in a comment at the point somebody would add it. `ApiPluginsTest` asserts every installed plugin
+  provides all six extension points; this one provides two.
+- **The `-cli` end-to-end run is real-runtime verification, not a substitute test.** Ticking three entries
+  and observing exactly those three jars absent from a generated pack — with the GUI never opened — is the
+  only way to prove the headless path, which no unit test reaches.
+
+## Correction to this entry — LOW-1 / A-5 is WITHDRAWN (same day, before any fix landed)
+
+**The finding was wrong, and the guard written for it was green on first run.** It claimed
+`ClientsideEntryInjector`'s `trimmed.lowercase()` was locale-sensitive and would break de-duplication
+under a Turkish locale. Measured under `Locale.forLanguageTag("tr")`:
+
+| Call | Result |
+|---|---|
+| Java `"Iceberg-".toLowerCase()` | `ıceberg-` — dotless i, the hazard is real **for Java** |
+| Java `"Iceberg-".toLowerCase(Locale.ROOT)` | `iceberg-` |
+| Kotlin `"Iceberg-".lowercase()` | `iceberg-` — the guard passed under a `tr` default locale |
+
+Kotlin's `lowercase()` is not `String.toLowerCase()`. It was introduced in 1.5 specifically to be
+locale-independent and compiles to `toLowerCase(Locale.ROOT)`; the locale-sensitive spelling is the
+explicit `lowercase(Locale.getDefault())`. The audit reasoned from the Java API's behaviour and attributed
+it to the Kotlin one.
+
+**The guard is kept** — retitled to say what it actually proves — because the property is worth pinning
+against the two ways it could still be lost: a change to `lowercase(Locale.getDefault())`, or the key
+moving into Java interop where the bare method *is* locale-sensitive. What is *not* kept is the claim that
+anything needed fixing.
+
+**Method note, and the reason this is written down rather than quietly deleted.** This is the same failure
+this log already records three times for verification harnesses, one level up: *an audit is itself unpinned
+reasoning, and a finding from it is indistinguishable from a real defect until something executes it.*
+Writing the guard before the fix is what caught it — a green pin for a claimed bug is a finding about the
+claim. Had the order been reversed, `Locale.ROOT` would have been added, the guard would have passed, and a
+non-bug would be recorded here as fixed forever.
+
+**Also downgraded on the same evidence:** MED-4's sibling guard `requestsTheDocumentedEndpoints` passed on
+first run too. The endpoints were already correct — the finding was that *nothing proved it*, which stands,
+but it is a coverage gap and not a defect. Same for the two `/verdicts.json` paging guards.
+
+## Recommendation
+
+MED-1 and MED-2 are defects in shipped code and should be fixed with pins, not recorded. MED-3 and MED-4
+are missing guards over code that is already correct. LOW-1 is a one-word fix with a real failure mode.
+The rest are tidying. Nothing here warrants rewriting history: every commit's *shape* is correct, and the
+findings are about what the commits contain, not how they were split.

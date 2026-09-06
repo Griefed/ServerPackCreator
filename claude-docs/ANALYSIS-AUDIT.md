@@ -151,3 +151,126 @@ after the fact.
 
 Suites from clean (`--rerun-tasks`): api **405** (1 skipped), clientside **369**, grinder **495**
 (29 skipped), app **149**.
+
+# Analysis — 2026-09-06, `claude-grinder-plugin`
+
+Scope: `serverpackcreator-plugin-grinder` (all of it), `VerdictsJsonEndpointTest` + the `/verdicts.json`
+route, and `ExtensionScopingTest` + the `ApiPlugins` fix. Test depth, edge cases, latent bugs, security.
+Companion to the same day's entry in `REFACTOR-AUDIT.md`; findings shared by both are cross-referenced
+rather than restated.
+
+## Coverage map — what has a guard and what does not
+
+| Unit | Guards | Verdict |
+|---|---|---|
+| `GrinderUrl` | 5 | good — normalisation, scheme assumption, rejection, endpoint derivation |
+| `GrinderClient` | 8 | good on failure modes, **blind to the request path** (A-4) |
+| `SelectionStore` | 8 | good — including a damaged config and the shipped `config.toml` itself |
+| `ClientsideEntryInjector` | 7 | good — the hardest-pinned unit, correctly so |
+| `GrinderPreGenExtension` | 5 | good — pins the real `run` signature, incl. idempotence |
+| `VerdictTableModel` | 10 | good |
+| **`GrinderTab.onSelectionChanged`** | **0** | **logic, not rendering — and wrong (A-1)** |
+| **`VerdictListPane.shownEntries`** | **0** | feeds A-1's decision; untested |
+| **`DashboardPane.duration` / `text`** | **0** | pure functions with real boundaries |
+| `GrinderTabExtension` | 0 | metadata + factory; `GrinderPreGenExtension` has `identifiesItself`, this does not |
+| `SettingsPane` | 0 | wiring, acceptable — except dead `isUsable` |
+
+## Potential bugs
+
+- **A-1 (MEDIUM) — `gui/GrinderTab.kt:181`, `onSelectionChanged` mis-files every stale entry.**
+  Full analysis in `REFACTOR-AUDIT.md` MED-1. In short: `partition { it in shownInOther }` sends an entry
+  shown in *neither* pane to `CONFIRMED`, and the module's own deliberate never-prune rule guarantees such
+  entries exist. Every tick migrates the user's at-your-own-risk selections into the proven list. Server
+  packs are unaffected (`allSelected()` is the union); the risk record is destroyed.
+  *Suggested tests:* an entry in neither pane keeps its stored pane; an entry shown in Other is filed under
+  Other; an entry shown in Confirmed is filed under Confirmed; *Select all* on an empty pane changes nothing.
+
+- **A-2 (MEDIUM, security) — grinder text reaches HTML-interpreting Swing components.**
+  Full analysis in `REFACTOR-AUDIT.md` MED-2, with the measured three-row table. `slug` and `detail` come
+  from mod metadata; the daemon is unauthenticated. Swing's HTML subset fetches remote images, so a crafted
+  mod name makes an SPC GUI issue outbound requests. *Suggested tests:* a verdict whose `slug` begins with
+  `<html>` renders as literal text (assert the renderer installs no HTML view, i.e. the `"html"` client
+  property stays null); same for a `/status` rule-error string.
+
+- **A-3 (MEDIUM) — `core/GrinderClient.kt:141`, a wrong-shaped 200 reads as "no verdicts".**
+  `readVerdicts` returns `emptyList()` when the document is neither an array nor an object carrying a
+  `verdicts` array. A proxy or a future daemon answering `{"error":"…"}` with a 200 therefore produces
+  `FetchResult.Ok(emptyList())`, and the tab reports *"0 confirmed, 0 other verdicts"* — indistinguishable
+  from a grinder that has genuinely ground nothing. The existing guard
+  `reportsAnUnparseableBodyRatherThanReturningNothingFound` names exactly this hazard but only covers
+  non-JSON, so the case it is named for is the case it misses. *Suggested test:* a 200 carrying
+  `{"error":"nope"}` yields `Failed`.
+
+- **A-4 (MEDIUM) — `core/GrinderClientTest.kt:44`, the fixture answers every path.**
+  See `REFACTOR-AUDIT.md` MED-4. No guard observes which URL the client requests. *Suggested test:* record
+  `exchange.requestURI.path` in the fixture and assert `/verdicts.json` and `/status`.
+
+- **A-5 — WITHDRAWN, not a bug.** The claim was that `ClientsideEntryInjector`'s `lowercase()` is
+  locale-sensitive. It is not: Kotlin's `lowercase()` exists (since 1.5) *because* `toLowerCase()` is
+  locale-sensitive, and compiles to `toLowerCase(Locale.ROOT)`. Measured under a Turkish default locale —
+  Java `toLowerCase()` → `ıceberg-`, Kotlin `lowercase()` → `iceberg-`. The guard written for it was green
+  on its first run, which is how the finding was caught; it is kept as a regression pin against the
+  property being lost to `lowercase(Locale.getDefault())` or to Java interop. Full note in the same day's
+  `REFACTOR-AUDIT.md` entry.
+
+- **A-6 (LOW) — `gui/GrinderTab.kt:78`, the dashboard `Timer` has no owner.** Polls for the life of the
+  JVM regardless of whether the tab is on screen. See LOW-6.
+
+## Missing edge cases in existing guards
+
+- `SelectionStoreTest.boundsThePollInterval` covers `0` and `9_999` but **not a negative** value, which is
+  the one that would reach `javax.swing.Timer` and throw `IllegalArgumentException` if the clamp were
+  removed from one side only.
+- `VerdictsJsonEndpointTest` asserts `page`/`pages` only for the unpaged case. Nothing exercises
+  `?size=1&page=2` on the JSON route, so the paging metadata is pinned only where it is trivially `1`.
+- `VerdictTableModelTest` does not assert `getColumnClass` for a non-tick column (it pins only the Boolean
+  one), so a change making every column Boolean would pass.
+- `GrinderClientTest` has no guard for a body that is a bare **array** — a shape `readVerdicts` explicitly
+  supports and documents. The branch is unreachable from the tests.
+- `ExtensionScopingTest` does not pin the extension-run multiplication. See MED-3.
+
+## Shallow or redundant
+
+- Nothing redundant found. `GrinderUrlTest.derivesTheEndpointsFromTheBase` is *shallow in isolation* —
+  string equality on a helper — but that is only a weakness because A-4 leaves it unjoined to the client.
+
+## Error handling
+
+Good, and deliberately so: `GrinderClient` converts every failure into `FetchResult.Failed`, restores the
+interrupt flag (a `SwingWorker` cancels by interrupting), and `SelectionStore` tolerates every damaged
+value because it is constructed on the generation path. `GrinderPreGenExtension` no-ops on an absent
+config rather than aborting a server pack. The one gap is A-3, where a failure is reported as a success.
+
+## Security
+
+- **A-2 is the finding.** Everything else checked clean:
+- `VerdictListPane.applyFilter` wraps free text in `Pattern.quote`, so a filter cannot be a regex injection
+  or a `PatternSyntaxException`.
+- No secret is read, written, or logged. `config.toml` holds a URL and two string lists.
+- The plugin issues only GETs, to a URL the user typed, restricted to `http`/`https` by `GrinderUrl`
+  (`file:`, `ftp:` and a schemeless-but-colon-bearing string are all rejected).
+- Fetched entries become exclusion patterns, and a malformed one is already inert —
+  `ModListCompiler.FilterMatcher` compiles up front and logs-and-skips. Nothing here executes grinder text.
+- The Settings pane states in the UI that the report server is unauthenticated, which is the honest
+  mitigation for a design the daemon owns.
+
+## Consistency with existing patterns
+
+Followed correctly: loopback-`HttpServer` guards over mocks (the grinder's own `ReportServerTest` idiom);
+tables' rendering left untested while their model is not (the frontend's stated stance); the shipped
+`config.toml` parsed by SPC's own `TomlParser` in its own guard; `pluginArtifact` consumable configuration
+rather than reaching into another project.
+One inconsistency: `GrinderPreGenExtension` has an `identifiesItself` guard, `GrinderTabExtension` has none.
+
+## Documentation & imports
+
+- `gui/GrinderTab.kt` imports `com.fasterxml.jackson.databind.JsonNode` and never uses it. Sole unused
+  import in the module (checked all 13 files).
+- `gui/SettingsPane.kt:124` `isUsable` is dead code.
+- Doc comments are present on every declaration including private ones, per the project convention; spot
+  checks found none restating its signature.
+
+## Suites at the time of this analysis
+
+api **407** (1 skipped), grinder **501** (29 skipped), plugin-grinder **44**, app **149**,
+clientside **369**, plugin-example **3**. Zero failures.
