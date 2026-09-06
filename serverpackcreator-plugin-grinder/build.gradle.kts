@@ -40,6 +40,9 @@ dependencies {
     // Testing
     testImplementation(libs.kotlinTestJunit5)
     testRuntimeOnly(libs.junitPlatformLauncher)
+    // Only for the three collaborators GrinderPreGenExtension never touches, so its guard can pin
+    // the real `run` signature rather than a private helper the signature might stop calling.
+    testImplementation(libs.mockk)
 }
 
 tasks.processResources {
