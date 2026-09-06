@@ -43,14 +43,38 @@ object BootCandidateSelector {
      * Choose the newest (file, Minecraft-version) pair among [files] for [loader] for which
      * [loaderVersionAvailable] holds, so the boot uses a combination that can actually install.
      * Returns `null` when no such combination exists.
+     *
+     * **A file declaring no loader at all is a fallback, not a match.** CurseForge had no modloader facet
+     * before Minecraft 1.13, so a pre-1.13 file carries an empty loader set — and a project whose files are
+     * *all* untagged was therefore never selected under any loader, i.e. never ground. Measured against the
+     * live API 2026-09-06: all 15 of mtlib's files are untagged and it returned no candidate at all.
+     *
+     * **Why that is safe here, which is a different argument than for a dependency.** Picking an untagged
+     * file for the wrong loader could stage a jar that loader ignores, boot cleanly and publish a false
+     * `CLEAR` — the worst outcome this engine has, since it claims proof about a mod that never loaded. Two
+     * things prevent it: [loaderVersionAvailable] covers the dominant case, because untagged files are
+     * overwhelmingly pre-1.13 where Fabric and Quilt have no builds, so only Forge is reachable and untagged
+     * *means* Forge; and for anything newer, `BootVerifier.refuseForSelfDeclaration` reads the downloaded
+     * jar's own descriptor before the boot and refuses one carrying only another loader's. The cost of being
+     * wrong is a refused attempt, not a wrong verdict.
      */
     fun pickBootableCandidate(
         files: List<ModFile>,
         loader: String,
         loaderVersionAvailable: (minecraftVersion: String) -> Boolean
     ): Pair<ModFile, String>? =
-        files.filter { loader in it.loaders }
-            .flatMap { file -> file.minecraftVersions.map { file to it } }
+        newestOf(files.filter { loader in it.loaders }, loaderVersionAvailable)
+        // An untagged file states no loader rather than stating another one — see [pickUntagged]. Last
+        // resort, so a file whose author did tag it always wins and this only adds a candidate where there
+        // was none: an all-untagged project (every one of mtlib's 15 files) was never ground at all.
+            ?: newestOf(files.filter { it.loaders.isEmpty() }, loaderVersionAvailable)
+
+    /** The newest bootable (file, Minecraft version) pair among [files], or `null`. */
+    private fun newestOf(
+        files: List<ModFile>,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): Pair<ModFile, String>? =
+        files.flatMap { file -> file.minecraftVersions.map { file to it } }
             .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
             .firstOrNull { loaderVersionAvailable(it.second) }
 
