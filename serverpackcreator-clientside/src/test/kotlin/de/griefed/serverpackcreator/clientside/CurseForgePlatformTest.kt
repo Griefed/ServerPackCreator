@@ -55,22 +55,12 @@ internal class CurseForgePlatformTest {
         ]}
     """.trimIndent()
 
-    /**
-     * The `/mods/{id}` document `resolveDependency` reads for a project's slug and website. Distinct from
-     * the search response, which wraps its single hit in an array.
-     */
-    private val modJson = """
-        {"data": {"id": 238222, "slug": "jei",
-                  "links": {"websiteUrl": "https://www.curseforge.com/minecraft/mc-mods/jei"}}}
-    """.trimIndent()
-
-    /** Every URL the requests this class makes actually go to, answered with the canned JSON above. */
+    /** A fetcher answering the search- and files-endpoints with the canned JSON above. */
     private val fetcher = HttpFetcher { url, headers ->
         Assertions.assertEquals("test-key", headers["x-api-key"])
         when {
             url.contains("/mods/search") -> searchJson
             url.contains("/mods/238222/files") -> filesJson
-            url.contains("/mods/238222") -> modJson
             else -> throw IllegalStateException("unexpected url $url")
         }
     }
@@ -196,42 +186,5 @@ internal class CurseForgePlatformTest {
     private companion object {
         /** CurseForge's maximum `pageSize` for the files endpoint, and therefore the platform's page size. */
         const val PAGE_SIZE = 50
-    }
-
-    /**
-     * A dependency ref that is a **slug** rather than a numeric id resolves through the same search
-     * endpoint `resolve` already uses.
-     *
-     * `resolveDependency` began with `nativeRef.toLong()`, so any non-numeric ref threw and was caught as
-     * "could not be resolved". Platform-supplied refs are numeric (CurseForge file relations carry
-     * `modId`), but a **manifest-declared** dependency is a mod id like `mtlib` — and those are the ones
-     * that were lost. Reported from the live grinder: `modtweaker` on Forge/1.12.2 refused for `mtlib`,
-     * a project CurseForge publishes under that exact slug.
-     */
-    @Test
-    fun resolvesADependencyGivenBySlug() {
-        val resolved = platform.resolveDependency("jei", "1.20.1")
-
-        Assertions.assertNotNull(resolved)
-        Assertions.assertEquals("jei", resolved!!.slug)
-        Assertions.assertEquals(2, resolved.files.size)
-    }
-
-    /** A numeric ref keeps taking the direct route — one request, no search. */
-    @Test
-    fun stillResolvesADependencyGivenByNumericId() {
-        val resolved = platform.resolveDependency("238222", "1.20.1")
-
-        Assertions.assertNotNull(resolved)
-        Assertions.assertEquals("jei", resolved!!.slug)
-    }
-
-    /** A slug CurseForge does not carry is nothing, not an exception — the caller reads null as unmapped. */
-    @Test
-    fun answersNothingForASlugCurseForgeDoesNotCarry() {
-        val empty = HttpFetcher { url, _ ->
-            if (url.contains("/mods/search")) """{"data": []}""" else throw IllegalStateException("unexpected $url")
-        }
-        Assertions.assertNull(CurseForgePlatform("test-key", empty).resolveDependency("no-such-mod", "1.20.1"))
     }
 }

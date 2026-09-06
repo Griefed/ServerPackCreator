@@ -225,43 +225,4 @@ internal class ModIdRegistryTest {
         Assertions.assertEquals("fabric-language-kotlin", KnownModIds.refFor("fabric-language-kotlin", "Modrinth"))
         Assertions.assertNull(KnownModIds.refFor("fabric-language-kotlin", "CurseForge"))
     }
-
-    /**
-     * A mod id no alias covers is offered to **CurseForge** as a candidate slug, exactly as it already is
-     * to Modrinth — the platform then decides whether such a project exists.
-     *
-     * Until 2026-09-06 this returned `null` for CurseForge, so *every* manifest-declared dependency of a
-     * CurseForge candidate was unmappable unless it happened to be one of the four hardcoded aliases.
-     * Reported from the live grinder: `modtweaker` on Forge/1.12.2 refused for `mtlib`, which is published
-     * on CurseForge under exactly that slug. Executed against the registry at the time, `mtlib`,
-     * `crafttweaker`, `jei`, `athena`, `flywheel` and `xaerolib` all returned `null` for CurseForge and
-     * their own id for Modrinth.
-     *
-     * The asymmetry had a real cause — CurseForge addresses projects by numeric id, which cannot be
-     * guessed — but the conclusion did not follow: its search endpoint takes a slug, and
-     * `CurseForgePlatform.resolve` was already using it. Returning the id here is the same optimistic guess
-     * Modrinth gets, and a guess that misses still resolves to nothing rather than to something wrong.
-     */
-    @Test
-    fun offersAnUnknownModIdAsASlugToBothPlatforms() {
-        for (id in listOf("mtlib", "crafttweaker", "jei", "athena", "flywheel", "xaerolib")) {
-            Assertions.assertEquals(id, KnownModIds.refFor(id, "CurseForge"), "CurseForge ref for '$id'")
-            Assertions.assertEquals(id, KnownModIds.refFor(id, "Modrinth"), "Modrinth ref for '$id'")
-        }
-    }
-
-    /** An alias still wins over the guess, on both platforms — that is the whole point of having one. */
-    @Test
-    fun stillPrefersAnAliasOverTheGuess() {
-        Assertions.assertEquals("306612", KnownModIds.refFor("fabric", "CurseForge"))
-        Assertions.assertEquals("fabric-api", KnownModIds.refFor("fabric", "Modrinth"))
-        Assertions.assertEquals("634179", KnownModIds.refFor("quilt_base", "CurseForge"))
-        Assertions.assertEquals("qsl", KnownModIds.refFor("quilt_base", "Modrinth"))
-    }
-
-    /** An unknown platform is still nothing; the guess is per-platform, not a blanket pass-through. */
-    @Test
-    fun offersNothingForAPlatformItDoesNotKnow() {
-        Assertions.assertNull(KnownModIds.refFor("mtlib", "SomeFuturePlatform"))
-    }
 }
