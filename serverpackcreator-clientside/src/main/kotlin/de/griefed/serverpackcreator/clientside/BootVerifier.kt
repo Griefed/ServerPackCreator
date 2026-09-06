@@ -351,7 +351,8 @@ class BootVerifier(
         depth: Int,
         unsatisfied: MutableSet<String>,
         unmapped: MutableSet<String>,
-        injected: MutableList<InjectedDependency>
+        injected: MutableList<InjectedDependency>,
+        excluded: Set<String>
     ): Boolean {
         val staged = httpDownloader.download(file, modsDir)
             ?: return false
@@ -364,7 +365,7 @@ class BootVerifier(
             // dedupes by ref and cannot see that those are one project. The duplicate is cosmetic in the
             // report but not against the cap: it refuses a pack that is within it, and a refusal is scored
             // INCONCLUSIVE, so the mod quietly stops being verified.
-            injected.add(InjectedDependency(file.fileName, null, file.pageUrl))
+            injected.add(InjectedDependency(file.fileName, null, file.pageUrl, file.version))
         }
         if (depth >= maxDependencyDepth) {
             return true
@@ -380,7 +381,9 @@ class BootVerifier(
                 unsatisfied.add(unsatisfiedLabel(dependencyRef, null, platform.name))
                 continue
             }
-            val dependencyFile = BootCandidateSelector.pickDependencyFile(dependencyProject.files, loader, minecraftVersion)
+            val dependencyFile = BootCandidateSelector.pickDependencyFile(
+                dependencyProject.withoutExcluded(excluded).files, loader, minecraftVersion
+            )
             if (dependencyFile == null) {
                 log.warn(
                     "Required dependency '${dependencyProject.slug}' ($dependencyRef) publishes no $loader " +
@@ -390,7 +393,8 @@ class BootVerifier(
                 continue
             }
             if (!downloadWithDependencies(
-                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
+                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
+                    injected, excluded
                 )
             ) {
                 log.warn(
@@ -402,7 +406,9 @@ class BootVerifier(
                 )
             }
         }
-        stageManifestDependencies(staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected)
+        stageManifestDependencies(
+            staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected, excluded
+        )
         return true
     }
 
@@ -428,7 +434,8 @@ class BootVerifier(
         depth: Int,
         unsatisfied: MutableSet<String>,
         unmapped: MutableSet<String>,
-        injected: MutableList<InjectedDependency>
+        injected: MutableList<InjectedDependency>,
+        excluded: Set<String>
     ) {
         if (depth >= maxDependencyDepth) {
             return
@@ -449,7 +456,7 @@ class BootVerifier(
             val plan = planManifestDependency(
                 requirement, loader, minecraftVersion,
                 mappingFor = { KnownModIds.mappingFor(it, platform.name) },
-                resolveRef = { platform.resolveDependency(it, minecraftVersion) }
+                resolveRef = { platform.resolveDependency(it, minecraftVersion)?.withoutExcluded(excluded) }
             )
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {
@@ -468,7 +475,8 @@ class BootVerifier(
                 is ManifestDependencyPlan.Stage -> plan.file
             }
             if (!downloadWithDependencies(
-                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
+                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
+                    injected, excluded
                 )
             ) {
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
@@ -629,7 +637,8 @@ class BootVerifier(
         mainFile: ModFile,
         minecraftVersion: String,
         loaderVersionOverride: String?,
-        attemptDirName: String = AttemptDirectory.nameFor(project.platform, project.slug, loader)
+        attemptDirName: String = AttemptDirectory.nameFor(project.platform, project.slug, loader),
+        excludedDependencies: Set<String> = emptySet()
     ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
@@ -642,7 +651,8 @@ class BootVerifier(
         val unmapped = mutableSetOf<String>()
         val injected = mutableListOf<InjectedDependency>()
         if (!downloadWithDependencies(
-                mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected
+                mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected,
+                excludedDependencies
             )
         ) {
             return Prepared.Failed(downloadFailureDetail(mainFile))
@@ -654,6 +664,15 @@ class BootVerifier(
         refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
         refuseForTooManyDependencies(injected.map { it.fileName }, loader, minecraftVersion)?.let { return it }
         unmappedDependencyNote(unmapped)?.let { log.warn(it) }
+        // Judge the staged jars against each other before spending a container on them: a set whose own
+        // descriptors contradict each other is refused by the loader, and the CANDIDATE wears the verdict.
+        dependencyToDemote(modsDir, mainFile, injected, loader, minecraftVersion, excludedDependencies)
+            ?.let { demoted ->
+                return stageBootPack(
+                    project, loader, mainFile, minecraftVersion, loaderVersionOverride, attemptDirName,
+                    excludedDependencies + demoted
+                )
+            }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
             ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")
@@ -664,6 +683,82 @@ class BootVerifier(
             candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName))
         )
     }
+
+    /**
+     * Which staged **dependency** file to drop to an older build because the pack's own descriptors
+     * contradict each other, or `null` when the set is coherent, nothing may be dropped, or the backtrack
+     * budget is spent.
+     *
+     * Reads the staged jars with the same `ModScanner.scannerFor` staging already uses — on a Quilt pack
+     * that is `QuiltPackScanner`, which merges the Fabric descriptor most Quilt mods actually ship — and
+     * hands [DependencyBacktrack] the two halves it needs: what each jar *declares it needs*, and what
+     * version of each mod id is *really staged*. A jar whose descriptor could not be read contributes
+     * nothing: `ScannedMod` falls back to the file name and an empty dependency list, which is
+     * indistinguishable by value from a mod that declared nothing.
+     *
+     * **Optional dependencies are excluded.** The loader loads the mod without them, so one being older
+     * than a `recommends` asked for cannot be why a pack is refused — demoting over it would spend the
+     * budget and change nothing.
+     *
+     * Everything here fails toward *proceeding*: no scanner, an unreadable jar, a version the platform
+     * never reported, an unparseable range. A pack that cannot be judged is booted, exactly as before.
+     */
+    private fun dependencyToDemote(
+        modsDir: File,
+        mainFile: ModFile,
+        injected: List<InjectedDependency>,
+        loader: String,
+        minecraftVersion: String,
+        alreadyExcluded: Set<String>
+    ): String? {
+        if (alreadyExcluded.size >= DependencyBacktrack.MAX_BACKTRACKS) {
+            log.warn(
+                "Giving up on making the dependency set coherent after ${alreadyExcluded.size} attempts; " +
+                    "booting ${mainFile.fileName} on $loader / Minecraft $minecraftVersion anyway."
+            )
+            return null
+        }
+        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return null
+        val stagedJars = modsDir.listFiles()?.toList() ?: return null
+        val scanned = runCatching { scanner.scan(stagedJars) }
+            .onFailure { log.debug("Could not scan the staged pack for dependency conflicts: ${it.message}") }
+            .getOrDefault(emptyList())
+            .filter { it.descriptorRead }
+        val publishedVersionOf = (injected.map { it.fileName to it.version } + (mainFile.fileName to mainFile.version))
+            .toMap()
+
+        val stagedVersions = scanned.flatMap { mod ->
+            val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
+            // A dependency names an id, and one jar answers to several: its own, plus everything it
+            // `provides` -- Fabric API declares `id: fabric-api` and `provides: [fabric]`.
+            (listOf(mod.modID) + mod.provides).map { it to version }
+        }.toMap()
+        val requirements = scanned.flatMap { mod ->
+            mod.dependencies
+                .filterNot { it.optional }
+                .mapNotNull { requirement ->
+                    requirement.versionConstraint?.let { constraint ->
+                        DependencyBacktrack.Requirement(
+                            mod.file.name, mod.file.name == mainFile.fileName, requirement.modID, constraint
+                        )
+                    }
+                }
+        }
+
+        val conflicts = DependencyBacktrack.conflicts(requirements, stagedVersions)
+        val demoted = DependencyBacktrack.fileToDemote(conflicts) ?: return null
+        val reason = conflicts.first { it.requiringFileName == demoted }
+        log.info(
+            "$demoted requires ${reason.requiredModId} '${reason.versionConstraint}' but the pack holds " +
+                "${reason.stagedVersion}, and Minecraft $minecraftVersion publishes nothing newer — " +
+                "re-staging ${mainFile.fileName} without it."
+        )
+        return demoted
+    }
+
+    /** [ProjectFiles] with every file staging has already ruled out removed, so a re-stage picks the next down. */
+    private fun ProjectFiles.withoutExcluded(excluded: Set<String>): ProjectFiles =
+        if (excluded.isEmpty()) this else copy(files = files.filterNot { it.fileName in excluded })
 
     /** Result of [prepareBootPack]: a ready-to-run pack, or the reason staging could not finish. */
     sealed interface Prepared {

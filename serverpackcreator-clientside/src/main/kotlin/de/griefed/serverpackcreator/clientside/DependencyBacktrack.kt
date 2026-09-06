@@ -92,8 +92,23 @@ object DependencyBacktrack {
      * `VersionConstraint` accepts anything it cannot read, so an unparseable range never produces a conflict
      * — the same fail-toward-proceed rule the rest of this module runs on.
      */
-    fun conflicts(requirements: List<Requirement>, stagedVersions: Map<String, String>): List<Conflict> =
-        TODO("the staged set is not checked against its own declared requirements yet")
+    fun conflicts(requirements: List<Requirement>, stagedVersions: Map<String, String>): List<Conflict> {
+        val staged = stagedVersions.mapKeys { (modId, _) -> modId.lowercase() }
+        return requirements.mapNotNull { requirement ->
+            val stagedVersion = staged[requirement.requiredModId.lowercase()] ?: return@mapNotNull null
+            if (VersionConstraint.satisfies(stagedVersion, requirement.versionConstraint)) {
+                null
+            } else {
+                Conflict(
+                    requirement.requiringFileName,
+                    requirement.requiringIsCandidate,
+                    requirement.requiredModId,
+                    requirement.versionConstraint,
+                    stagedVersion
+                )
+            }
+        }
+    }
 
     /**
      * Which staged file to drop to an older build, or `null` when nothing may be dropped.
@@ -102,5 +117,5 @@ object DependencyBacktrack {
      * `null`, because demoting the candidate would verify a different mod than the one that was asked about.
      */
     fun fileToDemote(conflicts: List<Conflict>): String? =
-        TODO("nothing is demoted yet")
+        conflicts.firstOrNull { !it.requiringIsCandidate }?.requiringFileName
 }
