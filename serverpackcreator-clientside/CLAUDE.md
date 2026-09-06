@@ -528,6 +528,30 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     tolerates, which would be a second copy of that grammar drifting from the first.
   - Still exactly one retry, through `stageBootPack`, so a second contradiction surfaces rather than loops.
 
+- **LANDMINE — a CurseForge file with NO loader tag is *unknown*, not incompatible (2026-09-06).**
+  CurseForge had no modloader facet before Minecraft 1.13 — everything was Forge, so nothing was tagged —
+  and `pickForLoader` asks `loader in it.loaders`, which no empty set satisfies. Such a dependency was
+  therefore unpickable and the boot was refused.
+  **Measured against the live API with Griefed's key:** `modtweaker` declares dependency `253211`, which
+  resolves to **mtlib** and returns 7 obtainable 1.12.2 files, *all* carrying `loaders=[]`. That is what
+  *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* was. Not rare: mtlib 15/15 files
+  untagged, `iron-chests` 106/138, `waystones` 70/494, `crafttweaker` 28/500 — essentially all pre-1.13 —
+  plus modern stragglers (`journeymap`, 5 files at 26.1.2). `jei` and `athena` have none.
+  `pickUntagged` is the **last** arm of `pickFrom`, so a file whose author stated a loader always wins and
+  this can only add a pick where there was none. The Minecraft version stays exact, and a file tagged for a
+  *different* loader is still refused — a tag is a statement, an empty set is the absence of one.
+  - **The first diagnosis of this report was wrong, and only the live API showed it.** The refusal names a
+    *slug* (`unsatisfiedLabel` resolves the ref), which reads like a manifest mod id — but
+    `modtweaker-4.0.20.11` declares `253211`, a **numeric** ref, so it came from the platform path and never
+    touched the manifest-id mapping. A cause that survives a code read can still be the wrong one.
+  - **OPEN, and it is a decision rather than an oversight:** `pickBootableCandidate` has the same
+    `loader in it.loaders` test, so a project whose files are *all* untagged is never selected as a
+    candidate at all. Measured: `mtlib` as a candidate for Forge returns **nothing** (never ground), while
+    `iron-chests` and `waystones` are fine because their newer files are tagged. Widening it there decides
+    *which mods get ground*, not merely which dependency is staged — the bounded risk being wasted boots
+    rather than wrong verdicts, since a mod loaded under a loader it does not support fails to load and
+    reads INCONCLUSIVE, never CONFIRMED. Left for Griefed.
+
 - **THE REFUSAL SPLIT KEYS ON MAPPING CONFIDENCE, NOT ON HOW FAR A LOOKUP GOT (2026-09-06).** This
   supersedes the "mapped-then-unstageable refuses, unmappable does not" rule described further down, and it
   is the safety property that rule was reaching for — now stated directly instead of emerging from distance.
