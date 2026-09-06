@@ -360,6 +360,39 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
   largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
   (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **A pack whose own jars contradict each other backtracks instead of booting** (`DependencyBacktrack`,
+  2026-09-06). Staging resolved every dependency *alone* — the newest file that project publishes for the
+  pack's Minecraft — and never asked whether the resulting **set** was coherent. Where it is not, the loader
+  refuses the pack, ~70 s of container is spent, and the *candidate* wears the INCONCLUSIVE: the
+  "never got a fair run" shape, one layer earlier than every guard that already covers it.
+  **The live case, `Modrinth/zoomify` on Quilt / Minecraft 1.20.5:**
+  `yet_another_config_lib_v3-3.6.6+1.20.6-fabric.jar` is tagged for 1.20.5 *and* declares
+  `"minecraft": "~1.20.5"` — so neither selection nor the descriptor gate objects — while demanding
+  `"fabric-api": ">=0.100.0+1.20.6"`. Verified against the live API: Modrinth publishes exactly **four**
+  fabric-api files for 1.20.5, `0.97.5` through `0.97.8`. **Staging *more* cannot fix that pack**; only an
+  older YACL can, and `3.4.2+1.20.5` requires nothing but `fabric-resource-loader-v0`.
+  - **What it never does, and each omission is load-bearing.** It never demotes the *candidate* (the subject
+    of the experiment; swapping it answers a question about a different mod). It never **refuses** — no
+    scanner, an unreadable jar, a version the platform never reported, a range `VersionConstraint` cannot
+    parse, an exhausted budget: every one of them proceeds to the boot exactly as before, because a gate
+    refusing on doubt is the mass-INCONCLUSIVE shape this module has already paid for twice. It ignores
+    **optional** dependencies (the loader loads the mod without them, so one being old cannot be why a pack
+    is refused) and requirements naming something **not staged at all** (that is
+    `refuseForMissingDependencies`' case, and demoting over a gap dropping a jar cannot close burns the
+    budget for nothing).
+  - **LANDMINE — a backtrack re-stages from scratch, so it re-downloads everything.** `zoomify` needs
+    **seven** (YACL ships 3.6.6 down to 3.6.0 tagged for 1.20.5, every one a `+1.20.6` build with the same
+    demand), and `MAX_BACKTRACKS` is 10 for that reason. Still cheaper than the wasted boot it replaces;
+    skipping files already on disk is an optimisation to make **only if the rate warrants it** — 2 of 250
+    live verdicts reached `DEPENDENCY_FAILURE` when this was written. Measure before changing it.
+  - The judge reads the staged jars through the same `ModScanner.scannerFor` staging already uses, which on
+    a Quilt pack is `QuiltPackScanner` — the one that merges the Fabric descriptor most Quilt mods actually
+    ship, so a Fabric-only dependency is not invisible to it. Jars whose descriptor could not be read are
+    dropped on `descriptorRead`: `ScannedMod`'s fallback is indistinguishable by value from a mod that
+    declared nothing.
+  - `InjectedDependency.version` exists for this: a descriptor names a **mod id and a range**, never a file,
+    so the judge needs what the platform published each staged file as. Carrying it there avoided threading
+    a second accumulator through every level of the staging recursion.
 - **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
   `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
