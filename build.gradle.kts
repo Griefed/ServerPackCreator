@@ -94,7 +94,7 @@ tasks.register<Delete>("cleanAppPlugins") {
     delete(fileTree(appPlugins) { include("**/*.jar") })
 }
 
-tasks.register<Copy>("copyExamplePluginsToApp") {
+tasks.register<Copy>("copyPluginsToApp") {
     description = "Refreshes the example and grinder plugins in the app's manual-test plugins directory."
     dependsOn("cleanAppPlugins")
     from(examplePlugin)

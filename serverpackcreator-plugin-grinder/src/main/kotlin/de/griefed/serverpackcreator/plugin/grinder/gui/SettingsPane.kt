@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.plugin.grinder.gui
 
-import de.griefed.serverpackcreator.plugin.grinder.core.GrinderUrl
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.FlowLayout
@@ -52,7 +51,9 @@ class SettingsPane(
 
     private val urlField = JTextField(initialUrl, 40)
     private val intervalSpinner = JSpinner(SpinnerNumberModel(initialInterval, 1, 3_600, 1))
-    private val feedback = JLabel(" ")
+    // Carries GrinderClient's reason strings, which interpolate the typed URL and an exception's
+    // message — so it goes through the plain-text label like everything else that shows outside text.
+    private val feedback = PlainTextRendering.label(" ")
 
     init {
         border = BorderFactory.createEmptyBorder(12, 12, 12, 12)
@@ -116,11 +117,8 @@ class SettingsPane(
         add(JLabel("<html><body style='width:520px'>$text</body></html>"))
     }
 
-    companion object {
+    private companion object {
         /** A red legible on both the light and dark look-and-feels ServerPackCreator ships. */
-        private val ERROR_COLOUR = Color(0xC0, 0x39, 0x2B)
-
-        /** Whether [url] is something the plugin could request, for callers wanting to check before saving. */
-        fun isUsable(url: String) = GrinderUrl.normalise(url) != null
+        val ERROR_COLOUR = Color(0xC0, 0x39, 0x2B)
     }
 }

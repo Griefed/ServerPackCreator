@@ -41,13 +41,18 @@ import javax.swing.SwingConstants
  * status document contains.
  *
  * Every field is read defensively. This pane is pointed at a daemon the user upgrades independently, so
- * a missing or reshaped field renders as an em dash rather than emptying the tab.
+ * a missing or reshaped field renders as an em dash rather than emptying the tab — the rule itself lives
+ * in [StatusFormatting], which is pinned separately.
+ *
+ * **Every label carrying daemon-supplied text is built by [PlainTextRendering]**, because a plain `JLabel`
+ * would parse a value beginning with `<html>` as markup and fetch the images in it. Only labels holding a
+ * literal written here use `JLabel` directly.
  *
  * @author Griefed
  */
 class DashboardPane : JPanel(BorderLayout(0, 8)) {
 
-    private val statusLine = JLabel("Not connected.")
+    private val statusLine = PlainTextRendering.label("Not connected.")
     private val cards = JPanel(GridLayout(0, 4, 8, 8))
     private val workers = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
     private val crawl = JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) }
@@ -93,7 +98,7 @@ class DashboardPane : JPanel(BorderLayout(0, 8)) {
             // the same order the daemon's own dashboard table uses, so the two read alike.
             workerRows.forEach { worker ->
                 workers.add(
-                    JLabel(
+                    PlainTextRendering.label(
                         "${text(worker.path("worker"))} — ${text(worker.path("platform"))}/" +
                                 "${text(worker.path("slug"))}, busy ${duration(worker.path("busySeconds"))}"
                     )
@@ -108,7 +113,7 @@ class DashboardPane : JPanel(BorderLayout(0, 8)) {
         if (crawlNode.isObject && !crawlNode.isEmpty) {
             crawlNode.properties().forEach { (platform, cursor) ->
                 crawl.add(
-                    JLabel(
+                    PlainTextRendering.label(
                         "$platform — offset ${text(cursor.path("offset"))}, " +
                                 "sweeps ${text(cursor.path("sweeps"))}, partition ${text(cursor.path("partition"))}"
                     )
@@ -121,7 +126,7 @@ class DashboardPane : JPanel(BorderLayout(0, 8)) {
         rulesAndCache.removeAll()
         val rules = status.path("bootRules")
         rulesAndCache.add(
-            JLabel(
+            PlainTextRendering.label(
                 "Boot rules: ${text(rules.path("ruleCount"))} from ${text(rules.path("source"))}, " +
                         "undecided → ${text(rules.path("undecidedVerdict"))}"
             )
@@ -131,12 +136,14 @@ class DashboardPane : JPanel(BorderLayout(0, 8)) {
         val errors = rules.path("errors")
         if (errors.isArray && !errors.isEmpty) {
             errors.forEach { error ->
-                rulesAndCache.add(JLabel(error.asText()).apply { foreground = ERROR_COLOUR })
+                rulesAndCache.add(PlainTextRendering.label(error.asText()).apply { foreground = ERROR_COLOUR })
             }
         }
         val cache = status.path("loaderCache")
         rulesAndCache.add(
-            JLabel("Loader cache: ${text(cache.path("installedTuples"))} tuples at ${text(cache.path("path"))}")
+            PlainTextRendering.label(
+                "Loader cache: ${text(cache.path("installedTuples"))} tuples at ${text(cache.path("path"))}"
+            )
         )
 
         revalidate()
@@ -162,35 +169,19 @@ class DashboardPane : JPanel(BorderLayout(0, 8)) {
         )
         add(JLabel(label, SwingConstants.CENTER), BorderLayout.NORTH)
         add(
-            JLabel(value, SwingConstants.CENTER).apply { font = font.deriveFont(Font.BOLD, font.size + 4f) },
+            PlainTextRendering.label(value).apply {
+                horizontalAlignment = SwingConstants.CENTER
+                font = font.deriveFont(Font.BOLD, font.size + 4f)
+            },
             BorderLayout.CENTER
         )
     }
 
-    /** A value fit to display: an em dash for anything absent, so a gap reads as a gap. */
-    private fun text(node: JsonNode): String =
-        if (node.isMissingNode || node.isNull) "—" else node.asText().ifBlank { "—" }
+    /** A value fit to display; the rule lives in [StatusFormatting], which is pinned separately. */
+    private fun text(node: JsonNode): String = StatusFormatting.text(node)
 
-    /**
-     * A span of seconds as something a human reads — "4h 12m" rather than "15134". Same rendering the
-     * daemon's dashboard does in JavaScript, for the same reason.
-     */
-    private fun duration(node: JsonNode): String {
-        if (!node.isNumber) {
-            return "—"
-        }
-        val total = node.asLong()
-        val days = total / 86_400
-        val hours = (total % 86_400) / 3_600
-        val minutes = (total % 3_600) / 60
-        val seconds = total % 60
-        return when {
-            days > 0 -> "${days}d ${hours}h ${minutes}m"
-            hours > 0 -> "${hours}h ${minutes}m"
-            minutes > 0 -> "${minutes}m ${seconds}s"
-            else -> "${seconds}s"
-        }
-    }
+    /** A span of seconds as a human reads it; the rule lives in [StatusFormatting]. */
+    private fun duration(node: JsonNode): String = StatusFormatting.duration(node)
 
     private companion object {
         /** A red that stays legible on both the light and the dark look-and-feels ServerPackCreator ships. */

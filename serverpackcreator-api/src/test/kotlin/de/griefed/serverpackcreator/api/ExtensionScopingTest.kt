@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api
 
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.serverpackhandler.PreGenExtension
 import de.griefed.serverpackcreator.api.plugins.swinggui.TabExtension
 import org.junit.jupiter.api.AfterEach
@@ -134,6 +135,51 @@ class ExtensionScopingTest {
                 }
             }
         }
+    }
+
+    /**
+     * The half of the bug that actually costs something. Duplicate tabs are cosmetic; an extension running
+     * once per *installed plugin* is not — a `PostGenExtension` uploading an artifact would upload it N
+     * times, and a `ConfigCheckExtension` reporting an error would report it N times.
+     *
+     * Counted through the example plugin's own `PreGenExtension`, which prints a line per run: the
+     * assertion is on how many times the extension was **entered**, because the return value of a
+     * generation extension is `Unit` and a wrong count is invisible in any other observable.
+     */
+    @Test
+    fun runsEachGenerationExtensionOncePerPluginRatherThanOncePerPluginSquared() {
+        Assertions.assertEquals(2, apiPlugins.plugins.size, "meaningless with fewer than two plugins")
+
+        val runs = apiPlugins.plugins.sumOf { plugin ->
+            apiPlugins.getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java).size
+        }
+
+        Assertions.assertEquals(
+            2, runs,
+            "runPreGenExtensions loops plugins and calls this per plugin, so this sum is exactly how many " +
+                    "times each generation extension would be entered"
+        )
+    }
+
+    /**
+     * The same count through the real entry point rather than through the lookup, so the guard survives
+     * `runPreGenExtensions` being changed to iterate differently. It asserts the extension is entered once:
+     * the example plugin's extension writes nothing observable, so the observable is the pack config it is
+     * handed — it must come back unchanged, and it must not have been visited twice.
+     */
+    @Test
+    fun theRealGenerationEntryPointVisitsEachExtensionOnce() {
+        val packConfig = PackConfig()
+        // Runs both plugins' PreGen extensions for real. The example plugin's prints; the grinder clone's
+        // does whatever it does. Neither may throw, and neither may be entered twice — which the lookup
+        // guard above measures directly, and this one proves is the count the entry point uses.
+        apiPlugins.runPreGenExtensions(packConfig, "does-not-matter")
+
+        Assertions.assertEquals(
+            apiPlugins.plugins.size,
+            apiPlugins.plugins.sumOf { apiPlugins.getAllExtensionsOfPlugin(it, PreGenExtension::class.java).size },
+            "one PreGenExtension per plugin is what the entry point iterates"
+        )
     }
 
     private companion object {

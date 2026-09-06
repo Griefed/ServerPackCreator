@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.plugin.grinder.gui
 
 import com.electronwill.nightconfig.core.CommentedConfig
-import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.plugins.swinggui.ExtensionTab
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
@@ -28,6 +27,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.plugin.grinder.core.FetchResult
 import de.griefed.serverpackcreator.plugin.grinder.core.GrinderClient
 import de.griefed.serverpackcreator.plugin.grinder.core.GrinderVerdict
+import de.griefed.serverpackcreator.plugin.grinder.core.SelectionAttribution
 import de.griefed.serverpackcreator.plugin.grinder.core.SelectionPane
 import de.griefed.serverpackcreator.plugin.grinder.core.SelectionStore
 import java.awt.BorderLayout
@@ -88,6 +88,25 @@ class GrinderTab(
             dashboardTimer.start()
         } else {
             status.text = "No grinder configured — set one in the Settings tab."
+        }
+    }
+
+    /**
+     * Stop polling when the tab leaves the window. Nothing else would: a Swing [Timer] holds a reference
+     * to its listener and keeps firing for the life of the JVM, so an unattended ServerPackCreator would
+     * ask its grinder for `/status` every few seconds forever. Not the `GlobalScope` anti-pattern this
+     * project removed from `-app`, but the same shape — a repeating task with no owner.
+     */
+    override fun removeNotify() {
+        dashboardTimer.stop()
+        super.removeNotify()
+    }
+
+    /** Resume polling if the tab is added back, so the Dashboard is live whenever it can be seen. */
+    override fun addNotify() {
+        super.addNotify()
+        if (settings.resolvedUrl != null && !dashboardTimer.isRunning) {
+            dashboardTimer.start()
         }
     }
 
@@ -187,16 +206,20 @@ class GrinderTab(
     /**
      * Persist a user's tick.
      *
-     * The panes share one selection set, so which pane an entry belongs to is decided by which pane
-     * currently shows it — and an entry belonging to neither (saved earlier, no longer reported) is kept
-     * under [SelectionPane.CONFIRMED] rather than dropped, since silently un-excluding a mod the user
-     * chose to exclude is the one outcome they would not notice until their server pack was wrong.
+     * The panes share one selection set, so which key an entry is written under has to be worked out
+     * rather than known. [SelectionAttribution] owns that rule and is pinned separately — it is pure, and
+     * it was wrong for as long as it lived here untested.
      */
     private fun onSelectionChanged(selected: Set<String>) {
-        val shownInOther = otherPane.shownEntries()
-        val (other, confirmed) = selected.partition { it in shownInOther }
-        settings.setSelected(SelectionPane.CONFIRMED, confirmed)
-        settings.setSelected(SelectionPane.OTHER, other)
+        val attributed = SelectionAttribution.split(
+            selected = selected,
+            shownInConfirmed = confirmedPane.shownEntries(),
+            shownInOther = otherPane.shownEntries(),
+            storedConfirmed = settings.selected(SelectionPane.CONFIRMED),
+            storedOther = settings.selected(SelectionPane.OTHER)
+        )
+        settings.setSelected(SelectionPane.CONFIRMED, attributed.confirmed)
+        settings.setSelected(SelectionPane.OTHER, attributed.other)
         saveConfiguration()
 
         // Both panes render one set, so a tick in either has to be mirrored into the other's model.

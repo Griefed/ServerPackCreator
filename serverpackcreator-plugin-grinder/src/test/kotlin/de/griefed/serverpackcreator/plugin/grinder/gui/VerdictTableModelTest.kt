@@ -109,7 +109,9 @@ internal class VerdictTableModelTest {
     @Test
     fun declaresTheTickColumnAsBooleanAndTheRestAsText() {
         val model = VerdictTableModel()
-        Assertions.assertEquals(java.lang.Boolean::class.java, model.getColumnClass(VerdictTableModel.TICK_COLUMN))
+        // javaObjectType is the BOXED java.lang.Boolean; Boolean::class.java would be primitive
+        // boolean.class, which JTable has no renderer for.
+        Assertions.assertEquals(Boolean::class.javaObjectType, model.getColumnClass(VerdictTableModel.TICK_COLUMN))
         for (column in 0 until model.columnCount) {
             if (column != VerdictTableModel.TICK_COLUMN) {
                 Assertions.assertEquals(

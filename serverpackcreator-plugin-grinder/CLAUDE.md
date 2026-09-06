@@ -95,13 +95,13 @@ Modelled on `serverpackcreator-plugin-example`: kotlin + dokka conventions, `kap
 extension index, the `pluginArtifact` consumable configuration, `plugin.toml` expansion through
 `processResources`, and the `Plugin-*` jar manifest attributes. No i18n4k (the example uses it only for
 demo strings). The root build copies the jar into `serverpackcreator-app/tests/plugins` via
-`copyExamplePluginsToApp`.
+`copyPluginsToApp`.
 
 - **LANDMINE — this jar must NOT be copied into `serverpackcreator-api/src/test/resources/testresources/plugins`.**
   `ApiPluginsTest` loops over every plugin jar it finds there and asserts each one provides **all six**
   extension types; this plugin provides two. The example plugin is the one that exercises every
-  extension point, which is why it is the only one that copy task takes. There is a comment saying so at
-  the point in the root build where somebody would add the second one.
+  extension point, which is why it is the only one `copyPluginsApiUnitTests` takes. There is a comment
+  saying so at the point in the root build where somebody would add the second one.
 
 ## Testing
 

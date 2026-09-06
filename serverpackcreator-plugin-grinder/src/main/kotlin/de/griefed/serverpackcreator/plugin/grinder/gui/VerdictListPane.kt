@@ -65,6 +65,9 @@ class VerdictListPane(
 
     init {
         table.rowSorter = sorter
+        // Every text cell carries grinder-supplied text, and the default renderer would parse a value
+        // beginning with <html> as markup. See PlainTextRendering.
+        table.setDefaultRenderer(String::class.java, PlainTextRendering.tableCellRenderer())
         table.autoResizeMode = JTable.AUTO_RESIZE_LAST_COLUMN
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         table.fillsViewportHeight = true
@@ -149,9 +152,16 @@ class VerdictListPane(
         updateSummary()
     }
 
-    /** "12 of 340 shown · 5 ticked" — the two numbers a user needs while filtering a long list. */
+    /**
+     * "12 of 340 shown · 5 ticked" — the two numbers a user needs while filtering a long list.
+     *
+     * Counted as a set intersection rather than a nested scan. This runs on every keystroke in the filter
+     * field, and the pane exists in its current form because the store runs to thousands of rows, so
+     * `selection × rows` was a contradiction of the file's own reasoning.
+     */
     private fun updateSummary() {
-        val ticked = model.selection.count { entry -> (0 until model.rowCount).any { model.rowAt(it).exclusionEntry == entry } }
+        val shown = shownEntries()
+        val ticked = model.selection.count { it in shown }
         summary.text = "${table.rowCount} of ${model.rowCount} shown · $ticked ticked here"
     }
 }

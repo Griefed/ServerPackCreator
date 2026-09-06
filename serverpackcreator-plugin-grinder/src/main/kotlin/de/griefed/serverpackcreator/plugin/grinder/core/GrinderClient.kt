@@ -81,7 +81,12 @@ class GrinderClient(
         fetchTree(baseUrl, GrinderUrl::verdicts).let { result ->
             when (result) {
                 is FetchResult.Failed -> result
-                is FetchResult.Ok -> FetchResult.Ok(readVerdicts(result.value))
+                // A wrong-shaped document is a failure, not an empty result: reported as "no verdicts
+                // found" it is indistinguishable from a grinder that has genuinely ground nothing, and
+                // that is exactly the pair an operator debugging an empty tab needs told apart.
+                is FetchResult.Ok -> readVerdicts(result.value)
+                    ?.let { FetchResult.Ok(it) }
+                    ?: FetchResult.Failed("The grinder answered with something that is not a verdict document.")
             }
         }
 
@@ -124,12 +129,15 @@ class GrinderClient(
      * The rows out of a feed document. Both the wrapped shape (`{"verdicts":[…]}`) and a bare array are
      * accepted, so the plugin survives a daemon that publishes the list without its paging envelope.
      * A row missing its slug is dropped rather than rendered nameless — it could not be acted on anyway.
+     * `null` means the document is not a verdict feed at all, which the caller turns into a failure.
      */
-    private fun readVerdicts(document: JsonNode): List<GrinderVerdict> {
+    private fun readVerdicts(document: JsonNode): List<GrinderVerdict>? {
         val rows = when {
             document.isArray -> document
             document["verdicts"]?.isArray == true -> document["verdicts"]
-            else -> return emptyList()
+            // `null`, not an empty list — see fetchVerdicts. An empty `verdicts` array still reaches the
+            // branch above, so a genuinely empty grinder is still a success.
+            else -> return null
         }
         return rows.mapNotNull { row ->
             val slug = row.textOrNull("slug") ?: return@mapNotNull null

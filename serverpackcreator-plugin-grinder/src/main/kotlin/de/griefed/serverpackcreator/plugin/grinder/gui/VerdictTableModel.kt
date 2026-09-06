@@ -76,12 +76,15 @@ class VerdictTableModel : AbstractTableModel() {
     override fun getColumnName(column: Int): String = COLUMNS[column]
 
     /**
-     * `Boolean` for the tick column is what makes `JTable` render a checkbox instead of the word "true";
-     * `java.lang.Boolean` rather than Kotlin's `Boolean::class.java`, which is the primitive `boolean`
-     * and does not match the renderer table.
+     * `Boolean` for the tick column is what makes `JTable` render a checkbox instead of the word "true".
+     *
+     * `javaObjectType`, not `Boolean::class.java`: the latter is the **primitive** `boolean.class`, which
+     * `JTable`'s renderer table has no entry for, so the column would fall back to the string renderer and
+     * show "true"/"false". Spelling it `java.lang.Boolean::class.java` picks the same class but warns
+     * ("not recommended for use in Kotlin"), and `javaObjectType` is the idiom that says boxed without it.
      */
     override fun getColumnClass(column: Int): Class<*> =
-        if (column == TICK_COLUMN) java.lang.Boolean::class.java else String::class.java
+        if (column == TICK_COLUMN) Boolean::class.javaObjectType else String::class.java
 
     /** Only the tick is the user's to change; the verdict itself is the grinder's statement. */
     override fun isCellEditable(row: Int, column: Int) =
@@ -90,7 +93,9 @@ class VerdictTableModel : AbstractTableModel() {
     override fun getValueAt(row: Int, column: Int): Any {
         val verdict = rows[row]
         return when (column) {
-            TICK_COLUMN -> verdict.exclusionEntry != null && verdict.exclusionEntry in selection
+            // Read once: `exclusionEntry` trims and re-checks on every access, and getValueAt runs per
+            // visible cell per repaint.
+            TICK_COLUMN -> verdict.exclusionEntry?.let { it in selection } == true
             1 -> verdict.slug
             2 -> verdict.exclusionEntry.orEmpty()
             3 -> verdict.verdict
