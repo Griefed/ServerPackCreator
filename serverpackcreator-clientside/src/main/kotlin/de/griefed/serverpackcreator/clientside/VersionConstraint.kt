@@ -50,6 +50,28 @@ object VersionConstraint {
     private fun looksLikeVersion(text: String) = text.any { it.isDigit() }
 
     /**
+     * Whether [version] is shaped like something [numbersOf] can actually read: every dot-separated
+     * component of its core numeric, once build metadata and an optional `v` prefix are dropped.
+     *
+     * **Stricter than [looksLikeVersion] on purpose, and applied to the other side of the comparison.**
+     * That guard asks whether a *constraint* is worth reading; this asks whether the *version* is, and
+     * "holds a digit somewhere" is far too generous for it — `Balm 26.2.0.7` holds several, yet
+     * [numbersOf] reads it as `[0, 2, 0, 7]` because the first component has no leading digit. A version
+     * that arrives as prose therefore compared as *older than almost any range*, which is a refusal
+     * manufactured out of decoration.
+     *
+     * **Prose is the norm, not the edge case:** CurseForge has no version field, so
+     * `CurseForgePlatform.toModFile` fills [ModFile.version] with the author-typed `displayName`.
+     * A version this cannot read now accepts, exactly as an unreadable constraint does — see the class doc.
+     */
+    private fun readableVersion(version: String): Boolean {
+        val core = version.substringBefore("+").substringBefore("-").removePrefix("v").removePrefix("V")
+        return core.isNotEmpty() && core.split(".").all { component ->
+            component.isNotEmpty() && component.all { it.isDigit() }
+        }
+    }
+
+    /**
      * Whether [version] satisfies [constraint]. A `null`, blank, wildcard or unparseable [constraint]
      * accepts, as does a `null` or blank [version] — see the class doc for why that direction is deliberate.
      */
@@ -57,6 +79,11 @@ object VersionConstraint {
         val candidate = version?.trim().orEmpty()
         val declared = constraint?.trim().orEmpty()
         if (candidate.isEmpty() || declared.isEmpty() || declared == "*") {
+            return true
+        }
+        // The version half of "unreadable accepts". Without it a platform's release name — which is all
+        // CurseForge has — reads as a version far below any bound and refuses everything.
+        if (!readableVersion(candidate)) {
             return true
         }
         return runCatching { matches(candidate, declared) }.getOrDefault(true)
@@ -209,6 +236,10 @@ object VersionConstraint {
      */
     private fun numbersOf(version: String): List<Int> =
         version.substringBefore("+").substringBefore("-")
+            // A `v` prefix is decoration an author types, not part of the number: without dropping it
+            // `v2.1` read as `[0, 1]` and sat below every bound. Both sides pass through here, so a bound
+            // spelled `>=v2.0` is read the same way.
+            .removePrefix("v").removePrefix("V")
             .split(".")
             .map { component -> component.takeWhile { it.isDigit() }.toIntOrNull() ?: 0 }
 
