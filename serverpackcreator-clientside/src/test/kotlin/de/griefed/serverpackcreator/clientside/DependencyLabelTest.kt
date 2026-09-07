@@ -81,15 +81,17 @@ internal class DependencyLabelTest {
      */
     @Test
     fun theSameMissingModIsReportedOnceAcrossBothHalves() {
-        val unsatisfied = sortedSetOf<String>()
+        val unsatisfied = mutableMapOf<String, UnmetReason>()
         // The platform half, resolved.
-        unsatisfied.add(BootVerifier.unsatisfiedLabel("MBAkmtvl", project("balm"), "Modrinth"))
-        // The manifest half, which has always been readable.
-        unsatisfied.add("balm")
+        unsatisfied[BootVerifier.unsatisfiedLabel("MBAkmtvl", project("balm"), "Modrinth")] =
+            UnmetReason.DOWNLOAD_FAILED
+        // The manifest half, which has always been readable — and which may well have failed differently.
+        unsatisfied["balm"] = UnmetReason.NO_USABLE_FILE
 
         Assertions.assertEquals(
-            listOf("balm"), unsatisfied.toList(),
-            "one missing mod must be one entry, however it was discovered"
+            listOf("balm"), unsatisfied.keys.toList(),
+            "one missing mod must be one entry, however it was discovered — which is why the reason travels " +
+                "beside the name rather than inside it"
         )
     }
 
@@ -97,11 +99,13 @@ internal class DependencyLabelTest {
     @Test
     fun theRefusalNamesModsNotIds() {
         val refusal = BootVerifier.refuseForMissingDependencies(
-            setOf(
-                BootVerifier.unsatisfiedLabel("uy4Cnpcm", project("bookshelf-lib"), "Modrinth"),
+            mapOf(
+                BootVerifier.unsatisfiedLabel("uy4Cnpcm", project("bookshelf-lib"), "Modrinth")
+                    to UnmetReason.NO_USABLE_FILE,
                 BootVerifier.unsatisfiedLabel("aaRl8GiW", project("prickle"), "Modrinth")
+                    to UnmetReason.NO_USABLE_FILE
             ),
-            "NeoForge", "1.21.11"
+            "NeoForge", "1.21.11", "Modrinth"
         )
 
         val detail = refusal?.detail.orEmpty()
@@ -134,25 +138,28 @@ internal class DependencyLabelTest {
      */
     @Test
     fun aLockedDependencySaysItIsLockedRatherThanUndownloadable() {
-        val locked = ModFile("fabric-api.jar", setOf("Fabric"), setOf("1.20.4"), null, null, emptyList())
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("fabric-api" to UnmetReason.DISTRIBUTION_LOCKED), "Quilt", "1.20.4", "CurseForge"
+        )
 
-        val label = BootVerifier.unsatisfiedLabel("306612", project("fabric-api"), "CurseForge", locked)
-
-        Assertions.assertTrue(label.contains("fabric-api"), label)
+        val detail = refusal?.detail.orEmpty()
+        Assertions.assertTrue(detail.contains("fabric-api"), detail)
         Assertions.assertTrue(
-            label.contains("distribution-locked"),
-            "a deliberate opt-out must not read as a transient failure: $label"
+            detail.contains("distribution-locked on CurseForge"),
+            "a deliberate opt-out must not read as a transient failure: $detail"
+        )
+        Assertions.assertFalse(
+            detail.contains("download failed"),
+            "and specifically must not read as the transient one: $detail"
         )
     }
 
-    /** An obtainable file adds no noise — the label stays the bare slug. */
+    /** The label is the name and nothing else — every "why" is an [UnmetReason] the refusal renders. */
     @Test
     fun anObtainableDependencyIsStillJustItsSlug() {
-        val obtainable = ModFile("fabric-api.jar", setOf("Fabric"), setOf("1.20.4"), "https://cdn/fabric-api.jar", null, emptyList())
-
         Assertions.assertEquals(
             "fabric-api",
-            BootVerifier.unsatisfiedLabel("306612", project("fabric-api"), "CurseForge", obtainable)
+            BootVerifier.unsatisfiedLabel("306612", project("fabric-api"), "CurseForge")
         )
     }
 }

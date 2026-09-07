@@ -57,7 +57,7 @@ internal class ManifestDependencyTest {
     @Test
     fun anUnmappedManifestDependencyDoesNotRefuseTheBoot() {
         Assertions.assertNull(
-            BootVerifier.refuseForMissingDependencies(emptySet(), "Fabric", "1.20.1"),
+            BootVerifier.refuseForMissingDependencies(emptyMap(), "Fabric", "1.20.1", "Modrinth"),
             "with nothing in `unsatisfied` there is no refusal, whatever went unmapped"
         )
     }
@@ -65,7 +65,9 @@ internal class ManifestDependencyTest {
     /** A dependency we *did* map and then failed to stage is a real gap, and still refuses as it always did. */
     @Test
     fun aMappedDependencyThatCouldNotBeStagedStillRefuses() {
-        val refusal = BootVerifier.refuseForMissingDependencies(setOf("fabric-api"), "Fabric", "1.20.1")
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("fabric-api" to UnmetReason.NO_USABLE_FILE), "Fabric", "1.20.1", "Modrinth"
+        )
 
         Assertions.assertNotNull(refusal)
         Assertions.assertTrue(refusal!!.detail.contains("fabric-api"), "the reason must name it: ${refusal.detail}")
