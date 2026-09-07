@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.clientside
 
+import com.electronwill.nightconfig.toml.TomlParser
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -44,26 +45,21 @@ import java.util.zip.ZipFile
  */
 object JarSelfDeclaration {
 
+    /** Where Forge keeps its descriptor — the one entry this object reads rather than merely lists. */
+    private const val FORGE_DESCRIPTOR = "META-INF/mods.toml"
+
+    /** The `mods.toml` table free-form mod properties live under. */
+    private const val TOML_PROPERTIES = "properties"
+
+    /** The property Sinytra Connector stamps into a wrapped Fabric mod's stub descriptor. */
+    private const val CONNECTOR_PLACEHOLDER_PROPERTY = "connector:placeholder"
+
     /** Descriptor path → the loader that reads it. Presence only; the contents are `-api`'s business. */
     private val descriptorLoaders = mapOf(
         "fabric.mod.json" to "Fabric",
         "quilt.mod.json" to "Quilt",
-        "META-INF/mods.toml" to "Forge",
+        FORGE_DESCRIPTOR to "Forge",
         "META-INF/neoforge.mods.toml" to "NeoForge"
-    )
-
-    /**
-     * Loaders that legitimately run **another** loader's mods, so a descriptor for the value is no
-     * contradiction when booting the key.
-     *
-     * Deliberately one-way and minimal, mirroring `BootCandidateSelector.fallbackLoaders`: Quilt runs Fabric
-     * mods and LegacyFabric reads the same `fabric.mod.json`, while Fabric cannot load a Quilt mod and
-     * Forge/NeoForge cross-loading is version-dependent. Guessing wider here would boot jars the loader
-     * cannot use and score the failure against the mod.
-     */
-    private val alsoRuns = mapOf(
-        "Quilt" to setOf("Fabric"),
-        "LegacyFabric" to setOf("Fabric")
     )
 
     /**
@@ -75,6 +71,28 @@ object JarSelfDeclaration {
             descriptorLoaders.filterKeys { archive.getEntry(it) != null }.values.toSet()
         }
     }.getOrDefault(emptySet())
+
+    /**
+     * Whether [jar] is a **Sinytra Connector placeholder** — a Fabric mod wrapped so a platform can tag it
+     * Forge, whose `META-INF/mods.toml` is a stub existing only to get the file past Forge's mod discovery
+     * until Connector takes it over.
+     *
+     * **Keyed on the marker, never on carrying two descriptors.** A genuine multi-loader jar ships a real
+     * `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; only
+     * `[properties] "connector:placeholder" = true` says *"the Forge descriptor here is not the mod"*.
+     *
+     * Fails toward `false` like everything else in this object: an unopenable jar, an absent descriptor or a
+     * `mods.toml` the parser chokes on all mean *"nothing said so"*.
+     */
+    fun isConnectorPlaceholder(jar: File): Boolean = runCatching {
+        ZipFile(jar).use { archive ->
+            val descriptor = archive.getEntry(FORGE_DESCRIPTOR) ?: return false
+            // Addressed as a path rather than by walking `valueMap()`: the key carries a colon, not a dot,
+            // so nightconfig's own path splitting cannot mistake it for two segments.
+            archive.getInputStream(descriptor).use { TomlParser().parse(it) }
+                .get<Any?>(listOf(TOML_PROPERTIES, CONNECTOR_PLACEHOLDER_PROPERTY)) == true
+        }
+    }.getOrDefault(false)
 
     /**
      * Why [jar] must not be booted as [loader] on [minecraftVersion], or `null` to go ahead.
@@ -90,9 +108,11 @@ object JarSelfDeclaration {
         minecraftConstraint: String?
     ): String? {
         val declared = declaredLoaders(jar)
+        // The cross-loading claim is [LoaderCompatibility]'s, and it needs the Minecraft version: NeoForge
+        // loads a Forge jar on 1.20.1 and on nothing else, so asking without one can only be wrong twice.
         val acceptable = declared.isEmpty() ||
             loader in declared ||
-            alsoRuns[loader].orEmpty().any { it in declared } ||
+            LoaderCompatibility.alsoRuns(loader, minecraftVersion).any { it in declared } ||
             loader !in descriptorLoaders.values
         if (!acceptable) {
             return "${jar.name} carries only ${declared.sorted().joinToString("/")} descriptor(s), " +

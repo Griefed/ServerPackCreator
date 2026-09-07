@@ -360,6 +360,39 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
   largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
   (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **A pack whose own jars contradict each other backtracks instead of booting** (`DependencyBacktrack`,
+  2026-09-06). Staging resolved every dependency *alone* — the newest file that project publishes for the
+  pack's Minecraft — and never asked whether the resulting **set** was coherent. Where it is not, the loader
+  refuses the pack, ~70 s of container is spent, and the *candidate* wears the INCONCLUSIVE: the
+  "never got a fair run" shape, one layer earlier than every guard that already covers it.
+  **The live case, `Modrinth/zoomify` on Quilt / Minecraft 1.20.5:**
+  `yet_another_config_lib_v3-3.6.6+1.20.6-fabric.jar` is tagged for 1.20.5 *and* declares
+  `"minecraft": "~1.20.5"` — so neither selection nor the descriptor gate objects — while demanding
+  `"fabric-api": ">=0.100.0+1.20.6"`. Verified against the live API: Modrinth publishes exactly **four**
+  fabric-api files for 1.20.5, `0.97.5` through `0.97.8`. **Staging *more* cannot fix that pack**; only an
+  older YACL can, and `3.4.2+1.20.5` requires nothing but `fabric-resource-loader-v0`.
+  - **What it never does, and each omission is load-bearing.** It never demotes the *candidate* (the subject
+    of the experiment; swapping it answers a question about a different mod). It never **refuses** — no
+    scanner, an unreadable jar, a version the platform never reported, a range `VersionConstraint` cannot
+    parse, an exhausted budget: every one of them proceeds to the boot exactly as before, because a gate
+    refusing on doubt is the mass-INCONCLUSIVE shape this module has already paid for twice. It ignores
+    **optional** dependencies (the loader loads the mod without them, so one being old cannot be why a pack
+    is refused) and requirements naming something **not staged at all** (that is
+    `refuseForMissingDependencies`' case, and demoting over a gap dropping a jar cannot close burns the
+    budget for nothing).
+  - **LANDMINE — a backtrack re-stages from scratch, so it re-downloads everything.** `zoomify` needs
+    **seven** (YACL ships 3.6.6 down to 3.6.0 tagged for 1.20.5, every one a `+1.20.6` build with the same
+    demand), and `MAX_BACKTRACKS` is 10 for that reason. Still cheaper than the wasted boot it replaces;
+    skipping files already on disk is an optimisation to make **only if the rate warrants it** — 2 of 250
+    live verdicts reached `DEPENDENCY_FAILURE` when this was written. Measure before changing it.
+  - The judge reads the staged jars through the same `ModScanner.scannerFor` staging already uses, which on
+    a Quilt pack is `QuiltPackScanner` — the one that merges the Fabric descriptor most Quilt mods actually
+    ship, so a Fabric-only dependency is not invisible to it. Jars whose descriptor could not be read are
+    dropped on `descriptorRead`: `ScannedMod`'s fallback is indistinguishable by value from a mod that
+    declared nothing.
+  - `InjectedDependency.version` exists for this: a descriptor names a **mod id and a range**, never a file,
+    so the judge needs what the platform published each staged file as. Carrying it there avoided threading
+    a second accumulator through every level of the staging recursion.
 - **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
   `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
@@ -443,12 +476,56 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   for Minecraft X", which would be false. Returning `null` where a file exists turns a diagnosable refusal
   into a misleading one, which is the same reason the version constraint is a preference here.
 
-- **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
+- **Quilt dependencies fall back to the Fabric build** (`LoaderCompatibility.alsoRuns`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
   dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
-  one-way and minimal — Fabric cannot load Quilt mods, and NeoForge/Forge cross-loading is version-dependent, so
-  guessing there would stage a jar the loader cannot use.
+  one-way and minimal — Fabric cannot load Quilt mods, so guessing wider would stage a jar the loader cannot use.
+- **NeoForge runs Forge builds on Minecraft 1.20.1, and on nothing else** (`LoaderCompatibility`, 2026-09-06).
+  NeoForge 20.1.x is a fork of Forge 47 that kept the `net.minecraftforge` packages, the `javafml` language
+  provider and `META-INF/mods.toml`, so there a Forge jar and a NeoForge jar are *the same file*; the package
+  rename landed with 1.20.2 and ends it. **State it as the one version, never as a lower bound** — a range
+  would boot Forge jars under NeoForge 1.20.2+, where FML rejects them (`Missing language javafml version
+  [46,)`, already a `runtimeMismatchMarkers` entry) and the failure is scored against the *mod*.
+  - **The fact has one home because it used to have two.** `JarSelfDeclaration.alsoRuns` (the pre-boot
+    descriptor gate) and `BootCandidateSelector.fallbackLoaders` (dependency selection) were separate
+    `Quilt to Fabric` maps answering the same question, so only one of them could ever have learned this.
+    `LoaderCompatibility.alsoRuns(loader, minecraftVersion)` is now both. **It takes the Minecraft version on
+    purpose:** the NeoForge claim is meaningless without one, and an overload that omits it would silently
+    re-open the gap.
+  - **What it cost, live 2026-09-06:** `CurseForge/mantle` published an `ERROR` row — *"Refusing to boot
+    NeoForge on Minecraft 1.20.1: `Mantle-1.20.1-1.11.117.jar` carries only Forge descriptor(s), so it is not
+    a NeoForge mod"* — for a file CurseForge ticks Forge **and** NeoForge and which had reached a ready-line
+    under Forge minutes earlier in the same run. A verdict about the grinder's own descriptor table,
+    published as a verdict about the mod. The dependency half was the same gap one step earlier: a dependency
+    publishing only Forge files was unpickable for a NeoForge 1.20.1 boot, and `refuseForMissingDependencies`
+    scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
+  - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
+    a real NeoForge build still beats the Forge fallback wherever a project publishes one.
+- **A Sinytra Connector *placeholder* is a Fabric mod, and the Forge scanner reads a stub** (2026-09-06).
+  `JarSelfDeclaration.isConnectorPlaceholder` reads `[properties] "connector:placeholder" = true` out of
+  `META-INF/mods.toml`, and `MetadataScanner` then scans such a jar as **Fabric**. Read from the live
+  `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past Forge's mod discovery
+  (version-less dependency entries on `connectormod` and `fabric_api`), while the `fabric.mod.json` beside it
+  holds the real mod — `"environment": "client"` included.
+  **Measured live 2026-09-06:** that project's Forge row read `jarScan=SERVER_OR_BOTH` and
+  `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same project's*
+  Fabric row read `CLIENT` off the identical descriptor. The contradiction was manufactured by the scanner
+  choice — and `ClientsideVerifier.declaresServerSupport`, the same predicate, is what arms the other-version
+  crash re-check, so a false one costs up to three boot budgets (~45 min) per armed candidate.
+  - **It substitutes the scanner's *input*, not the dispatch.** The loader→scanner choice still goes through
+    `ModScanner.scannerFor`, so the `MetadataScanner`/`ModListCompiler` drift documented at the top of this
+    file cannot come back; only the question changes, because a placeholder is not the loader it is tagged for.
+  - **Keyed on the marker, never on carrying both descriptors.** A genuine multi-loader jar ships a real
+    `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; hijacking those would
+    answer a Forge question with a Fabric answer.
+  - **The boot is still attempted** (Griefed's call): a working Connector setup should still be verified, and
+    the row's INCONCLUSIVE then stands on its own evidence rather than on a false contradiction.
+  - **Why that boot failed is NOT ours, and the staging was right.** The grinder staged the newest Sinytra
+    Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API (`0.92.6+1.11.15+1.20.1`) — the
+    only ones Modrinth publishes for 1.20.1 — and Connector under Forge 47.4.23 still logged *"Dependency
+    resolution found 0 candidates to load"* and never converted the jar, leaving Forge to read the stub's
+    version-less ranges and refuse. Do not "fix" this by staging more dependencies; they were all there.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
   are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
   `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
@@ -679,7 +756,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     ERROR over whatever the store held.
   - **LANDMINE — `modLoaderType` is supported by the API and must NOT be sent.** Asking CurseForge for
     Quilt returns nothing for Fabric API and re-creates the same refusal one layer down:
-    `BootCandidateSelector.fallbackLoaders` has to *see* the Fabric builds in order to fall back to them,
+    `LoaderCompatibility.alsoRuns` has to *see* the Fabric builds in order to fall back to them,
     and Fabric API is its canonical case. Version narrows the set; loader choice stays in the selector,
     with the obtainability preference. Parameters verified against https://docs.curseforge.com/rest-api/
     (`gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`, `pageSize`).

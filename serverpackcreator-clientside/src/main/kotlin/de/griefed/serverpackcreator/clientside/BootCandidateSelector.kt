@@ -269,15 +269,17 @@ object BootCandidateSelector {
     }
 
     /**
-     * [pickDependencyFile]'s loader resolution: the loader itself, then the one-way Quilt-to-Fabric fallback.
+     * [pickDependencyFile]'s loader resolution: the loader itself, then whichever other loaders'
+     * builds it can actually run here, then an untagged file.
      *
-     * The Minecraft version is fixed across both attempts, which is what makes the fallback reachable. It used
+     * The Minecraft version is fixed across every attempt, which is what makes the fallback reachable. It used
      * to be a *preference* inside each attempt, so a Quilt-tagged file for the wrong version satisfied the first
      * attempt and the Fabric build carrying the right version was never considered.
      */
     private fun pickFrom(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         pickForLoader(files, loader, minecraftVersion)
-            ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
+            ?: LoaderCompatibility.alsoRuns(loader, minecraftVersion)
+                .firstNotNullOfOrNull { pickForLoader(files, it, minecraftVersion) }
             ?: pickUntagged(files, minecraftVersion)
 
     /** Newest file carrying both [loader] and [minecraftVersion], or `null` when the project publishes none. */
@@ -301,15 +303,4 @@ object BootCandidateSelector {
     private fun pickUntagged(files: List<ModFile>, minecraftVersion: String): ModFile? =
         files.firstOrNull { it.loaders.isEmpty() && minecraftVersion in it.minecraftVersions }
 
-    /**
-     * Loaders that can run another loader's mods, used **only** when a dependency publishes nothing for the loader
-     * being booted. Quilt deliberately runs Fabric mods — which is precisely why the canonical dependency of a Quilt
-     * mod is Fabric API, a project that ships only Fabric-tagged files. Without this, every such dependency was
-     * silently dropped and the mod hard-failed with "requires fabric-api", wasting the whole boot: measured
-     * 2026-07-30, 210 dropped dependencies, all but 44 of them on Quilt.
-     *
-     * Deliberately not symmetric and deliberately minimal: Fabric cannot load Quilt mods, and NeoForge only loads
-     * Forge mods for a narrow band of Minecraft versions, so guessing there would stage a jar the loader cannot use.
-     */
-    private val fallbackLoaders = mapOf("Quilt" to "Fabric")
 }

@@ -115,4 +115,87 @@ internal class MetadataScannerTest {
             )
         }
     }
+
+    /**
+     * Write a jar shaped like Sinytra Connector's **placeholder**: a `fabric.mod.json` carrying the real
+     * mod, beside a synthetic `META-INF/mods.toml` whose only job is to make Forge's mod discovery accept
+     * the file until Connector takes it over. Modelled on the live
+     * `continuity-3.0.0+1.20.1.forge.jar`, whose entries are reproduced here verbatim in shape.
+     */
+    private fun connectorPlaceholderJar(
+        directory: File,
+        fileName: String,
+        fabricModJson: String,
+        placeholder: Boolean = true
+    ): File {
+        val jar = File(directory, fileName)
+        JarOutputStream(jar.outputStream()).use { jarStream ->
+            jarStream.putNextEntry(JarEntry("META-INF/mods.toml"))
+            jarStream.write(
+                """
+                modLoader = "javafml"
+                loaderVersion = "*"
+                license = "LGPL-3.0-only"
+
+                [properties]
+                ${if (placeholder) """"connector:placeholder" = true""" else """"some:other" = true"""}
+
+                [[mods]]
+                modId = "continuity"
+                version = "3.0.0+1.20.1.forge"
+
+                [[dependencies.continuity]]
+                modId = "connectormod"
+                mandatory = true
+                """.trimIndent().toByteArray()
+            )
+            jarStream.closeEntry()
+            jarStream.putNextEntry(JarEntry("fabric.mod.json"))
+            jarStream.write(fabricModJson.toByteArray())
+            jarStream.closeEntry()
+        }
+        return jar
+    }
+
+    /**
+     * **A Connector placeholder is a Fabric mod, and must be scanned as one.** Its `mods.toml` is a stub
+     * that declares no sideness at all, so the Forge scanner reads nothing and answers SERVER_OR_BOTH —
+     * while the `fabric.mod.json` in the very same jar says `"environment": "client"`.
+     *
+     * Measured live 2026-09-06: `Modrinth/continuity`'s Forge row came back `jarScan=SERVER_OR_BOTH` and
+     * `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same
+     * project's* Fabric row read `CLIENT` off the same descriptor. That false contradiction is not
+     * cosmetic: `ClientsideVerifier.declaresServerSupport` is what arms the other-version crash re-check,
+     * which spends up to three boot budgets (~45 min) arguing with a contradiction that never existed.
+     */
+    @Test
+    fun aConnectorPlaceholderIsScannedAsTheFabricModItWraps(@TempDir tempDir: File) {
+        val jar = connectorPlaceholderJar(
+            tempDir, "continuity-3.0.0+1.20.1.forge.jar", """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertEquals(
+            MetadataScanner.Result.CLIENT,
+            scanner.scan(jar, "Forge", "1.20.1"),
+            "the placeholder mods.toml declares nothing; the fabric.mod.json beside it declares client"
+        )
+    }
+
+    /**
+     * And the redirect is keyed on the **marker**, not on carrying two descriptors. A genuine multi-loader
+     * jar ships a real `mods.toml` next to a `fabric.mod.json` and each descriptor speaks for its own
+     * loader, so hijacking those would answer a Forge question with a Fabric answer.
+     */
+    @Test
+    fun aJarCarryingBothDescriptorsWithoutTheMarkerStaysOnItsOwnScanner(@TempDir tempDir: File) {
+        val jar = connectorPlaceholderJar(
+            tempDir, "multiloader-1.0.jar", """{"id":"continuity","environment":"client"}""", placeholder = false
+        )
+
+        Assertions.assertEquals(
+            MetadataScanner.Result.SERVER_OR_BOTH,
+            scanner.scan(jar, "Forge", "1.20.1"),
+            "no placeholder marker, so the Forge descriptor is the one that speaks for a Forge boot"
+        )
+    }
 }
