@@ -393,6 +393,31 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   - `InjectedDependency.version` exists for this: a descriptor names a **mod id and a range**, never a file,
     so the judge needs what the platform published each staged file as. Carrying it there avoided threading
     a second accumulator through every level of the staging recursion.
+  - **LANDMINE — that version is a platform *release name*, and comparing it as a number invented conflicts
+    everywhere (2026-09-07, one day after the backtrack shipped).** CurseForge has no version field, so
+    `CurseForgePlatform.toModFile` fills `ModFile.version` with the author-typed `displayName` — documented
+    in place as "often decorated". `VersionConstraint.numbersOf` maps a digit-less component to `0`, so
+    `Balm 26.2.0.7` read as `[0, 2, 0, 7]` and `balm-fabric-26.2-26.2.0.7.jar` (everything before the first
+    `-`) as `[0]`: below almost any range, on essentially every CurseForge dependency. `looksLikeVersion`
+    did not catch it — it asks only whether a digit is present, and those hold four.
+    **Measured on the live daemon that day: `1014` `re-staging ... without it` lines and `146`
+    `publishes no ... file for Minecraft` lines in one day, against `4` real staging failures, ending in 47
+    published `ERROR` verdicts** reading *"Required dependency unavailable"* — for files the CurseForge API
+    returns on request, correctly loader-tagged (`misc/cf-dependency-probe.sh` is that probe, and its header
+    carries the numbers). The demote loop exhausted each project's file list and `withoutExcluded` then left
+    `pickDependencyFile` nothing to pick. `readableVersion` now gates `satisfies` on the version side —
+    every dot-separated component of the core numeric, `v` prefix allowed — so prose accepts, exactly as an
+    unreadable *constraint* always has. **Do not "improve" this by extracting a version out of a release
+    name**: `Create 6.0.10 for NeoForge 1.21.1` offers two readings four major versions apart, and guessing
+    is the silently-plausible-value trap. A conflict spelled in an unreadable version is missed instead,
+    which costs one boot where inventing one costs a published verdict.
+  - **A staging refusal names its evidence, like a boot verdict does** (`UnmetReason`, 2026-09-07). Five
+    ways a dependency reaches `unsatisfied`, three of which printed the bare slug: an operator could not
+    tell *the project publishes nothing usable* from *the download died* from *staging dropped every build
+    itself*. `backtrackReason` re-runs the pick over the **unfiltered** list to separate the last one, which
+    had been reporting the exact opposite of what happened. **The reason travels beside the name, never
+    inside it** — `unsatisfied` is a `Map<name, reason>` so the `waystones` dedupe (one mod missing by both
+    routes is one entry) survives the two routes failing differently.
 - **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
   `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
