@@ -288,3 +288,120 @@ The three units the coverage map called untested are now extracted and pinned: `
 what is left in them after the extractions is layout and wiring, which is this project's standing stance
 on view code. What was *not* layout has been moved out of them, which was the finding.
 
+
+---
+
+# 2026-09-08 — test depth over `300a4aae6^1..HEAD`: the backtrack, the storm fix, and one latent repeat
+
+Scope: the code changed by the 2026-09-06 field reports (`LoaderCompatibility`, the Connector-placeholder
+redirect, `DependencyBacktrack`) and by the 2026-09-07/08 fixes to what the third of those did live
+(`VersionConstraint.readableVersion`, `UnmetReason` + `refuseForMissingDependencies` + `backtrackReason`,
+`BundledJars.versionsIn`, `BootVerifier.nestedVersions`). Companion to the same-day section in
+`REFACTOR-AUDIT.md`, which carries the per-commit red/green verification; this one is about depth, edges and
+bugs. READ-ONLY pass.
+
+## HIGH
+
+**A-1 — `numbersOf` still turns a value it cannot represent into `0`, and `readableVersion` now waves it
+through.** This is the defect just fixed (`Balm 26.2.0.7` → `[0, 2, 0, 7]`) reached by a second door:
+
+```kotlin
+.map { component -> component.takeWhile { it.isDigit() }.toIntOrNull() ?: 0 }
+```
+
+`readableVersion` admits any component that is **all digits**, but `toIntOrNull` returns `null` above
+`Int.MAX_VALUE` (10 digits), and `?: 0` then makes that component **zero** rather than unreadable. A version
+carrying a date or a CI counter — `1.20260908120000`, `2026.9.8.120000` — therefore compares as though its
+largest component were `0`, i.e. below almost any bound, which is exactly the shape that manufactured 47
+verdicts. It is latent rather than live: no version in the current corpus was observed hitting it, and the
+failure mode is a *demotion*, not a wrong sideness verdict.
+
+The direction of the fix is the one already chosen for this class: a component that is all digits but does
+not parse is **not readable**, so `satisfies` accepts and nothing is judged on a number we could not hold.
+That is a one-predicate change in `readableVersion` plus a boundary test; widening `numbersOf` to `Long`
+would only move the ceiling.
+
+## MEDIUM
+
+**A-2 — the two ambiguity rules introduced by `293998273` are asserted nowhere.** `BundledJars.versionsIn`
+drops an id one jar bundles at two versions; `BootVerifier.nestedVersions` drops one that two staged jars
+bundle differently. Both are documented as deliberate "fail toward proceeding" safety properties, and
+`grep -rl "versionsIn\|nestedVersions" src/test` matches **nothing** — only the end-to-end happy path
+exercises `versionsIn` at all, implicitly. Mutating either fold to keep the first value seen would pass the
+whole suite.
+
+**A-3 — the precedence rule is mutation-invisible.** `nestedVersions(stagedJars) + scanned…toMap()` relies on
+`Map.plus` letting the right operand win, so a top-level jar beats a bundled copy of the same id. Swapping
+the operands changes which build a demotion acts on and **no test fails**. The rule is stated in a comment
+and in the module CLAUDE.md; it needs a guard, because the comment is the only thing holding it.
+
+**A-4 — `backtrackReason` has no direct test.** The predicate that separates "this project publishes nothing
+usable" from "we excluded all of it" is reachable only through two staging paths, and only one of its three
+branches (`excluded` empty → short-circuit; excluded but a pick still exists; excluded and the pick only
+existed unfiltered) is exercised. It is a pure function taking a `ProjectFiles` and a `Set<String>` — unit
+territory, and this module's own preference is to pin pure decisions directly.
+
+**A-5 — two of the five `UnmetReason` values never travel the staging path.** `DISTRIBUTION_LOCKED` and
+`UNRESOLVED` are asserted only where the refusal string is *rendered* (`DependencyLabelTest`), not where the
+reason is *chosen*. The choice sites are one `if (dependencyFile.locked)` and one `?: UnmetReason.UNRESOLVED`
+in `downloadWithDependencies`; inverting either is invisible to the suite. `UnmetDependencyReasonTest` covers
+the three that were previously indistinguishable, which is where the value was — but the vocabulary is now
+five wide and only three deep.
+
+## LOW
+
+**A-6 — `explain()` returns `String?` and is interpolated straight into two log lines.** In
+`downloadWithDependencies` and `stageManifestDependencies` the reason is logged as
+`"…: ${reason.explain(platform.name)}."`. Only `UNRESOLVED` returns `null`, and neither site can reach it
+today — but the sites are one refactor away from printing the literal `null.`, and the compiler will not say
+so. Either make the log sites take the non-null branch explicitly or give `UNRESOLVED` a string of its own.
+
+**A-7 — a shallow assertion in a new test.** `NestedDependencyConflictTest.aSatisfiedNestedRequirementDemotesNothing`
+asserts `stagedMods(workDir).contains("create-6.0.10.jar")`. Its sibling asserts the exact set, which is the
+stronger form and the one that would catch an unrelated jar going missing.
+
+**A-8 — `nestedVersions` re-opens every staged jar on every backtrack round.** Up to `MAX_BACKTRACKS` (10)
+rounds × every staged jar, each a `ZipFile` open plus a nested-entry read. Noted, **not** recommended for
+optimisation: each round already re-downloads the whole pack, so this is far from the cost centre, and this
+module's standing rule is to measure before changing a bound. Recorded so the next reader does not have to
+re-derive that it was considered.
+
+## Not findings (verified — do not re-litigate)
+
+- **`backtrackReason` ignoring `requirement.versionConstraint` in the manifest path is correct.**
+  `pickDependencyFile` treats a constraint as a preference with a fall-back arm over the whole set, so its
+  *null-ness* is identical with and without one. Checked arm by arm; the reason classification cannot differ.
+- **`idsIn` is behaviour-identical after the `nestedDescriptorsOf` extraction.** Both failure directions
+  match the original: an absent/unreadable outer descriptor yields nothing (early return), and a nested jar
+  that cannot be parsed is dropped rather than failing the jar (`mapNotNull` where the original used
+  `getOrDefault(emptySet())`). `BundledJarDependencyTest`'s eight assertions are unchanged and green.
+- **No new compiler warnings, no unused imports.** `--rerun-tasks` on `:serverpackcreator-clientside:
+  compileKotlin` and `compileTestKotlin` emits nothing for this module; every warning in the build belongs to
+  `-api` (`Locale` constructors, nightconfig `valueMap`) and predates this range.
+- **No security surface.** No new I/O sink, no string-built query, no secret handled in production code. The
+  operator probe `misc/cf-dependency-probe.sh` reads `CURSEFORGE_API_KEY` from the environment, passes it only
+  as a header, and prints its *length* rather than its value; it is untracked by design.
+- **No new concurrency.** Everything added is pure or per-attempt, inside the existing
+  `(platform, slug, loader)` staging directory ownership; nothing new is shared between grind workers.
+- **Verdict-store impact is bounded and self-healing.** Nothing here writes verdicts; the 47 wrong `ERROR`
+  rows are overwritten as their 30-day TTL turns them over, and `ERROR` does not reach `/as-properties`.
+
+## Suggested tests (specific)
+
+1. `readableVersion` boundary table: `v2.1`, `V2.1`, `v` alone, `1..2`, `1.`, `1.0.0+build-1`, `1.20.1-rc1`,
+   and an over-`Int.MAX_VALUE` component — the last one red until A-1 is fixed.
+2. `BundledJars.versionsIn`: version read from a nested descriptor; a nested mod with no `version` omitted
+   while `idsIn` still reports it; the same id at two versions in one jar dropped; the same id at the *same*
+   version kept; the Quilt spelling (`quilt_loader.version`); an unreadable jar yielding an empty map.
+3. `nestedVersions` precedence: a top-level staged jar's version wins over a bundled copy of the same id
+   (kills the operand swap), and two jars bundling different versions of one id produce no conflict.
+4. `backtrackReason`: all three branches, directly.
+5. Staging-level `DISTRIBUTION_LOCKED` (a dependency file with `downloadUrl = null`) and `UNRESOLVED`
+   (a ref the platform does not carry) reaching the published refusal with the right reason.
+6. Tighten `aSatisfiedNestedRequirementDemotesNothing` to an exact-set assertion.
+
+## Suites at the time of this analysis
+
+clientside **419** (0 failures), grinder **503** (0 failures, 29 skipped), app **149** (0 failures) — the
+latter two re-measured at 2026-09-08 07:31/07:32, i.e. *after* `293998273`, because the merge message had
+quoted figures taken before it (REFACTOR-AUDIT L-4). They hold.

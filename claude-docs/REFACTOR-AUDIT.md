@@ -5634,3 +5634,141 @@ branch began — precisely the shape iteration 41's own MED-1 reports. Nothing w
 rather than disclosed: `e05365433` carries iteration 41 alone and `cf6cdc389` carries iteration 42, with
 the resulting tree byte-identical to the unsplit version.
 
+
+---
+
+# 2026-09-08 — audit of `300a4aae6^1..HEAD`: the field-report batch and the storm it caused
+
+Scope: 20 commits plus two merges — the 2026-09-06 field-report work merged as `300a4aae6`
+(`LoaderCompatibility`, the Connector-placeholder redirect, `DependencyBacktrack`) and the eight commits
+merged as `3578da046` fixing what the third of those did to the live daemon. READ-ONLY pass; no source
+was modified while producing this section.
+
+**Method.** Every commit's diff read against the refactoring conventions, plus a per-commit red/green
+verification in a detached worktree (below), an idiom sweep over the 633 added production lines, and a
+declaration-level documentation sweep over every changed main-source file.
+
+## Per-commit red/green verification (the boundary, actually checked out and run)
+
+`git worktree add --detach`, then for each commit: wipe `serverpackcreator-clientside/build`, run only the
+class in question.
+
+| Commit | Test class | Expected | Actual |
+|---|---|---|---|
+| `9d67140fe` | `UnreadableStagedVersionTest` | RED | **RED** |
+| `3156d60f2` | `UnreadableStagedVersionTest` | GREEN | **GREEN** |
+| `0ed267461` | `UnmetDependencyReasonTest` | RED | **RED** |
+| `06c3ac3c5` | `UnmetDependencyReasonTest` | GREEN | **GREEN** |
+| `f8326eb84` | `NestedDependencyConflictTest` | RED | **RED** |
+| `293998273` | `NestedDependencyConflictTest` | GREEN | **GREEN** |
+| `be01428f2` | `DependencyBacktrackTest` | RED | **RED** |
+| `20f5895a0` | `DependencyBacktrack*` | GREEN | **GREEN** |
+
+Eight for eight. Every pin in this range is genuinely red at its own commit and green at the next, so
+`git checkout <fix>^` is a boundary a reader can reproduce — the standard the 2026-07-31 audit found
+missing on all eight commits of that day.
+
+**Methodology landmine, and it nearly produced two false findings.** The first run reused one worktree
+build directory across checkouts and reported `3156d60f2` and `06c3ac3c5` as RED. They are not: Gradle
+answered `No tests found for given includes` for a class that was present in the source tree, because the
+stale `build/` from the previous checkout was reused. This is the same incremental-compilation trap
+`serverpackcreator-clientside/CLAUDE.md` already records for `18f59b4bf`. **Wipe the module build directory
+between checkouts, and treat `No tests found` as a distinct outcome from RED** — the verification script
+that produced the table above does both.
+
+## HIGH
+
+**H-1 — `20f5895a0` shipped a comparison against a value it never characterised, and it cost 47 published
+verdicts.** `DependencyBacktrack` judges a staged set by comparing `ModFile.version` against the ranges the
+jars declare. On CurseForge that field is the author-typed `displayName` (`CurseForgePlatform.toModFile`
+documents it as "often decorated" *in place*), and `VersionConstraint.numbersOf` maps a digit-less component
+to `0` — so `Balm 26.2.0.7` compares as `[0, 2, 0, 7]` and `balm-fabric-26.2-26.2.0.7.jar` as `[0]`.
+Practically every CurseForge dependency therefore read as older than its declared range.
+
+Measured on the live daemon within 24 hours of deployment: **1014** `re-staging … without it` lines and
+**146** `publishes no … file for Minecraft` lines in one day against **4** genuine staging failures, ending
+in **47 published `ERROR` verdicts** for files the CurseForge API returns on request, correctly loader-tagged.
+
+*The suite could not have caught it*: every guard in `be01428f2`/`20f5895a0` is Modrinth-shaped, where
+`version_number` is clean semver. The rule broken is not pin-first — that was followed exactly — it is that
+a new comparison was introduced without characterising the input it would actually meet on the other
+platform. **Closed by `3156d60f2`.** Kept here because the *shape* recurs: this module's history already
+contains "the two copies had drifted" and "the descriptor is upstream-wrong"; this is "the field does not
+contain what its type suggests", and the tell was in a comment three lines from the assignment.
+
+## MEDIUM
+
+**M-1 — the nested-jar ambiguity rules are asserted nowhere.** `293998273` states two safety properties in
+prose and pins neither: `BundledJars.versionsIn` drops an id its jar bundles at two different versions, and
+`BootVerifier.nestedVersions` drops one two staged jars bundle differently. `grep -rl "versionsIn\|nestedVersions"
+src/test` returns nothing — only the end-to-end happy path exercises `versionsIn`, implicitly. Also
+unasserted: the Quilt spelling (`quilt_loader.version`), and the documented split whereby a nested mod with
+no declared version still counts as *present* through `idsIn` while contributing no version. A rule stated
+in prose and asserted nowhere is the class of thing this log has flagged repeatedly.
+
+**M-2 — one rule, two implementations.** The "drop every id that resolved to more than one version" fold is
+written twice, in `BundledJars.versionsIn` and `BootVerifier.nestedVersions`. They agree today. Two copies of
+one rule is precisely the `MetadataScanner`/`ModListCompiler` drift shape this module's own CLAUDE.md opens
+with.
+
+**M-3 — `06c3ac3c5` carries a refactor inside a behaviour change.** Moving `withoutExcluded` to the companion
+and changing `planManifestDependency`'s parameter list and `resolveRef` contract are behaviour-preserving
+moves that enabled the change; the conventions still ask for them in their own `refactor:` commit. The commit
+message does disclose both, and the one existing assertion it altered was flagged in the body — the flag
+worked, the split did not happen.
+
+**M-4 — definition-of-done item 4 unmet by BOTH batches.** `claude-docs/REFACTOR-LOG.md`'s last entry is
+`## 2026-09-05`. Neither the 2026-09-06 field reports nor the 2026-09-07/08 storm fix appended a blow-by-blow,
+though both updated the module CLAUDE.md.
+
+**M-5 — the root status table has drifted.** `CLAUDE.md:346` states clientside **410**; the suite is **419**
+(`build/test-results/test`, 2026-09-08). The row's prose also predates the three fixes in this range.
+
+## LOW
+
+**L-1 — `DependencyBacktrack.Conflict` documents none of its five properties** (`DependencyBacktrack.kt:73-79`,
+`be01428f2`). The type carries a one-line class doc and the constructor is bare, against the convention that
+every unit — unexported included — states what it is for.
+
+**L-2 — `DependencyBacktrack.Requirement` uses a class-level `@param` block** (`DependencyBacktrack.kt:60-70`).
+The root conventions call that out specifically: it leaves the properties undocumented as far as dokka is
+concerned, and the reshape to one parameter per line with its own KDoc is in scope for the declaration being
+documented.
+
+**L-3 — pre-existing, outside this range, surfaced rather than deferred:** `BootVerifier.kt:614-631` carries
+**two stacked KDoc blocks** before `bootableReleases()`. The first ("Whether a given loader can actually be
+booted on a given Minecraft version…") documents `bootableCombination()`, which now has no doc at all.
+Introduced by `39d340340` (2026-08-23, `fix(clientside): re-check a crash across loaders and Minecraft lines`).
+
+**L-4 — the merge message asserts numbers measured before the last commit.** `3578da046` states "clientside
+419, grinder 503 (29 skipped), app 149". Only clientside was re-run after `293998273`; the grinder and app
+figures were measured at 2026-09-07 22:13/22:16, before that commit existed. The test-results XML timestamps
+are the evidence. A re-run is in flight; the numbers are expected to hold, but "expected to hold" is what the
+message stated as measured.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **P-1 — `2329996a5`'s edit to an existing test is comment-only.** The single changed line is a KDoc symbol
+  reference (`BootCandidateSelector.fallbackLoaders` → `LoaderCompatibility.alsoRuns`) following the move.
+  No assertion, argument or expected value changed: the documented reference-only carve-out.
+- **P-2 — `039645952` adds production code to a `test(…)` commit, deliberately.** The three added lines are
+  `isConnectorPlaceholder` as `TODO()`, so the test tree compiles and every new guard fails for exactly one
+  reason. Same technique in `be01428f2`, whose `DependencyBacktrack.kt` ships with both entry points as
+  `TODO()`. This is what makes a red pin isolate; it is not concern-mixing.
+- **P-3 — idiom sweep clean.** 633 added production lines across the range: zero new `!!`, zero new `var`.
+  Every `fun` and `const val` in every changed main-source file carries a doc comment, with the single
+  exception recorded as L-3 (pre-existing).
+- **P-4 — module boundaries intact.** `-clientside` gained no dependency on `-app`, Spring or Swing. Nothing
+  in `-api` changed anywhere in this range, so no `API-BEHAVIOUR-CHANGES.md` row is owed — `-clientside` is
+  not published to Maven.
+- **P-5 — `1ebfd7d50` is honestly labelled `refactor:`.** It replaces two deprecated `Config.valueMap()`
+  calls with `UnmodifiableConfig.get(path)`; no assertion changed, and the body says plainly that it corrects
+  a "no new warnings" claim the previous commit got wrong.
+- **P-6 — `misc/cf-dependency-probe.sh` is untracked on purpose.** `misc/` is the operator's own scratch area
+  and is deliberately not committed; the probe's header carries its measured results so the evidence survives
+  outside git.
+
+## Recommendation
+
+M-1, M-2 and L-1/L-2/L-3 are cheap and mechanical. M-4 and M-5 are the documentation debt this range
+accumulated, and M-5 is a wrong number in an always-loaded file. H-1 is closed; it stays as the lesson.
