@@ -1199,6 +1199,13 @@ class BootVerifier(
          * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
          * a newest build is known, and only when it differs from the one that actually crashed.
          */
+        /** Not implemented yet — see `LoaderTooOldRecheckTest`. Replaces [shouldRecheckCrash]. */
+        internal fun shouldRecheckOnNewestBuild(
+            outcome: BootOutcome,
+            bootedVersion: String,
+            latestVersion: String?
+        ): Boolean = TODO("a loader too old for the mod is not re-checked yet")
+
         internal fun shouldRecheckCrash(outcome: BootOutcome, bootedVersion: String, latestVersion: String?): Boolean =
             outcome.result == BootResult.CRASHED && latestVersion != null && latestVersion != bootedVersion
 
