@@ -77,9 +77,12 @@ class VerdictListPane(
             maxWidth = 34
             minWidth = 34
         }
-        // `SERVER_OR_BOTH` is the widest value this column ever holds AND the most common one — 1718 of
-        // 2057 rows on the live feed — so at an equal share of the table it truncates on nearly every row.
-        // A preferred width only: the column still shrinks with the window, it just does not start clipped.
+        // Both evidence columns hold long, fixed vocabularies, and at an equal share of the table their
+        // widest values clip: `SERVER_OR_BOTH` (1718 of 2057 rows on the live feed) and `CONTRADICTORY`
+        // (161) -- the second being the exact value these two columns were added to surface, so rendering
+        // it as `CONTRADICTO...` defeats the point of having them. Seen in the running GUI, not deduced.
+        // Preferred widths only: both still shrink with the window, they just do not start clipped.
+        table.columnModel.getColumn(VerdictTableModel.DECLARED_COLUMN).preferredWidth = 130
         table.columnModel.getColumn(VerdictTableModel.JAR_SIDENESS_COLUMN).preferredWidth = 140
 
         warning?.let { add(banner(it), BorderLayout.NORTH) }

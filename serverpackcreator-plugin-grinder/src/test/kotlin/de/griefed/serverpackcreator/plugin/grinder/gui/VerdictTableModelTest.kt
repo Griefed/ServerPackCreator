@@ -268,12 +268,10 @@ internal class VerdictTableModelTest {
      * the failure mode is a *different* column being widened, which nothing else would notice.
      */
     @Test
-    fun theSizedColumnConstantPointsAtTheColumnItNames() {
+    fun theSizedColumnConstantsPointAtTheColumnsTheyName() {
         val model = VerdictTableModel()
 
-        Assertions.assertEquals(
-            "JAR sideness",
-            model.getColumnName(VerdictTableModel.JAR_SIDENESS_COLUMN)
-        )
+        Assertions.assertEquals("Declared", model.getColumnName(VerdictTableModel.DECLARED_COLUMN))
+        Assertions.assertEquals("JAR sideness", model.getColumnName(VerdictTableModel.JAR_SIDENESS_COLUMN))
     }
 }
