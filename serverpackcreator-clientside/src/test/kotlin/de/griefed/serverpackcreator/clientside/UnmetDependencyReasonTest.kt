@@ -110,8 +110,15 @@ internal class UnmetDependencyReasonTest {
         "fabric-api-0.97.8.jar" to """"id":"fabric-api","provides":["fabric"]"""
     )
 
-    /** Writes the real jar the scanners read; a file with no body here fails to download, as CDNs do. */
+    /**
+     * Writes the real jar the scanners read; a file with no body here fails to download, as CDNs do.
+     *
+     * **Mirrors `HttpJarDownloader`'s first line**: a file with no `downloadUrl` is distribution-locked and
+     * cannot be fetched at all. A fake that ignored that would make the locked path untestable — and did,
+     * until this test was written against it and came back reporting a backtrack instead.
+     */
     private fun downloaderFor(bodies: Map<String, String>) = JarDownloader { modFile, targetDirectory ->
+        if (modFile.downloadUrl == null) return@JarDownloader null
         val body = bodies[modFile.fileName] ?: return@JarDownloader null
         targetDirectory.mkdirs()
         File(targetDirectory, modFile.fileName).also { jar ->
@@ -176,6 +183,117 @@ internal class UnmetDependencyReasonTest {
         Assertions.assertTrue(
             detail.contains("yacl (download failed)"),
             "the build exists and was picked; retrying might work, and the refusal must not blame the project: $detail"
+        )
+    }
+
+    /**
+     * A file was picked and its author opted out of third-party distribution: there is no URL to fetch, and
+     * no amount of retrying produces one. Distinguishing this from a transient failure is the same call
+     * `downloadFailureDetail` makes for the candidate — and until now it was asserted only where the string
+     * is rendered, never where the reason is *chosen* (A-5, `claude-docs/ANALYSIS-AUDIT.md`).
+     */
+    @Test
+    fun aDistributionLockedDependencyIsNotAFailedDownload(@TempDir workDir: File) {
+        val lockedOnly = ProjectFiles(
+            platform = "Modrinth", slug = "yacl", projectUrl = "https://modrinth.com/mod/yacl",
+            clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN,
+            files = listOf(
+                fabricFile("yet_another_config_lib_v3-3.6.6.jar", "3.6.6+1.20.6", downloadUrl = null)
+            )
+        )
+
+        val detail = refusalFor(lockedOnly, descriptors, workDir)
+
+        Assertions.assertTrue(
+            detail.contains("yacl (distribution-locked on Modrinth)"),
+            "an author's opt-out must not read as a transient failure: $detail"
+        )
+    }
+
+    /**
+     * A ref the platform does not carry at all. The label already says so, so the reason adds no second
+     * sentence — but it must be *chosen*, and that choice was likewise asserted nowhere.
+     */
+    @Test
+    fun anUnresolvedRefSaysWhichPlatformItBelongsTo(@TempDir workDir: File) {
+        val carriesNothing = object : ModPlatform {
+            override val name: String = "Modrinth"
+            override fun handles(projectUrl: String): Boolean = true
+            override fun resolve(projectUrl: String): ProjectFiles = candidate
+            override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = null
+        }
+        val prepared = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = carriesNothing,
+            httpDownloader = downloaderFor(descriptors),
+            loaderVersionPolicy = unbootableLoaderVersion,
+            workDirectory = workDir
+        ).prepareBootPack(candidate, "Fabric")
+
+        val detail = Assertions.assertInstanceOf(BootVerifier.Prepared.Failed::class.java, prepared).detail
+        Assertions.assertTrue(
+            detail.contains("yacl (unresolved Modrinth project)"),
+            "an opaque ref must say where to look it up, and must not gain a second explanation: $detail"
+        )
+    }
+
+    // --- the reason predicate itself, directly ------------------------------------------------------
+
+    /** Nothing excluded: whatever went wrong, staging did not do it. Short-circuits without a second pick. */
+    @Test
+    fun nothingExcludedIsAlwaysTheProjectsOwnGap() {
+        val project = ProjectFiles(
+            platform = "Modrinth", slug = "yacl", projectUrl = "https://modrinth.com/mod/yacl",
+            clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN,
+            files = listOf(fabricFile("yacl-3.6.6.jar", "3.6.6"))
+        )
+
+        Assertions.assertEquals(
+            UnmetReason.NO_USABLE_FILE,
+            BootVerifier.backtrackReason(project, emptySet(), "Fabric", fabricRelease)
+        )
+    }
+
+    /**
+     * Exclusions exist, but the project publishes nothing this boot could have used **anyway** — so they are
+     * not what stood in the way, and the refusal must still blame the project.
+     *
+     * Note the precondition this respects: `backtrackReason` is asked only once the *filtered* pick has
+     * already failed. Handing it a project that would still have yielded a file asks about a state it is
+     * never called in, and the answer is meaningless rather than wrong.
+     */
+    @Test
+    fun exclusionsDoNotGetTheBlameWhenNothingWasUsableEither() {
+        val forgeOnly = ProjectFiles(
+            platform = "Modrinth", slug = "yacl", projectUrl = "https://modrinth.com/mod/yacl",
+            clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN,
+            files = listOf(
+                ModFile(
+                    "yacl-forge-3.6.6.jar", setOf("Forge"), setOf(fabricRelease),
+                    "https://cdn/yacl-forge-3.6.6.jar", null, emptyList(), "3.6.6"
+                )
+            )
+        )
+
+        Assertions.assertEquals(
+            UnmetReason.NO_USABLE_FILE,
+            BootVerifier.backtrackReason(forgeOnly, setOf("yacl-3.4.2.jar"), "Fabric", fabricRelease),
+            "no Fabric build exists with or without the exclusions"
+        )
+    }
+
+    /** And the case the reason exists for: the exclusions are the only thing standing in the way. */
+    @Test
+    fun anExclusionThatRemovesEveryUsableBuildIsOurOwnDoing() {
+        val project = ProjectFiles(
+            platform = "Modrinth", slug = "yacl", projectUrl = "https://modrinth.com/mod/yacl",
+            clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN,
+            files = listOf(fabricFile("yacl-3.6.6.jar", "3.6.6"))
+        )
+
+        Assertions.assertEquals(
+            UnmetReason.DROPPED_BY_BACKTRACK,
+            BootVerifier.backtrackReason(project, setOf("yacl-3.6.6.jar"), "Fabric", fabricRelease)
         )
     }
 

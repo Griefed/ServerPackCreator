@@ -100,6 +100,13 @@ internal class NestedDependencyConflictTest {
         files = listOf(fabricFile("ponderjs-2.2.0.jar", "2.2.0"))
     )
 
+    /** Ponder as a project in its own right, for the case where the pack stages it top-level as well. */
+    private val ponder = ProjectFiles(
+        platform = "Modrinth", slug = "ponder", projectUrl = "https://modrinth.com/mod/ponder",
+        clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN,
+        files = listOf(fabricFile("ponder-1.0.90.jar", "1.0.90"))
+    )
+
     private val platform = object : ModPlatform {
         override val name: String = "Modrinth"
         override fun handles(projectUrl: String): Boolean = true
@@ -108,6 +115,7 @@ internal class NestedDependencyConflictTest {
             when (nativeRef) {
                 "create" -> create
                 "ponderjs" -> ponderJs
+                "ponder" -> ponder
                 else -> null
             }
     }
@@ -127,16 +135,19 @@ internal class NestedDependencyConflictTest {
         "ponderjs-2.2.0.jar" to ("META-INF/jars/ponder-1.0.64.jar" to """"id":"ponder","version":"1.0.64"""")
     )
 
-    /** A real jar, with a real nested jar inside it where the fixture says so. */
-    private fun downloader() = JarDownloader { modFile, targetDirectory ->
-        val body = descriptors[modFile.fileName] ?: return@JarDownloader null
+    /** A real jar, with a real nested jar inside it where [bodies] and [nesting] say so. */
+    private fun downloader(
+        bodies: Map<String, String> = descriptors,
+        nesting: Map<String, Pair<String, String>> = nested
+    ) = JarDownloader { modFile, targetDirectory ->
+        val body = bodies[modFile.fileName] ?: return@JarDownloader null
         targetDirectory.mkdirs()
         File(targetDirectory, modFile.fileName).also { jar ->
             JarOutputStream(jar.outputStream()).use { out ->
                 out.putNextEntry(JarEntry("fabric.mod.json"))
                 out.write("""{"schemaVersion":1,$body}""".toByteArray())
                 out.closeEntry()
-                nested[modFile.fileName]?.let { (path, nestedBody) ->
+                nesting[modFile.fileName]?.let { (path, nestedBody) ->
                     out.putNextEntry(JarEntry(path))
                     out.write(jarBytes(nestedBody))
                     out.closeEntry()
@@ -160,13 +171,18 @@ internal class NestedDependencyConflictTest {
         File(workDir, AttemptDirectory.nameFor("Modrinth", "createaddition", "Fabric") + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
-    private fun stage(workDir: File) = BootVerifier(
+    private fun stage(
+        workDir: File,
+        bodies: Map<String, String> = descriptors,
+        nesting: Map<String, Pair<String, String>> = nested,
+        project: ProjectFiles = candidate
+    ) = BootVerifier(
         apiWrapper = apiWrapper,
         platform = platform,
-        httpDownloader = downloader(),
+        httpDownloader = downloader(bodies, nesting),
         loaderVersionPolicy = unbootableLoaderVersion,
         workDirectory = workDir
-    ).prepareBootPack(candidate, "Fabric")
+    ).prepareBootPack(project, "Fabric")
 
     /**
      * **The blind spot itself.** `ponder 1.0.64` exists only inside `ponderjs`, so nothing saw it, the
@@ -193,34 +209,39 @@ internal class NestedDependencyConflictTest {
         val satisfied = descriptors + mapOf(
             "create-6.0.10.jar" to """"id":"create","version":"6.0.10","depends":{"ponder":">=1.0.60"}"""
         )
-        val verifier = BootVerifier(
-            apiWrapper = apiWrapper,
-            platform = platform,
-            httpDownloader = JarDownloader { modFile, targetDirectory ->
-                val body = satisfied[modFile.fileName] ?: return@JarDownloader null
-                targetDirectory.mkdirs()
-                File(targetDirectory, modFile.fileName).also { jar ->
-                    JarOutputStream(jar.outputStream()).use { out ->
-                        out.putNextEntry(JarEntry("fabric.mod.json"))
-                        out.write("""{"schemaVersion":1,$body}""".toByteArray())
-                        out.closeEntry()
-                        nested[modFile.fileName]?.let { (path, nestedBody) ->
-                            out.putNextEntry(JarEntry(path))
-                            out.write(jarBytes(nestedBody))
-                            out.closeEntry()
-                        }
-                    }
-                }
-            },
-            loaderVersionPolicy = unbootableLoaderVersion,
-            workDirectory = workDir
+
+        stage(workDir, bodies = satisfied)
+
+        Assertions.assertEquals(
+            listOf("createaddition-1.3.0.jar", "create-6.0.10.jar", "ponderjs-2.2.0.jar").sorted(),
+            stagedMods(workDir),
+            "1.0.64 satisfies >=1.0.60, so nothing contradicts anything and the newest build stays"
         )
+    }
 
-        verifier.prepareBootPack(candidate, "Fabric")
+    /**
+     * **A top-level jar outranks a bundled copy of the same id**, because it is the build staging
+     * deliberately chose and the one a demotion would act on. The rule lives in an operand order —
+     * `nestedVersions(...) + scanned…` — which nothing else asserts, so swapping it would silently start
+     * judging the pack against a library the loader is not going to load.
+     */
+    @Test
+    fun aTopLevelJarOutranksABundledCopyOfTheSameId(@TempDir workDir: File) {
+        val alsoStagesPonder = candidate.copy(
+            files = listOf(
+                fabricFile("createaddition-1.3.0.jar", "1.3.0", listOf("create", "ponderjs", "ponder"))
+            )
+        )
+        val bodies = descriptors + mapOf("ponder-1.0.90.jar" to """"id":"ponder","version":"1.0.90"""")
 
-        Assertions.assertTrue(
-            stagedMods(workDir).contains("create-6.0.10.jar"),
-            "1.0.64 satisfies >=1.0.60, so nothing contradicts anything: ${stagedMods(workDir)}"
+        stage(workDir, bodies = bodies, project = alsoStagesPonder)
+
+        Assertions.assertEquals(
+            listOf(
+                "createaddition-1.3.0.jar", "create-6.0.10.jar", "ponder-1.0.90.jar", "ponderjs-2.2.0.jar"
+            ).sorted(),
+            stagedMods(workDir),
+            "the staged ponder is 1.0.90 and satisfies >=1.0.82, so the nested 1.0.64 must not be what is judged"
         )
     }
 }
