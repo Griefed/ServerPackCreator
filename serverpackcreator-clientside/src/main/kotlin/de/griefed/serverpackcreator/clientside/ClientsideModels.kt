@@ -95,7 +95,9 @@ data class ModFile(
      * `displayName`), or `null` when it reported none. Carried so a dependant's declared constraint can
      * actually be *matched* rather than merely recorded — both platforms had this and both discarded it.
      */
-    val version: String? = null
+    val version: String? = null,
+    /** Not implemented yet — see `LinkedDependencyTest`. */
+    val relatedDependencies: List<String> = emptyList()
 ) {
     /** Whether this file cannot be downloaded via the API and needs the browser download-flow. */
     val locked: Boolean
