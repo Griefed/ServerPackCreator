@@ -150,7 +150,11 @@ class GrinderClient(
                 suggestedEntry = row.textOrNull("suggestedEntry"),
                 filenamePattern = row.textOrNull("filenamePattern"),
                 detail = row.textOrNull("detail").orEmpty(),
-                scannedAt = row.textOrNull("verifiedAt").orEmpty()
+                scannedAt = row.textOrNull("verifiedAt").orEmpty(),
+                // Both stay nullable: a row the grinder recorded no reading for must render as an empty
+                // cell, not as the word "null" -- 18 of 2057 rows on the live feed have no `declared`.
+                declared = row.textOrNull("declared"),
+                jarScan = row.textOrNull("jarScan")
             )
         }
     }

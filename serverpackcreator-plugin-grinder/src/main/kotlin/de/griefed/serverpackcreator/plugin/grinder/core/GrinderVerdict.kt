@@ -51,9 +51,19 @@ data class GrinderVerdict(
     val filenamePattern: String?,
     val detail: String,
     val scannedAt: String,
-    /** Not read from the feed yet — see `GrinderClientTest.readsTheDocumentedVerdictDocument`. */
+    /**
+     * What the mod says about itself, folded from the platform's declaration and the jar's own descriptor:
+     * `CLIENT`, `SERVER`, `CONTRADICTORY`, or `null` when neither source said anything.
+     *
+     * Shown beside the verdict rather than instead of it — a `CONTRADICTORY` row is one where the two
+     * sources disagree, which is the case a maintainer most often wants to look at by hand.
+     */
     val declared: String? = null,
-    /** Not read from the feed yet — see `GrinderClientTest.readsTheDocumentedVerdictDocument`. */
+    /**
+     * How the jar itself scanned — `CLIENT`, `SERVER_OR_BOTH`, `DEFERRED` (distribution-locked, never read)
+     * or `ERROR`. Named for the feed's own `jarScan` field so the mapping is one hop; the column is
+     * labelled "JAR sideness", which is what it means to a reader.
+     */
     val jarScan: String? = null
 ) {
     /**

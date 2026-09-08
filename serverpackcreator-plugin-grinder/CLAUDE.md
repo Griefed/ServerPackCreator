@@ -76,6 +76,16 @@ plus a native view of the daemon's own dashboard.
   the primitive `boolean.class`, which `JTable` has no renderer for — the column would fall back to the
   string renderer and show "true"/"false" instead of a checkbox. The `java.lang.Boolean::class.java`
   spelling picks the right class but raises a compiler warning.
+- **The table shows the conclusion and the two readings behind it** (2026-09-08). Columns are
+  `[tick] Name · Entry · Verdict · Declared · JAR sideness · Loader · Platform · Scanned · Detail`, with
+  the two evidence columns immediately after `Verdict` because that is the order a reader needs them in.
+  They are worth the width: on the live feed, **161 of 2057** rows are `CONTRADICTORY` — the platform's
+  declaration and the jar's own descriptor disagreeing about the same mod — and that is exactly the row a
+  maintainer wants to check by hand rather than trust. `declared` may be **absent** (18 of 2057) and both
+  render as an empty cell rather than the word "null", the same conflation `textOrNull` exists for.
+  **Consequence worth knowing:** the search box filters with a column-less `RowFilter.regexFilter`, so it
+  now matches these values too — typing `CONTRADICTORY` or `SERVER_OR_BOTH` filters the table. That is
+  useful and it was not designed, it is inherited from the filter being column-less.
 - **A selection is never pruned — only the user unticks.** An entry the grinder has stopped reporting
   (crawl moved on, store reset, daemon down) stays ticked. The alternative is that a mod the user
   deliberately excluded silently reappears in their next server pack, which is the one failure nobody
