@@ -452,11 +452,22 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     `fabric-api-base` belongs to Fabric API, and recording its host would send a later candidate to the
     wrong project. **First prover wins**: two projects declaring one id is an upstream collision this cannot
     adjudicate, and overwriting would make the answer depend on grind order.
-  - **What is deliberately NOT built yet:** downloading a linked project *because* an id is unresolved.
-    That is the last step of the algorithm Griefed described and closes the remaining gap — an id whose
-    project no candidate has ever staged, reachable only through an `optional` platform link (Modrinth marks
-    YACL optional for `do-a-barrel-roll` while its jar declares it under `depends`). It costs downloads on a
-    path that currently fails for free, so it is a separate decision rather than something smuggled in.
+  - **A required id nothing can resolve asks the projects the page links** (`askLinkedProjects`, the last
+    step of the algorithm). `ModFile.relatedDependencies` carries every linked project — required *and*
+    optional, never `incompatible` (fetching one to identify it would be the right file for the wrong
+    reason) and never `embedded` (already inside the jar, `BundledJars`' case). Reached **only** from a
+    requirement that is required, declared by the jar, and unresolvable by the learned map, the table and
+    the slug guess alike — a state whose only other outcome is booting without the library and letting the
+    loader refuse the pack, which costs a whole container against one jar download.
+    This is what closes `Modrinth/do-a-barrel-roll`: it declares `yet_another_config_lib_v3` under
+    `depends` while Modrinth lists YACL for it as **optional**, so the required list never mentions it.
+    **Everything probed is learned, matched or not**, so the cost amortises across candidates, and a
+    per-jar `probed` set stops several unresolved ids re-fetching the same links. The probe copy lands
+    outside `mods/` and is deleted at once — a project that turns out to provide something else must not
+    end up in the pack — and a match is staged by the ordinary path so its own dependencies, the injection
+    record and the `MAX_INJECTED_DEPENDENCIES` accounting all still happen.
+    **The cost rule is pinned, not assumed:** `nothingIsProbedWhileTheIdStillResolves` asserts the exact
+    set of files fetched through a recording downloader.
   - The descriptor is read **once per staged jar** (`BootVerifier.declaredDependencies`) and handed to both
     halves of staging; they used to scan the same file separately, which is two chances to disagree.
 

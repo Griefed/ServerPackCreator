@@ -459,6 +459,60 @@ class BootVerifier(
     }
 
     /**
+     * Download the projects [file]'s page links, read what they are, and stop as soon as one turns out to
+     * provide [modId]. Returns whether anything now answers for that id.
+     *
+     * **The last resort, and priced accordingly.** Reached only from a requirement that is required, that
+     * the jar declares, and that neither the learned map nor `KnownModIds` nor a slug guess could resolve —
+     * a state whose only other outcome is booting without the library and letting the loader refuse the
+     * pack, which costs a whole container. Against that, a jar download is cheap.
+     *
+     * **Everything it reads is kept, matched or not** ([LearnedModIds.learn]), so the cost amortises: the
+     * next candidate needing any of those projects by id pays nothing. [probed] stops one jar's several
+     * unresolved ids from fetching the same links again within a single pass.
+     *
+     * The probe copy is downloaded outside `mods/` and deleted immediately — a project that turns out to
+     * provide something else must not end up in the pack, and the matching one is staged by the ordinary
+     * path so that its own dependencies, its cap accounting and its injection record all still happen.
+     */
+    private fun askLinkedProjects(
+        modId: String,
+        file: ModFile,
+        loader: String,
+        minecraftVersion: String,
+        modsDir: File,
+        excluded: Set<String>,
+        probed: MutableSet<String>
+    ): Boolean {
+        val wanted = modId.trim().lowercase()
+        val probeDir = File(modsDir.parentFile.parentFile, "probe")
+        for (ref in file.relatedDependencies) {
+            if (learnedModIds.refFor(wanted, platform.name) != null) {
+                return true
+            }
+            if (!probed.add(ref)) {
+                continue
+            }
+            val project = platform.resolveDependency(ref, minecraftVersion) ?: continue
+            val candidate = BootCandidateSelector.pickDependencyFile(
+                project.withoutExcluded(excluded).files, loader, minecraftVersion
+            ) ?: continue
+            val jar = httpDownloader.download(candidate, probeDir) ?: continue
+            val ids = identityOf(jar, loader, minecraftVersion)
+            jar.delete()
+            learnedModIds.learn(platform.name, ref, ids)
+            if (ids.any { it.trim().lowercase() == wanted }) {
+                log.info(
+                    "'$modId' maps to no project by name, but ${project.slug} — linked from " +
+                        "${file.fileName}'s page — declares it. Staging it."
+                )
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
      * What [jar]'s own descriptor says it needs, or `null` when it could not be read at all.
      *
      * Read **once per staged jar** and handed to both halves of staging, which ask different questions of
@@ -512,6 +566,9 @@ class BootVerifier(
         val requirements = declared ?: return
 
         val bundled = BundledJars.idsIn(staged)
+        // Scoped to this jar, which is also the scope of `file.relatedDependencies`: several unresolved ids
+        // in one descriptor share a single round of probing instead of re-fetching the same links each time.
+        val probed = mutableSetOf<String>()
         for (requirement in stageableRequirements(requirements, visited, bundled) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
@@ -519,16 +576,32 @@ class BootVerifier(
             if (alreadySeen) {
                 continue
             }
-            val plan = planManifestDependency(
-                requirement, loader, minecraftVersion,
-                // Learned first: a descriptor this process actually read outranks a table entry and a
-                // slug guess alike, and it is the half that grows on its own.
-                mappingFor = { learnedModIds.mappingFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) } },
-                // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
-                // publishing nothing usable from one whose builds staging dropped.
-                resolveRef = { platform.resolveDependency(it, minecraftVersion) },
-                excluded = excluded
-            )
+            val planFor = {
+                planManifestDependency(
+                    requirement, loader, minecraftVersion,
+                    // Learned first: a descriptor this process actually read outranks a table entry and a
+                    // slug guess alike, and it is the half that grows on its own.
+                    mappingFor = {
+                        learnedModIds.mappingFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
+                    },
+                    // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
+                    // publishing nothing usable from one whose builds staging dropped.
+                    resolveRef = { platform.resolveDependency(it, minecraftVersion) },
+                    excluded = excluded
+                )
+            }
+            val firstPlan = planFor()
+            // Only here, and only for a requirement that is REQUIRED (optional ones never reach this loop)
+            // and unresolvable by every cheaper route, is a download worth spending to find out what a
+            // linked project is. Re-planning afterwards rather than using the probe's answer directly keeps
+            // one code path deciding what gets staged.
+            val plan = if (firstPlan is ManifestDependencyPlan.Unmapped &&
+                askLinkedProjects(requirement.modID, file, loader, minecraftVersion, modsDir, excluded, probed)
+            ) {
+                planFor()
+            } else {
+                firstPlan
+            }
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {
                     log.info("Manifest dependency '${plan.modID}' maps to nothing this platform carries.")
