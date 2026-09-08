@@ -54,7 +54,10 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author Griefed
  */
-class LearnedModIds {
+class LearnedModIds(
+    /** Not implemented yet — see `LearnedModIdsTest.onlySomethingNewAnnouncesItself`. */
+    private val onLearned: () -> Unit = {}
+) {
 
     /**
      * `platform -> (lowercased mod id -> ref)`. Nested per platform because a ref is meaningless on the
@@ -91,4 +94,11 @@ class LearnedModIds {
      */
     fun mappingFor(modId: String, platform: String, orElse: (String) -> ModIdMapping): ModIdMapping =
         refFor(modId, platform)?.let { ModIdMapping.Alias(it) } ?: orElse(modId)
+
+    /** Everything learned so far as plain data, so an owner can write it somewhere. */
+    fun snapshot(): Map<String, Map<String, String>> = TODO("nothing can be carried across a restart yet")
+
+    /** Adopt [snapshot] wholesale, as read back from wherever an owner wrote it. */
+    fun restore(snapshot: Map<String, Map<String, String>>): Unit =
+        TODO("nothing can be carried across a restart yet")
 }

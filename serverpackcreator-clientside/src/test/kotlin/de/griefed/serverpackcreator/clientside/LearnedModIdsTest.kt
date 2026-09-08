@@ -136,4 +136,66 @@ internal class LearnedModIdsTest {
 
         Assertions.assertEquals("first-project", learned.refFor("sharedlib", "Modrinth"))
     }
+
+    // --- carrying it across restarts ------------------------------------------------------------------
+
+    /**
+     * What was learned has to be expressible as plain data, or it cannot outlive the process. The shape is
+     * deliberately `platform -> id -> ref`: nested, because a ref is meaningless on the other platform, and
+     * a flat map keyed by a joined string would let that mistake through.
+     */
+    @Test
+    fun whatWasLearnedSurvivesARoundTrip() {
+        val original = LearnedModIds()
+        original.learn("Modrinth", "yacl", setOf("yet_another_config_lib_v3"))
+        original.learn("CurseForge", "667299", setOf("yet_another_config_lib_v3"))
+
+        val restored = LearnedModIds()
+        restored.restore(original.snapshot())
+
+        Assertions.assertEquals("yacl", restored.refFor("yet_another_config_lib_v3", "Modrinth"))
+        Assertions.assertEquals("667299", restored.refFor("yet_another_config_lib_v3", "CurseForge"))
+    }
+
+    /** An empty snapshot restores to an empty map rather than throwing at a daemon's startup. */
+    @Test
+    fun restoringNothingIsNotAFailure() {
+        val learned = LearnedModIds()
+
+        learned.restore(emptyMap())
+
+        Assertions.assertNull(learned.refFor("anything", "Modrinth"))
+    }
+
+    /**
+     * **Only a genuinely new pair is worth a write.** The hook is what a file-backed owner persists on, and
+     * re-learning something already known happens constantly — every staged dependency re-states its own id
+     * on every candidate that uses it.
+     */
+    @Test
+    fun onlySomethingNewAnnouncesItself() {
+        var announcements = 0
+        val learned = LearnedModIds(onLearned = { announcements++ })
+
+        learned.learn("Modrinth", "yacl", setOf("yet_another_config_lib_v3"))
+        Assertions.assertEquals(1, announcements, "the first sighting is news")
+
+        learned.learn("Modrinth", "yacl", setOf("yet_another_config_lib_v3"))
+        Assertions.assertEquals(1, announcements, "the same pair again is not")
+
+        learned.learn("Modrinth", "yacl", setOf("yet_another_config_lib_v3", "yacl_extra"))
+        Assertions.assertEquals(2, announcements, "a new id alongside a known one is")
+    }
+
+    /** Restoring is not learning: loading a file at startup must not immediately ask to write it back. */
+    @Test
+    fun restoringDoesNotAnnounceAnything() {
+        var announcements = 0
+        val learned = LearnedModIds(onLearned = { announcements++ })
+
+        learned.restore(mapOf("Modrinth" to mapOf("yet_another_config_lib_v3" to "yacl")))
+
+        Assertions.assertEquals(0, announcements)
+        Assertions.assertEquals("yacl", learned.refFor("yet_another_config_lib_v3", "Modrinth"))
+    }
 }
