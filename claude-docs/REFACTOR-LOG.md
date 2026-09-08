@@ -3824,3 +3824,61 @@ after the fact.
 
 Status-table counts refreshed from `build/test-results`: api **387 → 405**, clientside **368 → 369**,
 grinder **490 → 495**. The api number had been stale for some time; it is re-derived, not incremented.
+
+
+## 2026-09-06 — three field reports from the live grinder
+
+Reported by Griefed from the deployed daemon, each pinned red before its fix and each recorded in
+`serverpackcreator-clientside/CLAUDE.md` in full; the short version, so this log is not silent about a day's
+work:
+
+- **NeoForge runs Forge builds on Minecraft 1.20.1, and nowhere else** (`LoaderCompatibility`). NeoForge
+  20.1.x is a fork of Forge 47 that kept the `net.minecraftforge` packages and `META-INF/mods.toml`, so on
+  that one version a Forge jar and a NeoForge jar are the same file. `CurseForge/mantle` had published an
+  ERROR row refusing a file CurseForge ticks for both loaders, minutes after that same file reached a
+  ready-line under Forge. The fact now has one home instead of two divergent `Quilt to Fabric` maps.
+- **A Sinytra Connector placeholder is scanned as the Fabric mod it wraps.** `continuity`'s Forge row read
+  `jarScan=SERVER_OR_BOTH` against a platform declaring `client_side=REQUIRED` — a contradiction manufactured
+  entirely by scanning a stub `mods.toml` whose only job is to get the file past Forge's discovery. A false
+  contradiction is expensive, not merely wrong: it is what arms the other-version crash re-check, up to three
+  boot budgets per candidate.
+- **A pack whose own jars contradict each other backtracks instead of booting** (`DependencyBacktrack`), from
+  `Modrinth/zoomify` on Quilt / 1.20.5.
+
+## 2026-09-07/08 — the false-conflict storm the backtrack caused, and the three defects behind it
+
+**The backtrack shipped on the 6th and the daemon spent the 7th demoting almost everything.** Griefed
+reported three mods with "unresolved dependencies"; the store held **47** `ERROR` rows saying
+*"Required dependency unavailable"*, and the CurseForge API returns every one of those files on request,
+correctly loader-tagged (`misc/cf-dependency-probe.sh`, whose header carries the measurements).
+
+Three defects, each pinned red in its own commit first:
+
+1. **A CurseForge `ModFile.version` is the author-typed `displayName`**, and `numbersOf` maps a digit-less
+   component to `0` — `Balm 26.2.0.7` reads as `[0, 2, 0, 7]`, `balm-fabric-26.2-26.2.0.7.jar` as `[0]`. Nearly
+   every CurseForge dependency therefore looked older than its declared range, so the backtrack demoted it,
+   re-staged, saw the same thing and walked the project's file list to the end. Measured on the daemon: **1014**
+   `re-staging … without it` lines and **146** `publishes no … file for Minecraft` lines in one day against **4**
+   genuine staging failures. `readableVersion` now gates the version side of `satisfies`, which the class doc had
+   promised since it was written and only ever applied to the constraint side.
+2. **A staging refusal named no evidence.** Five ways a dependency goes unmet, three of them printing the bare
+   slug: diagnosing the 47 rows needed a CurseForge API probe *and* a log grep on the daemon host purely to learn
+   which of them it was. `UnmetReason` now travels beside the name — beside, not inside, so the dedupe that keeps
+   one mod one entry when both the platform and the manifest route miss it survives the two routes failing
+   differently.
+3. **A jar-in-jar library was invisible to the coherence check**, so `createaddition` booted a pack in which
+   `create` demanded `ponder [1.0.82,)` against the `1.0.64` nested in another jar, and the *candidate* wore the
+   INCONCLUSIVE. `BundledJars.versionsIn` + `BootVerifier.nestedVersions` close it, with bundled copies ranked
+   below top-level jars and ambiguity contributing nothing.
+
+**Audited and analysed the same day** (`claude-docs/REFACTOR-AUDIT.md`, `claude-docs/ANALYSIS-AUDIT.md`), which
+found one more instance of defect 1 one door along — a component above `Int.MAX_VALUE` parses to `null` and was
+read as `0`, so `readableVersion` now asks `toIntOrNull() != null` rather than "all digits" — plus the coverage
+gaps around the new nested-version rules, all since closed. The audit's own methodology produced the other
+lesson worth keeping: verifying per-commit red/green in a *reused* worktree build directory reports
+`No tests found` for a class that is present, and would have manufactured two false findings.
+
+Suites: clientside **410 → 438** across 2026-09-07/08, grinder **503** (29 skipped), app **149**, all green,
+every figure re-derived from `build/test-results` rather than incremented. The 410 is what the tree carried at
+`300a4aae6`; the 2026-09-06 batch reported 395 at `2329996a5` and grew from there, so the two spans are stated
+separately rather than chained into one number nobody measured.
