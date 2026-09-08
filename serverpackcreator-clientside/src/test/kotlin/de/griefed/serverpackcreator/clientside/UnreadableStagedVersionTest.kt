@@ -117,6 +117,59 @@ internal class UnreadableStagedVersionTest {
         )
     }
 
+    /**
+     * **The same defect, one door along** (A-1, `claude-docs/ANALYSIS-AUDIT.md`, 2026-09-08). `numbersOf`
+     * ends in `toIntOrNull() ?: 0`, and `toIntOrNull` returns `null` above `Int.MAX_VALUE` — so a component
+     * of ten-plus digits, which is what a date or a CI counter looks like, becomes **zero** and drops the
+     * version below almost any bound. `readableVersion` waves it through because it is all digits.
+     *
+     * Latent rather than live: nothing in the observed corpus hits it, and the cost is a wrong demotion
+     * rather than a wrong sideness verdict. It is fixed anyway because it is the exact shape that published
+     * 47 verdicts, and "all digits" is not the same question as "a number we can hold".
+     */
+    @Test
+    fun aComponentTooLargeToRepresentIsUnreadableRatherThanZero() {
+        Assertions.assertTrue(
+            VersionConstraint.satisfies("1.20260908120000", ">=1.5"),
+            "20260908120000 exceeds Int.MAX_VALUE, and reading it as 0 puts the version below the bound"
+        )
+        Assertions.assertTrue(
+            VersionConstraint.satisfies("2026.9.8.120000000000", "[2026,)"),
+            "the same, in a component that is not the last one"
+        )
+    }
+
+    /** The boundary either side of it, so the guard is a boundary rather than a blanket. */
+    @Test
+    fun aComponentThatFitsIsStillCompared() {
+        Assertions.assertTrue(VersionConstraint.satisfies("1.2147483647", ">=1.5"), "Int.MAX_VALUE fits")
+        Assertions.assertFalse(
+            VersionConstraint.satisfies("1.0.0-rc1+build", ">=99.0"),
+            "a suffix is dropped, not disqualifying: the core 1.0.0 is readable and really is below 99.0"
+        )
+        Assertions.assertFalse(
+            VersionConstraint.satisfies("1.4", ">=1.5"),
+            "and a small component is still genuinely below the bound"
+        )
+    }
+
+    /**
+     * Shapes that are not versions at all, at the edges of the predicate.
+     *
+     * `1.0.0-rc1+build` is deliberately **not** in this list: its core is `1.0.0`, which is perfectly
+     * readable, and it is correctly refused against `>=99.0`. Suffixes are dropped, not disqualifying —
+     * asserting otherwise would have widened the guard into "anything ornamented accepts".
+     */
+    @Test
+    fun theEdgesOfReadabilityAllAccept() {
+        listOf("v", "V", "1..2", "1.", ".1", "", "   ", "1_0", "one.two").forEach { version ->
+            Assertions.assertTrue(
+                VersionConstraint.satisfies(version, ">=99.0"),
+                "'$version' is not something to judge a pack by, so it must accept"
+            )
+        }
+    }
+
     /** And the comparison itself is untouched for versions that are versions. */
     @Test
     fun aReadableVersionIsStillCompared() {
