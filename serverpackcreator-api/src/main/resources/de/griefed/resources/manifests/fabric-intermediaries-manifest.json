@@ -1,5 +1,35 @@
 [
   {
+    "maven": "net.fabricmc:intermediary:26.3-pre-2",
+    "version": "26.3-pre-2",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.3-pre-1",
+    "version": "26.3-pre-1",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.3-snapshot-10",
+    "version": "26.3-snapshot-10",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.3-snapshot-9",
+    "version": "26.3-snapshot-9",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.3-snapshot-8",
+    "version": "26.3-snapshot-8",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.3-snapshot-7",
+    "version": "26.3-snapshot-7",
+    "stable": true
+  },
+  {
     "maven": "net.fabricmc:intermediary:26.3-snapshot-6",
     "version": "26.3-snapshot-6",
     "stable": true
