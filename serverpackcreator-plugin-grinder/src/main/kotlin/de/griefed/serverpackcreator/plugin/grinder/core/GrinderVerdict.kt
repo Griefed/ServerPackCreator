@@ -50,7 +50,11 @@ data class GrinderVerdict(
     val suggestedEntry: String?,
     val filenamePattern: String?,
     val detail: String,
-    val scannedAt: String
+    val scannedAt: String,
+    /** Not read from the feed yet — see `GrinderClientTest.readsTheDocumentedVerdictDocument`. */
+    val declared: String? = null,
+    /** Not read from the feed yet — see `GrinderClientTest.readsTheDocumentedVerdictDocument`. */
+    val jarScan: String? = null
 ) {
     /**
      * Whether this is the one verdict class that rests on decisive evidence — the server crashed with

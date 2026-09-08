@@ -211,4 +211,54 @@ internal class VerdictTableModelTest {
             "loading a saved selection must not look like a user edit, or the tab saves on every refresh"
         )
     }
+
+
+    // --- the evidence columns -------------------------------------------------------------------------
+
+    /**
+     * **Why these two columns exist.** `Verdict` is the conclusion; `Declared` and `JAR sideness` are the
+     * two things it was concluded from, and they disagree often enough to be worth reading side by side —
+     * on the live feed, 161 of 2057 rows are `CONTRADICTORY`, which means the platform and the jar say
+     * different things about the same mod.
+     *
+     * They sit immediately after `Verdict` for that reason: conclusion first, then what it rests on.
+     */
+    @Test
+    fun theEvidenceColumnsSitBesideTheVerdict() {
+        val model = VerdictTableModel()
+        val names = (0 until model.columnCount).map { model.getColumnName(it) }
+
+        Assertions.assertEquals(
+            listOf("Verdict", "Declared", "JAR sideness"),
+            names.subList(names.indexOf("Verdict"), names.indexOf("Verdict") + 3),
+            "the conclusion, then the two readings it came from: $names"
+        )
+    }
+
+    /** Each shows what the grinder recorded, verbatim — this table reports, it does not re-interpret. */
+    @Test
+    fun theEvidenceColumnsShowWhatTheGrinderRecorded() {
+        val model = VerdictTableModel().apply {
+            setRows(listOf(verdict("creativecore").copy(declared = "CONTRADICTORY", jarScan = "SERVER_OR_BOTH")))
+        }
+        val names = (0 until model.columnCount).map { model.getColumnName(it) }
+
+        Assertions.assertEquals("CONTRADICTORY", model.getValueAt(0, names.indexOf("Declared")))
+        Assertions.assertEquals("SERVER_OR_BOTH", model.getValueAt(0, names.indexOf("JAR sideness")))
+    }
+
+    /**
+     * A row the grinder recorded nothing for shows an empty cell. 18 of 2057 rows on the live feed have
+     * `declared: null`, and "null" in a table cell reads as a value rather than as its absence.
+     */
+    @Test
+    fun anUnrecordedReadingShowsNothingRatherThanTheWordNull() {
+        val model = VerdictTableModel().apply {
+            setRows(listOf(verdict("mystery").copy(declared = null, jarScan = null)))
+        }
+        val names = (0 until model.columnCount).map { model.getColumnName(it) }
+
+        Assertions.assertEquals("", model.getValueAt(0, names.indexOf("Declared")))
+        Assertions.assertEquals("", model.getValueAt(0, names.indexOf("JAR sideness")))
+    }
 }

@@ -72,6 +72,7 @@ internal class GrinderClientTest {
               "projectUrl": "https://modrinth.com/mod/creativecore", "loader": "Fabric",
               "suggestedEntry": "creativecore-", "detail": "crashed on a client-only class",
               "verifiedAt": "2026-09-04T12:30:00Z", "verdict": "CONFIRMED",
+              "declared": "CLIENT", "jarScan": "CLIENT",
               "filenamePattern": "CreativeCore_FABRIC_.*", "stagedDependencies": ["cloth-config"]
             },
             {
@@ -79,6 +80,7 @@ internal class GrinderClientTest {
               "projectUrl": "https://curseforge.com/minecraft/mc-mods/bookshelf", "loader": "Forge",
               "suggestedEntry": "bookshelf-", "detail": "server reached its ready line",
               "verifiedAt": "2026-09-05T08:00:00Z", "verdict": "CLEAR",
+              "declared": "CONTRADICTORY", "jarScan": "SERVER_OR_BOTH",
               "filenamePattern": null, "stagedDependencies": []
             }
           ]
@@ -101,6 +103,8 @@ internal class GrinderClientTest {
             Assertions.assertEquals("Fabric", confirmed.loader)
             Assertions.assertEquals("CONFIRMED", confirmed.verdict)
             Assertions.assertEquals("creativecore-", confirmed.suggestedEntry)
+            Assertions.assertEquals("CLIENT", confirmed.declared, "what the mod says about itself")
+            Assertions.assertEquals("CLIENT", confirmed.jarScan, "what its jar was read as")
             Assertions.assertEquals("CreativeCore_FABRIC_.*", confirmed.filenamePattern)
             Assertions.assertEquals("https://modrinth.com/mod/creativecore", confirmed.projectUrl)
             Assertions.assertEquals("crashed on a client-only class", confirmed.detail)
@@ -148,6 +152,10 @@ internal class GrinderClientTest {
             val row = (GrinderClient(mapper).fetchVerdicts(server.baseUrl()) as FetchResult.Ok).value.single()
             Assertions.assertNull(row.suggestedEntry)
             Assertions.assertNull(row.filenamePattern)
+            // 18 of 2057 rows on the live feed carry `declared: null` — a row nothing declared anything
+            // about must not put the word "null" in a table cell.
+            Assertions.assertNull(row.declared)
+            Assertions.assertNull(row.jarScan)
             Assertions.assertNull(row.exclusionEntry)
             Assertions.assertEquals("", row.detail)
         } finally {
