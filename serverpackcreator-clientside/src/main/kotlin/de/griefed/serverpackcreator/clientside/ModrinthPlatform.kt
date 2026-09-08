@@ -106,11 +106,22 @@ class ModrinthPlatform(
      * and required `dependencies` apply to every file it lists, but only its [modFilesOf] entries are
      * mods at all.
      */
+    /**
+     * Dependency types worth resolving a project for. `required` is staged; `optional` is only ever asked
+     * what it is, which is how a mod id no table knows gets matched to the project that provides it.
+     */
+    private val linkableDependencyTypes = setOf("required", "optional")
+
     private fun filesOf(version: JsonNode, projectUrl: String): List<ModFile> {
         val loaders = LoaderNames.canonicalLoaders(version.path("loaders").map { it.asText() })
         val mcVersions = version.path("game_versions").map { it.asText() }.toSortedSet()
         val requiredDeps = version.path("dependencies")
             .filter { it.path("dependency_type").asText() == "required" }
+            .mapNotNull { it.path("project_id").asText(null) }
+        // Everything the page links that could legitimately be staged: `embedded` is already inside the
+        // jar (BundledJars' case) and `incompatible` must never be fetched to be identified.
+        val linkedDeps = version.path("dependencies")
+            .filter { it.path("dependency_type").asText() in linkableDependencyTypes }
             .mapNotNull { it.path("project_id").asText(null) }
         return modFilesOf(version).map { file ->
             ModFile(
@@ -120,6 +131,7 @@ class ModrinthPlatform(
                 downloadUrl = file.textOrNull("url"),
                 pageUrl = projectUrl,
                 requiredDependencies = requiredDeps,
+                relatedDependencies = linkedDeps,
                 // The version this file was published under, which is what a dependant's declared
                 // constraint has to be matched against. Modrinth states it once per version, not per file.
                 version = version.textOrNull("version_number")

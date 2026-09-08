@@ -96,7 +96,18 @@ data class ModFile(
      * actually be *matched* rather than merely recorded — both platforms had this and both discarded it.
      */
     val version: String? = null,
-    /** Not implemented yet — see `LinkedDependencyTest`. */
+    /**
+     * Every project this file's page links, required **and** optional — the pool of things worth asking
+     * what they are, never a list of things to stage.
+     *
+     * [requiredDependencies] is the staging list and stays as strict as it is. This one exists because a
+     * mod id that resolves to nothing by spelling can still be sitting on the project page under a
+     * different name: `do-a-barrel-roll` declares `yet_another_config_lib_v3` in its jar while Modrinth
+     * lists YACL for it as *optional*, so the required list never mentions it.
+     *
+     * **Incompatible links are excluded.** Reading their id would be the right file for the wrong reason,
+     * and a match would stage the one jar the author says must not be there.
+     */
     val relatedDependencies: List<String> = emptyList()
 ) {
     /** Whether this file cannot be downloaded via the API and needs the browser download-flow. */
