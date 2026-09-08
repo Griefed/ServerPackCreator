@@ -429,6 +429,56 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     had been reporting the exact opposite of what happened. **The reason travels beside the name, never
     inside it** — `unsatisfied` is a `Map<name, reason>` so the `waystones` dedupe (one mod missing by both
     routes is one entry) survives the two routes failing differently.
+- **THE JAR IS THE AUTHORITY ON WHAT IT NEEDS; THE PLATFORM PAGE IS A SELF-REPORT** (2026-09-08). Two
+  consequences, both new, and together they are the beginning of the end of the hand-written id table.
+  - **A platform-declared dependency the descriptor never names cannot refuse a boot**
+    (`PlatformDependencyDemand`). `CurseForge/aether` on Forge / Minecraft 1.20.2 published ERROR for
+    `owo-lib`, which publishes no Forge build at all — and the Forge/NeoForge jar's `mods.toml` does not
+    list it; only the Fabric and Quilt builds do. CurseForge's per-file relations carry it regardless. Such
+    a dependency is now filed in `unmapped` (reported, never fatal) and the boot proceeds.
+    **The comparison is slug-against-id and therefore fuzzy**, because a project that cannot be staged
+    cannot be downloaded and its real id is unknowable there; `kleeslabs` declaring `balm-fabric` against a
+    project published as `balm` forbids an exact match, and a two-letter fragment forbids a loose one. Both
+    mistakes cost at most one container — a false "demanded" refuses exactly as before, a false "not
+    demanded" spends a boot that ends INCONCLUSIVE — and neither can reach a sideness verdict.
+    **`null` declared-ids (no scanner, or a scan that threw) means the platform stays in charge**, which is
+    the pre-2026-09-08 behaviour; an empty set is a *read* descriptor that asks for nothing.
+  - **The id-to-ref bridge is now learned from the jars staging downloads anyway** (`LearnedModIds`). A jar
+    staged under ref `R` whose descriptor declares id `X` proves this platform serves `X` at `R`, so the
+    learned mapping is an `Alias` — evidence, with an alias's right to refuse — while an unproved id still
+    falls through to `KnownModIds` and its guess. It compounds across candidates and is what makes entries
+    like `yet_another_config_lib_v3` self-answering: the first grind that stages YACL by ref teaches every
+    later one. **Only a jar's own `id` + `provides` is learned, never what it bundles** — a nested
+    `fabric-api-base` belongs to Fabric API, and recording its host would send a later candidate to the
+    wrong project. **First prover wins**: two projects declaring one id is an upstream collision this cannot
+    adjudicate, and overwriting would make the answer depend on grind order.
+  - **What is deliberately NOT built yet:** downloading a linked project *because* an id is unresolved.
+    That is the last step of the algorithm Griefed described and closes the remaining gap — an id whose
+    project no candidate has ever staged, reachable only through an `optional` platform link (Modrinth marks
+    YACL optional for `do-a-barrel-roll` while its jar declares it under `depends`). It costs downloads on a
+    path that currently fails for free, so it is a separate decision rather than something smuggled in.
+  - The descriptor is read **once per staged jar** (`BootVerifier.declaredDependencies`) and handed to both
+    halves of staging; they used to scan the same file separately, which is two chances to disagree.
+
+- **A loader too old for the pack is re-checked on the newest build, whatever the verdict**
+  (`LoaderVersionDemand`, `shouldRecheckOnNewestBuild`, 2026-09-08). The guard existed as
+  `shouldRecheckCrash` and covered only CRASHED; when `dependencyFailureMarkers` was widened (2026-08-29)
+  that console became INCONCLUSIVE and the guard silently stopped covering the case its own tests describe.
+  Measured on the live daemon: **all 511 Fabric boots ran loader 0.19.3** while Fabric's stable was 0.19.5,
+  and **17 of 42** `DEPENDENCY_FAILURE` rows were `fabric-language-kotlin` demanding `fabricloader >=0.19.5`
+  — an INCONCLUSIVE charged to a candidate for the harness's choice of build. `CachedLoaderVersions` even
+  logs the property that did not hold: *"(a crash on it is re-checked against <newest> before it counts)"*.
+  **Matched by a demand phrase and a runtime-provided loader id on the same line**, which is what separates
+  it from `Mod ID: 'ponder' … Expected range` — a demand no newer loader can satisfy. Whole-word matching,
+  or `forge` fires inside `forgeconfigapiport`. **Not a `BootRule`:** the rules file maps a console onto a
+  *verdict*, this maps one onto "try again differently", and an operator's typo must never cost containers.
+  **The other half of that outage was data, not code** — the shipped `fabric-manifest.xml` snapshot said
+  `<latest>0.19.3</latest>` (2026-06-01) while Fabric's maven said 0.19.5 (2026-08-28). `ApiWrapper` seeds
+  from the jar and refreshes in a background coroutine, so a cleared home races it: the first Fabric boot
+  installs what the stale snapshot named and `CachedLoaderVersions` prefers that most-recently-used build
+  for ever after. Refresh with `./gradlew :serverpackcreator-api:updateManifests` and re-run the api suite
+  **after** the copy — the task's own `dependsOn(test)` runs before it.
+
 - **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
   `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls

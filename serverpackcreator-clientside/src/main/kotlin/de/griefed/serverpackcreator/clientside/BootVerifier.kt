@@ -78,6 +78,7 @@ class BootVerifier(
     private val bootTimeout: Duration = Duration.ofMinutes(12),
     private val otherVersionRecheckLimit: Int = 2,
     private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
+    private val learnedModIds: LearnedModIds = LearnedModIds(),
     private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -353,10 +354,17 @@ class BootVerifier(
         unsatisfied: MutableMap<String, UnmetReason>,
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
-        excluded: Set<String>
+        excluded: Set<String>,
+        stagedFromRef: String? = null
     ): Boolean {
         val staged = httpDownloader.download(file, modsDir)
             ?: return false
+        // The jar is here and says what it is, so the id-to-ref bridge this platform needs is now a fact
+        // rather than a guess. Only for something fetched *by ref* -- the candidate itself was resolved from
+        // a project URL and teaches nothing about how to find it by id.
+        if (stagedFromRef != null) {
+            learnedModIds.learn(platform.name, stagedFromRef, identityOf(staged, loader, minecraftVersion))
+        }
         if (depth > 0 && injected.none { it.fileName == file.fileName }) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
             //
@@ -419,7 +427,7 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded
+                    injected, excluded, stagedFromRef = dependencyRef
                 )
             ) {
                 val reason = if (dependencyFile.locked) {
@@ -513,7 +521,9 @@ class BootVerifier(
             }
             val plan = planManifestDependency(
                 requirement, loader, minecraftVersion,
-                mappingFor = { KnownModIds.mappingFor(it, platform.name) },
+                // Learned first: a descriptor this process actually read outranks a table entry and a
+                // slug guess alike, and it is the half that grows on its own.
+                mappingFor = { learnedModIds.mappingFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) } },
                 // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
                 // publishing nothing usable from one whose builds staging dropped.
                 resolveRef = { platform.resolveDependency(it, minecraftVersion) },
@@ -540,7 +550,7 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded
+                    injected, excluded, stagedFromRef = (plan as? ManifestDependencyPlan.Stage)?.ref
                 )
             ) {
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
@@ -556,8 +566,33 @@ class BootVerifier(
         }
     }
 
-    /** This platform's ref for a manifest mod id, via [KnownModIds]. */
-    private fun platformRefFor(modId: String): String? = KnownModIds.refFor(modId, platform.name)
+    /**
+     * This platform's ref for a manifest mod id — what a staged jar proved, else what [KnownModIds] knows.
+     *
+     * Used for deduping against what is already staged, so it has to agree with the mapping staging itself
+     * uses; answering only from the table would re-download a project the learned map had already matched.
+     */
+    private fun platformRefFor(modId: String): String? =
+        learnedModIds.refFor(modId, platform.name) ?: KnownModIds.refFor(modId, platform.name)
+
+    /**
+     * The ids [jar] answers to — its own and everything it `provides` — or empty when its descriptor could
+     * not be read.
+     *
+     * **Its own identity only, never what it bundles.** A nested `fabric-api-base` is on the classpath
+     * because this jar carries it, but the id belongs to Fabric API; recording this project as its home
+     * would send a later candidate to download the wrong mod.
+     */
+    private fun identityOf(jar: File, loader: String, minecraftVersion: String): Set<String> {
+        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return emptySet()
+        return runCatching {
+            scanner.scan(listOf(jar))
+                .filter { it.descriptorRead }
+                .flatMap { listOf(it.modID) + it.provides }
+                .filter { it.isNotBlank() }
+                .toSet()
+        }.getOrDefault(emptySet())
+    }
 
     /**
      * Generate a self-installing server pack from the synthetic [modpackDir] with mod auto-exclusion
