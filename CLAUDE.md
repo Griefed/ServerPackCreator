@@ -342,7 +342,7 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 409 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
+| api            | 412 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
 | clientside     | 475           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Four verdicts** (`CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE`) since 2026-09-04, and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
 | app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
@@ -379,9 +379,18 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   `ExtensionScopingTest` (which builds its second plugin by cloning the example jar), recorded in
   `claude-docs/API-BEHAVIOUR-CHANGES.md`. **The general lesson: a defect whose multiplier is the count of
   something the repo only ever has one of cannot be found by testing what the repo ships.**
-- **Open, pre-existing, and NOT caused by the plugin work:** the *example* plugin dies with a
-  `StackOverflowError` in `CustomPluginFactory` when started in **CLI** mode (`Example`'s `init` calls
-  `ApiWrapper.api()` re-entrantly), leaving `PluginWrapper.getPlugin()` null and logging an NPE. Generation
-  still completes, and the GUI path is unaffected. Confirmed pre-existing by reproducing it against
-  `develop`'s unmodified `ApiPlugins` — worth stating, since it shows up in any CLI log that has plugins
-  installed and reads like a regression.
+- **CLOSED 2026-09-08 — the plugin-loading recursion** (was: "the example plugin dies with a
+  `StackOverflowError` in `CustomPluginFactory`, pre-existing, GUI unaffected"). Both halves of that
+  description turned out to be understated: it is not confined to CLI, and it is unbounded recursion rather
+  than one failed instantiation. **Plugin loading now happens after the API it reaches into exists** —
+  `ApiPlugins.loadAndStart()` instead of the constructor's `init`, called **last** by `stageThree`, and
+  `ApiWrapper.api()` publishes its singleton **before** running setup. Measured on one startup with the
+  example plugin installed: **53 ApiWrapper constructions, 268 `example-kotlin` log lines, an
+  OutOfMemoryError** — reported by Griefed as the example plugin's output appearing "a gazillion times" —
+  against **0 / 7 / 0** after. Detail and the two rows it owes an embedder:
+  `serverpackcreator-api/CLAUDE.md` and `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  **The lesson worth carrying:** the api suite had the example plugin installed and stayed green for
+  months, because whichever test called `ApiWrapper.api()` first did so before anything copied a jar into
+  `tests/plugins`. The defect needs a populated plugins directory at *first* startup — every real run, and
+  no test. A fixture that is installed *after* the thing it is meant to exercise has already run is not a
+  fixture.
