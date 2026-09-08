@@ -238,14 +238,15 @@ class BootVerifier(
         outcome: BootOutcome
     ): BootOutcome {
         val newest = loaderVersionPolicy.latestVersion(loader, first.minecraftVersion)
-        // The null check is redundant with shouldRecheckCrash (which is false for a null newest) but stated here so
-        // the non-nullness is visible where it is used, rather than resting on another function's contract.
-        if (newest == null || !shouldRecheckCrash(outcome, first.loaderVersion, newest)) {
+        // The null check is redundant with shouldRecheckOnNewestBuild (which is false for a null newest) but
+        // stated here so the non-nullness is visible where it is used, rather than resting on another
+        // function's contract.
+        if (newest == null || !shouldRecheckOnNewestBuild(outcome, first.loaderVersion, newest)) {
             return outcome
         }
         log.info(
-            "${project.slug}: $loader ${first.loaderVersion} crashed, but that is not the newest build — " +
-                "re-checking on $loader $newest before trusting the crash."
+            "${project.slug}: $loader ${first.loaderVersion} did not boot cleanly and is not the newest build — " +
+                "re-checking on $loader $newest before trusting the outcome."
         )
         val restaged = prepareBootPack(project, loader, loaderVersionOverride = newest)
         if (restaged is Prepared.Failed) {
@@ -1196,18 +1197,31 @@ class BootVerifier(
         }
 
         /**
-         * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
-         * a newest build is known, and only when it differs from the one that actually crashed.
+         * Whether a boot deserves a second run on the newest loader build: only when a newest build is known
+         * and differs from the one that ran, and only for an outcome the loader build could be responsible
+         * for — a **crash**, or any outcome whose console says the loader itself was too old for a mod.
+         *
+         * **The second arm is why this is no longer called `shouldRecheckCrash`.** That name was accurate
+         * while a loader too old for the pack produced a non-zero exit and read as CRASHED; since
+         * `dependencyFailureMarkers` was widened (2026-08-29) it reads as INCONCLUSIVE, and the guard
+         * silently stopped covering the case its own tests describe. Measured 2026-09-08: 17 of 42
+         * dependency failures on the live daemon, with all 511 Fabric boots pinned to loader 0.19.3 while
+         * 0.19.5 was current.
+         *
+         * A SURVIVED boot is never re-run whatever its console holds: it already answered the question, and
+         * a mod that booted cleanly on an old build has nothing to gain from a newer one.
          */
-        /** Not implemented yet — see `LoaderTooOldRecheckTest`. Replaces [shouldRecheckCrash]. */
         internal fun shouldRecheckOnNewestBuild(
             outcome: BootOutcome,
             bootedVersion: String,
             latestVersion: String?
-        ): Boolean = TODO("a loader too old for the mod is not re-checked yet")
-
-        internal fun shouldRecheckCrash(outcome: BootOutcome, bootedVersion: String, latestVersion: String?): Boolean =
-            outcome.result == BootResult.CRASHED && latestVersion != null && latestVersion != bootedVersion
+        ): Boolean {
+            if (latestVersion == null || latestVersion == bootedVersion || outcome.result == BootResult.SURVIVED) {
+                return false
+            }
+            return outcome.result == BootResult.CRASHED ||
+                LoaderVersionDemand.unmetIn(outcome.console?.lines().orEmpty())
+        }
 
         /**
          * Combine the original crash with the newest build's re-check. The newest build decides when it says
@@ -1222,14 +1236,14 @@ class BootVerifier(
             latestVersion: String
         ): BootOutcome = when (second.result) {
             BootResult.INCONCLUSIVE -> first.copy(
-                detail = "${first.detail} (crash on $bootedVersion could not be re-checked on $latestVersion: ${second.detail})"
+                detail = "${first.detail} (the boot on $bootedVersion could not be re-checked on $latestVersion: ${second.detail})"
             )
             BootResult.CRASHED -> second.copy(
-                detail = "${second.detail} (crash on $bootedVersion confirmed on the newest build $latestVersion)"
+                detail = "${second.detail} (the failure on $bootedVersion is confirmed on the newest build $latestVersion)"
             )
             BootResult.SURVIVED -> second.copy(
-                detail = "${second.detail} (crashed on $bootedVersion but not on the newest build $latestVersion — " +
-                    "treating the crash as a loader-build artefact, not the mod)"
+                detail = "${second.detail} (failed on $bootedVersion but not on the newest build $latestVersion — " +
+                    "treating that as a loader-build artefact, not the mod)"
             )
         }
 
