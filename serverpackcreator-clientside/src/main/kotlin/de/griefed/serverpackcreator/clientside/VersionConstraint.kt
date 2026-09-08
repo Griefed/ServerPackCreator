@@ -66,9 +66,11 @@ object VersionConstraint {
      */
     private fun readableVersion(version: String): Boolean {
         val core = version.substringBefore("+").substringBefore("-").removePrefix("v").removePrefix("V")
-        return core.isNotEmpty() && core.split(".").all { component ->
-            component.isNotEmpty() && component.all { it.isDigit() }
-        }
+        // `toIntOrNull` rather than `all { it.isDigit() }`: [numbersOf] ends in `toIntOrNull() ?: 0`, so a
+        // component of ten-plus digits -- a date, a CI counter -- is all digits AND reads as zero, dropping
+        // the version below almost any bound. That is the decorated-displayName defect one door along, so
+        // "a number we can hold" is the question, not "digits".
+        return core.isNotEmpty() && core.split(".").all { component -> component.toIntOrNull() != null }
     }
 
     /**
