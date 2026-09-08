@@ -84,7 +84,9 @@ internal class BootVerifierOutcomeTest {
      */
     @Test
     fun stagingRefusesToBootWithoutARequiredDependency() {
-        val refusal = BootVerifier.refuseForMissingDependencies(setOf("P7dR8mSH"), "Quilt", "1.20.1")
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("P7dR8mSH" to UnmetReason.UNRESOLVED), "Quilt", "1.20.1", "Modrinth"
+        )
 
         Assertions.assertNotNull(refusal, "a missing required dependency must stop the boot")
         Assertions.assertTrue(
@@ -94,20 +96,32 @@ internal class BootVerifierOutcomeTest {
         Assertions.assertTrue(refusal.detail.contains("dependency"), "singular for one missing dependency")
     }
 
-    /** Several missing dependencies are listed in a stable order, so the same failure reads the same way twice. */
+    /**
+     * Several missing dependencies are listed in a stable order, so the same failure reads the same way
+     * twice. Asserted by position rather than as the substring `alpha, zeta`, because each entry now carries
+     * its own reason and the two names are no longer adjacent — the rule is the ordering, not the spacing.
+     */
     @Test
     fun everyMissingDependencyIsNamedInAStableOrder() {
-        val refusal = BootVerifier.refuseForMissingDependencies(setOf("zeta", "alpha"), "Forge", "1.21.1")
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("zeta" to UnmetReason.NO_USABLE_FILE, "alpha" to UnmetReason.NO_USABLE_FILE),
+            "Forge", "1.21.1", "CurseForge"
+        )
 
         Assertions.assertNotNull(refusal)
-        Assertions.assertTrue(refusal!!.detail.contains("alpha, zeta"), "sorted, was: ${refusal.detail}")
+        Assertions.assertTrue(
+            refusal!!.detail.indexOf("alpha") < refusal.detail.indexOf("zeta"),
+            "sorted, was: ${refusal.detail}"
+        )
         Assertions.assertTrue(refusal.detail.contains("dependencies"), "plural for more than one")
     }
 
     /** Nothing missing, nothing to report — staging proceeds to the boot. */
     @Test
     fun stagingProceedsWhenEveryDependencyWasStaged() {
-        Assertions.assertNull(BootVerifier.refuseForMissingDependencies(emptySet(), "Fabric", "1.20.1"))
+        Assertions.assertNull(
+            BootVerifier.refuseForMissingDependencies(emptyMap(), "Fabric", "1.20.1", "Modrinth")
+        )
     }
 
     // --- the console that survives a re-check -------------------------------------------------------

@@ -349,7 +349,7 @@ class BootVerifier(
         modsDir: File,
         visited: MutableSet<String>,
         depth: Int,
-        unsatisfied: MutableSet<String>,
+        unsatisfied: MutableMap<String, UnmetReason>,
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>
@@ -378,18 +378,23 @@ class BootVerifier(
             if (dependencyProject == null) {
                 // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
-                unsatisfied.add(unsatisfiedLabel(dependencyRef, null, platform.name))
+                unsatisfied[unsatisfiedLabel(dependencyRef, null, platform.name)] = UnmetReason.UNRESOLVED
                 continue
             }
             val dependencyFile = BootCandidateSelector.pickDependencyFile(
                 dependencyProject.withoutExcluded(excluded).files, loader, minecraftVersion
             )
             if (dependencyFile == null) {
+                // Asked twice on purpose: the same pick over the *unfiltered* list separates "this project
+                // publishes nothing usable" from "it does, and an earlier backtrack excluded all of it".
+                // Both refuse, but only one of them is the project's fault, and the second reads as the
+                // opposite of the truth. Free — the project is already resolved and in hand.
+                val reason = backtrackReason(dependencyProject, excluded, loader, minecraftVersion)
                 log.warn(
-                    "Required dependency '${dependencyProject.slug}' ($dependencyRef) publishes no $loader " +
-                        "file for Minecraft $minecraftVersion."
+                    "Required dependency '${dependencyProject.slug}' ($dependencyRef) could not be staged " +
+                        "for $loader / Minecraft $minecraftVersion: ${reason.explain(platform.name)}."
                 )
-                unsatisfied.add(unsatisfiedLabel(dependencyRef, dependencyProject, platform.name))
+                unsatisfied[unsatisfiedLabel(dependencyRef, dependencyProject, platform.name)] = reason
                 continue
             }
             if (!downloadWithDependencies(
@@ -397,13 +402,16 @@ class BootVerifier(
                     injected, excluded
                 )
             ) {
+                val reason = if (dependencyFile.locked) {
+                    UnmetReason.DISTRIBUTION_LOCKED
+                } else {
+                    UnmetReason.DOWNLOAD_FAILED
+                }
                 log.warn(
                     "Required dependency '${dependencyProject.slug}' (${dependencyFile.fileName}) could not be " +
-                        "staged" + (if (dependencyFile.locked) " — the file is distribution-locked." else ".")
+                        "staged: ${reason.explain(platform.name)}."
                 )
-                unsatisfied.add(
-                    unsatisfiedLabel(dependencyRef, dependencyProject, platform.name, dependencyFile)
-                )
+                unsatisfied[unsatisfiedLabel(dependencyRef, dependencyProject, platform.name)] = reason
             }
         }
         stageManifestDependencies(
@@ -432,7 +440,7 @@ class BootVerifier(
         modsDir: File,
         visited: MutableSet<String>,
         depth: Int,
-        unsatisfied: MutableSet<String>,
+        unsatisfied: MutableMap<String, UnmetReason>,
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>
@@ -456,7 +464,10 @@ class BootVerifier(
             val plan = planManifestDependency(
                 requirement, loader, minecraftVersion,
                 mappingFor = { KnownModIds.mappingFor(it, platform.name) },
-                resolveRef = { platform.resolveDependency(it, minecraftVersion)?.withoutExcluded(excluded) }
+                // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
+                // publishing nothing usable from one whose builds staging dropped.
+                resolveRef = { platform.resolveDependency(it, minecraftVersion) },
+                excluded = excluded
             )
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {
@@ -467,8 +478,11 @@ class BootVerifier(
 
                 is ManifestDependencyPlan.Unsatisfied -> {
                     // An alias we resolved and then could not stage: a project we know the id names, so it refuses.
-                    log.warn("Manifest dependency '${plan.modID}' publishes no $loader file for Minecraft $minecraftVersion.")
-                    unsatisfied.add(plan.modID)
+                    log.warn(
+                        "Manifest dependency '${plan.modID}' could not be staged for $loader / Minecraft " +
+                            "$minecraftVersion: ${plan.reason.explain(platform.name)}."
+                    )
+                    unsatisfied[plan.modID] = plan.reason
                     continue
                 }
 
@@ -483,7 +497,8 @@ class BootVerifier(
                 // Same rule as the plan itself: an alias's failed download is a real gap and refuses; a
                 // guess's is only a guess that got further than most, and must not cost the boot.
                 if (plan.confident) {
-                    unsatisfied.add(requirement.modID)
+                    unsatisfied[requirement.modID] =
+                        if (dependencyFile.locked) UnmetReason.DISTRIBUTION_LOCKED else UnmetReason.DOWNLOAD_FAILED
                 } else {
                     unmapped.add(requirement.modID)
                 }
@@ -647,7 +662,7 @@ class BootVerifier(
         val attemptDir = File(workDirectory, attemptDirName).apply { deleteRecursively() }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
-        val unsatisfied = mutableSetOf<String>()
+        val unsatisfied = mutableMapOf<String, UnmetReason>()
         val unmapped = mutableSetOf<String>()
         val injected = mutableListOf<InjectedDependency>()
         if (!downloadWithDependencies(
@@ -661,7 +676,7 @@ class BootVerifier(
         // loader and Minecraft sets are what an author ticked; the descriptor is what the jar was built
         // against, and where the two disagree the boot can only fail for reasons that are not sideness.
         refuseForSelfDeclaration(File(modsDir, mainFile.fileName), loader, minecraftVersion)?.let { return it }
-        refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
+        refuseForMissingDependencies(unsatisfied, loader, minecraftVersion, platform.name)?.let { return it }
         refuseForTooManyDependencies(injected.map { it.fileName }, loader, minecraftVersion)?.let { return it }
         unmappedDependencyNote(unmapped)?.let { log.warn(it) }
         // Judge the staged jars against each other before spending a container on them: a set whose own
@@ -727,7 +742,9 @@ class BootVerifier(
         val publishedVersionOf = (injected.map { it.fileName to it.version } + (mainFile.fileName to mainFile.version))
             .toMap()
 
-        val stagedVersions = scanned.flatMap { mod ->
+        // Nested first, so a top-level jar of the same id wins: that is the copy staging deliberately
+        // chose and the one a demotion would act on. Nested entries can therefore only fill a gap.
+        val stagedVersions = nestedVersions(stagedJars) + scanned.flatMap { mod ->
             val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
             // A dependency names an id, and one jar answers to several: its own, plus everything it
             // `provides` -- Fabric API declares `id: fabric-api` and `provides: [fabric]`.
@@ -756,9 +773,28 @@ class BootVerifier(
         return demoted
     }
 
-    /** [ProjectFiles] with every file staging has already ruled out removed, so a re-stage picks the next down. */
-    private fun ProjectFiles.withoutExcluded(excluded: Set<String>): ProjectFiles =
-        if (excluded.isEmpty()) this else copy(files = files.filterNot { it.fileName in excluded })
+    /**
+     * The mod ids [stagedJars] carry **inside** themselves, mapped to the versions those nested descriptors
+     * state — the rest of the classpath, as far as judging the pack's coherence goes.
+     *
+     * A jar-in-jar library is loaded exactly like a staged file but appears in neither of the two sources
+     * `dependencyToDemote` otherwise has: it is not a top-level file, and the platform never published it,
+     * so `InjectedDependency.version` has nothing for it. Without this a requirement contradicting a bundled
+     * copy read as a requirement naming something *absent*, which `DependencyBacktrack` skips by design.
+     *
+     * **One id bundled at two versions by two different jars is dropped**, for the reason
+     * [BundledJars.versionsIn] drops it within a single jar: which copy the loader picks is its own
+     * resolution behaviour, and no opinion costs a missed conflict where a wrong one manufactures a demotion.
+     */
+    private fun nestedVersions(stagedJars: List<File>): Map<String, String> {
+        val perId = mutableMapOf<String, MutableSet<String>>()
+        for (jar in stagedJars) {
+            BundledJars.versionsIn(jar).forEach { (id, version) ->
+                perId.getOrPut(id) { mutableSetOf() }.add(version)
+            }
+        }
+        return perId.filterValues { it.size == 1 }.mapValues { (_, versions) -> versions.single() }
+    }
 
     /** Result of [prepareBootPack]: a ready-to-run pack, or the reason staging could not finish. */
     sealed interface Prepared {
@@ -931,25 +967,21 @@ class BootVerifier(
          * same two mods came out readably from the manifest half of staging.
          *
          * A [resolved] project is named by its slug, which is what the author, the platform page and the
-         * manifest all call it. That also **collapses the duplicate**: `unsatisfied` is a set, so a mod
-         * missing by both routes was two entries and is now one.
+         * manifest all call it. That also **collapses the duplicate**: `unsatisfied` is keyed by this name,
+         * so a mod missing by both routes was two entries and is now one.
          *
          * An unresolved ref keeps the ref — it is all we have — but says which platform it belongs to, so a
          * reader can look it up instead of mistaking it for a strange mod name.
+         *
+         * **The name only.** *Why* it is unmet is an [UnmetReason] carried beside it, precisely so that the
+         * dedupe above survives two routes disagreeing about the reason.
          */
         internal fun unsatisfiedLabel(
             ref: String,
             resolved: ProjectFiles?,
-            platformName: String,
-            file: ModFile? = null
-        ): String {
-            val name = resolved?.slug?.takeIf { it.isNotBlank() }
-                ?: return "$ref (unresolved $platformName project)"
-            // A locked file is not a failed download: the author opted out of third-party distribution, so
-            // there is no URL to fetch and no amount of retrying produces one. Saying "could not be
-            // downloaded" of it is the same conflation `downloadFailureDetail` fixed for the candidate.
-            return if (file?.locked == true) "$name (distribution-locked on $platformName)" else name
-        }
+            platformName: String
+        ): String = resolved?.slug?.takeIf { it.isNotBlank() }
+            ?: "$ref (unresolved $platformName project)"
 
         /**
          * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
@@ -962,16 +994,20 @@ class BootVerifier(
          * is both honest and actionable, where a "crash" would have been neither.
          */
         internal fun refuseForMissingDependencies(
-            unsatisfied: Set<String>,
+            unsatisfied: Map<String, UnmetReason>,
             loader: String,
-            minecraftVersion: String
+            minecraftVersion: String,
+            platformName: String
         ): Prepared.Failed? =
             if (unsatisfied.isEmpty()) {
                 null
             } else {
+                val named = unsatisfied.entries.sortedBy { it.key }.joinToString(", ") { (name, reason) ->
+                    reason.explain(platformName)?.let { "$name ($it)" } ?: name
+                }
                 Prepared.Failed(
                     "Required ${if (unsatisfied.size == 1) "dependency" else "dependencies"} unavailable for " +
-                        "$loader / Minecraft $minecraftVersion: ${unsatisfied.sorted().joinToString(", ")}. " +
+                        "$loader / Minecraft $minecraftVersion: $named. " +
                         "Not booting — a mod refused for missing dependencies says nothing about sideness."
                 )
             }
@@ -1000,16 +1036,20 @@ class BootVerifier(
             loader: String,
             minecraftVersion: String,
             mappingFor: (String) -> ModIdMapping,
-            resolveRef: (String) -> ProjectFiles?
+            resolveRef: (String) -> ProjectFiles?,
+            excluded: Set<String> = emptySet()
         ): ManifestDependencyPlan {
             val mapping = mappingFor(requirement.modID)
             val ref = mapping.ref ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
             val project = resolveRef(ref) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
             val confident = mapping is ModIdMapping.Alias
             val file = BootCandidateSelector.pickDependencyFile(
-                project.files, loader, minecraftVersion, requirement.versionConstraint
+                project.withoutExcluded(excluded).files, loader, minecraftVersion, requirement.versionConstraint
             ) ?: return if (confident) {
-                ManifestDependencyPlan.Unsatisfied(requirement.modID)
+                ManifestDependencyPlan.Unsatisfied(
+                    requirement.modID,
+                    backtrackReason(project, excluded, loader, minecraftVersion)
+                )
             } else {
                 // A guess that hit a real project publishing nothing usable. Being *almost* resolvable must
                 // not be worse than being unknown — the `xaerolib` case — so it is filed, not fatal.
@@ -1017,6 +1057,33 @@ class BootVerifier(
             }
             return ManifestDependencyPlan.Stage(ref, file, confident)
         }
+
+        /**
+         * Whether a project that yielded no file yielded none *of its own accord*, or because staging had
+         * already excluded the builds that would have served.
+         *
+         * Re-asks [BootCandidateSelector.pickDependencyFile] over the unfiltered list: a pick that succeeds
+         * there and fails against [excluded] means `DependencyBacktrack` demoted its way through everything
+         * usable. Both outcomes still refuse — the difference is whether the refusal blames the project or
+         * names what we did — and the extra call touches no network, since the project is already resolved.
+         */
+        internal fun backtrackReason(
+            project: ProjectFiles,
+            excluded: Set<String>,
+            loader: String,
+            minecraftVersion: String
+        ): UnmetReason {
+            val wouldHavePicked = excluded.isNotEmpty() &&
+                BootCandidateSelector.pickDependencyFile(project.files, loader, minecraftVersion) != null
+            return if (wouldHavePicked) UnmetReason.DROPPED_BY_BACKTRACK else UnmetReason.NO_USABLE_FILE
+        }
+
+        /**
+         * [ProjectFiles] with every file staging has already ruled out removed, so a re-stage picks the next
+         * one down. In the companion because both the platform route and the manifest planner need it.
+         */
+        internal fun ProjectFiles.withoutExcluded(excluded: Set<String>): ProjectFiles =
+            if (excluded.isEmpty()) this else copy(files = files.filterNot { it.fileName in excluded })
 
         /**
          * Ids the environment provides rather than the pack: never staged, whatever a descriptor says.
@@ -1312,6 +1379,62 @@ internal sealed interface ManifestDependencyPlan {
     /**
      * An **alias** we resolved and then could not stage. A project we know the id names, so failing to
      * honour it is a real gap: this is the only outcome that refuses the boot.
+     *
+     * [reason] defaults to [UnmetReason.NO_USABLE_FILE] because that is what "could not stage" meant for as
+     * long as this type existed; a caller that knows better says so.
      */
-    data class Unsatisfied(val modID: String) : ManifestDependencyPlan
+    data class Unsatisfied(
+        val modID: String,
+        val reason: UnmetReason = UnmetReason.NO_USABLE_FILE
+    ) : ManifestDependencyPlan
+}
+
+/**
+ * Why one required dependency could not be staged — the evidence a staging refusal publishes alongside the
+ * dependency's name.
+ *
+ * **The refusal used to name only the mod.** Five distinct failures reached `unsatisfied` and three of them
+ * printed the bare slug, so `Required dependency unavailable … balm` meant *"the project publishes nothing
+ * usable"*, *"the download died"* and *"we dropped every build ourselves while backtracking"* alike. That is
+ * the same standard [BootDecision.decidedBy] enforces on a boot verdict — a verdict that cannot name its own
+ * evidence cannot be audited — reaching the one refusal that publishes `ERROR` without ever booting.
+ *
+ * It travels **beside** the name rather than inside it, because `unsatisfied` is keyed by name so that one
+ * mod missing by both the platform and the manifest route stays one entry (the `waystones` case).
+ *
+ * @author Griefed
+ */
+internal enum class UnmetReason {
+
+    /** The ref resolved to no project at all; the label itself already says so, so this adds nothing. */
+    UNRESOLVED,
+
+    /** The project resolved and publishes nothing this loader and Minecraft version can use. */
+    NO_USABLE_FILE,
+
+    /**
+     * The project publishes something usable and **staging excluded it** — `DependencyBacktrack` demoted
+     * every candidate build trying to make the pack coherent. Reporting this as [NO_USABLE_FILE] states the
+     * opposite of the truth, and is what hid 1014 re-stagings a day behind 47 verdicts on 2026-09-07.
+     */
+    DROPPED_BY_BACKTRACK,
+
+    /** A file was picked and its author opted out of third-party distribution: there is no URL to fetch. */
+    DISTRIBUTION_LOCKED,
+
+    /** A file was picked, it had a URL, and fetching it failed — transient, unlike every other reason here. */
+    DOWNLOAD_FAILED;
+
+    /**
+     * How this reads in a refusal, or `null` when the name already carries it ([UNRESOLVED]).
+     *
+     * @param platformName Where to look the project up, which is only worth saying for an opt-out.
+     */
+    fun explain(platformName: String): String? = when (this) {
+        UNRESOLVED -> null
+        NO_USABLE_FILE -> "nothing published for this loader and Minecraft version"
+        DROPPED_BY_BACKTRACK -> "every usable build was dropped resolving a version conflict"
+        DISTRIBUTION_LOCKED -> "distribution-locked on $platformName"
+        DOWNLOAD_FAILED -> "download failed"
+    }
 }
