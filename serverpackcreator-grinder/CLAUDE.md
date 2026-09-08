@@ -82,6 +82,16 @@ file small enough to stay useful. Read the one for the subsystem you are touchin
   unwritable log must never fail a boot (a test pins that; `outcomeFor`'s final write was unguarded and *did*
   propagate before this).
 
+- **The learned mod-id map is daemon state and is persisted** (`JsonLearnedModIds`,
+  `SPC_GRINDER_LEARNED_IDS`, default `~/.spc-grinder/learned-mod-ids.json`, 2026-09-08). Staging bridges two
+  vocabularies — a descriptor names a mod **id**, a platform serves a **ref** — and `-clientside` learns the
+  pairs off jars it downloads anyway, falling back to a *probe* download when a required id resolves no
+  other way. Without a file behind it every restart re-pays every probe. Same contract as
+  `JsonCursorStore`: loaded on construction, whole-document temp-then-atomic-move on change, an unreadable
+  file logged and treated as empty. **Pure cache — deleting it costs downloads, never correctness**, which
+  is also why `--clear` taking it with the rest of the home is harmless. Written only when something is
+  genuinely *new*, because every staged dependency re-declares its own id on every candidate that uses it.
+
 ## Cross-cutting landmines (do not let these load lazily)
 
 These bite regardless of which subsystem you are in, so they stay in this always-loaded-for-the-module file even

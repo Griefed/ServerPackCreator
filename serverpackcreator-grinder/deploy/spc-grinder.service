@@ -58,6 +58,9 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 #Environment=SPC_GRINDER_CACHE=/home/grinder/.spc-grinder/cache
 #Environment=SPC_GRINDER_STORE=/home/grinder/.spc-grinder/verdicts.json
 #Environment=SPC_GRINDER_CURSORS=/home/grinder/.spc-grinder/cursors.json
+# What the grinder has worked out about which project serves which mod id, read off the jars it stages
+# anyway. Pure cache: delete it and the next passes re-derive it, paying a download each time they do.
+#Environment=SPC_GRINDER_LEARNED_IDS=/home/grinder/.spc-grinder/learned-mod-ids.json
 # The immediate re-grind queue. Written by `--requeue`/`--requeue-before` (run as the SAME user, or the
 # daemon cannot read it back) and drained at the start of every pass.
 #Environment=SPC_GRINDER_REQUEUE=/home/grinder/.spc-grinder/requeue.json

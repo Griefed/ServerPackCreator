@@ -70,7 +70,13 @@ class ContainerCandidateVerifier(
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT,
     private val crashLogs: BootLogStore? = null,
-    private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY }
+    private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
+    /**
+     * The id-to-project map, shared across every grind so what one candidate's jars prove is not
+     * re-derived for the next. The daemon hands in a file-backed one ([JsonLearnedModIds]); the default
+     * keeps a verifier constructed in a test free of a home directory.
+     */
+    private val learnedModIds: LearnedModIds = LearnedModIds()
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -240,6 +246,7 @@ class ContainerCandidateVerifier(
                         minecraftAcceptable = imageJava::supports,
                         bootTimeout = bootTimeout,
                         consoleRules = consoleRules,
+                        learnedModIds = learnedModIds,
                         bootArtifactSink = { staged, outcome ->
                             keepAttemptArtifacts(staged, outcome, crashLogs, keptLogNames)
                         }

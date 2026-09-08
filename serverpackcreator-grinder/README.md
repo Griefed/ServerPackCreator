@@ -214,6 +214,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
+| `SPC_GRINDER_LEARNED_IDS`       | `~/.spc-grinder/learned-mod-ids.json` | Mod-id-to-project map learned from staged jars; pure cache, deleting it costs downloads only |
 | `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
 | `SPC_GRINDER_BOOT_LOGS`         | `~/.spc-grinder/boot-logs`     | Console, server logs and crash reports of every boot that did not survive    |
 | `SPC_GRINDER_BOOT_RULES`        | `~/.spc-grinder/boot-rules.json` | Operator console rules; absent = built-in classification only. Hot-reloaded |
