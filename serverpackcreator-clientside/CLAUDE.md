@@ -411,6 +411,17 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     name**: `Create 6.0.10 for NeoForge 1.21.1` offers two readings four major versions apart, and guessing
     is the silently-plausible-value trap. A conflict spelled in an unreadable version is missed instead,
     which costs one boot where inventing one costs a published verdict.
+  - **A jar-in-jar library counts as staged when the set is judged** (`BundledJars.versionsIn` +
+    `BootVerifier.nestedVersions`, 2026-09-08). `dependencyToDemote` read `modsDir.listFiles()` and
+    `InjectedDependency.version`, and a nested library is in neither — not a top-level file, never published
+    by a platform — so a requirement contradicting *its* version looked like a requirement naming something
+    absent, which `DependencyBacktrack.conflicts` skips by design. Live: `CurseForge/createaddition` on
+    NeoForge 21.1.250 / MC 1.21.1 logged *"Mod ID: 'ponder', Requested by: 'create', Expected range:
+    '[1.0.82,)', Actual version: '1.0.64'"* while `ponder` appears in none of that verdict's four
+    `stagedDependencies`. Nested entries sit **under** the top-level ones (a bundled copy fills a gap, never
+    overwrites the build staging chose — which is also the one a demotion acts on), and an id bundled at two
+    different versions, within a jar or across two, contributes **nothing**: which copy a loader picks is its
+    own resolution behaviour, and no opinion costs a missed conflict where a wrong one manufactures a demotion.
   - **A staging refusal names its evidence, like a boot verdict does** (`UnmetReason`, 2026-09-07). Five
     ways a dependency reaches `unsatisfied`, three of which printed the bare slug: an operator could not
     tell *the project publishes nothing usable* from *the download died* from *staging dropped every build
