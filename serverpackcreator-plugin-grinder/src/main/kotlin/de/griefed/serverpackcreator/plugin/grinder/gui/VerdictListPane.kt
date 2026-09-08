@@ -77,6 +77,10 @@ class VerdictListPane(
             maxWidth = 34
             minWidth = 34
         }
+        // `SERVER_OR_BOTH` is the widest value this column ever holds AND the most common one — 1718 of
+        // 2057 rows on the live feed — so at an equal share of the table it truncates on nearly every row.
+        // A preferred width only: the column still shrinks with the window, it just does not start clipped.
+        table.columnModel.getColumn(VerdictTableModel.JAR_SIDENESS_COLUMN).preferredWidth = 140
 
         warning?.let { add(banner(it), BorderLayout.NORTH) }
         add(JScrollPane(table), BorderLayout.CENTER)

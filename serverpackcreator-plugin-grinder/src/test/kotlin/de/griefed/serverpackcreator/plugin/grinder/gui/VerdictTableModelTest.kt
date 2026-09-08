@@ -261,4 +261,19 @@ internal class VerdictTableModelTest {
         Assertions.assertEquals("", model.getValueAt(0, names.indexOf("Declared")))
         Assertions.assertEquals("", model.getValueAt(0, names.indexOf("JAR sideness")))
     }
+
+
+    /**
+     * `VerdictListPane` sizes that column by index, so the constant and the column list must not drift —
+     * the failure mode is a *different* column being widened, which nothing else would notice.
+     */
+    @Test
+    fun theSizedColumnConstantPointsAtTheColumnItNames() {
+        val model = VerdictTableModel()
+
+        Assertions.assertEquals(
+            "JAR sideness",
+            model.getColumnName(VerdictTableModel.JAR_SIDENESS_COLUMN)
+        )
+    }
 }

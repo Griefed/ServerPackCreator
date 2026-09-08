@@ -132,6 +132,9 @@ class VerdictTableModel : AbstractTableModel() {
         /** The checkbox column, addressed by name so the panes and the guards cannot drift from it. */
         const val TICK_COLUMN = 0
 
+        /** Sized by [VerdictListPane]: its widest value, `SERVER_OR_BOTH`, is also its most common one. */
+        const val JAR_SIDENESS_COLUMN = 5
+
         /**
          * `Declared` and `JAR sideness` sit immediately after `Verdict` on purpose: the conclusion, then
          * the two readings it was drawn from. They disagree often enough to be worth reading together —

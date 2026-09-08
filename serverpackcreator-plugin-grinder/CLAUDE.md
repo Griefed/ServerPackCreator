@@ -86,6 +86,12 @@ plus a native view of the daemon's own dashboard.
   **Consequence worth knowing:** the search box filters with a column-less `RowFilter.regexFilter`, so it
   now matches these values too — typing `CONTRADICTORY` or `SERVER_OR_BOTH` filters the table. That is
   useful and it was not designed, it is inherited from the filter being column-less.
+  **`JAR sideness` carries a preferred width** (`VerdictTableModel.JAR_SIDENESS_COLUMN`, sized in
+  `VerdictListPane`) because its widest value is also its most common one — `SERVER_OR_BOTH`, 1718 of 2057
+  rows — so at an equal share of the table it clipped on nearly every row. Verified by running the GUI with
+  the plugin installed against the live daemon and looking at it. A *preferred* width only: the column
+  still shrinks with the window, it just does not start clipped. The constant is guarded against drifting
+  from the column list, because the failure mode is silently widening a different column.
 - **A selection is never pruned — only the user unticks.** An entry the grinder has stopped reporting
   (crawl moved on, store reset, daemon down) stays ticked. The alternative is that a mod the user
   deliberately excluded silently reappears in their next server pack, which is the one failure nobody
