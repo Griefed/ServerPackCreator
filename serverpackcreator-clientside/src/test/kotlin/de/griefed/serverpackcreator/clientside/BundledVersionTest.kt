@@ -192,4 +192,53 @@ internal class BundledVersionTest {
 
         Assertions.assertEquals(emptyMap<String, String>(), BundledJars.versionsIn(plain))
     }
+
+    /**
+     * **The same rule one level up**, across a pack rather than within a jar: two staged mods each bundling
+     * a different build of one library is not an answer either.
+     *
+     * Asserted on `BootVerifier.nestedVersions` directly rather than through staging, because the
+     * end-to-end route would depend on `File.listFiles()` order to decide *which* wrong version a broken
+     * fold happened to keep — a guard that fails only sometimes is worse than none.
+     */
+    @Test
+    fun oneIdBundledDifferentlyByTwoStagedJarsIsDropped(@TempDir directory: File) {
+        val first = jarWith(
+            directory, "ponderjs.jar",
+            """"id":"ponderjs","jars":[{"file":"META-INF/jars/ponder.jar"}]""",
+            mapOf("META-INF/jars/ponder.jar" to """"id":"ponder","version":"1.0.64"""")
+        )
+        val second = jarWith(
+            directory, "ponderlib.jar",
+            """"id":"ponderlib","jars":[{"file":"META-INF/jars/ponder.jar"}]""",
+            mapOf("META-INF/jars/ponder.jar" to """"id":"ponder","version":"1.0.90"""")
+        )
+
+        Assertions.assertEquals(
+            emptyMap<String, String>(),
+            BootVerifier.nestedVersions(listOf(first, second)),
+            "the pack holds two Ponders and nothing here knows which one the loader will load"
+        )
+    }
+
+    /** And two jars bundling the *same* build agree, so the pack does hold that version. */
+    @Test
+    fun twoStagedJarsBundlingTheSameBuildAgree(@TempDir directory: File) {
+        val body = """"id":"ponder","version":"1.0.64""""
+        val first = jarWith(
+            directory, "ponderjs.jar",
+            """"id":"ponderjs","jars":[{"file":"META-INF/jars/ponder.jar"}]""",
+            mapOf("META-INF/jars/ponder.jar" to body)
+        )
+        val second = jarWith(
+            directory, "ponderlib.jar",
+            """"id":"ponderlib","jars":[{"file":"META-INF/jars/ponder.jar"}]""",
+            mapOf("META-INF/jars/ponder.jar" to body)
+        )
+
+        Assertions.assertEquals(
+            mapOf("ponder" to "1.0.64"),
+            BootVerifier.nestedVersions(listOf(first, second))
+        )
+    }
 }
