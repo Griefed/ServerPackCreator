@@ -55,7 +55,13 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Griefed
  */
 class LearnedModIds(
-    /** Not implemented yet — see `LearnedModIdsTest.onlySomethingNewAnnouncesItself`. */
+    /**
+     * Called when a genuinely **new** pair is recorded, which is what a file-backed owner persists on.
+     *
+     * Only news, never a re-statement: every staged dependency declares its own id again on every candidate
+     * that uses it, so announcing those would mean a write per staged jar for a document that did not
+     * change. Restoring a snapshot is likewise silent — loading a file must not ask to write it back.
+     */
     private val onLearned: () -> Unit = {}
 ) {
 
@@ -77,10 +83,13 @@ class LearnedModIds(
             return
         }
         val known = byPlatform.computeIfAbsent(platform) { ConcurrentHashMap() }
-        ids.asSequence()
+        val learnedSomething = ids.asSequence()
             .map { it.trim().lowercase() }
             .filter { it.isNotEmpty() }
-            .forEach { id -> known.putIfAbsent(id, ref) }
+            .count { id -> known.putIfAbsent(id, ref) == null } > 0
+        if (learnedSomething) {
+            onLearned()
+        }
     }
 
     /** The ref [platform] is known to serve [modId] at, or `null` when no staged jar has proved one. */
@@ -95,10 +104,31 @@ class LearnedModIds(
     fun mappingFor(modId: String, platform: String, orElse: (String) -> ModIdMapping): ModIdMapping =
         refFor(modId, platform)?.let { ModIdMapping.Alias(it) } ?: orElse(modId)
 
-    /** Everything learned so far as plain data, so an owner can write it somewhere. */
-    fun snapshot(): Map<String, Map<String, String>> = TODO("nothing can be carried across a restart yet")
+    /**
+     * Everything learned so far as plain data, so an owner can write it somewhere.
+     *
+     * `platform -> id -> ref`, nested rather than keyed by a joined string, for the same reason the
+     * in-memory shape is: a ref is meaningless on the other platform, and a flat key would let that mistake
+     * through both here and in whatever reads the file back.
+     */
+    fun snapshot(): Map<String, Map<String, String>> =
+        byPlatform.entries.associate { (platform, ids) -> platform to ids.toSortedMap().toMap() }
 
-    /** Adopt [snapshot] wholesale, as read back from wherever an owner wrote it. */
-    fun restore(snapshot: Map<String, Map<String, String>>): Unit =
-        TODO("nothing can be carried across a restart yet")
+    /**
+     * Adopt [snapshot] wholesale, as read back from wherever an owner wrote it.
+     *
+     * Silent by design — see [onLearned]. Existing entries win, so a restore can never overwrite something
+     * this process has already proved with a jar in hand.
+     */
+    fun restore(snapshot: Map<String, Map<String, String>>) {
+        snapshot.forEach { (platform, ids) ->
+            val known = byPlatform.computeIfAbsent(platform) { ConcurrentHashMap() }
+            ids.forEach { (id, ref) ->
+                val cleanId = id.trim().lowercase()
+                if (cleanId.isNotEmpty() && ref.isNotBlank()) {
+                    known.putIfAbsent(cleanId, ref)
+                }
+            }
+        }
+    }
 }
