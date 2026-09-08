@@ -237,6 +237,52 @@ internal class UnmetDependencyReasonTest {
         )
     }
 
+    /**
+     * **The `aether` case, end to end.** The platform attributes a dependency to this file that the jar's
+     * own descriptor never names, and the project publishes nothing usable — staging must boot anyway
+     * rather than publish an ERROR about a dependency the loader will not ask for.
+     *
+     * Asserted through the real staging join rather than on `PlatformDependencyDemand` alone, because a
+     * pure predicate proved correct in isolation says nothing about whether production consults it — the
+     * lesson `DependencySlugTest` was written for.
+     */
+    @Test
+    fun aPlatformDependencyTheJarNeverNamesDoesNotRefuseTheBoot(@TempDir workDir: File) {
+        // The candidate's platform page claims it needs yacl; its descriptor asks for nothing at all.
+        val aetherShaped = candidate.copy(
+            files = listOf(fabricFile("Zoomify-2.13.3.jar", "2.13.3", listOf("yacl")))
+        )
+        val forgeOnly = ProjectFiles(
+            platform = "Modrinth", slug = "yacl", projectUrl = "https://modrinth.com/mod/yacl",
+            clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN,
+            files = listOf(
+                ModFile(
+                    "yacl-forge-3.6.6.jar", setOf("Forge"), setOf(fabricRelease),
+                    "https://cdn/yacl-forge-3.6.6.jar", null, emptyList(), "3.6.6"
+                )
+            )
+        )
+        val declaresNothing = descriptors + mapOf("Zoomify-2.13.3.jar" to """"id":"zoomify","environment":"client"""")
+
+        val prepared = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platformServing(forgeOnly),
+            httpDownloader = downloaderFor(declaresNothing),
+            loaderVersionPolicy = unbootableLoaderVersion,
+            workDirectory = workDir
+        ).prepareBootPack(aetherShaped, "Fabric")
+
+        val detail = Assertions.assertInstanceOf(BootVerifier.Prepared.Failed::class.java, prepared).detail
+        Assertions.assertFalse(
+            detail.contains("Required dependency unavailable"),
+            "the jar does not ask for yacl, so its absence must not refuse the boot: $detail"
+        )
+        Assertions.assertTrue(
+            detail.contains("Server-pack generation failed"),
+            "staging should have got as far as generation, which this harness makes fail: $detail"
+        )
+    }
+
     // --- the reason predicate itself, directly ------------------------------------------------------
 
     /** Nothing excluded: whatever went wrong, staging did not do it. Short-circuits without a second pick. */

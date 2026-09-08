@@ -371,6 +371,12 @@ class BootVerifier(
         if (depth >= maxDependencyDepth) {
             return true
         }
+        // Read once, here, because both halves of staging need it: the platform loop below asks whether this
+        // jar actually wants what its project page attributes to it, and `stageManifestDependencies` stages
+        // what it declares. `null` means the descriptor could not be read at all, which both treat as
+        // "no opinion" rather than as "nothing declared".
+        val declared = declaredDependencies(staged, loader, minecraftVersion)
+        val declaredIds = declared?.map { it.modID }?.toSet()
         for (dependencyRef in file.requiredDependencies) {
             if (!visited.add(dependencyRef)) {
                 continue
@@ -391,6 +397,19 @@ class BootVerifier(
                 // Both refuse, but only one of them is the project's fault, and the second reads as the
                 // opposite of the truth. Free — the project is already resolved and in hand.
                 val reason = backtrackReason(dependencyProject, excluded, loader, minecraftVersion)
+                // The platform says this file needs it; the descriptor is what the loader will enforce. When
+                // the jar never names it, an unstageable dependency is a fact about the project page, not
+                // about this boot -- `CurseForge/aether` on Forge was refused for `owo-lib`, which only its
+                // Fabric and Quilt builds declare.
+                if (!PlatformDependencyDemand.isDemanded(declaredIds, dependencyProject)) {
+                    log.info(
+                        "Platform dependency '${dependencyProject.slug}' could not be staged " +
+                            "(${reason.explain(platform.name)}), but ${file.fileName}'s own descriptor does not " +
+                            "ask for it — booting without it."
+                    )
+                    unmapped.add(dependencyProject.slug)
+                    continue
+                }
                 log.warn(
                     "Required dependency '${dependencyProject.slug}' ($dependencyRef) could not be staged " +
                         "for $loader / Minecraft $minecraftVersion: ${reason.explain(platform.name)}."
@@ -408,17 +427,47 @@ class BootVerifier(
                 } else {
                     UnmetReason.DOWNLOAD_FAILED
                 }
-                log.warn(
-                    "Required dependency '${dependencyProject.slug}' (${dependencyFile.fileName}) could not be " +
-                        "staged: ${reason.explain(platform.name)}."
-                )
-                unsatisfied[unsatisfiedLabel(dependencyRef, dependencyProject, platform.name)] = reason
+                if (!PlatformDependencyDemand.isDemanded(declaredIds, dependencyProject)) {
+                    log.info(
+                        "Platform dependency '${dependencyProject.slug}' could not be staged " +
+                            "(${reason.explain(platform.name)}), but ${file.fileName}'s own descriptor does not " +
+                            "ask for it — booting without it."
+                    )
+                    unmapped.add(dependencyProject.slug)
+                } else {
+                    log.warn(
+                        "Required dependency '${dependencyProject.slug}' (${dependencyFile.fileName}) could not be " +
+                            "staged: ${reason.explain(platform.name)}."
+                    )
+                    unsatisfied[unsatisfiedLabel(dependencyRef, dependencyProject, platform.name)] = reason
+                }
             }
         }
         stageManifestDependencies(
-            staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected, excluded
+            declared, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected,
+            excluded, staged
         )
         return true
+    }
+
+    /**
+     * What [jar]'s own descriptor says it needs, or `null` when it could not be read at all.
+     *
+     * Read **once per staged jar** and handed to both halves of staging, which ask different questions of
+     * it: the platform loop asks whether a dependency the project page attributes to this jar is one the jar
+     * actually wants, and [stageManifestDependencies] stages what it declares and the platform never
+     * mentioned. They used to scan the same file separately, which is also two chances to disagree about
+     * what it said.
+     *
+     * **`null` and empty are different answers.** No scanner for the loader, or a scan that threw, means
+     * *we do not know*, and everything downstream then defers to the platform. An empty list means the
+     * descriptor was read and asks for nothing.
+     */
+    private fun declaredDependencies(jar: File, loader: String, minecraftVersion: String): List<ModDependency>? {
+        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return null
+        return runCatching { scanner.scan(listOf(jar)).flatMap { it.dependencies } }
+            .onFailure { log.debug("Could not read ${jar.name}'s manifest dependencies: ${it.message}") }
+            .getOrNull()
     }
 
     /**
@@ -434,7 +483,7 @@ class BootVerifier(
      * optional in practice, and refusing on it would turn working boots into INCONCLUSIVE.
      */
     private fun stageManifestDependencies(
-        staged: File,
+        declared: List<ModDependency>?,
         file: ModFile,
         loader: String,
         minecraftVersion: String,
@@ -444,18 +493,18 @@ class BootVerifier(
         unsatisfied: MutableMap<String, UnmetReason>,
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
-        excluded: Set<String>
+        excluded: Set<String>,
+        staged: File
     ) {
         if (depth >= maxDependencyDepth) {
             return
         }
-        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return
-        val declared = runCatching { scanner.scan(listOf(staged)).flatMap { it.dependencies } }
-            .onFailure { log.debug("Could not read ${file.fileName}'s manifest dependencies: ${it.message}") }
-            .getOrDefault(emptyList())
+        // `null` is "the descriptor could not be read", which is nothing to stage from -- the same early
+        // return this made for itself when it owned the scan.
+        val requirements = declared ?: return
 
         val bundled = BundledJars.idsIn(staged)
-        for (requirement in stageableRequirements(declared, visited, bundled) { platformRefFor(it) }) {
+        for (requirement in stageableRequirements(requirements, visited, bundled) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
