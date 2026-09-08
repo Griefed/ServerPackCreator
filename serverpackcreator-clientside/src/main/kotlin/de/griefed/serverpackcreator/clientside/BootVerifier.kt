@@ -773,29 +773,6 @@ class BootVerifier(
         return demoted
     }
 
-    /**
-     * The mod ids [stagedJars] carry **inside** themselves, mapped to the versions those nested descriptors
-     * state — the rest of the classpath, as far as judging the pack's coherence goes.
-     *
-     * A jar-in-jar library is loaded exactly like a staged file but appears in neither of the two sources
-     * `dependencyToDemote` otherwise has: it is not a top-level file, and the platform never published it,
-     * so `InjectedDependency.version` has nothing for it. Without this a requirement contradicting a bundled
-     * copy read as a requirement naming something *absent*, which `DependencyBacktrack` skips by design.
-     *
-     * **One id bundled at two versions by two different jars is dropped**, for the reason
-     * [BundledJars.versionsIn] drops it within a single jar: which copy the loader picks is its own
-     * resolution behaviour, and no opinion costs a missed conflict where a wrong one manufactures a demotion.
-     */
-    private fun nestedVersions(stagedJars: List<File>): Map<String, String> {
-        val perId = mutableMapOf<String, MutableSet<String>>()
-        for (jar in stagedJars) {
-            BundledJars.versionsIn(jar).forEach { (id, version) ->
-                perId.getOrPut(id) { mutableSetOf() }.add(version)
-            }
-        }
-        return perId.filterValues { it.size == 1 }.mapValues { (_, versions) -> versions.single() }
-    }
-
     /** Result of [prepareBootPack]: a ready-to-run pack, or the reason staging could not finish. */
     sealed interface Prepared {
         /** A generated, self-installing pack ready to boot, plus where its console log should land. */
@@ -1003,7 +980,7 @@ class BootVerifier(
                 null
             } else {
                 val named = unsatisfied.entries.sortedBy { it.key }.joinToString(", ") { (name, reason) ->
-                    reason.explain(platformName)?.let { "$name ($it)" } ?: name
+                    if (reason.worthAppending) "$name (${reason.explain(platformName)})" else name
                 }
                 Prepared.Failed(
                     "Required ${if (unsatisfied.size == 1) "dependency" else "dependencies"} unavailable for " +
@@ -1057,6 +1034,24 @@ class BootVerifier(
             }
             return ManifestDependencyPlan.Stage(ref, file, confident)
         }
+
+        /**
+         * The mod ids [stagedJars] carry **inside** themselves, mapped to the versions those nested descriptors
+         * state — the rest of the classpath, as far as judging the pack's coherence goes.
+         *
+         * A jar-in-jar library is loaded exactly like a staged file but appears in neither of the two sources
+         * `dependencyToDemote` otherwise has: it is not a top-level file, and the platform never published it,
+         * so `InjectedDependency.version` has nothing for it. Without this a requirement contradicting a bundled
+         * copy read as a requirement naming something *absent*, which `DependencyBacktrack` skips by design.
+         *
+         * **One id bundled at two versions by two different jars is dropped**, for the reason
+         * [BundledJars.versionsIn] drops it within a single jar: which copy the loader picks is its own
+         * resolution behaviour, and no opinion costs a missed conflict where a wrong one manufactures a demotion.
+         * Both levels are the same rule, so both go through [BundledJars.unambiguous] rather than folding twice.
+         */
+        internal fun nestedVersions(stagedJars: List<File>): Map<String, String> = BundledJars.unambiguous(
+            stagedJars.flatMap { jar -> BundledJars.versionsIn(jar).toList() }
+        )
 
         /**
          * Whether a project that yielded no file yielded none *of its own accord*, or because staging had
@@ -1426,15 +1421,28 @@ internal enum class UnmetReason {
     DOWNLOAD_FAILED;
 
     /**
-     * How this reads in a refusal, or `null` when the name already carries it ([UNRESOLVED]).
+     * How this reads, in a refusal or a log line. **Never `null`** — it used to return `null` for
+     * [UNRESOLVED], on the grounds that the label already says so, and two log sites interpolated the
+     * result straight into a string. Neither can reach that value today, so both would have printed the
+     * literal `null` only after some later edit, with nothing to warn them. Whether a reason is worth
+     * *appending to a refusal* is a rendering decision, and it now lives in the renderer
+     * ([refuseForMissingDependencies]) rather than in a nullable return.
      *
      * @param platformName Where to look the project up, which is only worth saying for an opt-out.
      */
-    fun explain(platformName: String): String? = when (this) {
-        UNRESOLVED -> null
+    fun explain(platformName: String): String = when (this) {
+        UNRESOLVED -> "unresolved on $platformName"
         NO_USABLE_FILE -> "nothing published for this loader and Minecraft version"
         DROPPED_BY_BACKTRACK -> "every usable build was dropped resolving a version conflict"
         DISTRIBUTION_LOCKED -> "distribution-locked on $platformName"
         DOWNLOAD_FAILED -> "download failed"
     }
+
+    /**
+     * Whether a refusal should append [explain] to the dependency's name.
+     *
+     * Only [UNRESOLVED] says no: `unsatisfiedLabel` already renders an unresolved ref as
+     * `<ref> (unresolved <platform> project)`, and a second parenthesis would say it twice.
+     */
+    val worthAppending: Boolean get() = this != UNRESOLVED
 }

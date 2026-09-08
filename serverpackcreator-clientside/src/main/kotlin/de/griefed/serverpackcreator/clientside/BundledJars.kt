@@ -85,14 +85,25 @@ object BundledJars {
      * demotion. An id whose descriptor states no version is likewise absent — [idsIn] still reports it, so
      * it still counts as *present*, just not as a version anything can be compared against.
      */
-    fun versionsIn(jar: File): Map<String, String> {
-        val perId = mutableMapOf<String, MutableSet<String>>()
-        for (descriptor in nestedDescriptorsOf(jar)) {
-            val version = versionOf(descriptor) ?: continue
-            idsOf(descriptor).forEach { id -> perId.getOrPut(id) { mutableSetOf() }.add(version) }
+    fun versionsIn(jar: File): Map<String, String> = unambiguous(
+        nestedDescriptorsOf(jar).flatMap { descriptor ->
+            val version = versionOf(descriptor) ?: return@flatMap emptyList()
+            idsOf(descriptor).map { id -> id to version }
         }
-        return perId.filterValues { it.size == 1 }.mapValues { (_, versions) -> versions.single() }
-    }
+    )
+
+    /**
+     * The id→version pairs on which [claims] all agree, with every contested id dropped.
+     *
+     * **One rule, one implementation.** It applies at two levels — within a jar bundling the same id twice,
+     * and across the staged jars of a pack — and `BootVerifier.nestedVersions` reaches this rather than
+     * writing the fold a second time. Two copies of one rule is the drift shape this module's own context
+     * file opens with, and an audit flagged it here the day the second copy appeared.
+     */
+    fun unambiguous(claims: List<Pair<String, String>>): Map<String, String> = claims
+        .groupBy({ it.first }, { it.second })
+        .filterValues { versions -> versions.distinct().size == 1 }
+        .mapValues { (_, versions) -> versions.first() }
 
     /**
      * Every nested jar's descriptor in [jar], parsed once so [idsIn] and [versionsIn] read the same jars by
