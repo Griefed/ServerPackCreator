@@ -61,7 +61,7 @@ import javax.swing.JTabbedPane
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ApiPlugins(
-    tomlParser: TomlParser,
+    private val tomlParser: TomlParser,
     private val apiProperties: ApiProperties,
     private val versionMeta: VersionMeta,
     private val utilities: Utilities
@@ -73,10 +73,29 @@ class ApiPlugins(
     private val toml = ".toml"
     private val configToml = "config$toml"
 
-    /** Not implemented yet — see `PluginLoadingOrderTest.constructingTheManagerLoadsNothing`. */
-    fun loadAndStart(): Unit = TODO("loading is still a side effect of construction")
-
-    init {
+    /**
+     * Load, start and inspect every installed plugin. **A step, not a side effect of construction.**
+     *
+     * Plugin code runs here — a plugin's constructor and its `start()` both — and plugin code reaches back
+     * into the API: the example plugin calls `ApiWrapper.api()` six times in its `init` to register
+     * listeners, and third-party plugins are entitled to do the same, because the example is the
+     * documentation. So this must not run until the API it will reach into exists.
+     *
+     * It used to run from this class's `init`, i.e. from inside `ApiWrapper.apiPlugins`' lazy initialiser,
+     * which `stageThree` touches **before** `serverPackHandler` is built. Two unbounded recursions came out
+     * of that, and both are closed by making the caller decide when this happens
+     * ([de.griefed.serverpackcreator.api.ApiWrapper.stageThree] calls it last):
+     *  - `ApiWrapper.api()` had not yet published its singleton, so the plugin's call built another wrapper,
+     *     which loaded the plugins again;
+     *  - `serverPackHandler`'s lazy initialiser needs `apiPlugins`, and Kotlin's `SynchronizedLazyImpl` is
+     *     re-entrant on one thread, so reaching it from here ran *this* initialiser a second time.
+     *
+     * Reproduced 2026-09-08: 53 wrappers, 268 `example-kotlin` log lines, OutOfMemoryError.
+     *
+     * Idempotent through pf4j: `loadPlugins` skips what is already resolved and `startPlugins` what is
+     * already started, so a caller that runs setup twice does not double-register anything.
+     */
+    fun loadAndStart() {
         loadPlugins()
         startPlugins()
         extractPluginConfigs(tomlParser)
