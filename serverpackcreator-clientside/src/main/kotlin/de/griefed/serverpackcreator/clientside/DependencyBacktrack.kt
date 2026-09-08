@@ -54,27 +54,34 @@ object DependencyBacktrack {
      */
     const val MAX_BACKTRACKS = 10
 
-    /**
-     * One requirement a staged jar declares, kept until every jar is in so the set can be judged as a whole.
-     *
-     * @param requiringFileName    The jar that declared it, named as it was staged.
-     * @param requiringIsCandidate Whether that jar is the mod being verified rather than a dependency.
-     * @param requiredModId        The mod id the descriptor names.
-     * @param versionConstraint    The range the descriptor spelled, verbatim and unparsed.
-     */
+    /** One requirement a staged jar declares, kept until every jar is in so the set can be judged as a whole. */
     data class Requirement(
+        /** The jar that declared it, named as it was staged. */
         val requiringFileName: String,
+        /** Whether that jar is the mod being verified rather than a dependency — only the latter may be demoted. */
         val requiringIsCandidate: Boolean,
+        /** The mod id the descriptor names, which may be an `id` or something another jar `provides`. */
         val requiredModId: String,
+        /** The range the descriptor spelled, verbatim and unparsed — `VersionConstraint` reads what it can. */
         val versionConstraint: String
     )
 
-    /** A [Requirement] the staged set contradicts, carrying both halves so the log can state the reason. */
+    /**
+     * A [Requirement] the staged set contradicts, carrying both halves so the log can state the reason.
+     *
+     * The first four properties are the requirement verbatim; [stagedVersion] is what the pack actually
+     * holds, and the pair of it and [versionConstraint] is the whole finding.
+     */
     data class Conflict(
+        /** The jar whose descriptor demanded something the pack does not hold; the demotion candidate. */
         val requiringFileName: String,
+        /** Whether that jar is the mod being verified — a conflict only it declares is left alone. */
         val requiringIsCandidate: Boolean,
+        /** The mod id that was demanded. */
         val requiredModId: String,
+        /** The range demanded, verbatim, so the log can quote what the author wrote. */
         val versionConstraint: String,
+        /** The version of [requiredModId] the pack really staged, which is what contradicts the range. */
         val stagedVersion: String
     )
 

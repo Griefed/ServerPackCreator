@@ -612,6 +612,13 @@ class BootVerifier(
     }
 
     /**
+     * Every stable Minecraft release SPC knows a server for — the set a jar's own declared range is searched
+     * against when its platform tagged nothing the jar accepts.
+     */
+    private fun bootableReleases(): List<String> =
+        apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }
+
+    /**
      * Whether a given loader can actually be booted on a given Minecraft version. Only a stable Minecraft
      * *release* qualifies — a mod's newest file may target a pre-release (a `-pre`/`-rc`/`-snapshot`), which
      * is unstable and a waste to boot — AND-ed with [minecraftAcceptable] (the host's own constraint, e.g.
@@ -621,13 +628,6 @@ class BootVerifier(
      * Takes the loader per call rather than closing over one, because the crash re-check's sample spans
      * loaders and has to gate each candidate against its own.
      */
-    /**
-     * Every stable Minecraft release SPC knows a server for — the set a jar's own declared range is searched
-     * against when its platform tagged nothing the jar accepts.
-     */
-    private fun bootableReleases(): List<String> =
-        apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }
-
     private fun bootableCombination(): (String, String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         return { loader, minecraftVersion ->
