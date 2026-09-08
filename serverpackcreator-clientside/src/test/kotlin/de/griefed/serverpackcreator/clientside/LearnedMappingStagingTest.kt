@@ -101,7 +101,11 @@ internal class LearnedMappingStagingTest {
             }
     }
 
+    /** Every file the staging join asked for, so a probe that should not have happened is visible. */
+    private val fetched = mutableListOf<String>()
+
     private val downloader = JarDownloader { modFile, targetDirectory ->
+        fetched += modFile.fileName
         val body = descriptors[modFile.fileName] ?: return@JarDownloader null
         targetDirectory.mkdirs()
         File(targetDirectory, modFile.fileName).also { jar ->
@@ -112,6 +116,16 @@ internal class LearnedMappingStagingTest {
             }
         }
     }
+
+    /**
+     * The learner as its page really looks in the reported case: the library is **linked**, and linked as
+     * optional, so `requiredDependencies` never mentions it and only the jar's `depends` does.
+     */
+    private val learnerLinkingTheLibrary = learner.copy(
+        files = listOf(
+            fabricFile("Learner-1.0.0.jar", "1.0.0").copy(relatedDependencies = listOf("weird-slug"))
+        )
+    )
 
     private fun verifier(workDir: File, learned: LearnedModIds) = BootVerifier(
         apiWrapper = apiWrapper,
@@ -153,6 +167,48 @@ internal class LearnedMappingStagingTest {
             listOf("Learner-1.0.0.jar", "MysteryLib-9.0.0.jar"),
             stagedMods(workDir, "learner"),
             "the learner names only the mod id, which nothing but the earlier grind could resolve"
+        )
+    }
+
+    /**
+     * **Step 4, and the `do-a-barrel-roll` case exactly.** Nothing has been learned, the id resolves to
+     * nothing by spelling, and the only trace of the library anywhere is an **optional** link on the
+     * candidate's own page. Staging asks that link what it is, recognises the id, and stages it — instead
+     * of booting without a library the loader immediately demands.
+     */
+    @Test
+    fun anUnresolvedRequiredIdIsAnsweredByAskingTheLinkedProjects(@TempDir workDir: File) {
+        val learned = LearnedModIds()
+
+        verifier(workDir, learned).prepareBootPack(learnerLinkingTheLibrary, "Fabric")
+
+        Assertions.assertEquals(
+            listOf("Learner-1.0.0.jar", "MysteryLib-9.0.0.jar"),
+            stagedMods(workDir, "learner"),
+            "the optional link was the only route to a library the jar hard-depends on"
+        )
+        Assertions.assertEquals(
+            "weird-slug", learned.refFor("mysterylib_v9", "Modrinth"),
+            "and what the probe read is kept, so no later candidate pays for it again"
+        )
+    }
+
+    /**
+     * **The cost rule: nothing is probed while the id still resolves.** Probing is only worth a download
+     * because the alternative is a wasted container; spending one when the answer was already available
+     * would make every well-formed pack pay for the malformed ones.
+     */
+    @Test
+    fun nothingIsProbedWhileTheIdStillResolves(@TempDir workDir: File) {
+        val learned = LearnedModIds()
+        learned.learn("Modrinth", "weird-slug", setOf("mysterylib_v9"))
+        fetched.clear()
+
+        verifier(workDir, learned).prepareBootPack(learnerLinkingTheLibrary, "Fabric")
+
+        Assertions.assertEquals(
+            listOf("Learner-1.0.0.jar", "MysteryLib-9.0.0.jar"), fetched.sorted(),
+            "the candidate and the library it needs, each fetched once and nothing else: $fetched"
         )
     }
 
