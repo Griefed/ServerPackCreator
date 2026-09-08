@@ -73,6 +73,9 @@ class ApiPlugins(
     private val toml = ".toml"
     private val configToml = "config$toml"
 
+    /** Not implemented yet — see `PluginLoadingOrderTest.constructingTheManagerLoadsNothing`. */
+    fun loadAndStart(): Unit = TODO("loading is still a side effect of construction")
+
     init {
         loadPlugins()
         startPlugins()
