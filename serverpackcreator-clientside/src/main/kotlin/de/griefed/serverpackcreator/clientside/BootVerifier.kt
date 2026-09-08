@@ -742,7 +742,9 @@ class BootVerifier(
         val publishedVersionOf = (injected.map { it.fileName to it.version } + (mainFile.fileName to mainFile.version))
             .toMap()
 
-        val stagedVersions = scanned.flatMap { mod ->
+        // Nested first, so a top-level jar of the same id wins: that is the copy staging deliberately
+        // chose and the one a demotion would act on. Nested entries can therefore only fill a gap.
+        val stagedVersions = nestedVersions(stagedJars) + scanned.flatMap { mod ->
             val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
             // A dependency names an id, and one jar answers to several: its own, plus everything it
             // `provides` -- Fabric API declares `id: fabric-api` and `provides: [fabric]`.
@@ -769,6 +771,29 @@ class BootVerifier(
                 "re-staging ${mainFile.fileName} without it."
         )
         return demoted
+    }
+
+    /**
+     * The mod ids [stagedJars] carry **inside** themselves, mapped to the versions those nested descriptors
+     * state — the rest of the classpath, as far as judging the pack's coherence goes.
+     *
+     * A jar-in-jar library is loaded exactly like a staged file but appears in neither of the two sources
+     * `dependencyToDemote` otherwise has: it is not a top-level file, and the platform never published it,
+     * so `InjectedDependency.version` has nothing for it. Without this a requirement contradicting a bundled
+     * copy read as a requirement naming something *absent*, which `DependencyBacktrack` skips by design.
+     *
+     * **One id bundled at two versions by two different jars is dropped**, for the reason
+     * [BundledJars.versionsIn] drops it within a single jar: which copy the loader picks is its own
+     * resolution behaviour, and no opinion costs a missed conflict where a wrong one manufactures a demotion.
+     */
+    private fun nestedVersions(stagedJars: List<File>): Map<String, String> {
+        val perId = mutableMapOf<String, MutableSet<String>>()
+        for (jar in stagedJars) {
+            BundledJars.versionsIn(jar).forEach { (id, version) ->
+                perId.getOrPut(id) { mutableSetOf() }.add(version)
+            }
+        }
+        return perId.filterValues { it.size == 1 }.mapValues { (_, versions) -> versions.single() }
     }
 
     /** Result of [prepareBootPack]: a ready-to-run pack, or the reason staging could not finish. */
