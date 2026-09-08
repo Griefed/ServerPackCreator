@@ -275,4 +275,48 @@ internal class ModIdRegistryTest {
         Assertions.assertEquals("fabric-language-kotlin", KnownModIds.refFor("fabric-language-kotlin", "Modrinth"))
         Assertions.assertNotEquals("306612", KnownModIds.refFor("fabric-language-kotlin", "CurseForge"))
     }
+
+    /**
+     * **YACL's mod id carries its major version, and its slug does not.** `yet_another_config_lib_v3` is
+     * what a descriptor names; both platforms publish the project as `yacl`, so the optimistic
+     * slug-guess resolves to nothing on either.
+     *
+     * Observed twice on the live daemon before being added, which is the bar this table sets:
+     * `Modrinth/do-a-barrel-roll` on Fabric / Minecraft 26.2 booted without it and the loader refused the
+     * pack with *"requires any version of yet_another_config_lib_v3, which is missing"*, and the earlier
+     * `zoomify` backtrack case reached the same project by the platform ref instead.
+     *
+     * **Modrinth marks it `optional` for do-a-barrel-roll while the jar declares it under `depends`**, so
+     * the platform half filters it out (correctly — that filter exists) and the manifest half is the only
+     * route left. That is exactly the gap an alias closes.
+     *
+     * A shape rule rather than a single entry, for the reason the Fabric API modules have one: the suffix
+     * tracks the library's major version and has already moved once (`_v2` -> `_v3`), so a literal entry
+     * would go stale at the next major and take the same debugging session to find again.
+     */
+    @Test
+    fun yetAnotherConfigLibResolvesToYaclOnBothPlatforms() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("yacl"),
+            KnownModIds.mappingFor("yet_another_config_lib_v3", "Modrinth")
+        )
+        Assertions.assertEquals(
+            ModIdMapping.Alias("667299"),
+            KnownModIds.mappingFor("yet_another_config_lib_v3", "CurseForge")
+        )
+        Assertions.assertEquals(
+            ModIdMapping.Alias("yacl"),
+            KnownModIds.mappingFor("yet_another_config_lib_v2", "Modrinth"),
+            "the suffix is the library's major version and has moved before"
+        )
+    }
+
+    /** And the shape stays narrow: a different library with a versioned id is still only a guess. */
+    @Test
+    fun anotherLibraryWithAVersionedIdIsNotClaimedForYacl() {
+        Assertions.assertEquals(
+            ModIdMapping.Guess("some_other_config_lib_v3"),
+            KnownModIds.mappingFor("some_other_config_lib_v3", "Modrinth")
+        )
+    }
 }
