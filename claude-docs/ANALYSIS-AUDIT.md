@@ -405,3 +405,23 @@ re-derive that it was considered.
 clientside **419** (0 failures), grinder **503** (0 failures, 29 skipped), app **149** (0 failures) — the
 latter two re-measured at 2026-09-08 07:31/07:32, i.e. *after* `293998273`, because the merge message had
 quoted figures taken before it (REFACTOR-AUDIT L-4). They hold.
+
+## Resolution — every finding closed the same day (2026-09-08)
+
+| Finding | Closed by | How |
+|---|---|---|
+| A-1 | `9fbfffa75` (red), `60a0e77c8` (fix) | `readableVersion` asks `toIntOrNull() != null` rather than "all digits" — the question `numbersOf` actually needs answered. Chosen over widening to `Long`, which moves the ceiling instead of closing the gap |
+| A-2 | `89ae3d8ca`, `838f35ad5` | `BundledVersionTest`: both ambiguity levels, the `provides` alias, the no-version split, the Quilt spelling, unreadable input |
+| A-3 | `89ae3d8ca` | The precedence guard, **mutation-verified**: swapping `nestedVersions(...) + scanned…` makes it fail with `create-6.0.8.jar` in place of `create-6.0.10.jar`, and nothing else in the suite notices |
+| A-4 | `89ae3d8ca` | `backtrackReason`'s three branches asserted directly, with its precondition stated — one first draft asked about a state the function is never called in, which is recorded in the test rather than silently dropped |
+| A-5 | `89ae3d8ca` | DISTRIBUTION_LOCKED and UNRESOLVED reached through real staging. Writing it exposed a **faithless fake**: the test downloader ignored `downloadUrl`, so a locked file "downloaded" and the case came back as a backtrack. It now mirrors `HttpJarDownloader`'s first line |
+| A-6 | `9b58349f4` | `explain()` always returns a sentence; whether to append it is `worthAppending`, in the renderer. Published strings byte-identical |
+| A-7 | `89ae3d8ca` | Exact-set assertion, and the duplicated jar builder in that file replaced by one parameterised harness |
+| A-8 | noted, deliberately not changed | Re-opening each staged jar per backtrack round is far from the cost centre — each round already re-downloads the pack — and this module measures before changing a bound |
+
+**Two of the new guards were red first, and both times the fault was in the test.** That is the argument for
+the convention that says run a pin before committing it: a fake more capable than the real thing, and a
+question the function is never asked, both look exactly like a code defect until the failure text is read.
+
+Suites at close: clientside **438**, grinder **503** (29 skipped), app **149**, zero failures, all
+re-derived from `build/test-results` with result files timestamped after the last code commit.

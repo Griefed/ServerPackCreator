@@ -5772,3 +5772,20 @@ message stated as measured.
 
 M-1, M-2 and L-1/L-2/L-3 are cheap and mechanical. M-4 and M-5 are the documentation debt this range
 accumulated, and M-5 is a wrong number in an always-loaded file. H-1 is closed; it stays as the lesson.
+
+## Resolution — every finding closed the same day (2026-09-08)
+
+| Finding | Closed by | How |
+|---|---|---|
+| H-1 | `3156d60f2` (before the audit) | `readableVersion` gates the version side of `satisfies`; the audit records the lesson, not open work |
+| M-1 | `89ae3d8ca`, `838f35ad5` | `BundledVersionTest` (10 guards) plus `aTopLevelJarOutranksABundledCopyOfTheSameId`, the last **mutation-verified** by swapping the operands |
+| M-2 | `9b58349f4` | `BundledJars.unambiguous` is the one implementation; `nestedVersions` calls it and moved to the companion |
+| M-3 | accepted, not fixed | The refactor is already merged inside `06c3ac3c5`; splitting it now would rewrite shared history for a disclosed, behaviour-preserving move. Recorded so the next pass does not re-raise it |
+| M-4 | `309a0ff45` | Two `REFACTOR-LOG.md` entries — the 2026-09-06 field reports, and the storm with its three defects |
+| M-5 | `309a0ff45` | Root status row 410 → **438**, re-derived from `build/test-results`; header date off 2026-08-31 |
+| L-1, L-2 | `03032f498` | `Conflict`'s five properties documented; `Requirement` reshaped from a class-level `@param` block to per-parameter KDoc |
+| L-3 | `03032f498` | The orphaned block moved to `bootableCombination()`, the function it describes |
+| L-4 | measured | Re-run **after** `293998273`: grinder 503 (29 skipped), app 149, both zero failures, result files timestamped 2026-09-08 07:47 |
+
+Suites at close, every figure re-derived from `build/test-results` rather than incremented:
+clientside **438**, grinder **503** (29 skipped), app **149**, zero failures.
