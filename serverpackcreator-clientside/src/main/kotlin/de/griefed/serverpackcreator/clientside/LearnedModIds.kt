@@ -132,9 +132,9 @@ class LearnedModIds(
      * @param orElse The unlearned answer, normally [KnownModIds.mappingFor] bound to this platform.
      */
     fun mappingsFor(modId: String, platform: String, orElse: (String) -> ModIdMapping): List<ModIdMapping> {
-        val learned = refsFor(modId, platform).map { ModIdMapping.Alias(it) }
-        val registry = orElse(modId).takeIf { it.ref != null && it.ref !in learned.map { alias -> alias.ref } }
-        return learned + listOfNotNull(registry)
+        val learnedRefs = refsFor(modId, platform)
+        val registry = orElse(modId).takeIf { it.ref != null && it.ref !in learnedRefs }
+        return learnedRefs.map { ModIdMapping.Alias(it) } + listOfNotNull(registry)
     }
 
     /**
