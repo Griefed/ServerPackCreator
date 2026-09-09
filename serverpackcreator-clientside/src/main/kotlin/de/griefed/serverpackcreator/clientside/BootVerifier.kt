@@ -594,8 +594,8 @@ class BootVerifier(
                     requirement, loader, minecraftVersion,
                     // Learned first: a descriptor this process actually read outranks a table entry and a
                     // slug guess alike, and it is the half that grows on its own.
-                    mappingFor = {
-                        learnedModIds.mappingFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
+                    mappingsFor = {
+                        learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
                     },
                     // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
                     // publishing nothing usable from one whose builds staging dropped.
@@ -632,7 +632,10 @@ class BootVerifier(
                     continue
                 }
 
-                is ManifestDependencyPlan.Stage -> plan.file
+                // The ref that actually staged is claimed too: with several mappings per id, the one
+                // `platformRefFor` claimed above need not be the one that won, and an unclaimed ref lets a
+                // later requirement resolve the same project again.
+                is ManifestDependencyPlan.Stage -> plan.file.also { visited.add(plan.ref) }
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
@@ -1171,34 +1174,47 @@ class BootVerifier(
          * refused, unmappable did not — which made *being almost resolvable worse than being unknown*, and
          * is why CurseForge was given no guess at all.
          *
-         * @param mappingFor This platform's mapping for a mod id, carrying how much it can be trusted.
-         * @param resolveRef The project behind a ref, or `null` when the platform does not carry it.
+         * **Several mappings are tried in turn, because one mod id is genuinely served by several
+         * projects** (2026-09-09): a fork or an unofficial port keeps the original's id, so
+         * [LearnedModIds.mappingsFor] can offer both, and the first of them having no build for this boot is
+         * not the same thing as the dependency being unavailable. The first mapping that yields a file wins;
+         * a refusal needs *every* mapping to have failed, and even then only an alias may raise one — the
+         * reason quoted is the first alias's, since that is the project a reader will go and look up.
+         *
+         * @param mappingsFor Everything worth trying for a mod id, best first, each carrying how much it can
+         *                    be trusted.
+         * @param resolveRef  The project behind a ref, or `null` when the platform does not carry it.
          */
         internal fun planManifestDependency(
             requirement: ModDependency,
             loader: String,
             minecraftVersion: String,
-            mappingFor: (String) -> ModIdMapping,
+            mappingsFor: (String) -> List<ModIdMapping>,
             resolveRef: (String) -> ProjectFiles?,
             excluded: Set<String> = emptySet()
         ): ManifestDependencyPlan {
-            val mapping = mappingFor(requirement.modID)
-            val ref = mapping.ref ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
-            val project = resolveRef(ref) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
-            val confident = mapping is ModIdMapping.Alias
-            val file = BootCandidateSelector.pickDependencyFile(
-                project.withoutExcluded(excluded).files, loader, minecraftVersion, requirement.versionConstraint
-            ) ?: return if (confident) {
-                ManifestDependencyPlan.Unsatisfied(
-                    requirement.modID,
-                    backtrackReason(project, excluded, loader, minecraftVersion)
+            var refusal: UnmetReason? = null
+            for (mapping in mappingsFor(requirement.modID)) {
+                val ref = mapping.ref ?: continue
+                val project = resolveRef(ref) ?: continue
+                val confident = mapping is ModIdMapping.Alias
+                val file = BootCandidateSelector.pickDependencyFile(
+                    project.withoutExcluded(excluded).files, loader, minecraftVersion,
+                    requirement.versionConstraint
                 )
-            } else {
-                // A guess that hit a real project publishing nothing usable. Being *almost* resolvable must
-                // not be worse than being unknown — the `xaerolib` case — so it is filed, not fatal.
-                ManifestDependencyPlan.Unmapped(requirement.modID)
+                if (file != null) {
+                    return ManifestDependencyPlan.Stage(ref, file, confident)
+                }
+                // Remembered rather than returned: a later mapping may still stage this id, and only once
+                // none has is there anything to refuse over.
+                if (confident && refusal == null) {
+                    refusal = backtrackReason(project, excluded, loader, minecraftVersion)
+                }
             }
-            return ManifestDependencyPlan.Stage(ref, file, confident)
+            // A guess that hit a real project publishing nothing usable. Being *almost* resolvable must
+            // not be worse than being unknown — the `xaerolib` case — so it is filed, not fatal.
+            return refusal?.let { ManifestDependencyPlan.Unsatisfied(requirement.modID, it) }
+                ?: ManifestDependencyPlan.Unmapped(requirement.modID)
         }
 
         /**

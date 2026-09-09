@@ -201,7 +201,7 @@ internal class ProvidedDependencyTest {
 
     /** The learned map as the live daemon holds it: one id, pointing at whichever project proved it first. */
     private fun learnedAs(modId: String, ref: String) =
-        LearnedModIds().apply { restore(mapOf("Modrinth" to mapOf(modId to ref))) }
+        LearnedModIds().apply { restore(mapOf("Modrinth" to mapOf(modId to listOf(ref)))) }
 
     /**
      * **The published row verbatim.** The core is staged from the platform ref, the candidate's own

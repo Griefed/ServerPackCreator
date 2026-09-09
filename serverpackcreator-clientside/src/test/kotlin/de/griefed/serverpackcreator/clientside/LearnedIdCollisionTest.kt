@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -58,6 +59,174 @@ import java.util.jar.JarOutputStream
  * @author Griefed
  */
 internal class LearnedIdCollisionTest {
+
+    // --- what the map remembers -----------------------------------------------------------------------
+
+    /** Every project that proves an id is remembered, in the order it proved it. */
+    @Test
+    fun everyProjectProvingAnIdIsRemembered() {
+        val learned = LearnedModIds()
+
+        learned.learn("Modrinth", "farmers-delight-fabric", setOf("farmersdelight"))
+        learned.learn("Modrinth", "farmers-delight", setOf("farmersdelight"))
+
+        Assertions.assertEquals(
+            listOf("farmers-delight-fabric", "farmers-delight"),
+            learned.refsFor("farmersdelight", "Modrinth"),
+            "two projects declaring one id is an upstream fact; forgetting one of them is our defect"
+        )
+    }
+
+    /** A ref is remembered once, however many candidates re-declare it. */
+    @Test
+    fun aRefIsRememberedOnce() {
+        val learned = LearnedModIds()
+
+        learned.learn("Modrinth", "farmers-delight", setOf("farmersdelight"))
+        learned.learn("Modrinth", "farmers-delight", setOf("farmersdelight"))
+
+        Assertions.assertEquals(listOf("farmers-delight"), learned.refsFor("farmersdelight", "Modrinth"))
+    }
+
+    /** Every learned ref is an alias, and the first prover still leads — `refFor` is unchanged. */
+    @Test
+    fun everyLearnedRefIsAnAliasAndTheFirstProverLeads() {
+        val learned = LearnedModIds()
+
+        learned.learn("Modrinth", "create-fabric", setOf("create"))
+        learned.learn("Modrinth", "LNytGWDc", setOf("create"))
+
+        Assertions.assertEquals(
+            listOf(
+                ModIdMapping.Alias("create-fabric"),
+                ModIdMapping.Alias("LNytGWDc"),
+                // Modrinth resolves a project by slug, so `create` is a legitimate thing to try last; it
+                // happens to be the real project's slug here, which is exactly why a guess is worth keeping.
+                ModIdMapping.Guess("create")
+            ),
+            learned.mappingsFor("create", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+        )
+        Assertions.assertEquals("create-fabric", learned.refFor("create", "Modrinth"))
+    }
+
+    /**
+     * The registry's answer is tried **after** everything learned, never instead of it: a slug guess is the
+     * weakest thing this engine has, and a jar it actually read outranks one.
+     */
+    @Test
+    fun theRegistryIsTriedAfterEverythingLearned() {
+        val learned = LearnedModIds()
+        learned.learn("Modrinth", "some-fork", setOf("mysterylib"))
+
+        Assertions.assertEquals(
+            listOf(ModIdMapping.Alias("some-fork"), ModIdMapping.Guess("mysterylib")),
+            learned.mappingsFor("mysterylib", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+        )
+    }
+
+    /** A ref already learned is not offered twice because the registry names it too. */
+    @Test
+    fun theRegistryDoesNotRepeatALearnedRef() {
+        val learned = LearnedModIds()
+        learned.learn("Modrinth", "fabric-api", setOf("fabric"))
+
+        Assertions.assertEquals(
+            listOf(ModIdMapping.Alias("fabric-api")),
+            learned.mappingsFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
+            "the table's `fabric -> fabric-api` alias is the same project a jar just proved"
+        )
+    }
+
+    /** An id nothing has proved is exactly what the registry makes of it, and nothing more. */
+    @Test
+    fun anUnlearnedIdIsStillJustTheRegistrysAnswer() {
+        Assertions.assertEquals(
+            listOf(ModIdMapping.Alias("fabric-api")),
+            LearnedModIds().mappingsFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+        )
+        Assertions.assertEquals(
+            emptyList<ModIdMapping>(),
+            LearnedModIds().mappingsFor("whatever", "SomeOtherPlatform") { ModIdMapping.None },
+            "a platform the registry knows nothing about offers nothing to try"
+        )
+    }
+
+    /** What was learned still survives a restart, now for every prover rather than only the first. */
+    @Test
+    fun everyRefSurvivesTheRoundTrip() {
+        val original = LearnedModIds()
+        original.learn("Modrinth", "create-fabric", setOf("create"))
+        original.learn("Modrinth", "LNytGWDc", setOf("create"))
+
+        val restored = LearnedModIds().apply { restore(original.snapshot()) }
+
+        Assertions.assertEquals(listOf("create-fabric", "LNytGWDc"), restored.refsFor("create", "Modrinth"))
+    }
+
+    // --- how planning uses them -----------------------------------------------------------------------
+
+    private fun planFile(name: String, loaders: Set<String>, mcVersions: Set<String>) =
+        ModFile(name, loaders, mcVersions, "https://cdn/$name", null, emptyList())
+
+    private fun planProject(slug: String, vararg files: ModFile) = ProjectFiles(
+        "Modrinth", slug, "https://modrinth.com/mod/$slug",
+        DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files.toList()
+    )
+
+    /** The first mapping resolves to a project with no build for this boot; the second is the real one. */
+    @Test
+    fun planningReachesTheSecondMapping() {
+        val forgeBuild = planFile("FarmersDelight-1.20.1-1.3.4.jar", setOf("Forge"), setOf("1.20.1"))
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("farmersdelight"), "Forge", "1.20.1",
+            mappingsFor = {
+                listOf(ModIdMapping.Alias("farmers-delight-fabric"), ModIdMapping.Alias("farmers-delight"))
+            },
+            resolveRef = { ref ->
+                when (ref) {
+                    "farmers-delight-fabric" ->
+                        planProject(ref, planFile("fd-fabric.jar", setOf("Fabric"), setOf("1.20.1")))
+                    else -> planProject(ref, forgeBuild)
+                }
+            }
+        )
+
+        Assertions.assertEquals(
+            ManifestDependencyPlan.Stage("farmers-delight", forgeBuild, confident = true), plan,
+            "the second project has the Forge build; refusing on the first loses a boot that can run"
+        )
+    }
+
+    /** And when no mapping can stage it, an alias still refuses — the safety property is unchanged. */
+    @Test
+    fun anAliasThatNoMappingCanStageStillRefuses() {
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("farmersdelight"), "Forge", "1.20.1",
+            mappingsFor = {
+                listOf(ModIdMapping.Alias("farmers-delight-fabric"), ModIdMapping.Alias("farmers-delight"))
+            },
+            resolveRef = { planProject(it, planFile("fd-fabric.jar", setOf("Fabric"), setOf("26.2"))) }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Unsatisfied("farmersdelight"), plan)
+    }
+
+    /**
+     * Guesses alongside each other still never refuse: only an alias may, so being almost resolvable twice
+     * must not be worse than being unknown once.
+     */
+    @Test
+    fun guessesAmongTheMappingsStillNeverRefuse() {
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("xaerolib"), "Quilt", "26.2",
+            mappingsFor = { listOf(ModIdMapping.Guess("xaerolib"), ModIdMapping.Guess("xaerolib-fabric")) },
+            resolveRef = { planProject(it, planFile("xaerolib.jar", setOf("Fabric"), setOf("1.20.1"))) }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Unmapped("xaerolib"), plan)
+    }
+
+    // --- and the same thing through real staging ------------------------------------------------------
 
     private val apiWrapper = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val resolver = LoaderVersionResolver(apiWrapper.versionMeta)

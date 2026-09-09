@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.clientside
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * The id-to-project bridge **learned from jars this process has already downloaded**, as opposed to the
@@ -66,17 +67,30 @@ class LearnedModIds(
 ) {
 
     /**
-     * `platform -> (lowercased mod id -> ref)`. Nested per platform because a ref is meaningless on the
-     * other one, and a single map keyed by a pair would let that mistake compile.
+     * `platform -> (lowercased mod id -> refs, in the order they proved it)`. Nested per platform because a
+     * ref is meaningless on the other one, and a single map keyed by a pair would let that mistake compile.
+     *
+     * The value is a **list** because one mod id is genuinely served by several projects — see [learn].
+     * [CopyOnWriteArrayList] rather than a set: order is the answer's ranking, and a contested id holds two
+     * or three entries at most, so copy-on-write costs nothing and keeps reads lock-free.
      */
-    private val byPlatform = ConcurrentHashMap<String, ConcurrentHashMap<String, String>>()
+    private val byPlatform = ConcurrentHashMap<String, ConcurrentHashMap<String, CopyOnWriteArrayList<String>>>()
 
     /**
      * Record that [platform] serves every id in [ids] at [ref], as proved by a jar staged from it.
      *
-     * **The first project to prove an id keeps it.** Two projects declaring one id is an upstream collision
-     * this cannot adjudicate, and letting the later one win would make the answer depend on the order
-     * candidates happened to be ground in.
+     * **The first project to prove an id leads, and every later one is kept behind it.** Two projects
+     * declaring one id is an upstream collision this cannot adjudicate — letting the later one win would
+     * make the answer depend on grind order — but *discarding* it is worse than either, because the ecosystem
+     * is full of cross-loader forks and unofficial ports that deliberately keep the original's mod id.
+     * `create` is Create and Create Fabric; `farmersdelight` is Farmer's Delight and its Fabric port;
+     * `sophisticatedcore` is Sophisticated Core and its unofficial Fabric port. Whichever was ground first
+     * owned the id for every loader afterwards, and a learned mapping's alias-strength then let the wrong
+     * project's empty file list refuse a boot (measured on `chefs-delight`, 2026-09-09).
+     *
+     * Keeping every prover needs no loader dimension to be loader-aware:
+     * [BootCandidateSelector.pickDependencyFile] already filters by loader and Minecraft version, so the
+     * project with a build for the boot in hand is the one that stages.
      */
     fun learn(platform: String, ref: String, ids: Collection<String>) {
         if (ref.isBlank()) {
@@ -86,48 +100,71 @@ class LearnedModIds(
         val learnedSomething = ids.asSequence()
             .map { it.trim().lowercase() }
             .filter { it.isNotEmpty() }
-            .count { id -> known.putIfAbsent(id, ref) == null } > 0
+            .count { id -> known.computeIfAbsent(id) { CopyOnWriteArrayList() }.addIfAbsent(ref) } > 0
         if (learnedSomething) {
             onLearned()
         }
     }
 
-    /** The ref [platform] is known to serve [modId] at, or `null` when no staged jar has proved one. */
-    fun refFor(modId: String, platform: String): String? =
-        byPlatform[platform]?.get(modId.trim().lowercase())
+    /**
+     * The ref [platform] is known to serve [modId] at, or `null` when no staged jar has proved one — the
+     * **first** prover where several exist.
+     *
+     * The single-answer view, for callers that only need one canonical ref: deduping what is already staged
+     * against what a requirement names. [refsFor] is what staging itself asks, because a ref that cannot
+     * serve this boot is not a reason to stop looking.
+     */
+    fun refFor(modId: String, platform: String): String? = refsFor(modId, platform).firstOrNull()
+
+    /** Every ref [platform] is known to serve [modId] at, in the order they proved it. */
+    fun refsFor(modId: String, platform: String): List<String> =
+        byPlatform[platform]?.get(modId.trim().lowercase())?.toList().orEmpty()
 
     /**
-     * [refFor] as a mapping, falling back to [orElse] for an id nothing has proved.
+     * Everything worth trying for [modId], learned aliases first and [orElse]'s answer last.
+     *
+     * The registry comes last rather than instead: a jar this process actually read outranks a slug guess,
+     * and it outranks the hand-written table too — the table is a snapshot of what somebody looked up once,
+     * while a learned ref is a descriptor read from the project it names. Trying it *afterwards* costs one
+     * resolve on the path that was already failing and is the only route left for an id whose projects have
+     * all been ground but none of which fits.
      *
      * @param orElse The unlearned answer, normally [KnownModIds.mappingFor] bound to this platform.
      */
-    fun mappingFor(modId: String, platform: String, orElse: (String) -> ModIdMapping): ModIdMapping =
-        refFor(modId, platform)?.let { ModIdMapping.Alias(it) } ?: orElse(modId)
+    fun mappingsFor(modId: String, platform: String, orElse: (String) -> ModIdMapping): List<ModIdMapping> {
+        val learned = refsFor(modId, platform).map { ModIdMapping.Alias(it) }
+        val registry = orElse(modId).takeIf { it.ref != null && it.ref !in learned.map { alias -> alias.ref } }
+        return learned + listOfNotNull(registry)
+    }
 
     /**
      * Everything learned so far as plain data, so an owner can write it somewhere.
      *
-     * `platform -> id -> ref`, nested rather than keyed by a joined string, for the same reason the
+     * `platform -> id -> refs`, nested rather than keyed by a joined string, for the same reason the
      * in-memory shape is: a ref is meaningless on the other platform, and a flat key would let that mistake
      * through both here and in whatever reads the file back.
      */
-    fun snapshot(): Map<String, Map<String, String>> =
-        byPlatform.entries.associate { (platform, ids) -> platform to ids.toSortedMap().toMap() }
+    fun snapshot(): Map<String, Map<String, List<String>>> = byPlatform.entries.associate { (platform, ids) ->
+        platform to ids.toSortedMap().mapValues { (_, refs) -> refs.toList() }
+    }
 
     /**
      * Adopt [snapshot] wholesale, as read back from wherever an owner wrote it.
      *
-     * Silent by design — see [onLearned]. Existing entries win, so a restore can never overwrite something
-     * this process has already proved with a jar in hand.
+     * Silent by design — see [onLearned]. Restored refs are **appended** behind whatever this process has
+     * already proved with a jar in hand, so a restore can never displace first-hand evidence and can never
+     * lose a prover either.
      */
-    fun restore(snapshot: Map<String, Map<String, String>>) {
+    fun restore(snapshot: Map<String, Map<String, List<String>>>) {
         snapshot.forEach { (platform, ids) ->
             val known = byPlatform.computeIfAbsent(platform) { ConcurrentHashMap() }
-            ids.forEach { (id, ref) ->
+            ids.forEach { (id, refs) ->
                 val cleanId = id.trim().lowercase()
-                if (cleanId.isNotEmpty() && ref.isNotBlank()) {
-                    known.putIfAbsent(cleanId, ref)
+                if (cleanId.isEmpty()) {
+                    return@forEach
                 }
+                val entry = known.computeIfAbsent(cleanId) { CopyOnWriteArrayList() }
+                refs.filter { it.isNotBlank() }.forEach { entry.addIfAbsent(it) }
             }
         }
     }
