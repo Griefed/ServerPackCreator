@@ -299,7 +299,9 @@ object BootCandidateSelector {
         for (obtainableOnly in listOf(true, false)) {
             val narrow = if (obtainableOnly) satisfying.filterNot { it.locked } else satisfying
             val whole = if (obtainableOnly) files.filterNot { it.locked } else files
-            for (version in listOf(minecraftVersion) + patchNeighboursOf(whole + narrow, minecraftVersion)) {
+            // Neighbours are gathered from `whole` alone: `narrow` is a subset of it, so adding it back in
+            // could only ever repeat versions `patchNeighboursOf` already de-duplicates.
+            for (version in listOf(minecraftVersion) + patchNeighboursOf(whole, minecraftVersion)) {
                 yield(narrow to version)
                 yield(whole to version)
             }
