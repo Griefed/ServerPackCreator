@@ -360,7 +360,7 @@ internal class UnmetDependencyReasonTest {
         val detail = refusalFor(onlyTheDemandingBuild, descriptors, workDir)
 
         Assertions.assertTrue(
-            detail.contains("yacl (every usable build was dropped resolving a version conflict)"),
+            detail.contains("yacl (every usable build was dropped making the pack coherent)"),
             "staging excluded the build itself, so reporting the project as publishing nothing is false: $detail"
         )
     }

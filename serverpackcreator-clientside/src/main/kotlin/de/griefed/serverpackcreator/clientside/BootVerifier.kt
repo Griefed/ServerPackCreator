@@ -688,6 +688,35 @@ class BootVerifier(
         .toSet()
 
     /**
+     * The first staged **dependency** whose own descriptor excludes [minecraftVersion], or `null` when every
+     * one of them accepts it.
+     *
+     * The dependency half of what `refuseForSelfDeclaration` does for the candidate, and the gate the
+     * patch-version fallback needs: `pickDependencyFile` stages a build from a neighbouring patch release,
+     * and neither the cross-loader nor the untagged fallback guarantees the version either, so a jar built
+     * against another Minecraft can reach the pack. The loader then refuses the whole pack and the
+     * *candidate* wears the verdict — the "never got a fair run" shape, one layer earlier than every guard
+     * that already covers it.
+     *
+     * **Everything uncertain accepts.** A descriptor that could not be read is already filtered out by
+     * `descriptorRead`, a jar declaring no range yields `null`, and [VersionConstraint] accepts any range it
+     * cannot parse — so this can only ever fire on a positive, readable contradiction. A gate that refused
+     * on doubt is the mass-INCONCLUSIVE shape this module has paid for twice.
+     *
+     * [mainFile] is excluded rather than merely deprioritised: demoting the candidate would verify a
+     * different mod, and dropping a *dependency* over a range the candidate declared would blame the wrong
+     * jar entirely.
+     */
+    private fun outsideThePacksMinecraft(
+        scanned: List<ScannedMod>,
+        mainFile: ModFile,
+        minecraftVersion: String
+    ): ScannedMod? = scanned.firstOrNull { mod ->
+        mod.file.name != mainFile.fileName &&
+            mod.minecraftConstraint?.let { !VersionConstraint.satisfies(minecraftVersion, it) } == true
+    }
+
+    /**
      * Generate a self-installing server pack from the synthetic [modpackDir] with mod auto-exclusion
      * disabled (so the candidate mod is kept). Returns the server-pack directory, or `null` on a
      * failed config-check or generation.
@@ -953,6 +982,19 @@ class BootVerifier(
                         )
                     }
                 }
+        }
+
+        // Asked before the version conflicts, because it is the more certain defect: a jar whose own
+        // descriptor names another Minecraft is one the loader refuses outright, where a version range is
+        // one mod's opinion about another. The candidate is excluded on purpose -- it is the subject of the
+        // experiment, and `refuseForSelfDeclaration` plus `reselectOnMinecraftContradiction` already answer
+        // its disagreement by re-selecting a version it accepts.
+        outsideThePacksMinecraft(scanned, mainFile, minecraftVersion)?.let { mismatch ->
+            log.info(
+                "${mismatch.file.name} declares Minecraft '${mismatch.minecraftConstraint}', which does not " +
+                    "include $minecraftVersion — re-staging ${mainFile.fileName} without it."
+            )
+            return mismatch.file.name
         }
 
         val conflicts = DependencyBacktrack.conflicts(requirements, stagedVersions)
@@ -1680,9 +1722,13 @@ internal enum class UnmetReason {
     NO_USABLE_FILE,
 
     /**
-     * The project publishes something usable and **staging excluded it** — `DependencyBacktrack` demoted
-     * every candidate build trying to make the pack coherent. Reporting this as [NO_USABLE_FILE] states the
-     * opposite of the truth, and is what hid 1014 re-stagings a day behind 47 verdicts on 2026-09-07.
+     * The project publishes something usable and **staging excluded it** — every candidate build was demoted
+     * trying to make the pack coherent. Reporting this as [NO_USABLE_FILE] states the opposite of the truth,
+     * and is what hid 1014 re-stagings a day behind 47 verdicts on 2026-09-07.
+     *
+     * Two things reach it, which is why the sentence says *coherent* rather than naming one of them: a
+     * version range one staged jar declares about another (`DependencyBacktrack`), and a jar whose own
+     * descriptor excludes the Minecraft being booted (`outsideThePacksMinecraft`, 2026-09-09).
      */
     DROPPED_BY_BACKTRACK,
 
@@ -1720,7 +1766,7 @@ internal enum class UnmetReason {
     fun explain(platformName: String): String = when (this) {
         UNRESOLVED -> "unresolved on $platformName"
         NO_USABLE_FILE -> "nothing published for this loader and Minecraft version"
-        DROPPED_BY_BACKTRACK -> "every usable build was dropped resolving a version conflict"
+        DROPPED_BY_BACKTRACK -> "every usable build was dropped making the pack coherent"
         DISTRIBUTION_LOCKED -> "distribution-locked on $platformName"
         DOWNLOAD_FAILED -> "download failed"
     }
