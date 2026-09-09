@@ -3968,12 +3968,45 @@ plugin-grinder **73**, api **412** (1 skipped), app **149** — the last needing
 `localhost:27017`, without which its Spring context tests time out and take the Gradle worker with them
 (confirmed by running it against `mongo:8.0.5` in Docker, where it is green).
 
-**Equivalence checked against `develop`'s unmodified test tree**, by the recipe in the root `CLAUDE.md`:
-**475 pre-existing guards, zero failures** against this branch's production code. Exactly three files could
-not compile, and each is one of the enumerated signature changes — `LearnedModIdsTest` and
-`ManifestDependencyTest` on `mappingFor` → `mappingsFor` (thirteen call sites) plus `restore`'s value type,
-and `VerdictAggregationTest` on `BootOutcome`'s `stagingPrevented` constructor argument becoming
-`prevention`. Adapting those three by their *arguments only*, with every assertion byte-identical, is what
-the 475 was measured with. Nothing else in the base tree noticed the change, which is the claim worth having:
-the behaviour that moved is the behaviour that was meant to.
+### Analysed and audited the same day, and the analysis found the hole the relaxation left
+
+`claude-docs/ANALYSIS-AUDIT.md` and `claude-docs/REFACTOR-AUDIT.md` carry the two reports. The audit's
+per-commit verification is worth quoting because it is the property the convention is actually after: each
+commit checked out into its **own fresh worktree** — never a reused build directory, which is what reported
+`No tests found` for a present class the day before — with the *whole* clientside suite run so a filter
+cannot silently match nothing. **10 red, 33 green across nine commits, and not one collateral failure**, so
+`git checkout <fix>^` really does show the missing implementation at all four test/fix pairs.
+
+The analysis's headline finding is the one that matters most, and it is a consequence of this batch rather
+than a pre-existing defect: **relaxing the exact-Minecraft rule removed the only gate in that dimension.**
+`refuseForSelfDeclaration` reads the candidate's descriptor; nothing read a *dependency*'s, because until
+now a dependency was never staged for another version and so could not disagree about one.
+`outsideThePacksMinecraft` closes it inside `dependencyToDemote` — which already held a `ScannedMod` for
+every staged jar with the field on it — and closes the same exposure in the cross-loader and untagged
+fallbacks, which predate the patch fallback. Without it a `cobblemon` Fabric 1.21.1 build stages into a
+1.21.11 pack, the loader refuses the pack, and the *candidate* wears an INCONCLUSIVE that overwrites a
+decisive verdict.
+
+Ten more findings were closed the same day — a `first {}` that threw on an empty fold, three guards that
+listed the verdicts they knew about instead of asking `Verdict.entries`, an unpinned thread-safety claim on
+a map that had just gained a mutable value type, three new `!!` in a test, and a KDoc link to a type that
+does not exist. Both resolution tables name every one.
+
+**Two of them are worth carrying beyond this module.** A guard can assert a rule that was invented for it:
+the retention drift-guard's first implementation partitioned on "did a container run?" and went red against
+*correct* code, because `ERROR` keeps its logs despite nothing having run — an admin has to diagnose the
+host. Reading *why* a red happened is what separates that from a real defect, and it costs one run. And a
+guard that enumerates the values it knows about stops covering the vocabulary the moment the vocabulary
+grows: `everyVerdictButClearKeepsItsLogs` stayed green while its own *name* became false.
+
+**Equivalence checked against `origin/develop`'s unmodified test tree**, by the recipe in the root
+`CLAUDE.md`, and re-run after the audit fixes: **475 pre-existing guards, zero failures** against the
+production code both times. **Four** files needed adapting, each an enumerated deliberate change —
+`LearnedModIdsTest` and `ManifestDependencyTest` on `mappingFor` → `mappingsFor` (thirteen call sites) plus
+`restore`'s value type; `VerdictAggregationTest` on `BootOutcome`'s `stagingPrevented` constructor argument
+becoming `prevention`; and, after the audit fix, `UnmetDependencyReasonTest` on
+`DROPPED_BY_BACKTRACK`'s sentence, which is the one *expectation* change in the batch and is why that commit
+is `fix:` rather than `refactor:`. The first three are argument-only, with every assertion byte-identical.
+Nothing else in the base tree noticed, which is the claim worth having: the behaviour that moved is the
+behaviour that was meant to.
 
