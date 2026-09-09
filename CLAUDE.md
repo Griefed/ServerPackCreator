@@ -338,17 +338,17 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-08):**
+**Current status (2026-09-09):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
 | api            | 412 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
-| clientside     | 475           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Four verdicts** (`CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE`) since 2026-09-04, and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
+| clientside     | 515           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Six verdicts** — `CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE` since 2026-09-04, plus `LOCKED`/`UNVERIFIABLE` since 2026-09-09 — and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. The two newest split out of `ERROR`, which was promising "an operator's problem" while holding 17 CurseForge distribution opt-outs and ~18 upstream gaps out of 53 published rows. Same pass closed three ways a dependency read as *unavailable* while being obtainable — one already in the pack refusing its own boot, one mod id served by two projects of which only the first was remembered, and an exact-Minecraft rule too strict inside a version-line. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
 | app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | plugin-grinder | 73            | GUI plugin over a grinder's `/verdicts.json` + `/status`; ticked entries reach `packConfig.clientMods` through a `PreGenExtension`, so one selection covers GUI, CLI and web. Verified end-to-end 2026-09-06 against a live `ReportServer`. Full state and landmines: **`serverpackcreator-plugin-grinder/CLAUDE.md`**. |
 | web-frontend   | 32 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage; `types/api.ts` mod-lists are `string[]` since the web module embedded them (2026-08-17); `RunConfigurationCard` asserts the *rendered* lists, not the props it passed in — the pass-through version stayed green with the card reverted to the pre-branch object shape (2026-08-18) |
-| grinder        | 509 (29 skip) | Continuous fire-and-forget boot-verification in network-less Docker containers, with a persisted catalog crawl cursor so coverage accumulates. Runs as a systemd service. **The report server carries no authentication** and binds loopback unless `SPC_GRINDER_HOST` says otherwise. **`SPC_GRINDER_MEMORY_GIB` is measured, not arbitrary** — the JVM derives each boot's heap from it, and it is the divisor in the worker-sizing formula. Full state, landmines and measurements: **`serverpackcreator-grinder/CLAUDE.md`**. |
+| grinder        | 512 (29 skip) | Continuous fire-and-forget boot-verification in network-less Docker containers, with a persisted catalog crawl cursor so coverage accumulates. Runs as a systemd service. **The report server carries no authentication** and binds loopback unless `SPC_GRINDER_HOST` says otherwise. **`SPC_GRINDER_MEMORY_GIB` is measured, not arbitrary** — the JVM derives each boot's heap from it, and it is the divisor in the worker-sizing formula. Full state, landmines and measurements: **`serverpackcreator-grinder/CLAUDE.md`**. |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -394,3 +394,22 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   `tests/plugins`. The defect needs a populated plugins directory at *first* startup — every real run, and
   no test. A fixture that is installed *after* the thing it is meant to exercise has already run is not a
   fixture.
+
+**Since then (2026-09-09): the grinder's `ERROR` bucket, read.** Two things generalise beyond the clientside
+module, whose own `CLAUDE.md` carries the detail and the landmines:
+
+- **A bucket that mixes "somebody must fix this" with "nobody can" is not readable, and stops being read.**
+  `Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* and held, out
+  of 53 published rows, **17 CurseForge distribution opt-outs and ~18 combinations nothing upstream ever
+  published for**. Neither is anybody's problem, and both were sitting in the one column an operator scans
+  to find work. `LOCKED` and `UNVERIFIABLE` now carry them, and what remains in `ERROR` is actionable by
+  construction. The general form: *a category defined by its consequence ("the grind did not happen") will
+  accumulate everything with that consequence, whatever its cause* — so define it by the cause, and make the
+  type carry it (`PreventionCause`) rather than a sentence a reader has to parse.
+- **A defect whose evidence is a published report can be diagnosed without touching the host.**
+  `chefs-delight`'s refusal printed the bare mod id `farmersdelight`; the platform route labels with the
+  resolved project's *slug* (`farmers-delight`), and the manifest route refuses only on a confident mapping,
+  which the id table does not give that id. Two facts in the code plus one string in the feed located the
+  bug in `LearnedModIds` — no shell on the daemon, no log. Worth doing before asking for access: the report
+  is evidence, and its wording is part of it. That is also the argument for the wording being precise, which
+  is why `unsatisfiedLabel` and `UnmetReason` exist at all.

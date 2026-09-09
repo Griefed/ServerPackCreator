@@ -3882,3 +3882,88 @@ Suites: clientside **410 → 438** across 2026-09-07/08, grinder **503** (29 ski
 every figure re-derived from `build/test-results` rather than incremented. The 410 is what the tree carried at
 `300a4aae6`; the 2026-09-06 batch reported 395 at `2329996a5` and grew from there, so the two spans are stated
 separately rather than chained into one number nobody measured.
+
+---
+
+## 2026-09-09 — the grinder's `ERROR` bucket, read
+
+Griefed asked for two things: a `LOCKED` verdict for distribution-locked files, "technically not an error on
+our side, but a limitation by CurseForge", and a look at the public grinder's remaining dependency-related
+`ERROR` rows. Both turned out to be the same finding from two directions — a bucket named after a
+*consequence* accumulates everything with that consequence, whatever caused it — so the pass ended with two
+new verdicts and three dependency-resolution fixes.
+
+### What the 53 `ERROR` rows on `grinder.serverpackcreator.de` actually were
+
+Read straight off `/verdicts.json?f.verdict=ERROR`, and every diagnosis below re-checked against the live
+Modrinth API the same day:
+
+| Cause | Rows |
+|---|---|
+| The mod's own file distribution-locked (`corail-tombstone`, `entityculling`, `not-enough-animations`, `skin-layers-3d`, `structory`) | 15 |
+| A required dependency distribution-locked (`better-combat-by-daedelus`) | 2 |
+| A dependency already staged in the pack, refused anyway | 10 |
+| A dependency one *patch release* away | 6 |
+| One mod id served by two projects, only the first remembered | 1 |
+| A jar carrying only another loader's descriptor | 4 |
+| Genuinely upstream-absent after all three fixes | ~14 |
+| The platform and the jar disagreeing about server support (a note, not a cause) | 5 |
+
+### The three dependency defects
+
+1. **A dependency already in the pack could refuse its own boot.** `stageableRequirements` dropped a
+   requirement that was optional, bundled, environment-provided or already resolved *by ref* — and the ref
+   dedupe is the wrong question, because one project is reachable under the ref its platform page links and
+   under whatever `LearnedModIds`/`KnownModIds` maps the manifest id to. Where those differ the id was
+   resolved a second time against a **different project**, and that project's empty file list refused the
+   boot. `createaddition` requires Modrinth project `LNytGWDc`, which publishes **17 Forge 1.20.1 and 11
+   NeoForge 1.21.1 files**; it was staged, and the verdict still read *"Required dependency unavailable …
+   create (nothing published for this loader and Minecraft version)"*. A `provided` set of every staged jar's
+   own identity closes it — which is also why the descriptor is now read **once** per staged jar for all
+   three of its readers instead of twice.
+2. **One mod id is served by several projects and the map remembered one.** Forks and unofficial ports keep
+   the original's mod id (Create ↔ Create Fabric, Farmer's Delight ↔ its Fabric port, Sophisticated Core ↔
+   its Fabric port), so whichever was ground first owned the id for every loader afterwards — with an
+   `Alias`'s right to refuse a boot. `LearnedModIds` now keeps every prover in order and
+   `planManifestDependency` tries each; a refusal needs all of them to fail. Keeping every prover is what
+   makes the lookup loader-aware **without** a loader dimension, since `pickDependencyFile` already filters
+   by loader and Minecraft version.
+3. **A dependency is now staged from a neighbouring patch release** (Griefed's call, and a deliberate
+   relaxation of a rule this log previously recorded as correct). Refusing every version but the exact one is
+   right across a version-*line* and too strict inside one. Six rows had their dependency one patch away:
+   `playeranimator` for Forge 1.20.2 against published 1.20/1.20.1, `yacl` and `forgified-fabric-api` for
+   Forge 1.20.6, `cobblemon` for Fabric 1.21.11 against published 1.21.1, and QSL for Quilt 1.21.1 and
+   1.21.11 against published 1.21. Nearest patch first, ties to the newer build, only versions the project
+   really publishes, never across a line.
+
+### The verdicts
+
+`Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* while holding 17
+opt-outs and ~18 upstream gaps. `LOCKED` and `UNVERIFIABLE` now carry those, `StagingOutcome.Prevented`
+carries a typed `PreventionCause` instead of only a sentence, and `UnmetReason` owns its own cause so a
+reason added later cannot reach a refusal without somebody deciding whose problem it is. Ranked
+`CONFIRMED, INCONCLUSIVE, ERROR, LOCKED, UNVERIFIABLE, CLEAR`, with `everyVerdictHasARank` failing the build
+if a verdict is added without one. `/as-properties` still gates on `CONFIRMED` alone.
+
+### Three things worth carrying forward
+
+- **An added enum constant cannot be pinned red**, only fail to compile, and the same is true of a new
+  parameter. Three of this batch's four red commits therefore pin the *behaviour* through a path that
+  compiles against the old code — `assertNotEquals(Verdict.ERROR, …)` for the verdict split, and real
+  staging for the two dependency fixes — with the unit-level guards landing beside the signatures they
+  exercise. Stated in each commit message rather than left for an auditor to notice.
+- **A guard must not construct the thing it asserts on.** `PreventedGrindBlameTest` drives the real
+  `prepareBootPack` and the real `refuseForMissingDependencies`, because a fixture handed the cause would
+  only prove that a `when` branches on its argument. Mutation-verified: forcing either cause site to `HOST`
+  fails exactly the three "not our failure" guards and leaves the counterweight green.
+- **The published report was enough to find the bug.** `chefs-delight`'s refusal printed the bare id
+  `farmersdelight`; the platform route labels with the resolved project's slug (`farmers-delight`) and the
+  manifest route refuses only on a confident mapping, which the id table does not give that id — so the
+  alias could only have come from the learned map. No daemon access, no logs. The corollary is that the
+  precision of a refusal's wording is load-bearing, which is the argument `unsatisfiedLabel` and
+  `UnmetReason` were built on.
+
+Suites re-derived from `build/test-results`: clientside **475 → 515**, grinder **509 → 512** (29 skipped),
+plugin-grinder **73**, api **412** (1 skipped), app **149** — the last needing a local MongoDB on
+`localhost:27017`, without which its Spring context tests time out and take the Gradle worker with them.
+
