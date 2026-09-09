@@ -30,7 +30,15 @@ data class InjectedDependency(
      * dependency can be **requeued as its own candidate** — which is how the suspicion gets answered by
      * grinding it rather than by trusting the string match that raised it.
      */
-    val projectUrl: String? = null
+    val projectUrl: String? = null,
+    /**
+     * The version the platform published this file under, or `null` when it reported none.
+     *
+     * Carried so [DependencyBacktrack] can judge the staged *set* against the ranges its jars declare —
+     * a descriptor names a mod and a version, never a file — without threading a second accumulator
+     * through every level of the staging recursion.
+     */
+    val version: String? = null
 )
 
 /**

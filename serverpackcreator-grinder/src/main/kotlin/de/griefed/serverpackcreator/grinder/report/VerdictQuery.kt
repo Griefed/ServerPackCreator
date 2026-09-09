@@ -128,8 +128,15 @@ internal enum class VerdictField(
          */
         val VERDICT_RANK = mapOf(
             // What a maintainer came for, in order: the findings; then the consoles a new rule gets written
-            // from; then the host's own problems; then the rows with nothing left to do.
-            Verdict.CONFIRMED to 0, Verdict.INCONCLUSIVE to 1, Verdict.ERROR to 2, Verdict.CLEAR to 3
+            // from; then the host's own problems, which are the ones somebody can act on; then the two that
+            // nobody can -- a distribution opt-out first, since it names a project and a file where the
+            // other names an absence; then the rows with nothing left to do.
+            Verdict.CONFIRMED to 0,
+            Verdict.INCONCLUSIVE to 1,
+            Verdict.ERROR to 2,
+            Verdict.LOCKED to 3,
+            Verdict.UNVERIFIABLE to 4,
+            Verdict.CLEAR to 5
         )
 
         /** The column addressed by [param], or `null` — an unknown one is ignored rather than fatal. */

@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test
  * [the documented parameter set](https://docs.curseforge.com/rest-api/) supports on
  * `/v1/mods/{modId}/files`. **`modLoaderType` is deliberately not used**, even though it exists: filtering
  * to Quilt would hide Fabric API's Fabric-tagged files, which is precisely the cross-loader fallback
- * `BootCandidateSelector.fallbackLoaders` exists for, and Fabric API is its canonical case. Narrowing by
+ * `LoaderCompatibility.alsoRuns` exists for, and Fabric API is its canonical case. Narrowing by
  * version is what shrinks the set; picking the loader stays in the selector, where the fallback lives.
  */
 internal class DependencyFileWindowTest {

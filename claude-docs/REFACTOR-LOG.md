@@ -3824,3 +3824,189 @@ after the fact.
 
 Status-table counts refreshed from `build/test-results`: api **387 → 405**, clientside **368 → 369**,
 grinder **490 → 495**. The api number had been stale for some time; it is re-derived, not incremented.
+
+
+## 2026-09-06 — three field reports from the live grinder
+
+Reported by Griefed from the deployed daemon, each pinned red before its fix and each recorded in
+`serverpackcreator-clientside/CLAUDE.md` in full; the short version, so this log is not silent about a day's
+work:
+
+- **NeoForge runs Forge builds on Minecraft 1.20.1, and nowhere else** (`LoaderCompatibility`). NeoForge
+  20.1.x is a fork of Forge 47 that kept the `net.minecraftforge` packages and `META-INF/mods.toml`, so on
+  that one version a Forge jar and a NeoForge jar are the same file. `CurseForge/mantle` had published an
+  ERROR row refusing a file CurseForge ticks for both loaders, minutes after that same file reached a
+  ready-line under Forge. The fact now has one home instead of two divergent `Quilt to Fabric` maps.
+- **A Sinytra Connector placeholder is scanned as the Fabric mod it wraps.** `continuity`'s Forge row read
+  `jarScan=SERVER_OR_BOTH` against a platform declaring `client_side=REQUIRED` — a contradiction manufactured
+  entirely by scanning a stub `mods.toml` whose only job is to get the file past Forge's discovery. A false
+  contradiction is expensive, not merely wrong: it is what arms the other-version crash re-check, up to three
+  boot budgets per candidate.
+- **A pack whose own jars contradict each other backtracks instead of booting** (`DependencyBacktrack`), from
+  `Modrinth/zoomify` on Quilt / 1.20.5.
+
+## 2026-09-07/08 — the false-conflict storm the backtrack caused, and the three defects behind it
+
+**The backtrack shipped on the 6th and the daemon spent the 7th demoting almost everything.** Griefed
+reported three mods with "unresolved dependencies"; the store held **47** `ERROR` rows saying
+*"Required dependency unavailable"*, and the CurseForge API returns every one of those files on request,
+correctly loader-tagged (`misc/cf-dependency-probe.sh`, whose header carries the measurements).
+
+Three defects, each pinned red in its own commit first:
+
+1. **A CurseForge `ModFile.version` is the author-typed `displayName`**, and `numbersOf` maps a digit-less
+   component to `0` — `Balm 26.2.0.7` reads as `[0, 2, 0, 7]`, `balm-fabric-26.2-26.2.0.7.jar` as `[0]`. Nearly
+   every CurseForge dependency therefore looked older than its declared range, so the backtrack demoted it,
+   re-staged, saw the same thing and walked the project's file list to the end. Measured on the daemon: **1014**
+   `re-staging … without it` lines and **146** `publishes no … file for Minecraft` lines in one day against **4**
+   genuine staging failures. `readableVersion` now gates the version side of `satisfies`, which the class doc had
+   promised since it was written and only ever applied to the constraint side.
+2. **A staging refusal named no evidence.** Five ways a dependency goes unmet, three of them printing the bare
+   slug: diagnosing the 47 rows needed a CurseForge API probe *and* a log grep on the daemon host purely to learn
+   which of them it was. `UnmetReason` now travels beside the name — beside, not inside, so the dedupe that keeps
+   one mod one entry when both the platform and the manifest route miss it survives the two routes failing
+   differently.
+3. **A jar-in-jar library was invisible to the coherence check**, so `createaddition` booted a pack in which
+   `create` demanded `ponder [1.0.82,)` against the `1.0.64` nested in another jar, and the *candidate* wore the
+   INCONCLUSIVE. `BundledJars.versionsIn` + `BootVerifier.nestedVersions` close it, with bundled copies ranked
+   below top-level jars and ambiguity contributing nothing.
+
+**Audited and analysed the same day** (`claude-docs/REFACTOR-AUDIT.md`, `claude-docs/ANALYSIS-AUDIT.md`), which
+found one more instance of defect 1 one door along — a component above `Int.MAX_VALUE` parses to `null` and was
+read as `0`, so `readableVersion` now asks `toIntOrNull() != null` rather than "all digits" — plus the coverage
+gaps around the new nested-version rules, all since closed. The audit's own methodology produced the other
+lesson worth keeping: verifying per-commit red/green in a *reused* worktree build directory reports
+`No tests found` for a class that is present, and would have manufactured two false findings.
+
+Suites: clientside **410 → 438** across 2026-09-07/08, grinder **503** (29 skipped), app **149**, all green,
+every figure re-derived from `build/test-results` rather than incremented. The 410 is what the tree carried at
+`300a4aae6`; the 2026-09-06 batch reported 395 at `2329996a5` and grew from there, so the two spans are stated
+separately rather than chained into one number nobody measured.
+
+---
+
+## 2026-09-09 — the grinder's `ERROR` bucket, read
+
+Griefed asked for two things: a `LOCKED` verdict for distribution-locked files, "technically not an error on
+our side, but a limitation by CurseForge", and a look at the public grinder's remaining dependency-related
+`ERROR` rows. Both turned out to be the same finding from two directions — a bucket named after a
+*consequence* accumulates everything with that consequence, whatever caused it — so the pass ended with two
+new verdicts and three dependency-resolution fixes.
+
+### What the 53 `ERROR` rows on `grinder.serverpackcreator.de` actually were
+
+Read straight off `/verdicts.json?f.verdict=ERROR`, and every diagnosis below re-checked against the live
+Modrinth API the same day:
+
+| Cause | Rows |
+|---|---|
+| The mod's own file distribution-locked (`corail-tombstone`, `entityculling`, `not-enough-animations`, `skin-layers-3d`, `structory`) | 15 |
+| A required dependency distribution-locked (`better-combat-by-daedelus`) | 2 |
+| A dependency already staged in the pack, refused anyway | 10 |
+| A dependency one *patch release* away | 6 |
+| One mod id served by two projects, only the first remembered | 1 |
+| A jar carrying only another loader's descriptor | 4 |
+| Genuinely upstream-absent after all three fixes | ~14 |
+| The platform and the jar disagreeing about server support (a note, not a cause) | 5 |
+
+### The three dependency defects
+
+1. **A dependency already in the pack could refuse its own boot.** `stageableRequirements` dropped a
+   requirement that was optional, bundled, environment-provided or already resolved *by ref* — and the ref
+   dedupe is the wrong question, because one project is reachable under the ref its platform page links and
+   under whatever `LearnedModIds`/`KnownModIds` maps the manifest id to. Where those differ the id was
+   resolved a second time against a **different project**, and that project's empty file list refused the
+   boot. `createaddition` requires Modrinth project `LNytGWDc`, which publishes **17 Forge 1.20.1 and 11
+   NeoForge 1.21.1 files**; it was staged, and the verdict still read *"Required dependency unavailable …
+   create (nothing published for this loader and Minecraft version)"*. A `provided` set of every staged jar's
+   own identity closes it — which is also why the descriptor is now read **once** per staged jar for all
+   three of its readers instead of twice.
+2. **One mod id is served by several projects and the map remembered one.** Forks and unofficial ports keep
+   the original's mod id (Create ↔ Create Fabric, Farmer's Delight ↔ its Fabric port, Sophisticated Core ↔
+   its Fabric port), so whichever was ground first owned the id for every loader afterwards — with an
+   `Alias`'s right to refuse a boot. `LearnedModIds` now keeps every prover in order and
+   `planManifestDependency` tries each; a refusal needs all of them to fail. Keeping every prover is what
+   makes the lookup loader-aware **without** a loader dimension, since `pickDependencyFile` already filters
+   by loader and Minecraft version.
+3. **A dependency is now staged from a neighbouring patch release** (Griefed's call, and a deliberate
+   relaxation of a rule this log previously recorded as correct). Refusing every version but the exact one is
+   right across a version-*line* and too strict inside one. Six rows had their dependency one patch away:
+   `playeranimator` for Forge 1.20.2 against published 1.20/1.20.1, `yacl` and `forgified-fabric-api` for
+   Forge 1.20.6, `cobblemon` for Fabric 1.21.11 against published 1.21.1, and QSL for Quilt 1.21.1 and
+   1.21.11 against published 1.21. Nearest patch first, ties to the newer build, only versions the project
+   really publishes, never across a line.
+
+### The verdicts
+
+`Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* while holding 17
+opt-outs and ~18 upstream gaps. `LOCKED` and `UNVERIFIABLE` now carry those, `StagingOutcome.Prevented`
+carries a typed `PreventionCause` instead of only a sentence, and `UnmetReason` owns its own cause so a
+reason added later cannot reach a refusal without somebody deciding whose problem it is. Ranked
+`CONFIRMED, INCONCLUSIVE, ERROR, LOCKED, UNVERIFIABLE, CLEAR`, with `everyVerdictHasARank` failing the build
+if a verdict is added without one. `/as-properties` still gates on `CONFIRMED` alone.
+
+### Three things worth carrying forward
+
+- **An added enum constant cannot be pinned red**, only fail to compile, and the same is true of a new
+  parameter. Three of this batch's four red commits therefore pin the *behaviour* through a path that
+  compiles against the old code — `assertNotEquals(Verdict.ERROR, …)` for the verdict split, and real
+  staging for the two dependency fixes — with the unit-level guards landing beside the signatures they
+  exercise. Stated in each commit message rather than left for an auditor to notice.
+- **A guard must not construct the thing it asserts on.** `PreventedGrindBlameTest` drives the real
+  `prepareBootPack` and the real `refuseForMissingDependencies`, because a fixture handed the cause would
+  only prove that a `when` branches on its argument. Mutation-verified: forcing either cause site to `HOST`
+  fails exactly the three "not our failure" guards and leaves the counterweight green.
+- **The published report was enough to find the bug.** `chefs-delight`'s refusal printed the bare id
+  `farmersdelight`; the platform route labels with the resolved project's slug (`farmers-delight`) and the
+  manifest route refuses only on a confident mapping, which the id table does not give that id — so the
+  alias could only have come from the learned map. No daemon access, no logs. The corollary is that the
+  precision of a refusal's wording is load-bearing, which is the argument `unsatisfiedLabel` and
+  `UnmetReason` were built on.
+
+Suites re-derived from `build/test-results`: clientside **475 → 515**, grinder **509 → 512** (29 skipped),
+plugin-grinder **73**, api **412** (1 skipped), app **149** — the last needing a local MongoDB on
+`localhost:27017`, without which its Spring context tests time out and take the Gradle worker with them
+(confirmed by running it against `mongo:8.0.5` in Docker, where it is green).
+
+### Analysed and audited the same day, and the analysis found the hole the relaxation left
+
+`claude-docs/ANALYSIS-AUDIT.md` and `claude-docs/REFACTOR-AUDIT.md` carry the two reports. The audit's
+per-commit verification is worth quoting because it is the property the convention is actually after: each
+commit checked out into its **own fresh worktree** — never a reused build directory, which is what reported
+`No tests found` for a present class the day before — with the *whole* clientside suite run so a filter
+cannot silently match nothing. **10 red, 33 green across nine commits, and not one collateral failure**, so
+`git checkout <fix>^` really does show the missing implementation at all four test/fix pairs.
+
+The analysis's headline finding is the one that matters most, and it is a consequence of this batch rather
+than a pre-existing defect: **relaxing the exact-Minecraft rule removed the only gate in that dimension.**
+`refuseForSelfDeclaration` reads the candidate's descriptor; nothing read a *dependency*'s, because until
+now a dependency was never staged for another version and so could not disagree about one.
+`outsideThePacksMinecraft` closes it inside `dependencyToDemote` — which already held a `ScannedMod` for
+every staged jar with the field on it — and closes the same exposure in the cross-loader and untagged
+fallbacks, which predate the patch fallback. Without it a `cobblemon` Fabric 1.21.1 build stages into a
+1.21.11 pack, the loader refuses the pack, and the *candidate* wears an INCONCLUSIVE that overwrites a
+decisive verdict.
+
+Ten more findings were closed the same day — a `first {}` that threw on an empty fold, three guards that
+listed the verdicts they knew about instead of asking `Verdict.entries`, an unpinned thread-safety claim on
+a map that had just gained a mutable value type, three new `!!` in a test, and a KDoc link to a type that
+does not exist. Both resolution tables name every one.
+
+**Two of them are worth carrying beyond this module.** A guard can assert a rule that was invented for it:
+the retention drift-guard's first implementation partitioned on "did a container run?" and went red against
+*correct* code, because `ERROR` keeps its logs despite nothing having run — an admin has to diagnose the
+host. Reading *why* a red happened is what separates that from a real defect, and it costs one run. And a
+guard that enumerates the values it knows about stops covering the vocabulary the moment the vocabulary
+grows: `everyVerdictButClearKeepsItsLogs` stayed green while its own *name* became false.
+
+**Equivalence checked against `origin/develop`'s unmodified test tree**, by the recipe in the root
+`CLAUDE.md`, and re-run after the audit fixes: **475 pre-existing guards, zero failures** against the
+production code both times. **Four** files needed adapting, each an enumerated deliberate change —
+`LearnedModIdsTest` and `ManifestDependencyTest` on `mappingFor` → `mappingsFor` (thirteen call sites) plus
+`restore`'s value type; `VerdictAggregationTest` on `BootOutcome`'s `stagingPrevented` constructor argument
+becoming `prevention`; and, after the audit fix, `UnmetDependencyReasonTest` on
+`DROPPED_BY_BACKTRACK`'s sentence, which is the one *expectation* change in the batch and is why that commit
+is `fix:` rather than `refactor:`. The first three are argument-only, with every assertion byte-identical.
+Nothing else in the base tree noticed, which is the claim worth having: the behaviour that moved is the
+behaviour that was meant to.
+

@@ -360,6 +360,220 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
   largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
   (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **A pack whose own jars contradict each other backtracks instead of booting** (`DependencyBacktrack`,
+  2026-09-06). Staging resolved every dependency *alone* — the newest file that project publishes for the
+  pack's Minecraft — and never asked whether the resulting **set** was coherent. Where it is not, the loader
+  refuses the pack, ~70 s of container is spent, and the *candidate* wears the INCONCLUSIVE: the
+  "never got a fair run" shape, one layer earlier than every guard that already covers it.
+  **The live case, `Modrinth/zoomify` on Quilt / Minecraft 1.20.5:**
+  `yet_another_config_lib_v3-3.6.6+1.20.6-fabric.jar` is tagged for 1.20.5 *and* declares
+  `"minecraft": "~1.20.5"` — so neither selection nor the descriptor gate objects — while demanding
+  `"fabric-api": ">=0.100.0+1.20.6"`. Verified against the live API: Modrinth publishes exactly **four**
+  fabric-api files for 1.20.5, `0.97.5` through `0.97.8`. **Staging *more* cannot fix that pack**; only an
+  older YACL can, and `3.4.2+1.20.5` requires nothing but `fabric-resource-loader-v0`.
+  - **What it never does, and each omission is load-bearing.** It never demotes the *candidate* (the subject
+    of the experiment; swapping it answers a question about a different mod). It never **refuses** — no
+    scanner, an unreadable jar, a version the platform never reported, a range `VersionConstraint` cannot
+    parse, an exhausted budget: every one of them proceeds to the boot exactly as before, because a gate
+    refusing on doubt is the mass-INCONCLUSIVE shape this module has already paid for twice. It ignores
+    **optional** dependencies (the loader loads the mod without them, so one being old cannot be why a pack
+    is refused) and requirements naming something **not staged at all** (that is
+    `refuseForMissingDependencies`' case, and demoting over a gap dropping a jar cannot close burns the
+    budget for nothing).
+  - **LANDMINE — a backtrack re-stages from scratch, so it re-downloads everything.** `zoomify` needs
+    **seven** (YACL ships 3.6.6 down to 3.6.0 tagged for 1.20.5, every one a `+1.20.6` build with the same
+    demand), and `MAX_BACKTRACKS` is 10 for that reason. Still cheaper than the wasted boot it replaces;
+    skipping files already on disk is an optimisation to make **only if the rate warrants it** — 2 of 250
+    live verdicts reached `DEPENDENCY_FAILURE` when this was written. Measure before changing it.
+  - The judge reads the staged jars through the same `ModScanner.scannerFor` staging already uses, which on
+    a Quilt pack is `QuiltPackScanner` — the one that merges the Fabric descriptor most Quilt mods actually
+    ship, so a Fabric-only dependency is not invisible to it. Jars whose descriptor could not be read are
+    dropped on `descriptorRead`: `ScannedMod`'s fallback is indistinguishable by value from a mod that
+    declared nothing.
+  - `InjectedDependency.version` exists for this: a descriptor names a **mod id and a range**, never a file,
+    so the judge needs what the platform published each staged file as. Carrying it there avoided threading
+    a second accumulator through every level of the staging recursion.
+  - **LANDMINE — that version is a platform *release name*, and comparing it as a number invented conflicts
+    everywhere (2026-09-07, one day after the backtrack shipped).** CurseForge has no version field, so
+    `CurseForgePlatform.toModFile` fills `ModFile.version` with the author-typed `displayName` — documented
+    in place as "often decorated". `VersionConstraint.numbersOf` maps a digit-less component to `0`, so
+    `Balm 26.2.0.7` read as `[0, 2, 0, 7]` and `balm-fabric-26.2-26.2.0.7.jar` (everything before the first
+    `-`) as `[0]`: below almost any range, on essentially every CurseForge dependency. `looksLikeVersion`
+    did not catch it — it asks only whether a digit is present, and those hold four.
+    **Measured on the live daemon that day: `1014` `re-staging ... without it` lines and `146`
+    `publishes no ... file for Minecraft` lines in one day, against `4` real staging failures, ending in 47
+    published `ERROR` verdicts** reading *"Required dependency unavailable"* — for files the CurseForge API
+    returns on request, correctly loader-tagged (`misc/cf-dependency-probe.sh` is that probe, and its header
+    carries the numbers). The demote loop exhausted each project's file list and `withoutExcluded` then left
+    `pickDependencyFile` nothing to pick. `readableVersion` now gates `satisfies` on the version side —
+    every dot-separated component of the core numeric, `v` prefix allowed — so prose accepts, exactly as an
+    unreadable *constraint* always has. **Do not "improve" this by extracting a version out of a release
+    name**: `Create 6.0.10 for NeoForge 1.21.1` offers two readings four major versions apart, and guessing
+    is the silently-plausible-value trap. A conflict spelled in an unreadable version is missed instead,
+    which costs one boot where inventing one costs a published verdict.
+  - **A jar-in-jar library counts as staged when the set is judged** (`BundledJars.versionsIn` +
+    `BootVerifier.nestedVersions`, 2026-09-08). `dependencyToDemote` read `modsDir.listFiles()` and
+    `InjectedDependency.version`, and a nested library is in neither — not a top-level file, never published
+    by a platform — so a requirement contradicting *its* version looked like a requirement naming something
+    absent, which `DependencyBacktrack.conflicts` skips by design. Live: `CurseForge/createaddition` on
+    NeoForge 21.1.250 / MC 1.21.1 logged *"Mod ID: 'ponder', Requested by: 'create', Expected range:
+    '[1.0.82,)', Actual version: '1.0.64'"* while `ponder` appears in none of that verdict's four
+    `stagedDependencies`. Nested entries sit **under** the top-level ones (a bundled copy fills a gap, never
+    overwrites the build staging chose — which is also the one a demotion acts on), and an id bundled at two
+    different versions, within a jar or across two, contributes **nothing**: which copy a loader picks is its
+    own resolution behaviour, and no opinion costs a missed conflict where a wrong one manufactures a demotion.
+  - **A staging refusal names its evidence, like a boot verdict does** (`UnmetReason`, 2026-09-07). Five
+    ways a dependency reaches `unsatisfied`, three of which printed the bare slug: an operator could not
+    tell *the project publishes nothing usable* from *the download died* from *staging dropped every build
+    itself*. `backtrackReason` re-runs the pick over the **unfiltered** list to separate the last one, which
+    had been reporting the exact opposite of what happened. **The reason travels beside the name, never
+    inside it** — `unsatisfied` is a `Map<name, reason>` so the `waystones` dedupe (one mod missing by both
+    routes is one entry) survives the two routes failing differently.
+- **THREE WAYS A DEPENDENCY WAS "UNAVAILABLE" WHILE BEING RIGHT THERE (2026-09-09).** All three came out of
+  one pass over the public grinder's `ERROR` rows, all three were verified against the live Modrinth API the
+  same day, and together they account for **~24 of its 27 dependency refusals**.
+  - **A dependency already in the pack could refuse its own boot.** `stageableRequirements` dropped a
+    requirement that was optional, bundled, environment-provided or *already resolved by ref* — and the ref
+    dedupe is not the question that settles it, because one project is reachable under the ref its platform
+    page links **and** under whatever `LearnedModIds`/`KnownModIds` maps the manifest id to. Where those
+    differ the same id was resolved a second time against a *different project*, whose "publishes nothing for
+    this loader and Minecraft version" then refused a boot the dependency was sitting in. Ten rows: `create`
+    (copycats, create-steam-n-rails, createaddition on both platforms), `farmersdelight` (ends-delight),
+    `sophisticatedcore` (both unofficial Fabric ports) — and Modrinth project `LNytGWDc` publishes 17 Forge
+    1.20.1 and 11 NeoForge 1.21.1 files, so the project publishing "nothing" was never the one in the pack.
+    Fixed by a `provided` set of every staged jar's own identity (`id` + `provides`), threaded through the
+    staging recursion and compared **lowercased** — unlike the neighbouring `bundledIds`, which compares two
+    ids read by the same scanner. That fix is also why the descriptor is now read **once** per staged jar for
+    all three of its readers (`scanStagedJar` + `identityIn`); `declaredDependencies` and `identityOf`
+    scanned the same file separately.
+  - **One mod id is served by several projects, and the map remembered one.** `LearnedModIds` kept whichever
+    project proved an id first, which is right about *overwriting* (grind order must not decide) and wrong
+    about *forgetting*: forks and unofficial ports deliberately keep the original's mod id — Create ↔ Create
+    Fabric, Farmer's Delight ↔ its Fabric port, Sophisticated Core ↔ its Fabric port — so whichever was
+    ground first owned the id for every loader afterwards, with an `Alias`'s right to **refuse the boot**.
+    It now keeps every prover in order and `planManifestDependency` tries each; a refusal needs all of them
+    to fail and only an alias may raise one. **Keeping every prover is what makes this loader-aware without a
+    loader dimension** — `pickDependencyFile` already filters by loader and Minecraft version. The persisted
+    document's values became lists, and `JsonLearnedModIds` still reads the old bare-string shape, because
+    rejecting it would silently re-pay every probe download the deployed daemon has ever made.
+    **How the diagnosis was made, which is the reusable part:** `chefs-delight`'s refusal printed the bare id
+    `farmersdelight`, and the platform route labels with the resolved project's *slug* (`farmers-delight`),
+    while the manifest route refuses only on a confident mapping — which `KnownModIds` does not give that id.
+    So the alias could only have come from the learned map. No server access needed.
+  - **A dependency is staged from a neighbouring patch release** (Griefed's call). `pickDependencyFile`
+    refused every Minecraft version but the exact one, which is right across a version-*line* and too strict
+    inside one: 1.20.1/1.20.2/1.20.3 run each other's mods, and a library that skipped a patch is not a
+    missing dependency. Six rows had their dependency one patch away — `playeranimator` for Forge 1.20.2
+    (published 1.20, 1.20.1), `yacl` and `forgified-fabric-api` for Forge 1.20.6, `cobblemon` for Fabric
+    1.21.11 (published 1.21.1), QSL for Quilt 1.21.1 and 1.21.11 (published 1.21). Nearest patch first, ties
+    to the newer build, only versions the project actually publishes, and never across a line.
+    **Landmine — the fallback must not widen the loader rule.** Cross-loading is a property of the Minecraft
+    the pack **boots at**, not of the version the file carries, so `pickFrom` takes a separate `compatibleAt`.
+    The obvious implementation — re-run the loader ladder at the neighbour — makes a Forge 1.20.1 file a
+    dependency for a NeoForge 1.20.2 pack, which is exactly what
+    `theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only` forbids.
+    **The three preferences are now ordered explicitly** in `preferenceLadder`: obtainability, then the
+    Minecraft version, then the declared constraint. That promotes obtainability over the version match for
+    the same reason it already outranked the loader match — an obtainable neighbour is a working dependency
+    where a locked exact match is nothing.
+  - **What remains after all three is genuine**, and is what `UNVERIFIABLE` is for: QSL's newest Modrinth
+    release is Minecraft **1.21** and the project is discontinued, so a Quilt mod declaring any `quilt_*`
+    module on 26.2 cannot be verified and re-grinding it will never say otherwise.
+
+- **A DEPENDENCY'S OWN MINECRAFT RANGE IS A PRE-BOOT GATE TOO (2026-09-09).**
+  `refuseForSelfDeclaration` asks whether a jar's descriptor accepts the Minecraft being booted — of the
+  **candidate** only. `outsideThePacksMinecraft` now asks it of every staged **dependency**, inside
+  `dependencyToDemote`, and demotes one that positively excludes the version; the exclusion machinery and
+  `MAX_BACKTRACKS` are reused, so a re-stage picks the next build down.
+  - **Why it became necessary that day:** the *exact-Minecraft* rule in `pickDependencyFile` **was** the
+    protection in this dimension — a dependency was never staged for another version, so its descriptor
+    could not disagree about one. The patch-version fallback relaxed exactly that. Without the gate a
+    `cobblemon` Fabric 1.21.1 build stages into a 1.21.11 pack, the loader refuses the pack, and the
+    *candidate* wears the INCONCLUSIVE, which overwrites a decisive verdict. No false CONFIRMED is reachable
+    (a wrong-Minecraft library produces none of the four decisive rungs), so the cost is a wasted container
+    and a downgraded verdict.
+  - It closes the same exposure in the **cross-loader** and **untagged** fallbacks, which predate the patch
+    fallback and never guaranteed the version either.
+  - **Everything uncertain accepts**, which is what keeps it from becoming a mass-demotion: an unreadable
+    descriptor is already filtered by `descriptorRead`, a jar declaring no range yields `null`, and
+    `VersionConstraint` accepts any range it cannot parse. Three guards pin those directions, and a fourth
+    asserts the *fixture's* range really excludes the release — a constraint the parser could not read would
+    accept everything and let the whole file pass for the wrong reason.
+  - **The candidate is excluded outright.** Demoting it would verify a different mod, and dropping a
+    *dependency* over a range the candidate declared would blame the wrong jar;
+    `reselectOnMinecraftContradiction` already answers the candidate's disagreement by re-selecting.
+  - Asked **before** the version conflicts: a jar naming another Minecraft is one the loader refuses
+    outright, where a version range is one mod's opinion about another. `UnmetReason.DROPPED_BY_BACKTRACK`
+    therefore reads *"every usable build was dropped making the pack coherent"* — two things reach it now,
+    and naming only the version conflict made the sentence false for the other.
+  - **Known residue:** a project whose *every* build declares the wrong Minecraft ends as
+    `ERROR`/`DROPPED_BY_BACKTRACK` rather than `UNVERIFIABLE`, because the cause cannot tell "we dropped it"
+    from "we dropped it because upstream's builds do not fit" without a second exclusion channel. Strictly
+    better than the boot it replaces; recorded so it is not rediscovered as a defect.
+
+- **THE JAR IS THE AUTHORITY ON WHAT IT NEEDS; THE PLATFORM PAGE IS A SELF-REPORT** (2026-09-08). Two
+  consequences, both new, and together they are the beginning of the end of the hand-written id table.
+  - **A platform-declared dependency the descriptor never names cannot refuse a boot**
+    (`PlatformDependencyDemand`). `CurseForge/aether` on Forge / Minecraft 1.20.2 published ERROR for
+    `owo-lib`, which publishes no Forge build at all — and the Forge/NeoForge jar's `mods.toml` does not
+    list it; only the Fabric and Quilt builds do. CurseForge's per-file relations carry it regardless. Such
+    a dependency is now filed in `unmapped` (reported, never fatal) and the boot proceeds.
+    **The comparison is slug-against-id and therefore fuzzy**, because a project that cannot be staged
+    cannot be downloaded and its real id is unknowable there; `kleeslabs` declaring `balm-fabric` against a
+    project published as `balm` forbids an exact match, and a two-letter fragment forbids a loose one. Both
+    mistakes cost at most one container — a false "demanded" refuses exactly as before, a false "not
+    demanded" spends a boot that ends INCONCLUSIVE — and neither can reach a sideness verdict.
+    **`null` declared-ids (no scanner, or a scan that threw) means the platform stays in charge**, which is
+    the pre-2026-09-08 behaviour; an empty set is a *read* descriptor that asks for nothing.
+  - **The id-to-ref bridge is now learned from the jars staging downloads anyway** (`LearnedModIds`). A jar
+    staged under ref `R` whose descriptor declares id `X` proves this platform serves `X` at `R`, so the
+    learned mapping is an `Alias` — evidence, with an alias's right to refuse — while an unproved id still
+    falls through to `KnownModIds` and its guess. It compounds across candidates and is what makes entries
+    like `yet_another_config_lib_v3` self-answering: the first grind that stages YACL by ref teaches every
+    later one. **Only a jar's own `id` + `provides` is learned, never what it bundles** — a nested
+    `fabric-api-base` belongs to Fabric API, and recording its host would send a later candidate to the
+    wrong project. **First prover wins**: two projects declaring one id is an upstream collision this cannot
+    adjudicate, and overwriting would make the answer depend on grind order.
+  - **A required id nothing can resolve asks the projects the page links** (`askLinkedProjects`, the last
+    step of the algorithm). `ModFile.relatedDependencies` carries every linked project — required *and*
+    optional, never `incompatible` (fetching one to identify it would be the right file for the wrong
+    reason) and never `embedded` (already inside the jar, `BundledJars`' case). Reached **only** from a
+    requirement that is required, declared by the jar, and unresolvable by the learned map, the table and
+    the slug guess alike — a state whose only other outcome is booting without the library and letting the
+    loader refuse the pack, which costs a whole container against one jar download.
+    This is what closes `Modrinth/do-a-barrel-roll`: it declares `yet_another_config_lib_v3` under
+    `depends` while Modrinth lists YACL for it as **optional**, so the required list never mentions it.
+    **Everything probed is learned, matched or not**, so the cost amortises across candidates, and a
+    per-jar `probed` set stops several unresolved ids re-fetching the same links. The probe copy lands
+    outside `mods/` and is deleted at once — a project that turns out to provide something else must not
+    end up in the pack — and a match is staged by the ordinary path so its own dependencies, the injection
+    record and the `MAX_INJECTED_DEPENDENCIES` accounting all still happen.
+    **The cost rule is pinned, not assumed:** `nothingIsProbedWhileTheIdStillResolves` asserts the exact
+    set of files fetched through a recording downloader.
+  - The descriptor is read **once per staged jar** (`BootVerifier.scanStagedJar`, since 2026-09-09; it was
+    `declaredDependencies` before) and handed to all three of its readers — the platform loop, the manifest
+    stager, and `identityIn` for what the pack provides. They used to scan the same file separately, which is
+    two chances to disagree about what it said.
+
+- **A loader too old for the pack is re-checked on the newest build, whatever the verdict**
+  (`LoaderVersionDemand`, `shouldRecheckOnNewestBuild`, 2026-09-08). The guard existed as
+  `shouldRecheckCrash` and covered only CRASHED; when `dependencyFailureMarkers` was widened (2026-08-29)
+  that console became INCONCLUSIVE and the guard silently stopped covering the case its own tests describe.
+  Measured on the live daemon: **all 511 Fabric boots ran loader 0.19.3** while Fabric's stable was 0.19.5,
+  and **17 of 42** `DEPENDENCY_FAILURE` rows were `fabric-language-kotlin` demanding `fabricloader >=0.19.5`
+  — an INCONCLUSIVE charged to a candidate for the harness's choice of build. `CachedLoaderVersions` even
+  logs the property that did not hold: *"(a crash on it is re-checked against <newest> before it counts)"*.
+  **Matched by a demand phrase and a runtime-provided loader id on the same line**, which is what separates
+  it from `Mod ID: 'ponder' … Expected range` — a demand no newer loader can satisfy. Whole-word matching,
+  or `forge` fires inside `forgeconfigapiport`. **Not a `BootRule`:** the rules file maps a console onto a
+  *verdict*, this maps one onto "try again differently", and an operator's typo must never cost containers.
+  **The other half of that outage was data, not code** — the shipped `fabric-manifest.xml` snapshot said
+  `<latest>0.19.3</latest>` (2026-06-01) while Fabric's maven said 0.19.5 (2026-08-28). `ApiWrapper` seeds
+  from the jar and refreshes in a background coroutine, so a cleared home races it: the first Fabric boot
+  installs what the stale snapshot named and `CachedLoaderVersions` prefers that most-recently-used build
+  for ever after. Refresh with `./gradlew :serverpackcreator-api:updateManifests` and re-run the api suite
+  **after** the copy — the task's own `dependsOn(test)` runs before it.
+
 - **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
   `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
@@ -443,12 +657,56 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   for Minecraft X", which would be false. Returning `null` where a file exists turns a diagnosable refusal
   into a misleading one, which is the same reason the version constraint is a preference here.
 
-- **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
+- **Quilt dependencies fall back to the Fabric build** (`LoaderCompatibility.alsoRuns`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
   dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
-  one-way and minimal — Fabric cannot load Quilt mods, and NeoForge/Forge cross-loading is version-dependent, so
-  guessing there would stage a jar the loader cannot use.
+  one-way and minimal — Fabric cannot load Quilt mods, so guessing wider would stage a jar the loader cannot use.
+- **NeoForge runs Forge builds on Minecraft 1.20.1, and on nothing else** (`LoaderCompatibility`, 2026-09-06).
+  NeoForge 20.1.x is a fork of Forge 47 that kept the `net.minecraftforge` packages, the `javafml` language
+  provider and `META-INF/mods.toml`, so there a Forge jar and a NeoForge jar are *the same file*; the package
+  rename landed with 1.20.2 and ends it. **State it as the one version, never as a lower bound** — a range
+  would boot Forge jars under NeoForge 1.20.2+, where FML rejects them (`Missing language javafml version
+  [46,)`, already a `runtimeMismatchMarkers` entry) and the failure is scored against the *mod*.
+  - **The fact has one home because it used to have two.** `JarSelfDeclaration.alsoRuns` (the pre-boot
+    descriptor gate) and `BootCandidateSelector.fallbackLoaders` (dependency selection) were separate
+    `Quilt to Fabric` maps answering the same question, so only one of them could ever have learned this.
+    `LoaderCompatibility.alsoRuns(loader, minecraftVersion)` is now both. **It takes the Minecraft version on
+    purpose:** the NeoForge claim is meaningless without one, and an overload that omits it would silently
+    re-open the gap.
+  - **What it cost, live 2026-09-06:** `CurseForge/mantle` published an `ERROR` row — *"Refusing to boot
+    NeoForge on Minecraft 1.20.1: `Mantle-1.20.1-1.11.117.jar` carries only Forge descriptor(s), so it is not
+    a NeoForge mod"* — for a file CurseForge ticks Forge **and** NeoForge and which had reached a ready-line
+    under Forge minutes earlier in the same run. A verdict about the grinder's own descriptor table,
+    published as a verdict about the mod. The dependency half was the same gap one step earlier: a dependency
+    publishing only Forge files was unpickable for a NeoForge 1.20.1 boot, and `refuseForMissingDependencies`
+    scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
+  - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
+    a real NeoForge build still beats the Forge fallback wherever a project publishes one.
+- **A Sinytra Connector *placeholder* is a Fabric mod, and the Forge scanner reads a stub** (2026-09-06).
+  `JarSelfDeclaration.isConnectorPlaceholder` reads `[properties] "connector:placeholder" = true` out of
+  `META-INF/mods.toml`, and `MetadataScanner` then scans such a jar as **Fabric**. Read from the live
+  `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past Forge's mod discovery
+  (version-less dependency entries on `connectormod` and `fabric_api`), while the `fabric.mod.json` beside it
+  holds the real mod — `"environment": "client"` included.
+  **Measured live 2026-09-06:** that project's Forge row read `jarScan=SERVER_OR_BOTH` and
+  `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same project's*
+  Fabric row read `CLIENT` off the identical descriptor. The contradiction was manufactured by the scanner
+  choice — and `ClientsideVerifier.declaresServerSupport`, the same predicate, is what arms the other-version
+  crash re-check, so a false one costs up to three boot budgets (~45 min) per armed candidate.
+  - **It substitutes the scanner's *input*, not the dispatch.** The loader→scanner choice still goes through
+    `ModScanner.scannerFor`, so the `MetadataScanner`/`ModListCompiler` drift documented at the top of this
+    file cannot come back; only the question changes, because a placeholder is not the loader it is tagged for.
+  - **Keyed on the marker, never on carrying both descriptors.** A genuine multi-loader jar ships a real
+    `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; hijacking those would
+    answer a Forge question with a Fabric answer.
+  - **The boot is still attempted** (Griefed's call): a working Connector setup should still be verified, and
+    the row's INCONCLUSIVE then stands on its own evidence rather than on a false contradiction.
+  - **Why that boot failed is NOT ours, and the staging was right.** The grinder staged the newest Sinytra
+    Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API (`0.92.6+1.11.15+1.20.1`) — the
+    only ones Modrinth publishes for 1.20.1 — and Connector under Forge 47.4.23 still logged *"Dependency
+    resolution found 0 candidates to load"* and never converted the jar, leaving Forge to read the stub's
+    version-less ranges and refuse. Do not "fix" this by staging more dependencies; they were all there.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
   are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
   `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
@@ -588,6 +846,36 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     `fabric-language-kotlin` and `quilt_loader` must not be claimed for Fabric API or QSL — they are now
     guesses at their own slugs, which refuse nothing).
 
+- **A PREVENTED GRIND IS NOW BLAMED ON SOMEBODY: `ERROR`, `LOCKED` OR `UNVERIFIABLE` (2026-09-09).**
+  `Verdict.ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and it was
+  carrying three unrelated things. Measured over the public grinder's **53 `ERROR` rows**: 15 were the mod's
+  own file being distribution-locked, 2 were a required *dependency* being locked, ~14 an upstream gap, 4 a
+  jar carrying only another loader's descriptor — i.e. **the bucket an operator reads to find out what to fix
+  was mostly things nobody can fix.**
+  - `StagingOutcome.Prevented` now carries a **`PreventionCause`** (`HOST` / `DISTRIBUTION_LOCKED` /
+    `UPSTREAM_UNAVAILABLE`), `Prepared.Failed` carries one per refusal site, and `BootOutcome.prevention`
+    replaces the old boolean — `stagingPrevented` survives as a *derived* property so the flag and the cause
+    cannot disagree about whether anything ran. `VerdictPolicy.decide` maps the cause to the verdict and is
+    the only place that does.
+  - **`UnmetReason` owns its own cause**, so a reason added later cannot reach a refusal without somebody
+    deciding whose problem it is. `preventionCauseFor` folds a set to the **most actionable** present —
+    `HOST` > `DISTRIBUTION_LOCKED` > `UPSTREAM_UNAVAILABLE` — because a refusal mixing a retryable download
+    failure with a permanent gap has to reach the person who can retry it, and between the two permanent ones
+    a named opt-out (a project, a file, an author's decision) beats an absence.
+    **`DROPPED_BY_BACKTRACK` is deliberately `HOST`:** staging dropped those builds itself.
+  - **`Verdict.grindRan`** exists so a reader asking "did anything run?" does not have to name the three
+    verdicts — `propagateClientOnlyProof` asked `== Verdict.ERROR` and would have silently missed the two new
+    ones. `LOCKED` and `UNVERIFIABLE` keep **no** logs: no container ran, so the detail is the whole story.
+  - **Landmine — every default is `HOST` on purpose.** A refusal site that forgets to state a cause stays in
+    the loud, actionable bucket rather than filing itself quietly as nobody's fault.
+  - **Landmine — the guard cannot be a fixture that passes the cause in.** `PreventedGrindBlameTest` drives
+    the real `prepareBootPack` and the real `refuseForMissingDependencies`, because a test constructing the
+    cause it then asserts on only proves that a `when` branches on its argument. Mutation-verified: forcing
+    either cause site to `HOST` fails exactly the three "not our failure" guards.
+  - The grinder's `VERDICT_RANK` gained both (`CONFIRMED, INCONCLUSIVE, ERROR, LOCKED, UNVERIFIABLE, CLEAR`)
+    and `everyVerdictHasARank` now fails the build if a verdict is added without one — an unranked verdict
+    sorts to `99`, behind everything, silently. `/as-properties` still gates on `CONFIRMED` alone.
+
 - **THE RESULT SYSTEM IS FOUR VERDICTS, AND EVERY CLIENTSIDE RULE LIVES IN A FILE (2026-09-04).** Read this
   before touching `BootLogClassifier`, `ClientsideVerifier` or `boot-rules.default.json`.
   - **`Verdict { CONFIRMED, CLEAR, ERROR, INCONCLUSIVE }`** replaced `BootResult` × `Confidence`. The pairing
@@ -679,7 +967,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     ERROR over whatever the store held.
   - **LANDMINE — `modLoaderType` is supported by the API and must NOT be sent.** Asking CurseForge for
     Quilt returns nothing for Fabric API and re-creates the same refusal one layer down:
-    `BootCandidateSelector.fallbackLoaders` has to *see* the Fabric builds in order to fall back to them,
+    `LoaderCompatibility.alsoRuns` has to *see* the Fabric builds in order to fall back to them,
     and Fabric API is its canonical case. Version narrows the set; loader choice stays in the selector,
     with the obtainability preference. Parameters verified against https://docs.curseforge.com/rest-api/
     (`gameVersion`, `modLoaderType`, `gameVersionTypeId`, `index`, `pageSize`).
@@ -772,13 +1060,16 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 257 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
-  JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
-  `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
-  `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached
-  version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`). The count is
-  re-derivable with `grep -rl "ApiWrapper.api(" src/test`; it read "`MetadataScannerTest` is the only one"
-  while three already did, which is why it is stated as a command rather than a number to trust.
+- **All offline.** Most build jars in-memory (`java.util.jar`) or feed canned JSON to a fake `HttpFetcher`.
+  A minority boot an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose
+  `ModScanner` relies on the API's cached version-manifests, hence `test`
+  `dependsOn :serverpackcreator-api:processTestResources`) — every test that drives real *staging* needs one,
+  which is why that set grows with each staging fix.
+  **Both counts here are commands, not numbers, and that is deliberate**: the suite total is
+  `<module>/build/test-results/test/*.xml` after a run, and the resource-needing set is
+  `grep -rl "ApiWrapper.api(" src/test`. This entry has now been wrong twice by stating them — it read
+  "`MetadataScannerTest` is the only one" while three already did, then "Four" while eight did, alongside a
+  suite total of 257 against an actual 523. Re-derive; do not trust a figure written here.
 - `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor`, plus the
   extracted `BootVerifier.outcomeFor` (`BootVerifierOutcomeTest`) and `HostProcessServerRunner`'s
   no-start-script contract are pure/offline-testable without a running server — keep new logic that way.

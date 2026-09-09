@@ -99,9 +99,13 @@ class VerdictTableModel : AbstractTableModel() {
             1 -> verdict.slug
             2 -> verdict.exclusionEntry.orEmpty()
             3 -> verdict.verdict
-            4 -> verdict.loader
-            5 -> verdict.platform
-            6 -> verdict.scannedAt
+            // The two readings the verdict was drawn from. Empty rather than "null" when the grinder
+            // recorded none: a table cell reading "null" looks like a value.
+            4 -> verdict.declared.orEmpty()
+            5 -> verdict.jarScan.orEmpty()
+            6 -> verdict.loader
+            7 -> verdict.platform
+            8 -> verdict.scannedAt
             else -> verdict.detail
         }
     }
@@ -128,7 +132,20 @@ class VerdictTableModel : AbstractTableModel() {
         /** The checkbox column, addressed by name so the panes and the guards cannot drift from it. */
         const val TICK_COLUMN = 0
 
-        private val COLUMNS =
-            listOf("", "Name", "Entry", "Verdict", "Loader", "Platform", "Scanned", "Detail")
+        /** Sized by [VerdictListPane]: `CONTRADICTORY` is the value this column exists to surface. */
+        const val DECLARED_COLUMN = 4
+
+        /** Sized by [VerdictListPane]: its widest value, `SERVER_OR_BOTH`, is also its most common one. */
+        const val JAR_SIDENESS_COLUMN = 5
+
+        /**
+         * `Declared` and `JAR sideness` sit immediately after `Verdict` on purpose: the conclusion, then
+         * the two readings it was drawn from. They disagree often enough to be worth reading together —
+         * 161 of 2057 rows on the live feed are `CONTRADICTORY`.
+         */
+        private val COLUMNS = listOf(
+            "", "Name", "Entry", "Verdict", "Declared", "JAR sideness", "Loader", "Platform",
+            "Scanned", "Detail"
+        )
     }
 }

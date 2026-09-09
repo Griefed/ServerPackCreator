@@ -46,7 +46,7 @@ internal class BootVerifierCrashRecheckTest {
     @Test
     fun aCrashOnAnOlderBuildIsWorthReChecking() {
         Assertions.assertTrue(
-            BootVerifier.shouldRecheckCrash(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = "52.1.20")
+            BootVerifier.shouldRecheckOnNewestBuild(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = "52.1.20")
         )
     }
 
@@ -54,7 +54,7 @@ internal class BootVerifierCrashRecheckTest {
     @Test
     fun aCrashOnTheNewestBuildIsNotReChecked() {
         Assertions.assertFalse(
-            BootVerifier.shouldRecheckCrash(outcome(BootResult.CRASHED), bootedVersion = "52.1.20", latestVersion = "52.1.20")
+            BootVerifier.shouldRecheckOnNewestBuild(outcome(BootResult.CRASHED), bootedVersion = "52.1.20", latestVersion = "52.1.20")
         )
     }
 
@@ -63,7 +63,7 @@ internal class BootVerifierCrashRecheckTest {
     fun nonCrashOutcomesAreNeverReChecked() {
         listOf(BootResult.SURVIVED, BootResult.INCONCLUSIVE).forEach { result ->
             Assertions.assertFalse(
-                BootVerifier.shouldRecheckCrash(outcome(result), bootedVersion = "52.1.16", latestVersion = "52.1.20"),
+                BootVerifier.shouldRecheckOnNewestBuild(outcome(result), bootedVersion = "52.1.16", latestVersion = "52.1.20"),
                 "$result must not trigger a re-boot"
             )
         }
@@ -72,7 +72,7 @@ internal class BootVerifierCrashRecheckTest {
     @Test
     fun anUnknownNewestVersionCannotBeReCheckedAgainst() {
         Assertions.assertFalse(
-            BootVerifier.shouldRecheckCrash(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = null)
+            BootVerifier.shouldRecheckOnNewestBuild(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = null)
         )
     }
 

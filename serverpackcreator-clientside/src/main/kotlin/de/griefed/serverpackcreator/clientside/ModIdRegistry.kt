@@ -165,6 +165,26 @@ object KnownModIds {
     /** Whether [id] names a module of QSL, and therefore resolves to QSL itself. */
     private fun isQslModule(id: String): Boolean = id !in notQsl && qslModulePattern.matches(id)
 
+    /** YetAnotherConfigLib, which both platforms publish as `yacl` whatever its mod id says. */
+    private val yetAnotherConfigLib = PlatformRef("yacl", "667299")
+
+    /**
+     * YACL's mod id carries the library's **major version** — `yet_another_config_lib_v3` — while both
+     * platforms publish it as `yacl`, so the slug guess resolves to nothing on either.
+     *
+     * **A shape, not an entry, for the same reason the Fabric API modules are one:** that suffix has already
+     * moved once (`_v2` to `_v3`) and will move again, so a literal would go stale at the next major and cost
+     * the same debugging session to rediscover. It is narrow enough not to claim anything else — the prefix
+     * is the library's full name, not a generic word.
+     *
+     * Observed twice on the live daemon before being added: `do-a-barrel-roll` refused with *"requires any
+     * version of yet_another_config_lib_v3, which is missing"*, and the `zoomify` backtrack reached the same
+     * project by its platform ref. The manifest route is the only one that can help there — **Modrinth marks
+     * YACL `optional` for do-a-barrel-roll while the jar declares it under `depends`**, so the platform half
+     * filters it out.
+     */
+    private val yaclModulePattern = Regex("""^yet_another_config_lib_v\d+$""")
+
     /**
      * The ref [platform] can resolve [modId] by, or `null` when there is none.
      *
@@ -201,6 +221,7 @@ object KnownModIds {
         val alias = aliases[id]
             ?: fabricApi.takeIf { isFabricApiModule(id) }
             ?: quiltStandardLibraries.takeIf { isQslModule(id) }
+            ?: yetAnotherConfigLib.takeIf { yaclModulePattern.matches(id) }
         alias?.let {
             val ref = when (platform) {
                 MODRINTH -> it.modrinth

@@ -39,6 +39,18 @@ import java.util.jar.JarOutputStream
  */
 internal class JarSelfDeclarationTest {
 
+    /** A jar whose entries carry real content, for the checks that read a descriptor rather than list it. */
+    private fun jarWithContent(dir: File, name: String, vararg entries: Pair<String, String>): File =
+        File(dir, name).also { file ->
+            JarOutputStream(file.outputStream()).use { out ->
+                entries.forEach { (path, body) ->
+                    out.putNextEntry(JarEntry(path))
+                    out.write(body.toByteArray())
+                    out.closeEntry()
+                }
+            }
+        }
+
     private fun jar(dir: File, name: String, vararg entries: String): File =
         File(dir, name).also { file ->
             JarOutputStream(file.outputStream()).use { out ->
@@ -171,5 +183,105 @@ internal class JarSelfDeclarationTest {
                 minecraftVersion = "1.20.1", minecraftConstraint = null
             )
         )
+    }
+
+    /**
+     * **NeoForge on Minecraft 1.20.1 *is* Forge, so a Forge jar is not a contradiction there.** NeoForge
+     * 20.1.x forked Forge 47 and kept the `net.minecraftforge` packages, `javafml` and `META-INF/mods.toml`;
+     * the package rename landed with 1.20.2, and from there the two are separate ecosystems. 1.20.1 is
+     * therefore the whole band, not the start of one.
+     *
+     * The live false positive this pins: `Mantle-1.20.1-1.11.117.jar` is ticked Forge **and** NeoForge on
+     * CurseForge and carries only `META-INF/mods.toml`, so the gate refused it as "not a NeoForge mod" and
+     * the project published an `ERROR` row for a loader that runs it perfectly well — while the very same
+     * file booted to a ready-line under Forge minutes earlier.
+     */
+    @Test
+    fun aNeoForgeBootOnMinecraft1201AcceptsAForgeJar(@TempDir dir: File) {
+        Assertions.assertNull(
+            JarSelfDeclaration.contradiction(
+                jar(dir, "Mantle-1.20.1-1.11.117.jar", "META-INF/mods.toml"),
+                loader = "NeoForge", minecraftVersion = "1.20.1", minecraftConstraint = null
+            )
+        )
+    }
+
+    /** Above 1.20.1 the packages diverge, so the same jar is refused again — the band is one version wide. */
+    @Test
+    fun aNeoForgeBootAboveMinecraft1201StillRefusesAForgeJar(@TempDir dir: File) {
+        val forgeOnly = jar(dir, "forgeonly.jar", "META-INF/mods.toml")
+
+        for (minecraftVersion in listOf("1.20.2", "1.20.4", "1.20.6", "1.21.1", "26.2")) {
+            Assertions.assertNotNull(
+                JarSelfDeclaration.contradiction(forgeOnly, "NeoForge", minecraftVersion, null),
+                "NeoForge $minecraftVersion renamed its packages away from Forge's and cannot load this jar"
+            )
+        }
+    }
+
+    /**
+     * And the concession is one-way, like every other entry: Forge never gained the ability to read
+     * `META-INF/neoforge.mods.toml`, so a NeoForge-only jar is refused on a Forge boot at 1.20.1 too.
+     */
+    @Test
+    fun aForgeBootDoesNotAcceptANeoForgeOnlyJarOnMinecraft1201(@TempDir dir: File) {
+        Assertions.assertNotNull(
+            JarSelfDeclaration.contradiction(
+                jar(dir, "neoforgeonly.jar", "META-INF/neoforge.mods.toml"),
+                loader = "Forge", minecraftVersion = "1.20.1", minecraftConstraint = null
+            )
+        )
+    }
+
+    /**
+     * A Sinytra Connector **placeholder** names itself in its own `mods.toml`, and that marker is the only
+     * thing separating it from a genuine multi-loader jar carrying both descriptors.
+     *
+     * The shape is `continuity-3.0.0+1.20.1.forge.jar`'s, read from the live file: a stub `mods.toml`
+     * carrying `[properties] "connector:placeholder" = true` and version-less dependency entries, beside
+     * the `fabric.mod.json` that holds the actual mod.
+     */
+    @Test
+    fun aConnectorPlaceholderNamesItselfInItsModsToml(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity.forge.jar",
+            "META-INF/mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
+    }
+
+    /** Everything else is not one — including a real multi-loader jar, which carries both descriptors too. */
+    @Test
+    fun anythingWithoutTheMarkerIsNotAConnectorPlaceholder(@TempDir dir: File) {
+        val notPlaceholders = listOf(
+            jarWithContent(
+                dir, "multiloader.jar",
+                "META-INF/mods.toml" to """
+                    modLoader = "javafml"
+                    [[mods]]
+                    modId = "multiloader"
+                """.trimIndent(),
+                "fabric.mod.json" to """{"id":"multiloader"}"""
+            ),
+            jarWithContent(dir, "fabriconly.jar", "fabric.mod.json" to """{"id":"fabriconly"}"""),
+            jarWithContent(dir, "unparseable.jar", "META-INF/mods.toml" to "this is not toml ]["),
+            jar(dir, "empty.jar"),
+            File(dir, "absent.jar")
+        )
+
+        for (candidate in notPlaceholders) {
+            Assertions.assertFalse(
+                JarSelfDeclaration.isConnectorPlaceholder(candidate),
+                "${candidate.name} carries no placeholder marker"
+            )
+        }
     }
 }

@@ -69,6 +69,11 @@ internal data class GrinderConfiguration(
     val requeue: File,
     /** The crawl position per platform. */
     val cursors: File,
+    /**
+     * The id-to-project map learned from staged jars, so a restart does not re-pay every probe download.
+     * Pure cache: deleting it costs downloads, never correctness.
+     */
+    val learnedIds: File,
     /** Console, server logs and crash reports of every boot that did not survive. */
     val bootLogs: File,
     /** Ceiling for [bootLogs], in bytes; oldest attempts are dropped once it is passed. */
@@ -127,6 +132,7 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_STORE", null),
             Knob("SPC_GRINDER_REQUEUE", null),
             Knob("SPC_GRINDER_CURSORS", null),
+            Knob("SPC_GRINDER_LEARNED_IDS", null),
             Knob("SPC_GRINDER_BOOT_LOGS", null),
             Knob("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", "2048"),
             Knob("SPC_GRINDER_BOOT_RULES", null),
@@ -195,6 +201,7 @@ internal data class GrinderConfiguration(
                 store = under("SPC_GRINDER_STORE", "verdicts.json"),
                 requeue = under("SPC_GRINDER_REQUEUE", "requeue.json"),
                 cursors = under("SPC_GRINDER_CURSORS", "cursors.json"),
+                learnedIds = under("SPC_GRINDER_LEARNED_IDS", "learned-mod-ids.json"),
                 bootLogs = under("SPC_GRINDER_BOOT_LOGS", "boot-logs"),
                 bootLogBudgetBytes = longAtLeast("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", 2048L, minimum = 0L) *
                     1024 * 1024,

@@ -52,6 +52,8 @@ class CurseForgePlatform(
     private val minecraftGameId = 432
     private val modsClassId = 6
     private val requiredRelationType = 3
+    /** Relation types worth resolving a project for: 3 required (staged) and 2 optional (identified only). */
+    private val linkableRelationTypes = setOf(2, 3)
     private val headers: Map<String, String>
         get() = mapOf("x-api-key" to apiKey, "Accept" to "application/json")
 
@@ -183,6 +185,11 @@ class CurseForgePlatform(
         val requiredDeps = fileNode.path("dependencies")
             .filter { it.path("relationType").asInt() == requiredRelationType }
             .map { it.path("modId").asText() }
+        // Required and optional, which is the pool worth identifying; 1 (embedded) is already inside the
+        // jar and 5 (incompatible) must never be fetched in order to be identified.
+        val linkedDeps = fileNode.path("dependencies")
+            .filter { it.path("relationType").asInt() in linkableRelationTypes }
+            .map { it.path("modId").asText() }
         val fileId = fileNode.path("id").asLong()
         return ModFile(
             fileName = fileNode.path("fileName").asText(),
@@ -191,6 +198,7 @@ class CurseForgePlatform(
             downloadUrl = fileNode.textOrNull("downloadUrl"),
             pageUrl = "$webBase/files/$fileId",
             requiredDependencies = requiredDeps,
+            relatedDependencies = linkedDeps,
             // CurseForge has no version field; `displayName` is what an author types as the release name
             // and is the closest thing to one. It is often decorated ("JEI 15.2.0.27 for 1.20.1"), which is
             // fine: VersionConstraint reads what it can and accepts what it cannot.

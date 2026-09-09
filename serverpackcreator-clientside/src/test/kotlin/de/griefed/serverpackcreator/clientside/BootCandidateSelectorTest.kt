@@ -358,14 +358,18 @@ internal class BootCandidateSelectorTest {
     }
 
     /**
-     * The fallback is Quilt-only and deliberately not symmetric. Fabric cannot load Quilt mods, and NeoForge only
-     * loads Forge mods for a narrow range of Minecraft versions — guessing there would stage a jar the loader cannot
-     * use and turn a clean signal into noise.
+     * The fallback is deliberately not symmetric, and the NeoForge half of it is deliberately narrow: Fabric
+     * cannot load Quilt mods at all, and NeoForge loads Forge mods on Minecraft 1.20.1 only — see
+     * [theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only].
+     *
+     * **The Forge fixture used to be tagged 1.20.1 and asked for at 1.21.1**, so it answered `null` because no
+     * file carried the version at all — whatever the loader rule said. The message spoke about cross-loading
+     * while the assertion could not see it; both fixtures are now asked at the version they carry.
      */
     @Test
     fun theFallbackDoesNotApplyToOtherLoaders() {
         val quiltOnly = listOf(file("dep-quilt.jar", setOf("Quilt"), setOf("1.20.1")))
-        val forgeOnly = listOf(file("dep-forge.jar", setOf("Forge"), setOf("1.20.1")))
+        val forgeOnly = listOf(file("dep-forge.jar", setOf("Forge"), setOf("1.21.1")))
 
         Assertions.assertNull(
             BootCandidateSelector.pickDependencyFile(quiltOnly, "Fabric", "1.20.1"),
@@ -373,7 +377,44 @@ internal class BootCandidateSelectorTest {
         )
         Assertions.assertNull(
             BootCandidateSelector.pickDependencyFile(forgeOnly, "NeoForge", "1.21.1"),
-            "NeoForge/Forge cross-loading is version-dependent — do not guess"
+            "NeoForge renamed its packages away from Forge's at 1.20.2 — a Forge build is not one here"
+        )
+    }
+
+    /**
+     * NeoForge 20.1.x is Forge 47 under another name — same `net.minecraftforge` packages, same `javafml`,
+     * same `META-INF/mods.toml` — so a dependency publishing only Forge files really is stageable for a
+     * NeoForge boot on Minecraft 1.20.1. Refusing it costs the entire boot, because
+     * `BootVerifier.refuseForMissingDependencies` scores an unstageable requirement INCONCLUSIVE.
+     *
+     * One Minecraft version wide, not a range: 1.20.2 renamed the packages and ended the compatibility.
+     */
+    @Test
+    fun theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only() {
+        val forgeOnly = listOf(file("dep-forge.jar", setOf("Forge"), setOf("1.20.1", "1.20.2")))
+
+        Assertions.assertEquals(
+            "dep-forge.jar",
+            BootCandidateSelector.pickDependencyFile(forgeOnly, "NeoForge", "1.20.1")?.fileName,
+            "NeoForge 20.1.x loads a Forge 1.20.1 mod unchanged"
+        )
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(forgeOnly, "NeoForge", "1.20.2"),
+            "the band is exactly 1.20.1"
+        )
+    }
+
+    /** A real NeoForge build still wins where the dependency publishes one, exactly as Quilt's fallback does. */
+    @Test
+    fun aRealNeoForgeBuildIsPreferredOverTheForgeFallback() {
+        val files = listOf(
+            file("dep-forge.jar", setOf("Forge"), setOf("1.20.1")),
+            file("dep-neoforge.jar", setOf("NeoForge"), setOf("1.20.1"))
+        )
+
+        Assertions.assertEquals(
+            "dep-neoforge.jar",
+            BootCandidateSelector.pickDependencyFile(files, "NeoForge", "1.20.1")?.fileName
         )
     }
 

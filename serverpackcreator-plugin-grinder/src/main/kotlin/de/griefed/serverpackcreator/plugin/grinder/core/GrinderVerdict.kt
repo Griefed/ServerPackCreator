@@ -32,8 +32,10 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  * @param projectUrl The project page, so a row can be opened rather than searched for.
  * @param platform Modrinth, CurseForge, or whatever a future daemon crawls.
  * @param loader The modloader this verdict was reached under; one project can hold several.
- * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`), kept as a
- *                string rather than an enum so a class added by a newer daemon still renders.
+ * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`, `LOCKED`,
+ *                `UNVERIFIABLE`), kept as a string rather than an enum so a class added by a newer daemon
+ *                still renders — which is what let `LOCKED` and `UNVERIFIABLE` arrive without a plugin
+ *                release, since only `CONFIRMED` is compared against by name.
  * @param suggestedEntry The name-pattern the grinder proposes for the clientside-mod list.
  * @param filenamePattern The stricter filename regex, shown for context but not used for exclusion.
  * @param detail Why the grinder decided what it did — the column that makes a verdict auditable.
@@ -50,7 +52,21 @@ data class GrinderVerdict(
     val suggestedEntry: String?,
     val filenamePattern: String?,
     val detail: String,
-    val scannedAt: String
+    val scannedAt: String,
+    /**
+     * What the mod says about itself, folded from the platform's declaration and the jar's own descriptor:
+     * `CLIENT`, `SERVER`, `CONTRADICTORY`, or `null` when neither source said anything.
+     *
+     * Shown beside the verdict rather than instead of it — a `CONTRADICTORY` row is one where the two
+     * sources disagree, which is the case a maintainer most often wants to look at by hand.
+     */
+    val declared: String? = null,
+    /**
+     * How the jar itself scanned — `CLIENT`, `SERVER_OR_BOTH`, `DEFERRED` (distribution-locked, never read)
+     * or `ERROR`. Named for the feed's own `jarScan` field so the mapping is one hop; the column is
+     * labelled "JAR sideness", which is what it means to a reader.
+     */
+    val jarScan: String? = null
 ) {
     /**
      * Whether this is the one verdict class that rests on decisive evidence — the server crashed with

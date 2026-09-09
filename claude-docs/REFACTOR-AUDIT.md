@@ -5634,3 +5634,319 @@ branch began — precisely the shape iteration 41's own MED-1 reports. Nothing w
 rather than disclosed: `e05365433` carries iteration 41 alone and `cf6cdc389` carries iteration 42, with
 the resulting tree byte-identical to the unsplit version.
 
+
+---
+
+# 2026-09-08 — audit of `300a4aae6^1..HEAD`: the field-report batch and the storm it caused
+
+Scope: 20 commits plus two merges — the 2026-09-06 field-report work merged as `300a4aae6`
+(`LoaderCompatibility`, the Connector-placeholder redirect, `DependencyBacktrack`) and the eight commits
+merged as `3578da046` fixing what the third of those did to the live daemon. READ-ONLY pass; no source
+was modified while producing this section.
+
+**Method.** Every commit's diff read against the refactoring conventions, plus a per-commit red/green
+verification in a detached worktree (below), an idiom sweep over the 633 added production lines, and a
+declaration-level documentation sweep over every changed main-source file.
+
+## Per-commit red/green verification (the boundary, actually checked out and run)
+
+`git worktree add --detach`, then for each commit: wipe `serverpackcreator-clientside/build`, run only the
+class in question.
+
+| Commit | Test class | Expected | Actual |
+|---|---|---|---|
+| `9d67140fe` | `UnreadableStagedVersionTest` | RED | **RED** |
+| `3156d60f2` | `UnreadableStagedVersionTest` | GREEN | **GREEN** |
+| `0ed267461` | `UnmetDependencyReasonTest` | RED | **RED** |
+| `06c3ac3c5` | `UnmetDependencyReasonTest` | GREEN | **GREEN** |
+| `f8326eb84` | `NestedDependencyConflictTest` | RED | **RED** |
+| `293998273` | `NestedDependencyConflictTest` | GREEN | **GREEN** |
+| `be01428f2` | `DependencyBacktrackTest` | RED | **RED** |
+| `20f5895a0` | `DependencyBacktrack*` | GREEN | **GREEN** |
+
+Eight for eight. Every pin in this range is genuinely red at its own commit and green at the next, so
+`git checkout <fix>^` is a boundary a reader can reproduce — the standard the 2026-07-31 audit found
+missing on all eight commits of that day.
+
+**Methodology landmine, and it nearly produced two false findings.** The first run reused one worktree
+build directory across checkouts and reported `3156d60f2` and `06c3ac3c5` as RED. They are not: Gradle
+answered `No tests found for given includes` for a class that was present in the source tree, because the
+stale `build/` from the previous checkout was reused. This is the same incremental-compilation trap
+`serverpackcreator-clientside/CLAUDE.md` already records for `18f59b4bf`. **Wipe the module build directory
+between checkouts, and treat `No tests found` as a distinct outcome from RED** — the verification script
+that produced the table above does both.
+
+## HIGH
+
+**H-1 — `20f5895a0` shipped a comparison against a value it never characterised, and it cost 47 published
+verdicts.** `DependencyBacktrack` judges a staged set by comparing `ModFile.version` against the ranges the
+jars declare. On CurseForge that field is the author-typed `displayName` (`CurseForgePlatform.toModFile`
+documents it as "often decorated" *in place*), and `VersionConstraint.numbersOf` maps a digit-less component
+to `0` — so `Balm 26.2.0.7` compares as `[0, 2, 0, 7]` and `balm-fabric-26.2-26.2.0.7.jar` as `[0]`.
+Practically every CurseForge dependency therefore read as older than its declared range.
+
+Measured on the live daemon within 24 hours of deployment: **1014** `re-staging … without it` lines and
+**146** `publishes no … file for Minecraft` lines in one day against **4** genuine staging failures, ending
+in **47 published `ERROR` verdicts** for files the CurseForge API returns on request, correctly loader-tagged.
+
+*The suite could not have caught it*: every guard in `be01428f2`/`20f5895a0` is Modrinth-shaped, where
+`version_number` is clean semver. The rule broken is not pin-first — that was followed exactly — it is that
+a new comparison was introduced without characterising the input it would actually meet on the other
+platform. **Closed by `3156d60f2`.** Kept here because the *shape* recurs: this module's history already
+contains "the two copies had drifted" and "the descriptor is upstream-wrong"; this is "the field does not
+contain what its type suggests", and the tell was in a comment three lines from the assignment.
+
+## MEDIUM
+
+**M-1 — the nested-jar ambiguity rules are asserted nowhere.** `293998273` states two safety properties in
+prose and pins neither: `BundledJars.versionsIn` drops an id its jar bundles at two different versions, and
+`BootVerifier.nestedVersions` drops one two staged jars bundle differently. `grep -rl "versionsIn\|nestedVersions"
+src/test` returns nothing — only the end-to-end happy path exercises `versionsIn`, implicitly. Also
+unasserted: the Quilt spelling (`quilt_loader.version`), and the documented split whereby a nested mod with
+no declared version still counts as *present* through `idsIn` while contributing no version. A rule stated
+in prose and asserted nowhere is the class of thing this log has flagged repeatedly.
+
+**M-2 — one rule, two implementations.** The "drop every id that resolved to more than one version" fold is
+written twice, in `BundledJars.versionsIn` and `BootVerifier.nestedVersions`. They agree today. Two copies of
+one rule is precisely the `MetadataScanner`/`ModListCompiler` drift shape this module's own CLAUDE.md opens
+with.
+
+**M-3 — `06c3ac3c5` carries a refactor inside a behaviour change.** Moving `withoutExcluded` to the companion
+and changing `planManifestDependency`'s parameter list and `resolveRef` contract are behaviour-preserving
+moves that enabled the change; the conventions still ask for them in their own `refactor:` commit. The commit
+message does disclose both, and the one existing assertion it altered was flagged in the body — the flag
+worked, the split did not happen.
+
+**M-4 — definition-of-done item 4 unmet by BOTH batches.** `claude-docs/REFACTOR-LOG.md`'s last entry is
+`## 2026-09-05`. Neither the 2026-09-06 field reports nor the 2026-09-07/08 storm fix appended a blow-by-blow,
+though both updated the module CLAUDE.md.
+
+**M-5 — the root status table has drifted.** `CLAUDE.md:346` states clientside **410**; the suite is **419**
+(`build/test-results/test`, 2026-09-08). The row's prose also predates the three fixes in this range.
+
+## LOW
+
+**L-1 — `DependencyBacktrack.Conflict` documents none of its five properties** (`DependencyBacktrack.kt:73-79`,
+`be01428f2`). The type carries a one-line class doc and the constructor is bare, against the convention that
+every unit — unexported included — states what it is for.
+
+**L-2 — `DependencyBacktrack.Requirement` uses a class-level `@param` block** (`DependencyBacktrack.kt:60-70`).
+The root conventions call that out specifically: it leaves the properties undocumented as far as dokka is
+concerned, and the reshape to one parameter per line with its own KDoc is in scope for the declaration being
+documented.
+
+**L-3 — pre-existing, outside this range, surfaced rather than deferred:** `BootVerifier.kt:614-631` carries
+**two stacked KDoc blocks** before `bootableReleases()`. The first ("Whether a given loader can actually be
+booted on a given Minecraft version…") documents `bootableCombination()`, which now has no doc at all.
+Introduced by `39d340340` (2026-08-23, `fix(clientside): re-check a crash across loaders and Minecraft lines`).
+
+**L-4 — the merge message asserts numbers measured before the last commit.** `3578da046` states "clientside
+419, grinder 503 (29 skipped), app 149". Only clientside was re-run after `293998273`; the grinder and app
+figures were measured at 2026-09-07 22:13/22:16, before that commit existed. The test-results XML timestamps
+are the evidence. A re-run is in flight; the numbers are expected to hold, but "expected to hold" is what the
+message stated as measured.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **P-1 — `2329996a5`'s edit to an existing test is comment-only.** The single changed line is a KDoc symbol
+  reference (`BootCandidateSelector.fallbackLoaders` → `LoaderCompatibility.alsoRuns`) following the move.
+  No assertion, argument or expected value changed: the documented reference-only carve-out.
+- **P-2 — `039645952` adds production code to a `test(…)` commit, deliberately.** The three added lines are
+  `isConnectorPlaceholder` as `TODO()`, so the test tree compiles and every new guard fails for exactly one
+  reason. Same technique in `be01428f2`, whose `DependencyBacktrack.kt` ships with both entry points as
+  `TODO()`. This is what makes a red pin isolate; it is not concern-mixing.
+- **P-3 — idiom sweep clean.** 633 added production lines across the range: zero new `!!`, zero new `var`.
+  Every `fun` and `const val` in every changed main-source file carries a doc comment, with the single
+  exception recorded as L-3 (pre-existing).
+- **P-4 — module boundaries intact.** `-clientside` gained no dependency on `-app`, Spring or Swing. Nothing
+  in `-api` changed anywhere in this range, so no `API-BEHAVIOUR-CHANGES.md` row is owed — `-clientside` is
+  not published to Maven.
+- **P-5 — `1ebfd7d50` is honestly labelled `refactor:`.** It replaces two deprecated `Config.valueMap()`
+  calls with `UnmodifiableConfig.get(path)`; no assertion changed, and the body says plainly that it corrects
+  a "no new warnings" claim the previous commit got wrong.
+- **P-6 — `misc/cf-dependency-probe.sh` is untracked on purpose.** `misc/` is the operator's own scratch area
+  and is deliberately not committed; the probe's header carries its measured results so the evidence survives
+  outside git.
+
+## Recommendation
+
+M-1, M-2 and L-1/L-2/L-3 are cheap and mechanical. M-4 and M-5 are the documentation debt this range
+accumulated, and M-5 is a wrong number in an always-loaded file. H-1 is closed; it stays as the lesson.
+
+## Resolution — every finding closed the same day (2026-09-08)
+
+| Finding | Closed by | How |
+|---|---|---|
+| H-1 | `3156d60f2` (before the audit) | `readableVersion` gates the version side of `satisfies`; the audit records the lesson, not open work |
+| M-1 | `89ae3d8ca`, `838f35ad5` | `BundledVersionTest` (10 guards) plus `aTopLevelJarOutranksABundledCopyOfTheSameId`, the last **mutation-verified** by swapping the operands |
+| M-2 | `9b58349f4` | `BundledJars.unambiguous` is the one implementation; `nestedVersions` calls it and moved to the companion |
+| M-3 | accepted, not fixed | The refactor is already merged inside `06c3ac3c5`; splitting it now would rewrite shared history for a disclosed, behaviour-preserving move. Recorded so the next pass does not re-raise it |
+| M-4 | `309a0ff45` | Two `REFACTOR-LOG.md` entries — the 2026-09-06 field reports, and the storm with its three defects |
+| M-5 | `309a0ff45` | Root status row 410 → **438**, re-derived from `build/test-results`; header date off 2026-08-31 |
+| L-1, L-2 | `03032f498` | `Conflict`'s five properties documented; `Requirement` reshaped from a class-level `@param` block to per-parameter KDoc |
+| L-3 | `03032f498` | The orphaned block moved to `bootableCombination()`, the function it describes |
+| L-4 | measured | Re-run **after** `293998273`: grinder 503 (29 skipped), app 149, both zero failures, result files timestamped 2026-09-08 07:47 |
+
+Suites at close, every figure re-derived from `build/test-results` rather than incremented:
+clientside **438**, grinder **503** (29 skipped), app **149**, zero failures.
+
+---
+
+## 2026-09-09 — audit: the LOCKED/UNVERIFIABLE batch (11 commits, merged into `develop`)
+
+Read-only. Scope is the branch merged as *"Merge branch 'claude-locked-unverifiable-verdicts' into develop"*:
+four `test(...)`/`fix(...)`-or-`feat(...)` pairs, one `refactor(...)`, two `docs`. Commits are cited by
+**subject** — this file is the guaranteed casualty of any history rewrite, so the hashes below are
+convenience only and may stop resolving.
+
+**No HIGH findings.** No module boundary crossed (`-clientside` gained no dependency; the `-grinder` edit
+points inward; `-api` is untouched, so the published surface and the plugin contract are unchanged). No
+behaviour change is hidden inside a `refactor:`. Every commit's type matches its diff.
+
+### Per-commit red/green — verified, not asserted
+
+Each commit checked out into its **own fresh worktree** (never a reused build directory — that is what
+reported `No tests found` for a present class on 2026-09-08 and manufactured two false findings) and the
+**whole** `:serverpackcreator-clientside:test` suite run, so a filter cannot silently match nothing:
+
+| Commit (subject) | Tests | Red | Which |
+|---|---|---|---|
+| `test(clientside): pin the patch-version dependency fallback` | 484 | **5** | all five in `DependencyPatchVersionTest` |
+| `fix(clientside): stage a dependency from a neighbouring patch release` | 484 | 0 | — |
+| `test(clientside): pin that a staged dependency cannot refuse its own boot` | 486 | **1** | `aDependencyAlreadyInThePackDoesNotRefuseTheBoot` |
+| `fix(clientside): a dependency in the pack cannot refuse its own boot` | 489 | 0 | — |
+| `test(clientside): pin that one mod id can be served by two projects` | 491 | **1** | `aSecondProjectIsTriedWhenTheFirstCannotStage` |
+| `fix(clientside): remember every project that proves a mod id, and try each` | 501 | 0 | — |
+| `test(clientside): pin who a prevented grind is blamed on` | 505 | **3** | the three "not our failure" guards |
+| `feat(clientside): LOCKED and UNVERIFIABLE, so ERROR means what it says` | 515 | 0 | — |
+| `refactor(clientside): gather patch neighbours from one set, not two` | 515 | 0 | — |
+
+**10 red, 33 green.** Every red is confined to the pin file its own commit added; **no commit produced a
+single collateral failure elsewhere in the suite**, which is the property that makes the boundary evidence
+rather than noise. `git checkout <fix>^` really does show the missing implementation at all four pairs.
+
+### MEDIUM
+
+**A-1 — three commits bundle a guard with the change they guard, for a structural reason that is stated but
+is still a deviation.**
+
+- `fix(clientside): a dependency in the pack cannot refuse its own boot` (`f2d8b7d40`) adds 41 test lines —
+  the three pure `stageableRequirements(providedIds = …)` guards.
+- `fix(clientside): remember every project that proves a mod id, and try each` (`c7cbad214`) adds 169 —
+  `LearnedIdCollisionTest`'s unit half — plus 36 in `JsonLearnedModIdsTest`.
+- `feat(clientside): LOCKED and UNVERIFIABLE, so ERROR means what it says` (`8093d4ba9`) adds
+  `PreventionCauseVerdictTest` (180) **and rewrites its own red pin**, `PreventedGrindBlameTest`
+  (+138/−…).
+
+The reason is real and is written into each preceding `test(...)` commit message: a guard over a parameter or
+an enum constant that does not exist yet cannot go **red**, only fail to compile, so it cannot be the thing
+committed first. The convention's boundary was met the only way available — a behavioural pin through a path
+that compiles against the pre-fix code — and the table above shows it worked at all four pairs.
+
+**The avoidable half is the third one.** `PreventedGrindBlameTest` already existed and was already red; its
+*fixture* was then replaced inside the feat commit (from a synthetic `BootOutcome` built from a detail string
+to the real `prepareBootPack` and `refuseForMissingDependencies`), because once the cause is a field rather
+than prose, the old fixture would have asserted only that a `when` branches on its argument. Its expectations
+were preserved and the result is mutation-verified — forcing either cause site to `HOST` fails exactly the
+three "not our failure" guards and leaves the counterweight green — but the version that was committed red is
+not the version that survives, which is precisely the weakening the "pin first means commit first" rule
+exists to prevent. A separate `test(clientside): drive the blame guard through real staging` **after** the
+feat would have cost nothing and kept both.
+
+*Remedy taken:* recorded here and in `claude-docs/REFACTOR-LOG.md` rather than fixed by rewriting history.
+The branch is merged; re-splitting eleven commits and redoing the merge to relocate a fixture is the churn
+this file's `358675fbf` entry already argues against, and the substance — a verified red boundary plus a
+stronger, mutation-checked final guard — is present in the tree either way. **The rule to carry forward: when
+a signature change forces the guard into the fix commit, add the strengthened guard as its own commit
+afterwards.**
+
+### LOW
+
+**A-2 — three new `!!` in `PreventedGrindBlameTest`.**
+`aDistributionLockedDependencyIsNotOurFailureEither`, `anUpstreamGapIsNotOurFailure` and
+`theHostsOwnTroubleIsStillAnError` write `verdictFor(refusal!!)` on `refuseForMissingDependencies`' nullable
+return. The conventions forbid *new* `!!` in refactored code and do not exempt tests. `requireNotNull(...)`
+says the same thing and fails with a sentence instead of a `NullPointerException`.
+
+**A-3 — `var refusal` in `planManifestDependency`.**
+`BootVerifier.kt`, the mapping loop. The conventions prefer `val`, and this is a genuine accumulator: the
+loop must short-circuit on the first mapping that stages (so a second project is never resolved
+unnecessarily) while remembering the first *alias*'s reason in case none does. A functional form would
+either resolve every ref or need two passes. Acceptable — but the *why* is not in the code, so the next
+reader sees only a `var`.
+
+**A-4 — three pre-existing expectations re-shaped, and one pre-existing test renamed, inside a `fix:`.**
+`LearnedModIdsTest`: `ModIdMapping.Alias("yacl")` → `listOf(ModIdMapping.Alias("yacl"))` (×3, semantically
+identical — `mappingsFor` returns a list), `restore(… to "yacl")` → `… to listOf("yacl")`, and
+`aContestedIdKeepsTheFirstThingThatProvedIt` → `…InFront` with its doc corrected from "wins" to "leads".
+`ManifestDependencyTest`: ten `mappingFor = { X }` → `mappingsFor = { listOf(X) }`, arguments only, no
+expectation touched. `VerdictAggregationTest`: the fixture helper's body only.
+
+This is the carve-out working as intended rather than a violation — the commit is labelled `fix:`, so the
+stop-and-flag signal is satisfied by the label, and the expectation *values* are unchanged. Recorded so it is
+not re-flagged: the ten argument-only edits are the clean form, the three `listOf(…)` wraps and the rename
+are the judgment calls.
+
+**A-5 — dangling KDoc link `[BootObservation]` in `Verdict.kt`, ×2.**
+`StagingOutcome`'s doc and `StagingOutcome.Staged`'s doc both link a type that exists nowhere in the
+repository (only a prose mention in `DefaultBootRulesTest` survives). **Pre-existing** — both occurrences are
+in `fd732d31a^` — but that file was rewritten substantially in this batch, so the Boy-Scout rule reaches it,
+and dokka resolves it to nothing.
+
+**A-6 — the companion analysis section cites commit hashes, against this repository's own rule.**
+`claude-docs/ANALYSIS-AUDIT.md`'s 2026-09-09 section names `fd732d31a..4107e860c`, `f2d8b7d40` and
+`3bd168f5e`. The convention is explicit that these accumulating audit files are the guaranteed casualty of a
+history rewrite and that subjects should be written *the first time* — the 2026-09-01 rebase killed 13 hashes
+in this very file, five of them now reachable from no ref. Self-inflicted, in the same session that quotes
+the rule.
+
+### Not findings (verified — do not re-litigate)
+
+- **Every commit type matches its diff.** The three `fix:` commits change behaviour and say so; the `feat:`
+  adds two enum constants and a cause type; the `refactor:` touches one file, changes no test, and keeps 515
+  green; the two `docs` commits touch no source.
+- **The `refactor:` commit is genuinely behaviour-preserving.** `whole + narrow` → `whole` in
+  `preferenceLadder`, where `narrow` is a subset of `whole` in both arms and `patchNeighboursOf` already
+  de-duplicates. No assertion touched, suite green at that commit.
+- **No big-bang rewrite, and no facade was owed.** `-clientside` is not published to Maven, so the
+  Strangler-Fig requirement does not bind; `BootOutcome.stagingPrevented` was nonetheless kept as a *derived*
+  accessor rather than deleted, so every reader of the old flag still compiles and the flag cannot disagree
+  with the cause it is derived from.
+- **No cleanup sprawl.** The one out-of-file change per commit is the one the change forces: the persistence
+  format follows the in-memory shape (`JsonLearnedModIds`), the rank table follows the new verdicts
+  (`VerdictQuery`), the plugin's doc follows the vocabulary.
+- **A bug found during the work was surfaced, not worked around.** The `NeoForge`-at-1.20.2 hazard the patch
+  fallback would have re-opened is pinned by `theFallbackDoesNotWidenTheLoaderRule` and answered in the code
+  by a separate `compatibleAt` parameter, rather than by widening the existing loader rule.
+- **Equivalence against `develop`'s unmodified test tree: 475 guards, 0 failures**, three files uncompilable,
+  each an enumerated signature change adapted by argument only.
+- **No new compiler warnings.** The pre-existing one in `ClientsideVerifier.kt` (unnecessary safe call on
+  `BootDecision`) predates the batch and is untouched.
+
+### Cross-reference
+
+`claude-docs/ANALYSIS-AUDIT.md`'s section of the same date carries the coverage findings, of which
+**M-1 (the patch fallback has no pre-boot gate on a dependency's own declared Minecraft range)** is the one
+this audit would otherwise have raised itself under *"surface a bug you find, fix it in its own commit"*.
+
+### Resolution — every finding closed the same day (2026-09-09)
+
+| Finding | Outcome |
+|---|---|
+| **A-1** (guard bundled with the change, ×3) | **Recorded, not rewritten.** The branch is merged; re-splitting eleven commits and redoing the merge to relocate a fixture is the churn the `358675fbf` entry above argues against, and the substance — a verified red boundary at all four pairs plus a stronger, mutation-checked final guard — is in the tree either way. **Rule carried forward:** when a signature change forces the guard into the fix commit, add the strengthened guard as its own commit *afterwards*. |
+| **A-2** (three new `!!`) | `refactor(clientside): the audit's three LOW code findings` — `requireNotNull` with a message |
+| **A-3** (`var refusal` without its reason) | same commit — the accumulator now says why it cannot be a `val` |
+| **A-4** (re-shaped expectations, one rename) | Recorded as the carve-out working: the commit is `fix:`, so the stop-and-flag is satisfied by the label, and the expectation *values* are unchanged |
+| **A-5** (dangling `[BootObservation]`, ×2) | same commit — now `[BootResult]`, the type actually meant |
+| **A-6** (hashes in the companion analysis) | `docs: the audit findings, and the gate that keeps the patch fallback safe` — every hash replaced by its commit subject; **zero** hash references remain in that section. The same pass caught a `file:line` citation in it (`ClientsideVerifier.kt:245`), which the same convention forbids, and named the symbol instead |
+| **Cross-referenced M-1** | `test(clientside): pin that a wrong-Minecraft dependency is dropped pre-boot` → `fix(clientside): drop a dependency whose descriptor excludes the pack's Minecraft` |
+
+**What the fix pass itself is worth recording.** The M-4 guard's first implementation asserted a rule that
+had been invented for it — retention partitioned on `Verdict.grindRan` — and went red against *correct*
+code, because `ERROR` keeps its logs despite nothing having run. That is the third time in this repository's
+audit history that a guard's own claim, not the code, was the defect; reading why the red happened is the
+step that separates them, and it costs one run.
+
+**Suites after the fixes:** clientside **523**, grinder **514** (29 skipped), plugin-grinder **73**, api
+**412** (1 skipped). All re-derived from `build/test-results`.
+

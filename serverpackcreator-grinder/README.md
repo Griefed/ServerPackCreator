@@ -214,6 +214,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
+| `SPC_GRINDER_LEARNED_IDS`       | `~/.spc-grinder/learned-mod-ids.json` | Mod-id-to-project map learned from staged jars; pure cache, deleting it costs downloads only |
 | `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
 | `SPC_GRINDER_BOOT_LOGS`         | `~/.spc-grinder/boot-logs`     | Console, server logs and crash reports of every boot that did not survive    |
 | `SPC_GRINDER_BOOT_RULES`        | `~/.spc-grinder/boot-rules.json` | Operator console rules; absent = built-in classification only. Hot-reloaded |
@@ -430,9 +431,11 @@ While the service runs:
 - **CSV:** `http://localhost:8757/export.csv`
 - **JSON:** `http://localhost:8757/verdicts.json`
 
-Table columns are `Name, Project, Name-pattern, Confidence, Loader, Platform, Project sideness, Jar sideness,
-Detail, Rule, Dependencies, Scanned (UTC), Logs`, highest confidence first. The CSV carries the same set
-except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
+Table columns are `Name, Project, Name-pattern, Verdict, Declared, Loader, Platform, Project sideness,
+Jar sideness, Detail, Decision, Rule, Dependencies, Scanned (UTC), Logs`, findings first. The CSV carries the
+same set except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
+Re-derive the exact list from `VerdictField` rather than trusting this sentence — that enum is the single
+declaration behind the header, the CSV header, the query key, the filter and the sort.
 
 **JSON (`/verdicts.json`)** serves the same selection as the table and the CSV — same `q`, `f.<field>`,
 `sort`, `dir`, `page` and `size` parameters, and like `/export.csv` a bare call returns everything rather
@@ -453,9 +456,20 @@ not survive, and the reaper drops the oldest once `SPC_GRINDER_BOOT_LOG_BUDGET_M
 descending (`?sort=logs&dir=desc`) is how you find the rows with something to read. `sort=logs` on
 `/export.csv` is accepted but does nothing, since that export has no Logs column.
 
-**Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
-means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
-learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
+**Interpreting the verdict.** Six values, and only one of them publishes anything:
+
+| Verdict | What it means | What to do with it |
+|---|---|---|
+| `CONFIRMED` | A rule matched a boot's console and named this mod exclusion-worthy. The **only** verdict `/as-properties` publishes. | Read the `Rule` and `Logs` columns; a confirmation you disagree with is revoked by editing the rules file. |
+| `CLEAR` | The server reached its ready-line and nothing matched — proven server-safe. | Nothing. This is the good outcome. |
+| `INCONCLUSIVE` | A boot **ran** and did something unexpected with nothing explaining why. | Read the console; this is the raw material the next rule is written from. |
+| `ERROR` | The grind could not be performed **and it is ours or the host's**: a failed download, a pack that would not generate, a missing runtime image. | Fix it. This is the only bucket that is actionable, which is why the other two exist. |
+| `LOCKED` | A CurseForge `allowModDistribution=false` opt-out stands between the grinder and a jar — the mod's own file, or a required dependency's. | Nothing, unless the mod is also on Modrinth, where files carry a URL. Retrying never helps. |
+| `UNVERIFIABLE` | The grind was never possible: a dependency nothing upstream published for that loader and Minecraft, a loader with no build, or a jar carrying only another loader's descriptor. | Nothing. QSL is the clearest case — its last release is Minecraft 1.21 and the project is discontinued, so a Quilt mod needing a `quilt_*` module on 1.21.1+ can never be verified. |
+
+A clean boot does **not** prove a mod is server-safe in general — only that this build, with these
+dependencies, on this Minecraft, reached a ready-line. `CONFIRMED` is the direction the evidence is strong
+in, which is why it is the only one published.
 
 **Read the `Detail` column on a crash.** A crash that *contradicts* the mod's own metadata — it claims to
 support servers, yet the server died — is re-checked on up to two other versions of the mod before it may
