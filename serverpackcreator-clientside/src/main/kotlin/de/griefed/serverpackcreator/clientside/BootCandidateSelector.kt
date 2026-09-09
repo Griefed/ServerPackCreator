@@ -235,12 +235,26 @@ object BootCandidateSelector {
         minecraftVersion.split('.').take(2).joinToString(".")
 
     /**
-     * Pick a dependency-file from [files] for the same [loader] and **exactly** [minecraftVersion], or `null`.
+     * Pick a dependency-file from [files] for the same [loader] at [minecraftVersion], falling back to
+     * another **patch** release of the same version-line when the project published nothing for that exact
+     * version, or `null` when even that finds nothing.
      *
-     * Unlike the candidate under test, a dependency is never staged for a different Minecraft version: a
-     * near-miss candidate still tests the candidate, but a near-miss dependency guarantees a loader-level
-     * version conflict that kills the boot and is then blamed on the mod under test. `null` becomes an
-     * INCONCLUSIVE refusal, which is the honest verdict for a mod that never got a fair run.
+     * Unlike the candidate under test, a dependency is never staged across a version-*line*: a near-miss
+     * candidate still tests the candidate, but a 1.19.4 dependency in a 1.20.1 pack guarantees a
+     * loader-level version conflict that kills the boot and is then blamed on the mod under test. `null`
+     * becomes a staging refusal, which is the honest outcome for a mod that never got a fair run.
+     *
+     * **Inside a line, that strictness cost boots it had no reason to.** 1.20.1, 1.20.2 and 1.20.3 run each
+     * other's mods in practice, and a library that skipped a patch release is not a missing dependency.
+     * Measured against the live Modrinth API on 2026-09-09, six published `ERROR` verdicts named a
+     * dependency that exists one patch away — `playeranimator` for Forge 1.20.2, `yacl` and
+     * `forgified-fabric-api` for Forge 1.20.6, `cobblemon` for Fabric 1.21.11, and QSL for Quilt 1.21.1 and
+     * 1.21.11. QSL shows why the line is the right width rather than a wider band: its newest release is
+     * Minecraft 1.21 and the project is discontinued, so every Quilt mod declaring a `quilt_*` module on
+     * 1.21.1 or later was refused permanently.
+     *
+     * The three preferences are ordered — obtainability, then the exact Minecraft version, then the
+     * declared constraint — and [preferenceLadder] is where that order is written down.
      */
     fun pickDependencyFile(
         files: List<ModFile>,
@@ -253,32 +267,102 @@ object BootCandidateSelector {
         // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
         // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
         val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
-        // Obtainability is the strongest preference of the three, and it outranks even the loader match.
-        // A distribution-locked file has no `downloadUrl` at all, so picking one guarantees the dependency
-        // is reported unmet -- whereas Quilt genuinely runs Fabric mods, making an obtainable Fabric build a
-        // working dependency where a locked Quilt build is nothing. `306612` (Fabric API on CurseForge) was
-        // refused for a Quilt boot on exactly that ordering.
-        //
-        // Still a preference and never a filter: when every candidate file is locked the last arm returns
-        // one anyway, so the refusal can say "distribution-locked" -- true and actionable -- instead of
-        // "publishes no <loader> file", which would be false.
-        return pickFrom(satisfying.filterNot { it.locked }, loader, minecraftVersion)
-            ?: pickFrom(files.filterNot { it.locked }, loader, minecraftVersion)
-            ?: pickFrom(satisfying, loader, minecraftVersion)
-            ?: pickFrom(files, loader, minecraftVersion)
+        return preferenceLadder(files, satisfying, minecraftVersion).firstNotNullOfOrNull { (candidates, version) ->
+            // Cross-loading is asked about the version the pack BOOTS at, never the one the file carries:
+            // NeoForge runs Forge builds on Minecraft 1.20.1 and on no other version, so re-running the
+            // loader ladder at a neighbour would make a Forge 1.20.1 file a dependency for a NeoForge
+            // 1.20.2 pack -- the exact mismatch `theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only` pins
+            // against.
+            pickFrom(candidates, loader, version, compatibleAt = minecraftVersion)
+        }
+    }
+
+    /**
+     * Every (candidate set, Minecraft version) pair [pickDependencyFile] tries, in the order it tries them:
+     * obtainability outermost, then the Minecraft version, then the declared constraint.
+     *
+     * **Obtainability is the strongest of the three.** A distribution-locked file has no `downloadUrl` at
+     * all, so picking one guarantees the dependency is reported unmet — whereas Quilt genuinely runs Fabric
+     * mods, making an obtainable Fabric build a working dependency where a locked Quilt build is nothing
+     * (`306612`, Fabric API on CurseForge, was refused for a Quilt boot on exactly that ordering), and an
+     * obtainable patch neighbour is a working dependency where a locked exact match is nothing.
+     *
+     * Still a preference and never a filter: the locked half of the ladder runs last but it does run, so
+     * when every candidate is locked one is returned anyway and the refusal can say "distribution-locked" —
+     * true and actionable — instead of "publishes no <loader> file", which would be false.
+     */
+    private fun preferenceLadder(
+        files: List<ModFile>,
+        satisfying: List<ModFile>,
+        minecraftVersion: String
+    ): Sequence<Pair<List<ModFile>, String>> = sequence {
+        for (obtainableOnly in listOf(true, false)) {
+            val narrow = if (obtainableOnly) satisfying.filterNot { it.locked } else satisfying
+            val whole = if (obtainableOnly) files.filterNot { it.locked } else files
+            // Neighbours are gathered from `whole` alone: `narrow` is a subset of it, so adding it back in
+            // could only ever repeat versions `patchNeighboursOf` already de-duplicates.
+            for (version in listOf(minecraftVersion) + patchNeighboursOf(whole, minecraftVersion)) {
+                yield(narrow to version)
+                yield(whole to version)
+            }
+        }
+    }
+
+    /**
+     * The other patch releases of [minecraftVersion]'s own line that [files] actually publish for, nearest
+     * first and a tie going to the newer build.
+     *
+     * Only what the files carry is offered, so the search is bounded by the project's real history rather
+     * than by an invented range. A version whose patch component is not a number is skipped: `1.21.4-pre3`
+     * is a pre-release rather than a patch of `1.21.4`, and staging a dependency from one is the near-miss
+     * this fallback is narrow in order to avoid.
+     *
+     * Nearest-first because a build closer to the version being booted is closer to the Minecraft it was
+     * compiled against — the same reason the exact match is preferred at all — and the newer build wins a
+     * tie because it is the more likely of the two to still be maintained.
+     */
+    private fun patchNeighboursOf(files: List<ModFile>, minecraftVersion: String): List<String> {
+        val wantedPatch = patchOf(minecraftVersion) ?: return emptyList()
+        val line = minecraftLine(minecraftVersion)
+        return files.flatMap { it.minecraftVersions }
+            .distinct()
+            .filter { it != minecraftVersion && minecraftLine(it) == line }
+            .mapNotNull { version -> patchOf(version)?.let { version to it } }
+            .sortedWith(compareBy({ kotlin.math.abs(it.second - wantedPatch) }, { -it.second }))
+            .map { it.first }
+    }
+
+    /**
+     * [minecraftVersion]'s patch component as a number — `0` for a two-component version such as `1.21`,
+     * and `null` when the component is not a plain number and therefore not a patch release.
+     */
+    private fun patchOf(minecraftVersion: String): Int? {
+        val components = minecraftVersion.split('.')
+        if (components.size < 2 || components.take(2).any { it.toIntOrNull() == null }) {
+            return null
+        }
+        return if (components.size == 2) 0 else components[2].toIntOrNull()
     }
 
     /**
      * [pickDependencyFile]'s loader resolution: the loader itself, then whichever other loaders'
-     * builds it can actually run here, then an untagged file.
+     * builds it can actually run **at [compatibleAt]**, then an untagged file.
      *
      * The Minecraft version is fixed across every attempt, which is what makes the fallback reachable. It used
      * to be a *preference* inside each attempt, so a Quilt-tagged file for the wrong version satisfied the first
      * attempt and the Fabric build carrying the right version was never considered.
+     *
+     * [compatibleAt] is the version the pack boots at and defaults to the one being matched; they differ only
+     * for a patch neighbour, where the cross-loader question still belongs to the pack.
      */
-    private fun pickFrom(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
+    private fun pickFrom(
+        files: List<ModFile>,
+        loader: String,
+        minecraftVersion: String,
+        compatibleAt: String = minecraftVersion
+    ): ModFile? =
         pickForLoader(files, loader, minecraftVersion)
-            ?: LoaderCompatibility.alsoRuns(loader, minecraftVersion)
+            ?: LoaderCompatibility.alsoRuns(loader, compatibleAt)
                 .firstNotNullOfOrNull { pickForLoader(files, it, minecraftVersion) }
             ?: pickUntagged(files, minecraftVersion)
 

@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.clientside
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.modscanning.ModDependency
+import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
@@ -162,15 +163,24 @@ class BootVerifier(
          */
         val decidedBy: BootDecision? = null,
         /**
-         * `true` when staging stopped before any container ran, so this outcome describes the *engine*
-         * rather than the mod.
+         * Non-`null` when staging stopped before any container ran, naming *whose problem* that was — so
+         * this outcome describes the engine, the platform or the ecosystem rather than the mod.
          *
          * Without it a refusal and a boot that learned nothing are the same `INCONCLUSIVE`, which is how a
          * host-wide defect came to be published as one verdict per candidate, overwriting decisive ones
-         * that a TTL would otherwise have left alone. `Verdict.ERROR` is what this feeds.
+         * that a TTL would otherwise have left alone. `Verdict.ERROR`, `Verdict.LOCKED` and
+         * `Verdict.UNVERIFIABLE` are what this feeds, and the cause is which.
          */
-        val stagingPrevented: Boolean = false
-    )
+        val prevention: PreventionCause? = null
+    ) {
+        /**
+         * Whether staging stopped before any container ran — [prevention] having an answer at all.
+         *
+         * Derived rather than stored, so the flag and the cause cannot disagree about whether a grind
+         * happened. Kept because "did anything run?" is a question several readers ask without caring why.
+         */
+        val stagingPrevented: Boolean get() = prevention != null
+    }
 
     /**
      * A single re-check attempt on another version of the mod: what was booted, and what came of it. The
@@ -204,7 +214,7 @@ class BootVerifier(
             // *silently un-booted* catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
             log.info("Not booting ${project.slug} on $loader: ${prepared.detail}")
-            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, stagingPrevented = true)
+            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, prevention = prepared.cause)
         }
         val ready = prepared as Prepared.Ready
         val outcome = boot(ready)
@@ -319,7 +329,7 @@ class BootVerifier(
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
                 attempts.add(
                     OtherVersionAttempt(
-                        label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail, stagingPrevented = true)
+                        label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail, prevention = staged.cause)
                     )
                 )
                 continue
@@ -343,6 +353,10 @@ class BootVerifier(
      * download — is collected into [unsatisfied] instead of being shrugged off. The caller refuses to boot when that
      * set is non-empty (see [refuseForMissingDependencies]): a mod the loader rejects for missing dependencies never
      * runs its own code, so the boot cannot say anything about sideness.
+     *
+     * [provided] accumulates every id the staged jars answer to, which is what stops the same dependency
+     * being looked up twice under two refs and refusing a boot it is already sitting in — see
+     * [stageableRequirements].
      */
     private fun downloadWithDependencies(
         file: ModFile,
@@ -355,15 +369,26 @@ class BootVerifier(
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>,
+        provided: MutableSet<String>,
         stagedFromRef: String? = null
     ): Boolean {
         val staged = httpDownloader.download(file, modsDir)
             ?: return false
+        // Read once, here, because three things need it: the id-to-ref bridge below, the platform loop's
+        // question of whether this jar actually wants what its project page attributes to it, and
+        // `stageManifestDependencies`. `null` means the descriptor could not be read at all, which every
+        // reader treats as "no opinion" rather than as "nothing declared".
+        val scan = scanStagedJar(staged, loader, minecraftVersion)
+        val identity = identityIn(scan)
+        // What the pack now answers to. Recorded for every staged jar including the candidate: the candidate
+        // is what the loader loads first, and a mod declaring its own id as a dependency of a submodule is
+        // not this engine's problem to invent a refusal over.
+        provided.addAll(identity.map { it.trim().lowercase() })
         // The jar is here and says what it is, so the id-to-ref bridge this platform needs is now a fact
         // rather than a guess. Only for something fetched *by ref* -- the candidate itself was resolved from
         // a project URL and teaches nothing about how to find it by id.
         if (stagedFromRef != null) {
-            learnedModIds.learn(platform.name, stagedFromRef, identityOf(staged, loader, minecraftVersion))
+            learnedModIds.learn(platform.name, stagedFromRef, identity)
         }
         if (depth > 0 && injected.none { it.fileName == file.fileName }) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
@@ -379,11 +404,7 @@ class BootVerifier(
         if (depth >= maxDependencyDepth) {
             return true
         }
-        // Read once, here, because both halves of staging need it: the platform loop below asks whether this
-        // jar actually wants what its project page attributes to it, and `stageManifestDependencies` stages
-        // what it declares. `null` means the descriptor could not be read at all, which both treat as
-        // "no opinion" rather than as "nothing declared".
-        val declared = declaredDependencies(staged, loader, minecraftVersion)
+        val declared = scan?.flatMap { it.dependencies }
         val declaredIds = declared?.map { it.modID }?.toSet()
         for (dependencyRef in file.requiredDependencies) {
             if (!visited.add(dependencyRef)) {
@@ -427,7 +448,7 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded, stagedFromRef = dependencyRef
+                    injected, excluded, provided, stagedFromRef = dependencyRef
                 )
             ) {
                 val reason = if (dependencyFile.locked) {
@@ -453,7 +474,7 @@ class BootVerifier(
         }
         stageManifestDependencies(
             declared, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected,
-            excluded, staged
+            excluded, provided, staged
         )
         return true
     }
@@ -498,7 +519,7 @@ class BootVerifier(
                 project.withoutExcluded(excluded).files, loader, minecraftVersion
             ) ?: continue
             val jar = httpDownloader.download(candidate, probeDir) ?: continue
-            val ids = identityOf(jar, loader, minecraftVersion)
+            val ids = identityIn(scanStagedJar(jar, loader, minecraftVersion))
             jar.delete()
             learnedModIds.learn(platform.name, ref, ids)
             if (ids.any { it.trim().lowercase() == wanted }) {
@@ -513,22 +534,22 @@ class BootVerifier(
     }
 
     /**
-     * What [jar]'s own descriptor says it needs, or `null` when it could not be read at all.
+     * Read [jar]'s own descriptor **once**, or `null` when it could not be read at all.
      *
-     * Read **once per staged jar** and handed to both halves of staging, which ask different questions of
-     * it: the platform loop asks whether a dependency the project page attributes to this jar is one the jar
-     * actually wants, and [stageManifestDependencies] stages what it declares and the platform never
-     * mentioned. They used to scan the same file separately, which is also two chances to disagree about
-     * what it said.
+     * The one scan every reader of a staged jar shares, because three of them ask different questions of the
+     * same bytes: what the jar answers to ([identityIn]), whether a dependency the project page attributes
+     * to it is one it actually wants, and what it declares that the platform never mentioned
+     * ([stageManifestDependencies]). They used to scan the same file twice over, which is also two chances
+     * to disagree about what it said.
      *
      * **`null` and empty are different answers.** No scanner for the loader, or a scan that threw, means
-     * *we do not know*, and everything downstream then defers to the platform. An empty list means the
+     * *we do not know*, and everything downstream then defers to the platform. An empty result means the
      * descriptor was read and asks for nothing.
      */
-    private fun declaredDependencies(jar: File, loader: String, minecraftVersion: String): List<ModDependency>? {
+    private fun scanStagedJar(jar: File, loader: String, minecraftVersion: String): List<ScannedMod>? {
         val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return null
-        return runCatching { scanner.scan(listOf(jar)).flatMap { it.dependencies } }
-            .onFailure { log.debug("Could not read ${jar.name}'s manifest dependencies: ${it.message}") }
+        return runCatching { scanner.scan(listOf(jar)) }
+            .onFailure { log.debug("Could not read ${jar.name}'s descriptor: ${it.message}") }
             .getOrNull()
     }
 
@@ -556,6 +577,7 @@ class BootVerifier(
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>,
+        provided: MutableSet<String>,
         staged: File
     ) {
         if (depth >= maxDependencyDepth) {
@@ -569,7 +591,7 @@ class BootVerifier(
         // Scoped to this jar, which is also the scope of `file.relatedDependencies`: several unresolved ids
         // in one descriptor share a single round of probing instead of re-fetching the same links each time.
         val probed = mutableSetOf<String>()
-        for (requirement in stageableRequirements(requirements, visited, bundled) { platformRefFor(it) }) {
+        for (requirement in stageableRequirements(requirements, visited, bundled, provided) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
@@ -581,8 +603,8 @@ class BootVerifier(
                     requirement, loader, minecraftVersion,
                     // Learned first: a descriptor this process actually read outranks a table entry and a
                     // slug guess alike, and it is the half that grows on its own.
-                    mappingFor = {
-                        learnedModIds.mappingFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
+                    mappingsFor = {
+                        learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
                     },
                     // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
                     // publishing nothing usable from one whose builds staging dropped.
@@ -619,11 +641,14 @@ class BootVerifier(
                     continue
                 }
 
-                is ManifestDependencyPlan.Stage -> plan.file
+                // The ref that actually staged is claimed too: with several mappings per id, the one
+                // `platformRefFor` claimed above need not be the one that won, and an unclaimed ref lets a
+                // later requirement resolve the same project again.
+                is ManifestDependencyPlan.Stage -> plan.file.also { visited.add(plan.ref) }
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded, stagedFromRef = (plan as? ManifestDependencyPlan.Stage)?.ref
+                    injected, excluded, provided, stagedFromRef = plan.ref
                 )
             ) {
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
@@ -649,23 +674,18 @@ class BootVerifier(
         learnedModIds.refFor(modId, platform.name) ?: KnownModIds.refFor(modId, platform.name)
 
     /**
-     * The ids [jar] answers to — its own and everything it `provides` — or empty when its descriptor could
-     * not be read.
+     * The ids a [scanStagedJar] result answers to — its own and everything it `provides` — or empty when the
+     * descriptor could not be read.
      *
      * **Its own identity only, never what it bundles.** A nested `fabric-api-base` is on the classpath
      * because this jar carries it, but the id belongs to Fabric API; recording this project as its home
      * would send a later candidate to download the wrong mod.
      */
-    private fun identityOf(jar: File, loader: String, minecraftVersion: String): Set<String> {
-        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return emptySet()
-        return runCatching {
-            scanner.scan(listOf(jar))
-                .filter { it.descriptorRead }
-                .flatMap { listOf(it.modID) + it.provides }
-                .filter { it.isNotBlank() }
-                .toSet()
-        }.getOrDefault(emptySet())
-    }
+    private fun identityIn(scan: List<ScannedMod>?): Set<String> = scan.orEmpty()
+        .filter { it.descriptorRead }
+        .flatMap { listOf(it.modID) + it.provides }
+        .filter { it.isNotBlank() }
+        .toSet()
 
     /**
      * Generate a self-installing server pack from the synthetic [modpackDir] with mod auto-exclusion
@@ -719,7 +739,12 @@ class BootVerifier(
     fun prepareBootPack(project: ProjectFiles, loader: String, loaderVersionOverride: String? = null): Prepared {
         val bootable = bootableCombination()
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { bootable(loader, it) }
-            ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
+            ?: return Prepared.Failed(
+                "No bootable file/Minecraft/loader combination for $loader.",
+                // Nothing published that this loader can run on a Minecraft we support -- not our doing,
+                // and not a statement about the mod.
+                cause = PreventionCause.UPSTREAM_UNAVAILABLE
+            )
         val (mainFile, minecraftVersion) = candidate
         val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
         return reselectOnMinecraftContradiction(staged, project, loader, mainFile, loaderVersionOverride, bootable)
@@ -815,7 +840,10 @@ class BootVerifier(
     ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
-            ?: return Prepared.Failed("No $loader version for Minecraft $minecraftVersion.")
+            ?: return Prepared.Failed(
+                "No $loader version for Minecraft $minecraftVersion.",
+                cause = PreventionCause.UPSTREAM_UNAVAILABLE
+            )
 
         val attemptDir = File(workDirectory, attemptDirName).apply { deleteRecursively() }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
@@ -825,10 +853,14 @@ class BootVerifier(
         val injected = mutableListOf<InjectedDependency>()
         if (!downloadWithDependencies(
                 mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected,
-                excludedDependencies
+                excludedDependencies, mutableSetOf()
             )
         ) {
-            return Prepared.Failed(downloadFailureDetail(mainFile))
+            return Prepared.Failed(
+                downloadFailureDetail(mainFile),
+                // A locked file has no URL and never will; anything else is a fetch that can be retried.
+                cause = if (mainFile.locked) PreventionCause.DISTRIBUTION_LOCKED else PreventionCause.HOST
+            )
         }
         // Ask the jar what it says about itself before spending a container on it. The platform's declared
         // loader and Minecraft sets are what an author ticked; the descriptor is what the jar was built
@@ -848,7 +880,10 @@ class BootVerifier(
             }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
-            ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")
+            ?: return Prepared.Failed(
+                "Server-pack generation failed for $loader $minecraftVersion.",
+                cause = PreventionCause.HOST
+            )
 
         return Prepared.Ready(
             serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
@@ -964,6 +999,14 @@ class BootVerifier(
             /** The named reason staging stopped, carried into the report instead of a bare "could not boot". */
             val detail: String,
             /**
+             * Whose problem [detail] describes, which is what decides the published verdict.
+             *
+             * Defaults to [PreventionCause.HOST], the loudest reading and the one every refusal carried
+             * before the causes were told apart — so a site that forgets to say stays visible in the bucket
+             * an operator reads rather than filing itself quietly as nobody's fault.
+             */
+            val cause: PreventionCause = PreventionCause.HOST,
+            /**
              * The staged jar's own declared Minecraft range, verbatim, set **only** when that range is why
              * staging stopped — i.e. the jar excludes the version being staged. `null` for every other
              * refusal, including a loader-descriptor mismatch.
@@ -1022,12 +1065,12 @@ class BootVerifier(
                 if (processing.isFailure) {
                     // Nothing booted: the hook runs before the container, and in the grinder it *is* the
                     // loader-cache overlay -- so this fails when the host is broken, not when the mod is.
-                    // Without `stagingPrevented` a broken cache publishes as a verdict about every mod that
+                    // Without a `prevention` a broken cache publishes as a verdict about every mod that
                     // wanted it, which is the missing-runtime-image outage in miniature.
                     return BootOutcome(
                         BootResult.INCONCLUSIVE, null,
                         "Pack post-processing failed: ${processing.exceptionOrNull()?.message}",
-                        stagingPrevented = true
+                        prevention = PreventionCause.HOST
                     )
                 }
             }
@@ -1089,6 +1132,9 @@ class BootVerifier(
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
                     "The platform's declared versions are what its author ticked, not what the jar was built for.",
+                // A web-form tick contradicting the jar is the author's mistake: nothing we can retry, and
+                // no statement about whether the mod belongs on a server.
+                cause = PreventionCause.UPSTREAM_UNAVAILABLE,
                 declaredMinecraftConstraint = minecraftDisagreement
             )
         }
@@ -1143,9 +1189,28 @@ class BootVerifier(
                 Prepared.Failed(
                     "Required ${if (unsatisfied.size == 1) "dependency" else "dependencies"} unavailable for " +
                         "$loader / Minecraft $minecraftVersion: $named. " +
-                        "Not booting — a mod refused for missing dependencies says nothing about sideness."
+                        "Not booting — a mod refused for missing dependencies says nothing about sideness.",
+                    cause = preventionCauseFor(unsatisfied)
                 )
             }
+
+        /**
+         * Whose problem a set of [unsatisfied] dependencies is, folded to the **most actionable** cause
+         * present.
+         *
+         * The order is `HOST` → `DISTRIBUTION_LOCKED` → `UPSTREAM_UNAVAILABLE`, and it ranks by what a
+         * reader can do about it. A refusal mixing a failed download with a permanent upstream gap has to
+         * reach the operator who can retry the download, so ours wins outright; between the other two, a
+         * distribution opt-out names a project, a file and an author's decision, where "nothing published"
+         * names an absence — so the identifiable fact wins.
+         *
+         * A `UnmetReason` maps to its cause and nothing else does: keeping the mapping on the reason means
+         * a new reason cannot be added without deciding whose problem it is.
+         */
+        internal fun preventionCauseFor(unsatisfied: Map<String, UnmetReason>): PreventionCause {
+            val causes = unsatisfied.values.map { it.preventionCause }.toSet()
+            return PreventionCause.entries.first { it in causes }
+        }
 
         /**
          * Where one manifest-declared requirement lands, without touching the network or the disk.
@@ -1163,34 +1228,47 @@ class BootVerifier(
          * refused, unmappable did not — which made *being almost resolvable worse than being unknown*, and
          * is why CurseForge was given no guess at all.
          *
-         * @param mappingFor This platform's mapping for a mod id, carrying how much it can be trusted.
-         * @param resolveRef The project behind a ref, or `null` when the platform does not carry it.
+         * **Several mappings are tried in turn, because one mod id is genuinely served by several
+         * projects** (2026-09-09): a fork or an unofficial port keeps the original's id, so
+         * [LearnedModIds.mappingsFor] can offer both, and the first of them having no build for this boot is
+         * not the same thing as the dependency being unavailable. The first mapping that yields a file wins;
+         * a refusal needs *every* mapping to have failed, and even then only an alias may raise one — the
+         * reason quoted is the first alias's, since that is the project a reader will go and look up.
+         *
+         * @param mappingsFor Everything worth trying for a mod id, best first, each carrying how much it can
+         *                    be trusted.
+         * @param resolveRef  The project behind a ref, or `null` when the platform does not carry it.
          */
         internal fun planManifestDependency(
             requirement: ModDependency,
             loader: String,
             minecraftVersion: String,
-            mappingFor: (String) -> ModIdMapping,
+            mappingsFor: (String) -> List<ModIdMapping>,
             resolveRef: (String) -> ProjectFiles?,
             excluded: Set<String> = emptySet()
         ): ManifestDependencyPlan {
-            val mapping = mappingFor(requirement.modID)
-            val ref = mapping.ref ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
-            val project = resolveRef(ref) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
-            val confident = mapping is ModIdMapping.Alias
-            val file = BootCandidateSelector.pickDependencyFile(
-                project.withoutExcluded(excluded).files, loader, minecraftVersion, requirement.versionConstraint
-            ) ?: return if (confident) {
-                ManifestDependencyPlan.Unsatisfied(
-                    requirement.modID,
-                    backtrackReason(project, excluded, loader, minecraftVersion)
+            var refusal: UnmetReason? = null
+            for (mapping in mappingsFor(requirement.modID)) {
+                val ref = mapping.ref ?: continue
+                val project = resolveRef(ref) ?: continue
+                val confident = mapping is ModIdMapping.Alias
+                val file = BootCandidateSelector.pickDependencyFile(
+                    project.withoutExcluded(excluded).files, loader, minecraftVersion,
+                    requirement.versionConstraint
                 )
-            } else {
-                // A guess that hit a real project publishing nothing usable. Being *almost* resolvable must
-                // not be worse than being unknown — the `xaerolib` case — so it is filed, not fatal.
-                ManifestDependencyPlan.Unmapped(requirement.modID)
+                if (file != null) {
+                    return ManifestDependencyPlan.Stage(ref, file, confident)
+                }
+                // Remembered rather than returned: a later mapping may still stage this id, and only once
+                // none has is there anything to refuse over.
+                if (confident && refusal == null) {
+                    refusal = backtrackReason(project, excluded, loader, minecraftVersion)
+                }
             }
-            return ManifestDependencyPlan.Stage(ref, file, confident)
+            // A guess that hit a real project publishing nothing usable. Being *almost* resolvable must
+            // not be worse than being unknown — the `xaerolib` case — so it is filed, not fatal.
+            return refusal?.let { ManifestDependencyPlan.Unsatisfied(requirement.modID, it) }
+                ?: ManifestDependencyPlan.Unmapped(requirement.modID)
         }
 
         /**
@@ -1270,6 +1348,7 @@ class BootVerifier(
             requirements: List<ModDependency>,
             alreadyResolved: Set<String> = emptySet(),
             bundledIds: Set<String> = emptySet(),
+            providedIds: Set<String> = emptySet(),
             refFor: (String) -> String? = { it }
         ): List<ModDependency> = requirements.filterNot { requirement ->
             // An optional dependency is neither staged nor allowed to refuse a boot: the descriptor itself
@@ -1286,6 +1365,19 @@ class BootVerifier(
                 // unconditionally: the author shipped that exact build, and fetching another version of the
                 // same id manufactures a conflict to blame on the mod.
                 requirement.modID in bundledIds ||
+                // Already in mods/, staged under some ref, and answering to this id -- so the loader will
+                // find it whatever project a second lookup of the same id would reach. The ref dedupe above
+                // cannot see this: one project is reachable under the ref its platform page links AND under
+                // whatever `LearnedModIds`/`KnownModIds` maps the manifest id to, and where those differ the
+                // id was resolved a second time against a DIFFERENT project, whose "publishes nothing for
+                // this loader and Minecraft version" then refused a boot the dependency was sitting in.
+                // Ten published ERROR verdicts were that, measured 2026-09-09: `create` (copycats,
+                // create-steam-n-rails, createaddition), `farmersdelight` (ends-delight) and
+                // `sophisticatedcore` (both unofficial Fabric ports).
+                //
+                // Lowercased on both sides because descriptors spell ids inconsistently and a miss here
+                // costs the whole boot, whereas `bundledIds` above compares two ids read by the same scanner.
+                requirement.modID.trim().lowercase() in providedIds ||
                 requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
@@ -1322,7 +1414,9 @@ class BootVerifier(
                 Prepared.Failed(
                     "Staging ${distinct.size} dependencies for $loader / Minecraft $minecraftVersion exceeds " +
                         "the cap of $MAX_INJECTED_DEPENDENCIES. Not booting — a pack that large cannot say " +
-                        "anything about this mod specifically."
+                        "anything about this mod specifically.",
+                    // Our cap, our judgement call, and an operator may want to know it bit.
+                    cause = PreventionCause.HOST
                 )
             }
         }
@@ -1481,7 +1575,7 @@ class BootVerifier(
             // The runner never started the server, so there is no console and nothing was learned about the
             // mod. An operator's problem, however late it surfaced.
             is RunResult.NotStarted ->
-                BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail, stagingPrevented = true)
+                BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail, prevention = PreventionCause.HOST)
             is RunResult.Completed -> {
                 val console = runResult.lines.joinToString("\n")
                 // Persisting the console must never fail the verification: the verdict comes from the lines in
@@ -1597,6 +1691,21 @@ internal enum class UnmetReason {
 
     /** A file was picked, it had a URL, and fetching it failed — transient, unlike every other reason here. */
     DOWNLOAD_FAILED;
+
+    /**
+     * Whose problem this reason is, which is what decides the published verdict.
+     *
+     * Stated per reason rather than folded at the call site, so a reason added later cannot reach a refusal
+     * without somebody deciding whether it is ours, the platform's or nobody's. `DROPPED_BY_BACKTRACK` is
+     * deliberately ours: staging dropped those builds itself trying to make the pack coherent, and an
+     * operator seeing it should be asking whether the backtrack was right.
+     */
+    val preventionCause: PreventionCause
+        get() = when (this) {
+            UNRESOLVED, NO_USABLE_FILE -> PreventionCause.UPSTREAM_UNAVAILABLE
+            DISTRIBUTION_LOCKED -> PreventionCause.DISTRIBUTION_LOCKED
+            DROPPED_BY_BACKTRACK, DOWNLOAD_FAILED -> PreventionCause.HOST
+        }
 
     /**
      * How this reads, in a refusal or a log line. **Never `null`** — it used to return `null` for

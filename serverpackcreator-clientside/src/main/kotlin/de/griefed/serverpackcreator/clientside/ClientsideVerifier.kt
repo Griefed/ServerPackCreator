@@ -249,11 +249,8 @@ class ClientsideVerifier(
                 }
 
             val verdict = VerdictPolicy.decide(
-                staging = if (bootOutcome?.stagingPrevented == true) {
-                    StagingOutcome.Prevented(bootOutcome.detail)
-                } else {
-                    StagingOutcome.Staged
-                },
+                staging = bootOutcome?.prevention?.let { StagingOutcome.Prevented(bootOutcome.detail, it) }
+                    ?: StagingOutcome.Staged,
                 boot = bootOutcome?.result,
                 confirmedByRule = confirmedByRule,
                 declared = declared
@@ -328,11 +325,13 @@ class ClientsideVerifier(
                         verdict = Verdict.CONFIRMED,
                         note = listOfNotNull(
                             verdict.note,
-                            // An ERROR being superseded must not vanish: publishing this entry is right (the
-                            // mod is client-only and the entry comes from platform metadata, not from a
-                            // boot), but the grind still failed and that is an operator's problem to see.
+                            // A prevented grind being superseded must not vanish: publishing this entry is
+                            // right (the mod is client-only and the entry comes from platform metadata, not
+                            // from a boot), but nothing ran here and a reader has to see that. Asked as
+                            // `grindRan` rather than as a list of verdict names, which is how such a list
+                            // comes to be missing one.
                             "This loader's own grind did not run (${verdict.verdict}).".takeIf {
-                                verdict.verdict == Verdict.ERROR
+                                !verdict.verdict.grindRan
                             },
                             "${proof.loader} proved this mod reaches client-only code " +
                                 "(${proof.decidedBy?.ruleId}); a mod's features do not change with the loader, " +

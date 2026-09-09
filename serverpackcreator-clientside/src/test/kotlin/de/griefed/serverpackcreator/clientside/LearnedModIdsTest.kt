@@ -100,8 +100,8 @@ internal class LearnedModIdsTest {
         learned.learn("Modrinth", "yacl", setOf("yet_another_config_lib_v3"))
 
         Assertions.assertEquals(
-            ModIdMapping.Alias("yacl"),
-            learned.mappingFor("yet_another_config_lib_v3", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+            listOf(ModIdMapping.Alias("yacl")),
+            learned.mappingsFor("yet_another_config_lib_v3", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
         )
     }
 
@@ -111,24 +111,27 @@ internal class LearnedModIdsTest {
         val learned = LearnedModIds()
 
         Assertions.assertEquals(
-            ModIdMapping.Alias("fabric-api"),
-            learned.mappingFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
+            listOf(ModIdMapping.Alias("fabric-api")),
+            learned.mappingsFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
             "the table still answers for the ids it knows"
         )
         Assertions.assertEquals(
-            ModIdMapping.Guess("mysterylib"),
-            learned.mappingFor("mysterylib", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
+            listOf(ModIdMapping.Guess("mysterylib")),
+            learned.mappingsFor("mysterylib", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
             "and an unknown id is still only a guess"
         )
     }
 
     /**
-     * **The first learner wins.** Two projects declaring one id is an upstream collision this cannot
+     * **The first learner leads.** Two projects declaring one id is an upstream collision this cannot
      * adjudicate, and overwriting would make the answer depend on grind order — the same reason
      * `BundledJars.unambiguous` drops a contested version rather than picking one.
+     *
+     * Leading is not owning: the later prover is kept behind it and [LearnedIdCollisionTest] is where that
+     * matters. `refFor` is the single-answer view, and it is the first prover it answers with.
      */
     @Test
-    fun aContestedIdKeepsTheFirstThingThatProvedIt() {
+    fun aContestedIdKeepsTheFirstThingThatProvedItInFront() {
         val learned = LearnedModIds()
 
         learned.learn("Modrinth", "first-project", setOf("sharedlib"))
@@ -193,7 +196,7 @@ internal class LearnedModIdsTest {
         var announcements = 0
         val learned = LearnedModIds(onLearned = { announcements++ })
 
-        learned.restore(mapOf("Modrinth" to mapOf("yet_another_config_lib_v3" to "yacl")))
+        learned.restore(mapOf("Modrinth" to mapOf("yet_another_config_lib_v3" to listOf("yacl"))))
 
         Assertions.assertEquals(0, announcements)
         Assertions.assertEquals("yacl", learned.refFor("yet_another_config_lib_v3", "Modrinth"))

@@ -61,11 +61,11 @@ class JsonLearnedModIds(private val file: File) {
     val ids = LearnedModIds(onLearned = ::persist).apply { restore(load()) }
 
     /** Read the document, or an empty map when it is absent (a first start) or unreadable (logged). */
-    private fun load(): Map<String, Map<String, String>> {
+    private fun load(): Map<String, Map<String, List<String>>> {
         if (!file.isFile) {
             return emptyMap()
         }
-        return runCatching { mapper.readValue<Map<String, Map<String, String>>>(file) }
+        return runCatching { mapper.readValue<Map<String, Map<String, Any>>>(file).mapValues { refsOf(it.value) } }
             .onFailure {
                 log.warn(
                     "Could not read learned mod ids ${file.absolutePath}; starting with none, " +
@@ -73,6 +73,22 @@ class JsonLearnedModIds(private val file: File) {
                 )
             }
             .getOrDefault(emptyMap())
+    }
+
+    /**
+     * One platform's `id -> refs`, accepting both shapes the file has ever had.
+     *
+     * `LearnedModIds` kept one ref per id until 2026-09-09 and this document therefore held a bare string
+     * there; it now holds a list, because one mod id is genuinely served by several projects. Reading the
+     * old shape is two lines and keeps a deployed daemon's accumulated map, where refusing it would silently
+     * re-pay every probe download the host has ever made. Anything else is dropped rather than guessed at.
+     */
+    private fun refsOf(byId: Map<String, Any>): Map<String, List<String>> = byId.mapValues { (_, refs) ->
+        when (refs) {
+            is String -> listOf(refs)
+            is List<*> -> refs.filterIsInstance<String>()
+            else -> emptyList()
+        }
     }
 
     /**

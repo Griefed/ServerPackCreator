@@ -129,5 +129,7 @@ object ClientsideReportRenderer {
         Verdict.INCONCLUSIVE -> "⚪ INCONCLUSIVE"
         Verdict.ERROR -> "🛠 ERROR"
         Verdict.CLEAR -> "🔵 CLEAR"
+        Verdict.LOCKED -> "🔒 LOCKED"
+        Verdict.UNVERIFIABLE -> "🚫 UNVERIFIABLE"
     }
 }

@@ -51,6 +51,42 @@ internal class JsonLearnedModIdsTest {
         )
     }
 
+    /**
+     * **The document written before 2026-09-09 held one bare ref per id, and must still load.**
+     *
+     * `LearnedModIds` kept a single prover then; it now keeps every project that proves an id, so the value
+     * is a list. Rejecting the old shape would be silent and expensive in exactly the way this file exists
+     * to prevent: the deployed daemon's accumulated map would read as empty and every probe download it has
+     * ever made would be re-paid.
+     */
+    @Test
+    fun theOneRefPerIdDocumentStillLoads(@TempDir home: File) {
+        val file = File(home, "learned-mod-ids.json").apply {
+            writeText("""{"Modrinth":{"yet_another_config_lib_v3":"yacl"},"CurseForge":{"fabric":"306612"}}""")
+        }
+
+        val ids = JsonLearnedModIds(file).ids
+
+        Assertions.assertEquals("yacl", ids.refFor("yet_another_config_lib_v3", "Modrinth"))
+        Assertions.assertEquals("306612", ids.refFor("fabric", "CurseForge"))
+    }
+
+    /** And the shape it writes now round-trips every prover, not only the first. */
+    @Test
+    fun everyProverSurvivesTheRoundTrip(@TempDir home: File) {
+        val file = File(home, "learned-mod-ids.json")
+        val store = JsonLearnedModIds(file)
+
+        store.ids.learn("Modrinth", "create-fabric", setOf("create"))
+        store.ids.learn("Modrinth", "LNytGWDc", setOf("create"))
+
+        Assertions.assertEquals(
+            listOf("create-fabric", "LNytGWDc"),
+            JsonLearnedModIds(file).ids.refsFor("create", "Modrinth"),
+            "one mod id is served by several projects, and the file is what carries that across a restart"
+        )
+    }
+
     /** A first start has no file, and that is not an error to report or a reason to fail. */
     @Test
     fun aMissingFileIsAnEmptyMap(@TempDir home: File) {

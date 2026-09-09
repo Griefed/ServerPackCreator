@@ -260,7 +260,7 @@ internal class ManifestDependencyTest {
         val plan = BootVerifier.planManifestDependency(
             ModDependency("fabric-api"), "Quilt", "1.21.11",
             // An ALIAS: fabric-api is a project we know this id names, so a failure to stage it refuses.
-            mappingFor = { ModIdMapping.Alias("306612") },
+            mappingsFor = { listOf(ModIdMapping.Alias("306612")) },
             // Resolves, but publishes nothing for this Minecraft version — the live shape.
             resolveRef = { project(file("fabric-api-0.100.8+1.20.6.jar", setOf("Fabric"), setOf("1.20.6"))) }
         )
@@ -276,7 +276,7 @@ internal class ManifestDependencyTest {
     fun anUnmappableIdIsStillOnlyAGuess() {
         val plan = BootVerifier.planManifestDependency(
             ModDependency("some-bundled-thing"), "Quilt", "1.21.11",
-            mappingFor = { ModIdMapping.None },
+            mappingsFor = { listOf(ModIdMapping.None) },
             resolveRef = { error("must not be consulted when nothing maps") }
         )
 
@@ -288,7 +288,7 @@ internal class ManifestDependencyTest {
     fun aMappedIdThePlatformDoesNotCarryIsAGuessToo() {
         val plan = BootVerifier.planManifestDependency(
             ModDependency("fabric-api"), "Quilt", "1.21.11",
-            mappingFor = { ModIdMapping.Alias("306612") },
+            mappingsFor = { listOf(ModIdMapping.Alias("306612")) },
             resolveRef = { null }
         )
 
@@ -301,7 +301,7 @@ internal class ManifestDependencyTest {
         val fits = file("fabric-api-0.141.6+1.21.11.jar", setOf("Fabric"), setOf("1.21.11"))
         val plan = BootVerifier.planManifestDependency(
             ModDependency("fabric-api"), "Quilt", "1.21.11",
-            mappingFor = { ModIdMapping.Alias("306612") },
+            mappingsFor = { listOf(ModIdMapping.Alias("306612")) },
             resolveRef = { project(file("fabric-api-0.100.8+1.20.6.jar", setOf("Fabric"), setOf("1.20.6")), fits) }
         )
 
@@ -352,7 +352,7 @@ internal class ManifestDependencyTest {
     fun anAliasThatResolvesToNothingUsableStillRefuses() {
         val plan = BootVerifier.planManifestDependency(
             requirement("fabric"), "Fabric", "1.20.1",
-            mappingFor = { ModIdMapping.Alias("fabric-api") },
+            mappingsFor = { listOf(ModIdMapping.Alias("fabric-api")) },
             resolveRef = { project() }
         )
 
@@ -364,7 +364,7 @@ internal class ManifestDependencyTest {
     fun aGuessThatResolvesToNothingUsableDoesNotRefuse() {
         val plan = BootVerifier.planManifestDependency(
             requirement("xaerolib"), "Quilt", "26.2",
-            mappingFor = { ModIdMapping.Guess("xaerolib") },
+            mappingsFor = { listOf(ModIdMapping.Guess("xaerolib")) },
             resolveRef = { project() }
         )
 
@@ -381,7 +381,7 @@ internal class ManifestDependencyTest {
             ManifestDependencyPlan.Unmapped("whatever"),
             BootVerifier.planManifestDependency(
                 requirement("whatever"), "Fabric", "1.20.1",
-                mappingFor = { ModIdMapping.None },
+                mappingsFor = { listOf(ModIdMapping.None) },
                 resolveRef = { project() }
             )
         )
@@ -394,7 +394,7 @@ internal class ManifestDependencyTest {
             ManifestDependencyPlan.Unmapped("fabric"),
             BootVerifier.planManifestDependency(
                 requirement("fabric"), "Fabric", "1.20.1",
-                mappingFor = { ModIdMapping.Alias("fabric-api") },
+                mappingsFor = { listOf(ModIdMapping.Alias("fabric-api")) },
                 resolveRef = { null }
             )
         )
@@ -411,12 +411,12 @@ internal class ManifestDependencyTest {
 
         val alias = BootVerifier.planManifestDependency(
             requirement("fabric"), "Fabric", "1.20.1",
-            mappingFor = { ModIdMapping.Alias("fabric-api") },
+            mappingsFor = { listOf(ModIdMapping.Alias("fabric-api")) },
             resolveRef = { project(fabricApi) }
         )
         val guess = BootVerifier.planManifestDependency(
             requirement("mtlib"), "Forge", "1.12.2",
-            mappingFor = { ModIdMapping.Guess("mtlib") },
+            mappingsFor = { listOf(ModIdMapping.Guess("mtlib")) },
             resolveRef = { project(mtlib) }
         )
 

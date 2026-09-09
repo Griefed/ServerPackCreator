@@ -429,6 +429,57 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     had been reporting the exact opposite of what happened. **The reason travels beside the name, never
     inside it** — `unsatisfied` is a `Map<name, reason>` so the `waystones` dedupe (one mod missing by both
     routes is one entry) survives the two routes failing differently.
+- **THREE WAYS A DEPENDENCY WAS "UNAVAILABLE" WHILE BEING RIGHT THERE (2026-09-09).** All three came out of
+  one pass over the public grinder's `ERROR` rows, all three were verified against the live Modrinth API the
+  same day, and together they account for **~24 of its 27 dependency refusals**.
+  - **A dependency already in the pack could refuse its own boot.** `stageableRequirements` dropped a
+    requirement that was optional, bundled, environment-provided or *already resolved by ref* — and the ref
+    dedupe is not the question that settles it, because one project is reachable under the ref its platform
+    page links **and** under whatever `LearnedModIds`/`KnownModIds` maps the manifest id to. Where those
+    differ the same id was resolved a second time against a *different project*, whose "publishes nothing for
+    this loader and Minecraft version" then refused a boot the dependency was sitting in. Ten rows: `create`
+    (copycats, create-steam-n-rails, createaddition on both platforms), `farmersdelight` (ends-delight),
+    `sophisticatedcore` (both unofficial Fabric ports) — and Modrinth project `LNytGWDc` publishes 17 Forge
+    1.20.1 and 11 NeoForge 1.21.1 files, so the project publishing "nothing" was never the one in the pack.
+    Fixed by a `provided` set of every staged jar's own identity (`id` + `provides`), threaded through the
+    staging recursion and compared **lowercased** — unlike the neighbouring `bundledIds`, which compares two
+    ids read by the same scanner. That fix is also why the descriptor is now read **once** per staged jar for
+    all three of its readers (`scanStagedJar` + `identityIn`); `declaredDependencies` and `identityOf`
+    scanned the same file separately.
+  - **One mod id is served by several projects, and the map remembered one.** `LearnedModIds` kept whichever
+    project proved an id first, which is right about *overwriting* (grind order must not decide) and wrong
+    about *forgetting*: forks and unofficial ports deliberately keep the original's mod id — Create ↔ Create
+    Fabric, Farmer's Delight ↔ its Fabric port, Sophisticated Core ↔ its Fabric port — so whichever was
+    ground first owned the id for every loader afterwards, with an `Alias`'s right to **refuse the boot**.
+    It now keeps every prover in order and `planManifestDependency` tries each; a refusal needs all of them
+    to fail and only an alias may raise one. **Keeping every prover is what makes this loader-aware without a
+    loader dimension** — `pickDependencyFile` already filters by loader and Minecraft version. The persisted
+    document's values became lists, and `JsonLearnedModIds` still reads the old bare-string shape, because
+    rejecting it would silently re-pay every probe download the deployed daemon has ever made.
+    **How the diagnosis was made, which is the reusable part:** `chefs-delight`'s refusal printed the bare id
+    `farmersdelight`, and the platform route labels with the resolved project's *slug* (`farmers-delight`),
+    while the manifest route refuses only on a confident mapping — which `KnownModIds` does not give that id.
+    So the alias could only have come from the learned map. No server access needed.
+  - **A dependency is staged from a neighbouring patch release** (Griefed's call). `pickDependencyFile`
+    refused every Minecraft version but the exact one, which is right across a version-*line* and too strict
+    inside one: 1.20.1/1.20.2/1.20.3 run each other's mods, and a library that skipped a patch is not a
+    missing dependency. Six rows had their dependency one patch away — `playeranimator` for Forge 1.20.2
+    (published 1.20, 1.20.1), `yacl` and `forgified-fabric-api` for Forge 1.20.6, `cobblemon` for Fabric
+    1.21.11 (published 1.21.1), QSL for Quilt 1.21.1 and 1.21.11 (published 1.21). Nearest patch first, ties
+    to the newer build, only versions the project actually publishes, and never across a line.
+    **Landmine — the fallback must not widen the loader rule.** Cross-loading is a property of the Minecraft
+    the pack **boots at**, not of the version the file carries, so `pickFrom` takes a separate `compatibleAt`.
+    The obvious implementation — re-run the loader ladder at the neighbour — makes a Forge 1.20.1 file a
+    dependency for a NeoForge 1.20.2 pack, which is exactly what
+    `theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only` forbids.
+    **The three preferences are now ordered explicitly** in `preferenceLadder`: obtainability, then the
+    Minecraft version, then the declared constraint. That promotes obtainability over the version match for
+    the same reason it already outranked the loader match — an obtainable neighbour is a working dependency
+    where a locked exact match is nothing.
+  - **What remains after all three is genuine**, and is what `UNVERIFIABLE` is for: QSL's newest Modrinth
+    release is Minecraft **1.21** and the project is discontinued, so a Quilt mod declaring any `quilt_*`
+    module on 26.2 cannot be verified and re-grinding it will never say otherwise.
+
 - **THE JAR IS THE AUTHORITY ON WHAT IT NEEDS; THE PLATFORM PAGE IS A SELF-REPORT** (2026-09-08). Two
   consequences, both new, and together they are the beginning of the end of the hand-written id table.
   - **A platform-declared dependency the descriptor never names cannot refuse a boot**
@@ -468,8 +519,10 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     record and the `MAX_INJECTED_DEPENDENCIES` accounting all still happen.
     **The cost rule is pinned, not assumed:** `nothingIsProbedWhileTheIdStillResolves` asserts the exact
     set of files fetched through a recording downloader.
-  - The descriptor is read **once per staged jar** (`BootVerifier.declaredDependencies`) and handed to both
-    halves of staging; they used to scan the same file separately, which is two chances to disagree.
+  - The descriptor is read **once per staged jar** (`BootVerifier.scanStagedJar`, since 2026-09-09; it was
+    `declaredDependencies` before) and handed to all three of its readers — the platform loop, the manifest
+    stager, and `identityIn` for what the pack provides. They used to scan the same file separately, which is
+    two chances to disagree about what it said.
 
 - **A loader too old for the pack is re-checked on the newest build, whatever the verdict**
   (`LoaderVersionDemand`, `shouldRecheckOnNewestBuild`, 2026-09-08). The guard existed as
@@ -761,6 +814,36 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     CurseForge were rewritten, three of them intent-preserving (`fabric-permissions-api-v0`,
     `fabric-language-kotlin` and `quilt_loader` must not be claimed for Fabric API or QSL — they are now
     guesses at their own slugs, which refuse nothing).
+
+- **A PREVENTED GRIND IS NOW BLAMED ON SOMEBODY: `ERROR`, `LOCKED` OR `UNVERIFIABLE` (2026-09-09).**
+  `Verdict.ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and it was
+  carrying three unrelated things. Measured over the public grinder's **53 `ERROR` rows**: 15 were the mod's
+  own file being distribution-locked, 2 were a required *dependency* being locked, ~14 an upstream gap, 4 a
+  jar carrying only another loader's descriptor — i.e. **the bucket an operator reads to find out what to fix
+  was mostly things nobody can fix.**
+  - `StagingOutcome.Prevented` now carries a **`PreventionCause`** (`HOST` / `DISTRIBUTION_LOCKED` /
+    `UPSTREAM_UNAVAILABLE`), `Prepared.Failed` carries one per refusal site, and `BootOutcome.prevention`
+    replaces the old boolean — `stagingPrevented` survives as a *derived* property so the flag and the cause
+    cannot disagree about whether anything ran. `VerdictPolicy.decide` maps the cause to the verdict and is
+    the only place that does.
+  - **`UnmetReason` owns its own cause**, so a reason added later cannot reach a refusal without somebody
+    deciding whose problem it is. `preventionCauseFor` folds a set to the **most actionable** present —
+    `HOST` > `DISTRIBUTION_LOCKED` > `UPSTREAM_UNAVAILABLE` — because a refusal mixing a retryable download
+    failure with a permanent gap has to reach the person who can retry it, and between the two permanent ones
+    a named opt-out (a project, a file, an author's decision) beats an absence.
+    **`DROPPED_BY_BACKTRACK` is deliberately `HOST`:** staging dropped those builds itself.
+  - **`Verdict.grindRan`** exists so a reader asking "did anything run?" does not have to name the three
+    verdicts — `propagateClientOnlyProof` asked `== Verdict.ERROR` and would have silently missed the two new
+    ones. `LOCKED` and `UNVERIFIABLE` keep **no** logs: no container ran, so the detail is the whole story.
+  - **Landmine — every default is `HOST` on purpose.** A refusal site that forgets to state a cause stays in
+    the loud, actionable bucket rather than filing itself quietly as nobody's fault.
+  - **Landmine — the guard cannot be a fixture that passes the cause in.** `PreventedGrindBlameTest` drives
+    the real `prepareBootPack` and the real `refuseForMissingDependencies`, because a test constructing the
+    cause it then asserts on only proves that a `when` branches on its argument. Mutation-verified: forcing
+    either cause site to `HOST` fails exactly the three "not our failure" guards.
+  - The grinder's `VERDICT_RANK` gained both (`CONFIRMED, INCONCLUSIVE, ERROR, LOCKED, UNVERIFIABLE, CLEAR`)
+    and `everyVerdictHasARank` now fails the build if a verdict is added without one — an unranked verdict
+    sorts to `99`, behind everything, silently. `/as-properties` still gates on `CONFIRMED` alone.
 
 - **THE RESULT SYSTEM IS FOUR VERDICTS, AND EVERY CLIENTSIDE RULE LIVES IN A FILE (2026-09-04).** Read this
   before touching `BootLogClassifier`, `ClientsideVerifier` or `boot-rules.default.json`.
