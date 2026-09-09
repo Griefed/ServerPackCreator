@@ -162,6 +162,26 @@ internal class PreventionCauseVerdictTest {
     }
 
     /**
+     * **An empty set is our problem, not an exception.**
+     *
+     * `first {}` over the causes present throws `NoSuchElementException` for an empty map, and the only
+     * caller guards it — which is exactly the shape this module has paid for before: `UnmetReason.explain`
+     * returned `null` for a value no caller could produce, and two log sites would have printed the literal
+     * `null` after some later edit. A helper whose name reads total has to be total.
+     *
+     * `HOST` is the answer for the same reason it is every prevention default: the loud, actionable reading
+     * is the safe one when nothing said otherwise.
+     */
+    @Test
+    fun anEmptyUnmetSetIsOurProblem() {
+        Assertions.assertEquals(
+            PreventionCause.HOST,
+            BootVerifier.preventionCauseFor(emptyMap()),
+            "a fold over nothing must answer, not throw"
+        )
+    }
+
+    /**
      * And a locked dependency outranks a merely-unpublished one, because it is the half a reader can chase:
      * it names a project, a file and an author's decision, where the other names an absence.
      */
