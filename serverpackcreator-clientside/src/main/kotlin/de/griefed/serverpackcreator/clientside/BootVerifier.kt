@@ -1248,10 +1248,16 @@ class BootVerifier(
          *
          * A `UnmetReason` maps to its cause and nothing else does: keeping the mapping on the reason means
          * a new reason cannot be added without deciding whose problem it is.
+         *
+         * **Total, including for an empty set**, which answers [PreventionCause.HOST] for the same reason
+         * every prevention default does: the loud, actionable reading is the safe one when nothing said
+         * otherwise. It is unreachable from the one call site, and that is exactly why it is stated — a
+         * helper that throws on a value its name admits, guarded only by a caller, is how
+         * `UnmetReason.explain` came to return `null` for something two log sites would have interpolated.
          */
         internal fun preventionCauseFor(unsatisfied: Map<String, UnmetReason>): PreventionCause {
             val causes = unsatisfied.values.map { it.preventionCause }.toSet()
-            return PreventionCause.entries.first { it in causes }
+            return PreventionCause.entries.firstOrNull { it in causes } ?: PreventionCause.HOST
         }
 
         /**
