@@ -45,13 +45,29 @@ class GrinderStatus(private val clock: () -> Instant = Instant::now) {
     /** Keyed by worker-thread name, so the map size is the pool size and entries are self-cleaning. */
     private val active = ConcurrentHashMap<String, ActiveCandidate>()
 
-    private val verifiedTotal = AtomicInteger(0)
-    private val failedTotal = AtomicInteger(0)
-    private val skippedTotal = AtomicInteger(0)
+    /**
+     * Outcomes of the pass currently running, **not** of the daemon's lifetime -- reset by [beginPass].
+     *
+     * Named for their scope because they did not have it: as lifetime totals they were still published as
+     * `verified`/`failed`/`skippedFresh` beside `pass` and `passCandidates`, so a dashboard paired a
+     * whole-run count with a single pass's slice size. A lifetime count of verdicts already exists, and is
+     * more accurate than one of these could be, because the store survives restarts.
+     */
+    private val verifiedThisPass = AtomicInteger(0)
+    private val failedThisPass = AtomicInteger(0)
+    private val skippedThisPass = AtomicInteger(0)
 
-    /** Note that a new pass has begun with [candidates] handed out. */
+    /**
+     * Note that a new pass has begun with [candidates] handed out, and start its counters from zero.
+     *
+     * The reset is the point, not bookkeeping: these three are published and documented as this pass's work.
+     * [startedAt] is untouched, because the daemon's uptime is genuinely lifetime.
+     */
     fun beginPass(number: Int, candidates: Int) {
         pass = PassState(number, candidates, clock())
+        verifiedThisPass.set(0)
+        failedThisPass.set(0)
+        skippedThisPass.set(0)
     }
 
     /** Note that the calling worker has started grinding [candidate]. */
@@ -68,9 +84,9 @@ class GrinderStatus(private val clock: () -> Instant = Instant::now) {
     fun endCandidate(outcome: GrindOutcome) {
         active.remove(Thread.currentThread().name)
         when (outcome) {
-            GrindOutcome.VERIFIED -> verifiedTotal
-            GrindOutcome.FAILED -> failedTotal
-            GrindOutcome.SKIPPED_FRESH -> skippedTotal
+            GrindOutcome.VERIFIED -> verifiedThisPass
+            GrindOutcome.FAILED -> failedThisPass
+            GrindOutcome.SKIPPED_FRESH -> skippedThisPass
         }.incrementAndGet()
     }
 
@@ -84,9 +100,9 @@ class GrinderStatus(private val clock: () -> Instant = Instant::now) {
             pass = current.number,
             passCandidates = current.candidates,
             passRunningSeconds = Duration.between(current.startedAt, now).seconds,
-            verified = verifiedTotal.get(),
-            failed = failedTotal.get(),
-            skippedFresh = skippedTotal.get(),
+            verified = verifiedThisPass.get(),
+            failed = failedThisPass.get(),
+            skippedFresh = skippedThisPass.get(),
             workers = active.entries
                 .sortedBy { it.key }
                 .map { (worker, candidate) ->

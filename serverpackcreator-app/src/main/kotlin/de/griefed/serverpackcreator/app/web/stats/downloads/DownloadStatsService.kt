@@ -36,6 +36,13 @@ import org.springframework.stereotype.Service
 import java.text.DateFormat
 import java.util.*
 
+/**
+ * Download statistics, read-only, in two shapes throughout: a whole series and a page of one. Every method
+ * defaults to newest-first, because every caller is a dashboard.
+ * 
+ * The paginated overloads exist because the history grows without bound — one row per download — so returning
+ * all of it is a response that gets worse forever.
+ */
 @Service
 class DownloadStatsService @Autowired constructor(
     private val modPackDownloadRepository: ModPackDownloadRepository,
@@ -44,6 +51,7 @@ class DownloadStatsService @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
 ) {
 
+    /** Modpack downloads aggregated per day, whole series, newest day first. */
     fun modPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (download in modPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
@@ -52,6 +60,7 @@ class DownloadStatsService @Autowired constructor(
         return count(dates)
     }
 
+    /** One page of [modPackDownloads]. */
     fun modPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
@@ -60,6 +69,7 @@ class DownloadStatsService @Autowired constructor(
         return count(dates)
     }
 
+    /** Server-pack downloads aggregated per day, whole series, newest day first. */
     fun serverPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (download in serverPackDownloadRepository.findAll(sort)) {
@@ -68,6 +78,7 @@ class DownloadStatsService @Autowired constructor(
         return count(dates)
     }
 
+    /** One page of [serverPackDownloads]. */
     fun serverPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (download in serverPackDownloadRepository.findAll(sizedPage.withSort(sort))) {
@@ -96,22 +107,27 @@ class DownloadStatsService @Autowired constructor(
         return "${DateFormat.getInstance().format(date)}" //"${date.toLocaleString()}-${date.toLocalDate().monthValue}-${date.toLocalDate().dayOfMonth}"
     }
 
+    /** Every individual modpack download, newest first. Unbounded — prefer the paginated overload. */
     fun allModPackDownloadsHistory(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<ModPackDownload> {
         return modPackDownloadRepository.findAll(sort)
     }
 
+    /** One page of [allModPackDownloadsHistory], as a `Page` so the caller learns the total. */
     fun allModPackDownloadsHistory(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): Page<ModPackDownload> {
         return modPackDownloadRepository.findAll(sizedPage.withSort(sort))
     }
 
+    /** Every individual server-pack download, newest first. Unbounded — prefer the paginated overload. */
     fun allServerPackDownloadsHistory(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<ServerPackDownload> {
         return serverPackDownloadRepository.findAll(sort)
     }
 
+    /** One page of [allServerPackDownloadsHistory], as a `Page` so the caller learns the total. */
     fun allServerPackDownloadsHistory(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): Page<ServerPackDownload> {
         return serverPackDownloadRepository.findAll(sizedPage.withSort(sort))
     }
 
+    /** One modpack's download history, by id. */
     fun downloadHistoryForModPack(modPackID: String): List<ModPackDownload> {
         val pack = modpackRepository.findById(modPackID)
         return if (pack.isPresent) {
@@ -121,10 +137,12 @@ class DownloadStatsService @Autowired constructor(
         }
     }
 
+    /** One modpack's download history, when the caller already holds the entity. */
     fun downloadHistoryForModPack(modPack: ModPack): List<ModPackDownload> {
         return modPackDownloadRepository.findAllByModPack(modPack)
     }
 
+    /** One server pack's download history, by id. */
     fun downloadHistoryForServerPack(serverPackID: String): List<ServerPackDownload> {
         val pack = serverPackRepository.findById(serverPackID)
         return if (pack.isPresent) {
@@ -134,6 +152,7 @@ class DownloadStatsService @Autowired constructor(
         }
     }
 
+    /** One server pack's download history, when the caller already holds the entity. */
     fun downloadHistoryForServerPack(serverPack: ServerPack): List<ServerPackDownload> {
         return serverPackDownloadRepository.findAllByServerPack(serverPack)
     }

@@ -23,40 +23,39 @@ import de.griefed.serverpackcreator.grinder.GrindVerdict
 
 /**
  * Renders verdicts as RFC-4180 CSV — the export behind the web table's "download CSV" action. Columns
- * mirror the table: project name (slug), link, the clientside-list name-pattern, the confidence and
- * which loader produced it. Rows are sorted highest-confidence-then-name so the strongest
- * clientside candidates lead; the web table re-sorts client-side, this is just a deterministic default.
+ * mirror the table: project name (slug), link, the clientside-list name-pattern, the confidence,
+ * which loader produced it, and the UTC date it was scanned on (see [ScanDate]). Rows are sorted
+ * highest-confidence-then-name so the strongest clientside candidates lead; the web table re-sorts
+ * client-side, this is just a deterministic default.
  *
  * @author Griefed
  */
 object VerdictCsvExporter {
 
     /** The header row; also documents the column order callers (and the table) rely on. */
-    private val header = listOf("Name", "Project", "NamePattern", "Confidence", "Loader", "Detail")
+    private val header = VerdictField.entries.map { it.csvHeader }
 
-    /** Confidence ordering for the default sort: strongest clientside signal first. */
-    private val confidenceRank = mapOf(
-        de.griefed.serverpackcreator.clientside.Confidence.HIGH to 0,
-        de.griefed.serverpackcreator.clientside.Confidence.MEDIUM to 1,
-        de.griefed.serverpackcreator.clientside.Confidence.LOW to 2,
-        de.griefed.serverpackcreator.clientside.Confidence.INCONCLUSIVE to 3
-    )
-
-    /** Render [verdicts] as a CSV document (header + one row per verdict), with proper escaping. */
-    fun toCsv(verdicts: List<GrindVerdict>): String {
-        val ordered = verdicts.sortedWith(
-            compareBy({ confidenceRank[it.confidence] ?: Int.MAX_VALUE }, { it.slug }, { it.loader })
-        )
-        val rows = ordered.map { verdict ->
-            listOf(
-                verdict.slug,
-                verdict.projectUrl,
-                verdict.suggestedEntry ?: "",
-                verdict.confidence.name,
-                verdict.loader,
-                verdict.detail
+    /**
+     * Render [verdicts] as a CSV document (header + one row per verdict), with proper escaping.
+     *
+     * Rows are **not** re-sorted here when the caller has already ordered them: `/export.csv` runs the same
+     * [VerdictSelection] the table does, so re-sorting would silently discard the reader's chosen order and
+     * hand them a file that disagrees with the page it came from. An unordered call still gets the
+     * highest-confidence-first default, which is what a direct `/export.csv` has always produced.
+     */
+    fun toCsv(verdicts: List<GrindVerdict>, preOrdered: Boolean = false): String {
+        val ordered = if (preOrdered) {
+            verdicts
+        } else {
+            // The table's own ordering, through the same key rather than a second rank table kept in step
+            // by hand -- the two used to declare confidence order separately.
+            verdicts.sortedWith(
+                compareBy({ VerdictField.VERDICT.sortKey(it) }, { it.slug }, { it.loader })
             )
         }
+        // Cells come from the same VerdictField list the table renders from, so the two cannot describe
+        // different columns -- the drift that had the CSV carrying seven fields against the table's eight.
+        val rows = ordered.map { verdict -> VerdictField.entries.map { it.text(verdict) } }
         return (listOf(header) + rows).joinToString("\n") { fields -> fields.joinToString(",") { escape(it) } }
     }
 

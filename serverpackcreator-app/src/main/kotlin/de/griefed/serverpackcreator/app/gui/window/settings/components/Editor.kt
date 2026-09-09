@@ -28,7 +28,9 @@ import javax.swing.JScrollPane
  * @author Griefed
  */
 abstract class Editor(name: String, guiProps : GuiProps) : JScrollPane(), SettingsEditor {
+    /** This editor's tab title. */
     val title = SettingsTitle(guiProps)
+    /** The editor's content panel, which the settings tab group adds. */
     val panel = JPanel(
         MigLayout(
             "left,wrap",

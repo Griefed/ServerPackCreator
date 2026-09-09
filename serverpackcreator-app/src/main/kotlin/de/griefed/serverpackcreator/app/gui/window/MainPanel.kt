@@ -56,12 +56,16 @@ class MainPanel(
     ),
     "growx,growy,north"
 ) {
+    /** The configuration editors — the tab group a user spends their time in. */
     val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper, mainFrame)
 
+    /** The log viewers. */
     @Suppress("MemberVisibilityCanBePrivate")
     val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
 
+    /** The always-visible bottom bar: generate, open server packs, and the status scanner. */
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper, mainFrame)
+    /** The settings tab group. */
     @Suppress("MemberVisibilityCanBePrivate")
     val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame, themeManager, controlPanel)
 

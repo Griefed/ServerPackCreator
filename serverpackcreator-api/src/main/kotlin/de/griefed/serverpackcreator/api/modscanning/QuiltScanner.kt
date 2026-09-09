@@ -47,17 +47,45 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val depends = "depends"
 
+    /** The `quilt_loader.provides` block, which mirrors `depends`' object-or-string entry shape. */
+    private val provides = "provides"
+
     override val scanAnnouncement = "Scanning Quilt mods for sideness..."
 
-    /** Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list. */
+    /**
+     * Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list.
+     *
+     * **Only `quilt_loader` is the platform.** `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, a
+     * mod the server genuinely needs — and so is **`quilt_base`**, which was excluded here until 2026-09-01
+     * as though it were the runtime. It is not: it is QSL's base module, shipped by QFAPI
+     * (`library/core/qsl_base` in `QuiltMC/quilt-standard-libraries`, whose `quilt_base_testmod` depends on
+     * `["quilt_loader", "quilt_base"]`). Excluding it was the same mistake [FabricScanner] documents on its
+     * own list — that one excludes `fabricloader` but never `fabric`, because a dependency you refuse to
+     * record can neither be reported nor rescued back into a pack that disabled it.
+     */
     val dependencyExclusions: Regex
-        get() = "(quilt_loader|quilt_base|quilted_fabric_api|java|minecraft)".toRegex()
+        get() = "(quilt_loader|java|minecraft)".toRegex()
 
     /**
      * Quilt declares `quilt_loader.depends` as an array whose entries are either an object carrying
      * an `id`, or the bare id as a string — both forms occur in the wild, so both are read. A
      * descriptor without the block declares no dependencies and yields an empty list.
      */
+    /**
+     * The `quilt_loader.depends` entry for `minecraft`, in either declaration form, or `null`. Excluded from
+     * [readDependencies] as the platform, but it is still the jar's own statement of what it targets.
+     */
+    override fun readMinecraftConstraint(modConfig: JsonNode): String? =
+        runCatching {
+            utilities.jsonUtilities.getNestedElement(modConfig, QUILT_LOADER, depends)
+                .firstOrNull { entry ->
+                    val id = if (entry.isContainerNode) entry.path("id").asText(null) else entry.asText(null)
+                    id == "minecraft"
+                }
+                ?.takeIf { it.isContainerNode }
+                ?.path("versions")?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
+        }.getOrNull()
+
     override fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency> {
         val modDependencies = mutableListOf<ModDependency>()
         try {
@@ -70,7 +98,14 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
                     }
                     if (!dependencyId.matches(dependencyExclusions)) {
                         log.debug("Added dependency $dependencyId for $modId.")
-                        modDependencies.add(ModDependency(dependencyId))
+                        // Only the object form can state a range; a bare string entry keeps a null
+                        // constraint rather than an invented one.
+                        val constraint = if (dependency.isContainerNode) {
+                            dependency.path("versions").takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
+                        } else {
+                            null
+                        }
+                        modDependencies.add(ModDependency(dependencyId, versionConstraint = constraint))
                     }
                 } catch (_: NullPointerException) {
                     log.debug("No dependencies for $modId.")
@@ -82,6 +117,31 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
         }
         return modDependencies
     }
+
+    /**
+     * Quilt nests `provides` under `quilt_loader`, with the same entry shape as `depends`: either an object
+     * carrying an `id`, or the bare id as a string. Absent for most mods, which yields an empty list.
+     */
+    override fun readProvides(modConfig: JsonNode, modId: String): List<String> {
+        val aliases = mutableListOf<String>()
+        try {
+            for (entry in utilities.jsonUtilities.getNestedElement(modConfig, QUILT_LOADER, provides)) {
+                val alias = if (entry.isContainerNode) {
+                    entry.path("id").takeIf { it.isTextual }?.asText()
+                } else {
+                    entry.takeIf { it.isTextual }?.asText()
+                }
+                alias?.takeIf { it.isNotBlank() }?.let { aliases.add(it) }
+            }
+        } catch (_: NullPointerException) {
+            // No "provides" block -> the mod answers to its own id only.
+        }
+        if (aliases.isNotEmpty()) {
+            log.debug("$modId also provides $aliases.")
+        }
+        return aliases
+    }
+
 
     private companion object {
         /** The descriptor block Quilt nests a mod's own identity and dependencies under. */

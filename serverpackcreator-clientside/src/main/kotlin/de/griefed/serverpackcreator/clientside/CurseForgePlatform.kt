@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.clientside
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 /**
  * Resolves `curseforge.com` mod-links via the CurseForge REST API (requires an `x-api-key`).
@@ -41,11 +43,17 @@ class CurseForgePlatform(
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ModPlatform {
 
+    /** @see ModPlatform.name */
+    override val name = "CurseForge"
+
+
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val apiBase = "https://api.curseforge.com/v1"
     private val minecraftGameId = 432
     private val modsClassId = 6
     private val requiredRelationType = 3
+    /** Relation types worth resolving a project for: 3 required (staged) and 2 optional (identified only). */
+    private val linkableRelationTypes = setOf(2, 3)
     private val headers: Map<String, String>
         get() = mapOf("x-api-key" to apiKey, "Accept" to "application/json")
 
@@ -67,7 +75,7 @@ class CurseForgePlatform(
 
         val files = allFilesOf(modId, webBase, slug)
         return ProjectFiles(
-            platform = "CurseForge",
+            platform = name,
             slug = slug,
             projectUrl = projectUrl,
             clientSide = DeclaredSupport.UNKNOWN,
@@ -76,23 +84,64 @@ class CurseForgePlatform(
         )
     }
 
-    override fun resolveDependency(nativeRef: String): ProjectFiles? = try {
-        val modId = nativeRef.toLong()
+    override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = try {
+        // Platform-supplied refs are numeric (a file's `dependencies[].modId`); a manifest-declared one is
+        // a mod id like `mtlib`, which used to throw here and be caught as "unresolvable". The slug route is
+        // the same search `resolve` uses, so it costs a request only where there was previously no answer.
+        val modId = nativeRef.toLongOrNull() ?: modIdForSlug(nativeRef) ?: return null
         val modNode = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId", headers)).path("data")
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: "https://www.curseforge.com"
         // Deliberately one page, unlike [resolve]: a dependency only needs *a* usable file for the loader and
         // Minecraft version being booted, and paging every dependency of every candidate would multiply what a
         // catalog sweep spends of the API key's quota for evidence nobody reads.
-        val files = objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0), headers))
+        val files = objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0, minecraftVersion), headers))
             .path("data").map { toModFile(it, webBase) }
-        ProjectFiles("CurseForge", nativeRef, webBase, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
+        // The project's own slug, not the ref we arrived by: `unsatisfiedLabel` reads this back to name an
+        // unmet dependency, and a bare `306612` in a refusal is unreadable. Free here — `modNode` is the
+        // `/mods/{id}` response we already fetched for `websiteUrl`.
+        ProjectFiles(
+            name,
+            modNode.textOrNull("slug") ?: nativeRef,
+            webBase,
+            DeclaredSupport.UNKNOWN,
+            DeclaredSupport.UNKNOWN,
+            files
+        )
     } catch (ex: Exception) {
         log.warn("Could not resolve CurseForge dependency '$nativeRef': ${ex.message}")
         null
     }
 
+    /**
+     * The numeric id CurseForge knows [slug] by, or `null` when it carries no such project.
+     *
+     * Exact-match on the slug rather than a text search, so it either finds the project the mod id names or
+     * finds nothing — it cannot quietly substitute a similarly-named one.
+     */
+    private fun modIdForSlug(slug: String): Long? {
+        val search = objectMapper.readTree(
+            httpFetcher.get("$apiBase/mods/search?gameId=$minecraftGameId&classId=$modsClassId&slug=$slug", headers)
+        )
+        return search.path("data").firstOrNull()?.path("id")?.asLong()
+    }
+
     /** One page of a project's files, `index` being the offset CurseForge pages on. */
-    private fun filesUrl(modId: Long, index: Int) = "$apiBase/mods/$modId/files?index=$index&pageSize=$FILE_PAGE_SIZE"
+    private fun filesUrl(modId: Long, index: Int, minecraftVersion: String? = null): String {
+        val url = "$apiBase/mods/$modId/files?index=$index&pageSize=$FILE_PAGE_SIZE"
+        // Narrowing by version is what makes a single page enough for a dependency. Unfiltered, CurseForge
+        // answers newest-first across every loader and Minecraft version, so a library publishing as often
+        // as Fabric API (1000+ files) has nothing older than current Minecraft in its newest 50 -- and a
+        // boot on 1.20.4 was refused for a dependency that has existed since December 2023.
+        //
+        // `modLoaderType` is supported too and is deliberately NOT sent: asking for Quilt returns nothing
+        // for Fabric API, which would re-create the same refusal one layer down. The cross-loader fallback
+        // in `BootCandidateSelector` has to see the Fabric builds in order to fall back to them.
+        return if (minecraftVersion.isNullOrBlank()) {
+            url
+        } else {
+            "$url&gameVersion=" + URLEncoder.encode(minecraftVersion, StandardCharsets.UTF_8)
+        }
+    }
 
     /**
      * Every published file of [modId], walked page by page rather than taking the newest [FILE_PAGE_SIZE].
@@ -136,6 +185,11 @@ class CurseForgePlatform(
         val requiredDeps = fileNode.path("dependencies")
             .filter { it.path("relationType").asInt() == requiredRelationType }
             .map { it.path("modId").asText() }
+        // Required and optional, which is the pool worth identifying; 1 (embedded) is already inside the
+        // jar and 5 (incompatible) must never be fetched in order to be identified.
+        val linkedDeps = fileNode.path("dependencies")
+            .filter { it.path("relationType").asInt() in linkableRelationTypes }
+            .map { it.path("modId").asText() }
         val fileId = fileNode.path("id").asLong()
         return ModFile(
             fileName = fileNode.path("fileName").asText(),
@@ -143,7 +197,12 @@ class CurseForgePlatform(
             minecraftVersions = gameVersions.filter { minecraftVersion.matches(it) }.toSortedSet(),
             downloadUrl = fileNode.textOrNull("downloadUrl"),
             pageUrl = "$webBase/files/$fileId",
-            requiredDependencies = requiredDeps
+            requiredDependencies = requiredDeps,
+            relatedDependencies = linkedDeps,
+            // CurseForge has no version field; `displayName` is what an author types as the release name
+            // and is the closest thing to one. It is often decorated ("JEI 15.2.0.27 for 1.20.1"), which is
+            // fine: VersionConstraint reads what it can and accepts what it cannot.
+            version = fileNode.textOrNull("displayName")
         )
     }
 
@@ -160,6 +219,10 @@ class CurseForgePlatform(
         return segments[2]
     }
 
+    /**
+     * CurseForge's own API limits, quoted rather than chosen: its page size and how far this client is willing
+     * to page. See [FILE_PAGE_SIZE] and the paging landmine on `resolve`.
+     */
     companion object {
         /** CurseForge's maximum `pageSize` for the files endpoint; asking for more is not honoured. */
         const val FILE_PAGE_SIZE = 50

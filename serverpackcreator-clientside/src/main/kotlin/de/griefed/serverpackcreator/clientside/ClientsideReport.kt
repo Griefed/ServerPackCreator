@@ -20,29 +20,22 @@
 package de.griefed.serverpackcreator.clientside
 
 /**
- * How strongly the evidence supports "this mod is clientside-only". Phase 1 (metadata only) reaches
- * at most [MEDIUM]; the boot-test (Phase 2) is what promotes a crashing mod to [HIGH].
- *
- * @author Griefed
- */
-enum class Confidence {
-    HIGH,
-    MEDIUM,
-    LOW,
-    INCONCLUSIVE
-}
-
-/**
  * Result of the jar metadata scan for one loader, including the case where it was deliberately put
  * off because the file is distribution-locked (its jar is only fetched in the boot-phase).
  *
  * @author Griefed
  */
 enum class JarScan {
+    /** The jar's own descriptor says client-only. */
     CLIENT,
+
+    /** The descriptor says server, says both, or said nothing usable — all of which keep the mod. */
     SERVER_OR_BOTH,
+
     /** Skipped now because the file is locked; the jar-scan happens in the boot-phase. */
     DEFERRED,
+
+    /** The jar could not be read at all (corrupt archive, unparseable descriptor). Not a sideness claim. */
     ERROR
 }
 
@@ -55,6 +48,13 @@ enum class JarScan {
  * @param declaredServerSide Platform-declared server support (Modrinth; UNKNOWN for CurseForge).
  * @param jarScan           DeclaredSupport read from the jar metadata via SPC's scanners.
  * @param bootResult        Outcome of the server-boot test, or `null` when boot was not run.
+ * @param bootedLoader      Which loader actually produced [bootResult], or `null` when no boot ran. Usually
+ *                          [loader]; it differs when a cross-loader crash re-check decided the outcome, and
+ *                          the difference is load-bearing — only a loader's *own* clean boot may disprove
+ *                          another loader's crash (see `ClientsideVerifier.loaderDisprovingTheCrash`).
+ * @param bootCrashExcerpt  The slice of the crashed console a maintainer reads to judge *why* it crashed, or
+ *                          `null` when the boot did not crash. Kept even when a later pass strips the crash of
+ *                          its standing: the server did crash, and that is still worth diagnosing.
  * @param confidence        Aggregate confidence for this loader.
  * @param sampleFile        The file-name the jar-scan ran against (for traceability).
  * @param note              Optional caveat (e.g. a metadata/jar-scan contradiction, or a boot detail).
@@ -67,10 +67,48 @@ data class LoaderVerdict(
     val declaredServerSide: DeclaredSupport,
     val jarScan: JarScan,
     val bootResult: BootResult?,
+    val bootedLoader: String?,
     val bootCrashExcerpt: String?,
-    val confidence: Confidence,
     val sampleFile: String?,
-    val note: String?
+    val note: String?,
+    /**
+     * The id of the operator console rule that decided or annotated this loader's boot, or `null` when the
+     * built-in ladder settled it alone. Carried so "which verdicts did rule X decide?" is answerable from
+     * the data rather than by reading prose.
+     */
+    val firedRule: String? = null,
+    /**
+     * The injected dependency this loader's crash names, or `null`. Annotation only — the verdict is the
+     * boot's own; the grinder requeues this dependency so the question is answered by grinding it.
+     */
+    val blamedDependency: String? = null,
+    /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
+    val blamedDependencyUrl: String? = null,
+    /**
+     * Which classifier rung settled this loader's boot, or `null` when none ran. Only a decision marked
+     * `BootDecision.decisive` may publish a clientside entry.
+     */
+    val decidedBy: BootDecision? = null,
+    /** The dependency jars staged beside the candidate, so a verdict names the pack it was booted with. */
+    val stagedDependencies: List<String> = emptyList(),
+    /**
+     * What this engine publishes about the mod on this loader, from `ClientsideVerifier.verdictOf`.
+     *
+     * Defaulted so the many fixtures that predate the redesign keep compiling; production always sets it.
+     */
+    val verdict: Verdict = Verdict.INCONCLUSIVE,
+    /** What the mod claims about itself — recorded because a *contradicted* claim is the finding. */
+    val declared: Declaration? = null,
+    /**
+     * The list-entry pattern of the file this verdict actually sampled, or `null` when none was.
+     *
+     * Narrower than [suggestedEntry], which is the common prefix over the project's *whole* history and
+     * must stay broad enough for the published `startsWith` list. A project that renamed its files — iris
+     * shipped `iris-mc1.16.5-…` before it shipped `iris-fabric-…` — collapses that prefix to something with
+     * no loader in it, so this says which artifact was looked at. On a Quilt row it reads `iris-fabric-`,
+     * because Quilt boots Fabric builds and this describes the file, not the row.
+     */
+    val filenamePattern: String? = null
 )
 
 /**

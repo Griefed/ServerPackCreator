@@ -34,14 +34,24 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 sealed interface RunResult {
     /** The pack could not be launched at all (e.g. no start script); carries why, for the report. */
-    data class NotStarted(val detail: String) : RunResult
+    data class NotStarted(
+        /** Why nothing was launched, in words a report can show a maintainer. */
+        val detail: String
+    ) : RunResult
 
     /**
      * The server ran to a terminal state. [lines] is the full console output, [exitCode] the process
      * exit (or `null` if it had to be force-killed), [timedOut] whether the budget elapsed before the
      * ready-line appeared.
      */
-    data class Completed(val lines: List<String>, val exitCode: Int?, val timedOut: Boolean) : RunResult
+    data class Completed(
+        /** The whole console, in order. What the classifier reads — the console decides, not the exit code. */
+        val lines: List<String>,
+        /** The process exit status, or `null` when it could not be determined because the run was force-killed. */
+        val exitCode: Int?,
+        /** Whether the budget ran out before the ready-line appeared. Suspended host time does not count. */
+        val timedOut: Boolean
+    ) : RunResult
 }
 
 /**
@@ -139,6 +149,7 @@ class HostProcessServerRunner : ServerRunner {
         return RunResult.Completed(synchronized(lines) { ArrayList(lines) }, exitCode, timedOut)
     }
 
+    /** The host runner's poll cadence, shared with the suspend-gap threshold it feeds. */
     companion object {
         /** How often the boot's liveness and ready-state are polled; also sets what counts as a suspend gap. */
         internal const val POLL_INTERVAL_MILLIS = 500L

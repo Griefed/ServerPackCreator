@@ -84,7 +84,9 @@ internal class BootVerifierOutcomeTest {
      */
     @Test
     fun stagingRefusesToBootWithoutARequiredDependency() {
-        val refusal = BootVerifier.refuseForMissingDependencies(setOf("P7dR8mSH"), "Quilt", "1.20.1")
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("P7dR8mSH" to UnmetReason.UNRESOLVED), "Quilt", "1.20.1", "Modrinth"
+        )
 
         Assertions.assertNotNull(refusal, "a missing required dependency must stop the boot")
         Assertions.assertTrue(
@@ -94,20 +96,32 @@ internal class BootVerifierOutcomeTest {
         Assertions.assertTrue(refusal.detail.contains("dependency"), "singular for one missing dependency")
     }
 
-    /** Several missing dependencies are listed in a stable order, so the same failure reads the same way twice. */
+    /**
+     * Several missing dependencies are listed in a stable order, so the same failure reads the same way
+     * twice. Asserted by position rather than as the substring `alpha, zeta`, because each entry now carries
+     * its own reason and the two names are no longer adjacent — the rule is the ordering, not the spacing.
+     */
     @Test
     fun everyMissingDependencyIsNamedInAStableOrder() {
-        val refusal = BootVerifier.refuseForMissingDependencies(setOf("zeta", "alpha"), "Forge", "1.21.1")
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("zeta" to UnmetReason.NO_USABLE_FILE, "alpha" to UnmetReason.NO_USABLE_FILE),
+            "Forge", "1.21.1", "CurseForge"
+        )
 
         Assertions.assertNotNull(refusal)
-        Assertions.assertTrue(refusal!!.detail.contains("alpha, zeta"), "sorted, was: ${refusal.detail}")
+        Assertions.assertTrue(
+            refusal!!.detail.indexOf("alpha") < refusal.detail.indexOf("zeta"),
+            "sorted, was: ${refusal.detail}"
+        )
         Assertions.assertTrue(refusal.detail.contains("dependencies"), "plural for more than one")
     }
 
     /** Nothing missing, nothing to report — staging proceeds to the boot. */
     @Test
     fun stagingProceedsWhenEveryDependencyWasStaged() {
-        Assertions.assertNull(BootVerifier.refuseForMissingDependencies(emptySet(), "Fabric", "1.20.1"))
+        Assertions.assertNull(
+            BootVerifier.refuseForMissingDependencies(emptyMap(), "Fabric", "1.20.1", "Modrinth")
+        )
     }
 
     // --- the console that survives a re-check -------------------------------------------------------
@@ -150,5 +164,43 @@ internal class BootVerifierOutcomeTest {
         val outcome = BootVerifier.BootOutcome(BootResult.CRASHED, directoryInTheWay, "detail", "excerpt", "console")
 
         Assertions.assertDoesNotThrow { BootVerifier.restoreDecisiveConsole(outcome) }
+    }
+
+    /**
+     * **A refusal has to name its cause, and "could not download" names nothing.**
+     *
+     * Measured against the live store on 2026-09-01: **21 verdicts** said only `Could not download <file>`,
+     * every one of them CurseForge, and the file names — `bwncr`, `tombstone`, `entityculling`,
+     * `moreoverlays` — are the population this module already documents as **distribution-locked**
+     * (`allowModDistribution=false`, so `downloadUrl` is null and the fetch has to go through the headless
+     * browser). Read as written, those 21 are indistinguishable from a 404 or a flaky link, so nobody can
+     * tell a broken host from a broken mod. A locked file says so, and names the host prerequisite it needs.
+     */
+    @Test
+    fun aLockedFileSaysWhyItCouldNotBeDownloaded() {
+        val locked = ModFile("tombstone-neoforge-26.2-9.9.3.jar", setOf("NeoForge"), setOf("26.2"), null, "https://cf/p", emptyList())
+
+        val reason = BootVerifier.downloadFailureDetail(locked)
+
+        Assertions.assertTrue(reason.contains(locked.fileName), reason)
+        Assertions.assertTrue(reason.contains("distribution-locked"), "the cause has to be named: $reason")
+        Assertions.assertTrue(
+            reason.contains("Modrinth"), "and where the project can be verified instead: $reason"
+        )
+        // The browser workaround was removed on 2026-09-02; a refusal must not send anyone looking for it.
+        Assertions.assertFalse(reason.contains("browser", ignoreCase = true), reason)
+        Assertions.assertFalse(reason.contains("Playwright", ignoreCase = true), reason)
+    }
+
+    /** An ordinary file's failure must not blame the browser — that would send the operator the wrong way. */
+    @Test
+    fun anOrdinaryFileFailureDoesNotBlameTheBrowser() {
+        val ordinary = ModFile("jei-1.20.1.jar", setOf("Forge"), setOf("1.20.1"), "https://cdn/jei.jar", null, emptyList())
+
+        val reason = BootVerifier.downloadFailureDetail(ordinary)
+
+        Assertions.assertTrue(reason.contains(ordinary.fileName), reason)
+        Assertions.assertFalse(reason.contains("distribution-locked"), reason)
+        Assertions.assertFalse(reason.contains("browser"), reason)
     }
 }

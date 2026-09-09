@@ -30,7 +30,9 @@ import picocli.shell.jline3.PicocliCommands.ClearScreen
     ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Re-runs first-time setup: create the home directory layout and lay down the shipped files. */
 class SetupCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+    /** Run the setup. */
     override fun run() {
         forceApiSetup()
     }

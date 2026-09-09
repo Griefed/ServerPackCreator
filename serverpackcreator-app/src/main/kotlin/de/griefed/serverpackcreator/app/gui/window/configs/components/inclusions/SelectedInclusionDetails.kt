@@ -153,6 +153,7 @@ class SelectedInclusionDetails(
         }
     }
 
+    /** The details text, forwarded to the wrapped text pane. */
     var text: String = ""
         set(value) {
             field = value
@@ -163,8 +164,10 @@ class SelectedInclusionDetails(
             return textPane.text
         }
 
+    /** Unused; the shortcuts are handled on key-press. */
     override fun keyTyped(e: KeyEvent) {}
 
+    /** Handles undo and redo, letting everything else through. */
     override fun keyPressed(e: KeyEvent) {
         textPane.highlighter.removeAllHighlights()
         when (e.keyCode) {
@@ -173,6 +176,7 @@ class SelectedInclusionDetails(
         }
     }
 
+    /** Unused; see [keyPressed]. */
     override fun keyReleased(e: KeyEvent) {}
 
 

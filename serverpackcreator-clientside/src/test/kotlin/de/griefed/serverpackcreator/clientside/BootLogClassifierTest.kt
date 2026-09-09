@@ -305,7 +305,11 @@ internal class BootLogClassifierTest {
         val cases = listOf(
             "Error: Unable to access jarfile forge.jar",
             "Error: Could not find or load main class do_not_manually_edit",
-            "Error: Invalid or corrupt jarfile server.jar"
+            "Error: Invalid or corrupt jarfile server.jar",
+            // The JVM's own message for an `@argfile` it cannot read, verbatim from Temurin 17. Reachable since
+            // Forge boots from `@libraries/.../unix_args.txt`: an install layer cached without that file fails
+            // exactly here, which is the same incomplete-cache case the jarfile messages above cover.
+            "Error: could not open `libraries/net/minecraftforge/forge/1.20.2-48.1.0/unix_args.txt'"
         )
         for (line in cases) {
             Assertions.assertEquals(
@@ -317,22 +321,105 @@ internal class BootLogClassifierTest {
     }
 
     /**
+     * The modloader's own bootstrap failed, so the JVM started but the server never did — no mod was loaded, and
+     * the run says nothing about sideness.
+     *
+     * Verbatim from a live grinder verdict (`CurseForge-ars-nouveau-Forge.log`, 2026-08-23), which was scored
+     * CRASHED and therefore a clientside HIGH for a mod whose code never ran. The cause is upstream and
+     * deterministic: the NeoForge ServerStarterJar synthesises a boot layer for the module path in
+     * `unix_args.txt`, and Forge's `SecureModuleClassLoader` matches a read module's configuration against its
+     * *direct* parents only, so `java.base` — one level further up, in the real boot configuration — is not
+     * found. cpw's original (what NeoForge itself runs) falls back to the platform classloader instead of
+     * throwing, which is why the same jar launches NeoForge and not Forge.
+     */
+    @Test
+    fun aModloaderThatNeverBootstrappedIsInconclusive() {
+        val lines = listOf(
+            "Detected 1.20.2 - Java 17",
+            "Running Forge checks and setup...",
+            "server.jar present.",
+            "Starting server...",
+            "Exception in thread \"main\" java.lang.IllegalStateException: Could not find parent layer for module `java.base` read by `net.minecraftforge.eventbus`",
+            "\tat cpw.mods.securejarhandler/net.minecraftforge.securemodules.SecureModuleClassLoader.<init>(SecureModuleClassLoader.java:137)",
+            "\tat net.minecraftforge.bootstrap@1.2.0/net.minecraftforge.bootstrap.BootstrapLauncher.main(BootstrapLauncher.java:117)",
+            "Exiting..."
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(lines, exitCode = 1, timedOut = false),
+            "the loader never bootstrapped, so no mod was ever loaded"
+        )
+    }
+
+    /**
+     * The ServerStarterJar's own give-ups, which land before any loader code runs at all: an install layer with
+     * no run-script to read arguments out of. Same class as the bootstrap failure above — the server was never
+     * launched — and observed on the offline boots whose cached install was incomplete.
+     */
+    @Test
+    fun aStarterJarThatCannotFindItsRunScriptIsInconclusive() {
+        listOf(
+            "Failed to find run file at run.sh, attempting to run installer",
+            "Failed to find startup arguments using run script path run.sh"
+        ).forEach { line ->
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf("Starting server...", line), exitCode = 1, timedOut = false),
+                "nothing was launched, so this says nothing about the mod: $line"
+            )
+        }
+    }
+
+    /**
+     * The launcher's `Error: could not open` excuse must not be claimable by a **mod's own log line**.
+     *
+     * `launchFailureMarkers` is rung four and [BootLogClassifier.clientOnlyClassMarker] is rung seven, so
+     * anything matching the former never reaches the latter — an over-broad pattern there does not merely add
+     * noise, it converts a textbook clientside crash into INCONCLUSIVE and drops a true positive. The JVM
+     * launcher emits its message as the **whole line**, while every mod line carries a timestamp and level
+     * prefix, which is the difference the guard has to key on.
+     */
+    @Test
+    fun aModLoggingCouldNotOpenDoesNotEscapeAClientOnlyClassCrash() {
+        val lines = listOf(
+            "[19:41:26] [main/ERROR] [polytone/]: Error: could not open assets/polytone/colormap.json",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(lines, exitCode = 1, timedOut = false),
+            "a mod's own message must not buy it the launcher's excuse"
+        )
+    }
+
+    /**
      * Pins the guard order **as a whole**, which no other test in this file does.
      *
-     * `classify` is seven ordered guards, and its correctness rests entirely on that order. They accreted one at a
-     * time, each in reaction to a live false positive, so every constraint is individually covered while the decision
-     * table as a unit never was — reordering two guards could leave every other test in this file green. Each case
-     * below puts a **higher-priority** signal in the same console as a **lower-priority** one and asserts the higher
-     * wins, which is the only way a swap shows up as a failure.
+     * `classify` is **sixteen** ordered guards, and its correctness rests entirely on that order. They accreted
+     * one at a time, each in reaction to a live false positive, so every constraint is individually covered while
+     * the decision table as a unit never was — reordering two guards could leave every other test in this file
+     * green. Each case below puts a **higher-priority** signal in the same console as a **lower-priority** one and
+     * asserts the higher wins, which is the only way a swap shows up as a failure.
      *
-     * The ladder, highest first: ready-line → timeout → setup-abort → launch-failure → killed/OOM →
-     * client-only-class → dependency-failure → exit code.
+     * The ladder, highest first:
+     *
+     *  1. ready-line   2. timeout   3. setup-abort   4. launch-failure   5. loader-bootstrap-failure
+     *  6. killed/OOM   7. operator rule   8. client-only-class   9. lwjgl-on-a-dedicated-server
+     * 10. fml-invalid-dist   11. dependency-failure   12. sandbox-network   13. mixin-apply
+     * 14. loader-solver   15. runtime-mismatch   16. exit code
+     *
+     * **Do not write that count from memory — re-derive it from `classify`.** This list has now been wrong three
+     * times: it once omitted the rule and sandbox rungs, said "eight guards" while listing fourteen, kept a stray
+     * fragment of an older ladder after the closing parenthesis, and left rungs 9, 10 and 12–15 asserted nowhere.
+     * The count in the module `CLAUDE.md` was wrong for the same reason.
      */
     @Test
     fun theGuardOrderIsPinnedAsAWhole() {
         val ready = "[Server thread/INFO]: Done (4.2s)! For help, type \"help\""
         val setupAbort = "Fabric is not available for Minecraft 26.2, Fabric 0.19.3."
         val launchFailure = "Error: Unable to access jarfile forge.jar"
+        val loaderBootstrapFailure =
+            "Exception in thread \"main\" java.lang.IllegalStateException: Could not find parent layer for module `java.base` read by `net.minecraftforge.eventbus`"
         val outOfMemory = "java.lang.OutOfMemoryError: Java heap space"
         val clientClass = "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
         val dependency = "[main/ERROR] [ne.ne.fm.lo.ModSorter/]: Missing or unsupported mandatory dependencies:"
@@ -362,6 +449,11 @@ internal class BootLogClassifierTest {
         )
         Assertions.assertEquals(
             BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(loaderBootstrapFailure, clientClass), exitCode = 1, timedOut = false),
+            "a loader that never bootstrapped outranks the client-class crash"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
             BootLogClassifier.classify(listOf(outOfMemory, clientClass), exitCode = 1, timedOut = false),
             "memory exhaustion outranks the client-class crash"
         )
@@ -383,11 +475,106 @@ internal class BootLogClassifierTest {
             "the client-class crash outranks a zero exit"
         )
 
+        // Rung 7 -- an operator's rule -- sits between the two groups above: it may not outrank anything
+        // meaning "the mod never got a fair run", and it outranks everything that judges the mod itself.
+        // Stated here rather than beside this test, so the ladder's order stays pinned in exactly one place.
+        val ruleCrashes = ConsoleRuleSet(listOf(ConsoleRule("r", "unrecognised", BootResult.CRASHED)), emptyList(), "test")
+        Assertions.assertEquals(
+            BootResult.SURVIVED,
+            BootLogClassifier.classify(listOf(ready, "something unrecognised"), exitCode = 1, timedOut = false, rules = ruleCrashes).result,
+            "a ready-line outranks an operator's rule"
+        )
+        for ((line, exit, timeout, why) in listOf(
+            listOf(setupAbort, 1, false, "setup-abort"),
+            listOf(launchFailure, 1, false, "a JVM that never launched"),
+            listOf(loaderBootstrapFailure, 1, false, "a loader that never bootstrapped"),
+            listOf(outOfMemory, 1, false, "memory exhaustion"),
+            listOf("something unrecognised", 137, false, "a killed exit"),
+            listOf("something unrecognised", 1, true, "a timeout")
+        ).map { listOf(it[0] as String, it[1] as Int, it[2] as Boolean, it[3] as String) }) {
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(
+                    listOf(line as String, "something unrecognised"), exit as Int, timeout as Boolean, ruleCrashes
+                ).result,
+                "$why outranks an operator's rule — a hand-edited file must never manufacture a HIGH from host trouble"
+            )
+        }
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(
+                listOf(clientClass), exitCode = 1, timedOut = false,
+                rules = ConsoleRuleSet(listOf(ConsoleRule("r", "net/minecraft/client", BootResult.INCONCLUSIVE)), emptyList(), "test")
+            ).result,
+            "an operator's rule outranks the built-in client-class marker"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(dependency), exitCode = 1, timedOut = false, rules = ConsoleRuleSet(
+                listOf(ConsoleRule("r", "Missing or unsupported", BootResult.CRASHED)), emptyList(), "test"
+            )).result,
+            "an operator's rule outranks the dependency guard and the exit code"
+        )
+
         // And the dependency guard outranks the bare exit code.
         Assertions.assertEquals(
             BootResult.INCONCLUSIVE,
             BootLogClassifier.classify(listOf(dependency), exitCode = 1, timedOut = false),
             "a dependency complaint outranks a non-zero exit"
+        )
+
+        // Rungs 9, 10 and 12-15 were asserted nowhere: the decisive pair below the client-class marker, and
+        // the four excuses below them. Added green -- the code was already right, only the guard was absent --
+        // which is exactly the shape that lets a reorder pass unnoticed.
+        val lwjgl = "java.lang.NoClassDefFoundError: org/lwjgl/Version"
+        val fmlInvalidDist = "Failed to load class net.minecraft.client.Minecraft for invalid dist DEDICATED_SERVER"
+        val sandboxNetwork = "java.net.UnknownHostException: api.polyfrost.org"
+        val mixinApply = "org.spongepowered.asm.mixin.injection.throwables.InvalidInjectionException: @Inject failure"
+        val loaderSolver = "Unhandled solver error involving the following rules:"
+        val runtimeMismatch = "Missing language javafml version [46,)"
+
+        // Every excuse sits BELOW the decisive band -- an excuse outranking the evidence silently discards
+        // true positives, which is the whole reason the band exists.
+        for ((excuse, why) in listOf(
+            sandboxNetwork to "a denied network",
+            mixinApply to "a mixin that could not apply",
+            loaderSolver to "a solver that gave up",
+            runtimeMismatch to "a runtime mismatch"
+        )) {
+            Assertions.assertEquals(
+                BootResult.CRASHED,
+                BootLogClassifier.classify(listOf(excuse, clientClass), exitCode = 1, timedOut = false),
+                "the client-class marker must outrank $why"
+            )
+            Assertions.assertEquals(
+                BootResult.CRASHED,
+                BootLogClassifier.classify(listOf(excuse, lwjgl), exitCode = 1, timedOut = false),
+                "reaching LWJGL on a dedicated server must outrank $why"
+            )
+            // ...and each is still an excuse rather than a crash when it stands alone on a non-zero exit.
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf(excuse), exitCode = 1, timedOut = false),
+                "$why outranks the bare exit code"
+            )
+        }
+
+        // The decisive pair is decisive even where the exit status says otherwise, and still yields to a
+        // fair-run guard -- the two directions that make them decisive rather than merely high-priority.
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(lwjgl), exitCode = 0, timedOut = false),
+            "a zero exit must not hide LWJGL on a dedicated server"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(fmlInvalidDist), exitCode = 0, timedOut = false),
+            "a zero exit must not hide FML refusing a client-only class -- the ServerStarterJar exits 0 on it"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(outOfMemory, lwjgl, fmlInvalidDist), exitCode = 1, timedOut = false),
+            "memory exhaustion outranks the decisive pair, like every other fair-run guard"
         )
 
         // The floor: nothing recognisable, decided by the exit status alone.
@@ -407,5 +594,132 @@ internal class BootLogClassifierTest {
         val console = listOf("[Server thread/INFO]: Done (7.2s)! For help, type \"help\"", "Killed")
 
         Assertions.assertEquals(BootResult.SURVIVED, BootLogClassifier.classify(console, exitCode = 137, timedOut = false))
+    }
+
+    /**
+     * A mod that dies because the sandbox denied it the network was never fairly tested.
+     *
+     * Boots run `--network none` — that isolation is the whole point — so any mod whose loader phones home at
+     * startup is guaranteed to fail here and would fail nowhere else. Measured 2026-08-29 over 200 published
+     * crash logs: **15 (8%)** died this way. The clearest is OneConfig, whose loader fetches its own stage1 from
+     * `api.polyfrost.org`, then falls back to a Swing error dialog — which is why the tail of those logs is
+     * `Fontconfig error: No writable cache directories` in a headless container — and calls `System.exit`.
+     */
+    @Test
+    fun aBootDeniedTheNetworkIsInconclusive() {
+        val console = listOf(
+            "[main/INFO] [LaunchWrapper]: Loading tweak class name cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker",
+            "[main/INFO] [STDERR]: java.net.UnknownHostException: api.polyfrost.org",
+            "Exiting..."
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the sandbox denied the network; that says nothing about whether the mod is clientside"
+        )
+    }
+
+    /**
+     * The network excuse is subordinate to the decisive marker, like every other excuse on the ladder.
+     *
+     * A clientside mod may perfectly well phone home *and* die on a client class. Letting the network guard
+     * outrank [BootLogClassifier] 's client-only marker would drop true positives, so it sits below it.
+     */
+    @Test
+    fun aClientClassCrashOutranksTheNetworkExcuse() {
+        val console = listOf(
+            "[main/INFO] [STDERR]: java.net.UnknownHostException: api.example.invalid",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/gui/screens/Screen"
+        )
+
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "a client-only class is decisive evidence and must not be excused by unrelated network noise"
+        )
+    }
+
+    /**
+     * Quilt Loader's solver phrasing must be read as the dependency failure it is.
+     *
+     * `requires version [0.19.3, ∞) of fabricloader` is what Quilt prints when a staged dependency does not fit
+     * the pack, and it was the single largest failure class in the published crash logs — 63 of 200 sampled,
+     * with Fabric API the requirer in 55 of them. The staging bug behind most of those is fixed separately; this
+     * keeps the *verdict* honest for the ones that still slip through.
+     */
+    @Test
+    fun theQuiltSolversVersionConflictIsADependencyFailure() {
+        val console = listOf(
+            "---- Quilt Loader: Failed to load ----",
+            "Fabric API requires version [0.19.3, \u221E) of fabricloader, but only wrong versions are present:"
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the pack was mis-assembled; the mod under test never ran"
+        )
+    }
+
+    /**
+     * A mixin that cannot find the class it targets is a missing dependency, not a sideness signal.
+     *
+     * Seen 6 times in the 200-log sample, always naming a class from a mod that was not staged —
+     * `com.llamalad7.mixinextras...`, `grillo78.clothes_mod...`, `net.fabricmc.fabric.api.event.Event`.
+     */
+    @Test
+    fun aMixinMissingItsTargetClassIsADependencyFailure() {
+        val console = listOf(
+            "Caused by: org.spongepowered.asm.mixin.throwables.ClassMetadataNotFoundException: " +
+                "com.llamalad7.mixinextras.injector.wrapoperation.Operation"
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the mixin's target was absent from the pack, so the mod was never exercised"
+        )
+    }
+
+    /**
+     * A pack assembled without the Mixin tweaker never loads a mod at all. Seen 6 times in the sample, all on
+     * legacy LaunchWrapper-era Forge.
+     */
+    @Test
+    fun aPackMissingTheMixinTweakerIsADependencyFailure() {
+        val console = listOf(
+            "java.lang.ClassNotFoundException: org.spongepowered.asm.launch.MixinTweaker"
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the tweaker is part of the pack we build, so its absence is our failure and not the mod's"
+        )
+    }
+    /**
+     * A pack with no Minecraft server jar never loaded a mod, so it cannot say anything about one.
+     *
+     * Observed live 2026-08-30 on `Modrinth/architectury-api` at Minecraft 1.20.4 / Quilt. The shipped
+     * template fetches the vanilla jar only as a side effect of installing the Quilt launcher, so a pack
+     * that already had the launcher — a restored backup, or the grinder's cached loader install — never
+     * gets one, and Quilt's launcher aborts before Loader starts. Scored CRASHED off the exit code alone.
+     */
+    @Test
+    fun aPackMissingTheMinecraftServerJarIsInconclusive() {
+        val console = listOf(
+            "quilt-server-launch.jar present.",
+            "The Minecraft server .JAR is missing (/srv/pack/server.jar)!",
+            "Exception in thread \"main\" java.lang.RuntimeException: Failed to setup Quilt server environment!",
+            "Caused by: java.lang.RuntimeException: Missing game jar at /srv/pack/server.jar",
+            "Exiting..."
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "no game jar means no Loader, no mods and nothing exercised — that is not the candidate's crash"
+        )
     }
 }

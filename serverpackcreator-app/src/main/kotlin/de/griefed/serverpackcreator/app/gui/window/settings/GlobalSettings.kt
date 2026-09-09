@@ -416,6 +416,7 @@ class GlobalSettings(
         componentResizer.registerComponent(javaPathsSetting.scrollPanel,"cell 2 $javaPathsY, grow, w 10:500:,h %s!")
     }
 
+    /** Fills the widgets from the stored global settings. */
     override fun loadSettings() {
         homeSetting.file = apiProperties.homeDirectory.absoluteFile
         //javaSetting.file = File(apiProperties.javaPath).absoluteFile
@@ -458,6 +459,7 @@ class GlobalSettings(
         return showRestartNotice
     }
 
+    /** Writes the widgets into the stored global settings. The owning panel re-loads afterwards, so the dirty-check reads the normalised values. */
     override fun saveSettings() {
         val showRestartNotice = checkRestartNoticeRequired()
 
@@ -501,6 +503,7 @@ class GlobalSettings(
         }
     }
 
+    /** Problems with the global settings as currently entered, as messages to show. Empty means valid. */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
 
@@ -579,6 +582,7 @@ class GlobalSettings(
         return errors.toList()
     }
 
+    /** Whether the global widgets differ from what is stored, compared against the normalised getters. */
     override fun hasUnsavedChanges(): Boolean {
         val javaPaths = javaPathsSetting.getData()
         javaPaths.remove("placeholder")

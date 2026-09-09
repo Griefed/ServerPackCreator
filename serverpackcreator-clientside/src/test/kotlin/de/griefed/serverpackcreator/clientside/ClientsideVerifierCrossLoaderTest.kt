@@ -45,7 +45,8 @@ internal class ClientsideVerifierCrossLoaderTest {
         loader: String,
         entry: String?,
         bootResult: BootResult?,
-        confidence: Confidence = Confidence.LOW
+        verdict: Verdict = Verdict.CLEAR,
+        bootedLoader: String? = loader
     ) = LoaderVerdict(
         loader = loader,
         suggestedEntry = entry,
@@ -53,8 +54,9 @@ internal class ClientsideVerifierCrossLoaderTest {
         declaredServerSide = DeclaredSupport.UNKNOWN,
         jarScan = JarScan.SERVER_OR_BOTH,
         bootResult = bootResult,
+        bootedLoader = bootedLoader,
         bootCrashExcerpt = null,
-        confidence = confidence,
+        verdict = verdict,
         sampleFile = null,
         note = null
     )
@@ -62,12 +64,51 @@ internal class ClientsideVerifierCrossLoaderTest {
     /** The `iron-chests` pair, verbatim: same entry, one crashed, one booted. The booted one wins. */
     @Test
     fun aLoaderThatBootedTheSameEntryDisprovesTheCrash() {
-        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Confidence.HIGH)
+        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Verdict.CONFIRMED)
         val neoForge = verdict("NeoForge", "ironchest-", BootResult.SURVIVED)
 
         val disproving = ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, neoForge))
 
         Assertions.assertEquals("NeoForge", disproving?.loader)
+    }
+
+    /**
+     * **Only a loader's *own* clean boot may disprove another loader's crash.**
+     *
+     * Since the other-version crash re-check began spanning loaders, a verdict's [LoaderVerdict.bootResult]
+     * can be the result of a boot run under a *different* loader — `reconcileOtherVersionRecheck` returns the
+     * surviving attempt's own outcome, and that attempt may be a cross-loader one. Letting such a SURVIVED
+     * disprove a third loader's crash breaks the invariant this reconciliation is built on: the entries are
+     * compared so that the published stem cannot strip a build proven to boot, but the build that actually
+     * booted belongs to a loader whose stem may be different.
+     *
+     * The shape below is the one `FilenameStemDeriver.deriveStem` documents — a project shipping
+     * `embeddium-` for Forge/NeoForge and `sodium-fabric-` for Fabric. NeoForge's SURVIVED came from a Fabric
+     * boot of `sodium-fabric-…jar`, which `embeddium-` would never strip, so publishing the Forge crash
+     * endangers nothing and the disproof is unfounded. It would also print "NeoForge booted a server", which
+     * NeoForge did not do.
+     */
+    @Test
+    fun aSurvivalBorrowedFromAnotherLoaderDisprovesNothing() {
+        val forge = verdict("Forge", "embeddium-", BootResult.CRASHED, Verdict.CONFIRMED)
+        val neoForge = verdict("NeoForge", "embeddium-", BootResult.SURVIVED, bootedLoader = "Fabric")
+
+        Assertions.assertNull(
+            ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, neoForge)),
+            "NeoForge never booted a server — a Fabric build did, under a stem 'embeddium-' cannot strip"
+        )
+    }
+
+    /** The same verdict with its own loader behind the boot is a disproof, so the guard is about *whose* boot. */
+    @Test
+    fun theSameSurvivalOnItsOwnLoaderStillDisproves() {
+        val forge = verdict("Forge", "embeddium-", BootResult.CRASHED, Verdict.CONFIRMED)
+        val neoForge = verdict("NeoForge", "embeddium-", BootResult.SURVIVED, bootedLoader = "NeoForge")
+
+        Assertions.assertEquals(
+            "NeoForge",
+            ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, neoForge))?.loader
+        )
     }
 
     /**
@@ -78,7 +119,7 @@ internal class ClientsideVerifierCrossLoaderTest {
      */
     @Test
     fun aLoaderBootingUnderADifferentEntryDisprovesNothing() {
-        val forge = verdict("Forge", "themod-forge-", BootResult.CRASHED, Confidence.HIGH)
+        val forge = verdict("Forge", "themod-forge-", BootResult.CRASHED, Verdict.CONFIRMED)
         val fabric = verdict("Fabric", "themod-fabric-", BootResult.SURVIVED)
 
         Assertions.assertNull(ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, fabric)))
@@ -91,7 +132,7 @@ internal class ClientsideVerifierCrossLoaderTest {
      */
     @Test
     fun onlyACleanBootDisprovesACrash() {
-        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Confidence.HIGH)
+        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Verdict.CONFIRMED)
 
         listOf(BootResult.CRASHED, BootResult.INCONCLUSIVE, null).forEach { otherResult ->
             val other = verdict("NeoForge", "ironchest-", otherResult)
@@ -123,12 +164,12 @@ internal class ClientsideVerifierCrossLoaderTest {
 
         Assertions.assertNull(
             ClientsideVerifier.loaderDisprovingTheCrash(
-                verdict("Forge", null, BootResult.CRASHED, Confidence.HIGH), listOf(neoForge)
+                verdict("Forge", null, BootResult.CRASHED, Verdict.CONFIRMED), listOf(neoForge)
             )
         )
         Assertions.assertNull(
             ClientsideVerifier.loaderDisprovingTheCrash(
-                verdict("Forge", "  ", BootResult.CRASHED, Confidence.HIGH), listOf(blankBooted)
+                verdict("Forge", "  ", BootResult.CRASHED, Verdict.CONFIRMED), listOf(blankBooted)
             )
         )
     }
@@ -136,7 +177,7 @@ internal class ClientsideVerifierCrossLoaderTest {
     /** A single-loader project cannot disprove itself, however it booted. */
     @Test
     fun aVerdictIsNeverItsOwnDisproof() {
-        val onlyLoader = verdict("Forge", "ironchest-", BootResult.CRASHED, Confidence.HIGH)
+        val onlyLoader = verdict("Forge", "ironchest-", BootResult.CRASHED, Verdict.CONFIRMED)
 
         Assertions.assertNull(ClientsideVerifier.loaderDisprovingTheCrash(onlyLoader, listOf(onlyLoader)))
     }
@@ -153,18 +194,18 @@ internal class ClientsideVerifierCrossLoaderTest {
      */
     @Test
     fun aSupersededCrashKeepsTheCrashButLosesTheConfidence() {
-        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Confidence.HIGH)
+        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Verdict.CONFIRMED)
             .copy(bootCrashExcerpt = "java.lang.NoSuchMethodError")
         val neoForge = verdict("NeoForge", "ironchest-", BootResult.SURVIVED)
 
         val superseded = ClientsideVerifier.supersededByLoader(
             verdict = forge,
             disproving = neoForge,
-            metadataOnly = Confidence.LOW to null,
+            metadataOnly = VerdictAssessment(Verdict.CLEAR, null, null, null),
             bootDetail = "Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)"
         )
 
-        Assertions.assertEquals(Confidence.LOW, superseded.confidence)
+        Assertions.assertEquals(Verdict.CLEAR, superseded.verdict)
         Assertions.assertEquals(BootResult.CRASHED, superseded.bootResult, "the boot really did crash — do not erase it")
         Assertions.assertEquals("java.lang.NoSuchMethodError", superseded.bootCrashExcerpt)
         Assertions.assertEquals("Forge", superseded.loader)
@@ -179,13 +220,13 @@ internal class ClientsideVerifierCrossLoaderTest {
      */
     @Test
     fun aSupersededCrashExplainsItselfWithoutTheOldClaim() {
-        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Confidence.HIGH)
+        val forge = verdict("Forge", "ironchest-", BootResult.CRASHED, Verdict.CONFIRMED)
             .copy(note = "Declared server/both but the server crashed — a strong clientside signal. Forge 48.1.0 → CRASHED")
 
         val note = ClientsideVerifier.supersededByLoader(
             verdict = forge,
             disproving = verdict("NeoForge", "ironchest-", BootResult.SURVIVED),
-            metadataOnly = Confidence.LOW to null,
+            metadataOnly = VerdictAssessment(Verdict.CLEAR, null, null, null),
             bootDetail = "Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)"
         ).note
 
@@ -200,9 +241,9 @@ internal class ClientsideVerifierCrossLoaderTest {
     @Test
     fun aMetadataCaveatSurvivesTheRewrite() {
         val note = ClientsideVerifier.supersededByLoader(
-            verdict = verdict("Forge", "themod-", BootResult.CRASHED, Confidence.HIGH),
+            verdict = verdict("Forge", "themod-", BootResult.CRASHED, Verdict.CONFIRMED),
             disproving = verdict("NeoForge", "themod-", BootResult.SURVIVED),
-            metadataOnly = Confidence.MEDIUM to "Platform marks server unsupported but the jar declares server/both.",
+            metadataOnly = VerdictAssessment(Verdict.INCONCLUSIVE, null, null, "Platform marks server unsupported but the jar declares server/both."),
             bootDetail = null
         ).note
 

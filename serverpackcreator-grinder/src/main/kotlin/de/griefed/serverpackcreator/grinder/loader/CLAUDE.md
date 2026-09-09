@@ -97,6 +97,14 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
   `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
   and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
   bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
+- **`USE_SSJ` is deliberately NOT set on generated packs — the templates decide.** They bypass the
+  ServerStarterJar themselves for exactly the Minecraft versions it cannot launch (`forgeNeedsItsOwnArgfile`;
+  the full range and its measurements are the SSJ landmine in `serverpackcreator-api/CLAUDE.md`). Setting the
+  knob here — which this branch did first — is blanket: it disables the starter jar for 1.17–1.20.1 and 1.20.4+
+  as well, where it works, so the grinder would boot every Forge pack by a route almost no user's pack takes and
+  would never again notice that route breaking. It noticed once (a clientside HIGH published for `ars-nouveau`,
+  whose server died in `BootstrapLauncher` before FML existed), which is precisely the fidelity worth keeping.
+  `PackVariablesTest.leavesTheStarterJarChoiceToTheTemplates` fails if the line comes back.
 - **Cache-overlay seam — RESOLVED (no deep `BootVerifier` change needed).** The install layer never
   name-collides with pack files (`libraries/`, `server.jar`, run-scripts vs. `start.sh`/`mods/`/`config/`),
   so the overlay is a plain recursive copy. Plan: add an optional `packPostProcessor:
@@ -114,6 +122,15 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   version, and `1.21.1 + NeoForge` is one of the most common combinations in the catalogue — every candidate was
   paying a full download-and-boot (~46 s of container time) before failing. A restart retries, which is a
   reasonable moment to find out whether upstream has been fixed.
+  **The candidate that paid for the attempt must not be told it was skipped** — `ContainerCandidateVerifier
+  .installedBase` reads `isInstallOnCooldown` *before* calling `ensureInstalled`, because `ensureInstalled`
+  records the cooldown on its way out of a failure; asking afterwards (as this did until 2026-09-03) answers
+  "on cooldown" for the attempt as well as for the skips behind it, which made the failure branch of
+  `installUnavailableMessage` unreachable and, during an outage, hid how many installs were still being tried.
+  **And a throw is logged by type, not by `message` alone** (`LoaderCache.installThrewMessage`, plus the
+  throwable itself to the logger): interpolating only the message printed a bare `null` for a throwable
+  carrying none, so that tuple's line said an install had failed and nothing else — while the tuple two lines
+  above it in the same journal named `Status 404: No such image` and was diagnosable on sight.
 - **The live install console goes beside the generated pack, NOT into the cache dir** (`install.log`), because
   `LoaderCache` wipes the cache directory when an install fails — which would delete the console exactly when it
   is the only evidence of why. Learned the hard way: the first version of this logging did precisely that.

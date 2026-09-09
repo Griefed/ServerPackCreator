@@ -31,6 +31,7 @@ import javax.swing.JPanel
  * @author Griefed
  */
 class StatusPanel {
+    /** The status line inside the control bar, which the scanner and the current message share. */
     val panel = JPanel()
     private val statusLine0 = StatusLabel("...${ReticulatingSplines.reticulate()}", 20)
     private val statusLine1 = StatusLabel("...${ReticulatingSplines.reticulate()}", 50)

@@ -31,6 +31,9 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -77,6 +80,9 @@ class DockerJavaContainerEngine(
             .withCmd(spec.command)
             .withWorkingDir(spec.workingDir)
             .withUser(spec.user)
+            // Fixed rather than the daemon's default (the container id), because `hostConfigFor` has to map it
+            // to an address and the id does not exist until after this call. See CONTAINER_HOST_NAME.
+            .withHostName(spec.hostName)
             // Stamped so a container that outlives its JVM can still be identified. Nothing else can find it:
             // it has no name, no autoremove, and the tracking set above dies with the process.
             .withLabels(mapOf(OWNER_LABEL to "1"))
@@ -178,8 +184,13 @@ class DockerJavaContainerEngine(
         // path exists to avoid.
         val stoppers = Executors.newFixedThreadPool(minOf(abandoned.size, MAX_PARALLEL_STOPS))
         try {
-            abandoned.map { containerId -> stoppers.submit { stopThenRemove(containerId) } }
-                .forEach { pending -> runCatching { pending.get() } }
+            val pending = abandoned.map { containerId -> stoppers.submit { stopThenRemove(containerId) } }
+            if (!awaitWithin(pending, shutdownGrace)) {
+                log.warn(
+                    "Some containers did not stop within ${shutdownGrace.seconds}s; abandoning them so shutdown can " +
+                        "finish. They carry the ${OWNER_LABEL} label and are reaped on the next start."
+                )
+            }
         } finally {
             stoppers.shutdownNow()
         }
@@ -227,6 +238,18 @@ class DockerJavaContainerEngine(
         }
     }
 
+    /**
+     * Ask the daemon whether [image] is there, treating *any* failure to answer as "no".
+     *
+     * A missing image and an unreachable daemon are different causes with one consequence — nothing can be
+     * booted — so both return `false` and the reason is logged rather than folded into the return type. Only
+     * a `docker pull`/`docker build` or a running daemon fixes either, and the preflight's message names both.
+     */
+    override fun hasImage(image: String): Boolean =
+        runCatching { client.inspectImageCmd(image).exec() }
+            .onFailure { log.warn("Could not confirm the runtime image '$image' with the container daemon: ${it.message}", it) }
+            .isSuccess
+
     /** Translate the platform-agnostic [spec] into a docker-java [HostConfig] with the hardening on. */
     private fun hostConfigFor(spec: ContainerSpec): HostConfig {
         val hostConfig = HostConfig.newHostConfig()
@@ -240,6 +263,13 @@ class DockerJavaContainerEngine(
             .withPidsLimit(spec.resources.pidsLimit)
             .withReadonlyRootfs(spec.readonlyRootfs)
             .withBinds(spec.mounts.map { Bind(it.hostPath, Volume(it.containerPath), if (it.readOnly) AccessMode.ro else AccessMode.rw) })
+            // The name resolution the daemon gives a *networked* container: it writes `<ip> <hostname>` into
+            // /etc/hosts, which is what makes a container's own name resolvable. A `none`-network boot has no
+            // address to write, so the entry is added by hand and pointed at loopback -- the mod must stay
+            // unable to reach anything, but it must be able to look *itself* up. Verified against docker 29.7.2
+            // that an extra host is written even with no network; without it `getaddrinfo` fails and every boot
+            // opens with three `UnknownHostException` stacktraces from log4j's getLocalHost().
+            .withExtraHosts("${spec.hostName}:$LOOPBACK_ADDRESS")
         if (spec.dropAllCapabilities) {
             hostConfig.withCapDrop(Capability.ALL)
         }
@@ -247,7 +277,9 @@ class DockerJavaContainerEngine(
             hostConfig.withSecurityOpts(listOf("no-new-privileges"))
         }
         if (spec.tmpfsMounts.isNotEmpty()) {
-            hostConfig.withTmpFs(spec.tmpfsMounts.associateWith { "rw" })
+            // Executable on purpose -- an untrusted mod may need to map a native library it unpacked here.
+            // See TMPFS_OPTIONS for the measurement and the trade-off it records.
+            hostConfig.withTmpFs(spec.tmpfsMounts.associateWith { TMPFS_OPTIONS })
         }
         return hostConfig
     }
@@ -267,12 +299,46 @@ class DockerJavaContainerEngine(
         internal const val POLL_INTERVAL_MILLIS = 500L
 
         /**
+         * The address a container's own hostname is mapped to. Loopback, because a network-less container has
+         * no other one — and the point is only that the name resolves, never that anything is reachable.
+         */
+        private const val LOOPBACK_ADDRESS = "127.0.0.1"
+
+        /**
          * Docker label every container this engine creates carries, so one that outlives its JVM can still be
          * found. Without it an orphan is indistinguishable from any other container on the host.
          */
         const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
 
 
+
+        /**
+         * Wait for [pending] to finish, but never longer than [budget] **in total**, reporting whether they all
+         * did.
+         *
+         * One budget across the whole set rather than one per task, which is the distinction that matters: a
+         * per-task timeout multiplied by the number of abandoned containers is how a bounded wait becomes an
+         * unbounded one again. A task still running when the budget is spent is simply left — the caller's
+         * `shutdownNow` interrupts it, its container keeps the owner label, and the next start reaps it. That is
+         * strictly better than holding the shutdown hook open until systemd SIGKILLs the process, because a
+         * SIGKILL orphans containers with nothing left to collect them.
+         *
+         * A failing task counts as finished: the drain cares whether it is still *waiting*, and the failure has
+         * already been logged where it happened.
+         */
+        internal fun awaitWithin(pending: List<Future<*>>, budget: Duration): Boolean {
+            val deadline = System.nanoTime() + budget.toNanos()
+            for (task in pending) {
+                val remaining = deadline - System.nanoTime()
+                if (remaining <= 0) {
+                    return pending.all { it.isDone }
+                }
+                // A throwing task is done, not pending, so only a timeout ends the wait early.
+                runCatching { task.get(remaining, TimeUnit.NANOSECONDS) }
+                    .onFailure { if (it is TimeoutException) return pending.all { finished -> finished.isDone } }
+            }
+            return true
+        }
 
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {

@@ -82,4 +82,55 @@ internal class GrindPacingTest {
 
         Assertions.assertEquals(Duration.ZERO, pause)
     }
+
+    /**
+     * **The inter-pass wait has to end early when work is queued.**
+     *
+     * `pauseAfterPass` returns `betweenSweeps` — default `SPC_GRINDER_INTERVAL`, 21 600 s — after a completed
+     * sweep that verified nothing. Sleeping that in one call means an operator who queues a re-grind into a
+     * just-dozed daemon waits up to six hours, and the queue exists precisely so a known-wrong verdict is not
+     * served while a timer runs down. Trading a 30-day TTL for a 6-hour one is better and still not what was
+     * built.
+     *
+     * Pinned as the pure decision — how long to wait *before looking again* — so no test has to sleep.
+     */
+    @Test
+    fun theWaitIsSlicedSoQueuedWorkIsNoticedLongBeforeItEnds() {
+        val sixHours = Duration.ofHours(6)
+
+        Assertions.assertTrue(
+            GrindPacing.pollInterval(sixHours) <= Duration.ofSeconds(30),
+            "a six-hour pause must be looked at far more often than once"
+        )
+        Assertions.assertEquals(
+            Duration.ofSeconds(5),
+            GrindPacing.pollInterval(Duration.ofSeconds(5)),
+            "a pause shorter than the slice is simply the pause — never round it up"
+        )
+        Assertions.assertTrue(
+            GrindPacing.pollInterval(Duration.ZERO).isZero,
+            "no pause, nothing to slice"
+        )
+    }
+
+    /**
+     * **A remainder that has already elapsed must slice to zero, never to a negative.**
+     *
+     * The caller computes `wakeAt - now` *after* checking `now < wakeAt`, with a synchronized read of the
+     * queue file in between — so on the final slice, where the remainder is by construction somewhere in
+     * `(0, 15s]`, an I/O stall longer than the remainder makes it negative. A negative `Duration` compares
+     * below the slice and would be passed straight through, and `Thread.sleep(-5)` throws
+     * `IllegalArgumentException` — not an `InterruptedException`, so it escapes the wait's catch, escapes
+     * `while (running.get())`, and ends `main`. A fire-and-forget daemon then quietly stops grinding with no
+     * crash anybody is watching for.
+     */
+    @Test
+    fun aRemainderThatHasAlreadyElapsedSlicesToZero() {
+        Assertions.assertTrue(GrindPacing.pollInterval(Duration.ofMillis(-5)).isZero)
+        Assertions.assertTrue(GrindPacing.pollInterval(Duration.ofHours(-1)).isZero)
+        Assertions.assertFalse(
+            GrindPacing.pollInterval(Duration.ofMillis(-5)).isNegative,
+            "Thread.sleep throws on a negative timeout, and nothing on that path catches it"
+        )
+    }
 }

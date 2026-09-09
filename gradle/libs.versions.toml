@@ -52,7 +52,6 @@ bouncycastle = "1.85"
 mslinks = "1.2"
 # Resolved from jitpack; published nowhere else.
 nekodetector = "Version-1.1-pre"
-playwright = "1.62.0"
 dockerJava = "3.7.1"
 commonsIo = "2.22.0"
 cronUtils = "9.2.1"
@@ -100,7 +99,6 @@ pf4j = { module = "org.pf4j:pf4j", version.ref = "pf4j" }
 bouncycastle = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
 mslinks = { module = "org.jabref:mslinks", version.ref = "mslinks" }
 nekodetector = { module = "com.github.MCRcortex:nekodetector", version.ref = "nekodetector" }
-playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 dockerJavaCore = { module = "com.github.docker-java:docker-java-core", version.ref = "dockerJava" }
 dockerJavaTransport = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "dockerJava" }
 commonsIo = { module = "commons-io:commons-io", version.ref = "commonsIo" }

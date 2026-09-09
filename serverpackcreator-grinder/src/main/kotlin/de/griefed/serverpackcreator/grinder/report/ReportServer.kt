@@ -19,16 +19,24 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
+import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.source.CursorStore
+import de.griefed.serverpackcreator.grinder.source.RequeueStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.net.InetSocketAddress
+import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -39,12 +47,22 @@ import java.util.concurrent.Executors
  * standalone service needs **no web framework** (no Spring, no new dependency). Bound to loopback by
  * default; pass a concrete port or `0` for an ephemeral one.
  *
+ * The browser-tab icon ships *inside* the jar and is served from there, keeping the promise the rest of the
+ * page already keeps: nothing here reaches out to an external asset.
+ *
  * @param store The verdicts to render; read live on each request so the table reflects the running grind.
  * @param requestedPort The port to bind (0 = pick a free one; read it back from [port] after [start]).
  * @param host The interface to bind; loopback by default so the report isn't exposed beyond the box.
  * @param fallbackLists Supplies the lists `/as-properties` publishes alongside the grinder's findings, read
  *                      per request so a refreshed list is served without a restart. `null` serves the
  *                      grinder's own findings only — the report server stays constructible without SPC.
+ * @param consoleRules Supplies the operator's console rules, so `/status` can report how many loaded and what
+ *        could not be. Reporting the errors is what stops a typo silently disabling an operator's rules —
+ *        the loader deliberately keeps the last good set, which would otherwise hide the breakage entirely.
+ * @param crashLogs The kept consoles of crashed boots, linked from the table and served by name. `null`
+ *                  simply offers no links, so the report stays constructible without a log store.
+ * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
+ *                re-verification is visible rather than inferred from the logs.
  * @author Griefed
  */
 class ReportServer(
@@ -54,21 +72,77 @@ class ReportServer(
     private val status: GrinderStatus? = null,
     private val cursors: CursorStore? = null,
     private val cacheRoot: File? = null,
-    private val fallbackLists: (() -> FallbackLists)? = null
+    private val fallbackLists: (() -> FallbackLists)? = null,
+    private val crashLogs: BootLogStore? = null,
+    private val consoleRules: (() -> ConsoleRuleSet)? = null,
+    private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * The tab icon, read off the classpath once and held: it is a few kilobytes and every page load asks for
+     * it, so re-reading the jar entry per request buys nothing. `null` if the resource is somehow absent, in
+     * which case the pages simply go without an icon — a missing decoration must not 500 an endpoint.
+     */
+    private val favicon: ByteArray? by lazy {
+        val bytes = javaClass.getResourceAsStream(FAVICON_RESOURCE)?.use { stream -> stream.readBytes() }
+        if (bytes == null) {
+            log.warn("No $FAVICON_RESOURCE on the classpath; the report is served without a tab icon.")
+        }
+        bytes
+    }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
     private var pool: ExecutorService? = null
+    /**
+     * Shared by `/status` and `/verdicts.json`. The date module is what keeps a [GrindVerdict]'s
+     * `verifiedAt` an ISO-8601 string rather than the `{"epochSecond":…,"nano":…}` object a bare mapper
+     * writes for an [java.time.Instant] — the same configuration [JsonVerdictStore] uses, so the shape on
+     * the wire is the shape on disk. `/status` writes only primitives, so it is unaffected either way.
+     */
     private val mapper = jacksonObjectMapper()
+        .registerModule(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     /** The actually-bound port (meaningful after [start], especially when an ephemeral `0` was asked). */
     val port: Int get() = server.address.port
+
+    /**
+     * The kept artifacts for one verdict, out of a per-request snapshot.
+     *
+     * Shared by the sort and the cell so the number a row is ordered by is the same number it then shows —
+     * two lookups written separately is exactly how those drift.
+     */
+    private fun logNamesFor(logsByOwner: Map<String, List<String>>, verdict: GrindVerdict): List<String> =
+        logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
 
     /** Register the routes, start serving on a small thread pool, and return `this` for chaining. */
     fun start(): ReportServer {
         // Longest-prefix match means /export.csv wins for that path; everything else renders the table.
         server.createContext("/export.csv") { exchange ->
-            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(store.all()))
+            // The SAME selection the table runs, so the two cannot disagree -- they agree because they
+            // share this function, not because two renderers were kept in step. `defaultSize = null` keeps a
+            // bare /export.csv exporting everything, which is the documented behaviour operators script.
+            // No log-count lookup on purpose: the CSV carries no Logs column, so `sort=logs` here degrades to
+            // the slug-then-loader tie-break rather than costing a directory listing for a column nobody is
+            // exporting. Every other sort behaves identically to the table's.
+            val selection = VerdictSelection.select(
+                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+            )
+            exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
+            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
+        }
+        // The same selection the table and the CSV run, through the same function -- three renderings of
+        // one query cannot disagree when only one of them picks the rows. Unlike the CSV this keeps each
+        // field's own shape (stagedDependencies stays an array), which is why a consumer outside this
+        // module gets a feed of its own rather than a flattened export it has to re-parse.
+        //
+        // `defaultSize = null` matches /export.csv: a bare call returns everything. The paging metadata
+        // still travels, so a client that does ask for a page knows where in the set it landed.
+        server.createContext("/verdicts.json") { exchange ->
+            val selection = VerdictSelection.select(
+                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+            )
+            respond(exchange, "application/json; charset=utf-8", verdictsJson(selection))
         }
         server.createContext("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
@@ -76,8 +150,57 @@ class ReportServer(
         server.createContext("/status") { exchange ->
             respond(exchange, "application/json; charset=utf-8", statusJson())
         }
+        // The same document, rendered for a human and polled by the page itself. A second route rather than
+        // content negotiation on /status: that endpoint is scripted against, and handing a machine reader HTML
+        // because an Accept header looked browser-shaped would break the thing it exists for.
+        server.createContext("/dashboard") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", StatusDashboardRenderer.toHtml())
+        }
+        // Both spellings need their own context: the pages link `/favicon.png`, while a browser asks for
+        // `/favicon.ico` unprompted on every endpoint that is not HTML (the plain-text crash consoles). Without
+        // a context of its own, either request falls through to `/` and gets the verdict table as its icon.
+        for (iconPath in listOf("/favicon.ico", "/favicon.png")) {
+            server.createContext(iconPath) { exchange -> respondFavicon(exchange) }
+        }
+        // Longest-prefix match again: each index is its own context, so the singular route cannot swallow it.
+        // /crash-log(s) are kept as aliases of the /boot-log(s) that superseded them: both are documented, and
+        // an operator who has used this report has the old ones bookmarked. Removing a documented endpoint
+        // costs a user something and buys nothing.
+        server.createContext("/crash-logs") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", crashLogIndex())
+        }
+        server.createContext("/boot-logs") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", crashLogIndex())
+        }
+        server.createContext("/boot-log") { exchange ->
+            serveBootLog(exchange)
+        }
+        server.createContext("/crash-log") { exchange ->
+            serveBootLog(exchange)
+        }
         server.createContext("/") { exchange ->
-            respond(exchange, "text/html; charset=utf-8", VerdictReportRenderer.toHtml(store.all()))
+            // One directory listing per *request*, not per row: `namesFor` lists the store every time it is
+            // asked, and the table renders every verdict, so asking per row would be a listing per row.
+            // Grouping on the owner prefix is safe because a tuple's own name cannot contain the separator —
+            // which is what `ATTEMPT_SEPARATOR` was chosen for.
+            val logsByOwner = crashLogs?.list()
+                ?.groupBy { it.substringBefore(BootLogStore.ATTEMPT_SEPARATOR) }
+                .orEmpty()
+            respond(
+                exchange,
+                "text/html; charset=utf-8",
+                VerdictReportRenderer.toHtml(
+                    VerdictSelection.select(
+                        store.all(),
+                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE),
+                        // The same snapshot the renderer reads from, so the count a row is SORTED by and the
+                        // links it then shows cannot disagree -- and still one listing per request.
+                        logCount = { verdict -> logNamesFor(logsByOwner, verdict).size }
+                    )
+                ) { verdict ->
+                    logNamesFor(logsByOwner, verdict)
+                }
+            )
         }
         pool = Executors.newFixedThreadPool(2).also { server.executor = it }
         server.start()
@@ -96,6 +219,77 @@ class ReportServer(
         return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, store.all())
     }
 
+    /**
+     * The index of kept crash consoles: every boot whose server died, linkable without first finding its row
+     * in the table. Deliberately plain — it is a list of file names, and the page that gives them meaning is
+     * the verdict table this links back to.
+     */
+    private fun crashLogIndex(): String {
+        val names = crashLogs?.list().orEmpty()
+        val items = names.joinToString("\n") { name ->
+            """  <li><a href="/crash-log?name=${URLEncoder.encode(name, StandardCharsets.UTF_8)}">$name</a></li>"""
+        }
+        val body = if (names.isEmpty()) "<p>No crashed boots have been recorded yet.</p>" else "<ul>\n$items\n</ul>"
+        return """
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>ServerPackCreator — crash consoles</title>
+              <link rel="icon" type="image/png" href="/favicon.png">
+            </head>
+            <body style="font-family: system-ui, sans-serif; margin: 1.5rem;">
+              <h1>Crash consoles (${names.size})</h1>
+              <p><a href="/">&larr; back to the verdict table</a></p>
+              $body
+            </body>
+            </html>
+        """.trimIndent()
+    }
+
+    /**
+     * Serve the bundled tab icon, or a 404 when the jar carries none. PNG under both `.png` and `.ico`: every
+     * current browser reads the bytes, not the extension, and one file beats shipping a second format.
+     */
+    private fun respondFavicon(exchange: HttpExchange) {
+        val icon = favicon
+        if (icon == null) {
+            respond(exchange, "text/plain; charset=utf-8", "No favicon is bundled with this build.", status = 404)
+        } else {
+            respondBytes(exchange, "image/png", icon)
+        }
+    }
+
+    /**
+     * Serve one kept boot log by its `?name=`, shared by `/boot-log` and its `/crash-log` alias.
+     *
+     * `read` is what enforces that a name cannot escape the store; a refusal is deliberately
+     * indistinguishable from an absent log, so probing tells an unauthenticated caller nothing.
+     */
+    private fun serveBootLog(exchange: HttpExchange) {
+        val name = queryParameter(exchange.requestURI.rawQuery, "name")
+        val body = name?.let { crashLogs?.read(it) }
+        if (body == null) {
+            respond(exchange, "text/plain; charset=utf-8", "No such boot log.", status = 404)
+        } else {
+            respond(exchange, "text/plain; charset=utf-8", body)
+        }
+    }
+
+    /**
+     * The value of [key] in a raw query string, percent-decoded, or `null` when absent.
+     *
+     * Hand-rolled because the JDK's HTTP server hands over the raw query and this daemon deliberately carries
+     * no web framework to parse one. A malformed escape decodes to `null` rather than throwing — a bad query
+     * is a 404, never a 500 in somebody's log.
+     */
+    private fun queryParameter(rawQuery: String?, key: String): String? =
+        rawQuery?.split('&')
+            ?.firstOrNull { it.substringBefore('=') == key }
+            ?.substringAfter('=', "")
+            ?.let { runCatching { URLDecoder.decode(it, StandardCharsets.UTF_8) }.getOrNull() }
+            ?.ifEmpty { null }
+
     /** Stop serving and shut the thread pool down. */
     fun stop() {
         server.stop(0)
@@ -111,10 +305,42 @@ class ReportServer(
      * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
      * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
      */
+    /**
+     * One page of the verdict feed: the rows themselves plus where in the set they sit. `total` is the
+     * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
+     * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
+     */
+    private fun verdictsJson(selection: VerdictPage): String {
+        val document = linkedMapOf(
+            "total" to selection.total,
+            "matched" to selection.matched,
+            "page" to selection.page,
+            "pages" to selection.pages,
+            "verdicts" to selection.rows
+        )
+        return runCatching { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
+            .getOrElse { "{\"error\":\"verdicts unavailable\"}" }
+    }
+
     private fun statusJson(): String {
         val document = linkedMapOf<String, Any?>(
             "verdicts" to store.all().size,
+            // How much work is waiting in the jump-the-crawl lane. Read live: an operator queueing a re-grind
+            // wants to see it land, and a backlog that never shrinks is the symptom of a stalled pass.
+            "requeued" to requeue?.pending(),
             "activity" to status?.snapshot(),
+            // The rule file keeps its last good state when a save breaks it, so the errors have to be visible
+            // somewhere or a typo disables an operator's rules in complete silence.
+            "bootRules" to consoleRules?.invoke()?.let { loaded ->
+                linkedMapOf(
+                    "source" to loaded.source,
+                    "ruleCount" to loaded.rules.size,
+                    // What an undecided rule resolves to, so an operator can see which mode is in force
+                    // without reading the unit file.
+                    "undecidedVerdict" to (loaded.undecidedVerdict?.name ?: "grinder decides"),
+                    "errors" to loaded.errors
+                )
+            },
             "crawl" to cursors?.let { store ->
                 ModPlatforms.known.associateWith { platform ->
                     val cursor = store.cursor(platform)
@@ -133,17 +359,33 @@ class ReportServer(
     }
 
     /**
-     * Write [body] as a 200 response with the given [contentType], closing the exchange.
+     * Write [body] with the given [contentType] and [status] (200 unless a route says otherwise, which only
+     * the crash-log lookup does), closing the exchange.
      *
      * UTF-8 for every endpoint, including `/as-properties`: that document declares ISO-8859-1 because
      * `Properties.load(InputStream)` decodes it that way, but `FallbackPropertiesRenderer` escapes everything
      * outside printable ASCII to `\uXXXX`, and the two encodings agree byte for byte there. Encoding it
      * "correctly" would be a branch that can never change an output.
      */
-    private fun respond(exchange: HttpExchange, contentType: String, body: String) {
-        val bytes = body.toByteArray(StandardCharsets.UTF_8)
+    private fun respond(exchange: HttpExchange, contentType: String, body: String, status: Int = 200) =
+        respondBytes(exchange, contentType, body.toByteArray(StandardCharsets.UTF_8), status)
+
+    /**
+     * Write [bytes] verbatim with the given [contentType] and [status], closing the exchange. The one endpoint
+     * that needs it is the icon — every other response is text, and goes through [respond] above.
+     */
+    private fun respondBytes(exchange: HttpExchange, contentType: String, bytes: ByteArray, status: Int = 200) {
         exchange.responseHeaders.add("Content-Type", contentType)
-        exchange.sendResponseHeaders(200, bytes.size.toLong())
+        exchange.sendResponseHeaders(status, bytes.size.toLong())
         exchange.responseBody.use { it.write(bytes) }
+    }
+
+    /** Where the bundled tab icon lives. Private: which resource backs the icon routes is nobody else's business. */
+    companion object {
+        /**
+         * Classpath location of the tab icon, resolved relative to this class's package so it travels with the
+         * jar. It is ServerPackCreator's own configuration glyph (`img/config.png`), the same mark the app uses.
+         */
+        private const val FAVICON_RESOURCE = "favicon.png"
     }
 }

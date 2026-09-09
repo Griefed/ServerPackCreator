@@ -38,6 +38,7 @@ import org.springframework.stereotype.Component
 @Component
 class RunConfigurationListMigration {
 
+    /** The three fields whose shape changed, named once so the rewrite and its tests cannot disagree about which they are. */
     companion object {
         /** The three fields that changed shape. */
         val MIGRATED_FIELDS = listOf("startArgs", "clientMods", "whitelistedMods")

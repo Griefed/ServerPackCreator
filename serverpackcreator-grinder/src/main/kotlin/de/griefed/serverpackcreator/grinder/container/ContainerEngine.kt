@@ -31,6 +31,43 @@ import kotlin.math.roundToLong
 const val PACK_MOUNT = "/srv/pack"
 
 /**
+ * The hostname every boot container carries — a fixed name rather than the daemon's default, which is the
+ * container's own id and therefore different on every boot.
+ *
+ * It exists because it has to be *resolvable*: the daemon writes an `<ip> <hostname>` line into `/etc/hosts`
+ * only for a container that has an address, and a grinder boot deliberately has none. Without that line
+ * `getaddrinfo` fails on the container's own name, and a Minecraft server asks for it immediately — log4j
+ * calls `InetAddress.getLocalHost()` while configuring itself, so every NeoForge boot opened with three
+ * `UnknownHostException: <container-id>: Temporary failure in name resolution` stacktraces before a single mod
+ * was loaded. Fixing the name here lets the engine map it, which a per-boot container id could not: the id is
+ * only known *after* the container is created, and the mapping has to be part of creating it.
+ */
+const val CONTAINER_HOST_NAME = "spc-grinder"
+
+/**
+ * Mount options for every boot container's tmpfs. **`exec` is a deliberate, owner-approved weakening of the
+ * sandbox** (2026-08-24); the rest of the posture in [ContainerSpec] is untouched.
+ *
+ * **Why it is needed.** Docker mounts a `--tmpfs` `nosuid,nodev,noexec` and the rootfs is read-only, so nothing
+ * inside can write a shared object and map it executable — which is exactly what JNA does when it unpacks its
+ * native library, and what Minecraft's own `oshi` system-report probes need. Measured with the production
+ * posture otherwise unchanged (no network, read-only rootfs, all caps dropped, no-new-privileges), JNA loading
+ * its native library: with `rw` it fails `UnsatisfiedLinkError: /tmp/jna….tmp: failed to map segment from
+ * shared object`; with `rw,exec` it answers `JNA-OK pointerSize=8`. On a boot console that failure shows up as
+ * `NoClassDefFoundError: Could not initialize class com.sun.jna.Native` — noise in a crash report, but a mod
+ * needing JNA *at load time* would die for the environment and reach the classifier looking like a crash,
+ * which is a false clientside signal and the reason this changed.
+ *
+ * **What it costs, stated plainly.** A mod can now run a native binary it wrote into `/tmp`. That is a smaller
+ * step than it reads: the workload is an untrusted JVM, which is already an arbitrary-code execution engine, and
+ * the container it runs in has no network, no capabilities, no privilege escalation, a read-only rootfs and a
+ * non-root user — none of which changes here. `nosuid` and `nodev` stay too: docker keeps applying both even
+ * when only `exec` is asked for, which was verified rather than assumed (`rw,exec` and
+ * `rw,nosuid,nodev,exec` produce the identical `rw,nosuid,nodev,relatime`).
+ */
+const val TMPFS_OPTIONS = "rw,exec"
+
+/**
  * How long anything the grinder is tearing down gets to exit on its own before it is killed.
  *
  * Applies to both halves of a shutdown, because both are on the same clock: the container is asked to stop
@@ -89,6 +126,11 @@ data class ContainerResources(
     fun cpuCapDescription(): String =
         if (cpuQuota == UNSET_QUOTA) "uncapped" else "${cpuQuota.toDouble() / cpuPeriod} cores ($cpuQuota/${cpuPeriod}µs)"
 
+    /**
+     * The daemon's own floors and its two "unset means no limit" sentinels, plus the [forCpus]/[forLimits]
+     * factories that convert cores and gibibytes into them. Every value here is docker's, not ours, which is why
+     * they are constants with the daemon's wording quoted rather than tunables.
+     */
     companion object {
         /**
          * The smallest quota the docker daemon accepts — it rejects anything under 1ms per period with
@@ -178,6 +220,9 @@ data class BindMount(val hostPath: String, val containerPath: String, val readOn
  * read-only root filesystem with only an explicit tmpfs writable, every Linux capability dropped, no
  * privilege escalation, and a non-root user. The Docker socket is never mounted.
  *
+ * The one deliberate concession is that the tmpfs is **executable** ([TMPFS_OPTIONS]); everything else above
+ * is unchanged, `nosuid` and `nodev` included.
+ *
  * @param image            The runtime image (a JRE + the ServerStarterJar + a fixed entrypoint).
  * @param command          The command to run inside the container (e.g. `bash start.sh`).
  * @param workingDir       Working directory inside the container (where the pack is mounted).
@@ -189,7 +234,12 @@ data class BindMount(val hostPath: String, val containerPath: String, val readOn
  * @param noNewPrivileges  Whether to forbid privilege escalation (`no-new-privileges`).
  * @param user             The `uid:gid` to run as (non-root). The default matches the image's own `USER`;
  *                         callers that bind-mount a host directory pass the host owner (see `ContainerUser`).
- * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only.
+ * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only. Mounted
+ *                         **executable** — see [TMPFS_OPTIONS] for what that grants and why.
+ * @param hostName         The container's own hostname, which the engine also makes resolvable. A *networked*
+ *                         container gets an `<ip> <hostname>` line in `/etc/hosts` from the daemon; `none` has
+ *                         no address, so nothing resolves it and `InetAddress.getLocalHost()` throws — see
+ *                         [CONTAINER_HOST_NAME].
  * @author Griefed
  */
 data class ContainerSpec(
@@ -203,7 +253,8 @@ data class ContainerSpec(
     val dropAllCapabilities: Boolean = true,
     val noNewPrivileges: Boolean = true,
     val user: String = "1000:1000",
-    val tmpfsMounts: List<String> = listOf("/tmp")
+    val tmpfsMounts: List<String> = listOf("/tmp"),
+    val hostName: String = CONTAINER_HOST_NAME
 )
 
 /**
@@ -267,4 +318,16 @@ interface ContainerEngine : AutoCloseable {
      * only thing that ever collects them. Default no-op for engines with no such notion (test fakes).
      */
     fun reapOrphans(): Int = 0
+
+    /**
+     * Whether [image] is available to this engine right now. Defaults to `true`, so an engine with no notion
+     * of images — every test fake here — never blocks a startup it cannot have an opinion about.
+     *
+     * Exists because the answer is knowable in one call and the alternative is discovering it thousands of
+     * verdicts later: with the runtime image absent, every loader install throws, every tuple goes on
+     * cooldown, and every candidate wanting one is scored INCONCLUSIVE about a mod that was never booted
+     * (measured 2026-09-03). `false` also covers a daemon that cannot be reached at all, which is the same
+     * conclusion for the caller — no container is going to run — and implementations log which it was.
+     */
+    fun hasImage(image: String): Boolean = true
 }

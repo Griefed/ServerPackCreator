@@ -26,13 +26,19 @@ import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 import java.util.*
 
+/**
+ * One recorded server-pack download — a row per download rather than a counter, which is what makes the
+ * download *history* possible. The counter on the pack itself is kept alongside for the cheap case.
+ */
 @Document
 class ServerPackDownload {
 
+    /** When the download happened, set on construction so a retry keeps the original time. */
     @MongoId(FieldType.STRING)
     var downloadedAt: Date = Date(System.currentTimeMillis())
         private set
 
+    /** Which pack was downloaded. */
     @DBRef
     var serverPack: ServerPack
 

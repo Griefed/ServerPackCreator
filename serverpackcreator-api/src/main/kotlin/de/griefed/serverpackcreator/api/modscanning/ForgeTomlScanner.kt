@@ -36,6 +36,21 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
+
+    /** The key a Forge/NeoForge dependency entry states its Maven version range under. */
+    private val versionRange = "versionRange"
+
+    /** Forge's optionality flag in `mods.toml`: `mandatory = true|false`. */
+    private val mandatory = "mandatory"
+
+    /** NeoForge's replacement for [mandatory] in `neoforge.mods.toml`: a `type` string, default `"required"`. */
+    private val dependencyType = "type"
+
+    /**
+     * The `type` values that do **not** oblige the pack to carry the dependency. `"incompatible"` is here
+     * because it means the mod must *not* be present, which is the opposite of something to go and fetch.
+     */
+    private val notRequiredTypes = setOf("optional", "incompatible", "discouraged")
     private val both = "BOTH"
 
     /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
@@ -48,6 +63,11 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     val neoForgeMinecraft: Regex
         get() = "^(neoforge|forge|minecraft)$".toRegex()
 
+    /**
+     * The `side` value a Forge descriptor uses for client-only, spelled the way the TOML spells it: upper case,
+     * matched exactly. Read together with [neoForgeMinecraft] — it is a `side=CLIENT` on the *platform*
+     * dependency that marks the mod itself clientside, which is the one signal [read] is after.
+     */
     val client: Regex
         get() = "^CLIENT$".toRegex()
 
@@ -67,8 +87,26 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
         val modConfig: CommentedConfig = getConfig(modJar)
         val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
         val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
-        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
+        return ScannedMod(
+            modJar, modId, sidenessOf(sidenesses), dependencies,
+            minecraftConstraint = readMinecraftConstraint(modConfig, modId),
+            descriptorRead = true
+        )
     }
+
+    /**
+     * The `versionRange` of the `minecraft` dependency this descriptor declares, or `null`.
+     *
+     * Read separately rather than returned from [getSidenessesAndDependencies], because that function
+     * *consumes* the platform entry — the `side` on it is what decides the mod's own sideness — and threading
+     * a third value out of it would tangle two unrelated answers. `minecraft` specifically, not the whole
+     * platform regex: `forge`/`neoforge` state a loader range, which is a different question.
+     */
+    private fun readMinecraftConstraint(modConfig: CommentedConfig, modId: String): String? = runCatching {
+        getMapOfDependencyLists(modConfig)[modId]
+            ?.firstOrNull { getModId(it).equals("minecraft", ignoreCase = true) }
+            ?.let { getVersionRange(it) }
+    }.getOrNull()
 
     private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
@@ -91,7 +129,12 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                         // The platform itself. What side this mod demands of Minecraft/Forge IS its sideness.
                         sidesForModloader.add(dependencySideness)
                     } else {
-                        modDependencies.add(ModDependency(dependencyModId, dependencySideness))
+                        modDependencies.add(
+                            ModDependency(
+                                dependencyModId, dependencySideness, getVersionRange(declared),
+                                optional = isOptional(declared)
+                            )
+                        )
                     }
                 }
 
@@ -183,6 +226,31 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * @param config Mod- or dependency-config which contains the modId.
      * @return `side` from the passed config, in upper-case letters.
      */
+    /**
+     * The `versionRange` a dependency entry states, or `null` when it states none. Kept verbatim: Forge and
+     * NeoForge write Maven ranges (`[15.2,)`), which is a different grammar from Fabric's, and normalising
+     * the two here would lose information the caller needs to tell them apart.
+     */
+    private fun getVersionRange(config: CommentedConfig): String? =
+        config.valueMap()[versionRange]?.toString()?.takeIf { it.isNotBlank() }
+
+    /**
+     * Whether [config] declares a dependency the mod can load without, reading **both** loader spellings:
+     * Forge's `mandatory = false` and NeoForge's `type` being one of [notRequiredTypes]. `NeoForgeTomlScanner`
+     * overrides only the descriptor's file name, and NeoForge on Minecraft 1.20.2-1.20.4 still ships
+     * `mods.toml` with `mandatory`, so one reader has to serve both rather than each scanner knowing its own.
+     *
+     * Says `false` — required — whenever neither field is present or either is unreadable. That is NeoForge's
+     * documented default for an absent `type`, and the safe direction: see [ModDependency.optional].
+     */
+    private fun isOptional(config: CommentedConfig): Boolean {
+        val declaredType = config.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
+        if (declaredType != null) {
+            return declaredType in notRequiredTypes
+        }
+        return config.valueMap()[mandatory]?.toString()?.trim()?.lowercase() == "false"
+    }
+
     private fun getSide(config: CommentedConfig): String {
         return if (config.valueMap()[side] != null) {
             config.valueMap()[side].toString().uppercase()

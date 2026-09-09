@@ -50,6 +50,12 @@ object FilenameStemDeriver {
      * With several file-names the longest common prefix naturally diverges at the version; that
      * prefix is then trimmed back to its last delimiter so no partial version-token (e.g. a stray
      * `mc1`) leaks into the stem. With a single file-name the trailing version is stripped instead.
+     *
+     * Called once per loader-group, so a project shipping for several loaders commonly yields several
+     * *different* stems — `sodium-fabric-` for Fabric against `embeddium-` for Forge/NeoForge — and each is
+     * an independent list-entry. That divergence is why `ClientsideVerifier.loaderDisprovingTheCrash`
+     * compares **entries** rather than loaders: where the stems differ, one loader's published entry strips
+     * nothing the other proved bootable, so there is no contradiction to reconcile.
      * Returns `null` when [fileNames] is empty.
      */
     fun deriveStem(fileNames: Collection<String>): String? {
@@ -66,16 +72,6 @@ object FilenameStemDeriver {
         // the version off the shortest name, which is the safest broad matcher.
         return trimmed.ifBlank { stripTrailingVersion(names.minByOrNull { it.length } ?: names.first()) }
     }
-
-    /**
-     * Derive one stem per loader by grouping [filesPerLoader] file-names. A project shipping for
-     * several loaders commonly yields several stems (e.g. `sodium-fabric-` vs `embeddium-`), each of
-     * which is an independent list-entry.
-     */
-    fun deriveStems(filesPerLoader: Map<String, Collection<String>>): Map<String, String> =
-        filesPerLoader.mapNotNull { (loader, names) ->
-            deriveStem(names)?.let { loader to it }
-        }.toMap()
 
     /** Strip the trailing version-remainder from a single name, keeping at least the leading token. */
     private fun stripTrailingVersion(name: String): String {

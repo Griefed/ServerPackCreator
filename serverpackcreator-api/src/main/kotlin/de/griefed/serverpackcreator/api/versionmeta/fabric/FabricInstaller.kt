@@ -30,6 +30,7 @@ import java.net.URI
 import java.net.URL
 import java.util.*
 import javax.xml.parsers.ParserConfigurationException
+import java.util.Collections
 
 /**
  * Information about the Fabric installer.
@@ -54,7 +55,15 @@ internal class FabricInstaller(
     /**
      * Available installer versions for Fabric.
      */
-    val installers: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var installers: List<String> = emptyList()
+        private set
 
     /**
      * Meta for the Fabric-Version-to-Installer-URL.
@@ -87,6 +96,7 @@ internal class FabricInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
+        val next_installers = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(installerManifest)
         val latestElements = document.getElementsByTagName(latest)
         val latestNode = latestElements.item(0)
@@ -111,14 +121,13 @@ internal class FabricInstaller(
         } catch (ignored: MalformedURLException) {
             // The release-installer URL couldn't be parsed -> releaseInstallerUrl stays unset.
         }
-        installers.clear()
 
         val elements = document.getElementsByTagName(version)
         for (i in 0 until elements.length) {
             val versionNode = elements.item(i)
             val versionChildren = versionNode.childNodes
             val versionItem = versionChildren.item(0)
-            installers.add(versionItem.nodeValue)
+            next_installers.add(versionItem.nodeValue)
         }
         installerUrlMeta.clear()
         for (version in installers) {
@@ -128,7 +137,10 @@ internal class FabricInstaller(
                 // A version whose installer URL can't be parsed is omitted from the URL map.
             }
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        installers = Collections.unmodifiableList(next_installers)
+}
 
     /**
      * Acquire the URL for the given Fabric version.

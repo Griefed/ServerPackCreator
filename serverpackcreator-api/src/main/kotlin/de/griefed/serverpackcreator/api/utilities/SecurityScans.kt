@@ -64,8 +64,11 @@ class SecurityScans {
                         results.add(entry)
                     }
                 }
-            } catch (ex: Exception) {
-                log.error("Error during Nekodetector scan.", ex)
+            } catch (failure: Throwable) {
+                // Throwable, not Exception: the scanner is a third-party jitpack artifact, so a missing
+                // transitive class surfaces as a LinkageError rather than an Exception -- and a scan that
+                // cannot run must cost the scan, never the generation that asked for it.
+                log.error("Error during Nekodetector scan; this modpack was NOT scanned.", failure)
             }
             return results
         }

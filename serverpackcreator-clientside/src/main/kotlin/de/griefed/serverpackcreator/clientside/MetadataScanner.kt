@@ -56,7 +56,7 @@ class MetadataScanner(private val modScanner: ModScanner) {
      * declared the mod client-only.
      */
     fun scan(jar: File, loader: String, minecraftVersion: String): Result = try {
-        val scanner = modScanner.scannerFor(loader, minecraftVersion)
+        val scanner = modScanner.scannerFor(descriptorLoaderOf(jar, loader), minecraftVersion)
         val clientside = scanner
             ?.scan(listOf(jar))
             ?.any { it.file == jar && it.sideness == Sideness.CLIENT }
@@ -64,5 +64,27 @@ class MetadataScanner(private val modScanner: ModScanner) {
         if (clientside) Result.CLIENT else Result.SERVER_OR_BOTH
     } catch (_: Exception) {
         Result.ERROR
+    }
+
+    /**
+     * Which loader's descriptor actually describes [jar] — [bootLoader] for anything ordinary, and
+     * [WRAPPED_LOADER] for a Sinytra Connector placeholder, whose `mods.toml` is a stub and whose real
+     * descriptor is the `fabric.mod.json` beside it.
+     *
+     * **This substitutes the scanner's *input*, not the dispatch.** The loader→scanner choice still goes
+     * through `ModScanner.scannerFor`, so this class and `ModListCompiler` cannot drift the way they once
+     * did; what changes is the question asked, because a placeholder is not the loader it is tagged for.
+     *
+     * Measured live 2026-09-06: `Modrinth/continuity`'s Forge row read `SERVER_OR_BOTH` off the stub and
+     * came out `CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the same
+     * project's Fabric row read `CLIENT` off the identical `fabric.mod.json`. That false contradiction is
+     * what arms `ClientsideVerifier`'s other-version crash re-check.
+     */
+    private fun descriptorLoaderOf(jar: File, bootLoader: String): String =
+        if (JarSelfDeclaration.isConnectorPlaceholder(jar)) WRAPPED_LOADER else bootLoader
+
+    private companion object {
+        /** The loader whose descriptor a Connector placeholder really carries. */
+        const val WRAPPED_LOADER = "Fabric"
     }
 }

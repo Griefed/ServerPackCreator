@@ -32,7 +32,7 @@ package de.griefed.serverpackcreator.clientside
  * That enum is SPC's own *verdict* (`SERVER`/`CLIENT`, one value = the whole answer, defaulting to
  * `SERVER` so nothing is dropped). This one is a third party's *self-report* about one side, and the
  * confidence model is built on keeping the two apart: `ClientsideVerifier.aggregate` folds this,
- * `JarScan` (where SPC's own verdict arrives) and `BootResult` into a [Confidence] precisely because
+ * `JarScan` (where SPC's own verdict arrives) and `BootResult` into a [Verdict] precisely because
  * the platform's claim is unreliable — which is the entire reason the expensive boot-test exists.
  * The translation between the two domains is deliberate and lives at that call-site, taking *two* of
  * these values to derive one client/server leaning.
@@ -52,6 +52,7 @@ enum class DeclaredSupport {
     /** The platform said nothing. Always the case on CurseForge, which has no such field. */
     UNKNOWN;
 
+    /** Parsing of the platform's own wording into this enum; see [fromString] for the unrecognised case. */
     companion object {
         /**
          * Parse a platform-provided support-string into a [DeclaredSupport], defaulting to [UNKNOWN] for
@@ -88,7 +89,26 @@ data class ModFile(
     val minecraftVersions: Set<String>,
     val downloadUrl: String?,
     val pageUrl: String?,
-    val requiredDependencies: List<String>
+    val requiredDependencies: List<String>,
+    /**
+     * The version the platform published this file under (Modrinth's `version_number`, CurseForge's
+     * `displayName`), or `null` when it reported none. Carried so a dependant's declared constraint can
+     * actually be *matched* rather than merely recorded — both platforms had this and both discarded it.
+     */
+    val version: String? = null,
+    /**
+     * Every project this file's page links, required **and** optional — the pool of things worth asking
+     * what they are, never a list of things to stage.
+     *
+     * [requiredDependencies] is the staging list and stays as strict as it is. This one exists because a
+     * mod id that resolves to nothing by spelling can still be sitting on the project page under a
+     * different name: `do-a-barrel-roll` declares `yet_another_config_lib_v3` in its jar while Modrinth
+     * lists YACL for it as *optional*, so the required list never mentions it.
+     *
+     * **Incompatible links are excluded.** Reading their id would be the right file for the wrong reason,
+     * and a match would stage the one jar the author says must not be there.
+     */
+    val relatedDependencies: List<String> = emptyList()
 ) {
     /** Whether this file cannot be downloaded via the API and needs the browser download-flow. */
     val locked: Boolean

@@ -30,6 +30,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
+import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
@@ -57,6 +58,50 @@ class ConfigurationHandler(
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
     /** Logger for check results, exposed because the checks report through it rather than returning text. */
     val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    companion object {
+        /** Logger for the scan guard below, which is a companion member and cannot use the instance logger. */
+        private val scanLog by lazy { cachedLoggerOf(ConfigurationHandler::class.java) }
+
+        /**
+         * Run the Nekodetector malware scan over [destination], returning its findings — or **nothing** if
+         * the scanner could not run at all.
+         *
+         * **Why this catches [Throwable], which is normally wrong.** Nekodetector is a third-party scanner
+         * resolved from jitpack: an *optional safety net*, not a precondition for building a server pack. A
+         * host whose classpath lacks it threw `NoClassDefFoundError` out of `checkConfiguration` and killed
+         * the whole generation coroutine (reported 2026-08-29), which is a far worse outcome than not
+         * scanning. `NoClassDefFoundError` is an `Error`, so catching `Exception` — as the scanner itself
+         * did — could never have caught it.
+         *
+         * **And why the guard lives here rather than inside `SecurityScans`.** The failure happens while
+         * *resolving the call*: the class cannot be loaded, so no statement inside it ever runs. Only a
+         * guard around the invocation can contain that, which is also why [scan] is a parameter — it keeps
+         * the reference inside a lambda body, evaluated within the `try`, and lets a test inject a scanner
+         * that cannot load.
+         *
+         * A failure is logged loudly rather than added to the config errors: an unavailable scanner is a
+         * problem with *this installation*, not with the user's modpack, and must not block their build.
+         *
+         * @param destination The modpack directory to scan.
+         * @param scan        The scan to run; defaults to the real Nekodetector.
+         * @return The scanner's findings, or an empty list when it could not run.
+         */
+        internal fun nekodetectorFindings(
+            destination: Path,
+            scan: (Path) -> List<String> = { SecurityScans.scanUsingNekodetector(it) }
+        ): List<String> = try {
+            scan(destination)
+        } catch (failure: Throwable) {
+            scanLog.error(
+                "The Nekodetector malware scan could not run, so this modpack was NOT scanned. " +
+                    "Generation continues -- this is a problem with the ServerPackCreator installation " +
+                    "(the scanner is missing from its classpath), not with the modpack.",
+                failure
+            )
+            emptyList()
+        }
+    }
 
     /** Loader-name matcher for Forge, from the single source of truth in `SupportedModloaders`. */
     val forge = SupportedModloaders.forge
@@ -224,7 +269,7 @@ class ConfigurationHandler(
         log.info("Performing security scans")
         log.info("Performing Nekodetector scan")
         if (modpack.isDirectory) {
-            configCheck.otherErrors.addAll(SecurityScans.scanUsingNekodetector(modpack.toPath()))
+            configCheck.otherErrors.addAll(nekodetectorFindings(modpack.toPath()))
         }
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {

@@ -49,6 +49,12 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - **serverpackcreator-plugin-example** — pf4j example plugin exercising every extension point.
   Documentation-by-example: must always reflect current API idiom. See
   `serverpackcreator-plugin-example/CLAUDE.md`.
+- **serverpackcreator-plugin-grinder** — pf4j plugin bridging SPC to a grinder daemon: a GUI tab
+  (Confirmed / Other Verdicts / Dashboard / Settings) over the daemon's `/verdicts.json` and `/status`,
+  and a `PreGenExtension` folding the ticked entries into `packConfig.clientMods` for **every**
+  generation — GUI, CLI and web. Depends on `-api` only; not published. It is the pick-and-choose
+  alternative to `/as-properties`, which publishes every `CONFIRMED` finding or none. See
+  `serverpackcreator-plugin-grinder/CLAUDE.md`.
 - **serverpackcreator-web-frontend** — Quasar 2 / Vue 3 SPA, JavaScript (TS migration planned),
   Pinia stores, built into the app's web backend via the org.siouan frontend Gradle plugin. See
   `serverpackcreator-web-frontend/CLAUDE.md`.
@@ -148,14 +154,36 @@ evidence consulted occasionally, not context every session needs.
   by construction. Draft messily, but pin before you refine, and never let "make it fast" arrive before
   there is something whose behaviour is known.
 
+- **A published verdict must rest on decisive evidence, and the report must say which rung produced it.**
+  `CRASHED` is reachable both from a marker no broken harness can fabricate and from a bare non-zero exit that
+  means only *"nothing recognised why"* — and until `BootDecision` those were indistinguishable downstream, so
+  the grinder published both alike. Measured against the live daemon on 2026-08-31: **27 of 43 published
+  `HIGH` verdicts rested on no decisive evidence**, and one poisoned loader-cache entry (`NeoForge 21.11.45 /
+  MC 1.21.11`) had produced identical failures across all **90** boots against it — a library mod and a
+  server-side building mod among them. Two lessons generalise beyond the grinder: **a verdict that cannot name
+  its own evidence cannot be audited**, and **an environment defect looks exactly like a subject defect unless
+  something distinguishes them**.
+- **Question the requirement before you optimise the cost of meeting it.** On 2026-09-02 a circuit breaker
+  was designed, pinned with 189 lines of guards, implemented, wired through two modules and documented — and
+  deleted 34 minutes later, when Griefed asked whether the thing it protected was needed at all. It was not:
+  the route it bounded existed only to circumvent CurseForge's distribution opt-out, had stopped working
+  entirely, served under 1% of candidates, and cost 192.9 MB in every artifact. Every commit in that sequence
+  was correctly shaped, which is exactly why the shaping did not save it. The evidence to ask the prior
+  question was already in hand. This is Knuth's rule one level up: *measure before optimising* presumes the
+  thing should exist, so establish that first — "should this code exist?" is cheaper to answer than "how do I
+  make its failure cheap?", and one of the two answers deletes the other's work.
+
 - **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
   defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
   hashes killed by a rebase, a landmine still describing a flaw that had been fixed, a line number shifted
-  by the very commit that cited it, and suite counts left behind by the tests that were just added. Prefer
-  the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash), the **symbol name**
-  over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a number genuinely
-  earns its place — a measurement, a byte count — say what produced it, so a reader can re-run it instead of
-  trusting it.
+  by the very commit that cited it, and suite counts left behind by the tests that were just added. **It
+  recurred on 2026-09-01:** that rebase killed 13 more hashes in `claude-docs/REFACTOR-AUDIT.md`, five of
+  which are now reachable from no ref at all and will stop resolving entirely once gc runs. That file cites
+  hashes at volume, so it is the guaranteed casualty of every history rewrite — write subjects there the
+  first time. Prefer the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash),
+  the **symbol name** over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a
+  number genuinely earns its place — a measurement, a byte count — say what produced it, so a reader can
+  re-run it instead of trusting it.
 - **KISS + MVC + TDD + SOLID** — always.
 - **No shortcuts:** fix bugs when found, don't defer.
 - **No assumptions:** read the code, check the docs before advising.
@@ -239,6 +267,14 @@ evidence consulted occasionally, not context every session needs.
   `1f92f585c`, `5caa6833f`) bundled guard and change, so nobody can check out `2a9a03473^` and watch the pin
   go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
   keep and everything to reconstruct later.
+- **Run the pin before you commit it red, and read *why* it failed.** Committing a guard red is only
+  evidence if the red is the missing implementation. Twice on 2026-09-01 it was not: a fixture omitted a
+  collaborator, so four asserted field paths could not have resolved even against correct code; and a Kotlin
+  `${'$'}` escape produced the literal `...-v${'$'}version`, so the guard asserted a string no implementation
+  would ever return. Both were fixed in the very commit that was supposed to turn them green, which quietly
+  undoes the boundary the previous rule exists to create — `git checkout <fix>^` then shows a failure that is
+  partly the guard's own fault. One run before `git commit` distinguishes the two, and costs seconds.
+
 - **`refactor:` is a claim about behaviour, not about intent.** Use it only when behaviour is preserved; label
   a behaviour change `fix:` or `feat:` however tidy it looks. If an **existing** test's *assertion, argument or
   expected value* has to change, the label is already wrong — that is the stop-and-flag signal, not a formality.
@@ -302,16 +338,17 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-08-23):**
+**Current status (2026-09-09):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 356 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them. |
-| clientside     | 126           | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned; `MetadataScanner` dispatches through `ModScanner.scannerFor`; the locked-file browser download treats an aborted navigation as the download starting, which is the only way CurseForge's `/download` ever succeeds. A crash now has to survive **three** checks before it counts as clientside: the newest loader build, other versions of the mod (when it contradicts a declared server support), and — after every loader is in — another loader that booted a server with the *same* list-entry. One build's crash and a clientside mod used to be indistinguishable evidence, and the published entry is a loader-agnostic stem, so one loader's crash was stripping another loader's proven-bootable build (2026-08-23) |
+| api            | 412 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
+| clientside     | 523           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Six verdicts** — `CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE` since 2026-09-04, plus `LOCKED`/`UNVERIFIABLE` since 2026-09-09 — and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. The two newest split out of `ERROR`, which was promising "an operator's problem" while holding 17 CurseForge distribution opt-outs and ~18 upstream gaps out of 53 published rows. Same pass closed three ways a dependency read as *unavailable* while being obtainable — one already in the pack refusing its own boot, one mod id served by two projects of which only the first was remembered, and an exact-Minecraft rule too strict inside a version-line. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
 | app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
+| plugin-grinder | 73            | GUI plugin over a grinder's `/verdicts.json` + `/status`; ticked entries reach `packConfig.clientMods` through a `PreGenExtension`, so one selection covers GUI, CLI and web. Verified end-to-end 2026-09-06 against a live `ReportServer`. Full state and landmines: **`serverpackcreator-plugin-grinder/CLAUDE.md`**. |
 | web-frontend   | 32 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage; `types/api.ts` mod-lists are `string[]` since the web module embedded them (2026-08-17); `RunConfigurationCard` asserts the *rendered* lists, not the props it passed in — the pass-through version stayed green with the card reverted to the pre-branch object shape (2026-08-18) |
-| grinder        | 310 (16–23 skip) | Continuous fire-and-forget boot-verification in network-less containers, with a persisted catalog crawl cursor so coverage accumulates instead of re-checking the top N. Core loop e2e-verified on current MC; script-template matrix green across bash/fish. **The CurseForge crawl's two design-killers are LANDMINE #1 and #2 in `serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/source/CLAUDE.md`** — read those before touching the partition plan. Runs as a systemd service since 2026-08-22, which took a home-resolution fix in `-api` and a startup-ordering fix here — both landmined in the module files. The report server binds **loopback** unless `SPC_GRINDER_HOST` says otherwise (2026-08-23) and carries no authentication — the landmine in the module file has the reverse-proxy consequence. Its two bind-address guards need a real non-loopback IPv4 and skip without one, which is why this row's skip count is a range rather than a number. `deploy/` carries an example systemd unit and an installer; `SystemdUnitConfigurationTest` fails the build if a knob is added to the service and not to the unit. Per-container CPU and memory are capped by `SPC_GRINDER_CPUS` (cores, default `2`) and `SPC_GRINDER_MEMORY_GIB` (GiB, default `3`), both defaults being the values hardcoded before the knobs existed; only an exact `0` means uncapped, decided on the input rather than on the rounded value. **The memory cap carries a don't-touch warning for a measured reason:** the grinder's packs pass no `-Xmx`, so the JVM derives each server's heap from the cgroup limit at 25% (3 GiB → a 768 MiB heap), and the cap is also the divisor in the worker-sizing formula — so moving it starves boots or over-subscribes the host, and either way the kills are scored INCONCLUSIVE and read as mods that hang. a unit-level `CPUQuota=` can only ever bound the daemon's own host-side work, for the same cgroup reason that makes the shutdown hook load-bearing. Containers run as the **owner of the directory they mount**, not the image's `USER 1000:1000` — the systemd migration broke every install with that mismatch, and the landmine in the module file has the reason the failure names the wrong subsystem (2026-08-23). `/as-properties` publishes the fallback clientside-mod list (shipped list + crash-proven findings) for an SPC instance's `fallback.updateurl` to poll. Stopping the service signals containers and workers and kills them after a 15s window; containers live in the **docker daemon's** cgroup, not the unit's, so the shutdown hook is the only thing that can stop them and a label-based startup reap is the only recovery from a SIGKILL — both landmined in the module file. |
+| grinder        | 514 (29 skip) | Continuous fire-and-forget boot-verification in network-less Docker containers, with a persisted catalog crawl cursor so coverage accumulates. Runs as a systemd service. **The report server carries no authentication** and binds loopback unless `SPC_GRINDER_HOST` says otherwise. **`SPC_GRINDER_MEMORY_GIB` is measured, not arbitrary** — the JVM derives each boot's heap from it, and it is the divisor in the worker-sizing formula. Full state, landmines and measurements: **`serverpackcreator-grinder/CLAUDE.md`**. |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -331,3 +368,48 @@ settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, ver
 (all cards + nav SFCs; suite at 32 across 14 files; tables left untested by design — trivial format-lambda logic vs.
 brittle QTable rendering). The GUI `GlobalScope.launch` anti-pattern is resolved (see Open issues),
 GUI-verified. **Next (optional):** broaden component-test coverage further.
+
+**Since then (2026-09-06): the grinder plugin**, a second pf4j plugin module (`-plugin-grinder`) plus the
+`/verdicts.json` feed it reads. Two things worth carrying forward beyond that module's own docs:
+
+- **`ApiPlugins.getAllExtensionsOfPlugin` ignored its `plugin` argument**, so every tab was added once per
+  *installed plugin* and every generation extension ran that many times. Invisible for as long as this
+  repository shipped exactly one plugin — one times one is one — and visible the first time two were
+  installed together, as a tab strip reading `Grinder | Tetris | Grinder | Tetris`. Fixed, pinned by
+  `ExtensionScopingTest` (which builds its second plugin by cloning the example jar), recorded in
+  `claude-docs/API-BEHAVIOUR-CHANGES.md`. **The general lesson: a defect whose multiplier is the count of
+  something the repo only ever has one of cannot be found by testing what the repo ships.**
+- **CLOSED 2026-09-08 — the plugin-loading recursion** (was: "the example plugin dies with a
+  `StackOverflowError` in `CustomPluginFactory`, pre-existing, GUI unaffected"). Both halves of that
+  description turned out to be understated: it is not confined to CLI, and it is unbounded recursion rather
+  than one failed instantiation. **Plugin loading now happens after the API it reaches into exists** —
+  `ApiPlugins.loadAndStart()` instead of the constructor's `init`, called **last** by `stageThree`, and
+  `ApiWrapper.api()` publishes its singleton **before** running setup. Measured on one startup with the
+  example plugin installed: **53 ApiWrapper constructions, 268 `example-kotlin` log lines, an
+  OutOfMemoryError** — reported by Griefed as the example plugin's output appearing "a gazillion times" —
+  against **0 / 7 / 0** after. Detail and the two rows it owes an embedder:
+  `serverpackcreator-api/CLAUDE.md` and `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  **The lesson worth carrying:** the api suite had the example plugin installed and stayed green for
+  months, because whichever test called `ApiWrapper.api()` first did so before anything copied a jar into
+  `tests/plugins`. The defect needs a populated plugins directory at *first* startup — every real run, and
+  no test. A fixture that is installed *after* the thing it is meant to exercise has already run is not a
+  fixture.
+
+**Since then (2026-09-09): the grinder's `ERROR` bucket, read.** Two things generalise beyond the clientside
+module, whose own `CLAUDE.md` carries the detail and the landmines:
+
+- **A bucket that mixes "somebody must fix this" with "nobody can" is not readable, and stops being read.**
+  `Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* and held, out
+  of 53 published rows, **17 CurseForge distribution opt-outs and ~18 combinations nothing upstream ever
+  published for**. Neither is anybody's problem, and both were sitting in the one column an operator scans
+  to find work. `LOCKED` and `UNVERIFIABLE` now carry them, and what remains in `ERROR` is actionable by
+  construction. The general form: *a category defined by its consequence ("the grind did not happen") will
+  accumulate everything with that consequence, whatever its cause* — so define it by the cause, and make the
+  type carry it (`PreventionCause`) rather than a sentence a reader has to parse.
+- **A defect whose evidence is a published report can be diagnosed without touching the host.**
+  `chefs-delight`'s refusal printed the bare mod id `farmersdelight`; the platform route labels with the
+  resolved project's *slug* (`farmers-delight`), and the manifest route refuses only on a confident mapping,
+  which the id table does not give that id. Two facts in the code plus one string in the feed located the
+  bug in `LearnedModIds` — no shell on the daemon, no log. Worth doing before asking for access: the report
+  is evidence, and its wording is part of it. That is also the argument for the wording being precise, which
+  is why `unsatisfiedLabel` and `UnmetReason` exist at all.

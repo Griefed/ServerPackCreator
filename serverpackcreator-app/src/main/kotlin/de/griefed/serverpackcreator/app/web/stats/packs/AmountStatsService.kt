@@ -25,12 +25,14 @@ import de.griefed.serverpackcreator.app.web.serverpack.runconfiguration.RunConfi
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+/** The dashboard's plain counts, computed per read from the repositories. */
 @Service
 class AmountStatsService @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
     private val modpackRepository: ModPackRepository,
     private val runConfigurationRepository: RunConfigurationRepository
 ) {
+    /** The counts as of now — computed on every access, since nothing here is cached. */
     val stats: AmountStatsData
         get() {
             val modloaders = hashMapOf<String, Int>()

@@ -388,6 +388,161 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** the bash template's `setupForge` across Minecraft versions and asserts which of the two modern
+     * launch paths it picks — the ServerStarterJar, or Forge's own argfile.
+     *
+     * Forge's installer produces one of two argfiles, and only one of them the ServerStarterJar can start:
+     *
+     * | Minecraft | argfile | ServerStarterJar |
+     * |---|---|---|
+     * | 1.17 – 1.20.1 | `-p <module path>`, cpw `securejarhandler` | works — cpw's loader falls back to the platform classloader |
+     * | **1.20.2** | `-p <module path>`, Forge `securemodules` | **dies** — `Could not find parent layer for module` |
+     * | 1.20.3 onwards | `-jar forge-<ver>-shim.jar` | works — the starter jar takes its own "jar mode" |
+     *
+     * Measured 2026-08-23 against real installs: Forge `1.20.2-48.1.0` on Temurin 17 dies at
+     * `SecureModuleClassLoader.<init>` under the starter jar and reaches `Done (5.183s)! For help` from its
+     * argfile, while `1.21.1-52.1.0` reaches `Done (6.593s)!` *through* the starter jar. 1.20.2's install carries
+     * no shim jar and its argfile opens `-p … --add-modules ALL-MODULE-PATH`; 1.20.3's and 1.21.1's do carry one.
+     *
+     * **The versions below are the point, for the same reason as the launcher-era test above.** The rule may not
+     * read minor+patch in isolation: `26.20.2` has minor `20` and patch `2` and is not 1.20.2. Getting that wrong
+     * costs the hosting-company compatibility the starter jar exists to provide, on every modern pack.
+     */
+    @Test
+    fun theBashTemplateBypassesTheStarterJarOnlyWhereForgeCannotBeLaunchedWithIt() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Forge launch-path check skipped")
+
+        // Minecraft version to whether the ServerStarterJar may be used. Java is fixed at 17 throughout, so the
+        // Security-Manager branch is never what decides here.
+        val expectations = mapOf(
+            "1.17.1" to true,
+            "1.19.2" to true,
+            "1.20" to true,
+            "1.20.1" to true,
+            "1.20.2" to false,
+            "1.20.3" to false,
+            "1.20.4" to true,
+            "1.21.1" to true,
+            // The YY.x scheme. `26.2`'s minor is 2 and `26.20.2` matches 1.20.2 component for component below
+            // the major — neither is the affected era.
+            "26.2" to true,
+            "26.20.2" to true,
+            // A component that is not a number at all (a snapshot-shaped version). It must take the bypass: the
+            // argfile path works for every Forge from 1.17 on, while the starter jar does not, so a version we
+            // cannot read must not be sent down the route that has a known failure.
+            "26w05a" to false
+        )
+
+        for ((minecraftVersion, starterJarExpected) in expectations) {
+            val packDir = File.createTempFile("spc-forge-ssj-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                JAVA_VERSION="17"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                MINECRAFT_VERSION="$minecraftVersion"
+                MODLOADER_VERSION="48.1.0"
+                LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "forgeNeedsItsOwnArgfile")}
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed for Minecraft $minecraftVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for Minecraft $minecraftVersion:\n$output")
+            val choseStarterJar = runCommand.contains("-jar server.jar")
+
+            Assertions.assertEquals(
+                starterJarExpected,
+                choseStarterJar,
+                "Minecraft $minecraftVersion was launched via ${if (choseStarterJar) "the ServerStarterJar" else "Forge's argfile"}; " +
+                    "expected ${if (starterJarExpected) "the ServerStarterJar" else "Forge's argfile"}. Run command: $runCommand"
+            )
+            // Reading an unparseable version must stay silent, not shout bash arithmetic at the operator.
+            Assertions.assertFalse(
+                output.contains("value too great for base") || output.contains("integer expression expected"),
+                "Minecraft $minecraftVersion made the shell complain about arithmetic:\n$output"
+            )
+            // The argfile path must name the argfile it launches from, not merely avoid the starter jar.
+            if (!starterJarExpected) {
+                Assertions.assertTrue(
+                    runCommand.contains("@libraries/net/minecraftforge/forge/$minecraftVersion-48.1.0/unix_args.txt"),
+                    "the bypass must launch from Forge's own argfile: $runCommand"
+                )
+            }
+        }
+    }
+
+    /**
+     * All three templates must carry the same Minecraft-1.20.2/1.20.3 bypass, and each must test the **major**
+     * component.
+     *
+     * Only bash can be executed on every machine, so fish and PowerShell get the same source-level treatment
+     * [allTemplatesResolveJavaAfterTheChecksAndFailSafeWhenItIsUnknown] gives their Java guard. A template that
+     * silently lacks the bypass produces a server pack that cannot start on Minecraft 1.20.2 — the failure this
+     * exists to prevent — and one that omits the major test bypasses the starter jar for `26.20.2` as well,
+     * quietly dropping the hosting compatibility it provides.
+     *
+     * Each must also **screen a component before comparing it**, and fail towards the bypass when it cannot be
+     * read. Comparing an unreadable component is not harmless: bash prints `value too great for base` at the
+     * operator, and PowerShell's `[int]` cast *throws*. Failing towards the bypass is the safe polarity for the
+     * same reason the Java guard's is — the argfile path works for every Forge from 1.17 on, so a version nobody
+     * can parse must not be handed to the one route with a known failure.
+     */
+    @Test
+    fun allTemplatesBypassTheStarterJarForTheAffectedForgeVersionsAndTestTheMajor() {
+        val expectations = mapOf(
+            "default_template.sh" to listOf(
+                """[[ "${'$'}{SEMANTICS[0]}" =~ ^[0-9]+${'$'} ]] || return 0""",
+                """[[ ${'$'}{SEMANTICS[0]} -eq 1 ]] || return 1""",
+                """[[ ${'$'}{SEMANTICS[1]} -eq 20 ]] || return 1""",
+                """[[ ${'$'}{SEMANTICS[2]} -eq 2 || ${'$'}{SEMANTICS[2]} -eq 3 ]]"""
+            ),
+            "default_template.fish" to listOf(
+                """if not string match -qr '^[0-9]+${'$'}' -- "${'$'}SEMANTICS[1]"""",
+                """test "${'$'}SEMANTICS[1]" -eq 1""",
+                """test "${'$'}SEMANTICS[2]" -eq 20""",
+                """test "${'$'}SEMANTICS[3]" -eq 2; or test "${'$'}SEMANTICS[3]" -eq 3"""
+            ),
+            "default_template.ps1" to listOf(
+                """if (-Not ([string]${'$'}Semantics[0] -match '^\d+${'$'}'))""",
+                """[int]${'$'}Semantics[0] -ne 1""",
+                """[int]${'$'}Semantics[1] -ne 20""",
+                """[int]${'$'}Semantics[2] -eq 2) -Or ([int]${'$'}Semantics[2] -eq 3"""
+            )
+        )
+
+        expectations.forEach { (name, required) ->
+            val text = template(name)
+            required.forEach { fragment ->
+                Assertions.assertTrue(
+                    text.contains(fragment),
+                    "$name is missing part of the Forge 1.20.2/1.20.3 starter-jar bypass. Expected to find:\n  $fragment"
+                )
+            }
+        }
+    }
+
+    /**
      * Every template must resolve the Java version **after** the Java-check block, and must fail safe when it
      * cannot.
      *
@@ -797,4 +952,109 @@ internal class ScriptTemplateContentTest {
         System.getenv("PATH")?.split(File.pathSeparator)
             ?.map { File(it, executable) }
             ?.firstOrNull { it.canExecute() }
+    /**
+     * A faithful stand-in for `downloadIfNotExist`: reports the file as present when it is, and makes any
+     * actual download fatal. The real function echoes "false" for a file that is already there, which is
+     * what steers `setupQuilt` past its install branch — a stub that always downloaded would never
+     * reproduce the cached-launcher case at all.
+     */
+    private val offlineDownloadStub = """
+        downloadIfNotExist() {
+          if [[ -s "${'$'}{1}" ]]; then echo "${'$'}{1} present." >&2; echo "false"; return 0; fi
+          echo "NETWORK: download attempted for ${'$'}{2}" >&2; exit 4
+        }
+    """.trimIndent()
+
+    /**
+     * **Executes** `setupQuilt` on a pack that kept its launcher but lost the Minecraft server jar, and
+     * asserts it does not quietly carry on.
+     *
+     * Observed live 2026-08-30: `Modrinth/architectury-api` at Minecraft 1.20.4 died with "Missing game jar
+     * at /srv/pack/server.jar" and was scored against the mod. The vanilla jar is fetched only as a side
+     * effect of installing the launcher — `--download-server` lives inside the branch that runs when
+     * `quilt-server-launch.jar` is absent — so a pack that already has the launcher and not the jar never
+     * gets one. That is a restored backup, a half-cleaned directory, or the grinder's cached loader
+     * install, and Quilt's launcher refuses to start without it.
+     *
+     * Asserted as "must not exit 0 having done nothing", not as a fixed message: what matters is that the
+     * gap is noticed. The stubs make any network use fatal, so noticing shows up as a non-zero exit.
+     */
+    @Test
+    fun theBashTemplateNoticesAQuiltPackWithNoMinecraftServerJar() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — offline Quilt execution check skipped")
+        val packDir = File.createTempFile("spc-quilt-nojar-", "-pack").apply { delete(); mkdirs() }
+        // The launcher is there; the vanilla server jar is not. That is the whole scenario.
+        File(packDir, "quilt-server-launch.jar").writeBytes(ByteArray(64))
+
+        val harness = File(packDir, "harness.sh")
+        harness.writeText(
+            """
+            commandAvailable() { return 1; }
+            crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+            $offlineDownloadStub
+            runInstallerJavaCommand() { echo "NETWORK: installer run"; exit 5; }
+            JAVA_ARGS="-Xmx4G"
+            MINECRAFT_VERSION="1.20.4"
+            MODLOADER_VERSION="0.31.0-beta.1"
+            QUILT_INSTALLER_VERSION="0.15.1"
+            LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+            SERVER_RUN_COMMAND="do_not_manually_edit"
+            ${extractShellFunction("default_template.sh", "setupQuilt")}
+            setupQuilt
+            echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+            """.trimIndent()
+        )
+
+        val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+            .directory(packDir).redirectErrorStream(true).start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        val exit = process.waitFor()
+        packDir.deleteRecursively()
+
+        Assertions.assertNotEquals(
+            0, exit,
+            "setupQuilt finished happily on a pack with no server.jar; the server then dies with " +
+                "\"Missing game jar\" and the mod under test gets the blame. Output:\n$output"
+        )
+    }
+
+    /** The ordinary cached path must keep working offline: launcher and server jar both present. */
+    @Test
+    fun theBashTemplateStillBuildsARunCommandWhenTheQuiltPackIsComplete() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — offline Quilt execution check skipped")
+        val packDir = File.createTempFile("spc-quilt-offline-", "-pack").apply { delete(); mkdirs() }
+        File(packDir, "quilt-server-launch.jar").writeBytes(ByteArray(64))
+        File(packDir, "server.jar").writeBytes(ByteArray(64))
+
+        val harness = File(packDir, "harness.sh")
+        harness.writeText(
+            """
+            commandAvailable() { return 1; }
+            crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+            $offlineDownloadStub
+            runInstallerJavaCommand() { echo "NETWORK: installer run"; exit 5; }
+            JAVA_ARGS="-Xmx4G"
+            MINECRAFT_VERSION="1.20.4"
+            MODLOADER_VERSION="0.31.0-beta.1"
+            QUILT_INSTALLER_VERSION="0.15.1"
+            LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+            SERVER_RUN_COMMAND="do_not_manually_edit"
+            ${extractShellFunction("default_template.sh", "setupQuilt")}
+            setupQuilt
+            echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+            """.trimIndent()
+        )
+
+        val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+            .directory(packDir).redirectErrorStream(true).start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        val exit = process.waitFor()
+        packDir.deleteRecursively()
+
+        Assertions.assertEquals(0, exit, "setupQuilt failed on a complete offline pack:\n$output")
+        Assertions.assertTrue(
+            output.contains("RESULT=-Xmx4G -jar quilt-server-launch.jar nogui"),
+            "the offline path must still assemble the run command, was:\n$output"
+        )
+    }
 }

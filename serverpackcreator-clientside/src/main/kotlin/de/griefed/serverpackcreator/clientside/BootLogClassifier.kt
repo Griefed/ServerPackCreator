@@ -20,8 +20,142 @@
 package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.clientside.BootLogClassifier.clientOnlyClassMarker
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.util.concurrent.ConcurrentHashMap
 import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarkers
 
+
+/**
+ * Which rung of the ladder settled a boot's verdict, and whether that rung's `CRASHED` counts as **decisive
+ * evidence of client-only-ness**.
+ *
+ * Why this is needed at all: `CRASHED` is reachable from [CLIENT_ONLY_CLASS], which no environment failure
+ * can fabricate, and from [EXIT_CODE], which means only *"the process exited non-zero and nothing recognised
+ * why"*. Both produced an identical `HIGH`, so the published fallback list could not tell a mod reaching for
+ * `net/minecraft/client` from one whose mixins failed to apply. Sampled against the deployed grinder on
+ * 2026-08-31, four of five published boot logs were the latter — and one of those mods was already being
+ * served to every instance polling the list.
+ *
+ * @author Griefed
+ */
+enum class BootDecision(
+    /**
+     * Whether a `CRASHED` from this rung may publish a clientside entry. **Exactly four qualify**, and the set
+     * is deliberately small: [CLIENT_ONLY_CLASS], [LWJGL_ON_A_DEDICATED_SERVER] and [FML_INVALID_DIST] because
+     * no broken harness can fabricate any of the three — a dedicated server ships no LWJGL, and FML's
+     * "invalid dist" is the loader itself refusing a client-only class — and [OPERATOR_RULE] because a rule
+     * that reached `CRASHED` said so deliberately; an undecided rule resolves to the ladder or to
+     * `INCONCLUSIVE`, never to `CRASHED`.
+     *
+     * Re-derive this list from the constants below rather than trusting the sentence: it read "exactly two"
+     * for as long as it took `lwjgl-on-a-dedicated-server` and `fml-invalid-dist` to be promoted from
+     * examples to shipped defaults.
+     */
+    val decisive: Boolean = false,
+    /**
+     * Whether this rung proves the **mod** reaches client-only code, rather than merely that this boot
+     * failed. Narrower than [decisive] on purpose: an operator rule reaching `CRASHED` is decisive because
+     * its author said so, but says nothing certain about sideness, so it must not cross builds or loaders.
+     *
+     * What this licenses is strong — no other version and no other loader may clear such a crash, and every
+     * loader of the project inherits it — which is why the set stays the three rungs that are client-only
+     * evidence by construction.
+     */
+    val provesClientOnly: Boolean = false
+) {
+    /** The server reported ready. */
+    READY_LINE,
+
+    /** The boot ran out of its budget, so the mod never got a fair run. */
+    TIMED_OUT,
+
+    /** The pack's own setup aborted before the mod was loaded. */
+    SETUP_ABORT,
+
+    /** The JVM never got as far as running the server. */
+    LAUNCH_FAILURE,
+
+    /** The modloader fell over before it could load anything. */
+    LOADER_BOOTSTRAP_FAILURE,
+
+    /** Killed from outside, or killed for memory — host trouble, not the mod's doing. */
+    KILLED_OR_OOM,
+
+    /** An operator's console rule decided it. Decisive, because such a rule states `CRASHED` on purpose. */
+    OPERATOR_RULE(decisive = true),
+
+    /** The server died reaching for a client-only class. The one signal a broken harness cannot fabricate. */
+    CLIENT_ONLY_CLASS(decisive = true, provesClientOnly = true),
+
+    /**
+     * The server died reaching for LWJGL, the client's windowing and OpenGL binding, which a dedicated
+     * server never ships. Decisive for the same reason as [CLIENT_ONLY_CLASS] and catches what that one
+     * cannot: `iris` scored INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` while this signature
+     * lived only in the operator example file.
+     */
+    LWJGL_ON_A_DEDICATED_SERVER(decisive = true, provesClientOnly = true),
+
+    /**
+     * FML refused a client-only class on a dedicated server and said so. Decisive, and needed separately
+     * because NeoForge's ServerStarterJar can print the crash in full and still **exit 0** — the exit-code
+     * rung would call that inconclusive.
+     */
+    FML_INVALID_DIST(decisive = true, provesClientOnly = true),
+
+    /** A dependency the staging failed to supply, so the mod's own code never ran. */
+    DEPENDENCY_FAILURE,
+
+    /** The sandbox denied the network, so the mod failed on the harness. */
+    SANDBOX_NETWORK,
+
+    /**
+     * A mixin failed to apply or inject — the jar and the Minecraft it was booted on disagree about what
+     * exists. Says nothing about sideness: the mod never reached its own server code.
+     */
+    MIXIN_APPLY_FAILURE,
+
+    /** The modloader's dependency solver gave up, so no mod was loaded to judge. */
+    LOADER_SOLVER_FAILURE,
+
+    /** The jar and the runtime disagree about the loader or its language — the wrong jar was staged. */
+    RUNTIME_MISMATCH,
+
+    /** Nothing was recognised; the exit status alone decided. **Never** evidence of anything about sideness. */
+    EXIT_CODE;
+
+    /**
+     * This rung's identifier in the rules file, derived from the enum name so the two cannot drift apart —
+     * `CLIENT_ONLY_CLASS` becomes `client-only-class`, exactly the id `boot-rules.default.json` ships.
+     *
+     * Used so a confirmation names a rule an operator can actually find and edit, whether it came from
+     * their own rule or from a built-in rung.
+     */
+    val ruleId: String get() = name.lowercase().replace('_', '-')
+}
+
+/**
+ * What a console classified to, plus the operator rule that had a hand in it — `null` when the built-in
+ * ladder decided alone. The rule is carried as a *field* rather than only mentioned in prose, because
+ * "how many verdicts did rule X decide?" is the only way to find a bad rule, and a sentence cannot answer it.
+ *
+ * @author Griefed
+ */
+data class Classification(
+    /** The verdict this console produced. */
+    val result: BootResult,
+    /** The rule that decided or annotated it, or `null` when no rule matched. */
+    val firedRule: ConsoleRuleMatch? = null,
+    /**
+     * Which rung settled [result]. Carried so the publication gate can refuse a `CRASHED` that is not
+     * evidence, and so an audit can report the distribution rather than guessing at it.
+     */
+    val decidedBy: BootDecision = BootDecision.EXIT_CODE
+) {
+    companion object {
+        /** A verdict the built-in ladder reached with no rule involved. */
+        internal fun of(result: BootResult, decidedBy: BootDecision) = Classification(result, null, decidedBy)
+    }
+}
 
 /**
  * Outcome of booting a server with the candidate mod force-included. Note the asymmetry: only
@@ -64,18 +198,57 @@ object BootLogClassifier {
      * clientside HIGH. Kept specific so a genuine mod-load crash (a stacktrace, a mixin error) does
      * **not** match.
      */
-    private val setupAbortMarkers = Regex(
-        "(is not available for Minecraft" +
-            "|servers are having trouble" +
-            "|Something went wrong during the server installation" +
-            "|Java install-script failed" +
-            "|Java installation failed" +
-            "|wget or curl is required" +
-            "|variables\\.txt not present" +
-            "|Incorrect modloader specified" +
-            "|did not agree to Mojang's EULA)",
-        RegexOption.IGNORE_CASE
-    )
+    private val setupAbortMarkers = bundledPattern("setup-abort")
+
+    /**
+     * The compiled pattern of a bundled rule, by id — the single source of truth for every signature this
+     * ladder tests.
+     *
+     * The patterns used to be duplicated here as `Regex` literals; they now live in
+     * `boot-rules.default.json`, where an operator can read and edit them, and this reads them back so the
+     * ladder's *order* stays in code while its *content* does not. The KDoc above each field is kept
+     * deliberately: it is the rationale and the measured evidence for the pattern, which the file's `note`
+     * mirrors but which belongs beside the rung that uses it.
+     *
+     * A rule the bundle does not define yields a regex that never matches, which disables that rung rather
+     * than throwing mid-classification. `DefaultBootRulesTest` pins that every id here exists, so this
+     * fallback is a safety net and never the normal path.
+     */
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Ids [bundledPattern] was asked for and could not find, so a disabled rung is visible rather than silent. */
+    private val unresolvedRuleIds = ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * The pattern rung [ruleId] uses, from the shipped `boot-rules.default.json`.
+     *
+     * A rung's *order* is in code and its *pattern* is in the file, so a renamed or deleted id — or one
+     * present but carrying no usable pattern — leaves the rung with nothing to match. That still yields a never-matching regex — the ladder must keep working —
+     * but it is now **recorded and logged** instead of being invisible: a silently disabled rung either stops
+     * every publication (if it was a decisive one) or stops excusing host trouble (if it was a fair-run
+     * guard), and both look like the engine behaving normally.
+     *
+     * The file is shipped inside this jar, so this is a packaging error rather than an operator's;
+     * `BundledRuleIdsResolveTest` is what catches it at build time, and this is what makes it visible if one
+     * ever reaches a running daemon.
+     */
+    internal fun bundledPattern(ruleId: String): Regex {
+        // Both halves matter and both were silent: an id that is absent, and one that is present carrying no
+        // usable pattern. Either leaves the rung with nothing to match, and the rung cannot tell them apart.
+        val pattern = DefaultBootRules.bundled().rules.firstOrNull { it.id == ruleId }?.regex
+        if (pattern == null) {
+            unresolvedRuleIds.add(ruleId)
+            log.error(
+                "Boot rule '$ruleId' is missing from the bundled rules, or carries no usable pattern; that rung " +
+                    "of the ladder will match nothing. This is a packaging fault, not a configuration one."
+            )
+            return Regex("(?!)")
+        }
+        return pattern
+    }
+
+    /** Rule ids [bundledPattern] could not resolve — empty in a correctly packaged build. */
+    internal fun missingRuleIds(): Set<String> = unresolvedRuleIds.toSet()
 
     /**
      * Console evidence that the run died for lack of memory rather than because of the mod — the JVM's own
@@ -86,13 +259,7 @@ object BootLogClassifier {
      * at 3 GiB while the host's Docker VM held 1.93 GiB, so the cap could not be honoured and fat mods were killed by
      * the VM — which, without this, scored as a HIGH-confidence clientside crash.
      */
-    private val outOfMemoryMarkers = Regex(
-        $$"(java\\.lang\\.OutOfMemoryError" +
-            "|insufficient memory for the Java Runtime Environment" +
-            "|Cannot allocate memory" +
-            $$"|Killed\\s+\"?\\$?JAVA)",
-        RegexOption.IGNORE_CASE
-    )
+    private val outOfMemoryMarkers = bundledPattern("out-of-memory")
 
     /**
      * The JVM never started: it could not open or identify the jar it was told to run. The server therefore never
@@ -103,13 +270,40 @@ object BootLogClassifier {
      * promoted to HIGH-confidence clientside — ten of the sweep's first fifteen HIGH verdicts, including the
      * definitely-server-side libraries `balm`, `collective` and `geckolib`. Trusting the exit status is what made this
      * class visible, which is why it needs the same pre-launch treatment as [setupAbortMarkers].
+     *
+     * `Error: could not open` is the JVM launcher's message for an **`@argfile`** it cannot read, and it belongs to
+     * exactly the same incomplete-cached-install case — only the file the boot depends on differs. It became
+     * reachable when the grinder started launching Forge from `@libraries/.../unix_args.txt` instead of through the
+     * ServerStarterJar.
+     *
+     * **Anchored to line start, and that anchor is load-bearing.** This guard is checked ahead of
+     * [clientOnlyClassMarker], so anything it matches never reaches the decisive marker — an over-broad
+     * alternative here does not add noise, it turns a textbook clientside crash into
+     * [BootResult.INCONCLUSIVE] and drops a true positive. `could not open` is a generic verb phrase a mod may
+     * well log about one of its own resources, unlike the three distinctive sentences beside it. The launcher
+     * emits this one as the **entire line**, while every mod line carries a timestamp and level prefix, so `^`
+     * means "the launcher said it" and nothing else. Lines are matched one at a time, which is what makes the
+     * anchor mean line start.
      */
-    private val launchFailureMarkers = Regex(
-        "(Unable to access jarfile" +
-            "|Could not find or load main class" +
-            "|Invalid or corrupt jarfile)",
-        RegexOption.IGNORE_CASE
-    )
+    private val launchFailureMarkers = bundledPattern("launch-failure")
+
+    /**
+     * The **modloader itself** failed to bootstrap: the JVM started, but the server never did, so no mod was ever
+     * loaded and the run says nothing about sideness. One rung below [launchFailureMarkers] — there the JVM could
+     * not open the jar, here it opened it and the loader fell over on its own module wiring.
+     *
+     * Found live on 2026-08-23 in `CurseForge-ars-nouveau-Forge.log`, which was scored CRASHED and therefore
+     * headed for a clientside HIGH for a mod whose code never ran. The cause is upstream and deterministic, not a
+     * flaky boot: the NeoForge ServerStarterJar synthesises a boot layer for the module path named in Forge's
+     * `unix_args.txt`, and Forge's `SecureModuleClassLoader` looks a read module's configuration up among its
+     * **direct** parents only — so `java.base`, one level further up in the real boot configuration, is not found
+     * and it throws. cpw's original, which NeoForge itself runs, falls back to the platform classloader there,
+     * which is why the same starter jar launches NeoForge and not Forge.
+     *
+     * The starter jar's own give-ups are the same class of failure and sit here too: an install layer with no
+     * run-script leaves it nothing to read launch arguments out of, and it exits before any loader code runs.
+     */
+    private val loaderBootstrapFailureMarkers = bundledPattern("loader-bootstrap-failure")
 
     /**
      * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
@@ -120,23 +314,84 @@ object BootLogClassifier {
      * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
      * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
      */
-    private val dependencyFailureMarkers = Regex(
-        "(Missing or unsupported mandatory dependencies" +
-            "|Unmet dependency listing" +
-            "|Incompatible mods found" +
-            "|requires .{1,80} or above" +
-            "|requires any version of)",
-        RegexOption.IGNORE_CASE
-    )
+    private val dependencyFailureMarkers = bundledPattern("dependency-failure")
+
+    /**
+     * The sandbox refusing a mod the network. Boots run `--network none` — that isolation is the entire
+     * guarantee — so a mod whose loader reaches for the internet at startup is certain to die here and nowhere
+     * else, which makes the crash a property of the harness rather than of the mod.
+     *
+     * Measured 2026-08-29 across 200 published crash logs: **15 (8%)**. The clearest is OneConfig, which fetches
+     * its own stage1 from `api.polyfrost.org`, falls back to a Swing error dialog when it cannot — the
+     * `Fontconfig error: No writable cache directories` tail those logs all share, in a headless container — and
+     * then calls `System.exit`.
+     *
+     * Subordinate to [clientOnlyClassMarker], like every other excuse: a clientside mod may phone home *and* die
+     * on a client class, and the marker must still win.
+     */
+    private val sandboxNetworkMarkers = bundledPattern("sandbox-network")
+
+    /**
+     * A mixin that could not be applied or injected. **Not sideness evidence**: the jar and the Minecraft it
+     * was booted on disagree about what exists, so the mod's own server code never ran.
+     *
+     * Two of five real logs sampled 2026-08-31 died exactly this way and reached the bare exit-code rung —
+     * `create_ltab` on Minecraft 1.20.6 (`@Inject … could not find any targets matching
+     * 'Lnet/minecraft/class_4317;method_20807'`) and `debugify` on 1.19.1 (`@Shadow field f_25782_ was not
+     * located in the target class`). The existing mixin coverage in [dependencyFailureMarkers] is only
+     * `ClassMetadataNotFoundException` and the legacy `MixinTweaker`, neither of which is the apply/inject
+     * shape. **Stays below [clientOnlyClassMarker]** — a mod reaching a client-only class *through* a mixin
+     * is a genuine signal, and outranking it here would discard true positives.
+     */
+    private val mixinApplyFailureMarkers = bundledPattern("mixin-apply-failure")
+
+    /**
+     * The modloader's dependency solver giving up, so nothing was loaded to judge.
+     *
+     * Quilt's phrasing shares **nothing** with Fabric's: no `requires`, no `Incompatible mods found`, so
+     * [dependencyFailureMarkers] does not reach it. Its `requires version .{1,80} of ` alternative was
+     * written for a *different* Quilt shape. Observed 2026-08-31 on `create_ltab` / Quilt 0.31.0-beta.1:
+     * `Unhandled solver error involving the following rules:` with
+     * `quilt_resource_loader versions [*] (0 valid options, 0 invalid options)`.
+     */
+    private val loaderSolverFailureMarkers = bundledPattern("loader-solver-failure")
+
+    /**
+     * The staged jar and the runtime disagree about the loader itself — the wrong jar was staged, so the run
+     * says nothing about the mod.
+     *
+     * Observed 2026-08-31: `DamageVignette-2.0.2-**forge**+mc1.20.jar` staged for a **NeoForge** boot, dying
+     * on `Missing language javafml version [46,)` (Forge's language provider, not NeoForge's) and a
+     * `java.lang.module.ResolutionException` from the jar's bundled MixinExtras colliding with NeoForge's.
+     * One platform file claiming two loaders is what put it there; see `BootCandidateSelector`.
+     *
+     * **log4j-core belongs here for the opposite reason, and it is the most valuable member.** Its absence is
+     * not the mod's doing at all — the server is supposed to *have* a logging framework — so a console
+     * reaching for `org.apache.logging.log4j` means the runtime we assembled is broken. Measured 2026-08-31:
+     * every one of the 90 boots against the cached `NeoForge 21.11.45 / Minecraft 1.21.11` install died this
+     * way, `corgilib` (a library) and `chisels-bits` (a building mod that runs on servers) included, and the
+     * ones that reached a non-zero exit were published as clientside. **One poisoned cache entry produced
+     * false positives across an entire tuple**, which is exactly the failure a bare exit-code verdict cannot
+     * distinguish from a mod crashing on its own merits.
+     */
+    private val runtimeMismatchMarkers = bundledPattern("runtime-mismatch")
 
     /**
      * The decisive clientside signal: the server loaded the mod and then died reaching for a client-only class. This
      * is the one thing the expensive boot exists to catch, so it outranks the dependency excuse above — an
      * informational "Found 2 dependencies" line must never suppress it.
      */
-    private val clientOnlyClassMarker = Regex(
-        "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)"
-    )
+    private val clientOnlyClassMarker = bundledPattern("client-only-class")
+
+    /**
+     * LWJGL is the client's windowing and OpenGL binding; a dedicated server ships none of it. Sits beside
+     * [clientOnlyClassMarker] rather than below it — both are decisive, and neither can be fabricated by a
+     * broken harness, which is what separates them from every excuse further down.
+     */
+    private val lwjglMarker = bundledPattern("lwjgl-on-a-dedicated-server")
+
+    /** FML's own words for refusing a client-only class on a dedicated server. */
+    private val fmlInvalidDistMarker = bundledPattern("fml-invalid-dist")
 
     /**
      * Exit codes meaning "terminated from outside" (POSIX `128 + signal`): `SIGKILL` — what Docker reports for an
@@ -152,43 +407,116 @@ object BootLogClassifier {
      * The ready-line wins outright — when present the boot [BootResult.SURVIVED] even though the
      * process is subsequently killed (yielding a non-zero exit). Otherwise a timeout is
      * [BootResult.INCONCLUSIVE]; a pre-launch [setupAbortMarkers] hit is [BootResult.INCONCLUSIVE]
-     * (the mod was never tested — the loader/env/install failed first); a clean `0` exit without ever
-     * reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is [BootResult.CRASHED].
+     * (the mod was never tested — the loader/env/install failed first); so is a JVM that never launched
+     * ([launchFailureMarkers]) or a loader that never bootstrapped ([loaderBootstrapFailureMarkers]); a clean
+     * `0` exit without ever reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is
+     * [BootResult.CRASHED].
      */
-    fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult {
+    fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult =
+        classify(consoleLines, exitCode, timedOut, ConsoleRuleSet.EMPTY).result
+
+    /**
+     * As above, consulting an operator's [rules] at rung 7 — above the exit code and above
+     * [clientOnlyClassMarker], below the timeout, killed/OOM and environment guards.
+     *
+     * **Why exactly there.** Everything above rung 7 means *the mod never got a fair run*, so a hand-edited
+     * file must not be able to manufacture a `CRASHED` — and therefore a `HIGH` — out of host trouble; a
+     * memory-starved VM doing precisely that, systematically, to the biggest mods is on this engine's
+     * record. Below the marker instead would leave a rule unable to raise the signature this feature exists
+     * for: FML's `for invalid dist DEDICATED_SERVER` on a **zero** exit, which the fallback excuses.
+     *
+     * A rule stating a verdict decides. A rule stating none is *undecided*, and
+     * [ConsoleRuleSet.undecidedVerdict] says what that means — by default the ladder decides and the rule
+     * merely names itself on the result, so an operator can see their pattern matched without it changing
+     * anything. First match in file order wins: the file's order is the only precedence its author can see.
+     */
+    fun classify(
+        consoleLines: List<String>,
+        exitCode: Int?,
+        timedOut: Boolean,
+        rules: ConsoleRuleSet
+    ): Classification {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
-            return BootResult.SURVIVED
+            return Classification.of(BootResult.SURVIVED, BootDecision.READY_LINE)
         }
         if (timedOut) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.TIMED_OUT)
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.SETUP_ABORT)
         }
         // The JVM never got as far as running the server, so nothing about the mod was exercised.
         if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.LAUNCH_FAILURE)
+        }
+        // The loader fell over before it could load anything, so there was no mod in the run to blame.
+        if (consoleLines.any { loaderBootstrapFailureMarkers.containsMatchIn(it) }) {
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.LOADER_BOOTSTRAP_FAILURE)
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
         if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.KILLED_OR_OOM)
         }
+        // Rung 7 -- the operator's own rules. Below every guard above, all of which mean the mod never got a
+        // fair run, so a hand-edited file can never turn host trouble into a HIGH. Above the marker below,
+        // so a rule can raise a signature the exit code excused and excuse one the marker would crash.
+        val fired = rules.rules.firstNotNullOfOrNull { rule ->
+            rule.firstMatch(consoleLines)?.let { ConsoleRuleMatch(rule, it) }
+        }
+        // A rule that states a verdict decides. One that does not is *undecided*: the rule set says whether
+        // that means INCONCLUSIVE or "let the ladder decide", and in the latter case the match still rides
+        // along on whatever the ladder settles, so the operator can see that their pattern matched.
+        val decided = fired?.rule?.verdict ?: rules.undecidedVerdict?.takeIf { fired != null }
+        if (fired != null && decided != null) {
+            return Classification(decided, fired, BootDecision.OPERATOR_RULE)
+        }
+        val annotating = fired
+
         // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
         // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
         // in full and then exits **0**, so `modelfix` -- textbook `NoClassDefFoundError: net/minecraft/client/
         // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
-            return BootResult.CRASHED
+            return Classification(BootResult.CRASHED, annotating, BootDecision.CLIENT_ONLY_CLASS)
+        }
+        // The rest of the decisive band. Both are as unfakeable as the marker above -- a dedicated server
+        // ships no LWJGL, and FML saying "invalid dist DEDICATED_SERVER" is the loader itself refusing a
+        // client-only class -- so they sit here, above every excuse and below every fair-run guard.
+        if (consoleLines.any { lwjglMarker.containsMatchIn(it) }) {
+            return Classification(BootResult.CRASHED, annotating, BootDecision.LWJGL_ON_A_DEDICATED_SERVER)
+        }
+        if (consoleLines.any { fmlInvalidDistMarker.containsMatchIn(it) }) {
+            return Classification(BootResult.CRASHED, annotating, BootDecision.FML_INVALID_DIST)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.DEPENDENCY_FAILURE)
         }
-        return when (exitCode) {
-            null, 0 -> BootResult.INCONCLUSIVE
-            else -> BootResult.CRASHED
+        // The sandbox denied the network, so the mod failed on the harness rather than on its own merits.
+        if (consoleLines.any { sandboxNetworkMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.SANDBOX_NETWORK)
         }
+        // The jar and the runtime disagree -- a mixin that cannot apply, a solver that gave up, a language
+        // provider from the wrong loader. Each means the pack we assembled was wrong, not that the mod is
+        // clientside, and each reached the bare exit code before these rungs existed.
+        if (consoleLines.any { mixinApplyFailureMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.MIXIN_APPLY_FAILURE)
+        }
+        if (consoleLines.any { loaderSolverFailureMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.LOADER_SOLVER_FAILURE)
+        }
+        if (consoleLines.any { runtimeMismatchMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.RUNTIME_MISMATCH)
+        }
+        return Classification(
+            when (exitCode) {
+                null, 0 -> BootResult.INCONCLUSIVE
+                else -> BootResult.CRASHED
+            },
+            annotating,
+            BootDecision.EXIT_CODE
+        )
     }
 }
 

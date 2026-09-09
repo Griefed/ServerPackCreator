@@ -19,7 +19,9 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.JarScan
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -50,8 +52,8 @@ internal class GrinderTest {
             clientsideReport(
                 c.slug,
                 listOf(
-                    loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH),
-                    loaderVerdict("Fabric", "${c.slug}-fabric-", Confidence.MEDIUM)
+                    loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED),
+                    loaderVerdict("Fabric", "${c.slug}-fabric-", Verdict.INCONCLUSIVE)
                 )
             )
         }
@@ -60,10 +62,118 @@ internal class GrinderTest {
         Assertions.assertEquals(GrindOutcome.VERIFIED, outcome)
         Assertions.assertEquals(2, store.all().size)
         Assertions.assertEquals(
-            setOf("Forge" to Confidence.HIGH, "Fabric" to Confidence.MEDIUM),
-            store.all().map { it.loader to it.confidence }.toSet()
+            setOf("Forge" to Verdict.CONFIRMED, "Fabric" to Verdict.INCONCLUSIVE),
+            store.all().map { it.loader to it.verdict }.toSet()
         )
         Assertions.assertEquals("jei-", store.all().first { it.loader == "Forge" }.suggestedEntry)
+    }
+
+    /**
+     * The clientside engine already decides both sidenesses and the jar scan, and the CLI report prints
+     * all three — but they stopped at [de.griefed.serverpackcreator.clientside.LoaderVerdict] and never
+     * reached the store, so the grinder's own report could not show what the platform declared versus what
+     * the jar declared. Those two facts are what a human needs to judge a verdict.
+     */
+    @Test
+    fun recordsTheDeclaredSidenessAndTheJarScanBehindTheVerdict() {
+        val store = InMemoryVerdictStore()
+        val verifier = CandidateVerifier { c ->
+            clientsideReport(
+                c.slug,
+                listOf(
+                    loaderVerdict(
+                        "Fabric", "${c.slug}-", Verdict.CONFIRMED,
+                        declaredClientSide = DeclaredSupport.REQUIRED,
+                        declaredServerSide = DeclaredSupport.UNSUPPORTED,
+                        jarScan = JarScan.CLIENT,
+                        bootedLoader = "Quilt"
+                    )
+                )
+            )
+        }
+
+        Grinder(verifier, store).grind(candidate("jei"))
+
+        val recorded = store.all().single()
+        Assertions.assertEquals(DeclaredSupport.REQUIRED, recorded.declaredClientSide)
+        Assertions.assertEquals(DeclaredSupport.UNSUPPORTED, recorded.declaredServerSide)
+        Assertions.assertEquals(JarScan.CLIENT, recorded.jarScan)
+        Assertions.assertEquals(
+            "Quilt", recorded.bootedLoader,
+            "the loader that actually booted may differ from the loader the verdict is about"
+        )
+    }
+
+    /**
+     * A verdict recorded before those columns existed has no answer for them, which is a *different*
+     * statement from CurseForge publishing no sideness at all — and CurseForge publishes none for every
+     * one of its rows. Collapsing the two onto `UNKNOWN` would make the ~870 legacy rows indistinguishable
+     * from every CurseForge row, which is exactly the confusion the column exists to dispel.
+     */
+    @Test
+    fun aVerdictWithoutRecordedSidenessIsNullRatherThanUnknown() {
+        Assertions.assertNull(grindVerdict("jei", "Forge").declaredClientSide)
+        Assertions.assertNull(grindVerdict("jei", "Forge").jarScan)
+    }
+
+    /**
+     * **A dependency blamed for a candidate's crash is queued for its own verification.**
+     *
+     * This is the mechanism that makes attribution safe. The blame itself is a string match over a console
+     * and deliberately never moves a verdict, so the suspicion has to be settled some other way — by
+     * grinding the dependency alone and seeing whether it crashes by itself. Without the queueing the
+     * annotation would be a note nobody ever acts on.
+     */
+    @Test
+    fun aDependencyBlamedForACrashIsQueuedForItsOwnVerification() {
+        val store = InMemoryVerdictStore()
+        val queued = mutableListOf<GrindCandidate>()
+        val requeue = object : de.griefed.serverpackcreator.grinder.source.RequeueStore {
+            override fun add(candidates: Collection<GrindCandidate>): Int {
+                queued.addAll(candidates); return candidates.size
+            }
+
+            override fun drain(): List<GrindCandidate> = emptyList()
+            override fun pending(): Int = queued.size
+        }
+        val verifier = CandidateVerifier { c ->
+            clientsideReport(
+                c.slug,
+                listOf(
+                    loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED)
+                        .copy(blamedDependencyUrl = "https://modrinth.com/mod/benbenlaw-core")
+                )
+            )
+        }
+
+        Grinder(verifier, store, requeue = requeue).grind(candidate("strawberrymod"))
+
+        Assertions.assertEquals(
+            listOf("https://modrinth.com/mod/benbenlaw-core"), queued.map { it.projectUrl },
+            "the blamed dependency must be queued so the question is answered by grinding it"
+        )
+        Assertions.assertEquals(ModPlatforms.MODRINTH, queued.single().platform, "resolved from its own URL")
+    }
+
+    /** Nothing blamed means nothing queued — the common case must not put work on the lane. */
+    @Test
+    fun aCandidateWithNoBlamedDependencyQueuesNothing() {
+        val queued = mutableListOf<GrindCandidate>()
+        val requeue = object : de.griefed.serverpackcreator.grinder.source.RequeueStore {
+            override fun add(candidates: Collection<GrindCandidate>): Int {
+                queued.addAll(candidates); return candidates.size
+            }
+
+            override fun drain(): List<GrindCandidate> = emptyList()
+            override fun pending(): Int = 0
+        }
+        val verifier = CandidateVerifier { c ->
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.ERROR)))
+        }
+
+        Grinder(verifier, InMemoryVerdictStore(), requeue = requeue).grind(candidate("jei"))
+
+        Assertions.assertTrue(queued.isEmpty())
     }
 
     @Test
@@ -72,13 +182,62 @@ internal class GrinderTest {
         val store = InMemoryVerdictStore()
         store.record(grindVerdict("jei", "Forge", verifiedAt = now.minus(Duration.ofDays(5))))
         val calls = AtomicInteger(0)
-        val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
+        val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Verdict.CONFIRMED))) }
 
         val outcome = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
 
         Assertions.assertEquals(GrindOutcome.SKIPPED_FRESH, outcome)
         Assertions.assertEquals(0, calls.get(), "a verdict younger than the TTL must not be re-verified")
         Assertions.assertEquals(1, store.all().size)
+    }
+
+    /**
+     * **A forced grind ignores freshness.** That is the whole point of the immediate re-grind queue: a
+     * verdict is queued precisely *because* it is wrong, and it is almost always recent — the defects that
+     * invalidate verdicts are found by reading verdicts that were just produced. Without this the queue
+     * would drain into `SKIPPED_FRESH` and do nothing at all.
+     */
+    @Test
+    fun aForcedGrindReVerifiesEvenAFreshVerdict() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("creativecore", "Fabric", verifiedAt = now.minus(Duration.ofMinutes(5))))
+        val calls = AtomicInteger(0)
+        val verifier = CandidateVerifier { c ->
+            calls.incrementAndGet()
+            clientsideReport(c.slug, listOf(loaderVerdict("Fabric", "CreativeCore_FABRIC_", Verdict.ERROR)))
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        Assertions.assertEquals(GrindOutcome.SKIPPED_FRESH, grinder.grind(candidate("creativecore")))
+        Assertions.assertEquals(GrindOutcome.VERIFIED, grinder.grind(candidate("creativecore"), force = true))
+        Assertions.assertEquals(1, calls.get(), "only the forced grind may re-verify")
+        Assertions.assertEquals(
+            Verdict.ERROR,
+            store.all().single { it.loader == "Fabric" }.verdict,
+            "the re-grind replaces the verdict it was queued to correct"
+        )
+    }
+
+    /** The pool carries the force through to every candidate, or a queued batch would drain into nothing. */
+    @Test
+    fun theForcedFlagReachesEveryCandidateInAPooledBatch() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        listOf("creativecore", "jei").forEach {
+            store.record(grindVerdict(it, "Forge", verifiedAt = now.minus(Duration.ofMinutes(5))))
+        }
+        val calls = AtomicInteger(0)
+        val verifier = CandidateVerifier { c ->
+            calls.incrementAndGet()
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.ERROR)))
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        val pass = GrindPool(grinder, 2).grindAll(listOf(candidate("creativecore"), candidate("jei")), force = true)
+
+        Assertions.assertEquals(2, pass.verified)
+        Assertions.assertEquals(2, calls.get())
     }
 
     /**
@@ -93,7 +252,7 @@ internal class GrinderTest {
         val ground = Collections.synchronizedList(mutableListOf<String>())
         val verifier = CandidateVerifier { c ->
             ground.add(c.platform)
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH)), platform = c.platform)
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Verdict.CONFIRMED)), platform = c.platform)
         }
         val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
 
@@ -112,14 +271,14 @@ internal class GrinderTest {
     fun reVerifiesAProjectWhoseVerdictIsStale() {
         val now = Instant.parse("2026-06-01T00:00:00Z")
         val store = InMemoryVerdictStore()
-        store.record(grindVerdict("jei", "Forge", confidence = Confidence.LOW, verifiedAt = now.minus(Duration.ofDays(40))))
+        store.record(grindVerdict("jei", "Forge", verifiedAt = now.minus(Duration.ofDays(40))))
         val calls = AtomicInteger(0)
-        val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
+        val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Verdict.CONFIRMED))) }
 
         Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
 
         Assertions.assertEquals(1, calls.get(), "a verdict older than the TTL must be re-verified")
-        Assertions.assertEquals(Confidence.HIGH, store.all().single { it.loader == "Forge" }.confidence)
+        Assertions.assertEquals(Verdict.CONFIRMED, store.all().single { it.loader == "Forge" }.verdict)
     }
 
     @Test
@@ -139,7 +298,7 @@ internal class GrinderTest {
         val store = InMemoryVerdictStore()
         val verifier = CandidateVerifier { c ->
             Thread.sleep(5)
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED)))
         }
         val candidates = (1..30).map { candidate("mod$it", it.toLong()) }
 
@@ -156,7 +315,7 @@ internal class GrinderTest {
         val processed = Collections.synchronizedList(mutableListOf<String>())
         val verifier = CandidateVerifier { c ->
             processed.add(c.slug)
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED)))
         }
         val candidates = listOf(candidate("low", 10), candidate("high", 30), candidate("mid", 20))
 
@@ -178,7 +337,7 @@ internal class GrinderTest {
         val verifier = CandidateVerifier { c ->
             processed.add(c.slug)
             pool.requestStop() // ask to stop while the very first candidate is still being ground
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED)))
         }
         pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
 
@@ -202,7 +361,7 @@ internal class GrinderTest {
         store.record(grindVerdict("fresh", "Forge", verifiedAt = now.minus(Duration.ofDays(1))))
         val verifier = CandidateVerifier { c ->
             if (c.slug == "doomed") throw IllegalStateException("boot host exploded")
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED)))
         }
         val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
 
@@ -229,7 +388,7 @@ internal class GrinderTest {
         val verifier = CandidateVerifier { c ->
             firstStarted.countDown()
             Thread.sleep(50)
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED)))
         }
         val pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
         val mainThread = Thread.currentThread()

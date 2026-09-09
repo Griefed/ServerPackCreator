@@ -43,71 +43,348 @@ object BootCandidateSelector {
      * Choose the newest (file, Minecraft-version) pair among [files] for [loader] for which
      * [loaderVersionAvailable] holds, so the boot uses a combination that can actually install.
      * Returns `null` when no such combination exists.
+     *
+     * **A file declaring no loader at all is a fallback, not a match.** CurseForge had no modloader facet
+     * before Minecraft 1.13, so a pre-1.13 file carries an empty loader set — and a project whose files are
+     * *all* untagged was therefore never selected under any loader, i.e. never ground. Measured against the
+     * live API 2026-09-06: all 15 of mtlib's files are untagged and it returned no candidate at all.
+     *
+     * **Why that is safe here, which is a different argument than for a dependency.** Picking an untagged
+     * file for the wrong loader could stage a jar that loader ignores, boot cleanly and publish a false
+     * `CLEAR` — the worst outcome this engine has, since it claims proof about a mod that never loaded. Two
+     * things prevent it: [loaderVersionAvailable] covers the dominant case, because untagged files are
+     * overwhelmingly pre-1.13 where Fabric and Quilt have no builds, so only Forge is reachable and untagged
+     * *means* Forge; and for anything newer, `BootVerifier.refuseForSelfDeclaration` reads the downloaded
+     * jar's own descriptor before the boot and refuses one carrying only another loader's. The cost of being
+     * wrong is a refused attempt, not a wrong verdict.
      */
     fun pickBootableCandidate(
         files: List<ModFile>,
         loader: String,
         loaderVersionAvailable: (minecraftVersion: String) -> Boolean
     ): Pair<ModFile, String>? =
-        files.filter { loader in it.loaders }
-            .flatMap { file -> file.minecraftVersions.map { file to it } }
+        newestOf(files.filter { loader in it.loaders }, loaderVersionAvailable)
+        // An untagged file states no loader rather than stating another one — see [pickUntagged]. Last
+        // resort, so a file whose author did tag it always wins and this only adds a candidate where there
+        // was none: an all-untagged project (every one of mtlib's 15 files) was never ground at all.
+            ?: newestOf(files.filter { it.loaders.isEmpty() }, loaderVersionAvailable)
+
+    /** The newest bootable (file, Minecraft version) pair among [files], or `null`. */
+    private fun newestOf(
+        files: List<ModFile>,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): Pair<ModFile, String>? =
+        files.flatMap { file -> file.minecraftVersions.map { file to it } }
             .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
             .firstOrNull { loaderVersionAvailable(it.second) }
 
     /**
-     * The sample the other-version crash re-check boots: the newest bootable file of each Minecraft version
-     * *other than* [bootedMinecraftVersion], most recent Minecraft first, capped at [limit] — the same
-     * [loaderVersionAvailable] gate as [pickBootableCandidate], since a version the loader cannot install can
+     * The newest Minecraft version of [file] that both [loaderVersionAvailable] allows and the jar's own
+     * declared [minecraftConstraint] accepts, or `null` when the file declares none the jar agrees with.
+     *
+     * **Why a second pass instead of folding this into [pickBootableCandidate].** The constraint is the
+     * jar's, and the jar does not exist until it has been downloaded — which happens after selection. So
+     * the first pick is necessarily made from platform metadata alone, and this narrows it once the
+     * descriptor can actually be read.
+     *
+     * Measured on JEI: `jei-1.21.1-forge-19.52.0.422.jar` is tagged for 1.21 and 1.21.1 while declaring
+     * `[1.21, 1.21.1)`, so the newest tagged version is excluded by the jar itself and 1.21 is the answer.
+     * Returning `null` rather than the excluded version is deliberate — the caller then keeps its original
+     * refusal, which is the honest outcome when platform and jar genuinely share no version.
+     */
+    fun newestVersionSatisfying(
+        file: ModFile,
+        minecraftConstraint: String,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): String? =
+        file.minecraftVersions
+            .sortedWith { left, right -> minecraftComparator.compare(right, left) }
+            .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
+
+    /**
+     * The newest Minecraft **release** in [releases] that the jar's [minecraftConstraint] accepts and the
+     * loader can boot, or `null` when there is none.
+     *
+     * The wider fallback behind [newestVersionSatisfying]: that one reconsiders only versions the *platform*
+     * tagged, so it rescues a jar tagged for two versions whose descriptor accepts one of them (JEI) and
+     * does nothing for a jar tagged for exactly one version its descriptor excludes.
+     * `moonlight-1.20.4-2.9.9-forge.jar` is tagged 1.20.4 and declares `[1.20,1.20.2)`; platform and jar
+     * share nothing, and the candidate was refused rather than booted at the version it was built for.
+     *
+     * **The jar is the better authority when the two disagree**, because the loader enforces this range at
+     * runtime: booting inside it is what gets the mod loaded, while booting at a version the author merely
+     * ticked on a web form gets the mod rejected by FML before it runs.
+     *
+     * **A constraint that constrains nothing never bumps.** [VersionConstraint] accepts anything it cannot
+     * read — deliberately, so a grammar gap cannot mass-refuse — which means an empty, wildcard or
+     * unparseable descriptor would otherwise "satisfy" the newest release in existence and silently
+     * relocate every candidate there. Such a constraint is answered with `null`, leaving the caller's
+     * original refusal in place.
+     */
+    fun newestReleaseSatisfying(
+        minecraftConstraint: String,
+        releases: Collection<String>,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): String? {
+        if (!constrainsAnything(minecraftConstraint, releases)) {
+            return null
+        }
+        return releases
+            .sortedWith { left, right -> minecraftComparator.compare(right, left) }
+            .firstOrNull { VersionConstraint.satisfies(it, minecraftConstraint) && loaderVersionAvailable(it) }
+    }
+
+    /**
+     * Whether [minecraftConstraint] actually excludes something out of [releases].
+     *
+     * A constraint every candidate satisfies carries no information — it is blank, a wildcard, or a string
+     * the parser could not read and therefore accepted. Asked of the same set the caller is about to search,
+     * so the question is decided by the constraint's observed effect rather than by trying to re-detect the
+     * shapes [VersionConstraint] chooses to tolerate.
+     */
+    private fun constrainsAnything(minecraftConstraint: String, releases: Collection<String>): Boolean =
+        releases.any { !VersionConstraint.satisfies(it, minecraftConstraint) }
+
+    /**
+     * One member of the sample the other-version crash re-check boots: which file, under which loader, on
+     * which Minecraft version. The loader is carried explicitly because the sample deliberately leaves the
+     * crashing loader — see [pickRecheckCandidates].
+     */
+    data class RecheckCandidate(
+        /** The published file to stage. */
+        val file: ModFile,
+        /** The loader to boot it under; not necessarily the one that crashed. */
+        val loader: String,
+        /** The Minecraft version to boot it on. */
+        val minecraftVersion: String
+    )
+
+    /**
+     * The sample the other-version crash re-check boots, capped at [limit]: a *diverse* set of published
+     * combinations other than the crashing `bootedLoader` / [bootedMinecraftVersion] one, gated by
+     * [loaderVersionAvailable] exactly as selection is — a combination the loader has no build for can
      * never be staged either.
      *
-     * One candidate per Minecraft version, never two builds of the same one: two rebuilds for one Minecraft
-     * are near-identical code, so a different version line buys far more per boot spent. That relies on
-     * [files] arriving newest-first, which both platforms do and the stable sort preserves, so the file kept
-     * for a version is that version's latest.
+     * Each pick prefers a candidate introducing both a [minecraftLine] and a loader that no earlier pick
+     * used (the crashing combination's own line counts as used from the start), then relaxes to a new line,
+     * then to a new loader, and finally takes whatever is left. So the diversity is a *preference*: a
+     * project publishing one loader and one Minecraft line still spends its whole budget, on the same
+     * newest-first versions it always did. Candidates are considered most-recent-Minecraft-first and only
+     * the newest file of each (loader, Minecraft version) is ever one — two rebuilds for one Minecraft are
+     * near-identical code. That relies on [files] arriving newest-first, which both platforms do and the
+     * stable sort preserves.
+     *
+     * **Why diverse and not simply newest.** Measured 2026-08-23 on `creativecore`: a Fabric crash on
+     * Minecraft 26.2 was re-checked on Fabric 26.1.2 and Fabric 26.1 — same loader, same loader version
+     * `0.19.3`, and the two Minecraft versions either side of the crashing one. Both were INCONCLUSIVE and
+     * the crash was published HIGH, while NeoForge had booted a server for the same project in the same
+     * run. Two boots that close to the crashing combination re-test its environment, not the mod.
+     *
+     * **Crossing the loader is a wider claim than [pickBootableCandidate] makes, and it is gated to match.**
+     * A mod really can be client-only on one loader, which is why `ClientsideVerifier.loaderDisprovingTheCrash`
+     * refuses to let any survival clear any crash. This sample is spent only where the crash already
+     * *contradicts* a declared server support (`BootVerifier.shouldRecheckAgainstOtherVersions`), i.e. where
+     * one of the two signals is known to be wrong — and a project the author declares server-capable, that
+     * boots a server under another loader, is far better explained by a broken build than by sideness.
      */
     fun pickRecheckCandidates(
         files: List<ModFile>,
-        loader: String,
+        bootedLoader: String,
         bootedMinecraftVersion: String,
         limit: Int,
-        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
-    ): List<Pair<ModFile, String>> {
+        loaderVersionAvailable: (loader: String, minecraftVersion: String) -> Boolean
+    ): List<RecheckCandidate> {
         if (limit <= 0) {
             return emptyList()
         }
-        return files.filter { loader in it.loaders }
-            .flatMap { file -> file.minecraftVersions.map { file to it } }
-            .filter { (_, minecraftVersion) ->
-                minecraftVersion != bootedMinecraftVersion && loaderVersionAvailable(minecraftVersion)
+        val pool = files
+            .flatMap { file -> file.loaders.flatMap { loader -> file.minecraftVersions.map { RecheckCandidate(file, loader, it) } } }
+            .filter { candidate ->
+                !(candidate.loader == bootedLoader && candidate.minecraftVersion == bootedMinecraftVersion) &&
+                    loaderVersionAvailable(candidate.loader, candidate.minecraftVersion)
             }
-            .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
-            .distinctBy { it.second }
-            .take(limit)
+            .sortedWith { left, right -> minecraftComparator.compare(right.minecraftVersion, left.minecraftVersion) }
+            .distinctBy { it.loader to it.minecraftVersion }
+            .toMutableList()
+
+        val usedLines = mutableSetOf(minecraftLine(bootedMinecraftVersion))
+        val usedLoaders = mutableSetOf<String>()
+        val picked = ArrayList<RecheckCandidate>(limit)
+        while (picked.size < limit && pool.isNotEmpty()) {
+            val next = pool.firstOrNull { it.loader !in usedLoaders && minecraftLine(it.minecraftVersion) !in usedLines }
+                ?: pool.firstOrNull { minecraftLine(it.minecraftVersion) !in usedLines }
+                ?: pool.firstOrNull { it.loader !in usedLoaders }
+                ?: pool.first()
+            pool.remove(next)
+            usedLoaders.add(next.loader)
+            usedLines.add(minecraftLine(next.minecraftVersion))
+            picked.add(next)
+        }
+        return picked
     }
 
     /**
-     * Pick a dependency-file from [files] for the same [loader], preferring an exact
-     * [minecraftVersion] match and falling back to any file for that loader.
-     */
-    fun pickDependencyFile(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
-        pickForLoader(files, loader, minecraftVersion)
-            ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
-
-    /** Newest file carrying [loader], preferring one that also lists [minecraftVersion]. */
-    private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? {
-        val forLoader = files.filter { loader in it.loaders }
-        return forLoader.firstOrNull { minecraftVersion in it.minecraftVersions } ?: forLoader.firstOrNull()
-    }
-
-    /**
-     * Loaders that can run another loader's mods, used **only** when a dependency publishes nothing for the loader
-     * being booted. Quilt deliberately runs Fabric mods — which is precisely why the canonical dependency of a Quilt
-     * mod is Fabric API, a project that ships only Fabric-tagged files. Without this, every such dependency was
-     * silently dropped and the mod hard-failed with "requires fabric-api", wasting the whole boot: measured
-     * 2026-07-30, 210 dropped dependencies, all but 44 of them on Quilt.
+     * The Minecraft *version-line* [minecraftVersion] belongs to — its first two components, so `26.1.2` and
+     * `26.1` are one line while `26.2` is another, and `1.21.11` is separate from `1.20.1`.
      *
-     * Deliberately not symmetric and deliberately minimal: Fabric cannot load Quilt mods, and NeoForge only loads
-     * Forge mods for a narrow band of Minecraft versions, so guessing there would stage a jar the loader cannot use.
+     * A line is the granularity at which mod code actually differs: builds within one are ports of the same
+     * source across a patch release, which is why re-checking a crash on the version next to it learns so
+     * little.
      */
-    private val fallbackLoaders = mapOf("Quilt" to "Fabric")
+    internal fun minecraftLine(minecraftVersion: String): String =
+        minecraftVersion.split('.').take(2).joinToString(".")
+
+    /**
+     * Pick a dependency-file from [files] for the same [loader] at [minecraftVersion], falling back to
+     * another **patch** release of the same version-line when the project published nothing for that exact
+     * version, or `null` when even that finds nothing.
+     *
+     * Unlike the candidate under test, a dependency is never staged across a version-*line*: a near-miss
+     * candidate still tests the candidate, but a 1.19.4 dependency in a 1.20.1 pack guarantees a
+     * loader-level version conflict that kills the boot and is then blamed on the mod under test. `null`
+     * becomes a staging refusal, which is the honest outcome for a mod that never got a fair run.
+     *
+     * **Inside a line, that strictness cost boots it had no reason to.** 1.20.1, 1.20.2 and 1.20.3 run each
+     * other's mods in practice, and a library that skipped a patch release is not a missing dependency.
+     * Measured against the live Modrinth API on 2026-09-09, six published `ERROR` verdicts named a
+     * dependency that exists one patch away — `playeranimator` for Forge 1.20.2, `yacl` and
+     * `forgified-fabric-api` for Forge 1.20.6, `cobblemon` for Fabric 1.21.11, and QSL for Quilt 1.21.1 and
+     * 1.21.11. QSL shows why the line is the right width rather than a wider band: its newest release is
+     * Minecraft 1.21 and the project is discontinued, so every Quilt mod declaring a `quilt_*` module on
+     * 1.21.1 or later was refused permanently.
+     *
+     * The three preferences are ordered — obtainability, then the exact Minecraft version, then the
+     * declared constraint — and [preferenceLadder] is where that order is written down.
+     */
+    fun pickDependencyFile(
+        files: List<ModFile>,
+        loader: String,
+        minecraftVersion: String,
+        versionConstraint: String? = null
+    ): ModFile? {
+        // A constraint is a PREFERENCE, never a filter. Preferring a satisfying file is an improvement;
+        // returning null where this used to return a file would turn a bootable candidate into a refusal,
+        // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
+        // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
+        val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
+        return preferenceLadder(files, satisfying, minecraftVersion).firstNotNullOfOrNull { (candidates, version) ->
+            // Cross-loading is asked about the version the pack BOOTS at, never the one the file carries:
+            // NeoForge runs Forge builds on Minecraft 1.20.1 and on no other version, so re-running the
+            // loader ladder at a neighbour would make a Forge 1.20.1 file a dependency for a NeoForge
+            // 1.20.2 pack -- the exact mismatch `theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only` pins
+            // against.
+            pickFrom(candidates, loader, version, compatibleAt = minecraftVersion)
+        }
+    }
+
+    /**
+     * Every (candidate set, Minecraft version) pair [pickDependencyFile] tries, in the order it tries them:
+     * obtainability outermost, then the Minecraft version, then the declared constraint.
+     *
+     * **Obtainability is the strongest of the three.** A distribution-locked file has no `downloadUrl` at
+     * all, so picking one guarantees the dependency is reported unmet — whereas Quilt genuinely runs Fabric
+     * mods, making an obtainable Fabric build a working dependency where a locked Quilt build is nothing
+     * (`306612`, Fabric API on CurseForge, was refused for a Quilt boot on exactly that ordering), and an
+     * obtainable patch neighbour is a working dependency where a locked exact match is nothing.
+     *
+     * Still a preference and never a filter: the locked half of the ladder runs last but it does run, so
+     * when every candidate is locked one is returned anyway and the refusal can say "distribution-locked" —
+     * true and actionable — instead of "publishes no <loader> file", which would be false.
+     */
+    private fun preferenceLadder(
+        files: List<ModFile>,
+        satisfying: List<ModFile>,
+        minecraftVersion: String
+    ): Sequence<Pair<List<ModFile>, String>> = sequence {
+        for (obtainableOnly in listOf(true, false)) {
+            val narrow = if (obtainableOnly) satisfying.filterNot { it.locked } else satisfying
+            val whole = if (obtainableOnly) files.filterNot { it.locked } else files
+            // Neighbours are gathered from `whole` alone: `narrow` is a subset of it, so adding it back in
+            // could only ever repeat versions `patchNeighboursOf` already de-duplicates.
+            for (version in listOf(minecraftVersion) + patchNeighboursOf(whole, minecraftVersion)) {
+                yield(narrow to version)
+                yield(whole to version)
+            }
+        }
+    }
+
+    /**
+     * The other patch releases of [minecraftVersion]'s own line that [files] actually publish for, nearest
+     * first and a tie going to the newer build.
+     *
+     * Only what the files carry is offered, so the search is bounded by the project's real history rather
+     * than by an invented range. A version whose patch component is not a number is skipped: `1.21.4-pre3`
+     * is a pre-release rather than a patch of `1.21.4`, and staging a dependency from one is the near-miss
+     * this fallback is narrow in order to avoid.
+     *
+     * Nearest-first because a build closer to the version being booted is closer to the Minecraft it was
+     * compiled against — the same reason the exact match is preferred at all — and the newer build wins a
+     * tie because it is the more likely of the two to still be maintained.
+     */
+    private fun patchNeighboursOf(files: List<ModFile>, minecraftVersion: String): List<String> {
+        val wantedPatch = patchOf(minecraftVersion) ?: return emptyList()
+        val line = minecraftLine(minecraftVersion)
+        return files.flatMap { it.minecraftVersions }
+            .distinct()
+            .filter { it != minecraftVersion && minecraftLine(it) == line }
+            .mapNotNull { version -> patchOf(version)?.let { version to it } }
+            .sortedWith(compareBy({ kotlin.math.abs(it.second - wantedPatch) }, { -it.second }))
+            .map { it.first }
+    }
+
+    /**
+     * [minecraftVersion]'s patch component as a number — `0` for a two-component version such as `1.21`,
+     * and `null` when the component is not a plain number and therefore not a patch release.
+     */
+    private fun patchOf(minecraftVersion: String): Int? {
+        val components = minecraftVersion.split('.')
+        if (components.size < 2 || components.take(2).any { it.toIntOrNull() == null }) {
+            return null
+        }
+        return if (components.size == 2) 0 else components[2].toIntOrNull()
+    }
+
+    /**
+     * [pickDependencyFile]'s loader resolution: the loader itself, then whichever other loaders'
+     * builds it can actually run **at [compatibleAt]**, then an untagged file.
+     *
+     * The Minecraft version is fixed across every attempt, which is what makes the fallback reachable. It used
+     * to be a *preference* inside each attempt, so a Quilt-tagged file for the wrong version satisfied the first
+     * attempt and the Fabric build carrying the right version was never considered.
+     *
+     * [compatibleAt] is the version the pack boots at and defaults to the one being matched; they differ only
+     * for a patch neighbour, where the cross-loader question still belongs to the pack.
+     */
+    private fun pickFrom(
+        files: List<ModFile>,
+        loader: String,
+        minecraftVersion: String,
+        compatibleAt: String = minecraftVersion
+    ): ModFile? =
+        pickForLoader(files, loader, minecraftVersion)
+            ?: LoaderCompatibility.alsoRuns(loader, compatibleAt)
+                .firstNotNullOfOrNull { pickForLoader(files, it, minecraftVersion) }
+            ?: pickUntagged(files, minecraftVersion)
+
+    /** Newest file carrying both [loader] and [minecraftVersion], or `null` when the project publishes none. */
+    private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
+        files.firstOrNull { loader in it.loaders && minecraftVersion in it.minecraftVersions }
+
+    /**
+     * Newest file for [minecraftVersion] that declares **no loader at all**, or `null`.
+     *
+     * CurseForge had no modloader facet before Minecraft 1.13, so a pre-1.13 file carries an empty loader
+     * set and `pickForLoader` — which asks `loader in it.loaders` — can never match one. Measured against
+     * the live API 2026-09-06: all 15 of mtlib's files are untagged, and 106 of iron-chests' 138. That made
+     * every such dependency unpickable and refused the boot, which is what
+     * *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* was.
+     *
+     * **Untagged is unknown, not incompatible**, and it is the *last* arm on purpose: the exact loader and
+     * the cross-loader fallback are both tried first, so a file whose author did state a loader always wins
+     * and this can only add a pick where there was none. A file tagged for a *different* loader is still
+     * refused — that tag is a statement, and an empty set is the absence of one.
+     */
+    private fun pickUntagged(files: List<ModFile>, minecraftVersion: String): ModFile? =
+        files.firstOrNull { it.loaders.isEmpty() && minecraftVersion in it.minecraftVersions }
+
 }

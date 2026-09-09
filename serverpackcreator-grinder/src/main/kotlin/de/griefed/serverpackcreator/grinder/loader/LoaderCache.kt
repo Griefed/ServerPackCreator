@@ -144,12 +144,17 @@ class LoaderCache(
      */
     fun ensureInstalled(loader: String, loaderVersion: String, minecraftVersion: String): File? {
         val baseDir = baseDirFor(loader, loaderVersion, minecraftVersion)
-        if (markUsed(baseDir)) {
+        // [isInstalled], not merely [markUsed]: the marker only says an install once succeeded, while this also
+        // asks whether the templates that produced it are still the ones in force. Consulting it here is the
+        // whole point of recording provenance -- until this call existed the digest was written and never read,
+        // so a template change was served from the stale layer forever. `markUsed` still runs, because stamping
+        // the tuple as used is what keeps it alive against eviction.
+        if (isInstalled(loader, loaderVersion, minecraftVersion) && markUsed(baseDir)) {
             return baseDir
         }
         synchronized(lockFor(baseDir)) {
             // Re-check under the lock: another worker may have installed it while we waited.
-            if (markUsed(baseDir)) {
+            if (isInstalled(loader, loaderVersion, minecraftVersion) && markUsed(baseDir)) {
                 return baseDir
             }
             val failedAt = recentFailures[baseDir.path]
@@ -163,7 +168,7 @@ class LoaderCache(
             baseDir.deleteRecursively()
             baseDir.mkdirs()
             val installed = runCatching { installer.install(baseDir, loader, loaderVersion, minecraftVersion) }
-                .onFailure { log.warn("Loader install threw for $loader $loaderVersion / Minecraft $minecraftVersion: ${it.message}") }
+                .onFailure { log.warn(installThrewMessage(loader, loaderVersion, minecraftVersion, it), it) }
                 .getOrDefault(false)
             if (!installed) {
                 baseDir.deleteRecursively()
@@ -289,13 +294,33 @@ class LoaderCache(
     /** Make a token safe to use as a path segment, collapsing anything unusual to an underscore. */
     private fun sanitize(token: String): String = token.replace(Regex("[^A-Za-z0-9._-]"), "_")
 
-    /** The completion-marker name and the marker's template-provenance key. */
-
     companion object {
         /** Completion marker, written only after a successful install; its presence means cache-hit. */
         const val MARKER = ".spc-installed"
 
         /** Marker key holding the digest of the start-script templates an install was produced with. */
         internal const val TEMPLATES_KEY = "templates"
+
+        /**
+         * What to log when an install throws: the tuple, the exception's **type**, and its message when it has
+         * one. A function rather than an interpolation at the call site so it can be pinned without capturing
+         * a logger.
+         *
+         * The type is not decoration. `${'$'}{throwable.message}` alone printed a bare `null` for a throwable
+         * carrying no message (live daemon, 2026-09-03, NeoForge 21.1.23 / Minecraft 1.21.1), which told an
+         * operator that a tuple had failed and nothing else — while the tuple logged two lines earlier named
+         * `Status 404: No such image` and was diagnosable on sight. The stack trace goes to the logger
+         * alongside this; the sentence is what a `journalctl | grep` returns.
+         */
+        internal fun installThrewMessage(
+            loader: String,
+            loaderVersion: String,
+            minecraftVersion: String,
+            throwable: Throwable
+        ): String {
+            val type = throwable::class.simpleName ?: throwable::class.java.name
+            val detail = throwable.message?.takeIf { it.isNotBlank() }?.let { ": $it" } ?: " (no message)"
+            return "Loader install threw for $loader $loaderVersion / Minecraft $minecraftVersion — $type$detail"
+        }
     }
 }

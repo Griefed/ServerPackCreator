@@ -29,12 +29,19 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling
 import java.io.File
 
+/** Starts the Spring Boot application that serves the SPA and the v2 API. */
 @SpringBootApplication
 @EnableConfigurationProperties
 @EntityScan(value = ["de.griefed.serverpackcreator.app"])
 @EnableScheduling
 class WebService(private val api: ApiWrapper) {
 
+    /**
+     * Boot Spring with SPC's own configuration locations appended, returning the context.
+     * 
+     * The location list is the part that matters: `overrides.properties` comes **last**, because later locations win
+     * and that is where a container's database URI arrives from.
+     */
     fun start(args: Array<String>): ConfigurableApplicationContext {
         val configLocationArgument = configLocationArgument(
             api.apiProperties.serverPackCreatorPropertiesFile,
@@ -59,6 +66,7 @@ class WebService(private val api: ApiWrapper) {
         return getSpringBootApplicationContext()
     }
 
+    /** The argument composition, split out so it can be asserted without booting Spring — which is the only way to test it, since `start` hands the result straight to Boot. */
     companion object {
         private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -124,6 +132,7 @@ class WebService(private val api: ApiWrapper) {
     }
 }
 
+/** Entry point when the web application is launched on its own rather than through SPC's mode dispatch. */
 fun main(args: Array<String>) {
     WebService(ApiWrapper.api()).start(args)
 }

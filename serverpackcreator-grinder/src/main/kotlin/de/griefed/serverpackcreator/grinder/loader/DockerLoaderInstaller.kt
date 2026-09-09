@@ -59,10 +59,10 @@ class DockerLoaderInstaller(
 ) : LoaderInstaller {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    /** Watched in the install console: once the server is ready, the loader+libraries are fully installed. */
     /** Live install console, written into the tuple's cache directory as bookkeeping (see the run below). */
     private val installLogName = INSTALL_LOG
 
+    /** Watched in the install console: once the server is ready, the loader+libraries are fully installed. */
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
     override fun install(target: File, loader: String, loaderVersion: String, minecraftVersion: String): Boolean {

@@ -50,7 +50,9 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val themeRegex = ".*\\.(properties|txt)".toRegex()
     private val lastModifiedMap: HashMap<File, Long> = HashMap()
+    /** Where user-supplied themes are read from — a directory under SPC's home, so a user can drop one in. */
     val themesDir: File = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
+    /** Every selectable theme, bundled and user-supplied together. Rebuilt by `reloadThemes`. */
     val themes = mutableListOf<ThemeInfo>()
 
     init {

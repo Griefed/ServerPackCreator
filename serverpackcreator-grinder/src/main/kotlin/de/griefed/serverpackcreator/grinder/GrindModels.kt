@@ -20,7 +20,10 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.ClientsideReport
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Declaration
+import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.JarScan
 import java.time.Instant
 
 /**
@@ -98,8 +101,6 @@ data class GrindVerdict(
     val loader: String,
     /** The line to add to the clientside fallback-list if accepted, or `null` when nothing is being suggested. */
     val suggestedEntry: String?,
-    /** How strongly the evidence says "clientside". Only a crash is decisive; a clean boot proves nothing. */
-    val confidence: Confidence,
     /** Human-readable evidence behind [confidence] — the boot outcome and exit detail, as shown in the report. */
     val detail: String,
     /** When this verdict was reached, which the re-verify TTL compares against to decide staleness. */
@@ -108,7 +109,62 @@ data class GrindVerdict(
      * The platform's immutable project identifier, or `null` for verdicts recorded before it was tracked. Dedup
      * falls back to [slug] when absent, so a store written by an older build stays readable and correct.
      */
-    val projectId: String? = null
+    val projectId: String? = null,
+    /**
+     * Client support as the *platform* declares it, or `null` for a verdict recorded before this was carried.
+     * Nullable rather than [DeclaredSupport.UNKNOWN] on purpose: `UNKNOWN` is a real answer the platform gives —
+     * CurseForge gives it for *every* project, since it publishes no sideness at all — while `null` means nobody
+     * ever asked. Collapsing the two would make a legacy row indistinguishable from a CurseForge row.
+     */
+    val declaredClientSide: DeclaredSupport? = null,
+    /** Server support as the platform declares it, or `null` when unrecorded. See [declaredClientSide]. */
+    val declaredServerSide: DeclaredSupport? = null,
+    /** What SPC's own scan of the jar descriptor concluded, or `null` for a verdict recorded before this was carried. */
+    val jarScan: JarScan? = null,
+    /**
+     * The loader whose boot actually produced the evidence, which is not always [loader]: a cross-loader
+     * re-check can settle one loader's verdict from another loader's clean boot.
+     */
+    val bootedLoader: String? = null,
+    /**
+     * The operator console rule that decided or annotated this verdict, or `null` when the built-in ladder
+     * settled it alone. A column rather than only a phrase in [detail], because finding a rule that fires
+     * too broadly means counting the verdicts it produced.
+     */
+    val firedRule: String? = null,
+    /**
+     * The dependency jars staged beside the candidate for the decisive boot, so a verdict can be traced to
+     * the pack that produced it rather than only to the mod it is about.
+     */
+    val stagedDependencies: List<String> = emptyList(),
+    /**
+     * Which classifier rung settled this verdict's boot, by name, or `null` for a verdict recorded before it
+     * was tracked. **The publication gate reads this**: only a decision `BootDecision.decisive` marks may
+     * reach the fallback list, so a crash that was really a mixin failure, a solver give-up or a bare
+     * non-zero exit can never publish. A `String` rather than the enum, so a rung added by a newer build
+     * leaves the store readable to an older one.
+     */
+    val decidedBy: String? = null,
+    /**
+     * What this engine publishes about the mod. Defaults to [Verdict.INCONCLUSIVE] so a row written by the
+     * old schema loads and claims nothing: the `Confidence` scale has no honest mapping onto these four
+     * states, so an unmigrated row is re-earned by a real boot rather than translated, and publishes nothing
+     * until the re-verify TTL brings it round.
+     */
+    val verdict: Verdict = Verdict.INCONCLUSIVE,
+    /**
+     * What the mod claims about itself, or `null` when it claimed nothing recognisable. Recorded because a
+     * *contradicted* claim is the finding — a mod declaring the server while calling client classes — and it
+     * cannot be reported as one if nothing kept the claim.
+     */
+    val declared: Declaration? = null,
+    /**
+     * The list-entry pattern of the file this verdict sampled, shown beside [suggestedEntry].
+     *
+     * [suggestedEntry] is what gets published and stays broad; this is what a maintainer checks the finding
+     * against on the platform page, and it keeps the loader token a project's rename history erases.
+     */
+    val filenamePattern: String? = null
 )
 
 /**

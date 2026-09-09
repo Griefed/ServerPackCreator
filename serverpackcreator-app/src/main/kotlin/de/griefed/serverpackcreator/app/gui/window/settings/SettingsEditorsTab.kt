@@ -46,7 +46,9 @@ class SettingsEditorsTab(
     controlPanel: ControlPanel
 ) : TabPanel() {
 
+    /** This tab-group's title component in the outer window. */
     val title = SettingsTitle(guiProps)
+    /** The load/save row shared by every tab below, which also owns the reload-after-save rule. */
     val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame, controlPanel)
 
     private val componentResizer = ComponentResizer()
@@ -60,6 +62,7 @@ class SettingsEditorsTab(
     private val changeListener = ChangeListener { checkTimer.restart() }
     private val tableModelListener = TableModelListener { checkTimer.restart() }
 
+    /** The global settings tab: home directory, Java, server-packs directory, exclusions. */
     val global = GlobalSettings(
         guiProps,
         apiProperties,
@@ -69,7 +72,9 @@ class SettingsEditorsTab(
         actionListener,
         tableModelListener
     )
+    /** The webservice settings tab: Tomcat directories and the database URI. */
     val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener)
+    /** The GUI settings tab: theme, font, focus behaviour, tips. */
     val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager)
 
     init {

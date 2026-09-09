@@ -19,7 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.BootDecision
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -47,13 +48,13 @@ internal class FallbackPropertiesRendererTest {
     }
 
     @Test
-    fun addsHighConfidenceFindingsToTheRepositoryList() {
+    fun addsConfirmedFindingsToTheRepositoryList() {
         val document = FallbackPropertiesRenderer.render(
             clientsideMods = listOf("jei-", "journeymap-"),
             whitelist = emptyList(),
             verdicts = listOf(
-                grindVerdict("entityculling", "Fabric", Confidence.HIGH, suggestedEntry = "entityculling-"),
-                grindVerdict("skinlayers3d", "Forge", Confidence.HIGH, suggestedEntry = "skinlayers3d-")
+                grindVerdict("entityculling", "Fabric", verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"),
+                grindVerdict("skinlayers3d", "Forge", verdict = Verdict.CONFIRMED, suggestedEntry = "skinlayers3d-")
             )
         )
 
@@ -63,15 +64,15 @@ internal class FallbackPropertiesRendererTest {
     }
 
     @Test
-    fun publishesOnlyHighConfidence() {
+    fun publishesOnlyConfirmed() {
         val document = FallbackPropertiesRenderer.render(
             clientsideMods = listOf("jei-"),
             whitelist = emptyList(),
             verdicts = listOf(
-                grindVerdict("maybe", "Fabric", Confidence.MEDIUM, suggestedEntry = "maybe-"),
-                grindVerdict("unlikely", "Fabric", Confidence.LOW, suggestedEntry = "unlikely-"),
-                grindVerdict("unknown", "Fabric", Confidence.INCONCLUSIVE, suggestedEntry = "unknown-"),
-                grindVerdict("nothingsuggested", "Fabric", Confidence.HIGH, suggestedEntry = null)
+                grindVerdict("maybe", "Fabric", suggestedEntry = "maybe-"),
+                grindVerdict("unlikely", "Fabric", suggestedEntry = "unlikely-"),
+                grindVerdict("unknown", "Fabric", suggestedEntry = "unknown-"),
+                grindVerdict("nothingsuggested", "Fabric", suggestedEntry = null)
             )
         )
 
@@ -86,7 +87,7 @@ internal class FallbackPropertiesRendererTest {
             whitelist = emptyList(),
             // The same mod, ground on three loaders: one entry, not three.
             verdicts = listOf("Fabric", "Forge", "NeoForge").map {
-                grindVerdict("entityculling", it, Confidence.HIGH, suggestedEntry = "entityculling-")
+                grindVerdict("entityculling", it, Verdict.CONFIRMED, suggestedEntry = "entityculling-")
             }
         )
 
@@ -120,7 +121,7 @@ internal class FallbackPropertiesRendererTest {
 
     @Test
     fun isStableAcrossRendersSoPollingDoesNotChurn() {
-        val verdicts = listOf(grindVerdict("zed", "Fabric", Confidence.HIGH, suggestedEntry = "zed-"))
+        val verdicts = listOf(grindVerdict("zed", "Fabric", verdict = Verdict.CONFIRMED, suggestedEntry = "zed-"))
         val first = FallbackPropertiesRenderer.render(listOf("beta-", "alpha-"), emptyList(), verdicts)
         val second = FallbackPropertiesRenderer.render(listOf("alpha-", "beta-"), emptyList(), verdicts)
 
@@ -165,4 +166,83 @@ internal class FallbackPropertiesRendererTest {
         )
     }
 
+}
+
+/**
+ * Pins the gate that decides what actually reaches an SPC instance: **HIGH is necessary but no longer
+ * sufficient — the deciding console must have carried decisive client-only evidence.**
+ *
+ * Why HIGH alone was never enough: `CRASHED` is reachable both from the client-only-class marker, which no
+ * environment failure can fabricate, and from the bare exit-code fallback, which means only "the process
+ * exited non-zero and nothing recognised why". Sampled against the live grinder on 2026-08-31, four of five
+ * published boot logs were the latter, and `created_ltab-` was already in the served list because of it.
+ */
+internal class FallbackPropertiesPublicationGateTest {
+
+    /**
+     * A stored row as the engine would produce it for a boot decided by [decidedBy].
+     *
+     * The decisive-rung check used to live in the renderer beside the confidence floor. It now lives
+     * upstream in `ClientsideVerifier.verdictOf`, which only ever reaches `CONFIRMED` from a rung
+     * `BootDecision.decisive` marks — so this helper models that fold, and the assertions below still pin
+     * the same end-to-end outcomes: what a decisive rung produced publishes, what an excuse produced does not.
+     */
+    private fun verdict(slug: String, decidedBy: String?) = grindVerdict(
+        slug, "Fabric", suggestedEntry = "$slug-",
+        verdict = if (BootDecision.entries.firstOrNull { it.name == decidedBy }?.decisive == true) {
+            Verdict.CONFIRMED
+        } else {
+            Verdict.INCONCLUSIVE
+        }
+    ).copy(decidedBy = decidedBy)
+
+    @Test
+    fun onlyAVerdictDecidedByDecisiveEvidenceIsPublished() {
+        val rendered = FallbackPropertiesRenderer.render(
+            clientsideMods = emptyList(),
+            whitelist = emptyList(),
+            verdicts = listOf(
+                verdict("modelfix", BootDecision.CLIENT_ONLY_CLASS.name),
+                verdict("ruled", BootDecision.OPERATOR_RULE.name),
+                verdict("create_ltab", BootDecision.EXIT_CODE.name),
+                verdict("mixinbroken", BootDecision.MIXIN_APPLY_FAILURE.name)
+            )
+        )
+
+        Assertions.assertTrue(rendered.contains("modelfix-"), "a client-only-class crash is what the list is for")
+        Assertions.assertTrue(rendered.contains("ruled-"), "an operator rule stating CRASHED said so deliberately")
+        Assertions.assertFalse(
+            rendered.contains("create_ltab-"),
+            "a bare non-zero exit nobody recognised must never publish — this is the live false positive"
+        )
+        Assertions.assertFalse(rendered.contains("mixinbroken-"), "a mixin that failed to apply is not sideness evidence")
+    }
+
+    /**
+     * A verdict recorded before the rung was tracked cannot be shown to be decisive, so it does not publish.
+     * That deliberately empties the grinder's contribution until a sweep re-grinds — an empty contribution is
+     * better than a wrong one, and the alternative is grandfathering in exactly the entries this gate exists
+     * to remove.
+     */
+    @Test
+    fun aLegacyVerdictWithNoRecordedDecisionIsNotPublished() {
+        val rendered = FallbackPropertiesRenderer.render(
+            clientsideMods = emptyList(), whitelist = emptyList(), verdicts = listOf(verdict("legacy", null))
+        )
+
+        Assertions.assertFalse(rendered.contains("legacy-"))
+    }
+
+    /** The shipped list is untouched by the gate — it is not the grinder's to withhold. */
+    @Test
+    fun theShippedListIsPublishedRegardless() {
+        val rendered = FallbackPropertiesRenderer.render(
+            clientsideMods = listOf("shipped-entry-"),
+            whitelist = listOf("whitelisted-"),
+            verdicts = listOf(verdict("create_ltab", BootDecision.EXIT_CODE.name))
+        )
+
+        Assertions.assertTrue(rendered.contains("shipped-entry-"))
+        Assertions.assertTrue(rendered.contains("whitelisted-"))
+    }
 }

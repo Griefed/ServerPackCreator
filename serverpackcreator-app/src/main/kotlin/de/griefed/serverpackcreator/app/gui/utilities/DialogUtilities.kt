@@ -31,6 +31,7 @@ import javax.swing.JOptionPane
  * @author Griefed
  */
 class DialogUtilities {
+    /** Dialog construction, as functions rather than methods: nothing here holds state, and every call site is a one-off. */
     companion object {
 
         /**

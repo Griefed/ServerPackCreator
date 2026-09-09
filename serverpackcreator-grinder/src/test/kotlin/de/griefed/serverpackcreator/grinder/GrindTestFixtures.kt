@@ -28,17 +28,22 @@ import java.time.Instant
 internal fun loaderVerdict(
     loader: String,
     suggestedEntry: String?,
-    confidence: Confidence,
-    note: String? = null
+    verdict: Verdict = Verdict.INCONCLUSIVE,
+    note: String? = null,
+    declaredClientSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
+    declaredServerSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
+    jarScan: JarScan = JarScan.ERROR,
+    bootedLoader: String? = null
 ) = LoaderVerdict(
     loader = loader,
     suggestedEntry = suggestedEntry,
-    declaredClientSide = DeclaredSupport.UNKNOWN,
-    declaredServerSide = DeclaredSupport.UNKNOWN,
-    jarScan = JarScan.ERROR,
+    declaredClientSide = declaredClientSide,
+    declaredServerSide = declaredServerSide,
+    jarScan = jarScan,
     bootResult = null,
+    bootedLoader = bootedLoader,
     bootCrashExcerpt = null,
-    confidence = confidence,
+    verdict = verdict,
     sampleFile = null,
     note = note
 )
@@ -63,13 +68,22 @@ internal fun clientsideReport(
 internal fun grindVerdict(
     slug: String,
     loader: String,
-    confidence: Confidence = Confidence.HIGH,
+    // Defaults to the verdict that claims nothing, so a fixture written before the redesign stands for an
+    // unmigrated row rather than silently for a finding. Tests about publication state it explicitly.
+    verdict: Verdict = Verdict.INCONCLUSIVE,
     suggestedEntry: String? = "$slug-",
     projectUrl: String = "https://modrinth.com/mod/$slug",
     detail: String = "",
     platform: String = "Modrinth",
-    verifiedAt: Instant = Instant.EPOCH
-) = GrindVerdict(platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, verifiedAt)
+    verifiedAt: Instant = Instant.EPOCH,
+    // A fixture standing for a finding should stand for a LEGITIMATE one, so it defaults to the
+    // decision that is decisive evidence. The publication gate's refusal of a non-decisive verdict is
+    // pinned explicitly in VerdictPublicationTest rather than implied by every fixture here.
+    decidedBy: String? = BootDecision.CLIENT_ONLY_CLASS.name
+) = GrindVerdict(
+    platform, slug, projectUrl, loader, suggestedEntry, detail, verifiedAt,
+    decidedBy = decidedBy, verdict = verdict
+)
 
 /** [GrinderApplication]'s source, for the guards that can only be stated against `main`'s own text. */
 internal val grinderEntryPoint = File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt")

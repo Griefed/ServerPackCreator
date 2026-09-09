@@ -10,8 +10,7 @@ The verification **engine** moved to its own standalone module —
 `serverpackcreator-clientside`, package `de.griefed.serverpackcreator.clientside` (depends only on
 `-api`). See **`serverpackcreator-clientside/CLAUDE.md`** for the metadata/boot signals, platform
 layer, downloaders and list-editor. This module keeps only the **CLI verbs** that drive it and their
-dispatch; it consumes the engine via `api(project(":serverpackcreator-clientside"))` (Playwright now
-arrives transitively from there — it is no longer declared in the app build).
+dispatch; it consumes the engine via `api(project(":serverpackcreator-clientside"))`.
 
 Automates the `[Clientside-mod Addition Request]` issues: derive the clientside-list file-name
 stem(s), assess server-safety, and — once accepted — open the PR. **All three phases done.**

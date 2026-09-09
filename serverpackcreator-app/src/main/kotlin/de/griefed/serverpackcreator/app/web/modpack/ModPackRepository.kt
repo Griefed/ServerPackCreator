@@ -25,8 +25,10 @@ import org.springframework.stereotype.Repository
 
 import java.util.*
 
+/** Stored modpacks, with the two lookups the upload path needs. */
 @Repository
 interface ModPackRepository : MongoRepository<ModPack, String> {
+    /** The modpack whose server packs include the given one — the reverse of the `@DBRef` list. */
     fun findByServerPacksContains(serverPack: ServerPack): Optional<ModPack>
 
     /**

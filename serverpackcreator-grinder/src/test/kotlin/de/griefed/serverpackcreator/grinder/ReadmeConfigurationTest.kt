@@ -32,72 +32,41 @@ import java.io.File
  * the entry point reads must be documented with its real default, and the README must not invent variables
  * the service ignores. Without this, adding a knob and forgetting the table (or renaming one) is silent.
  *
- * It reads both files as text on purpose: the point is to catch *documentation* drift, which no amount of
- * testing the Kotlin can do.
+ * It reads the README as text — documentation drift is the point — but takes the *variables* from
+ * [GrinderConfiguration.KNOBS], the same list the service configures itself from. That list replaced a
+ * regex over `GrinderApplication`'s source, which only worked while every `env(...)` call stayed inside one
+ * `main`, and which would have silently stopped covering anything that moved out of the file it scanned.
  */
 internal class ReadmeConfigurationTest {
 
     private val readme = File("README.md")
-    private val entryPoint =
-        File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt")
-
-    /**
-     * `env("NAME", "literal")` pairs — only those whose fallback is a string literal, because those are the
-     * ones whose exact default the README can quote. Variables whose default is *computed*
-     * (e.g. `env("SPC_GRINDER_WORK", File(base, "work").path)`) deliberately do not match here; they are
-     * still required to be documented, via [envAnyName].
-     */
-    private val envWithLiteralDefault = Regex("""env\("(SPC_GRINDER_[A-Z_]+)",\s*"([^"]*)"\)""")
-
-    /** Every name handed to `env(...)`, whatever its default looks like. */
-    private val envAnyName = Regex("""env\("(SPC_GRINDER_[A-Z_]+)"""")
-
-    /** `System.getenv("NAME")` — variables that are simply optional, with no default to document. */
-    private val envWithoutDefault = Regex("""getenv\("([A-Z_]+)"\)""")
 
     @Test
     fun everyEnvironmentVariableTheServiceReadsIsDocumentedWithItsDefault() {
         Assertions.assertTrue(readme.isFile, "README.md not found at ${readme.absolutePath}")
-        Assertions.assertTrue(entryPoint.isFile, "entry point not found at ${entryPoint.absolutePath}")
-
         val readmeText = readme.readText()
-        val source = entryPoint.readText()
 
-        val defaults = envWithLiteralDefault.findAll(source)
-            .associate { it.groupValues[1] to it.groupValues[2] }
-        Assertions.assertTrue(defaults.isNotEmpty(), "no env(...) calls found — did the entry point change shape?")
-
-        for (name in envAnyName.findAll(source).map { it.groupValues[1] }.toSet()) {
-            Assertions.assertTrue(readmeText.contains("`$name`"), "README does not document $name")
-        }
-
-        for ((name, default) in defaults) {
-            Assertions.assertTrue(readmeText.contains("`$name`"), "README does not document $name")
-            Assertions.assertTrue(
-                readmeText.contains("`$default`"),
-                "README does not state $name's real default ($default)"
-            )
+        for (knob in GrinderConfiguration.KNOBS) {
+            Assertions.assertTrue(readmeText.contains("`${knob.name}`"), "README does not document ${knob.name}")
+            knob.literalDefault?.let { default ->
+                Assertions.assertTrue(
+                    readmeText.contains("`$default`"),
+                    "README does not state ${knob.name}'s real default ($default)"
+                )
+            }
         }
     }
 
+    /** The one variable that is not `SPC_GRINDER_`-prefixed still has to be in the table. */
     @Test
-    fun optionalVariablesWithoutADefaultAreDocumentedToo() {
-        val readmeText = readme.readText()
-        val optional = envWithoutDefault.findAll(entryPoint.readText())
-            .map { it.groupValues[1] }
-            .filter { it.startsWith("SPC_GRINDER_") || it == "CURSEFORGE_API_KEY" }
-            .toSet()
-
-        for (name in optional) {
-            Assertions.assertTrue(readmeText.contains("`$name`"), "README does not document $name")
-        }
+    fun theCurseForgeKeyIsDocumentedToo() {
+        Assertions.assertTrue(readme.readText().contains("`CURSEFORGE_API_KEY`"))
     }
 
     @Test
     fun theReadmeDoesNotDocumentVariablesTheServiceIgnores() {
         val known = buildSet {
-            addAll(envAnyName.findAll(entryPoint.readText()).map { it.groupValues[1] })
-            addAll(envWithoutDefault.findAll(entryPoint.readText()).map { it.groupValues[1] })
+            addAll(GrinderConfiguration.KNOBS.map { it.name })
             // Read by the gated integration tests rather than the service itself.
             addAll(listOf("SPC_GRINDER_IMAGE_TEMPLATES", "SPC_GRINDER_TEMPLATE_MC", "SPC_GRINDER_TEMPLATE_LOADERS",
                 "SPC_GRINDER_TEMPLATE_SHELLS", "SPC_GRINDER_TEMPLATE_WORKERS", "SPC_GRINDER_TEMPLATE_TIMEOUT_MINUTES"))

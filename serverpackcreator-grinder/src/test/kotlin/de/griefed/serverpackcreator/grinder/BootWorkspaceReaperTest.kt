@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -36,15 +37,28 @@ internal class BootWorkspaceReaperTest {
     @TempDir
     lateinit var work: File
 
+    /**
+     * The staging-directory name of one attempt, built through the same [AttemptDirectory] helper production
+     * uses, so the fixture cannot drift away from the layout under test.
+     */
+    private fun attempt(slug: String, loader: String, platform: String = ModPlatforms.MODRINTH) =
+        AttemptDirectory.nameFor(platform, slug, loader)
+
     /** Build one attempt's staging exactly as `BootVerifier`/`ClientsideVerifier` lay it out. */
-    private fun stageAttempt(slug: String, loader: String, packBytes: Int = 4096) {
-        File(work, "boot/$slug-$loader/serverpack/libraries").apply { mkdirs() }
-        File(work, "boot/$slug-$loader/serverpack/libraries/loader.jar").writeBytes(ByteArray(packBytes))
-        File(work, "boot/$slug-$loader/modpack/mods").apply { mkdirs() }
-        File(work, "boot/$slug-$loader/modpack/mods/mod.jar").writeBytes(ByteArray(packBytes))
-        File(work, "boot/$slug-$loader/boot.log").writeText("[Server thread/INFO]: Done (4.2s)! For help")
-        File(work, "verify/$slug-$loader").apply { mkdirs() }
-        File(work, "verify/$slug-$loader/mod.jar").writeBytes(ByteArray(packBytes))
+    private fun stageAttempt(
+        slug: String,
+        loader: String,
+        packBytes: Int = 4096,
+        platform: String = ModPlatforms.MODRINTH
+    ) {
+        val dir = attempt(slug, loader, platform)
+        File(work, "boot/$dir/serverpack/libraries").apply { mkdirs() }
+        File(work, "boot/$dir/serverpack/libraries/loader.jar").writeBytes(ByteArray(packBytes))
+        File(work, "boot/$dir/modpack/mods").apply { mkdirs() }
+        File(work, "boot/$dir/modpack/mods/mod.jar").writeBytes(ByteArray(packBytes))
+        File(work, "boot/$dir/boot.log").writeText("[Server thread/INFO]: Done (4.2s)! For help")
+        File(work, "verify/$dir").apply { mkdirs() }
+        File(work, "verify/$dir/mod.jar").writeBytes(ByteArray(packBytes))
     }
 
     private fun reaper() = BootWorkspaceReaper(work)
@@ -54,13 +68,13 @@ internal class BootWorkspaceReaperTest {
     fun dropsThePackButKeepsTheBootLog() {
         stageAttempt("jei", "Forge")
 
-        reaper().reap("jei")
+        reaper().reap(ModPlatforms.MODRINTH, "jei")
 
-        Assertions.assertFalse(File(work, "boot/jei-Forge/serverpack").exists(), "the staged pack must be gone")
-        Assertions.assertFalse(File(work, "boot/jei-Forge/modpack").exists(), "the staged modpack must be gone")
-        Assertions.assertTrue(File(work, "boot/jei-Forge/boot.log").isFile, "the boot log is the evidence — keep it")
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists(), "the staged pack must be gone")
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/modpack").exists(), "the staged modpack must be gone")
+        Assertions.assertTrue(File(work, "boot/${attempt("jei", "Forge")}/boot.log").isFile, "the boot log is the evidence — keep it")
         Assertions.assertTrue(
-            File(work, "boot/jei-Forge/boot.log").readText().contains("Done (4.2s)"),
+            File(work, "boot/${attempt("jei", "Forge")}/boot.log").readText().contains("Done (4.2s)"),
             "the kept log must be the original, not a truncated stand-in"
         )
     }
@@ -70,9 +84,9 @@ internal class BootWorkspaceReaperTest {
     fun removesTheDownloadedJarScratchCompletely() {
         stageAttempt("jei", "Forge")
 
-        reaper().reap("jei")
+        reaper().reap(ModPlatforms.MODRINTH, "jei")
 
-        Assertions.assertFalse(File(work, "verify/jei-Forge").exists(), "nothing worth keeping among downloaded jars")
+        Assertions.assertFalse(File(work, "verify/${attempt("jei", "Forge")}").exists(), "nothing worth keeping among downloaded jars")
     }
 
     /** Every loader of the finished candidate is reaped, not just the first one found. */
@@ -80,11 +94,11 @@ internal class BootWorkspaceReaperTest {
     fun reapsAllLoadersOfTheSameCandidate() {
         listOf("Forge", "NeoForge", "Fabric", "Quilt").forEach { stageAttempt("jei", it) }
 
-        reaper().reap("jei")
+        reaper().reap(ModPlatforms.MODRINTH, "jei")
 
         listOf("Forge", "NeoForge", "Fabric", "Quilt").forEach { loader ->
-            Assertions.assertFalse(File(work, "boot/jei-$loader/serverpack").exists(), "pack for $loader survived")
-            Assertions.assertTrue(File(work, "boot/jei-$loader/boot.log").isFile, "log for $loader was lost")
+            Assertions.assertFalse(File(work, "boot/${attempt("jei", loader)}/serverpack").exists(), "pack for $loader survived")
+            Assertions.assertTrue(File(work, "boot/${attempt("jei", loader)}/boot.log").isFile, "log for $loader was lost")
         }
     }
 
@@ -97,13 +111,13 @@ internal class BootWorkspaceReaperTest {
         stageAttempt("jei", "Forge")
         stageAttempt("sodium", "Fabric")
 
-        reaper().reap("jei")
+        reaper().reap(ModPlatforms.MODRINTH, "jei")
 
         Assertions.assertTrue(
-            File(work, "boot/sodium-Fabric/serverpack/libraries/loader.jar").isFile,
+            File(work, "boot/${attempt("sodium", "Fabric")}/serverpack/libraries/loader.jar").isFile,
             "an in-flight boot of another candidate must be untouched"
         )
-        Assertions.assertTrue(File(work, "verify/sodium-Fabric/mod.jar").isFile)
+        Assertions.assertTrue(File(work, "verify/${attempt("sodium", "Fabric")}/mod.jar").isFile)
     }
 
     /**
@@ -115,12 +129,41 @@ internal class BootWorkspaceReaperTest {
         stageAttempt("jei", "Forge")
         stageAttempt("jei-extras", "Forge")
 
-        reaper().reap("jei")
+        reaper().reap(ModPlatforms.MODRINTH, "jei")
 
-        Assertions.assertFalse(File(work, "boot/jei-Forge/serverpack").exists(), "the named candidate is reaped")
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists(), "the named candidate is reaped")
         Assertions.assertTrue(
-            File(work, "boot/jei-extras-Forge/serverpack/libraries/loader.jar").isFile,
+            File(work, "boot/${attempt("jei-extras", "Forge")}/serverpack/libraries/loader.jar").isFile,
             "a longer slug sharing the prefix must survive"
+        )
+    }
+
+    /**
+     * **The same slug on two platforms is two candidates, and the grinder runs them in parallel.** Verdict
+     * freshness is already keyed on `(platform, slug)` for exactly that reason, so reaping one platform's
+     * finished candidate must leave the other platform's in-flight staging completely alone.
+     *
+     * Observed 2026-08-23 on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge
+     * 26.2.0.66 on Minecraft 26.2 SURVIVED for one and CRASHED (exit 1) for the other — same loader build,
+     * same Minecraft, same mod — a Fabric boot exited **127** (a shell that could not find the command it was
+     * given), and two re-checks came back INCONCLUSIVE on files another run had booted to a ready-line.
+     */
+    @Test
+    fun reapingOnePlatformLeavesTheSameSlugOnAnotherPlatformAlone() {
+        stageAttempt("creativecore", "Fabric", platform = ModPlatforms.MODRINTH)
+        stageAttempt("creativecore", "Fabric", platform = ModPlatforms.CURSEFORGE)
+
+        reaper().reap(ModPlatforms.MODRINTH, "creativecore")
+
+        val stillBooting = attempt("creativecore", "Fabric", ModPlatforms.CURSEFORGE)
+        Assertions.assertTrue(
+            File(work, "boot/$stillBooting/serverpack/libraries/loader.jar").isFile,
+            "the other platform's candidate was still booting from this pack"
+        )
+        Assertions.assertTrue(File(work, "verify/$stillBooting/mod.jar").isFile)
+        Assertions.assertFalse(
+            File(work, "boot/${attempt("creativecore", "Fabric", ModPlatforms.MODRINTH)}/serverpack").exists(),
+            "the finished candidate is still reaped"
         )
     }
 
@@ -129,7 +172,7 @@ internal class BootWorkspaceReaperTest {
     fun reportsTheBytesItReclaimed() {
         stageAttempt("jei", "Forge", packBytes = 1024)
 
-        val reclaimed = reaper().reap("jei")
+        val reclaimed = reaper().reap(ModPlatforms.MODRINTH, "jei")
 
         // Two 1 KiB pack files plus the 1 KiB downloaded jar; the kept log is excluded.
         Assertions.assertEquals(3072, reclaimed)
@@ -146,10 +189,10 @@ internal class BootWorkspaceReaperTest {
 
         val reclaimed = reaper().reapAll()
 
-        Assertions.assertFalse(File(work, "boot/jei-Forge/serverpack").exists())
-        Assertions.assertFalse(File(work, "boot/sodium-Fabric/modpack").exists())
-        Assertions.assertFalse(File(work, "verify/sodium-Fabric").exists())
-        Assertions.assertTrue(File(work, "boot/jei-Forge/boot.log").isFile, "logs survive a startup sweep too")
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists())
+        Assertions.assertFalse(File(work, "boot/${attempt("sodium", "Fabric")}/modpack").exists())
+        Assertions.assertFalse(File(work, "verify/${attempt("sodium", "Fabric")}").exists())
+        Assertions.assertTrue(File(work, "boot/${attempt("jei", "Forge")}/boot.log").isFile, "logs survive a startup sweep too")
         Assertions.assertTrue(reclaimed > 0, "a sweep that found packs must report freeing something")
     }
 
@@ -158,7 +201,7 @@ internal class BootWorkspaceReaperTest {
     fun anAbsentWorkTreeIsANoOp() {
         val reaper = BootWorkspaceReaper(File(work, "never-created"))
 
-        Assertions.assertEquals(0, reaper.reap("jei"))
+        Assertions.assertEquals(0, reaper.reap(ModPlatforms.MODRINTH, "jei"))
         Assertions.assertEquals(0, reaper.reapAll())
     }
 
@@ -168,9 +211,9 @@ internal class BootWorkspaceReaperTest {
         stageAttempt("jei", "Forge")
         val reaper = reaper()
 
-        reaper.reap("jei")
+        reaper.reap(ModPlatforms.MODRINTH, "jei")
 
-        Assertions.assertEquals(0, reaper.reap("jei"), "nothing left to free the second time")
-        Assertions.assertTrue(File(work, "boot/jei-Forge/boot.log").isFile, "and the log still stands")
+        Assertions.assertEquals(0, reaper.reap(ModPlatforms.MODRINTH, "jei"), "nothing left to free the second time")
+        Assertions.assertTrue(File(work, "boot/${attempt("jei", "Forge")}/boot.log").isFile, "and the log still stands")
     }
 }

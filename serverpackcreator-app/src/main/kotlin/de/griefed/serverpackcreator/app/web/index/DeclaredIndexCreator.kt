@@ -47,6 +47,7 @@ class DeclaredIndexCreator(
     private val indexStore: IndexStore
 ) {
 
+    /** This creator's logger. Index failures are logged and swallowed here, so this is where a missing index shows up. */
     companion object {
         private val log by lazy { cachedLoggerOf(DeclaredIndexCreator::class.java) }
     }

@@ -35,6 +35,13 @@ import java.io.File
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingDeque
 
+/**
+ * The generation queue's one worker: a blocking queue drained by a single thread, so two generations never run
+ * at once. That is deliberate — concurrent generations would race in the same server-packs directory.
+ * 
+ * Progress is reported by writing `QueueEvent`s as each stage completes, which is the only way a caller learns
+ * what happened to a fire-and-forget submission.
+ */
 @Service
 class TaskExecutionServiceImpl @Autowired constructor(
     private val modpackService: ModPackService,

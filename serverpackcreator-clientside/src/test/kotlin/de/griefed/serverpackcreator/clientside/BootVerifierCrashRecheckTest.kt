@@ -46,7 +46,7 @@ internal class BootVerifierCrashRecheckTest {
     @Test
     fun aCrashOnAnOlderBuildIsWorthReChecking() {
         Assertions.assertTrue(
-            BootVerifier.shouldRecheckCrash(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = "52.1.20")
+            BootVerifier.shouldRecheckOnNewestBuild(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = "52.1.20")
         )
     }
 
@@ -54,7 +54,7 @@ internal class BootVerifierCrashRecheckTest {
     @Test
     fun aCrashOnTheNewestBuildIsNotReChecked() {
         Assertions.assertFalse(
-            BootVerifier.shouldRecheckCrash(outcome(BootResult.CRASHED), bootedVersion = "52.1.20", latestVersion = "52.1.20")
+            BootVerifier.shouldRecheckOnNewestBuild(outcome(BootResult.CRASHED), bootedVersion = "52.1.20", latestVersion = "52.1.20")
         )
     }
 
@@ -63,7 +63,7 @@ internal class BootVerifierCrashRecheckTest {
     fun nonCrashOutcomesAreNeverReChecked() {
         listOf(BootResult.SURVIVED, BootResult.INCONCLUSIVE).forEach { result ->
             Assertions.assertFalse(
-                BootVerifier.shouldRecheckCrash(outcome(result), bootedVersion = "52.1.16", latestVersion = "52.1.20"),
+                BootVerifier.shouldRecheckOnNewestBuild(outcome(result), bootedVersion = "52.1.16", latestVersion = "52.1.20"),
                 "$result must not trigger a re-boot"
             )
         }
@@ -72,7 +72,7 @@ internal class BootVerifierCrashRecheckTest {
     @Test
     fun anUnknownNewestVersionCannotBeReCheckedAgainst() {
         Assertions.assertFalse(
-            BootVerifier.shouldRecheckCrash(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = null)
+            BootVerifier.shouldRecheckOnNewestBuild(outcome(BootResult.CRASHED), bootedVersion = "52.1.16", latestVersion = null)
         )
     }
 
@@ -199,7 +199,7 @@ internal class BootVerifierCrashRecheckTest {
         val reconciled = BootVerifier.reconcileOtherVersionRecheck(
             first = outcome(BootResult.CRASHED, "Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)", excerpt = "crash"),
             attempts = listOf(
-                attempt("ironchest-1.20.1.jar (Minecraft 1.20.1)", BootResult.SURVIVED, "Forge 47.3.0 / Minecraft 1.20.1 → SURVIVED")
+                attempt("ironchest-1.20.1.jar (Forge, Minecraft 1.20.1)", BootResult.SURVIVED, "Forge 47.3.0 / Minecraft 1.20.1 → SURVIVED")
             )
         )
 
@@ -215,8 +215,8 @@ internal class BootVerifierCrashRecheckTest {
         val reconciled = BootVerifier.reconcileOtherVersionRecheck(
             first = outcome(BootResult.CRASHED, "1.20.2 → CRASHED", excerpt = "crash"),
             attempts = listOf(
-                attempt("mod-1.20.1.jar (Minecraft 1.20.1)", BootResult.CRASHED),
-                attempt("mod-1.19.2.jar (Minecraft 1.19.2)", BootResult.SURVIVED)
+                attempt("mod-1.20.1.jar (Forge, Minecraft 1.20.1)", BootResult.CRASHED),
+                attempt("mod-1.19.2.jar (Forge, Minecraft 1.19.2)", BootResult.SURVIVED)
             )
         )
 
@@ -230,8 +230,8 @@ internal class BootVerifierCrashRecheckTest {
         val reconciled = BootVerifier.reconcileOtherVersionRecheck(
             first = first,
             attempts = listOf(
-                attempt("mod-1.20.1.jar (Minecraft 1.20.1)", BootResult.CRASHED),
-                attempt("mod-1.19.2.jar (Minecraft 1.19.2)", BootResult.CRASHED)
+                attempt("mod-1.20.1.jar (Forge, Minecraft 1.20.1)", BootResult.CRASHED),
+                attempt("mod-1.19.2.jar (Forge, Minecraft 1.19.2)", BootResult.CRASHED)
             )
         )
 
@@ -252,8 +252,8 @@ internal class BootVerifierCrashRecheckTest {
         val reconciled = BootVerifier.reconcileOtherVersionRecheck(
             first = first,
             attempts = listOf(
-                attempt("mod-1.20.1.jar (Minecraft 1.20.1)", BootResult.INCONCLUSIVE, "timed out"),
-                attempt("mod-1.19.2.jar (Minecraft 1.19.2)", BootResult.INCONCLUSIVE, "Could not download mod-1.19.2.jar.")
+                attempt("mod-1.20.1.jar (Forge, Minecraft 1.20.1)", BootResult.INCONCLUSIVE, "timed out"),
+                attempt("mod-1.19.2.jar (Forge, Minecraft 1.19.2)", BootResult.INCONCLUSIVE, "Could not download mod-1.19.2.jar.")
             )
         )
 

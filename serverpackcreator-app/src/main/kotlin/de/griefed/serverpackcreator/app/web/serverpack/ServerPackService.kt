@@ -57,6 +57,7 @@ class ServerPackService @Autowired constructor(
         gridFsOperations
     )
 
+    /** One server pack by id, empty when there is none. */
     fun getServerPack(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)
     }
@@ -121,10 +122,12 @@ class ServerPackService @Autowired constructor(
         }
     }
 
+    /** Every server pack, newest first by default. */
     fun getServerPacks(sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): List<ServerPack> {
         return serverPackRepository.findAll(sort)
     }
 
+    /** One page of server packs, as a `Page` so the caller learns the total. */
     fun getServerPacks(
         sizedPage: PageRequest,
         sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")
@@ -163,6 +166,7 @@ class ServerPackService @Autowired constructor(
         serverPackRepository.deleteById(serverPack.id!!)
     }
 
+    /** Delete a server pack by id, **and** its stored archive. The id overload is the one that cleans up disk. */
     @Suppress("unused")
     fun deleteServerPack(id: String) {
         val serverPack = serverPackRepository.findById(id)
@@ -183,6 +187,7 @@ class ServerPackService @Autowired constructor(
         return storage.load(serverPack.fileID!!)
     }
 
+    /** One server pack by id, for a read-only view — identical to [getServerPack] but named for the call site that only displays it. */
     @Suppress("unused")
     fun getServerPackView(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)

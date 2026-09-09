@@ -19,11 +19,22 @@
  */
 package de.griefed.serverpackcreator.app.web.stats.packs
 
+/**
+ * The dashboard's plain counts: how much has been stored, and which versions and loaders it is spread across.
+ * 
+ * The three maps are value-to-count, not lists, so the SPA can render a distribution without counting client-side.
+ */
 data class AmountStatsData(
+    /** How many modpacks are stored. */
     val modPacks: Int,
+    /** How many server packs are stored. */
     val serverPacks: Int,
+    /** How many distinct run configurations exist — lower than [serverPacks] whenever configurations were reused. */
     val runConfigurations: Int,
+    /** Minecraft version to how many server packs use it. */
     val minecraftVersions: HashMap<String, Int>,
+    /** Modloader to how many server packs use it. */
     val modloaders: HashMap<String, Int>,
+    /** Modloader build to how many server packs use it. */
     val modloaderVersions: HashMap<String, Int>
 )

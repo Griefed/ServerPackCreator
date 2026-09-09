@@ -22,5 +22,6 @@ package de.griefed.serverpackcreator.app.web.serverpack
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
+/** Stored server packs. No derived queries — the id and the inherited paging are all any caller needs. */
 @Repository
 interface ServerPackRepository : MongoRepository<ServerPack, String>

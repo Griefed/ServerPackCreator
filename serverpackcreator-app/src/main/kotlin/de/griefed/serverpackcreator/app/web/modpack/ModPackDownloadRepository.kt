@@ -22,7 +22,9 @@ package de.griefed.serverpackcreator.app.web.modpack
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
+/** Recorded modpack downloads. */
 @Repository
 interface ModPackDownloadRepository : MongoRepository<ModPackDownload, String> {
+    /** Every recorded download of one modpack. */
     fun findAllByModPack(modPack: ModPack): List<ModPackDownload>
 }

@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.grinder.report.VerdictStore
+import de.griefed.serverpackcreator.grinder.source.RequeueStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
 import java.time.Instant
@@ -42,6 +43,10 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param clock       Supplies the verdict timestamp and the freshness "now" (injectable for tests).
  * @param status      Live activity record for the report server's `/status`, updated around each candidate.
  *                    Optional so the orchestration stays testable without it.
+ * @param requeue     Where a dependency blamed for a candidate's crash is queued for its own verification.
+ *                    Optional for the same reason. **This is the point of attribution:** the blame itself is
+ *                    a string match and is never allowed to move a verdict, so the suspicion is settled by
+ *                    grinding the dependency and seeing whether it crashes alone.
  * @author Griefed
  */
 class Grinder(
@@ -49,18 +54,53 @@ class Grinder(
     private val store: VerdictStore,
     private val reverifyTtl: Duration = Duration.ofDays(30),
     private val clock: () -> Instant = Instant::now,
-    private val status: GrinderStatus? = null
+    private val status: GrinderStatus? = null,
+    private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
+     * Queue every dependency a loader's crash was attributed to, so it is verified in its own right.
+     *
+     * Attribution deliberately never changes a verdict — it is a string match over a console — so this is
+     * what turns the suspicion into evidence: grind the dependency alone and see whether it crashes.
+     * Failure here is logged and dropped, because a queueing problem must not cost the verdicts just earned.
+     */
+    private fun queueBlamedDependencies(report: de.griefed.serverpackcreator.clientside.ClientsideReport, candidate: GrindCandidate) {
+        // Not `store`: this class already has one, of a different type, and shadowing it here made the two
+        // reads three lines apart look like the same collaborator.
+        val queue = requeue ?: return
+        val blamed = report.perLoader.mapNotNull { it.blamedDependencyUrl }.distinct()
+        if (blamed.isEmpty()) {
+            return
+        }
+        runCatching {
+            queue.add(
+                blamed.map { url ->
+                    GrindCandidate(url, url.substringAfterLast('/'), 0, ModPlatforms.ofUrl(url))
+                }
+            )
+        }.onSuccess {
+            log.info("Queued $it dependency project(s) blamed for ${candidate.slug}'s crash: ${blamed.joinToString(", ")}")
+        }.onFailure {
+            log.warn("Could not queue the dependencies blamed for ${candidate.slug}'s crash: ${it.message}")
+        }
+    }
+
+    /**
      * Verify [candidate] (unless a fresh verdict exists), record its per-loader verdicts and report what
      * happened — the daemon paces itself on how much real work a pass did (see [GrindPacing]).
+     *
+     * [force] skips the freshness check, which is what the immediate re-grind queue
+     * ([de.griefed.serverpackcreator.grinder.source.RequeueStore]) runs on. **It is not a convenience.** A
+     * project is queued precisely because its stored verdict is known to be wrong, and a wrong verdict is
+     * usually a recent one — engine defects get found by reading verdicts that were just produced — so an
+     * unforced drain would turn straight into [GrindOutcome.SKIPPED_FRESH] and quietly do nothing.
      */
-    fun grind(candidate: GrindCandidate): GrindOutcome {
+    fun grind(candidate: GrindCandidate, force: Boolean = false): GrindOutcome {
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
         val lastVerified = store.newestVerification(candidate.platform, candidate.slug, candidate.projectId)
-        if (lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
+        if (!force && lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
             // Deliberately not INFO: a pass can skip dozens of fresh projects in microseconds, and logging each
             // would bury the one line that matters — the candidate actually being worked on.
             log.debug("Skipping ${candidate.platform}/${candidate.slug}: verdict still fresh.")
@@ -68,7 +108,10 @@ class Grinder(
         }
         // One readable line per candidate actually being ground, so `tail -f` answers "what is it doing?"
         // without decoding pack paths. The thread name in the log pattern says which worker.
-        log.info("Grinding ${candidate.platform}/${candidate.slug} — ${candidate.projectUrl}")
+        // Say when a grind jumped the queue: it is the difference between "the crawl reached this" and
+        // "somebody decided the stored verdict was wrong", which is the first question asked of a re-grind.
+        val why = if (force) " (re-grind requested)" else ""
+        log.info("Grinding ${candidate.platform}/${candidate.slug}$why — ${candidate.projectUrl}")
         status?.beginCandidate(candidate)
         val startedAt = clock()
         val report = runCatching { verifier.verify(candidate) }
@@ -97,21 +140,35 @@ class Grinder(
                     projectUrl = report.projectUrl,
                     loader = verdict.loader,
                     suggestedEntry = verdict.suggestedEntry,
-                    confidence = verdict.confidence,
+                    filenamePattern = verdict.filenamePattern,
+                    // The redesigned verdict and the claim it either confirms or contradicts. Carried
+                    // alongside `confidence` until stage 5 retires it; `/as-properties` already gates on this.
+                    verdict = verdict.verdict,
+                    declared = verdict.declared,
                     detail = verdict.note ?: "",
                     verifiedAt = now,
                     // Identity comes from the candidate, not the report: the report echoes the slug, which is the
                     // mutable name this exists to stop depending on.
-                    projectId = candidate.projectId
+                    projectId = candidate.projectId,
+                    // The evidence behind the confidence, carried through so the report can show *why* rather
+                    // than only *what*. The clientside engine has decided all four already.
+                    declaredClientSide = verdict.declaredClientSide,
+                    declaredServerSide = verdict.declaredServerSide,
+                    jarScan = verdict.jarScan,
+                    bootedLoader = verdict.bootedLoader,
+                    firedRule = verdict.firedRule,
+                    decidedBy = verdict.decidedBy?.name,
+                    stagedDependencies = verdict.stagedDependencies
                 )
             )
         }
+        queueBlamedDependencies(report, candidate)
         // Report the boot result alongside the confidence: a verdict reached *without* a boot is a much weaker
         // claim than one that booted, and only the log can tell them apart afterwards.
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
                 report.perLoader
-                    .joinToString(", ") { "${it.loader}=${it.confidence}(boot:${it.bootResult ?: "none"})" }
+                    .joinToString(", ") { "${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})" }
                     .ifEmpty { "no loader verdicts" } +
                 " after ${Duration.between(startedAt, clock()).seconds}s"
         )
@@ -180,6 +237,9 @@ class GrindPool(
         stopRequested.set(true)
     }
 
+    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
+    internal fun trackedWorkerCount(): Int = workers.size
+
     /**
      * Stop for real: signal, **interrupt** every worker, and wait up to [grace] for them to come back. Returns
      * whether they all did.
@@ -194,9 +254,6 @@ class GrindPool(
      * holding it open. A `false` return is worth logging — it means the process is about to exit with work still
      * running.
      */
-    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
-    internal fun trackedWorkerCount(): Int = workers.size
-
     fun awaitStop(grace: Duration): Boolean {
         stopRequested.set(true)
         val running = workers
@@ -223,8 +280,12 @@ class GrindPool(
      * A candidate counts as reached only once [Grinder.grind] has *returned* for it, so one still being ground
      * while the JVM tears down is deliberately not reported — it gets handed out again next time.
      * `verified` stays the pacing measure (see [GrindPacing]); skipped-as-fresh and failed do not count there.
+     *
+     * [force] is carried through to every candidate, which is what makes a drained re-grind queue actually
+     * re-grind: the whole batch is there because its verdicts are known to be wrong, and most of them are too
+     * recent to pass the freshness check.
      */
-    fun grindAll(candidates: Collection<GrindCandidate>): GrindPass {
+    fun grindAll(candidates: Collection<GrindCandidate>, force: Boolean = false): GrindPass {
         val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
         val verified = AtomicInteger(0)
         val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
@@ -235,7 +296,7 @@ class GrindPool(
             Thread {
                 while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
-                    val outcome = grinder.grind(candidate)
+                    val outcome = grinder.grind(candidate, force)
                     reached.add(candidate)
                     if (outcome == GrindOutcome.VERIFIED) {
                         verified.incrementAndGet()

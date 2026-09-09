@@ -57,13 +57,13 @@ object ClientsideReportRenderer {
         builder.appendLine()
 
         builder.appendLine("### Per-loader confidence")
-        builder.appendLine("| Loader | Suggested entry | Declared (client/server) | Jar scan | Boot | Confidence |")
+        builder.appendLine("| Loader | Suggested entry | Declared (client/server) | Jar scan | Boot | Verdict |")
         builder.appendLine("|---|---|---|---|---|---|")
         for (verdict in report.perLoader) {
             builder.appendLine(
                 "| ${verdict.loader} | ${code(verdict.suggestedEntry)} | " +
                         "${verdict.declaredClientSide} / ${verdict.declaredServerSide} | " +
-                        "${verdict.jarScan} | ${verdict.bootResult ?: "—"} | ${badge(verdict.confidence)} |"
+                        "${verdict.jarScan} | ${bootCell(verdict)} | ${badge(verdict.verdict)} |"
             )
         }
         builder.appendLine()
@@ -102,14 +102,34 @@ object ClientsideReportRenderer {
         return builder.toString()
     }
 
+    /**
+     * The `Boot` cell for one loader: the result, and — when a *different* loader produced it — which one.
+     *
+     * The other-version crash re-check samples across loaders, so a verdict can be decided by a boot that ran
+     * under another loader. That is honest evidence about the mod and misleading evidence about the loader, so
+     * the cell has to say `SURVIVED (via NeoForge)` rather than let a row claim a boot it never had.
+     */
+    private fun bootCell(verdict: LoaderVerdict): String {
+        val result = verdict.bootResult ?: return "—"
+        val via = verdict.bootedLoader?.takeIf { it != verdict.loader } ?: return result.toString()
+        return "$result (via $via)"
+    }
+
     /** Wrap a non-null entry in inline-code, or render an em-dash for a missing one. */
     private fun code(value: String?): String = if (value.isNullOrBlank()) "—" else "`$value`"
 
-    /** Decorate a confidence with an emoji so a maintainer can triage at a glance. */
-    private fun badge(confidence: Confidence): String = when (confidence) {
-        Confidence.HIGH -> "🟢 **HIGH**"
-        Confidence.MEDIUM -> "🟡 MEDIUM"
-        Confidence.LOW -> "🔴 LOW"
-        Confidence.INCONCLUSIVE -> "⚪ INCONCLUSIVE"
+    /**
+     * Decorate a verdict with an emoji so a maintainer can triage at a glance.
+     *
+     * CONFIRMED leads because it is what the report is read for; ERROR is marked as the operator's problem
+     * it is, so a broken host does not read as a page of suspicious mods.
+     */
+    private fun badge(verdict: Verdict): String = when (verdict) {
+        Verdict.CONFIRMED -> "🟢 **CONFIRMED**"
+        Verdict.INCONCLUSIVE -> "⚪ INCONCLUSIVE"
+        Verdict.ERROR -> "🛠 ERROR"
+        Verdict.CLEAR -> "🔵 CLEAR"
+        Verdict.LOCKED -> "🔒 LOCKED"
+        Verdict.UNVERIFIABLE -> "🚫 UNVERIFIABLE"
     }
 }

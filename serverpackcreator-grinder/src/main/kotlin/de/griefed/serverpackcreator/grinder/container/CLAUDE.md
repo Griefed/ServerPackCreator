@@ -16,6 +16,13 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   hardening as defaults**: `networkMode=none`, `readonlyRootfs`, `dropAllCapabilities`,
   `noNewPrivileges`, non-root `user`, tmpfs for `/tmp`, plus memory/cpu/pids caps. **Never mount the
   Docker socket into a boot container.**
+- **`ContainerEngine.hasImage` + `RuntimeImagePreflight` are the startup refusal.** `hasImage` defaults to
+  `true`, so every fake in the suite is unaffected and only `DockerJavaContainerEngine` (via `inspectImageCmd`)
+  really answers; any failure to answer is `false`, because a missing image and an unreachable daemon have one
+  consequence — nothing boots — and the refusal names both. `main` exits 1 on a refusal rather than warning:
+  with no image, grinding on publishes an INCONCLUSIVE verdict about every candidate it touches, replacing the
+  decisive ones already in the store, and the 30-day re-verify TTL then keeps them wrong. Measured 2026-09-03;
+  the full incident is the host-defect landmine in the module `CLAUDE.md`.
 - **`ContainerResources` is set in cores, via `forCpus`** — `SPC_GRINDER_CPUS` (default `2`) is read in
   `GrinderApplication` and reaches both the mod boot and the loader install; `CpuLimitWiringTest` pins that
   join, because `main` boots Docker and no test can execute it. **Send the quota and the period together.**
@@ -40,6 +47,43 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   INCONCLUSIVE — the failure mode that looks like a hanging mod rather than a mis-set host.
   `ContainerLimitsWiringTest` asserts both knobs reach both collaborators, and that `main`'s fallbacks
   resolve to exactly the `ContainerResources` defaults every other construction site falls back to.
+- **A boot container has a fixed, *resolvable* hostname** (`CONTAINER_HOST_NAME` = `spc-grinder`, set with
+  `withHostName` and mapped to `127.0.0.1` with `withExtraHosts`). The daemon writes an `<ip> <hostname>` line
+  into `/etc/hosts` only for a container that *has* an address, and `--network none` has none — so a container
+  could not resolve its own name, and the first thing a Minecraft server does is ask for it: log4j calls
+  `InetAddress.getLocalHost()` while configuring itself, so every boot opened with three
+  `UnknownHostException: <container-id>: Temporary failure in name resolution` stacktraces before a mod was
+  touched. **The name has to be fixed rather than the daemon's default**, because the mapping is part of the
+  create call and the container id does not exist until after it. Measured against docker 29.7.2 under
+  `--network none`: `wget: bad address '<id>'` before, `can't connect to remote host (127.0.0.1)` after — i.e.
+  `getaddrinfo` now succeeds, and `--add-host` is honoured with no network at all, which is what makes this
+  possible without granting the boot one. `theContainersOwnHostnameResolvesWithoutANetwork` asserts it through
+  `wget` (the same `getaddrinfo` the JVM calls) rather than by reading `/etc/hosts`, which would only show that
+  a line was written.
+- **The boot tmpfs is mounted `exec` (`TMPFS_OPTIONS`), and that is a decided trade-off, not an oversight.**
+  Docker mounts a `--tmpfs` `nosuid,nodev,noexec` and the rootfs is read-only, so nothing inside a boot could
+  write a shared object and map it executable. Griefed approved granting `exec` on 2026-08-24 once the cost was
+  measured, and the measurement is the reason: the report that raised it looked cosmetic
+  (`Could not initialize class com.sun.jna.Native` in a crash report), but booting a real server under the
+  actual posture showed **every boot the grinder ever ran silently lost Netty's native epoll transport**:
+
+  | `/tmp` | boot console |
+  |---|---|
+  | `rw` | `NativeLibraryLoader: /tmp/libnetty_transport_native_epoll_….so exists but cannot be executed … check volume for "noexec" flag` → `Using default channel type` |
+  | `rw,exec` | `Using epoll channel type` |
+
+  JNA directly, production posture otherwise unchanged: `rw` gives
+  `UnsatisfiedLinkError: /tmp/jna….tmp: failed to map segment from shared object`, `rw,exec` gives
+  `JNA-OK pointerSize=8`.
+  **What is given away, and what is not.** A mod can run a native binary it wrote into `/tmp` — against a
+  workload that is already an untrusted JVM, i.e. an arbitrary-code execution engine, in a container with no
+  network, no capabilities, no privilege escalation, a read-only rootfs and a non-root user, none of which
+  changed. **`nosuid` and `nodev` are still applied**, which was verified rather than assumed: `rw,exec` and
+  `rw,nosuid,nodev,exec` both produce `rw,nosuid,nodev,relatime`. So do not "restore" `noexec` believing it
+  costs nothing, and do not widen the grant further.
+  `aBootCanExecuteFromItsTmpfsWhileKeepingTheRestOfItsHardening` pins both halves — it **executes** a binary out
+  of `/tmp` (the flag is the mechanism, running the file is the promise) and then asserts `nosuid`/`nodev`
+  survived.
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify

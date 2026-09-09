@@ -19,4 +19,9 @@
  */
 package de.griefed.serverpackcreator.app.cli.commands
 
+/**
+ * Marker for every subcommand of the interactive shell: a picocli `@Command` that picocli invokes as a
+ * `Runnable`. Its own annotation carries the name and help; this interface exists so the shell can collect them
+ * as one type rather than as `Runnable`s.
+ */
 interface Command : Runnable

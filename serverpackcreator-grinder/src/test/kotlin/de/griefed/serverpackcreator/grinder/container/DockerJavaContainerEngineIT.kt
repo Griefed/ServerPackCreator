@@ -217,6 +217,81 @@ internal class DockerJavaContainerEngineIT {
         orphanEngine.close()
     }
 
+    /**
+     * A container's own hostname must resolve, even with no network.
+     *
+     * `--network none` gives the daemon no address to map, so it writes no `<ip> <hostname>` line into
+     * `/etc/hosts` — the line every *networked* container gets. `getaddrinfo` on the container's own name then
+     * fails, and the first thing a Minecraft server does is ask for it: log4j calls
+     * `InetAddress.getLocalHost()` while configuring itself, so every boot opened with three
+     * `UnknownHostException: <container-id>: Temporary failure in name resolution` stacktraces before any mod
+     * was touched.
+     *
+     * Asserted through `wget`, which calls the same `getaddrinfo` the JVM does, against a port nothing listens
+     * on: a resolved name reaches the connect and is refused, an unresolved one never gets that far and reports
+     * a bad address. Reading `/etc/hosts` would only show that a line was written, not that the resolver uses it.
+     */
+    @Test
+    fun theContainersOwnHostnameResolvesWithoutANetwork() {
+        val output = engine.run(
+            busyboxSpec("""wget -q -T 1 -O - "http://${'$'}(hostname):1/" 2>&1"""),
+            readyPattern = Regex("this-never-appears"),
+            timeout = Duration.ofSeconds(30)
+        )
+        val console = output.lines.joinToString("\n")
+
+        Assertions.assertFalse(
+            console.contains("bad address"),
+            "the container's own hostname must resolve — the boot's first log4j call is getLocalHost(): $console"
+        )
+        Assertions.assertTrue(
+            console.contains("Connection refused"),
+            "resolution must get as far as a connect (refused, since nothing listens): $console"
+        )
+    }
+
+    /**
+     * A boot must be able to execute a native library it extracted into `/tmp`, while the rest of that mount's
+     * hardening stays on.
+     *
+     * Docker mounts a `--tmpfs` `nosuid,nodev,noexec` by default, and the rootfs is read-only, so anything that
+     * writes a `.so` and maps it executable fails — which is what JNA does, and what Minecraft's own `oshi`
+     * system-report probes need. Measured with the production posture otherwise unchanged (no network, read-only
+     * rootfs, all caps dropped, no-new-privileges):
+     *
+     * | `/tmp` | JNA loading its native library |
+     * |---|---|
+     * | `rw` | `UnsatisfiedLinkError: /tmp/jna….tmp: failed to map segment from shared object` |
+     * | `rw,exec` | `JNA-OK pointerSize=8` |
+     *
+     * That failure reaches a boot console as `NoClassDefFoundError: Could not initialize class
+     * com.sun.jna.Native` (seen in `Modrinth-polytone-NeoForge.log`), and a mod needing JNA *at load time* would
+     * therefore die for the environment and arrive at the classifier looking like a crash.
+     *
+     * Asserted by **executing** a binary out of `/tmp` rather than by reading the mount flags, because the flag
+     * is the mechanism and running the file is the promise. The flags are then checked for what must *not* have
+     * been given away: `nosuid` and `nodev` stay, and only `noexec` goes.
+     */
+    @Test
+    fun aBootCanExecuteFromItsTmpfsWhileKeepingTheRestOfItsHardening() {
+        val output = engine.run(
+            busyboxSpec("cp /bin/busybox /tmp/echo && /tmp/echo EXEC-FROM-TMPFS-WORKS; grep ' /tmp ' /proc/mounts"),
+            readyPattern = Regex("this-never-appears"),
+            timeout = Duration.ofSeconds(30)
+        )
+        val console = output.lines.joinToString("\n")
+
+        Assertions.assertTrue(
+            console.contains("EXEC-FROM-TMPFS-WORKS"),
+            "a boot must be able to run a native library it unpacked into /tmp: $console"
+        )
+        val tmpMount = output.lines.firstOrNull { it.contains(" /tmp ") }
+            ?: Assertions.fail("no /tmp mount line in: $console")
+        Assertions.assertFalse(tmpMount.contains("noexec"), "noexec is what this grants away: $tmpMount")
+        Assertions.assertTrue(tmpMount.contains("nosuid"), "nosuid must NOT be given away with it: $tmpMount")
+        Assertions.assertTrue(tmpMount.contains("nodev"), "nodev must NOT be given away with it: $tmpMount")
+    }
+
     /** Every container this engine owns, by the label it stamps on them. */
     private fun runningGrinderContainers(): List<String> =
         DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(true)

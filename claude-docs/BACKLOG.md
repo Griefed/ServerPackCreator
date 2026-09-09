@@ -9,5 +9,5 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > cited by name elsewhere in the repo after their entries went away, so reusing an ID silently repoints someone
 > else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers what any past ID meant.
 
-Add the next item under a dated section, starting at **B35**, with the reason it waited and enough context to pick
+Add the next item under a dated section, starting at **B36**, with the reason it waited and enough context to pick
 it up cold.

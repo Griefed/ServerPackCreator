@@ -20,7 +20,9 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.BootArtifacts
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
@@ -48,10 +50,91 @@ internal class ReportServerTest {
     private fun get(port: Int, path: String) = HttpClient.newHttpClient()
         .send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), BodyHandlers.ofString())
 
+    /** The same request, kept as bytes — an icon must be asserted on its own bytes, not on a decoded string. */
+    private fun getBytes(port: Int, path: String) = HttpClient.newHttpClient()
+        .send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), BodyHandlers.ofByteArray())
+
+    /**
+     * The crash console a HIGH verdict was reached from, served by name so the overview can link it. The
+     * name is untrusted input off a query string, so the traversal case is pinned in the same test as the
+     * happy path — they are the same code path with different input.
+     */
+    @Test
+    fun servesAKeptCrashLogAndRefusesToEscapeItsStore(@TempDir logDir: File) {
+        val secret = File(logDir.parentFile, "secret.txt").apply { writeText("not yours") }
+        val crashLogs = BootLogStore(logDir)
+        val name = crashLogs.keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric"),
+            BootLogStore.attemptKey("Fabric", "0.19.3", "26.2"),
+            listOf(BootArtifacts.Artifact("console.log", "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft", false))
+        ).single()
+        val store = InMemoryVerdictStore().apply { record(grindVerdict("creativecore", "Fabric")) }
+        val server = ReportServer(store, requestedPort = 0, crashLogs = crashLogs).start()
+        try {
+            val kept = get(server.port, "/boot-log?name=$name")
+            Assertions.assertEquals(200, kept.statusCode())
+            Assertions.assertTrue(kept.headers().firstValue("Content-Type").orElse("").contains("text/plain"))
+            Assertions.assertTrue(kept.body().contains("net/minecraft/client/Minecraft"))
+
+            // The superseded routes stay: both are documented, and an operator has them bookmarked.
+            val viaAlias = get(server.port, "/crash-log?name=$name")
+            Assertions.assertEquals(kept.body(), viaAlias.body(), "/crash-log must keep answering as an alias")
+
+            val escaped = get(server.port, "/boot-log?name=../${secret.name}")
+            Assertions.assertEquals(404, escaped.statusCode(), "a traversal must not be served")
+            Assertions.assertFalse(escaped.body().contains("not yours"), "and must not leak the file either")
+
+            for (index in listOf("/boot-logs", "/crash-logs")) {
+                val listing = get(server.port, index)
+                Assertions.assertEquals(200, listing.statusCode())
+                Assertions.assertTrue(listing.body().contains(name), "$index lists what is kept")
+            }
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * Sorting by Logs, through the real handler and a real directory listing.
+     *
+     * The unit test pins the ordering; this pins the *wiring* — that the count the sort uses comes from the
+     * same per-request snapshot the cells are rendered from. Those were two separate lookups in the first
+     * draft, which is exactly how a row sorts as having logs and then renders an em-dash.
+     */
+    @Test
+    fun sortsTheTableByHowManyLogsEachRowHas(@TempDir logDir: File) {
+        val crashLogs = BootLogStore(logDir)
+        crashLogs.keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric"),
+            BootLogStore.attemptKey("Fabric", "0.16.9", "1.21.1"),
+            listOf(
+                BootArtifacts.Artifact("console.log", "crashed", false),
+                BootArtifacts.Artifact("latest.log", "also crashed", false)
+            )
+        )
+        val store = InMemoryVerdictStore().apply {
+            record(grindVerdict("sodium", "Fabric"))
+            record(grindVerdict("jei", "Forge"))
+            record(grindVerdict("iron-chests", "NeoForge"))
+        }
+        val server = ReportServer(store, requestedPort = 0, crashLogs = crashLogs).start()
+        try {
+            val body = get(server.port, "/?sort=logs&dir=desc").body()
+
+            Assertions.assertTrue(body.contains("sort=logs"), "the Logs header must render a sort link")
+            val withLogs = body.indexOf("sodium")
+            val without = listOf("jei", "iron-chests").minOf { body.indexOf(it) }
+            Assertions.assertTrue(withLogs in 0..<without, "the row holding logs must lead a descending Logs sort")
+            Assertions.assertTrue(body.contains("2 log(s)"), "and must still render the count it was sorted by")
+        } finally {
+            server.stop()
+        }
+    }
+
     @Test
     fun servesTheHtmlTableAndTheCsvExport() {
         val store = InMemoryVerdictStore().apply {
-            record(grindVerdict("jei", "Forge", confidence = Confidence.HIGH, suggestedEntry = "jei-"))
+            record(grindVerdict("jei", "Forge", suggestedEntry = "jei-", verdict = Verdict.CONFIRMED))
         }
         val server = ReportServer(store, requestedPort = 0).start()
         try {
@@ -63,7 +146,7 @@ internal class ReportServerTest {
             val csv = get(server.port, "/export.csv")
             Assertions.assertEquals(200, csv.statusCode())
             Assertions.assertTrue(csv.headers().firstValue("Content-Type").orElse("").contains("text/csv"))
-            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Confidence,Loader,Detail"))
+            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Filename,Verdict,Declared,Loader,Platform"))
             Assertions.assertTrue(csv.body().contains("jei-"))
         } finally {
             server.stop()
@@ -160,8 +243,8 @@ internal class ReportServerTest {
     @Test
     fun servesTheFallbackListAsPollableProperties() {
         val store = InMemoryVerdictStore().apply {
-            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, suggestedEntry = "entityculling-"))
-            record(grindVerdict("inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE, suggestedEntry = "inconclusive-"))
+            record(grindVerdict("entityculling", "Fabric", verdict = Verdict.CONFIRMED, suggestedEntry = "entityculling-"))
+            record(grindVerdict("inconclusive", "Forge", suggestedEntry = "inconclusive-", verdict = Verdict.CLEAR))
         }
         val server = ReportServer(
             store,
@@ -179,6 +262,44 @@ internal class ReportServerTest {
             Assertions.assertTrue(entries.contains("jei-"), "the repository list must be served: $entries")
             Assertions.assertTrue(entries.contains("entityculling-"), "a HIGH finding must be served: $entries")
             Assertions.assertFalse(entries.contains("inconclusive-"), "an unproven finding must never be served: $entries")
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * The report's browser-tab icon. Both names are served on purpose: the pages link `/favicon.png`, and a
+     * browser asks for `/favicon.ico` on its own on every other endpoint — the plain-text crash consoles
+     * included. Neither may fall through to the catch-all context, which would answer an icon request with the
+     * whole verdict table.
+     *
+     * Asserted on the PNG signature rather than on a non-empty body, because an HTML fall-through or a 404 page
+     * is also a non-empty body with a 200 in front of it.
+     */
+    @Test
+    fun servesTheFaviconAndReferencesItFromEveryPage() {
+        val server = ReportServer(InMemoryVerdictStore(), requestedPort = 0).start()
+        try {
+            for (path in listOf("/favicon.ico", "/favicon.png")) {
+                val icon = getBytes(server.port, path)
+                Assertions.assertEquals(200, icon.statusCode(), path)
+                Assertions.assertTrue(
+                    icon.headers().firstValue("Content-Type").orElse("").contains("image/png"),
+                    "$path was served as ${icon.headers().firstValue("Content-Type")}"
+                )
+                Assertions.assertArrayEquals(
+                    byteArrayOf(0x89.toByte(), 'P'.code.toByte(), 'N'.code.toByte(), 'G'.code.toByte()),
+                    icon.body().take(4).toByteArray(),
+                    "$path must be a real PNG, not a page that happens to answer 200"
+                )
+            }
+
+            for (page in listOf("/", "/crash-logs")) {
+                Assertions.assertTrue(
+                    get(server.port, page).body().contains("""<link rel="icon" type="image/png" href="/favicon.png">"""),
+                    "$page must point a browser at the icon"
+                )
+            }
         } finally {
             server.stop()
         }

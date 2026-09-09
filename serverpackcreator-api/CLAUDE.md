@@ -20,6 +20,41 @@
   `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
   before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
 
+- **LANDMINE — dependency optionality has two spellings, and reading only one silently makes every
+  dependency required (fixed 2026-09-04).** Forge's `mods.toml` marks it `mandatory = true|false`;
+  NeoForge's `neoforge.mods.toml` dropped that field entirely for `type`, a string defaulting to
+  `"required"` and also taking `"optional"`, `"incompatible"` and `"discouraged"`. `ForgeTomlScanner.isOptional`
+  reads **both**, and must keep doing so: `NeoForgeTomlScanner` overrides only the descriptor's file name, and
+  NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml` with `mandatory`, so a per-scanner split would
+  miss that overlap. `"incompatible"` counts as not-required on purpose — it means the mod must *not* be
+  present, which is the opposite of something to fetch.
+  **Absent or unreadable means required**, deliberately: reading a required dependency as optional boots a mod
+  without something it needs, which fails as a crash and can publish a *wrong* verdict, whereas reading an
+  optional one as required only refuses a boot and learns nothing. It is also NeoForge's own documented default.
+  Neither word appeared anywhere in this module before, so `ModDependency` had no field to carry the answer and
+  no consumer could respect it — `advancement-plaques` was refused for `prism`, which its toml marks
+  `mandatory=false`.
+
+- **LANDMINE — version metadata is published as immutable snapshots; never hand out a live collection
+  (2026-09-04).** `VersionMeta` refreshes manifests on a **background coroutine** (`refreshScope.launch`,
+  B31's ~392 ms startup win) while callers read. Every `update()` in `versionmeta` used to `clear()` and
+  re-`add()` a plain collection that the accessors returned directly, so a reader got either a
+  `ConcurrentModificationException` or — silently — the empty window between the two.
+  **The silent half is what cost verdicts:** `BootVerifier.bootableCombination()` rebuilds its release set
+  from `serverReleases()` on *every* staging call, so an empty read fails every candidate and the boot is
+  refused with "No bootable file/Minecraft/loader combination for <loader>" — a statement about the engine's
+  own timing wearing the shape of a statement about the mod.
+  All ten classes now build fresh collections and publish each in one assignment to a `@Volatile` field.
+  - **Unmodifiable views, not merely `List`-typed fields.** A `List` field still holds an `ArrayList` at
+    runtime, so a caller can cast and mutate; the first attempt at the fix left the pin red for exactly that.
+  - **`VersionMeta.update()` and `refreshManifests()` share one monitor.** Locking `update()` alone did
+    nothing for the race, because the coroutine calls each meta's `update()` *directly* and never goes
+    through it — a guard that looked applied and was not.
+  - Three published signatures were narrowed (`MutableList`→`List`, `HashMap`→`Map`); see
+    `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  - Two latent bugs fell out: `MinecraftClientMeta.update()` never cleared `allVersions` (unbounded growth
+    on a long-running process), and `NeoForgeLoader.update()` reversed the *published* map while iterating it.
+
 ## Established patterns
 
 - **Settings-group extraction** (used to break up `ApiProperties`): (1) write group tests first
@@ -49,8 +84,21 @@
   **not** re-add a `when (modloader)` over the concrete scanners; that duplication is what hid the Forge
   era bug in two places at once (versioning-scheme landmine below). A `null` return means "no scanner
   knows this loader" and each caller turns it into keep-every-mod. The Quilt arm returns
-  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins, and the *Quilt* `ScannedMod` is
-  kept when both agree, because its id and dependency list feed the downstream dependency-rescue.
+  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins on a sideness disagreement, and
+  whichever scan **actually read a descriptor** wins otherwise (see the landmine below; "the Quilt one is
+  kept when both agree" was the old rule, and it discarded a Fabric-only jar's entire declaration).
+- **LANDMINE — the "nothing could be read" fallback is indistinguishable from a real scan by value alone.**
+  `DescriptorScanner` flattens a missing descriptor to `ScannedMod(modJar)`: file name as `modID`, `SERVER`,
+  empty `dependencies`/`provides`, `null` `minecraftConstraint` — every one of which a genuine descriptor
+  could also produce. So anything **merging two scans of the same jar** must read `ScannedMod.descriptorRead`
+  rather than inferring from the values. `QuiltPackScanner` did not, and it cost real data: Quilt runs Fabric
+  mods and most ship no `quilt.mod.json`, so the Quilt scan was the fallback, the Fabric scan was real, the
+  merge only preferred Fabric where the two disagreed about *sideness*, both read `SERVER`, they agreed, and
+  the **empty entry won**. Everything the jar declared was thrown away. Found 2026-08-31 from a live grinder
+  boot — `bookshelf` on Quilt died with `requires any version of fabric-api, which is missing!` because the
+  dependency was never *reported*, so nothing could resolve it — and it reached generation too, where
+  `ModListCompiler`'s rescue would fail to keep Fabric API in a Quilt pack that needed it. Same outcome as the
+  `fabric` exclusion bug, by a different route.
 - **A jar carrying no descriptor is NOT a scan failure — do not log it as one.** Every scanner is handed
   the whole mods-directory, and a Quilt pack is scanned by **both** the Quilt and Fabric scanner by
   design, so one of the two finds nothing in every single-format jar. `MissingDescriptorException`
@@ -162,6 +210,34 @@
   **The grinder cannot catch this class of bug** — it pre-bakes the install and boots offline from cache, so it
   only ever exercises the launch of an already-installed tuple. Cached tuples stay valid across this change:
   their `unix_args.txt` is what the new path launches, and `downloadIfNotExist` short-circuits on it offline.
+
+  **Second, independent reason the templates bypass SSJ: Minecraft 1.20.2/1.20.3 Forge, which it cannot launch
+  at all** (`forgeNeedsItsOwnArgfile` in all three templates, added 2026-08-23 after the grinder published a
+  clientside HIGH for a mod whose server never started). Forge's installer writes one of two argfiles and SSJ
+  can only start one:
+
+  | Minecraft | argfile | ServerStarterJar |
+  |---|---|---|
+  | 1.17 – 1.20.1 | `-p <module path>`, cpw `securejarhandler` | works — cpw's `ModuleClassLoader` ends its parent-layer lookup with `.orElse(getPlatformClassLoader())` |
+  | **1.20.2** | `-p <module path> --add-modules ALL-MODULE-PATH`, Forge `securemodules` | **dies** — Forge's fork *throws* `Could not find parent layer for module` instead, because SSJ's synthesised boot layer is one level below the real boot configuration |
+  | 1.20.3 onwards | `-jar forge-<version>-shim.jar` | works — SSJ takes its own "jar mode" and synthesises nothing |
+
+  **LANDMINE — do not widen this to "every Forge from 1.20.2 on" from reading the source.** The throw is still
+  present in `securemodules` 2.2.21 (checked in the jar's own class bytes), so the source says every modern Forge
+  should fail — and it does not, because from 1.20.3 the argfile no longer takes the module-path route. Measured
+  on Temurin under `--network none`: `1.20.1-47.4.0` and `1.21.1-52.1.0` both reach the ready-line *through* SSJ
+  (1.21.1 logging `Launching in jar mode, using jar: forge-1.21.1-52.1.0-shim.jar`), while `1.20.2-48.1.0` dies
+  at `SecureModuleClassLoader.<init>` and reaches `Done (5.183s)! For help` from its own argfile. Over-widening
+  costs every modern pack the hosting-company compatibility SSJ exists for. 1.20.3 *is* included, on HELP.md's
+  word rather than a boot — it ships the shim, but it has two Forge builds in total, so over-including is
+  free and under-including is a dead server. **The module named in the exception varies per run**
+  (`java.base`/`net.minecraftforge.eventbus` in production, `java.management.rmi`/`JarJarMetadata` locally), so
+  anything matching on it must match the message.
+  Pinned by `ScriptTemplateContentTest.theBashTemplateBypassesTheStarterJarOnlyWhereForgeCannotBeLaunchedWithIt`
+  (executes `setupForge` across both versioning schemes, `26.20.2` included — it matches 1.20.2 component for
+  component below the major) and `allTemplatesBypassTheStarterJarForTheAffectedForgeVersionsAndTestTheMajor`.
+  fish and PowerShell were verified by **executing** the extracted function in containers: all three shells agree
+  on all ten versions, and both templates pass their own parser (`fish -n`, PowerShell's `Parser::ParseFile`).
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI
@@ -335,6 +411,32 @@
   keeping these in the API lets plugin authors open browsers/files/folders regardless of host. Do
   **not** invert them behind an app-side adapter — that would remove the capability from plugins.
   (`java.awt` is core JDK; the inward-dep rule only forbids Swing / Spring-web / frontend.)
+- **LANDMINE — plugin code runs during loading and reaches back into this API, so loading must happen
+  LAST (2026-09-08).** `ApiPlugins.loadAndStart()` exists to make that orderable; it used to be the
+  constructor's `init`, which ran from inside `ApiWrapper.apiPlugins`' lazy initialiser, which `stageThree`
+  touched **first**. Two unbounded recursions came out of that, and closing one without the other just
+  swaps them:
+  - `ApiWrapper.api()` assigned its singleton only when the constructor *returned*, and both `@Synchronized`
+    and the inner `synchronized(this)` are **re-entrant on one thread** — so a plugin calling
+    `ApiWrapper.api()` from its own `init` saw `null` and built a second wrapper, which loaded the plugins
+    again. It now publishes the instance before running `setup()`, and un-publishes if setup throws so a
+    later call still retries from scratch.
+  - `serverPackHandler`'s lazy initialiser needs `apiPlugins`, so a plugin reaching
+    `ApiWrapper.api().serverPackHandler` re-entered the initialiser it was already inside. Kotlin's
+    `SynchronizedLazyImpl` **re-runs the initialiser rather than blocking** on a re-entrant same-thread
+    read — a fact worth knowing anywhere two lazies can reach each other.
+
+  Measured on one startup with the example plugin installed: **53 ApiWrapper constructions, 268
+  `example-kotlin` log lines, OutOfMemoryError**, against 0 / 7 / 0 after. **Do not "fix" this class of
+  thing by editing the example plugin** — calling `ApiWrapper.api()` from a plugin's `init` is what the
+  example documents and what third parties copy, so the API has to survive it.
+
+  **Why the suite was green for months:** tests share a JVM and whichever class called `ApiWrapper.api()`
+  first did so before anything copied a jar into `tests/plugins`; `ExtensionScopingTest` installs one in its
+  own `@BeforeAll` and loads it by hand, long after the singleton is published. `PluginLoadingOrderTest`
+  installs the jar in `@BeforeAll` and *then* triggers `api()` from a field initialiser, which is the real
+  startup order and reproduces it.
+
 - **Plugin test jar:** `serverpackcreator-plugin-example-dev.jar` under the API test-resources is a
   build artifact regenerated by `copyPluginsApiUnitTests` — **don't commit rebuilds.** `ApiPluginsTest`
   loads it via pf4j and asserts all six extension points are discovered.

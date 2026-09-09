@@ -38,6 +38,7 @@ open class ResizeIndicatorScrollPane(
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
 ) : JScrollPane(view, verticalScrollbarVisibility, horizontalScrollbarVisibility) {
 
+    /** Where the drag handle was last painted, which is what the mouse listener hit-tests against. `null` until the first paint. */
     var handleBarPosition: Rectangle? = null
         private set
 

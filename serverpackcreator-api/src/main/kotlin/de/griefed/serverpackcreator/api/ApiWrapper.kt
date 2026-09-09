@@ -339,14 +339,29 @@ class ApiWrapper private constructor(
             properties: File = File("serverpackcreator.properties"),
             runSetup: Boolean = true
         ): ApiWrapper {
-            if (api == null) {
-                synchronized(this) {
-                    if (api == null) {
-                        api = ApiWrapper(properties, runSetup)
+            api?.let { return it }
+            synchronized(this) {
+                api?.let { return it }
+                // Published BEFORE setup, deliberately. Setup loads plugins, plugin code calls this very
+                // method, and both `@Synchronized` and this block are re-entrant on one thread — so
+                // assigning after the constructor returned meant a re-entrant caller saw null and built a
+                // second wrapper, which loaded the plugins again. Measured before the fix: 53 wrappers and
+                // an OutOfMemoryError from one startup with the example plugin installed.
+                val wrapper = ApiWrapper(properties, runSetup = false)
+                api = wrapper
+                if (runSetup) {
+                    // A failed setup un-publishes, so the next top-level call retries from scratch rather
+                    // than handing out a half-built wrapper -- which is what the old
+                    // assign-only-on-success did, and the one part of it worth keeping. A re-entrant
+                    // caller that already took the instance is unaffected: it has it, and this only
+                    // clears the field.
+                    runCatching { wrapper.setup() }.onFailure {
+                        api = null
+                        throw it
                     }
                 }
+                return wrapper
             }
-            return api!!
         }
     }
 
@@ -521,14 +536,20 @@ class ApiWrapper private constructor(
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     fun stageThree() {
-        apiPlugins
         forgeAnnotationScanner
         forgeTomlScanner
         neoForgeTomlScanner
         fabricScanner
         quiltScanner
         modScanner
+        configurationHandler
         serverPackHandler
+        // LAST, and that is the whole point. Plugin code runs inside `loadAndStart`, and plugin code
+        // reaches back into this API -- the example plugin registers listeners on `configurationHandler`
+        // and `serverPackHandler` from its own `init`. Touching `apiPlugins` first meant those lazies were
+        // entered from inside its initialiser, and `SynchronizedLazyImpl` re-enters rather than blocking,
+        // so the initialiser ran again and the plugins loaded again.
+        apiPlugins.loadAndStart()
     }
 
     /**

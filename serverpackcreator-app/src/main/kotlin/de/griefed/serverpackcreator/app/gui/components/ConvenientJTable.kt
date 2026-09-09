@@ -68,6 +68,7 @@ abstract class ConvenientJTable(
     listSelectionModel: DefaultListSelectionModel? = null
 ) : JTable(tableModel, tableColumnModel, listSelectionModel) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    /** The scroll pane wrapping this table, which is what a parent lays out rather than the table itself. */
     val scrollPanel: ResizeIndicatorScrollPane
 
     init {
@@ -97,10 +98,12 @@ abstract class ConvenientJTable(
         scrollPanel = ResizeIndicatorScrollPane(guiProps, this)
     }
 
+    /** Register a listener for edits, so the owning editor can mark itself dirty. */
     fun addTableModelListener(tableModelListener: TableModelListener) {
         model.addTableModelListener(tableModelListener)
     }
 
+    /** Replace the table's contents, discarding whatever was in it. */
     open fun loadData(data: HashMap<String, String>, clearDataBeforeLoad: Boolean = true) {
         if (clearDataBeforeLoad) {
             clearData()

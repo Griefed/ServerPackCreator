@@ -25,15 +25,30 @@ import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
 import java.io.File
 
-class TaskDetail(val modpack: ModPack) {
+/**
+ * One unit of queued work, carrying everything the worker needs and filling in what it produces as it goes.
+ * 
+ * Mutable on purpose: the same instance travels through the queue, so a later stage can read what an earlier
+ * one created.
+ */
+class TaskDetail(
+    /** The modpack being processed — the one field every task has from the start. */
+    val modpack: ModPack
+) {
 
+    /** The server pack being produced, once it has been created. */
     var serverPack: ServerPack? = null
+    /** The API-level configuration the generation runs with, derived from [runConfiguration]. */
     var packConfig: PackConfig? = null
+    /** The stored configuration this task was submitted with. */
     var runConfiguration: RunConfiguration? = null
 
+    /** Where the finished archive landed on disk. */
     var serverPackFile: File? = null
+    /** The uploaded archive this task reads from. */
     var modPackFile: File? = null
 
+    /** Compares the modpack, server pack, configuration and run configuration — the four things that identify the work, not the files it happens to have produced yet. */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -48,6 +63,7 @@ class TaskDetail(val modpack: ModPack) {
         return true
     }
 
+    /** Hashes the same four fields [equals] compares. */
     override fun hashCode(): Int {
         var result = modpack.hashCode()
         result = 31 * result + (serverPack.hashCode())
@@ -56,6 +72,7 @@ class TaskDetail(val modpack: ModPack) {
         return result
     }
 
+    /** Every field, for a log line. */
     override fun toString(): String {
         return "TaskDetail(modpack=$modpack, serverPack=$serverPack, packConfig=$packConfig, runConfiguration=$runConfiguration)"
     }

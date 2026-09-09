@@ -1,0 +1,128 @@
+[
+  {
+    "id": "setup-abort",
+    "pattern": "(is not available for Minecraft|servers are having trouble|Something went wrong during the server installation|Java install-script failed|Java installation failed|wget or curl is required|variables\\.txt not present|Incorrect modloader specified|did not agree to Mojang's EULA)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The install script gave up before the server started, so no mod was ever loaded. Kept specific so a genuine mod-load crash does not match.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "launch-failure",
+    "pattern": "(Unable to access jarfile|Could not find or load main class|Invalid or corrupt jarfile|^Error: could not open|The Minecraft server \\.JAR is missing|Missing game jar at)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The JVM never started -- it could not open or identify the jar it was told to run. 'Error: could not open' is the launcher's message for an unreadable @argfile and is anchored to line start on purpose: the launcher emits it as the whole line, while every mod line carries a timestamp prefix, and an over-broad match here turns a textbook clientside crash into INCONCLUSIVE.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "loader-bootstrap-failure",
+    "pattern": "(Could not find parent layer for module|Failed to find run file at|Failed to find startup arguments using run script path)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The modloader itself failed to bootstrap: the JVM started but the server never did. Forge's SecureModuleClassLoader looks a read module's configuration up among its direct parents only, so the ServerStarterJar's synthesised boot layer cannot find java.base and throws before FML exists.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "out-of-memory",
+    "pattern": "(java\\.lang\\.OutOfMemoryError|insufficient memory for the Java Runtime Environment|Cannot allocate memory|Killed\\s+\"?\\$?JAVA)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The run died for lack of memory rather than because of the mod. A mod can be memory-hungry, but running out of memory is not evidence that it needs a client.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "client-only-class",
+    "pattern": "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)",
+    "verdict": "CONFIRMED",
+    "note": "The decisive signal, and the one thing the expensive boot exists to catch: the server loaded the mod and then died reaching for a client-only class. Outranks every excuse below -- a clientside mod may phone home AND die on a client class, and this must still win. Known gap: Fabric intermediary names (class_NNNN) are not matched, because that scheme is intermediary for every class and not only client ones, so a pattern would trade these false negatives for false positives.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "lwjgl-on-a-dedicated-server",
+    "pattern": "(NoClassDefFoundError: org/lwjgl|ClassNotFoundException: org\\.lwjgl)",
+    "verdict": "CONFIRMED",
+    "note": "Reached for LWJGL, the client's windowing and OpenGL binding, which a dedicated server never ships. Decisive in a way client-only-class misses, since that one matches only net/minecraft/client -- `iris` scored INCONCLUSIVE on 'NoClassDefFoundError: org/lwjgl/Version' while this rule lived in the operator example file instead of here. Anchored to the two loader-failure spellings, never to the bare string: a server-side mod logging the word must not be caught.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "fml-invalid-dist",
+    "pattern": "for invalid dist DEDICATED_SERVER",
+    "verdict": "CONFIRMED",
+    "note": "FML refused a client-only class on a dedicated server -- it says so in as many words. Worth a rule of its own because NeoForge's ServerStarterJar can print this crash in full and still exit 0, which the exit-code rung reads as inconclusive; the console has to outrank the status here.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "dependency-failure",
+    "pattern": "(Missing or unsupported mandatory dependencies|Unmet dependency listing|Incompatible mods found|requires .{1,80} or above|requires any version of|requires version .{1,80} of |ClassMetadataNotFoundException|ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
+    "verdict": "INCONCLUSIVE",
+    "note": "A mod refused for unsatisfied required dependencies never got a fair test: it was rejected before its own code ran. The largest single failure class measured -- 36 of 112 kept logs in 2026-07-30, and Quilt's 'requires version [x, y) of z' phrasing alone was 63 of 200 published crash logs in 2026-08-29.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "sandbox-network",
+    "pattern": "(java\\.net\\.UnknownHostException|java\\.net\\.ConnectException|java\\.net\\.NoRouteToHostException|java\\.net\\.SocketTimeoutException)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The sandbox refusing a mod the network. Boots run --network none and that isolation is the entire guarantee, so a mod whose loader reaches the internet at startup is certain to die here and nowhere else, making the crash a property of the harness. 15 of 200 published crash logs (2026-08-29).",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "mixin-apply-failure",
+    "pattern": "(InvalidInjectionException|InvalidMixinException|MixinApplyError|MixinTransformerError|FAILED during APPLY|Critical injection failure|Mixin transformation of .{1,120} failed)",
+    "verdict": "INCONCLUSIVE",
+    "note": "A mixin that could not be applied or injected: the jar and the Minecraft it was booted on disagree about what exists, so the mod's own server code never ran. Stays below client-only-class -- a mod reaching a client-only class THROUGH a mixin is a genuine signal.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "loader-solver-failure",
+    "pattern": "(Unhandled solver error|\\(0 valid options, 0 invalid options\\)|Quilt Loader: Failed to load)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The modloader's dependency solver giving up, so nothing was loaded to judge. Quilt's phrasing shares nothing with Fabric's, which is why dependency-failure does not reach it.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "runtime-mismatch",
+    "pattern": "(Missing language .{1,40} version|java\\.lang\\.module\\.ResolutionException|NoClassDefFoundError: org/apache/logging/log4j|ClassNotFoundException: org\\.apache\\.logging\\.log4j)",
+    "verdict": "INCONCLUSIVE",
+    "note": "The staged jar and the runtime disagree about the loader itself. log4j-core is the most valuable member and belongs here for the opposite reason: its absence is not the mod's doing at all, so a console reaching for it means the runtime we assembled is broken. All 90 boots against one poisoned NeoForge 21.11.45 / MC 1.21.11 cache entry died this way, a library and a server-side building mod among them.",
+    "source": "CONSOLE"
+  },
+  {
+    "id": "metadata-contradiction-platform-client-jar-server",
+    "source": "METADATA",
+    "pattern": "platform_server=unsupported.*manifest=server_or_both",
+    "declares": "CONTRADICTORY",
+    "note": "The platform marks the server unsupported while the jar declares server/both. They disagree, so the mod declared nothing usable -- the boot decides, as it does in every case."
+  },
+  {
+    "id": "metadata-contradiction-platform-server-jar-client",
+    "source": "METADATA",
+    "pattern": "platform_server=required.*manifest=client(\\s|$)",
+    "declares": "CONTRADICTORY",
+    "note": "The mirror image: the platform marks the server required while the jar declares client-only."
+  },
+  {
+    "id": "manifest-client-only",
+    "source": "METADATA",
+    "pattern": "manifest=client(\\s|$)",
+    "declares": "CLIENT",
+    "note": "The jar's own descriptor says client-only. A declaration, not a verdict: the mod is still booted and the console still decides. An honestly-declared client mod is the cheap case; the boot exists for the dishonest one."
+  },
+  {
+    "id": "platform-server-unsupported",
+    "source": "METADATA",
+    "pattern": "platform_server=unsupported",
+    "declares": "CLIENT",
+    "note": "Modrinth declares server_side: unsupported. CurseForge has no such field and always reads 'unknown', so this only ever fires for Modrinth projects."
+  },
+  {
+    "id": "platform-server-required",
+    "source": "METADATA",
+    "pattern": "platform_server=required",
+    "declares": "SERVER",
+    "note": "The mod claims it runs on a server. Recorded because it is the claim worth contradicting: a SERVER declaration whose console then reaches a client-only class is exactly the unclean mod this engine hunts."
+  },
+  {
+    "id": "manifest-server-or-both",
+    "source": "METADATA",
+    "pattern": "manifest=server_or_both",
+    "declares": "SERVER",
+    "note": "The jar's descriptor says server or both. Same reasoning as platform-server-required, from the other source."
+  }
+]

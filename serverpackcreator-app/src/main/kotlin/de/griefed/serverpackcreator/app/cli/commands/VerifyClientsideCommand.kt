@@ -66,6 +66,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
     )
     private var output: String? = null
 
+    /** Assess a project with a real server boot on top of the metadata — the expensive pass, and the only one whose crash is decisive. */
     override fun run() {
         verify(url ?: return, output?.let { File(it) })
     }
@@ -73,12 +74,16 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
     /**
      * Build the metadata+boot report for [projectUrl] and emit it to [outputFile] (or stdout when
      * `null`). Failures render as a short Markdown note rather than throwing, so the workflow always
-     * has a comment to post. The headless browser is disposed once the run completes.
+     * has a comment to post.
+     *
+     * **Distribution-locked CurseForge files cannot be verified here.** They publish no download URL, and
+     * the headless-browser workaround that used to fetch them anyway was removed on 2026-09-02 — see
+     * `HttpJarDownloader`. Such a project is verified from Modrinth instead.
      */
     fun verify(projectUrl: String, outputFile: File? = null) {
         val workDirectory = File(apiWrapper.apiProperties.homeDirectory, "work/clientside-verify")
         val markdown = try {
-            BrowserDownloader().use { browserDownloader ->
+            run {
                 val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
                 val verifier = ClientsideVerifier(
                     platforms = supportedPlatforms(),
@@ -90,7 +95,6 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                             apiWrapper = apiWrapper,
                             platform = platform,
                             httpDownloader = httpDownloader,
-                            browserDownloader = browserDownloader,
                             loaderVersionPolicy = LoaderVersionResolver(apiWrapper.versionMeta),
                             workDirectory = File(workDirectory, "boot")
                         )

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 
 /**
@@ -42,7 +42,7 @@ data class FallbackLists(
  * The point is to take the fallback list off a maintainer's hand-editing loop: the grinder boots mods
  * continuously, and a mod that crashes a server is exactly the evidence the list exists to encode.
  *
- * Only [Confidence.HIGH] is ever published, because only a crash is decisive — a mod that boots cleanly
+ * Only [Verdict.CONFIRMED] is ever published, because only a rule match is decisive — a mod that boots cleanly
  * has proven nothing, and a false entry silently strips a mod out of everybody's server pack. That
  * asymmetry is why the gate is a floor rather than a threshold to tune.
  *
@@ -74,7 +74,12 @@ object FallbackPropertiesRenderer {
         verdicts: Collection<GrindVerdict>
     ): String {
         val proven = verdicts
-            .filter { it.confidence == Confidence.HIGH }
+            // One condition, where there used to be two. `Confidence.HIGH` was also reachable from the bare
+            // exit-code rung -- "exited non-zero, nothing recognised why" -- so a separate decisive-rung check
+            // had to be bolted alongside it; measured on the live daemon, 27 of 43 published HIGHs rested on no
+            // decisive evidence. `verdictOf` now only ever reaches CONFIRMED from a decisive rung, so CONFIRMED
+            // *means* decisive and asking twice would only invite the two to drift apart.
+            .filter { it.verdict == Verdict.CONFIRMED }
             .mapNotNull { it.suggestedEntry?.trim()?.ifEmpty { null } }
         val shipped = normalise(clientsideMods)
         val merged = normalise(clientsideMods + proven)
@@ -103,6 +108,7 @@ object FallbackPropertiesRenderer {
             appendList(MODS_WHITELIST_KEY, whitelisted)
         }
     }
+
 
     /**
      * Merge, drop blanks and unrepresentable entries, de-duplicate, and sort case-insensitively so the

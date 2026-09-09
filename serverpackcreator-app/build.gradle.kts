@@ -25,7 +25,7 @@ configurations {
 dependencies {
     api(project(":serverpackcreator-api"))
     // Clientside-mod verification engine (platforms, metadata/boot signals, list editing). The CLI
-    // verbs in this module are thin wrappers over it; Playwright arrives transitively from here.
+    // verbs in this module are thin wrappers over it.
     api(project(":serverpackcreator-clientside"))
     api(libs.kotlinReflect)
     api(libs.commonsIo)

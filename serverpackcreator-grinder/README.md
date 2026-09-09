@@ -37,7 +37,8 @@ docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 |---|---|
 | Result table | <http://localhost:8757/> — sortable, highest confidence first |
 | CSV export | <http://localhost:8757/export.csv> |
-| What it is doing right now | `curl -s localhost:8757/status` |
+| JSON feed | <http://localhost:8757/verdicts.json> — the same rows, each field keeping its own type |
+| What it is doing right now | `http://localhost:8757/dashboard` in a browser, or `curl -s localhost:8757/status` |
 
 **6. Run it continuously.** Once step 4 works, drop the `--args` and the grinder crawls the catalogue on
 its own, keeping the same report live at `localhost:8757`:
@@ -63,7 +64,7 @@ on the host is touched, and no mod ever gets network access.
 | JDK 21+              | To build and run the service                                                 |
 | Disk                 | The runtime image is ~2 GB; each cached loader install adds a few hundred MB |
 | RAM                  | ~3 GB **per parallel worker** (each worker holds a booting Minecraft server) |
-| Playwright + Chromium | **Required for CurseForge.** Distribution-locked files (`allowModDistribution=false`) have no API download-URL and are fetched with a headless browser, on the *host*. Install with `npx --yes playwright install chromium` as the service account, plus `sudo npx --yes playwright install-deps chromium` for the OS libraries |
+| ~~Playwright + Chromium~~ | **No longer needed** (removed 2026-09-02). Distribution-locked CurseForge files (`allowModDistribution=false`) publish no download URL and are reported as unverifiable; the headless-browser workaround that used to fetch them is gone. Non-locked CurseForge files and all of Modrinth never needed it. |
 | `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only. Complementary to the browser above: the key reveals that a file is locked, the browser fetches it |
 
 ---
@@ -98,7 +99,30 @@ Pass any number of project URLs. The grinder resolves each, boots it per modload
 
 ## 4. Run it as a service (continuous)
 
-With **no arguments** it enters fire-and-forget mode:
+**Deploy it on a server in one command.** This fetches the module's deploy script and runs it: it
+creates the build and service accounts, clones `develop`, builds the runtime image and the
+distribution, installs to `/opt/spc-grinder`, installs the systemd unit and enables it.
+
+```bash
+f=$(mktemp) && curl -fsSL https://git.griefed.de/griefed/serverpackcreator/raw/branch/develop/serverpackcreator-grinder/deploy/install-grinder.sh -o "$f" && sudo bash "$f" --bootstrap
+```
+
+**Every run after that is the same command without `--bootstrap`** — that is the upgrade path, and
+re-fetching each time means the deploy logic is updated along with the code it deploys. Add
+`--skip-image` once the runtime image exists; it is the difference between a two-minute update and a
+ten-minute one.
+
+Docker and JDK 21+ must already be present. The script checks both and names the command to fix
+them, but it deliberately installs no packages — on Debian/Ubuntu the one-time step is
+`apt install -y docker.io git openjdk-21-jdk && systemctl enable --now docker`. §8 covers the rest,
+and `--help` lists every flag.
+
+> Deliberately **not** `curl … | sudo bash`. A pipe hands the shell a script it may have only half
+> received, and root running half a script fails worse than a download that fails cleanly.
+> Downloading first also leaves you a file you can read before running it as root.
+
+To watch a pass in the foreground instead — during development, or the first time — run it with **no
+arguments**:
 
 ```bash
 ./gradlew :serverpackcreator-grinder:run
@@ -190,6 +214,12 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
+| `SPC_GRINDER_LEARNED_IDS`       | `~/.spc-grinder/learned-mod-ids.json` | Mod-id-to-project map learned from staged jars; pure cache, deleting it costs downloads only |
+| `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
+| `SPC_GRINDER_BOOT_LOGS`         | `~/.spc-grinder/boot-logs`     | Console, server logs and crash reports of every boot that did not survive    |
+| `SPC_GRINDER_BOOT_RULES`        | `~/.spc-grinder/boot-rules.json` | Operator console rules; absent = built-in classification only. Hot-reloaded |
+| `SPC_GRINDER_RULE_FALLBACK`     | `grinder`                      | What a rule stating no verdict means: `grinder` (the ladder decides) or `inconclusive` |
+| `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` | `2048`                       | Ceiling for that store; oldest attempts are dropped first once it is passed  |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
@@ -199,6 +229,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
+| `SPC_GRINDER_STORE_FLUSH_SECONDS` | `30`                         | Seconds between verdict-store writes. `0` writes through on every verdict    |
 | `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
 | `SPC_GRINDER_CACHE_TTL_DAYS`    | `7`                            | Delete cached loader installs unused this long (~150 MB each). `0` = never   |
 | `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
@@ -396,14 +427,49 @@ workers over starving each of them.
 
 While the service runs:
 
-- **Table:** `http://localhost:8757/` — sortable by any column (name, project, name pattern, confidence, loader)
+- **Table:** `http://localhost:8757/` — sortable by any column, including **Logs**
 - **CSV:** `http://localhost:8757/export.csv`
+- **JSON:** `http://localhost:8757/verdicts.json`
 
-Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest confidence first.
+Table columns are `Name, Project, Name-pattern, Verdict, Declared, Loader, Platform, Project sideness,
+Jar sideness, Detail, Decision, Rule, Dependencies, Scanned (UTC), Logs`, findings first. The CSV carries the
+same set except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
+Re-derive the exact list from `VerdictField` rather than trusting this sentence — that enum is the single
+declaration behind the header, the CSV header, the query key, the filter and the sort.
 
-**Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
-means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
-learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
+**JSON (`/verdicts.json`)** serves the same selection as the table and the CSV — same `q`, `f.<field>`,
+`sort`, `dir`, `page` and `size` parameters, and like `/export.csv` a bare call returns everything rather
+than one page. It differs from the CSV in keeping each field's own type: `stagedDependencies` arrives as an
+array instead of a comma-joined string, and `verifiedAt` as an ISO-8601 timestamp. The document wraps the
+rows in the paging metadata, so a consumer can tell "nothing matched" from "nothing recorded":
+
+```json
+{ "total": 1483, "matched": 91, "page": 1, "pages": 1, "verdicts": [ … ] }
+```
+
+This is the endpoint the ServerPackCreator grinder plugin reads. Use `/export.csv` for a spreadsheet and
+`/verdicts.json` for anything that parses the result.
+
+**Logs is sortable but not filterable**, because it is the one column not derived from the verdict — it is a
+listing of the artifacts kept on disk. Not every entry has any: artifacts are kept only for boots that did
+not survive, and the reaper drops the oldest once `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` is passed. Sorting it
+descending (`?sort=logs&dir=desc`) is how you find the rows with something to read. `sort=logs` on
+`/export.csv` is accepted but does nothing, since that export has no Logs column.
+
+**Interpreting the verdict.** Six values, and only one of them publishes anything:
+
+| Verdict | What it means | What to do with it |
+|---|---|---|
+| `CONFIRMED` | A rule matched a boot's console and named this mod exclusion-worthy. The **only** verdict `/as-properties` publishes. | Read the `Rule` and `Logs` columns; a confirmation you disagree with is revoked by editing the rules file. |
+| `CLEAR` | The server reached its ready-line and nothing matched — proven server-safe. | Nothing. This is the good outcome. |
+| `INCONCLUSIVE` | A boot **ran** and did something unexpected with nothing explaining why. | Read the console; this is the raw material the next rule is written from. |
+| `ERROR` | The grind could not be performed **and it is ours or the host's**: a failed download, a pack that would not generate, a missing runtime image. | Fix it. This is the only bucket that is actionable, which is why the other two exist. |
+| `LOCKED` | A CurseForge `allowModDistribution=false` opt-out stands between the grinder and a jar — the mod's own file, or a required dependency's. | Nothing, unless the mod is also on Modrinth, where files carry a URL. Retrying never helps. |
+| `UNVERIFIABLE` | The grind was never possible: a dependency nothing upstream published for that loader and Minecraft, a loader with no build, or a jar carrying only another loader's descriptor. | Nothing. QSL is the clearest case — its last release is Minecraft 1.21 and the project is discontinued, so a Quilt mod needing a `quilt_*` module on 1.21.1+ can never be verified. |
+
+A clean boot does **not** prove a mod is server-safe in general — only that this build, with these
+dependencies, on this Minecraft, reached a ready-line. `CONFIRMED` is the direction the evidence is strong
+in, which is why it is the only one published.
 
 **Read the `Detail` column on a crash.** A crash that *contradicts* the mod's own metadata — it claims to
 support servers, yet the server died — is re-checked on up to two other versions of the mod before it may
@@ -424,6 +490,47 @@ one entry per platform with the next `offset`, the number of completed `sweeps`,
 `partition` being walked (`gameVersion|modLoaderType|direction`, `*` meaning "no filter"). Read it to tell
 "still on the first pass over this platform" from "covered it, now keeping it current".
 
+### Re-grinding verdicts you no longer trust
+
+The crawl plus the re-verify TTL answer *when does a project come round again?* with **eventually, at the
+TTL** — right when a mod changes, wrong when the bug is in the grinder. When that happens the affected
+verdicts are already published, and waiting out a 30-day TTL means serving a known-wrong clientside entry for
+a month.
+
+So there is a queue that jumps the crawl. Entries in it are ground **first, in the next pass, and past the
+freshness check** — the last part matters, because a verdict is queued precisely *because* it is wrong, and a
+wrong verdict is usually a recent one.
+
+```bash
+# A named handful — a report someone disputed, a verdict that looks wrong.
+spc-grinder --requeue https://modrinth.com/mod/creativecore https://www.curseforge.com/minecraft/mc-mods/jei
+
+# Everything verified before a fix landed. This is the one you want after an engine bug:
+# a defect invalidates a *population*, not a list you assemble by hand.
+spc-grinder --requeue-before 2026-08-23T18:00:00Z
+
+# Everything verified since a moment. This is the one you want after an OUTAGE — the daemon or its
+# host was broken from then until you noticed, so everything ground in that window is suspect.
+spc-grinder --requeue-since 2026-09-03T18:00:00Z
+```
+
+The last two are mirrors, and picking the wrong one queues exactly the verdicts you did not mean: `-before`
+is "the past is suspect, we have just fixed it", `-since` is "this window is suspect, it has just ended".
+`-since` includes a verdict stamped at the instant itself, so the two never overlap.
+
+All three commands **queue and exit**, so run them against a service that is already up — the daemon takes the
+queue at the start of its next pass (a stopped one, on its next start). They are additive and idempotent:
+queueing something already waiting changes nothing, and the same slug on the two platforms queues twice
+because it is two projects. Run them **as the same user as the service**, or it will not be able to read the
+queue back.
+
+Watch the backlog drain on `/status` → `requeued`, and in the log: a queued grind logs
+`Grinding <platform>/<slug> (re-grind requested)`, which is how you tell "the crawl reached this" from
+"somebody decided the old verdict was wrong".
+
+The queue lives in `SPC_GRINDER_REQUEUE` (`~/.spc-grinder/requeue.json`) and survives restarts. Deleting the
+file cancels whatever is still waiting.
+
 ---
 
 ## 7. Watch what it is doing (logs and live status)
@@ -439,6 +546,21 @@ you want when a boot has been quiet for eight minutes.
 | Why is a cold tuple taking minutes? | that tuple's `.spc-install.log` (live) |
 | Where has the crawl got to? | `/status` → `crawl`, or `SPC_GRINDER_CURSORS` |
 
+### `/dashboard` — live activity, for a human
+
+`http://localhost:8757/dashboard` is `/status` rendered as a page that polls itself: the current pass, what
+each worker is holding and for how long, the crawl position per platform, the loader-cache size, and any
+boot-rule errors — with durations as `2d 3h 2m` rather than `183742`. The poll interval is selectable
+(2/5/15/60s) and pausable, and it says so when the daemon stops answering rather than freezing on stale
+numbers.
+
+No framework and nothing fetched off the network, so it works over an SSH tunnel or behind a reverse proxy
+on a host with no route to a CDN. It is **read-only**, like every other endpoint here, and carries the same
+absence of authentication — see *Exposing the report* above.
+
+`/status` itself is unchanged and stays JSON: it is a second route, not content negotiation, so anything
+scripted against `/status` is unaffected.
+
 ### `/status` — live activity, as JSON
 
 ```bash
@@ -448,6 +570,8 @@ curl -s http://localhost:8757/status
 ```json
 {
   "verdicts" : 454,
+  "requeued" : 0,
+  "bootRules" : { "source" : "none", "ruleCount" : 0, "undecidedVerdict" : "grinder decides", "errors" : [ ] },
   "activity" : {
     "uptimeSeconds" : 22, "pass" : 1, "passCandidates" : 100,
     "passRunningSeconds" : 20, "verified" : 2, "failed" : 0, "skippedFresh" : 0,
@@ -464,6 +588,12 @@ curl -s http://localhost:8757/status
 }
 ```
 
+**`bootRules.errors` is the one nobody thinks to check.** A broken rule file keeps the *last good* rules
+rather than dropping them, which is what stops a mid-edit save from disabling everything you wrote — but it
+also means a typo is invisible from the outside. Anything non-empty there is a rule that is not running.
+`undecidedVerdict` shows which mode `SPC_GRINDER_RULE_FALLBACK` put the daemon in: `grinder decides` (the
+default) or `INCONCLUSIVE`.
+
 **`busySeconds` is the one to watch.** A worker past a few minutes on one candidate is either installing a cold
 loader tuple or stuck; the boot budget is 12 minutes, so anything approaching that will end as `INCONCLUSIVE`.
 A worker between candidates is simply absent from `workers`, so a shorter list than `SPC_GRINDER_WORKERS` means
@@ -474,6 +604,7 @@ Handy one-liners:
 ```bash
 curl -s localhost:8757/status | jq '.activity.workers'                  # who is on what
 curl -s localhost:8757/status | jq '.crawl'                             # crawl position per platform
+curl -s localhost:8757/status | jq '.bootRules'                         # rules loaded, and any that failed
 watch -n5 'curl -s localhost:8757/status | jq -c .activity'             # a poor man's dashboard
 ```
 
@@ -592,12 +723,92 @@ something to retype:
 - [`deploy/spc-grinder.service`](deploy/spc-grinder.service) — every variable §5 documents, commented out, with
   its default. Pinned against `GrinderApplication` by `SystemdUnitConfigurationTest`, so a knob added to the
   service and forgotten here fails the build.
-- [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — builds the runtime image, runs `installDist`,
-  installs to `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership.
-  Run it as your normal user, **not** as root: it calls `sudo` for the privileged steps itself, and a Gradle
-  build run as root leaves root-owned files in `build/`. Re-running it is the upgrade path. `--help` lists the
-  flags; two are worth knowing about — `--grant-docker`, without which it refuses to put an *already-existing*
-  account into the root-equivalent `docker` group, and `--no-pull` for an offline image rebuild.
+- [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — **one script, two modes, and the mode is
+  your uid rather than a flag.** Run as a normal user it builds *this* checkout and installs it; run as
+  root it clones a branch and hands off to the first mode inside that clone. There is no `--mode`,
+  because there is no choice: a Gradle build must not run as root or it leaves root-owned files in
+  `build/` that your next ordinary build cannot overwrite, and dropping to an unprivileged build account
+  requires being root to begin with. Re-running either way is the upgrade path. `--help` prints
+  everything.
+
+  ```bash
+  ./install-grinder.sh                  # build this checkout, install it, restart the service
+  sudo ./install-grinder.sh --bootstrap # first install on a host that never ran the grinder
+  sudo ./install-grinder.sh             # update an installed service from a fresh clone
+  ```
+
+  **Build mode** (not root) builds the runtime image, runs `installDist`, installs to
+  `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership. It
+  calls `sudo` for the privileged steps itself. Flags worth knowing: `--grant-docker`, without which it
+  refuses to put an *already-existing* account into the root-equivalent `docker` group; `--no-pull` for
+  an offline image rebuild; `--skip-image`; and `--install-unit` to install the unit file (never enabled
+  or started for you).
+
+  **`--clear` is the fresh-start flag, and the only thing in the script that destroys data.** It removes
+  `SPC_GRINDER_HOME` — `/home/grinder/.spc-grinder` in the shipped unit — which holds the verdict store,
+  the crawl cursors, the re-grind queue, the kept boot logs *and* the loader cache. The daemon then starts
+  with no verdicts, at the head of the crawl, and re-downloads every loader install it needs at roughly
+  150 MB per loader/Minecraft tuple, which is the expensive part rather than the verdicts. Binaries are
+  untouched: this is about state, not code. It runs **after** the service is stopped, which is
+  load-bearing — the daemon coalesces verdict writes and flushes on shutdown, so clearing a running
+  service would only get the store written back out of memory as it stops. The path is guarded on its
+  shape before anything is built, and refused outright if it resolves to the account's whole home or to
+  the install prefix. Do not confuse it with the checkout deploy mode wipes on every run: that is build
+  input and costs a clone to replace, while the data directory costs weeks of boots.
+
+  **Deploy mode** (root) exists to drop privileges. On a host that has never run the grinder, use
+  `--bootstrap`: without it, deploy mode presumes what a first install leaves behind and stops at the
+  first thing it cannot satisfy — and the first thing is a chicken-and-egg, because it needs the build
+  account to exist while the account is created by build mode's step 4, which it never reaches.
+  `--bootstrap` creates the account, adds it to the `docker` group, implies `--install-unit`, and
+  `systemctl enable --now`s the service at the end. `--branch` picks what to deploy.
+
+  It **does not install packages**. Docker and a JDK must already be present; both are checked up front
+  and named with the command to fix them, but `apt`/`dnf`/`pacman` differ and silently installing a
+  container runtime is a bigger step than a deploy script should take unattended. The build JDK is worth
+  calling out because nothing used to check it: build mode's JVM step asks whether *systemd* will find a
+  java for the **service**, which is a different question answered much later, so a host with no JDK
+  failed inside Gradle with a message about `JAVA_HOME` and nothing about how it got there.
+
+  **`--bootstrap` grants the `docker` group only to an account it created itself.** That group is
+  root-equivalent, build mode refuses to grant it to an account it did not create, and bootstrapping is
+  not a reason to be less careful — a pre-existing account is refused with the `usermod` line to run
+  deliberately.
+
+  **It builds as a *build* account, not as `grinder`.** The service account is created nologin and
+  without sudo, which is what a service account should be, and the build needs both — it calls `sudo`
+  about thirty times. So `sudo -u grinder -i ./install-grinder.sh` cannot work twice over: `-i` runs the
+  account's login shell, which is `/usr/sbin/nologin`, and the account could not `sudo` even if it had
+  one.
+
+  The account needs `docker` membership, which is checked before anything is cloned (otherwise it
+  surfaces inside the build as a stopped Docker daemon). It does **not** need permanent `sudo`: if it
+  cannot already sudo without a password, the script grants that for the run and removes the grant on
+  exit — on `EXIT`, so a build that dies at Gradle or is Ctrl-C'd leaves nothing behind — which it can do
+  because it is root already. A drop-in written by a run that got killed is refused rather than reused,
+  so a leaked grant is loud instead of silent.
+
+  **A password prompt is not the alternative.** Root running `sudo -u <account>` needs no password — the
+  one that does is build mode's own sudo, the account going back to root. An account created by `useradd
+  --system` has no password at all, so that prompt cannot be answered by anyone, TTY or not.
+  `--no-temp-sudo` leaves `/etc/sudoers.d` alone and lets it prompt, which is only useful for an account
+  that has a password.
+
+  **Deploy mode runs the *clone's* copy of the script, not the one you launched.** That is the point of
+  cloning: the branch carries its own installer, and re-running the launched copy would install the
+  branch's jars under whatever logic happened to be on your disk. The child runs unprivileged, so it
+  lands in build mode; only root reaches the hand-off, so there is no recursion.
+
+  **It refuses to run from a copy of itself inside `/opt/spc-grinder-src`**, which is where the previous
+  run left a checkout and therefore the copy nearest to hand. Deploy mode wipes that directory before it
+  clones, so running the copy inside it means deleting the file bash is still reading — and bash reads a
+  script incrementally, by offset, so the symptom is a syntax error somewhere in the middle rather than
+  anything naming the cause. Re-fetch it instead, which is what the one-liner in §4 does.
+
+  It keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: build mode finishes
+  with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next*
+  build. And deploy mode never stops or starts the service — build mode does, and its `EXIT` trap
+  restarts it if the install dies halfway, which only works if it was the one that stopped it.
 
 **The service needs a JVM systemd can find.** The launcher wants `JAVA_HOME` or a `java` on `PATH`, and systemd
 gives a unit neither — its `PATH` is `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin` and nothing
@@ -629,9 +840,11 @@ Two more things the unit file decides, both worth stating explicitly:
 | `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
 | `FileNotFoundException: /log4j2.xml`, `Could not create directory /logs` | The service ran in `/` and SPC took it for its home. Fixed in the daemon, which now names its home itself; on an older build set `WorkingDirectory=` in the unit (§8) |
 | `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
-| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning above it, and the console it names; note the tuple is then on a 60-minute cooldown, so later candidates repeat this line without a fresh attempt |
+| `Loader install for … failed, so the pack could not be completed` | The one-off install boot failed for **this** candidate — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning, or the `Loader install threw` line, and the `install.log` under `<work>/install/<mc>-<loader>-<version>/` |
+| `Loader install for … was not retried` (on cooldown) | An **echo**, not a cause: that tuple failed within the last 60 minutes and is not being re-attempted, so this appears once per candidate wanting it while the real failure was logged once. Find the cause with `journalctl -u spc-grinder \| grep -E 'Install produced no library layer\|Loader install threw'` |
+| `Runtime image '…' is not available on the container daemon` | The daemon refuses to start, deliberately: nothing could be booted, so every candidate would be scored INCONCLUSIVE about a boot that never happened. Either the image was removed (a `docker system prune -a` does it — it is only in use *during* a boot) or Docker is unreachable. Rebuild it (§2) and start the service again |
 | Installs fail instantly with `Permission denied` inside the pack | The container's `uid:gid` does not own the staging directory, so it can read the pack and write nothing. §5, *Container identity* — check the `containerUser=` value on the startup line |
-| Every locked CurseForge file fails    | With `Timeout 30000ms exceeded`: missing Chromium OS libraries (`sudo npx --yes playwright install-deps chromium`) — the `Playwright Host validation warning` in the log lists them. With a `net::ERR_ABORTED` stack: an older build, in which the download-triggered navigation abort discarded the file |
+| Every locked CurseForge file fails | **Expected, and not a fault.** `allowModDistribution=false` means the author opted out of third-party distribution, so no download URL exists and the mod cannot be boot-verified from CurseForge. The verdict says so and names Modrinth, where the same project is verified from instead. |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
 | Everything is `INCONCLUSIVE`             | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column                         |
@@ -669,6 +882,16 @@ restart. Run it after touching paging or the cursor:
 
 ```bash
 GRINDER_LIVE_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*CatalogCrawlLiveIT"
+
+# Audit a LIVE grinder's published verdicts against their own evidence. Fails if any verdict published as
+# HIGH rests on a crash that is not decisive evidence of client-only-ness -- a mixin that would not apply, a
+# dependency solver that gave up, a jar staged for the wrong loader, or a bare non-zero exit nobody
+# recognised. Prints the distribution by decision either way, so a new failure shape shows up as a bucket.
+#
+#   SPC_GRINDER_AUDIT_URL     which grinder to grade (default https://grinder.serverpackcreator.de)
+#   SPC_GRINDER_AUDIT_SAMPLE  how many consoles to fetch (default 200)
+#   SPC_GRINDER_BOOT_RULES    honoured, so the audit classifies with the same rules the daemon uses
+GRINDER_AUDIT_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*GrinderAuditIT"
 ```
 
 Internals, design decisions and landmines live in [`CLAUDE.md`](CLAUDE.md) and [`module.md`](module.md).

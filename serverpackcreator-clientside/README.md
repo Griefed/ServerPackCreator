@@ -25,28 +25,23 @@ because the author implemented their clientside code wrong.
 | The ServerPackCreator jar | everything                            | From the [latest release](https://github.com/Griefed/ServerPackCreator/releases)    |
 | `CURSEFORGE_API_KEY`      | CurseForge links only                 | Modrinth needs no key. CurseForge's API refuses requests without one                |
 | Network                   | everything                            | Resolving projects, downloading jars                                                |
-| Browser system libraries  | locked CurseForge files, **on Linux** | See below — a headless Chromium needs OS libraries that a bare server usually lacks |
 
 ```bash
 export CURSEFORGE_API_KEY="your-key"      # only if you pass curseforge.com links
 ```
 
-**Distribution-locked CurseForge files** (authors who disabled third-party downloads) are fetched through a
-headless browser instead. Mods with open downloads never trigger it, so most runs never touch this.
+**Distribution-locked CurseForge files cannot be verified.** Some authors disable third-party downloads
+(`allowModDistribution=false`), and CurseForge then publishes no download URL for the file — so there is
+nothing to fetch and the mod cannot be scanned or boot-tested from that platform. The report says so per
+mod rather than failing the run, and every other mod verifies normally.
 
-When it *is* needed, two things must be in place:
+If the project is also on Modrinth, verify it from there: Modrinth files always carry a download URL.
 
-1. **The browser binary** — downloaded automatically on first use, so the first locked mod you verify needs
-   extra network and disk.
-2. **Its system libraries** — *not* handled by that download. On a headless Linux host, install them once:
-
-   ```bash
-   npx --yes playwright install-deps chromium
-   ```
-
-   This is what ServerPackCreator's own CI does before a boot-verification run. Without it, Chromium fails to
-   launch on a bare server. Treat it as best-effort: if it can't be installed, locked files simply fail to
-   download while every other mod still verifies normally.
+> Earlier versions drove the CurseForge website with a headless Chromium to fetch these anyway, which is why
+> older docs mention Playwright and `playwright install-deps`. That was removed in 2026-09: it existed only
+> to work around the author's opt-out, it stopped working when CurseForge moved behind a bot challenge, and
+> it cost ~193 MB of bundled browser runtimes in every download. **No browser is needed any more, and none
+> of those prerequisites apply.**
 
 Everything below is run as `java -jar serverpackcreator.jar <verb>`. Adjust the jar name to your release.
 
@@ -171,8 +166,7 @@ Each command accepts `--help`.
 | Symptom                              | Cause & fix                                                                                                                                                                                                                 |
 |--------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | CurseForge link fails to resolve     | `CURSEFORGE_API_KEY` unset or invalid — Modrinth links are unaffected                                                                                                                                                       |
-| A file won't download                | The author disabled third-party distribution, so the headless browser takes over. On first use it needs network for the browser binary, and on Linux the system libraries from `npx --yes playwright install-deps chromium` |
-| Chromium fails to launch             | Missing OS libraries on a headless host — run `npx --yes playwright install-deps chromium`. Only locked files are affected                                                                                                  |
+| A file won't download | The author disabled third-party distribution (`allowModDistribution=false`), so CurseForge publishes no download URL. This is permanent, not a misconfiguration — verify the project from Modrinth instead. |
 | Everything comes back `INCONCLUSIVE` | Usually no bootable combination: the mod's newest file may target a Minecraft version its loader has no build for, or only pre-releases. Check the report's detail line                                                     |
 | Boot takes very long                 | Expected on a cold run — the first boot downloads the Minecraft server plus the loader                                                                                                                                      |
 | I need this at catalogue scale       | Use [`serverpackcreator-grinder`](../serverpackcreator-grinder/README.md), which runs these boots in parallel, isolated Docker containers                                                                                   |

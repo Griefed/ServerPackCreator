@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -50,7 +50,7 @@ internal class GrindPoolOrderTest {
         val processed = Collections.synchronizedList(mutableListOf<String>())
         val verifier = CandidateVerifier { c ->
             processed.add("${c.platform}:${c.slug}")
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.MEDIUM)), platform = c.platform)
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", verdict = Verdict.INCONCLUSIVE)), platform = c.platform)
         }
         GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = workers).grindAll(candidates)
         return processed
@@ -124,7 +124,7 @@ internal class GrindPoolOrderTest {
             if (processed.size >= 2) {
                 pool.requestStop() // cut the pass short, as a shutdown would
             }
-            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.MEDIUM)), platform = c.platform)
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", verdict = Verdict.INCONCLUSIVE)), platform = c.platform)
         }
         pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
         val candidates = (1..20).map { candidate("CurseForge", "cf$it", 1_000_000_000L - it) } +

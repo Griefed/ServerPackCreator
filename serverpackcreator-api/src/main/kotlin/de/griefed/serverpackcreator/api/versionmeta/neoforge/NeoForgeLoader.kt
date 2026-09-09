@@ -28,6 +28,7 @@ import org.w3c.dom.Document
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
+import java.util.Collections
 
 /**
  * Information about available NeoForge loader versions in correlation to Minecraft versions.
@@ -45,8 +46,16 @@ internal class NeoForgeLoader(
     private val minecraftMeta: MinecraftMeta
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    val minecraftVersions: MutableList<String> = ArrayList(100)
-    val neoForgeVersions: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place — the refresh runs on a background coroutine while callers read.
+     */
+    @Volatile
+    var minecraftVersions: List<String> = emptyList()
+        private set
+    @Volatile
+    var neoForgeVersions: List<String> = emptyList()
+        private set
     private val version = VersionMetaConfig.TAG_VERSION
 
     /**
@@ -54,14 +63,18 @@ internal class NeoForgeLoader(
      * * `key`: Minecraft version.
      * * `value`: List of NeoForge versions for said Minecraft versions.
      */
-    val versionMeta: HashMap<String, List<String>> = HashMap(200)
+    @Volatile
+    var versionMeta: Map<String, List<String>> = emptyMap()
+        private set
 
     /**
      * 1-1 NeoForge version to Minecraft version
      * * `key`: NeoForge version.
      * * `value`: Minecraft version for said NeoForge version.
      */
-    val neoForgeToMinecraftMeta: HashMap<String, String> = HashMap(200)
+    @Volatile
+    var neoForgeToMinecraftMeta: Map<String, String> = emptyMap()
+        private set
 
     /**
      * 1-1 Minecraft + NeoForge version combination to [NeoForgeInstance]
@@ -71,7 +84,9 @@ internal class NeoForgeLoader(
      * * `1.18.2-40.0.44`
      * + `value`: The [NeoForgeInstance] for said Minecraft and NeoForge version combination.
      */
-    val instanceMeta: HashMap<String, NeoForgeInstance> = HashMap(200)
+    @Volatile
+    var instanceMeta: Map<String, NeoForgeInstance> = emptyMap()
+        private set
 
     /**
      * Update the available NeoForge loader information.
@@ -80,11 +95,11 @@ internal class NeoForgeLoader(
      */
     @Throws(IOException::class)
     fun update() {
-        minecraftVersions.clear()
-        neoForgeVersions.clear()
-        versionMeta.clear()
-        neoForgeToMinecraftMeta.clear()
-        instanceMeta.clear()
+        val nextMinecraftVersions = ArrayList<String>(100)
+        val nextNeoForgeVersions = ArrayList<String>(100)
+        val nextVersionMeta = HashMap<String, List<String>>(200)
+        val nextNeoForgeToMinecraftMeta = HashMap<String, String>(200)
+        val nextInstanceMeta = HashMap<String, NeoForgeInstance>(200)
 
         val oldNeoDocument: Document = utilities.xmlUtilities.getXml(oldNeoForgeManifest)
         val oldNeoElements = oldNeoDocument.getElementsByTagName(version)
@@ -103,9 +118,9 @@ internal class NeoForgeLoader(
             val neoForgeVersion = combination[1]
 
             if (!minecraftVersions.contains(mcVersion)) {
-                minecraftVersions.add(mcVersion)
+                nextMinecraftVersions.add(mcVersion)
             }
-            neoForgeVersions.add(neoForgeVersion)
+            nextNeoForgeVersions.add(neoForgeVersion)
             oldNeoForgeVersionsForMCVer.add(neoForgeVersion)
             try {
                 val neoForgeInstance = OldNeoForgeInstance(
@@ -113,8 +128,8 @@ internal class NeoForgeLoader(
                     neoForgeVersion,
                     minecraftMeta
                 )
-                instanceMeta["$mcVersion-$neoForgeVersion"] = neoForgeInstance
-                neoForgeToMinecraftMeta[neoForgeVersion] = mcVersion
+                nextInstanceMeta["$mcVersion-$neoForgeVersion"] = neoForgeInstance
+                nextNeoForgeToMinecraftMeta[neoForgeVersion] = mcVersion
             } catch (ex: MalformedURLException) {
 
                 // Well, in THEORY this should never be thrown, so we don't need to bother
@@ -129,7 +144,7 @@ internal class NeoForgeLoader(
                     ex
                 )
             }
-            versionMeta[mcVersion] = oldNeoForgeVersionsForMCVer
+            nextVersionMeta[mcVersion] = oldNeoForgeVersionsForMCVer
         }
 
         val newNeoDocument: Document = utilities.xmlUtilities.getXml(newNeoForgeManifest)
@@ -146,10 +161,10 @@ internal class NeoForgeLoader(
 
                 if (neoForgeVersion.matches(mcVersionRegex)) {
                     if (!minecraftVersions.contains(mcVersion)) {
-                        minecraftVersions.add(mcVersion)
+                        nextMinecraftVersions.add(mcVersion)
                     }
                     if (!neoForgeVersions.contains(neoForgeVersion)) {
-                        neoForgeVersions.add(neoForgeVersion)
+                        nextNeoForgeVersions.add(neoForgeVersion)
                     }
                     if (!newNeoForgeVersionsForMCVer.contains(neoForgeVersion)) {
                         newNeoForgeVersionsForMCVer.add(neoForgeVersion)
@@ -161,8 +176,8 @@ internal class NeoForgeLoader(
                             neoForgeVersion,
                             minecraftMeta
                         )
-                        instanceMeta["$mcVersion-$neoForgeVersion"] = neoForgeInstance
-                        neoForgeToMinecraftMeta[neoForgeVersion] = mcVersion
+                        nextInstanceMeta["$mcVersion-$neoForgeVersion"] = neoForgeInstance
+                        nextNeoForgeToMinecraftMeta[neoForgeVersion] = mcVersion
                     } catch (ex: MalformedURLException) {
 
                         // Well, in THEORY this should never be thrown, so we don't need to bother
@@ -180,14 +195,23 @@ internal class NeoForgeLoader(
                 }
             }
             if (newNeoForgeVersionsForMCVer.isNotEmpty()) {
-                versionMeta[mcVersion] = newNeoForgeVersionsForMCVer
+                nextVersionMeta[mcVersion] = newNeoForgeVersionsForMCVer
             }
         }
 
-        for ((key, value) in versionMeta.entries) {
-            versionMeta[key] = value.reversed()
+        // Reversed on the builder, before publication -- the old code walked the published map's entries
+        // while writing back into it, which is a mutation a concurrent reader could observe half-applied.
+        for (key in nextVersionMeta.keys.toList()) {
+            nextVersionMeta[key] = nextVersionMeta.getValue(key).reversed()
         }
-    }
+
+        // Published in one assignment each, as unmodifiable views.
+        minecraftVersions = Collections.unmodifiableList(nextMinecraftVersions)
+        neoForgeVersions = Collections.unmodifiableList(nextNeoForgeVersions)
+        versionMeta = Collections.unmodifiableMap(nextVersionMeta)
+        neoForgeToMinecraftMeta = Collections.unmodifiableMap(nextNeoForgeToMinecraftMeta)
+        instanceMeta = Collections.unmodifiableMap(nextInstanceMeta)
+}
 
     internal companion object {
         /**

@@ -500,6 +500,7 @@ class InclusionsEditor(
         validate()
     }
 
+    /** Re-check the inclusions and update the status icon. Overrides Swing's own `validate`, so it also lays the panel out. */
     override fun validate() {
         super.validate()
         inclusionList.updateUI()
@@ -661,10 +662,13 @@ class InclusionsEditor(
             exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
     }
 
+    /** Accepts files dragged onto the inclusions list, so a source can be added by dropping it rather than through the chooser. */
     class InclusionsListHandler(private val editor: InclusionsEditor): TransferHandler() {
+        /** Whether the drag carries files, which is the only thing this list accepts. */
         override fun canImport(support: TransferSupport) =
             support.isDrop && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
 
+        /** Add one inclusion per dropped file, and select the last so the details panel shows it. */
         override fun importData(support: TransferSupport): Boolean {
             if (!canImport(support)) {
                 return false

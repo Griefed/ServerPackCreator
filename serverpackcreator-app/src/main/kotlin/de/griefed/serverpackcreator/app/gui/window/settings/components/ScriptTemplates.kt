@@ -6,6 +6,7 @@ import de.griefed.serverpackcreator.app.gui.components.ConvenientJTable
 import java.util.*
 import javax.swing.event.TableModelListener
 
+/** The table mapping a start-script type to the template file it is generated from. */
 class ScriptTemplates(guiProps: GuiProps, tableModelListener: TableModelListener) : ConvenientJTable(
     guiProps,
     Translations.settings_global_scripts_key.toString(),
@@ -26,6 +27,7 @@ class ScriptTemplates(guiProps: GuiProps, tableModelListener: TableModelListener
         super.loadData(data, clearDataBeforeLoad)
     }
 
+    /** The configured template for one script type, empty when the table names none. */
     @Suppress("unused")
     fun getTemplatePath(type: String): Optional<String> {
         return Optional.ofNullable(getData()[type])
