@@ -143,12 +143,12 @@ enum class PreventionCause {
 /**
  * Whether the host got as far as handing a pack to the container, and if not, why.
  *
- * Separate from [BootObservation] because the two failures are not the same kind of thing: staging is the
- * engine's own work and its failure is an operator problem, while a boot's failure is a statement about the
- * mod — the distinction [Verdict.ERROR] exists to preserve.
+ * Separate from [BootResult] because the two failures are not the same kind of thing: staging is the
+ * engine's own work and its failure is nobody's statement about the mod, while a boot's failure is exactly
+ * that — the distinction [Verdict.ERROR], [Verdict.LOCKED] and [Verdict.UNVERIFIABLE] exist to preserve.
  */
 sealed interface StagingOutcome {
-    /** A pack was generated and handed over; whatever happened next is [BootObservation]'s to report. */
+    /** A pack was generated and handed over; whatever happened next is [BootResult]'s to report. */
     data object Staged : StagingOutcome
 
     /** Staging stopped before any container ran; [detail] is the operator-facing reason. */

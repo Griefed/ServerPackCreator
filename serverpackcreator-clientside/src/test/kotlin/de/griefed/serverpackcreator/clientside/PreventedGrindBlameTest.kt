@@ -160,7 +160,7 @@ internal class PreventedGrindBlameTest {
 
         Assertions.assertNotEquals(
             Verdict.ERROR,
-            verdictFor(refusal!!),
+            verdictFor(requireNotNull(refusal) { "the dependency was supposed to be unmet" }),
             "the pack cannot be assembled and nobody involved can change that"
         )
     }
@@ -179,7 +179,7 @@ internal class PreventedGrindBlameTest {
 
         Assertions.assertNotEquals(
             Verdict.ERROR,
-            verdictFor(refusal!!),
+            verdictFor(requireNotNull(refusal) { "the dependency was supposed to be unmet" }),
             "a dependency nobody ever published is not a host problem and not evidence about the mod"
         )
     }
@@ -205,9 +205,11 @@ internal class PreventedGrindBlameTest {
         Assertions.assertEquals(
             Verdict.ERROR,
             verdictFor(
-                BootVerifier.refuseForMissingDependencies(
-                    mapOf("balm" to UnmetReason.DOWNLOAD_FAILED), "Fabric", "26.2", "Modrinth"
-                )!!
+                requireNotNull(
+                    BootVerifier.refuseForMissingDependencies(
+                        mapOf("balm" to UnmetReason.DOWNLOAD_FAILED), "Fabric", "26.2", "Modrinth"
+                    )
+                ) { "a failed download was supposed to refuse" }
             ),
             "a fetch that died is retryable, which is exactly what ERROR is for"
         )

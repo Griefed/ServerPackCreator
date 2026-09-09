@@ -1295,6 +1295,10 @@ class BootVerifier(
             resolveRef: (String) -> ProjectFiles?,
             excluded: Set<String> = emptySet()
         ): ManifestDependencyPlan {
+            // An accumulator rather than a `val`, and deliberately: the loop must stop at the first mapping
+            // that stages (so a second project is never resolved for nothing) while remembering the first
+            // *alias*'s reason in case none does. A functional form either resolves every ref or needs two
+            // passes over them.
             var refusal: UnmetReason? = null
             for (mapping in mappingsFor(requirement.modID)) {
                 val ref = mapping.ref ?: continue
