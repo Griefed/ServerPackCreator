@@ -87,6 +87,36 @@ internal class JsonLearnedModIdsTest {
         )
     }
 
+    /**
+     * **An id whose stored value contributes nothing must leave nothing behind.**
+     *
+     * `restore` claims the map entry with `computeIfAbsent` *before* filtering the refs, so an id carrying a
+     * JSON `null`, a number or an empty array leaves an empty list behind — which `snapshot()` then writes
+     * back as `"id": []`, and the document accumulates entries that assert nothing and grow every restart.
+     * Harmless to read (`refFor` answers `null` either way), which is exactly why nothing would have noticed.
+     *
+     * A mixed-shape document is the same test: the old bare-string form and the new list form in one file is
+     * what a daemon mid-upgrade really holds.
+     */
+    @Test
+    fun anIdWithNothingUsableLeavesNoEntry(@TempDir home: File) {
+        val file = File(home, "learned-mod-ids.json").apply {
+            writeText(
+                """{"Modrinth":{"yacl-id":"yacl","empty-id":[],"null-id":null,"number-id":7,"list-id":["qsl"]}}"""
+            )
+        }
+
+        val store = JsonLearnedModIds(file)
+
+        Assertions.assertEquals("yacl", store.ids.refFor("yacl-id", "Modrinth"), "the legacy string form")
+        Assertions.assertEquals("qsl", store.ids.refFor("list-id", "Modrinth"), "and the current list form")
+        Assertions.assertEquals(
+            setOf("yacl-id", "list-id"),
+            store.ids.snapshot().getValue("Modrinth").keys,
+            "an id that contributed no ref must not survive the round trip as an empty entry"
+        )
+    }
+
     /** A first start has no file, and that is not an error to report or a reason to fail. */
     @Test
     fun aMissingFileIsAnEmptyMap(@TempDir home: File) {
