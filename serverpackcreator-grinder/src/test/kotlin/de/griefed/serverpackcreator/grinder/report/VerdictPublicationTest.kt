@@ -86,15 +86,62 @@ internal class VerdictPublicationTest {
     }
 
     /**
-     * Retention is asked of the verdict itself rather than re-derived, so the artifacts and the outcome that
-     * justified keeping them cannot drift apart. Only a clean boot has nothing worth reading.
+     * **Asked of `Verdict.entries`, so a verdict added later is covered without editing this guard.**
+     *
+     * The four hand-written rows above and `anErrorNeverPublishesHoweverManyThereAre` were the whole of this
+     * file's coverage, and `LOCKED`/`UNVERIFIABLE` joined the population it exists to protect against
+     * (2026-09-09) without appearing in a single assertion. `FallbackPropertiesRenderer` filters
+     * `== Verdict.CONFIRMED`, so it is correct by construction — and construction is exactly what a
+     * publication gate must not be trusted on, since the cost of being wrong is a mod stripped from every
+     * server pack built against the list.
      */
     @Test
-    fun everyVerdictButClearKeepsItsLogs() {
-        Assertions.assertTrue(Verdict.CONFIRMED.keepsLogs, "a published exclusion has to stay auditable")
-        Assertions.assertTrue(Verdict.ERROR.keepsLogs, "an admin reads these to find what broke")
-        Assertions.assertTrue(Verdict.INCONCLUSIVE.keepsLogs, "the next rule is extracted from these")
-        Assertions.assertFalse(Verdict.CLEAR.keepsLogs, "a clean boot has nothing to investigate")
+    fun onlyConfirmedIsEverPublished() {
+        val rendered = render(Verdict.entries.map { grindVerdict("${it.name.lowercase()}-mod", "Forge", verdict = it) })
+
+        Verdict.entries.forEach { verdict ->
+            val entry = "${verdict.name.lowercase()}-mod-"
+            if (verdict == Verdict.CONFIRMED) {
+                Assertions.assertTrue(rendered.contains(entry), "$verdict is the one that publishes:\n$rendered")
+            } else {
+                Assertions.assertFalse(rendered.contains(entry), "$verdict must not publish:\n$rendered")
+            }
+        }
+    }
+
+    /**
+     * **Every verdict is classified for retention, asserted over `Verdict.entries` so a verdict added later
+     * cannot slip through unclassified.**
+     *
+     * This replaced `everyVerdictButClearKeepsItsLogs`, whose four hand-written assertions stayed green
+     * while its *name* became false: `LOCKED` and `UNVERIFIABLE` discard too (2026-09-09). A guard that
+     * lists the values it knows about cannot notice a new one, which is the whole failure this is written
+     * to avoid.
+     *
+     * The three reasons for discarding are not one rule, which is why this is a set rather than a predicate
+     * over [Verdict.grindRan] — a plausible-looking partition on "did a container run?" is wrong, because
+     * `ERROR` keeps its logs *despite* nothing having run:
+     *
+     * | Verdict | Keeps | Why |
+     * |---|---|---|
+     * | `CONFIRMED` | yes | a published exclusion has to stay auditable |
+     * | `INCONCLUSIVE` | yes | the next console rule is extracted from it |
+     * | `ERROR` | yes | an admin has to diagnose the host, and this is the only bucket they can act on |
+     * | `CLEAR` | no | a clean boot has nothing to investigate |
+     * | `LOCKED` | no | there is no download, so there was never a boot to read |
+     * | `UNVERIFIABLE` | no | nothing ran, and the detail is the whole story |
+     */
+    @Test
+    fun everyVerdictIsClassifiedForRetention() {
+        Assertions.assertEquals(
+            setOf(Verdict.CLEAR, Verdict.LOCKED, Verdict.UNVERIFIABLE),
+            Verdict.entries.filterNot { it.keepsLogs }.toSet(),
+            "a verdict added to the vocabulary has to be classified here, and its reason written above"
+        )
+        Assertions.assertEquals(
+            setOf(Verdict.CONFIRMED, Verdict.INCONCLUSIVE, Verdict.ERROR),
+            Verdict.entries.filter { it.keepsLogs }.toSet()
+        )
     }
 
     /**

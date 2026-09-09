@@ -163,6 +163,49 @@ internal class LearnedIdCollisionTest {
         Assertions.assertEquals(listOf("create-fabric", "LNytGWDc"), restored.refsFor("create", "Modrinth"))
     }
 
+    /**
+     * **The class doc's thread-safety claim, asserted.**
+     *
+     * `GrindPool` shares one instance across N grind workers, and until 2026-09-09 the value behind an id
+     * was an immutable `String` written once by `putIfAbsent`. It is now a `CopyOnWriteArrayList` mutated by
+     * `addIfAbsent` *after* a `computeIfAbsent` — a composition that is correct (the map's compute is atomic,
+     * the list's add is synchronised) and that nothing in either module had a second thread to prove.
+     *
+     * Every worker is released from one latch so the writes genuinely overlap, and each proves a distinct
+     * ref for the same id — the collision shape, at the concurrency the grinder really runs.
+     */
+    @Test
+    fun concurrentLearnersKeepEveryRefExactlyOnce() {
+        val learned = LearnedModIds()
+        val refs = (1..16).map { "project-$it" }
+        val start = java.util.concurrent.CountDownLatch(1)
+        val done = java.util.concurrent.CountDownLatch(refs.size)
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(refs.size)
+        try {
+            refs.forEach { ref ->
+                pool.submit {
+                    start.await()
+                    // Twice, so a re-declaration racing a first declaration is covered as well.
+                    repeat(2) { learned.learn("Modrinth", ref, setOf("sharedlib", "SharedLib")) }
+                    done.countDown()
+                }
+            }
+            start.countDown()
+            Assertions.assertTrue(done.await(30, java.util.concurrent.TimeUnit.SECONDS), "the writers deadlocked")
+        } finally {
+            pool.shutdownNow()
+        }
+
+        Assertions.assertEquals(
+            refs.sorted(), learned.refsFor("sharedlib", "Modrinth").sorted(),
+            "every project that proved the id must survive, exactly once, whatever the interleaving"
+        )
+        Assertions.assertTrue(
+            learned.refFor("sharedlib", "Modrinth") in refs,
+            "and the single-answer view must be one of them rather than null or a duplicate"
+        )
+    }
+
     // --- how planning uses them -----------------------------------------------------------------------
 
     private fun planFile(name: String, loaders: Set<String>, mcVersions: Set<String>) =

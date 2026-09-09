@@ -208,6 +208,31 @@ internal class DependencyPatchVersionTest {
     }
 
     /**
+     * **The middle rung of `preferenceLadder`'s stated ordering**: obtainability, then the Minecraft
+     * version, then the declared constraint. The outer two are pinned by
+     * [anObtainableNeighbourBeatsALockedExactMatch] and by
+     * `BootCandidateSelectorTest.aConstraintNarrowsTheChoiceButNeverEmptiesIt`; this is the one the KDoc
+     * claimed and nothing asserted.
+     *
+     * An **exact** file the dependant's declared constraint rejects beats a **neighbour** it accepts,
+     * because the version is the stronger signal: the loader enforces the Minecraft it was built against,
+     * while a mod-version range is one author's opinion about another project.
+     */
+    @Test
+    fun anExactVersionTheConstraintRejectsBeatsANeighbourItAccepts() {
+        val files = listOf(
+            ModFile("dep-2.0.0.jar", setOf("Forge"), setOf("1.20.2"), "https://cdn/exact", null, emptyList(), "2.0.0"),
+            ModFile("dep-1.0.0.jar", setOf("Forge"), setOf("1.20.1"), "https://cdn/near", null, emptyList(), "1.0.0")
+        )
+
+        Assertions.assertEquals(
+            "dep-2.0.0.jar",
+            BootCandidateSelector.pickDependencyFile(files, "Forge", "1.20.2", versionConstraint = "<2.0.0")?.fileName,
+            "the exact Minecraft wins even though only the neighbour satisfies the declared range"
+        )
+    }
+
+    /**
      * A version component the parser cannot read is not a patch number, and a snapshot or pre-release is not
      * a build to stage a dependency from. Both are skipped rather than guessed at.
      */

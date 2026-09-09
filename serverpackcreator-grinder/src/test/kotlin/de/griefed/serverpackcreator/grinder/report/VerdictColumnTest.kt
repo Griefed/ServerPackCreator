@@ -112,8 +112,17 @@ internal class VerdictColumnTest {
         listOf(BootResult.CRASHED, BootResult.INCONCLUSIVE).forEach {
             Assertions.assertTrue(BootArtifacts.worthKeeping(it), "$it must leave evidence behind")
         }
-        listOf(Verdict.CONFIRMED, Verdict.INCONCLUSIVE, Verdict.ERROR).forEach {
-            Assertions.assertTrue(it.keepsLogs, "$it must keep its logs")
+        // Asked over `Verdict.entries` rather than as a list, so a verdict added to the vocabulary fails
+        // this guard until somebody classifies it -- the list form covered four of six after LOCKED and
+        // UNVERIFIABLE arrived, silently. `VerdictPublicationTest.everyVerdictIsClassifiedForRetention`
+        // carries the per-verdict reasoning; this half is only about agreeing with `worthKeeping`.
+        Verdict.entries.filter { it.keepsLogs }.forEach {
+            Assertions.assertTrue(it.grindRan || it == Verdict.ERROR, "$it keeps logs, so a boot ran or it is ours")
         }
+        Assertions.assertEquals(
+            setOf(Verdict.CLEAR, Verdict.LOCKED, Verdict.UNVERIFIABLE),
+            Verdict.entries.filterNot { it.keepsLogs }.toSet(),
+            "the discarding set has to stay in step with BootArtifacts.worthKeeping's only false case"
+        )
     }
 }
