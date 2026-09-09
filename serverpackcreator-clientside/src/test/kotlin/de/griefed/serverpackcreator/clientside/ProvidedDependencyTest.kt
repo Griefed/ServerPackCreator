@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -62,6 +63,46 @@ import java.util.jar.JarOutputStream
  * @author Griefed
  */
 internal class ProvidedDependencyTest {
+
+    /**
+     * The pure half: an id a staged jar answers to is not a requirement to go and fetch, exactly as a
+     * bundled one is not.
+     */
+    @Test
+    fun aRequirementTheStagedPackAlreadyProvidesIsNotStageable() {
+        val requirements = listOf(ModDependency("sophisticatedcore"), ModDependency("balm"))
+
+        Assertions.assertEquals(
+            listOf("balm"),
+            BootVerifier.stageableRequirements(requirements, providedIds = setOf("sophisticatedcore"))
+                .map { it.modID },
+            "'sophisticatedcore' is already in mods/; only 'balm' is still worth resolving"
+        )
+    }
+
+    /** Case is not identity: descriptors spell ids inconsistently and a miss here costs the whole boot. */
+    @Test
+    fun theProvidedCheckIgnoresCase() {
+        Assertions.assertEquals(
+            emptyList<String>(),
+            BootVerifier.stageableRequirements(
+                listOf(ModDependency("SophisticatedCore")),
+                providedIds = setOf("sophisticatedcore")
+            ).map { it.modID }
+        )
+    }
+
+    /** And an id nothing provides is still stageable, so the drop cannot be mistaken for "never refuse". */
+    @Test
+    fun anIdNothingProvidesIsStillStageable() {
+        Assertions.assertEquals(
+            listOf("farmersdelight"),
+            BootVerifier.stageableRequirements(
+                listOf(ModDependency("farmersdelight")),
+                providedIds = setOf("create")
+            ).map { it.modID }
+        )
+    }
 
     private val apiWrapper = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val resolver = LoaderVersionResolver(apiWrapper.versionMeta)

@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.clientside
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.modscanning.ModDependency
+import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
@@ -343,6 +344,10 @@ class BootVerifier(
      * download — is collected into [unsatisfied] instead of being shrugged off. The caller refuses to boot when that
      * set is non-empty (see [refuseForMissingDependencies]): a mod the loader rejects for missing dependencies never
      * runs its own code, so the boot cannot say anything about sideness.
+     *
+     * [provided] accumulates every id the staged jars answer to, which is what stops the same dependency
+     * being looked up twice under two refs and refusing a boot it is already sitting in — see
+     * [stageableRequirements].
      */
     private fun downloadWithDependencies(
         file: ModFile,
@@ -355,15 +360,26 @@ class BootVerifier(
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>,
+        provided: MutableSet<String>,
         stagedFromRef: String? = null
     ): Boolean {
         val staged = httpDownloader.download(file, modsDir)
             ?: return false
+        // Read once, here, because three things need it: the id-to-ref bridge below, the platform loop's
+        // question of whether this jar actually wants what its project page attributes to it, and
+        // `stageManifestDependencies`. `null` means the descriptor could not be read at all, which every
+        // reader treats as "no opinion" rather than as "nothing declared".
+        val scan = scanStagedJar(staged, loader, minecraftVersion)
+        val identity = identityIn(scan)
+        // What the pack now answers to. Recorded for every staged jar including the candidate: the candidate
+        // is what the loader loads first, and a mod declaring its own id as a dependency of a submodule is
+        // not this engine's problem to invent a refusal over.
+        provided.addAll(identity.map { it.trim().lowercase() })
         // The jar is here and says what it is, so the id-to-ref bridge this platform needs is now a fact
         // rather than a guess. Only for something fetched *by ref* -- the candidate itself was resolved from
         // a project URL and teaches nothing about how to find it by id.
         if (stagedFromRef != null) {
-            learnedModIds.learn(platform.name, stagedFromRef, identityOf(staged, loader, minecraftVersion))
+            learnedModIds.learn(platform.name, stagedFromRef, identity)
         }
         if (depth > 0 && injected.none { it.fileName == file.fileName }) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
@@ -379,11 +395,7 @@ class BootVerifier(
         if (depth >= maxDependencyDepth) {
             return true
         }
-        // Read once, here, because both halves of staging need it: the platform loop below asks whether this
-        // jar actually wants what its project page attributes to it, and `stageManifestDependencies` stages
-        // what it declares. `null` means the descriptor could not be read at all, which both treat as
-        // "no opinion" rather than as "nothing declared".
-        val declared = declaredDependencies(staged, loader, minecraftVersion)
+        val declared = scan?.flatMap { it.dependencies }
         val declaredIds = declared?.map { it.modID }?.toSet()
         for (dependencyRef in file.requiredDependencies) {
             if (!visited.add(dependencyRef)) {
@@ -427,7 +439,7 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded, stagedFromRef = dependencyRef
+                    injected, excluded, provided, stagedFromRef = dependencyRef
                 )
             ) {
                 val reason = if (dependencyFile.locked) {
@@ -453,7 +465,7 @@ class BootVerifier(
         }
         stageManifestDependencies(
             declared, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected,
-            excluded, staged
+            excluded, provided, staged
         )
         return true
     }
@@ -498,7 +510,7 @@ class BootVerifier(
                 project.withoutExcluded(excluded).files, loader, minecraftVersion
             ) ?: continue
             val jar = httpDownloader.download(candidate, probeDir) ?: continue
-            val ids = identityOf(jar, loader, minecraftVersion)
+            val ids = identityIn(scanStagedJar(jar, loader, minecraftVersion))
             jar.delete()
             learnedModIds.learn(platform.name, ref, ids)
             if (ids.any { it.trim().lowercase() == wanted }) {
@@ -513,22 +525,22 @@ class BootVerifier(
     }
 
     /**
-     * What [jar]'s own descriptor says it needs, or `null` when it could not be read at all.
+     * Read [jar]'s own descriptor **once**, or `null` when it could not be read at all.
      *
-     * Read **once per staged jar** and handed to both halves of staging, which ask different questions of
-     * it: the platform loop asks whether a dependency the project page attributes to this jar is one the jar
-     * actually wants, and [stageManifestDependencies] stages what it declares and the platform never
-     * mentioned. They used to scan the same file separately, which is also two chances to disagree about
-     * what it said.
+     * The one scan every reader of a staged jar shares, because three of them ask different questions of the
+     * same bytes: what the jar answers to ([identityIn]), whether a dependency the project page attributes
+     * to it is one it actually wants, and what it declares that the platform never mentioned
+     * ([stageManifestDependencies]). They used to scan the same file twice over, which is also two chances
+     * to disagree about what it said.
      *
      * **`null` and empty are different answers.** No scanner for the loader, or a scan that threw, means
-     * *we do not know*, and everything downstream then defers to the platform. An empty list means the
+     * *we do not know*, and everything downstream then defers to the platform. An empty result means the
      * descriptor was read and asks for nothing.
      */
-    private fun declaredDependencies(jar: File, loader: String, minecraftVersion: String): List<ModDependency>? {
+    private fun scanStagedJar(jar: File, loader: String, minecraftVersion: String): List<ScannedMod>? {
         val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return null
-        return runCatching { scanner.scan(listOf(jar)).flatMap { it.dependencies } }
-            .onFailure { log.debug("Could not read ${jar.name}'s manifest dependencies: ${it.message}") }
+        return runCatching { scanner.scan(listOf(jar)) }
+            .onFailure { log.debug("Could not read ${jar.name}'s descriptor: ${it.message}") }
             .getOrNull()
     }
 
@@ -556,6 +568,7 @@ class BootVerifier(
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>,
+        provided: MutableSet<String>,
         staged: File
     ) {
         if (depth >= maxDependencyDepth) {
@@ -569,7 +582,7 @@ class BootVerifier(
         // Scoped to this jar, which is also the scope of `file.relatedDependencies`: several unresolved ids
         // in one descriptor share a single round of probing instead of re-fetching the same links each time.
         val probed = mutableSetOf<String>()
-        for (requirement in stageableRequirements(requirements, visited, bundled) { platformRefFor(it) }) {
+        for (requirement in stageableRequirements(requirements, visited, bundled, provided) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
@@ -623,7 +636,7 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded, stagedFromRef = (plan as? ManifestDependencyPlan.Stage)?.ref
+                    injected, excluded, provided, stagedFromRef = (plan as? ManifestDependencyPlan.Stage)?.ref
                 )
             ) {
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
@@ -649,23 +662,18 @@ class BootVerifier(
         learnedModIds.refFor(modId, platform.name) ?: KnownModIds.refFor(modId, platform.name)
 
     /**
-     * The ids [jar] answers to — its own and everything it `provides` — or empty when its descriptor could
-     * not be read.
+     * The ids a [scanStagedJar] result answers to — its own and everything it `provides` — or empty when the
+     * descriptor could not be read.
      *
      * **Its own identity only, never what it bundles.** A nested `fabric-api-base` is on the classpath
      * because this jar carries it, but the id belongs to Fabric API; recording this project as its home
      * would send a later candidate to download the wrong mod.
      */
-    private fun identityOf(jar: File, loader: String, minecraftVersion: String): Set<String> {
-        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return emptySet()
-        return runCatching {
-            scanner.scan(listOf(jar))
-                .filter { it.descriptorRead }
-                .flatMap { listOf(it.modID) + it.provides }
-                .filter { it.isNotBlank() }
-                .toSet()
-        }.getOrDefault(emptySet())
-    }
+    private fun identityIn(scan: List<ScannedMod>?): Set<String> = scan.orEmpty()
+        .filter { it.descriptorRead }
+        .flatMap { listOf(it.modID) + it.provides }
+        .filter { it.isNotBlank() }
+        .toSet()
 
     /**
      * Generate a self-installing server pack from the synthetic [modpackDir] with mod auto-exclusion
@@ -825,7 +833,7 @@ class BootVerifier(
         val injected = mutableListOf<InjectedDependency>()
         if (!downloadWithDependencies(
                 mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected,
-                excludedDependencies
+                excludedDependencies, mutableSetOf()
             )
         ) {
             return Prepared.Failed(downloadFailureDetail(mainFile))
@@ -1270,6 +1278,7 @@ class BootVerifier(
             requirements: List<ModDependency>,
             alreadyResolved: Set<String> = emptySet(),
             bundledIds: Set<String> = emptySet(),
+            providedIds: Set<String> = emptySet(),
             refFor: (String) -> String? = { it }
         ): List<ModDependency> = requirements.filterNot { requirement ->
             // An optional dependency is neither staged nor allowed to refuse a boot: the descriptor itself
@@ -1286,6 +1295,19 @@ class BootVerifier(
                 // unconditionally: the author shipped that exact build, and fetching another version of the
                 // same id manufactures a conflict to blame on the mod.
                 requirement.modID in bundledIds ||
+                // Already in mods/, staged under some ref, and answering to this id -- so the loader will
+                // find it whatever project a second lookup of the same id would reach. The ref dedupe above
+                // cannot see this: one project is reachable under the ref its platform page links AND under
+                // whatever `LearnedModIds`/`KnownModIds` maps the manifest id to, and where those differ the
+                // id was resolved a second time against a DIFFERENT project, whose "publishes nothing for
+                // this loader and Minecraft version" then refused a boot the dependency was sitting in.
+                // Ten published ERROR verdicts were that, measured 2026-09-09: `create` (copycats,
+                // create-steam-n-rails, createaddition), `farmersdelight` (ends-delight) and
+                // `sophisticatedcore` (both unofficial Fabric ports).
+                //
+                // Lowercased on both sides because descriptors spell ids inconsistently and a miss here
+                // costs the whole boot, whereas `bundledIds` above compares two ids read by the same scanner.
+                requirement.modID.trim().lowercase() in providedIds ||
                 requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
