@@ -49,6 +49,26 @@ internal class VerdictSortRankTest {
         .select(store, VerdictQuery.parse(QueryParams.parse(raw), 250))
         .rows.map { it.verdict }
 
+    /**
+     * **Drift guard.** An unranked verdict sorts to `99` — behind everything, silently — so adding one to
+     * the vocabulary and forgetting the rank table produces a column that looks sorted and is not. Asked of
+     * `Verdict.entries` rather than of a list written here, or this guard would need the same edit it exists
+     * to demand.
+     */
+    @Test
+    fun everyVerdictHasARank() {
+        Assertions.assertEquals(
+            emptyList<Verdict>(),
+            Verdict.entries.filterNot { it in VerdictField.VERDICT_RANK },
+            "an unranked verdict sorts behind everything without saying so"
+        )
+        Assertions.assertEquals(
+            Verdict.entries.size,
+            VerdictField.VERDICT_RANK.values.distinct().size,
+            "two verdicts sharing a rank makes their relative order the sort's own accident"
+        )
+    }
+
     @Test
     fun sortingByVerdictRunsTheFindingsFirst() {
         Assertions.assertEquals(

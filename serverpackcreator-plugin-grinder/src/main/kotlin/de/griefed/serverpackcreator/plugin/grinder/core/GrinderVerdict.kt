@@ -32,8 +32,10 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  * @param projectUrl The project page, so a row can be opened rather than searched for.
  * @param platform Modrinth, CurseForge, or whatever a future daemon crawls.
  * @param loader The modloader this verdict was reached under; one project can hold several.
- * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`), kept as a
- *                string rather than an enum so a class added by a newer daemon still renders.
+ * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`, `LOCKED`,
+ *                `UNVERIFIABLE`), kept as a string rather than an enum so a class added by a newer daemon
+ *                still renders — which is what let `LOCKED` and `UNVERIFIABLE` arrive without a plugin
+ *                release, since only `CONFIRMED` is compared against by name.
  * @param suggestedEntry The name-pattern the grinder proposes for the clientside-mod list.
  * @param filenamePattern The stricter filename regex, shown for context but not used for exclusion.
  * @param detail Why the grinder decided what it did — the column that makes a verdict auditable.

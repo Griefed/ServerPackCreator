@@ -163,15 +163,24 @@ class BootVerifier(
          */
         val decidedBy: BootDecision? = null,
         /**
-         * `true` when staging stopped before any container ran, so this outcome describes the *engine*
-         * rather than the mod.
+         * Non-`null` when staging stopped before any container ran, naming *whose problem* that was — so
+         * this outcome describes the engine, the platform or the ecosystem rather than the mod.
          *
          * Without it a refusal and a boot that learned nothing are the same `INCONCLUSIVE`, which is how a
          * host-wide defect came to be published as one verdict per candidate, overwriting decisive ones
-         * that a TTL would otherwise have left alone. `Verdict.ERROR` is what this feeds.
+         * that a TTL would otherwise have left alone. `Verdict.ERROR`, `Verdict.LOCKED` and
+         * `Verdict.UNVERIFIABLE` are what this feeds, and the cause is which.
          */
-        val stagingPrevented: Boolean = false
-    )
+        val prevention: PreventionCause? = null
+    ) {
+        /**
+         * Whether staging stopped before any container ran — [prevention] having an answer at all.
+         *
+         * Derived rather than stored, so the flag and the cause cannot disagree about whether a grind
+         * happened. Kept because "did anything run?" is a question several readers ask without caring why.
+         */
+        val stagingPrevented: Boolean get() = prevention != null
+    }
 
     /**
      * A single re-check attempt on another version of the mod: what was booted, and what came of it. The
@@ -205,7 +214,7 @@ class BootVerifier(
             // *silently un-booted* catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
             log.info("Not booting ${project.slug} on $loader: ${prepared.detail}")
-            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, stagingPrevented = true)
+            return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, prevention = prepared.cause)
         }
         val ready = prepared as Prepared.Ready
         val outcome = boot(ready)
@@ -320,7 +329,7 @@ class BootVerifier(
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
                 attempts.add(
                     OtherVersionAttempt(
-                        label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail, stagingPrevented = true)
+                        label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail, prevention = staged.cause)
                     )
                 )
                 continue
@@ -639,7 +648,7 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded, provided, stagedFromRef = (plan as? ManifestDependencyPlan.Stage)?.ref
+                    injected, excluded, provided, stagedFromRef = plan.ref
                 )
             ) {
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
@@ -730,7 +739,12 @@ class BootVerifier(
     fun prepareBootPack(project: ProjectFiles, loader: String, loaderVersionOverride: String? = null): Prepared {
         val bootable = bootableCombination()
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { bootable(loader, it) }
-            ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
+            ?: return Prepared.Failed(
+                "No bootable file/Minecraft/loader combination for $loader.",
+                // Nothing published that this loader can run on a Minecraft we support -- not our doing,
+                // and not a statement about the mod.
+                cause = PreventionCause.UPSTREAM_UNAVAILABLE
+            )
         val (mainFile, minecraftVersion) = candidate
         val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
         return reselectOnMinecraftContradiction(staged, project, loader, mainFile, loaderVersionOverride, bootable)
@@ -826,7 +840,10 @@ class BootVerifier(
     ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
-            ?: return Prepared.Failed("No $loader version for Minecraft $minecraftVersion.")
+            ?: return Prepared.Failed(
+                "No $loader version for Minecraft $minecraftVersion.",
+                cause = PreventionCause.UPSTREAM_UNAVAILABLE
+            )
 
         val attemptDir = File(workDirectory, attemptDirName).apply { deleteRecursively() }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
@@ -839,7 +856,11 @@ class BootVerifier(
                 excludedDependencies, mutableSetOf()
             )
         ) {
-            return Prepared.Failed(downloadFailureDetail(mainFile))
+            return Prepared.Failed(
+                downloadFailureDetail(mainFile),
+                // A locked file has no URL and never will; anything else is a fetch that can be retried.
+                cause = if (mainFile.locked) PreventionCause.DISTRIBUTION_LOCKED else PreventionCause.HOST
+            )
         }
         // Ask the jar what it says about itself before spending a container on it. The platform's declared
         // loader and Minecraft sets are what an author ticked; the descriptor is what the jar was built
@@ -859,7 +880,10 @@ class BootVerifier(
             }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
-            ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")
+            ?: return Prepared.Failed(
+                "Server-pack generation failed for $loader $minecraftVersion.",
+                cause = PreventionCause.HOST
+            )
 
         return Prepared.Ready(
             serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
@@ -975,6 +999,14 @@ class BootVerifier(
             /** The named reason staging stopped, carried into the report instead of a bare "could not boot". */
             val detail: String,
             /**
+             * Whose problem [detail] describes, which is what decides the published verdict.
+             *
+             * Defaults to [PreventionCause.HOST], the loudest reading and the one every refusal carried
+             * before the causes were told apart — so a site that forgets to say stays visible in the bucket
+             * an operator reads rather than filing itself quietly as nobody's fault.
+             */
+            val cause: PreventionCause = PreventionCause.HOST,
+            /**
              * The staged jar's own declared Minecraft range, verbatim, set **only** when that range is why
              * staging stopped — i.e. the jar excludes the version being staged. `null` for every other
              * refusal, including a loader-descriptor mismatch.
@@ -1033,12 +1065,12 @@ class BootVerifier(
                 if (processing.isFailure) {
                     // Nothing booted: the hook runs before the container, and in the grinder it *is* the
                     // loader-cache overlay -- so this fails when the host is broken, not when the mod is.
-                    // Without `stagingPrevented` a broken cache publishes as a verdict about every mod that
+                    // Without a `prevention` a broken cache publishes as a verdict about every mod that
                     // wanted it, which is the missing-runtime-image outage in miniature.
                     return BootOutcome(
                         BootResult.INCONCLUSIVE, null,
                         "Pack post-processing failed: ${processing.exceptionOrNull()?.message}",
-                        stagingPrevented = true
+                        prevention = PreventionCause.HOST
                     )
                 }
             }
@@ -1100,6 +1132,9 @@ class BootVerifier(
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
                     "The platform's declared versions are what its author ticked, not what the jar was built for.",
+                // A web-form tick contradicting the jar is the author's mistake: nothing we can retry, and
+                // no statement about whether the mod belongs on a server.
+                cause = PreventionCause.UPSTREAM_UNAVAILABLE,
                 declaredMinecraftConstraint = minecraftDisagreement
             )
         }
@@ -1154,9 +1189,28 @@ class BootVerifier(
                 Prepared.Failed(
                     "Required ${if (unsatisfied.size == 1) "dependency" else "dependencies"} unavailable for " +
                         "$loader / Minecraft $minecraftVersion: $named. " +
-                        "Not booting — a mod refused for missing dependencies says nothing about sideness."
+                        "Not booting — a mod refused for missing dependencies says nothing about sideness.",
+                    cause = preventionCauseFor(unsatisfied)
                 )
             }
+
+        /**
+         * Whose problem a set of [unsatisfied] dependencies is, folded to the **most actionable** cause
+         * present.
+         *
+         * The order is `HOST` → `DISTRIBUTION_LOCKED` → `UPSTREAM_UNAVAILABLE`, and it ranks by what a
+         * reader can do about it. A refusal mixing a failed download with a permanent upstream gap has to
+         * reach the operator who can retry the download, so ours wins outright; between the other two, a
+         * distribution opt-out names a project, a file and an author's decision, where "nothing published"
+         * names an absence — so the identifiable fact wins.
+         *
+         * A `UnmetReason` maps to its cause and nothing else does: keeping the mapping on the reason means
+         * a new reason cannot be added without deciding whose problem it is.
+         */
+        internal fun preventionCauseFor(unsatisfied: Map<String, UnmetReason>): PreventionCause {
+            val causes = unsatisfied.values.map { it.preventionCause }.toSet()
+            return PreventionCause.entries.first { it in causes }
+        }
 
         /**
          * Where one manifest-declared requirement lands, without touching the network or the disk.
@@ -1360,7 +1414,9 @@ class BootVerifier(
                 Prepared.Failed(
                     "Staging ${distinct.size} dependencies for $loader / Minecraft $minecraftVersion exceeds " +
                         "the cap of $MAX_INJECTED_DEPENDENCIES. Not booting — a pack that large cannot say " +
-                        "anything about this mod specifically."
+                        "anything about this mod specifically.",
+                    // Our cap, our judgement call, and an operator may want to know it bit.
+                    cause = PreventionCause.HOST
                 )
             }
         }
@@ -1519,7 +1575,7 @@ class BootVerifier(
             // The runner never started the server, so there is no console and nothing was learned about the
             // mod. An operator's problem, however late it surfaced.
             is RunResult.NotStarted ->
-                BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail, stagingPrevented = true)
+                BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail, prevention = PreventionCause.HOST)
             is RunResult.Completed -> {
                 val console = runResult.lines.joinToString("\n")
                 // Persisting the console must never fail the verification: the verdict comes from the lines in
@@ -1635,6 +1691,21 @@ internal enum class UnmetReason {
 
     /** A file was picked, it had a URL, and fetching it failed — transient, unlike every other reason here. */
     DOWNLOAD_FAILED;
+
+    /**
+     * Whose problem this reason is, which is what decides the published verdict.
+     *
+     * Stated per reason rather than folded at the call site, so a reason added later cannot reach a refusal
+     * without somebody deciding whether it is ours, the platform's or nobody's. `DROPPED_BY_BACKTRACK` is
+     * deliberately ours: staging dropped those builds itself trying to make the pack coherent, and an
+     * operator seeing it should be asking whether the backtrack was right.
+     */
+    val preventionCause: PreventionCause
+        get() = when (this) {
+            UNRESOLVED, NO_USABLE_FILE -> PreventionCause.UPSTREAM_UNAVAILABLE
+            DISTRIBUTION_LOCKED -> PreventionCause.DISTRIBUTION_LOCKED
+            DROPPED_BY_BACKTRACK, DOWNLOAD_FAILED -> PreventionCause.HOST
+        }
 
     /**
      * How this reads, in a refusal or a log line. **Never `null`** — it used to return `null` for

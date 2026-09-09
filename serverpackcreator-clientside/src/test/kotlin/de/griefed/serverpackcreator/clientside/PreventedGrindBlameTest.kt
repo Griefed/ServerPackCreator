@@ -19,8 +19,11 @@
  */
 package de.griefed.serverpackcreator.clientside
 
+import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 /**
  * Pins **who a prevented grind is blamed on**, which is the one thing [Verdict.ERROR] promises and was not
@@ -43,26 +46,85 @@ import org.junit.jupiter.api.Test
  * | Genuinely ours | the rest |
  *
  * These guards deliberately assert what a prevented grind is **not**, because that is the whole claim they
- * can make without naming the verdicts that replace it — and it stays the claim worth guarding afterwards:
+ * could make before the verdicts that replace it existed — and it stays the claim worth guarding afterwards:
  * whatever the vocabulary grows into, a CurseForge opt-out must never be filed as ServerPackCreator's
  * failure. `PreventionCauseVerdictTest` is where the positive answers live.
+ *
+ * **Nothing here constructs the cause it then asserts on.** Two guards drive the real
+ * `BootVerifier.prepareBootPack` — a locked candidate file and a pack that will not generate — and two
+ * drive the real `refuseForMissingDependencies`, which is where an `UnmetReason` set becomes one cause. A
+ * fixture that passed the cause in would assert only that `when` branches on its argument.
  *
  * @author Griefed
  */
 internal class PreventedGrindBlameTest {
 
-    /** A refusal exactly as staging reports it: no container ran, and the detail says why. */
-    private fun refusedWith(detail: String) = BootVerifier.BootOutcome(
-        BootResult.INCONCLUSIVE, null, detail, stagingPrevented = true
+    private val apiWrapper = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
+    private val resolver = LoaderVersionResolver(apiWrapper.versionMeta)
+
+    /** A real Fabric-capable server release from the cached metadata, so the test stays version-agnostic. */
+    private val fabricRelease = apiWrapper.versionMeta.minecraft.serverReleases()
+        .map { it.minecraftVersion }
+        .first { resolver.latest("Fabric", it) != null }
+
+    /** Selection passes and generation does not, so staging is exercised and no server is ever launched. */
+    private val unbootableLoaderVersion = object : LoaderVersionPolicy {
+        override fun preferredVersion(loader: String, minecraftVersion: String) = "0.0.0-no-such-build"
+        override fun latestVersion(loader: String, minecraftVersion: String) = "0.0.0-no-such-build"
+    }
+
+    /** A project of one Fabric file, obtainable unless [locked] says otherwise. */
+    private fun candidate(slug: String, fileName: String, locked: Boolean = false) = ProjectFiles(
+        "CurseForge", slug, "https://www.curseforge.com/minecraft/mc-mods/$slug",
+        DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN,
+        listOf(
+            ModFile(
+                fileName, setOf("Fabric"), setOf(fabricRelease),
+                if (locked) null else "https://cdn/$fileName", null, emptyList()
+            )
+        )
     )
 
-    private fun verdictFor(detail: String, jarScan: JarScan = JarScan.ERROR) = ClientsideVerifier.verdictOf(
-        serverSide = DeclaredSupport.UNKNOWN,
-        clientSide = DeclaredSupport.UNKNOWN,
-        jarScan = jarScan,
-        bootOutcome = refusedWith(detail),
-        bootAttempted = true
-    ).verdict
+    /** Writes a real jar for anything with a URL, and nothing at all for a locked file. */
+    private val downloader = JarDownloader { file, targetDirectory ->
+        if (file.locked) {
+            return@JarDownloader null
+        }
+        targetDirectory.mkdirs()
+        File(targetDirectory, file.fileName).also { it.writeText("not really a jar") }
+    }
+
+    private fun verifierFor(workDir: File) = BootVerifier(
+        apiWrapper = apiWrapper,
+        platform = object : ModPlatform {
+            override val name: String = "CurseForge"
+            override fun handles(projectUrl: String): Boolean = true
+            override fun resolve(projectUrl: String): ProjectFiles = error("not used")
+            override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = null
+        },
+        httpDownloader = downloader,
+        loaderVersionPolicy = unbootableLoaderVersion,
+        workDirectory = workDir
+    )
+
+    /** The published verdict for a staging refusal, folded exactly as `verdictFor` folds it in production. */
+    private fun verdictFor(failed: BootVerifier.Prepared.Failed, jarScan: JarScan = JarScan.ERROR) =
+        ClientsideVerifier.verdictOf(
+            serverSide = DeclaredSupport.UNKNOWN,
+            clientSide = DeclaredSupport.UNKNOWN,
+            jarScan = jarScan,
+            bootOutcome = BootVerifier.BootOutcome(
+                BootResult.INCONCLUSIVE, null, failed.detail, prevention = failed.cause
+            ),
+            bootAttempted = true
+        ).verdict
+
+    /** The refusal `prepareBootPack` produces for [project], which must be one. */
+    private fun refusalFor(project: ProjectFiles, workDir: File): BootVerifier.Prepared.Failed {
+        val prepared = verifierFor(workDir).prepareBootPack(project, "Fabric")
+        Assertions.assertTrue(prepared is BootVerifier.Prepared.Failed, "staging was supposed to refuse: $prepared")
+        return prepared as BootVerifier.Prepared.Failed
+    }
 
     /**
      * `corail-tombstone`, `entityculling`, `not-enough-animations`, `skin-layers-3d` and `structory`: the
@@ -70,14 +132,17 @@ internal class PreventedGrindBlameTest {
      * to fetch. Nothing about that is ours, and no operator can fix it.
      */
     @Test
-    fun aDistributionLockedFileIsNotOurFailure() {
+    fun aDistributionLockedFileIsNotOurFailure(@TempDir workDir: File) {
+        val locked = candidate("corail-tombstone", "tombstone-forge-26.2-9.9.3.jar", locked = true)
+
+        val refusal = refusalFor(locked, workDir)
+
+        Assertions.assertTrue(
+            refusal.detail.contains("distribution-locked"), "the refusal has to say why: ${refusal.detail}"
+        )
         Assertions.assertNotEquals(
             Verdict.ERROR,
-            verdictFor(
-                "Could not download tombstone-forge-26.2-9.9.3.jar: the file is distribution-locked " +
-                    "(allowModDistribution=false), so CurseForge publishes no download URL for it.",
-                jarScan = JarScan.DEFERRED
-            ),
+            verdictFor(refusal, jarScan = JarScan.DEFERRED),
             "a CurseForge opt-out is CurseForge's decision, not a defect in ServerPackCreator"
         )
     }
@@ -88,12 +153,14 @@ internal class PreventedGrindBlameTest {
      */
     @Test
     fun aDistributionLockedDependencyIsNotOurFailureEither() {
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("player-animation-library" to UnmetReason.DISTRIBUTION_LOCKED),
+            "Fabric", "26.2", "CurseForge"
+        )
+
         Assertions.assertNotEquals(
             Verdict.ERROR,
-            verdictFor(
-                "Required dependency unavailable for Fabric / Minecraft 26.2: player-animation-library " +
-                    "(distribution-locked on CurseForge). Not booting."
-            ),
+            verdictFor(refusal!!),
             "the pack cannot be assembled and nobody involved can change that"
         )
     }
@@ -105,12 +172,14 @@ internal class PreventedGrindBlameTest {
      */
     @Test
     fun anUpstreamGapIsNotOurFailure() {
+        val refusal = BootVerifier.refuseForMissingDependencies(
+            mapOf("cobblemon" to UnmetReason.NO_USABLE_FILE),
+            "Fabric", "1.21.11", "Modrinth"
+        )
+
         Assertions.assertNotEquals(
             Verdict.ERROR,
-            verdictFor(
-                "Required dependency unavailable for Fabric / Minecraft 1.21.11: cobblemon (nothing " +
-                    "published for this loader and Minecraft version). Not booting."
-            ),
+            verdictFor(refusal!!),
             "a dependency nobody ever published is not a host problem and not evidence about the mod"
         )
     }
@@ -120,16 +189,27 @@ internal class PreventedGrindBlameTest {
      * to keep meaning "somebody can go and fix this".
      */
     @Test
-    fun theHostsOwnTroubleIsStillAnError() {
+    fun theHostsOwnTroubleIsStillAnError(@TempDir workDir: File) {
+        val obtainable = candidate("some-mod", "some-mod-1.0.0.jar")
+
+        val refusal = refusalFor(obtainable, workDir)
+
+        Assertions.assertTrue(
+            refusal.detail.contains("generation failed"), "generation was supposed to fail: ${refusal.detail}"
+        )
         Assertions.assertEquals(
             Verdict.ERROR,
-            verdictFor("Server-pack generation failed for Fabric 26.2."),
+            verdictFor(refusal),
             "generation is ours, and an operator reads this column to find out what broke"
         )
         Assertions.assertEquals(
             Verdict.ERROR,
-            verdictFor("Pack post-processing failed: no such loader install in the cache"),
-            "a broken loader cache is the missing-runtime-image shape and must stay visible"
+            verdictFor(
+                BootVerifier.refuseForMissingDependencies(
+                    mapOf("balm" to UnmetReason.DOWNLOAD_FAILED), "Fabric", "26.2", "Modrinth"
+                )!!
+            ),
+            "a fetch that died is retryable, which is exactly what ERROR is for"
         )
     }
 }
