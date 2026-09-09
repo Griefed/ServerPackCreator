@@ -3965,5 +3965,15 @@ if a verdict is added without one. `/as-properties` still gates on `CONFIRMED` a
 
 Suites re-derived from `build/test-results`: clientside **475 → 515**, grinder **509 → 512** (29 skipped),
 plugin-grinder **73**, api **412** (1 skipped), app **149** — the last needing a local MongoDB on
-`localhost:27017`, without which its Spring context tests time out and take the Gradle worker with them.
+`localhost:27017`, without which its Spring context tests time out and take the Gradle worker with them
+(confirmed by running it against `mongo:8.0.5` in Docker, where it is green).
+
+**Equivalence checked against `develop`'s unmodified test tree**, by the recipe in the root `CLAUDE.md`:
+**475 pre-existing guards, zero failures** against this branch's production code. Exactly three files could
+not compile, and each is one of the enumerated signature changes — `LearnedModIdsTest` and
+`ManifestDependencyTest` on `mappingFor` → `mappingsFor` (thirteen call sites) plus `restore`'s value type,
+and `VerdictAggregationTest` on `BootOutcome`'s `stagingPrevented` constructor argument becoming
+`prevention`. Adapting those three by their *arguments only*, with every assertion byte-identical, is what
+the 475 was measured with. Nothing else in the base tree noticed the change, which is the claim worth having:
+the behaviour that moved is the behaviour that was meant to.
 
