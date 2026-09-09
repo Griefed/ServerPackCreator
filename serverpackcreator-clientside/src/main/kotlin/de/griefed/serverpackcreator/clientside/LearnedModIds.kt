@@ -160,11 +160,16 @@ class LearnedModIds(
             val known = byPlatform.computeIfAbsent(platform) { ConcurrentHashMap() }
             ids.forEach { (id, refs) ->
                 val cleanId = id.trim().lowercase()
-                if (cleanId.isEmpty()) {
+                val usable = refs.filter { it.isNotBlank() }
+                // Filtered *before* the entry is claimed: an id whose stored value contributes nothing --
+                // a document holding a JSON null, a number, or an empty array -- must leave no trace, or
+                // `snapshot()` writes it back as `"id": []` and the file grows an entry per restart that
+                // asserts nothing. Harmless to read, which is why nothing would have noticed.
+                if (cleanId.isEmpty() || usable.isEmpty()) {
                     return@forEach
                 }
                 val entry = known.computeIfAbsent(cleanId) { CopyOnWriteArrayList() }
-                refs.filter { it.isNotBlank() }.forEach { entry.addIfAbsent(it) }
+                usable.forEach { entry.addIfAbsent(it) }
             }
         }
     }
