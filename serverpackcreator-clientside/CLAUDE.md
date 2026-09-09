@@ -480,6 +480,37 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     release is Minecraft **1.21** and the project is discontinued, so a Quilt mod declaring any `quilt_*`
     module on 26.2 cannot be verified and re-grinding it will never say otherwise.
 
+- **A DEPENDENCY'S OWN MINECRAFT RANGE IS A PRE-BOOT GATE TOO (2026-09-09).**
+  `refuseForSelfDeclaration` asks whether a jar's descriptor accepts the Minecraft being booted — of the
+  **candidate** only. `outsideThePacksMinecraft` now asks it of every staged **dependency**, inside
+  `dependencyToDemote`, and demotes one that positively excludes the version; the exclusion machinery and
+  `MAX_BACKTRACKS` are reused, so a re-stage picks the next build down.
+  - **Why it became necessary that day:** the *exact-Minecraft* rule in `pickDependencyFile` **was** the
+    protection in this dimension — a dependency was never staged for another version, so its descriptor
+    could not disagree about one. The patch-version fallback relaxed exactly that. Without the gate a
+    `cobblemon` Fabric 1.21.1 build stages into a 1.21.11 pack, the loader refuses the pack, and the
+    *candidate* wears the INCONCLUSIVE, which overwrites a decisive verdict. No false CONFIRMED is reachable
+    (a wrong-Minecraft library produces none of the four decisive rungs), so the cost is a wasted container
+    and a downgraded verdict.
+  - It closes the same exposure in the **cross-loader** and **untagged** fallbacks, which predate the patch
+    fallback and never guaranteed the version either.
+  - **Everything uncertain accepts**, which is what keeps it from becoming a mass-demotion: an unreadable
+    descriptor is already filtered by `descriptorRead`, a jar declaring no range yields `null`, and
+    `VersionConstraint` accepts any range it cannot parse. Three guards pin those directions, and a fourth
+    asserts the *fixture's* range really excludes the release — a constraint the parser could not read would
+    accept everything and let the whole file pass for the wrong reason.
+  - **The candidate is excluded outright.** Demoting it would verify a different mod, and dropping a
+    *dependency* over a range the candidate declared would blame the wrong jar;
+    `reselectOnMinecraftContradiction` already answers the candidate's disagreement by re-selecting.
+  - Asked **before** the version conflicts: a jar naming another Minecraft is one the loader refuses
+    outright, where a version range is one mod's opinion about another. `UnmetReason.DROPPED_BY_BACKTRACK`
+    therefore reads *"every usable build was dropped making the pack coherent"* — two things reach it now,
+    and naming only the version conflict made the sentence false for the other.
+  - **Known residue:** a project whose *every* build declares the wrong Minecraft ends as
+    `ERROR`/`DROPPED_BY_BACKTRACK` rather than `UNVERIFIABLE`, because the cause cannot tell "we dropped it"
+    from "we dropped it because upstream's builds do not fit" without a second exclusion channel. Strictly
+    better than the boot it replaces; recorded so it is not rediscovered as a defect.
+
 - **THE JAR IS THE AUTHORITY ON WHAT IT NEEDS; THE PLATFORM PAGE IS A SELF-REPORT** (2026-09-08). Two
   consequences, both new, and together they are the beginning of the end of the hand-written id table.
   - **A platform-declared dependency the descriptor never names cannot refuse a boot**
@@ -1029,13 +1060,16 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 257 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
-  JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
-  `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
-  `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached
-  version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`). The count is
-  re-derivable with `grep -rl "ApiWrapper.api(" src/test`; it read "`MetadataScannerTest` is the only one"
-  while three already did, which is why it is stated as a command rather than a number to trust.
+- **All offline.** Most build jars in-memory (`java.util.jar`) or feed canned JSON to a fake `HttpFetcher`.
+  A minority boot an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose
+  `ModScanner` relies on the API's cached version-manifests, hence `test`
+  `dependsOn :serverpackcreator-api:processTestResources`) — every test that drives real *staging* needs one,
+  which is why that set grows with each staging fix.
+  **Both counts here are commands, not numbers, and that is deliberate**: the suite total is
+  `<module>/build/test-results/test/*.xml` after a run, and the resource-needing set is
+  `grep -rl "ApiWrapper.api(" src/test`. This entry has now been wrong twice by stating them — it read
+  "`MetadataScannerTest` is the only one" while three already did, then "Four" while eight did, alongside a
+  suite total of 257 against an actual 523. Re-derive; do not trust a figure written here.
 - `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor`, plus the
   extracted `BootVerifier.outcomeFor` (`BootVerifierOutcomeTest`) and `HostProcessServerRunner`'s
   no-start-script contract are pure/offline-testable without a running server — keep new logic that way.

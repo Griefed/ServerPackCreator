@@ -425,3 +425,234 @@ question the function is never asked, both look exactly like a code defect until
 
 Suites at close: clientside **438**, grinder **503** (29 skipped), app **149**, zero failures, all
 re-derived from `build/test-results` with result files timestamped after the last code commit.
+
+---
+
+## 2026-09-09 — test depth & coverage: the LOCKED/UNVERIFIABLE batch
+
+Read-only. Scope is the eleven commits merged as *"Merge branch 'claude-locked-unverifiable-verdicts' into
+develop"*: two new verdicts with a typed `PreventionCause`, and three dependency-resolution fixes
+(provided-ids dedupe, multi-ref learned map, patch-version fallback). Commits are cited by **subject** —
+this file accumulates and a history rewrite kills hashes in it, which is how thirteen of them died here on
+2026-09-01. Suites at analysis time: clientside **515**, grinder **512**
+(29 skipped), plugin-grinder **73**, api **412** (1 skipped), app **149**.
+
+Lens: what the *relaxed* rule now lets through, functions that are not total, and stated orderings nothing
+asserts.
+
+**No HIGH findings.** No module boundary crossed (`-clientside` gained no dependency; `-api` untouched, so
+the published surface and the plugin contract are unchanged), no behaviour change hidden inside a
+`refactor:`, and no verdict can now be *published* that could not be published before — `/as-properties`
+still gates on `CONFIRMED`, and neither new verdict is reachable from a boot that ran.
+
+### MEDIUM
+
+**M-1 — the patch-version fallback has no pre-boot gate on the dependency's *own* declared Minecraft range.**
+`serverpackcreator-clientside/.../BootCandidateSelector.kt` `pickDependencyFile` / `preferenceLadder`, and
+`BootVerifier.dependencyToDemote`.
+
+`pickDependencyFile` now stages a dependency built for another patch release of the same line. Nothing
+afterwards asks whether that jar's descriptor accepts the version being booted:
+
+- `refuseForSelfDeclaration` reads the **candidate's** jar only.
+- `DependencyBacktrack.conflicts` matches *mod-id → version* requirements. It never looks at a staged jar's
+  `minecraftConstraint`, and `dependencyToDemote` does not pass one, although it already holds the
+  `ScannedMod` for every staged jar and that field is right there on it.
+
+So `cobblemon`'s Fabric 1.21.1 build now stages into a 1.21.11 pack, the loader refuses the pack at runtime,
+and the candidate wears an `INCONCLUSIVE` — which *overwrites a decisive verdict in the store*, the harm
+shape this module keeps guards for. It cannot reach a false `CONFIRMED` (a wrong-Minecraft library produces
+none of the four decisive rungs), so this is a wasted container plus a downgraded verdict, not a wrong
+publication.
+
+*What makes it this batch's finding rather than a pre-existing one:* the exact-Minecraft rule **was** the
+protection in the version dimension, and *"test(clientside): pin the patch-version dependency fallback"*
+quotes the reasoning it relaxed.
+The loader dimension already had a gate (`JarSelfDeclaration`) and the version dimension now has none.
+
+*Fix:* have `dependencyToDemote` also demote a **dependency** whose `minecraftConstraint` positively excludes
+the pack's Minecraft version. It reuses the existing `excluded`/`MAX_BACKTRACKS` machinery, is symmetric with
+`refuseForSelfDeclaration`'s treatment of the candidate, and keeps the fail-toward-proceed rule for free
+because `VersionConstraint.satisfies` accepts anything it cannot read. It also closes the same exposure in
+the *cross-loader* and *untagged* fallbacks, which predate this batch.
+
+**M-2 — `BootVerifier.preventionCauseFor` is not total: it throws on an empty map.**
+`serverpackcreator-clientside/.../BootVerifier.kt`, `PreventionCause.entries.first { it in causes }`.
+
+`causes` is empty for an empty `unsatisfied`, and `first {}` then throws `NoSuchElementException`. The only
+call site guards it (`refuseForMissingDependencies` returns `null` before reaching it), so it is unreachable
+today — which is exactly the shape this repository has paid for twice: `UnmetReason.explain` returned `null`
+for a value no caller could produce, and two log sites would have printed the literal `null` after some later
+edit. An `internal` helper with no `require` and no doc saying "never empty" is a landmine, and its name
+reads total.
+
+*Failure scenario:* a second caller folds a set it has not proved non-empty — e.g. a future refusal that
+collects unmet dependencies and reports even when none were found — and a grind worker dies on an exception
+whose message names an enum, not the dependency.
+
+*Fix:* return `PreventionCause.HOST` for an empty set (the same "loudest reading" default every other
+prevention site takes) and pin it.
+
+**M-3 — neither new verdict is covered by the publication guard.**
+`serverpackcreator-grinder/src/test/.../report/VerdictPublicationTest.kt`.
+
+That test pins "a broken host does not publish" across twenty `ERROR` rows, deliberately, because the failure
+mode is a flood. `LOCKED` and `UNVERIFIABLE` are new members of exactly the population it exists to protect
+against and appear in no assertion. `FallbackPropertiesRenderer` filters `== Verdict.CONFIRMED`, so it is
+correct today by construction — but the guard's whole point is that construction is not what it trusts.
+
+*Fix:* drive the renderer over one row of **every** `Verdict.entries` value and assert only the `CONFIRMED`
+one is served. Derived from `entries`, so a seventh verdict is covered without an edit.
+
+**M-4 — `attemptRetentionAgreesWithVerdictRetention` asserts a hand-written list, so it no longer covers
+every verdict.** `serverpackcreator-grinder/src/test/.../report/VerdictColumnTest.kt`.
+
+It iterates `listOf(Verdict.CONFIRMED, Verdict.INCONCLUSIVE, Verdict.ERROR)` and asserts `keepsLogs`. Its own
+doc calls itself a *drift guard* between `BootArtifacts.worthKeeping` and `Verdict.keepsLogs` — and it now
+covers four of six verdicts, silently. `LOCKED`/`UNVERIFIABLE` were given `keepsLogs = false` by judgment
+(no container ran, so there is nothing to keep); nothing asserts that judgment, and nothing would notice a
+seventh verdict added with the wrong value.
+
+*Fix:* partition `Verdict.entries` on `grindRan` and assert the two groups, so the guard is stated as the
+rule rather than as a list.
+
+**M-5 — `LearnedModIds`' thread-safety claim is asserted nowhere, and the value type just became mutable.**
+`serverpackcreator-clientside/.../LearnedModIds.kt`.
+
+The class doc ends *"Thread-safe: the grinder shares one instance across its grind workers, which is where
+the compounding comes from"*, and `GrindPool` really does share one across N workers. Until this batch the
+value was an immutable `String` behind `putIfAbsent`; it is now a `CopyOnWriteArrayList` mutated by
+`addIfAbsent` after a `computeIfAbsent`. That composition is correct — `computeIfAbsent` is atomic and
+`addIfAbsent` is synchronised — but it is now the kind of correctness worth pinning, and no test in either
+module starts a second thread.
+
+*Fix:* concurrent `learn` of the same id from several threads, asserting every distinct ref survives exactly
+once and `refFor` is stable. Cheap, deterministic enough with a latch, and it is the property the grinder
+depends on.
+
+### LOW
+
+**L-1 — the version-over-constraint half of `preferenceLadder`'s stated ordering is unpinned.**
+`DependencyPatchVersionTest` pins obtainability-over-version (`anObtainableNeighbourBeatsALockedExactMatch`)
+and version-over-nothing, and `BootCandidateSelectorTest.aConstraintNarrowsTheChoiceButNeverEmptiesIt` pins
+the constraint as a preference. Nothing asserts the middle rung: an **exact** file the constraint rejects
+beats a **neighbour** it accepts. The ladder does behave that way (verified by reading the yield order), and
+the KDoc claims all three, so two of three are load-bearing prose.
+
+**L-2 — `LearnedModIds.restore` can create an empty entry that then round-trips as `"id": []`.**
+`computeIfAbsent` runs before the refs are filtered, so an id whose value contributes nothing usable — a
+legacy document holding a JSON `null`, a number, or an empty array — leaves an empty `CopyOnWriteArrayList`
+behind. Harmless to read (`refFor` returns `null`), but `snapshot()` serialises it, so the file accumulates
+entries that assert nothing. `learn` cannot do this (its `ref` is non-blank-guarded).
+
+**L-3 — `mappingsFor` rebuilds the learned ref list inside its own filter.**
+`orElse(modId).takeIf { it.ref != null && it.ref !in learned.map { alias -> alias.ref } }` maps `learned` a
+second time on every call and nests two `it`-shadowing lambdas. `learned.none { it.ref == … }` says the same
+thing once. Style only; the behaviour is pinned by `theRegistryDoesNotRepeatALearnedRef`.
+
+**L-4 — the patch distance inside a line is unbounded, and the `1.21` line is unusually wide.**
+`minecraftLine` is the first two components, so `1.21` … `1.21.11` is one line and a dependency eleven patch
+releases away is eligible. This is Griefed's stated rule ("if the only difference is a patch version, try the
+others"), nearest-first mitigates it, and M-1's fix is the real protection — recorded here so the next reader
+knows it was considered rather than overlooked. Bounding the distance is available if M-1's gate turns out to
+fire often.
+
+**L-5 — `provided` is complete only for the jar whose staging finishes last.**
+A dependency's *own* manifest requirement is planned during its recursion, so an id a **later sibling** will
+provide is not yet in `provided` and gets resolved separately. The candidate — the case the ten live rows
+were — is fully covered, because its manifest pass runs after every platform dependency is in. Pre-existing
+shape of the recursion, not introduced here; noted because the fix's guarantee is narrower than its name
+suggests.
+
+**L-6 — `serverpackcreator-clientside/CLAUDE.md`'s testing section is stale in two numbers.**
+It says *"257 tests, all offline"* (now 515) and *"**Four** need a resource"* against
+`grep -rl "ApiWrapper.api(" src/test`, which now answers **11** — it was already wrong before this batch
+(8) and three of the new files added to it. The file's own instruction is to state the count as a command
+rather than a number to trust; the sentence should follow its own advice.
+
+### Not findings (verified — do not re-litigate)
+
+- **No unused imports** in any of the fourteen changed files. `ScannedMod` (new in `BootVerifier`),
+  `CopyOnWriteArrayList` (new in `LearnedModIds`) and every test import are used.
+- **No new compiler warnings.** The one pre-existing warning in `ClientsideVerifier.kt:245` (unnecessary safe
+  call on `BootDecision`) is untouched and predates this batch; `BootVerifier`'s "no cast needed" was removed
+  in *"fix(clientside): a dependency in the pack cannot refuse its own boot"* while the surrounding function
+  was being changed. Also flagged: `ClientsideVerifier.kt:245` is a **line number**, which the conventions
+  ask prose to avoid — the symbol is the `confirmedByRule` fold in `verdictOf`.
+- **No security surface.** No new input reaches a shell, a path, a query or a log format string. The new
+  verdict names are enum constants; the report escapes every cell through `esc()` as before; nothing reads a
+  credential.
+- **`VerdictPolicy.decide`'s `when (staging.cause)` is exhaustive with no `else`**, so a seventh cause is a
+  compile error rather than a silent `ERROR`. Deliberate and verified.
+- **`patchOf` handles every malformed shape by returning `null`**, including a non-numeric patch
+  (`1.21.4-pre3`), a snapshot (`22w24a`), a trailing dot, and a component above `Int.MAX_VALUE` — the same
+  `toIntOrNull()` discipline `readableVersion` was corrected to on 2026-09-08. Pinned by
+  `anUnreadablePatchComponentIsNotANeighbour`.
+- **The three red commits that could not go red on their signatures say so in their own messages**, and each
+  pins the behaviour through a path that compiles against the pre-fix code. Checked against the convention
+  rather than assumed: an added enum constant or a new parameter cannot fail an assertion, only a
+  compilation.
+- **`PreventedGrindBlameTest` does not construct the cause it asserts on** — two guards drive the real
+  `prepareBootPack`, two the real `refuseForMissingDependencies` — and it is mutation-verified: forcing
+  either cause site to `HOST` fails exactly the three "not our failure" guards and leaves the counterweight
+  green.
+- **Equivalence against `develop`'s unmodified test tree: 475 guards, 0 failures**, with exactly three files
+  uncompilable, each an enumerated signature change adapted by argument only. Re-run recipe is in the root
+  `CLAUDE.md`.
+
+### Suggested tests (specific)
+
+1. `aDependencyWhoseDescriptorExcludesThePacksMinecraftIsDemoted` — drive `prepareBootPack` with a staged
+   dependency declaring `"minecraft": "~1.21.1"` into a 1.21.11 pack, assert it is dropped and an older build
+   staged. (M-1; the guard that makes the relaxation safe.)
+2. `aDependencyDeclaringNoMinecraftRangeIsLeftAlone` and `anUnreadableRangeIsLeftAlone` — the
+   fail-toward-proceed counterweights for M-1, without which the gate becomes a mass-refusal.
+3. `anEmptyUnmetSetIsOurProblem` — `preventionCauseFor(emptyMap())` is `HOST`, not an exception. (M-2)
+4. `onlyConfirmedIsEverPublished` over `Verdict.entries` in `VerdictPublicationTest`. (M-3)
+5. `retentionFollowsWhetherAGrindRan` — partition `Verdict.entries` on `grindRan` in `VerdictColumnTest`.
+   (M-4)
+6. `concurrentLearnersKeepEveryRefExactlyOnce` — N threads, one id, distinct refs, latch-started. (M-5)
+7. `anExactVersionTheConstraintRejectsBeatsANeighbourItAccepts`. (L-1)
+8. `aLegacyDocumentWithNothingUsableForAnIdLeavesNoEntry`, plus a mixed-shape document (one id a string, one
+   a list) for `JsonLearnedModIds`. (L-2)
+
+### Suites at the time of this analysis
+
+clientside 515 · grinder 512 (29 skipped) · plugin-grinder 73 · api 412 (1 skipped) · app 149 (needs a local
+MongoDB on 27017; green against `mongo:8.0.5` in Docker). All re-derived from `build/test-results`.
+
+### Resolution — every finding closed the same day (2026-09-09)
+
+Fixed on `develop` in the commits below, each cited by subject. Two needed a red pin first; four were
+coverage over code that was already correct and landed green; three were hygiene.
+
+| Finding | Commit (subject) | How |
+|---|---|---|
+| **M-1** | `test(clientside): pin that a wrong-Minecraft dependency is dropped pre-boot` → `fix(clientside): drop a dependency whose descriptor excludes the pack's Minecraft` | `outsideThePacksMinecraft` in `dependencyToDemote`, asked before the version conflicts, candidate excluded, everything uncertain accepting |
+| **M-2** | `test(clientside): pin that folding no unmet dependencies answers, not throws` → `fix(clientside): make preventionCauseFor total` | `firstOrNull … ?: HOST`; red with the real `NoSuchElementException` |
+| **M-3** | `test: close the coverage gaps the analysis found (M-3, M-4, M-5, L-1)` | `onlyConfirmedIsEverPublished` driven over `Verdict.entries` |
+| **M-4** | same | `everyVerdictIsClassifiedForRetention` asserts the partition of `Verdict.entries`, so an unclassified verdict fails the build |
+| **M-5** | same | sixteen writers off one latch; mutation `addIfAbsent` → `add` fails it |
+| **L-1** | same | `anExactVersionTheConstraintRejectsBeatsANeighbourItAccepts`; mutation hoisting the constraint tier fails it |
+| **L-2** | `test(grinder): pin that a restored id with no usable ref leaves no entry` → `fix(clientside): do not remember an id a restore had no ref for` | filter before claiming the entry; fixture is a mixed-shape document |
+| **L-3** | `refactor(clientside): ask the learned refs once in mappingsFor` | compare against the ref list directly |
+| **L-4** | — | no code change; M-1's gate is the protection, and the reasoning stays recorded above |
+| **L-5** | — | no code change; pre-existing shape of the recursion, and the candidate case is fully covered |
+| **L-6** | `docs: the audit findings, and the gate that keeps the patch fallback safe` | both counts restated as commands, with the entry's own two-time error recorded |
+
+**One finding was mine and wrong, and the correction is the useful part.** M-4's first implementation
+asserted retention as a partition on `Verdict.grindRan` — *"a grind that never ran has nothing to keep"* —
+and went **red against correct code**: `ERROR.keepsLogs` is `true` *despite* nothing having run, because an
+admin has to diagnose the host and that is the one bucket they can act on. The guard was asserting a rule
+that had been invented for it rather than the rule that exists. Reading *why* it failed is what caught it;
+the shipped guard states the actual classification with a per-verdict reason and fails the build on an
+unclassified verdict, instead of on a tidy-looking predicate.
+
+**One under-reported item, found while fixing M-4.** `VerdictPublicationTest.everyVerdictButClearKeepsItsLogs`
+had the same defect as `VerdictColumnTest` — a hand-written list of three — *and* a name this batch made
+actively false, since `LOCKED` and `UNVERIFIABLE` discard as well. M-4 named only `VerdictColumnTest`. Both
+are now derived from `Verdict.entries`.
+
+**Suites after the fixes:** clientside **523**, grinder **514** (29 skipped), plugin-grinder **73**, api
+**412** (1 skipped), app **149** (needs a local MongoDB on 27017). All re-derived from `build/test-results`.
+
