@@ -84,18 +84,39 @@ class CurseForgePlatform(
         )
     }
 
-    override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = try {
+    /** The narrow call is the widened one asked about nothing else, so the two cannot drift apart. */
+    override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? =
+        resolveDependency(nativeRef, minecraftVersion, emptyList())
+
+    override fun resolveDependency(
+        nativeRef: String,
+        minecraftVersion: String?,
+        alsoVersions: List<String>
+    ): ProjectFiles? = try {
         // Platform-supplied refs are numeric (a file's `dependencies[].modId`); a manifest-declared one is
         // a mod id like `mtlib`, which used to throw here and be caught as "unresolvable". The slug route is
         // the same search `resolve` uses, so it costs a request only where there was previously no answer.
         val modId = nativeRef.toLongOrNull() ?: modIdForSlug(nativeRef) ?: return null
         val modNode = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId", headers)).path("data")
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: "https://www.curseforge.com"
-        // Deliberately one page, unlike [resolve]: a dependency only needs *a* usable file for the loader and
-        // Minecraft version being booted, and paging every dependency of every candidate would multiply what a
-        // catalog sweep spends of the API key's quota for evidence nobody reads.
-        val files = objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0, minecraftVersion), headers))
-            .path("data").map { toModFile(it, webBase) }
+        // Deliberately one page **per version**, unlike [resolve]: a dependency only needs *a* usable file
+        // for the loader and Minecraft version being booted, and paging a project's whole history for every
+        // dependency of every candidate would multiply what a catalog sweep spends of the API key's quota
+        // for evidence nobody reads.
+        //
+        // `alsoVersions` is what makes a version-line reachable at all here. Every file this endpoint returns
+        // carries the version it was asked for, so a caller cannot discover a neighbour from the answer --
+        // which is why the patch-version fallback in `BootCandidateSelector` was inert on this platform until
+        // 2026-09-10. The caller supplies neighbours only after the exact version has failed, so the common
+        // case is still exactly one request.
+        val files = (listOf(minecraftVersion) + alsoVersions.filter { it != minecraftVersion })
+            .distinct()
+            .flatMap { version ->
+                objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0, version), headers))
+                    .path("data").map { toModFile(it, webBase) }
+            }
+            // One file can be tagged for several versions of a line, so two queries can return it twice.
+            .distinctBy { it.fileName }
         // The project's own slug, not the ref we arrived by: `unsatisfiedLabel` reads this back to name an
         // unmet dependency, and a bare `306612` in a refusal is unreadable. Free here — `modNode` is the
         // `/mods/{id}` response we already fetched for `websiteUrl`.

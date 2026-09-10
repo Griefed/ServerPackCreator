@@ -72,6 +72,9 @@ class ModrinthPlatform(
      * [minecraftVersion] is accepted and unused: Modrinth's version endpoint returns a project's **whole**
      * version list in one response, so there is no newest-N window for an older Minecraft to fall outside
      * of — the defect this parameter exists to fix is CurseForge's paging, not the interface's.
+     *
+     * For the same reason the widening overload is left at its default: there is nothing a caller could ask
+     * for that this answer does not already contain.
      */
     override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = try {
         val slug = slugOf(nativeRef)

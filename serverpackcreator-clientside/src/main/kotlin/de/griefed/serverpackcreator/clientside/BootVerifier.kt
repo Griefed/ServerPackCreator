@@ -410,7 +410,7 @@ class BootVerifier(
             if (!visited.add(dependencyRef)) {
                 continue
             }
-            val dependencyProject = platform.resolveDependency(dependencyRef, minecraftVersion)
+            val dependencyProject = resolveDependencyAcrossTheLine(dependencyRef, loader, minecraftVersion, excluded)
             if (dependencyProject == null) {
                 // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
@@ -608,7 +608,7 @@ class BootVerifier(
                     },
                     // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
                     // publishing nothing usable from one whose builds staging dropped.
-                    resolveRef = { platform.resolveDependency(it, minecraftVersion) },
+                    resolveRef = { resolveDependencyAcrossTheLine(it, loader, minecraftVersion, excluded) },
                     excluded = excluded
                 )
             }
@@ -668,6 +668,50 @@ class BootVerifier(
     }
 
     /**
+     * The dependency project behind [ref], widened to the whole Minecraft **version-line** if the version
+     * being booted turns up nothing usable — or `null` when the ref resolves to no project at all.
+     *
+     * **Why a caller has to ask for this rather than the selector finding it.** `pickDependencyFile` already
+     * falls back to a neighbouring patch release, but it can only search the files it is handed, and
+     * `CurseForgePlatform.resolveDependency` answers one page narrowed by `gameVersion=<exact>` — so every
+     * file in hand carries the exact version and the neighbour rung can never match anything the exact rung
+     * did not. The fallback was therefore **inert on CurseForge from the day it shipped**: measured
+     * 2026-09-10, `better-combat-by-daedelus` and `combat-roll` were still published `UNVERIFIABLE` for
+     * `playeranimator` on Forge 1.20.2 while PlayerAnimator publishes Forge builds for 1.20.1 and 1.20.
+     *
+     * **The exact version is asked for first and alone**, so the common case stays one request; the
+     * neighbours are fetched only where the boot would otherwise be refused outright. They come from SPC's
+     * own Minecraft release list rather than from the files, because on CurseForge the files cannot name a
+     * version nobody asked about, and they are ordered by [BootCandidateSelector.patchNeighboursIn] — the
+     * same nearest-first rule the in-hand fallback uses, so the two cannot drift.
+     *
+     * Modrinth ignores the extra versions (it returns a whole history in one response), so this costs that
+     * platform nothing and the widened call is simply the same answer again.
+     */
+    private fun resolveDependencyAcrossTheLine(
+        ref: String,
+        loader: String,
+        minecraftVersion: String,
+        excluded: Set<String>
+    ): ProjectFiles? {
+        val exact = platform.resolveDependency(ref, minecraftVersion) ?: return null
+        if (BootCandidateSelector.pickDependencyFile(
+                exact.withoutExcluded(excluded).files, loader, minecraftVersion
+            ) != null
+        ) {
+            return exact
+        }
+        val neighbours = BootCandidateSelector.patchNeighboursIn(bootableReleases(), minecraftVersion)
+        if (neighbours.isEmpty()) {
+            return exact
+        }
+        // Handing the exact version back as well keeps the answer a superset: a widened resolve must never
+        // lose a file the narrow one had, or a project whose only usable build the excluded set had dropped
+        // would report a different reason on the second look.
+        return platform.resolveDependency(ref, minecraftVersion, neighbours) ?: exact
+    }
+
+    /**
      * [primary] unless the requirement names an alternative that can be staged where the primary cannot.
      *
      * Quilt's `unless` clause says *"this requirement is met if that id is present instead"*, and Quilt
@@ -704,7 +748,7 @@ class BootVerifier(
                 mappingsFor = {
                     learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
                 },
-                resolveRef = { platform.resolveDependency(it, minecraftVersion) },
+                resolveRef = { resolveDependencyAcrossTheLine(it, loader, minecraftVersion, excluded) },
                 excluded = excluded
             )
             if (plan is ManifestDependencyPlan.Stage) {

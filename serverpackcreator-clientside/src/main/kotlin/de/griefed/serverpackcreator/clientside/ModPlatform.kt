@@ -69,8 +69,33 @@ interface ModPlatform {
      * its files, or `null` when it cannot be resolved. DeclaredSupport is irrelevant for a dependency and is
      * left [DeclaredSupport.UNKNOWN]; the caller picks a file matching the dependent's loader and Minecraft
      * version.
+     *
      */
     fun resolveDependency(nativeRef: String, minecraftVersion: String? = null): ProjectFiles?
+
+    /**
+     * [resolveDependency] widened to ask for [alsoVersions] **as well as** [minecraftVersion].
+     *
+     * **Why this exists as a second overload rather than a parameter.** The two platforms answer very
+     * differently: Modrinth returns a project's whole version list in one response, so there is nothing a
+     * caller could ask for that is not already there, while CurseForge answers one page narrowed by
+     * `gameVersion` and therefore cannot show a caller anything it did not ask about. That is why
+     * `BootCandidateSelector`'s patch-version fallback — which searches only the files in hand — was
+     * **inert on CurseForge** from the day it shipped.
+     *
+     * The default ignores the extra versions and answers exactly as the narrow call does, which is the
+     * correct behaviour for any platform that already returns everything, and keeps every existing
+     * implementation valid. Override it only where asking costs a request.
+     *
+     * `BootVerifier.resolveDependencyAcrossTheLine` supplies the neighbours **only** after the exact version
+     * has turned up nothing usable, so the extra requests are paid for exactly where the boot would
+     * otherwise be refused.
+     */
+    fun resolveDependency(
+        nativeRef: String,
+        minecraftVersion: String?,
+        alsoVersions: List<String>
+    ): ProjectFiles? = resolveDependency(nativeRef, minecraftVersion)
 }
 
 /**

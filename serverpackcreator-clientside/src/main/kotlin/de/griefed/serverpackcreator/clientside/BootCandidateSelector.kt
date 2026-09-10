@@ -343,10 +343,22 @@ object BootCandidateSelector {
      * compiled against — the same reason the exact match is preferred at all — and the newer build wins a
      * tie because it is the more likely of the two to still be maintained.
      */
-    private fun patchNeighboursOf(files: List<ModFile>, minecraftVersion: String): List<String> {
+    private fun patchNeighboursOf(files: List<ModFile>, minecraftVersion: String): List<String> =
+        patchNeighboursIn(files.flatMap { it.minecraftVersions }, minecraftVersion)
+
+    /**
+     * The patch releases of [minecraftVersion]'s own line present in [versions], nearest first and a tie
+     * going to the newer build — the ordering rule [patchNeighboursOf] applies to a project's files, exposed
+     * for a caller holding a list of *versions* instead.
+     *
+     * `BootVerifier` needs exactly that: a CurseForge dependency's files are fetched **per version**
+     * (`gameVersion=<exact>`), so the neighbours cannot be read off the files in hand and have to come from
+     * the Minecraft releases SPC knows about. One rule for both, or the two orderings drift.
+     */
+    fun patchNeighboursIn(versions: Collection<String>, minecraftVersion: String): List<String> {
         val wantedPatch = patchOf(minecraftVersion) ?: return emptyList()
         val line = minecraftLine(minecraftVersion)
-        return files.flatMap { it.minecraftVersions }
+        return versions
             .distinct()
             .filter { it != minecraftVersion && minecraftLine(it) == line }
             .mapNotNull { version -> patchOf(version)?.let { version to it } }
