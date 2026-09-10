@@ -613,16 +613,19 @@ class BootVerifier(
                 )
             }
             val firstPlan = planFor()
+            // The alternative is only reached when the primary could not be staged, which is the order the
+            // descriptor implies: `unless` names a substitute, not a preference.
+            val planned = alternativeFor(requirement, firstPlan, loader, minecraftVersion, excluded)
             // Only here, and only for a requirement that is REQUIRED (optional ones never reach this loop)
             // and unresolvable by every cheaper route, is a download worth spending to find out what a
             // linked project is. Re-planning afterwards rather than using the probe's answer directly keeps
             // one code path deciding what gets staged.
-            val plan = if (firstPlan is ManifestDependencyPlan.Unmapped &&
+            val plan = if (planned is ManifestDependencyPlan.Unmapped &&
                 askLinkedProjects(requirement.modID, file, loader, minecraftVersion, modsDir, excluded, probed)
             ) {
                 planFor()
             } else {
-                firstPlan
+                planned
             }
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {
@@ -662,6 +665,57 @@ class BootVerifier(
                 }
             }
         }
+    }
+
+    /**
+     * [primary] unless the requirement names an alternative that can be staged where the primary cannot.
+     *
+     * Quilt's `unless` clause says *"this requirement is met if that id is present instead"*, and Quilt
+     * Loader honours it — so a mod written for either library declares *"QSL, unless Fabric API is here"*
+     * and runs with either. Reading only the primary id makes such a requirement look hard: measured on the
+     * live grinder 2026-09-10, `geophilic`, `terralith`, `trek` and `true-ending` were each refused for
+     * `quilt_resource_loader` while QSL publishes nothing past Minecraft 1.21 and Fabric API publishes for
+     * every version of it.
+     *
+     * **Only reached when the primary failed**, which is the order the descriptor implies — `unless` names a
+     * substitute, not a preference — and only for a plan that is `Unsatisfied`, i.e. one that would refuse
+     * the boot. An `Unmapped` primary already never refuses, so spending resolves on its alternatives would
+     * buy nothing.
+     *
+     * The alternative is planned by the **same** [planManifestDependency] the primary went through, so it
+     * inherits the whole mapping ladder (learned refs, the registry, the version constraint) and the same
+     * confidence rule. First alternative that stages wins; if none does, [primary] is handed back untouched
+     * so the refusal still names the id the descriptor actually asked for.
+     */
+    private fun alternativeFor(
+        requirement: ModDependency,
+        primary: ManifestDependencyPlan,
+        loader: String,
+        minecraftVersion: String,
+        excluded: Set<String>
+    ): ManifestDependencyPlan {
+        if (primary !is ManifestDependencyPlan.Unsatisfied || requirement.unlessProvided.isEmpty()) {
+            return primary
+        }
+        for (alternative in requirement.unlessProvided) {
+            val plan = planManifestDependency(
+                ModDependency(alternative, versionConstraint = requirement.versionConstraint),
+                loader, minecraftVersion,
+                mappingsFor = {
+                    learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
+                },
+                resolveRef = { platform.resolveDependency(it, minecraftVersion) },
+                excluded = excluded
+            )
+            if (plan is ManifestDependencyPlan.Stage) {
+                log.info(
+                    "'${requirement.modID}' could not be staged, and the descriptor's `unless` names " +
+                        "'$alternative' as satisfying it instead — staging ${plan.file.fileName}."
+                )
+                return plan
+            }
+        }
+        return primary
     }
 
     /**
@@ -1430,6 +1484,10 @@ class BootVerifier(
                 // Lowercased on both sides because descriptors spell ids inconsistently and a miss here
                 // costs the whole boot, whereas `bundledIds` above compares two ids read by the same scanner.
                 requirement.modID.trim().lowercase() in providedIds ||
+                // Quilt's `unless`: the descriptor itself says this requirement is met if that id is here
+                // instead, and the loader honours it. `geophilic`, `terralith`, `trek` and `true-ending`
+                // all declare `quilt_resource_loader unless fabric-resource-loader-v0`.
+                requirement.unlessProvided.any { it.trim().lowercase() in providedIds } ||
                 requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }

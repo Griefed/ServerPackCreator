@@ -105,7 +105,13 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
                         } else {
                             null
                         }
-                        modDependencies.add(ModDependency(dependencyId, versionConstraint = constraint))
+                        modDependencies.add(
+                            ModDependency(
+                                dependencyId,
+                                versionConstraint = constraint,
+                                unlessProvided = readUnless(dependency)
+                            )
+                        )
                     }
                 } catch (_: NullPointerException) {
                     log.debug("No dependencies for $modId.")
@@ -116,6 +122,32 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
             // dependencies, so there is nothing to record.
         }
         return modDependencies
+    }
+
+    /**
+     * The ids [dependency]'s `unless` clause names, or empty when it states none.
+     *
+     * Quilt's `unless` says *"this requirement is met if that is present instead"*, and it takes the same
+     * shapes an entry of `depends` does — a bare id, an object carrying one, or an array of either — so all
+     * three are read. Only a container entry can carry the clause at all; a bare-string dependency has
+     * nowhere to put it.
+     *
+     * Any *range* on the alternative is deliberately dropped: this answers "what else would satisfy this",
+     * and enforcing a range on the substitute is the loader's job, not a scanner's.
+     */
+    private fun readUnless(dependency: JsonNode): List<String> {
+        if (!dependency.isContainerNode) {
+            return emptyList()
+        }
+        val unless = dependency.path("unless")
+        val entries = if (unless.isArray) unless.toList() else listOf(unless)
+        return entries.mapNotNull { entry ->
+            when {
+                entry.isTextual -> entry.asText()
+                entry.isContainerNode -> entry.path("id").takeIf { it.isTextual }?.asText()
+                else -> null
+            }?.takeIf { it.isNotBlank() }
+        }
     }
 
     /**
