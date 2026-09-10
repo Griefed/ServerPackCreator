@@ -202,7 +202,10 @@ class CurseForgePlatform(
             // CurseForge has no version field; `displayName` is what an author types as the release name
             // and is the closest thing to one. It is often decorated ("JEI 15.2.0.27 for 1.20.1"), which is
             // fine: VersionConstraint reads what it can and accepts what it cannot.
-            version = fileNode.textOrNull("displayName")
+            version = fileNode.textOrNull("displayName"),
+            // 1 release, 2 beta, 3 alpha. An absent field reads as `0` and so as a release, which is the
+            // fail-toward-no-op direction the Modrinth side takes for the same reason.
+            channel = ReleaseChannel.fromCurseForge(fileNode.path("releaseType").asInt())
         )
     }
 

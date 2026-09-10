@@ -63,10 +63,32 @@ object BootCandidateSelector {
         loader: String,
         loaderVersionAvailable: (minecraftVersion: String) -> Boolean
     ): Pair<ModFile, String>? =
+        // The channel is the outermost preference, so a stable build on an older Minecraft beats a beta on a
+        // newer one. Newest-Minecraft-first does not merely permit a beta -- authors publish their
+        // experimental newer-Minecraft ports on that channel while the stable line sits on an older version,
+        // so it prefers one for exactly the projects that have a stable alternative. Measured on
+        // `hybrid-aquatic`: 16 stable Forge releases on 1.20.1, and a `[Sinytra]` beta on 1.20.4 was booted.
+        //
+        // A preference, never a filter: every channel is tried in turn, so a project publishing only betas
+        // (or only an alpha, as `faster-random` does for Forge) is ground exactly as deeply as before.
+        ReleaseChannel.entries.firstNotNullOfOrNull { channel ->
+            pickBootableCandidateFrom(files.filter { it.channel == channel }, loader, loaderVersionAvailable)
+        }
+
+    /**
+     * [pickBootableCandidate]'s loader resolution, over one channel's files: the tagged files first, then the
+     * untagged ones.
+     *
+     * An untagged file states no loader rather than stating another one — see [pickUntagged]. Last resort, so
+     * a file whose author did tag it always wins and this only adds a candidate where there was none: an
+     * all-untagged project (every one of mtlib's 15 files) was never ground at all.
+     */
+    private fun pickBootableCandidateFrom(
+        files: List<ModFile>,
+        loader: String,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): Pair<ModFile, String>? =
         newestOf(files.filter { loader in it.loaders }, loaderVersionAvailable)
-        // An untagged file states no loader rather than stating another one — see [pickUntagged]. Last
-        // resort, so a file whose author did tag it always wins and this only adds a candidate where there
-        // was none: an all-untagged project (every one of mtlib's 15 files) was never ground at all.
             ?: newestOf(files.filter { it.loaders.isEmpty() }, loaderVersionAvailable)
 
     /** The newest bootable (file, Minecraft version) pair among [files], or `null`. */

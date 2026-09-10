@@ -68,6 +68,52 @@ enum class DeclaredSupport {
 }
 
 /**
+ * How stable a published file claims to be — Modrinth's `version_type`, CurseForge's `releaseType`.
+ *
+ * **Declaration order is the preference order**, and `BootCandidateSelector.pickBootableCandidate` walks it:
+ * a release is what a user's pack installs, so it is what a verdict should be about.
+ *
+ * Measured on `hybrid-aquatic`, 2026-09-10: 16 stable Forge releases on Minecraft 1.20.1 beside 10
+ * `[Sinytra]` betas on 1.20.1–1.20.4. Newest-Minecraft-first picked a beta, because authors publish their
+ * experimental *newer*-Minecraft ports on that channel while the stable line sits on an older version — so
+ * the ordering preferred a beta for exactly the projects that had a stable alternative.
+ *
+ * @author Griefed
+ */
+enum class ReleaseChannel {
+    /** A normal release, and what an absent or unrecognised channel reads as. */
+    RELEASE,
+
+    /** Pre-release. Reached only when the project publishes no release for the loader being booted. */
+    BETA,
+
+    /** Earlier than beta, and the last resort — `faster-random` publishes one and no Forge release at all. */
+    ALPHA;
+
+    companion object {
+        /**
+         * The channel [value] names, defaulting to [RELEASE] for anything unrecognised, absent or `null`.
+         *
+         * Failing toward RELEASE keeps the preference a *no-op* where the platform says nothing, which is the
+         * behaviour every caller had before the channel was read at all — a platform that renames the field
+         * degrades to newest-Minecraft-first rather than to "everything is an alpha".
+         */
+        fun fromString(value: String?): ReleaseChannel =
+            entries.firstOrNull { it.name.equals(value?.trim(), ignoreCase = true) } ?: RELEASE
+
+        /**
+         * The channel CurseForge's numeric `releaseType` names — `1` release, `2` beta, `3` alpha — with the
+         * same fail-toward-RELEASE rule for anything else.
+         */
+        fun fromCurseForge(releaseType: Int): ReleaseChannel = when (releaseType) {
+            2 -> BETA
+            3 -> ALPHA
+            else -> RELEASE
+        }
+    }
+}
+
+/**
  * A single downloadable mod-file as listed by a hosting platform, normalized across Modrinth and
  * CurseForge. [downloadUrl] is `null` when the author forbade third-party distribution
  * (CurseForge `allowModDistribution=false`); such [locked] files can only be fetched through the
@@ -108,7 +154,12 @@ data class ModFile(
      * **Incompatible links are excluded.** Reading their id would be the right file for the wrong reason,
      * and a match would stage the one jar the author says must not be there.
      */
-    val relatedDependencies: List<String> = emptyList()
+    val relatedDependencies: List<String> = emptyList(),
+    /**
+     * How stable the platform says this file is. Defaults to [ReleaseChannel.RELEASE], which is also what an
+     * absent or unrecognised value reads as — see [ReleaseChannel.fromString].
+     */
+    val channel: ReleaseChannel = ReleaseChannel.RELEASE
 ) {
     /** Whether this file cannot be downloaded via the API and needs the browser download-flow. */
     val locked: Boolean

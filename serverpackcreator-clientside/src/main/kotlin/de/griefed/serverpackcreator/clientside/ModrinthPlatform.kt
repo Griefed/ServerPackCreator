@@ -134,7 +134,10 @@ class ModrinthPlatform(
                 relatedDependencies = linkedDeps,
                 // The version this file was published under, which is what a dependant's declared
                 // constraint has to be matched against. Modrinth states it once per version, not per file.
-                version = version.textOrNull("version_number")
+                version = version.textOrNull("version_number"),
+                // Stated once per version too. `release`, `beta` or `alpha`; anything else reads as a
+                // release, so a renamed field degrades to the old newest-Minecraft-first ordering.
+                channel = ReleaseChannel.fromString(version.textOrNull("version_type"))
             )
         }
     }
