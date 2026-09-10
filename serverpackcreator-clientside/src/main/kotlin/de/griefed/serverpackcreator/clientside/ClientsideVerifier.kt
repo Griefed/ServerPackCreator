@@ -162,10 +162,10 @@ class ClientsideVerifier(
                 blamedDependency = bootOutcome?.blamedDependency,
                 blamedDependencyUrl = bootOutcome?.blamedDependencyUrl,
                 stagedDependencies = bootOutcome?.stagedDependencies.orEmpty(),
+                // The artifact's own published name. The whole history's common prefix
+                // (`suggestedEntry`) is what gets published and loses the loader token for any project that
+                // ever renamed its files; this is what a maintainer looks up on the platform page.
                 sampleFile = sample?.fileName,
-                // From the sampled file alone: one name keeps its loader token, where the whole
-                // history's common prefix loses it for any project that ever renamed its files.
-                filenamePattern = FilenameStemDeriver.deriveStem(listOfNotNull(sample?.fileName)),
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail

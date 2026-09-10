@@ -201,7 +201,7 @@ internal class VerdictReportRendererTest {
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
             decidedBy = "SENTINELDECISION",
-            filenamePattern = "SENTINELFILENAME"
+            fileName = "SENTINELFILENAME"
         )
 
         val row = VerdictReportRenderer.toHtml(pageOf(listOf(verdict))) { listOf("SENTINELLOG") }

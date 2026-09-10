@@ -39,7 +39,7 @@ internal class VerdictTableModelTest {
         loader = "Fabric",
         verdict = verdict,
         suggestedEntry = entry,
-        filenamePattern = null,
+        fileName = null,
         detail = "because",
         scannedAt = "2026-09-04T12:30:00Z"
     )

@@ -25,24 +25,34 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Pins the `Filename` column: the pattern of the artifact actually sampled, beside the broad historical
- * `NamePattern`.
+ * Pins the `Filename` column: **the file that was actually sampled, named as the platform names it**, beside
+ * the broad historical `NamePattern`.
  *
  * `iris` published `iris-` for Fabric, `iris-neoforge-` for NeoForge and `iris-` for Quilt — three rows
  * where two say nothing about which file was looked at. The name pattern is the common prefix over a
- * project's whole history and must stay broad, because the fallback list matches it with `startsWith`. The
- * filename pattern is derived from the sampled file alone and keeps the loader token that history erases.
+ * project's whole history and must stay broad, because the fallback list matches it with `startsWith`. This
+ * column is the other half a maintainer needs: the artifact to go and look at on the project page.
  *
- * The two are shown side by side rather than one replacing the other: the first is what gets *published*,
- * the second is what a maintainer needs to check the finding against the platform page.
+ * **It used to carry a derived *stem* rather than a filename**, and that was the defect Griefed reported on
+ * 2026-09-10: `FilenameStemDeriver.deriveStem` was run over the sampled file, so the column titled
+ * "Filename" held `iris-fabric-` instead of `iris-fabric-1.7.5+mc1.21.1.jar`. Measured over 400 live rows:
+ * **not one** value ended in `.jar`, and **270 (67%)** were byte-identical to `NamePattern`, so the column
+ * was redundant two thirds of the time and never once answered the question it is named for.
+ *
+ * The real name serves the stem's documented purpose strictly better — it keeps the loader token history
+ * erases *and* the version, which is what identifies the artifact on the platform.
+ *
+ * `LoaderVerdict.sampleFile` had the right value all along; `Grinder.grind`'s hand-written 18-field copy
+ * simply never carried it. That is the same mapping `claude-docs/ANALYSIS-AUDIT.md` flagged on 2026-09-05 as
+ * asserted only five fields deep.
  */
 internal class FilenameColumnTest {
 
-    private fun row(slug: String, entry: String?, filename: String?) =
+    private fun row(slug: String, entry: String?, fileName: String?) =
         grindVerdict(slug, "Quilt", verdict = Verdict.CONFIRMED, suggestedEntry = entry)
-            .copy(filenamePattern = filename)
+            .copy(fileName = fileName)
 
-    /** Both columns exist, and the filename sits beside the pattern it narrows. */
+    /** Both columns exist, and the filename sits beside the pattern it identifies an artifact for. */
     @Test
     fun theCsvCarriesBothPatterns() {
         val header = VerdictCsvExporter.toCsv(emptyList()).lineSequence().first()
@@ -51,12 +61,18 @@ internal class FilenameColumnTest {
         Assertions.assertTrue(header.contains("Filename"), header)
     }
 
-    /** The reported Quilt row: broad entry published, Fabric filename shown beside it. */
+    /**
+     * **The reported defect.** The Quilt row publishes the broad `iris-` and shows the Fabric artifact it
+     * actually booted — by its full published name, not a stem of it.
+     */
     @Test
-    fun aQuiltRowShowsTheFabricFileItActuallyBooted() {
-        val csv = VerdictCsvExporter.toCsv(listOf(row("iris", "iris-", "iris-fabric-")))
+    fun aQuiltRowNamesTheFabricFileItActuallyBooted() {
+        val csv = VerdictCsvExporter.toCsv(listOf(row("iris", "iris-", "iris-fabric-1.7.5+mc1.21.1.jar")))
 
-        Assertions.assertTrue(csv.contains("iris-fabric-"), "the sampled artifact must be visible: $csv")
+        Assertions.assertTrue(
+            csv.contains("iris-fabric-1.7.5+mc1.21.1.jar"),
+            "the column has to name the artifact a maintainer would download: $csv"
+        )
         Assertions.assertTrue(csv.contains("iris-"), csv)
     }
 
@@ -73,20 +89,21 @@ internal class FilenameColumnTest {
     }
 
     /**
-     * **The published entry is unchanged.** `/as-properties` still serves `suggestedEntry`; adding a
-     * narrower column must not narrow what reaches users' fallback lists, or a mod would stop being
-     * excluded for the builds the narrow pattern misses.
+     * **The published entry is unchanged, and this guard matters more now than it did.**
+     * `/as-properties` still serves `suggestedEntry`. Publishing a *stem* of one file would already have
+     * stopped excluding the builds it misses; publishing a full **filename** would narrow the fallback list
+     * to a single build of a single loader, which is the worst version of that mistake.
      */
     @Test
-    fun theFilenamePatternIsNotWhatGetsPublished() {
+    fun theSampledFilenameIsNotWhatGetsPublished() {
         val rendered = FallbackPropertiesRenderer.render(
-            emptyList(), emptyList(), listOf(row("iris", "iris-", "iris-fabric-"))
+            emptyList(), emptyList(), listOf(row("iris", "iris-", "iris-fabric-1.7.5+mc1.21.1.jar"))
         )
 
         Assertions.assertTrue(rendered.contains("iris-"), rendered)
         Assertions.assertFalse(
-            rendered.contains("iris-fabric-"),
-            "the broad historical entry is what must be published, not the narrow one: $rendered"
+            rendered.contains("iris-fabric-1.7.5+mc1.21.1.jar"),
+            "the broad historical entry is what must be published, never one artifact's name: $rendered"
         )
     }
 }

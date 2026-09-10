@@ -431,11 +431,19 @@ While the service runs:
 - **CSV:** `http://localhost:8757/export.csv`
 - **JSON:** `http://localhost:8757/verdicts.json`
 
-Table columns are `Name, Project, Name-pattern, Verdict, Declared, Loader, Platform, Project sideness,
-Jar sideness, Detail, Decision, Rule, Dependencies, Scanned (UTC), Logs`, findings first. The CSV carries the
-same set except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
-Re-derive the exact list from `VerdictField` rather than trusting this sentence — that enum is the single
-declaration behind the header, the CSV header, the query key, the filter and the sort.
+Table columns are `Name, Project, Name-pattern, Filename, Verdict, Declared, Loader, Platform, Project
+sideness, Jar sideness, Detail, Decision, Rule, Dependencies, Scanned (UTC), Logs`, findings first. The CSV
+carries the same set except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness`
+and `Scanned`. Re-derive the exact list from `VerdictField` rather than trusting this sentence — that enum is
+the single declaration behind the header, the CSV header, the query key, the filter and the sort, and this
+sentence has already been wrong once by omitting `Filename`.
+
+**`Name-pattern` and `Filename` are not two spellings of one thing.** `Name-pattern` is the common prefix
+over the project's *whole* published history and is the only one `/as-properties` serves, because the
+fallback list matches it with `startsWith` and has to cover every build ever released. `Filename` is the
+**published name of the one artifact this verdict sampled**, verbatim — what to look up on the project page
+to check the finding. On a Quilt row it names a Fabric build, because Quilt boots those and the column
+describes the file rather than the row.
 
 **JSON (`/verdicts.json`)** serves the same selection as the table and the CSV — same `q`, `f.<field>`,
 `sort`, `dir`, `page` and `size` parameters, and like `/export.csv` a bare call returns everything rather

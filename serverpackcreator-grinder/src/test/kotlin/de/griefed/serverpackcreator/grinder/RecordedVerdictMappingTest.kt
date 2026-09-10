@@ -62,9 +62,12 @@ internal class RecordedVerdictMappingTest {
         declaredClientSide = DeclaredSupport.REQUIRED,
         declaredServerSide = DeclaredSupport.UNSUPPORTED,
         jarScan = JarScan.CLIENT,
-        bootedLoader = "SENTINEL_BOOTED"
+        bootedLoader = "SENTINEL_BOOTED",
+        // Sentinelled here since 2026-09-10. This guard exists to prove every field the mapping copies
+        // arrives, and it used to sentinel the *derived stem* instead -- which round-tripped fine while
+        // `sampleFile`, the field the report actually needs, was dropped and left `null` in the fixture.
+        sampleFile = "SENTINEL_FILENAME"
     ).copy(
-        filenamePattern = "SENTINEL_FILENAME",
         declared = Declaration.SERVER,
         firedRule = "SENTINEL_RULE",
         decidedBy = BootDecision.FML_INVALID_DIST,
@@ -104,13 +107,13 @@ internal class RecordedVerdictMappingTest {
         Assertions.assertEquals(recordedAt, row.verifiedAt)
     }
 
-    /** The two published patterns, which must not be confused with one another. */
+    /** The broad published stem and the sampled artifact's own name, which must not be confused. */
     @Test
     fun bothPatternsAreCarriedAndNotSwapped() {
         val row = recorded()
 
         Assertions.assertEquals("SENTINEL_ENTRY", row.suggestedEntry, "the broad, published stem")
-        Assertions.assertEquals("SENTINEL_FILENAME", row.filenamePattern, "the sampled artifact's pattern")
+        Assertions.assertEquals("SENTINEL_FILENAME", row.fileName, "the sampled artifact's own file name")
     }
 
     /** **The verdict itself** — the field the publication gate reads. */

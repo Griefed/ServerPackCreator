@@ -148,7 +148,7 @@ class GrinderClient(
                 loader = row.textOrNull("loader").orEmpty(),
                 verdict = row.textOrNull("verdict").orEmpty(),
                 suggestedEntry = row.textOrNull("suggestedEntry"),
-                filenamePattern = row.textOrNull("filenamePattern"),
+                fileName = row.textOrNull("fileName"),
                 detail = row.textOrNull("detail").orEmpty(),
                 scannedAt = row.textOrNull("verifiedAt").orEmpty(),
                 // Both stay nullable: a row the grinder recorded no reading for must render as an empty

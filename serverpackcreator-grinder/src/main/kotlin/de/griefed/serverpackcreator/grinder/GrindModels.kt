@@ -159,12 +159,17 @@ data class GrindVerdict(
      */
     val declared: Declaration? = null,
     /**
-     * The list-entry pattern of the file this verdict sampled, shown beside [suggestedEntry].
+     * The **published file name** of the artifact this verdict sampled, verbatim, shown beside
+     * [suggestedEntry] — `iris-fabric-1.7.5+mc1.21.1.jar`, not a stem of it.
      *
-     * [suggestedEntry] is what gets published and stays broad; this is what a maintainer checks the finding
-     * against on the platform page, and it keeps the loader token a project's rename history erases.
+     * [suggestedEntry] is what gets published and stays broad; this is the artifact a maintainer opens the
+     * platform page to check the finding against, so it has to be the name they will see there.
+     *
+     * It carried a *derived stem* until 2026-09-10, which made it useless for exactly that: over 400 live
+     * rows not one value ended in `.jar` and 270 were byte-identical to [suggestedEntry]. The real name
+     * keeps the loader token a project's rename history erases *and* the version that identifies the build.
      */
-    val filenamePattern: String? = null
+    val fileName: String? = null
 )
 
 /**

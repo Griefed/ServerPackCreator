@@ -76,7 +76,7 @@ internal enum class VerdictField(
     // Beside the pattern it narrows, never instead of it: PATTERN is what `/as-properties` publishes and
     // has to match every build ever released, while this names the one artifact that was sampled. Blank
     // when nothing was sampled -- repeating the broad stem here would imply a file was examined.
-    FILENAME("Filename", "Filename", "filename", FilterKind.TEXT, { it.filenamePattern ?: "" }),
+    FILENAME("Filename", "Filename", "filename", FilterKind.TEXT, { it.fileName ?: "" }),
     VERDICT(
         "Verdict", "Verdict", "verdict", FilterKind.CHOICE, { it.verdict.name },
         // Zero-padded so the rank sorts as text alongside every other column, without the sorter needing

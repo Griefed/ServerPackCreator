@@ -37,7 +37,8 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  *                still renders — which is what let `LOCKED` and `UNVERIFIABLE` arrive without a plugin
  *                release, since only `CONFIRMED` is compared against by name.
  * @param suggestedEntry The name-pattern the grinder proposes for the clientside-mod list.
- * @param filenamePattern The stricter filename regex, shown for context but not used for exclusion.
+ * @param fileName The published file name of the artifact the grinder sampled, verbatim — shown for
+ *                 context, never used for exclusion. It carried a derived *stem* until 2026-09-10.
  * @param detail Why the grinder decided what it did — the column that makes a verdict auditable.
  * @param scannedAt When it was verified, as the ISO-8601 string the feed carries.
  *
@@ -50,7 +51,7 @@ data class GrinderVerdict(
     val loader: String,
     val verdict: String,
     val suggestedEntry: String?,
-    val filenamePattern: String?,
+    val fileName: String?,
     val detail: String,
     val scannedAt: String,
     /**
@@ -79,9 +80,9 @@ data class GrinderVerdict(
      * offers none and therefore cannot be ticked.
      *
      * Only [suggestedEntry] qualifies, matching what the daemon itself publishes through
-     * `FallbackPropertiesRenderer`. [filenamePattern] is deliberately not a fallback: it is a regex over
-     * a *filename*, which the exclusion list only applies under its regex filter, so offering it here
-     * would silently do nothing under SPC's default matching mode.
+     * `FallbackPropertiesRenderer`. [fileName] is deliberately not a fallback: it names **one build** of
+     * one loader, so offering it here would exclude that single artifact and nothing else — a narrower
+     * mistake than the stem it replaced, which at least matched a loader's whole line.
      */
     val exclusionEntry: String? get() = suggestedEntry?.trim()?.ifEmpty { null }
 
