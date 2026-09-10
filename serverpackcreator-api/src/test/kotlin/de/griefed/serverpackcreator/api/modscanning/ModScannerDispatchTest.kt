@@ -113,6 +113,35 @@ internal class ModScannerDispatchTest {
     }
 
     /**
+     * **And so does NeoForge, which used to throw instead.**
+     *
+     * `forgeUsesToml` wrapped its comparison in `runCatching { … }.getOrDefault(true)` and
+     * `neoForgeUsesNeoToml` did not, while `SemanticVersionComparator` indexes `versionNumbers[1]`
+     * and calls `toInt()` unguarded — so `""` and `"1.x.y"` raised `NumberFormatException` and
+     * `"26"` an `ArrayIndexOutOfBoundsException`, straight out of `scannerFor`. `"26"` is not even
+     * malformed: it is a legitimate shape under the newer `YY.x[.y]` scheme this codebase supports.
+     *
+     * The blast radius was the published module, not just the grinder: `ModListCompiler` does not
+     * wrap its `scannerFor` call, so this aborted a **generation**. Both eras now share one
+     * `atLeast` helper in `LoaderDescriptors`, so neither can lose the fallback the other has.
+     *
+     * Asked as "does not throw" *and* "answers the modern scanner", because a fallback that throws
+     * and a fallback that answers wrongly are different defects.
+     */
+    @Test
+    fun anUnparseableMinecraftVersionAlsoFallsBackForNeoForge() {
+        for (minecraftVersion in listOf("", "26", "not-a-version", "1.x.y")) {
+            // The explicit type argument picks JUnit's value-returning overload; without it Kotlin
+            // resolves the `Executable` one and the assertion below compares against `kotlin.Unit`,
+            // which is how the first draft of this guard failed against correct code.
+            val scanner = Assertions.assertDoesNotThrow<ModJarScanner?> {
+                modScanner.scannerFor("NeoForge", minecraftVersion)
+            }
+            Assertions.assertSame(modScanner.neoForgeTomlScanner, scanner, "NeoForge/'$minecraftVersion'")
+        }
+    }
+
+    /**
      * No scanner knows an unrecognised loader, and the `null` is deliberate: each caller decides
      * what that means, and both keep every mod rather than silently producing an empty server pack.
      */
