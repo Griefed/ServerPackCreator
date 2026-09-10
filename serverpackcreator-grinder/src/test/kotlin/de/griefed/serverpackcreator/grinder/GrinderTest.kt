@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
 import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.grinder.report.VerdictField
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -86,7 +87,8 @@ internal class GrinderTest {
                         declaredClientSide = DeclaredSupport.REQUIRED,
                         declaredServerSide = DeclaredSupport.UNSUPPORTED,
                         jarScan = JarScan.CLIENT,
-                        bootedLoader = "Quilt"
+                        bootedLoader = "Quilt",
+                        sampleFile = "jei-1.21.1-fabric-19.21.0.247.jar"
                     )
                 )
             )
@@ -95,6 +97,14 @@ internal class GrinderTest {
         Grinder(verifier, store).grind(candidate("jei"))
 
         val recorded = store.all().single()
+        // Asked through the column rather than the field, so the assertion needs no name for it: what
+        // matters is that the report's `Filename` cell ends up carrying the artifact that was sampled.
+        // `LoaderVerdict.sampleFile` holds it and `Grinder.grind`'s hand-written mapping dropped it, which
+        // is the same 18-field copy `claude-docs/ANALYSIS-AUDIT.md` flagged as asserted five fields deep.
+        Assertions.assertEquals(
+            "jei-1.21.1-fabric-19.21.0.247.jar", VerdictField.FILENAME.text(recorded),
+            "the Filename column has to name the artifact a maintainer would download"
+        )
         Assertions.assertEquals(DeclaredSupport.REQUIRED, recorded.declaredClientSide)
         Assertions.assertEquals(DeclaredSupport.UNSUPPORTED, recorded.declaredServerSide)
         Assertions.assertEquals(JarScan.CLIENT, recorded.jarScan)

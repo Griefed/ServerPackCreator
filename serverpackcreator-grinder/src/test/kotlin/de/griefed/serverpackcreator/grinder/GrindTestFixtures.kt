@@ -33,7 +33,8 @@ internal fun loaderVerdict(
     declaredClientSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
     declaredServerSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
     jarScan: JarScan = JarScan.ERROR,
-    bootedLoader: String? = null
+    bootedLoader: String? = null,
+    sampleFile: String? = null
 ) = LoaderVerdict(
     loader = loader,
     suggestedEntry = suggestedEntry,
@@ -44,7 +45,7 @@ internal fun loaderVerdict(
     bootedLoader = bootedLoader,
     bootCrashExcerpt = null,
     verdict = verdict,
-    sampleFile = null,
+    sampleFile = sampleFile,
     note = note
 )
 
