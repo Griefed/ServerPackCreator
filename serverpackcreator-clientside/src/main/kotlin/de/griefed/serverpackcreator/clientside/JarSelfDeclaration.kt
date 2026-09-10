@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.clientside
 
 import com.electronwill.nightconfig.toml.TomlParser
+import de.griefed.serverpackcreator.api.config.SupportedModloaders
+import de.griefed.serverpackcreator.api.modscanning.LoaderDescriptors
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -46,7 +48,7 @@ import java.util.zip.ZipFile
 object JarSelfDeclaration {
 
     /** Where Forge keeps its descriptor — the one entry this object reads rather than merely lists. */
-    private const val FORGE_DESCRIPTOR = "META-INF/mods.toml"
+    private const val FORGE_DESCRIPTOR = LoaderDescriptors.FORGE_TOML
 
     /** The `mods.toml` table free-form mod properties live under. */
     private const val TOML_PROPERTIES = "properties"
@@ -54,21 +56,38 @@ object JarSelfDeclaration {
     /** The property Sinytra Connector stamps into a wrapped Fabric mod's stub descriptor. */
     private const val CONNECTOR_PLACEHOLDER_PROPERTY = "connector:placeholder"
 
-    /** Descriptor path → the loader that reads it. Presence only; the contents are `-api`'s business. */
-    private val descriptorLoaders = mapOf(
-        "fabric.mod.json" to "Fabric",
-        "quilt.mod.json" to "Quilt",
-        FORGE_DESCRIPTOR to "Forge",
-        "META-INF/neoforge.mods.toml" to "NeoForge"
-    )
+    /**
+     * The loaders a descriptor can evidence on [minecraftVersion] — the canonical names
+     * [SupportedModloaders] spells, minus any whose descriptor set is empty there.
+     *
+     * A loader outside this set can never be refused (see [contradiction]'s last accept arm), which is
+     * exactly right for `LegacyFabric`: it reads Fabric's descriptor, so no jar can carry evidence against
+     * it, and `LoaderCompatibility` already accepts a Fabric jar for its boot.
+     */
+    private fun declaringLoaders(minecraftVersion: String): Set<String> =
+        SupportedModloaders.names.filterTo(mutableSetOf()) {
+            LoaderDescriptors.descriptorsFor(it, minecraftVersion).isNotEmpty()
+        }
 
     /**
-     * The loaders whose descriptors [jar] carries. Empty when the jar cannot be opened, has no descriptor, or
-     * is not an archive at all — all of which mean *"this says nothing"*, never *"this says no"*.
+     * The loaders whose descriptors [jar] carries, **as read on [minecraftVersion]**. Empty when the jar
+     * cannot be opened, has no descriptor, or is not an archive at all — all of which mean *"this says
+     * nothing"*, never *"this says no"*.
+     *
+     * **The Minecraft version is part of the question, not a refinement of it.** Which file a loader reads
+     * has changed twice, and [LoaderDescriptors] is the one place that knows when — so on Minecraft 1.20.4 a
+     * `META-INF/mods.toml` names **both** Forge and NeoForge, because both read it there and its presence
+     * therefore distinguishes nothing. This object used to hold its own flat, version-blind map and read
+     * every `mods.toml` as Forge's, which refused 13 genuine NeoForge jars on 1.20.2–1.20.4.
+     *
+     * One jar can name several loaders two ways, and they are different: a genuine multi-loader jar carries
+     * several descriptors, while an *ambiguous* one carries a single file that several loaders read.
      */
-    fun declaredLoaders(jar: File): Set<String> = runCatching {
+    fun declaredLoaders(jar: File, minecraftVersion: String): Set<String> = runCatching {
         ZipFile(jar).use { archive ->
-            descriptorLoaders.filterKeys { archive.getEntry(it) != null }.values.toSet()
+            declaringLoaders(minecraftVersion).filterTo(mutableSetOf()) { loader ->
+                LoaderDescriptors.descriptorsFor(loader, minecraftVersion).any { archive.getEntry(it) != null }
+            }
         }
     }.getOrDefault(emptySet())
 
@@ -107,13 +126,16 @@ object JarSelfDeclaration {
         minecraftVersion: String,
         minecraftConstraint: String?
     ): String? {
-        val declared = declaredLoaders(jar)
+        val declared = declaredLoaders(jar, minecraftVersion)
         // The cross-loading claim is [LoaderCompatibility]'s, and it needs the Minecraft version: NeoForge
         // loads a Forge jar on 1.20.1 and on nothing else, so asking without one can only be wrong twice.
+        // That is a claim about the *jar* loading unchanged, and stays separate from which descriptor a
+        // loader reads -- NeoForge's package rename (1.20.2) and its descriptor rename (1.20.5) are two
+        // different dates, and merging them is what made this gate wrong.
         val acceptable = declared.isEmpty() ||
             loader in declared ||
             LoaderCompatibility.alsoRuns(loader, minecraftVersion).any { it in declared } ||
-            loader !in descriptorLoaders.values
+            loader !in declaringLoaders(minecraftVersion)
         if (!acceptable) {
             return "${jar.name} carries only ${declared.sorted().joinToString("/")} descriptor(s), " +
                 "so it is not a $loader mod"
