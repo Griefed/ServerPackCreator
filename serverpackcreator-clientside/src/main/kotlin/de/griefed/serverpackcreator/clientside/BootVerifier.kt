@@ -944,8 +944,11 @@ class BootVerifier(
             )
         val (mainFile, minecraftVersion) = candidate
         val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
-        // At most one retry, and the two answer different refusals -- the loader mismatch first, because
-        // where a jar disagrees about both, no other Minecraft version makes it a mod for this loader.
+        // At most one retry, enforced here rather than by which channel a refusal carries: the loader
+        // mismatch is tried first, because where a jar disagrees about both, no other Minecraft version
+        // makes it a mod for this loader. Only when that retry does not apply -- nothing declared, or
+        // nothing declared that this Minecraft can boot -- does the version retry get its turn, which is
+        // what keeps a `mods.toml`-only jar's genuine NeoForge boot on an older Minecraft reachable.
         reselectOnLoaderContradiction(staged, project, loader, mainFile, minecraftVersion, loaderVersionOverride, bootable)
             ?.let { return it }
         return reselectOnMinecraftContradiction(staged, project, loader, mainFile, loaderVersionOverride, bootable)
@@ -1428,10 +1431,15 @@ class BootVerifier(
             val minecraftDisagreement = declared?.takeIf { !VersionConstraint.satisfies(minecraftVersion, it) }
             // Asked again rather than parsed back out of `contradiction`: the acceptability rule lives in
             // JarSelfDeclaration and must have one home, and this costs a second read of the archive only
-            // on the refusal path. The two channels are mutually exclusive because the loader mismatch is
-            // reported first, so a jar disagreeing about both offers the loader retry and not the version
-            // one -- which is the right way round: booting another version under a loader whose descriptor
-            // the jar does not carry still cannot load the mod.
+            // on the refusal path.
+            //
+            // **Both channels are filled when the jar disagrees about both**, and which retry to spend is
+            // `prepareBootPack`'s decision, not this function's. Nulling the Minecraft range here to
+            // enforce "exactly one retry" lost a reachable boot: where the declared loader has no build for
+            // this Minecraft the loader retry cannot fire, and the version retry that could have has been
+            // erased. A `mods.toml`-only jar requested as NeoForge on 1.20.6 is that shape -- at 1.20.4 the
+            // same file *is* a NeoForge descriptor, so re-selecting the version finds a genuine NeoForge
+            // boot instead of borrowing Forge's.
             val mismatchedLoaders = JarSelfDeclaration.contradictingLoaders(jar, loader, minecraftVersion)
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
@@ -1439,7 +1447,7 @@ class BootVerifier(
                 // A web-form tick contradicting the jar is the author's mistake: nothing we can retry, and
                 // no statement about whether the mod belongs on a server.
                 cause = PreventionCause.UPSTREAM_UNAVAILABLE,
-                declaredMinecraftConstraint = minecraftDisagreement.takeIf { mismatchedLoaders.isEmpty() },
+                declaredMinecraftConstraint = minecraftDisagreement,
                 declaredLoaders = mismatchedLoaders
             )
         }
