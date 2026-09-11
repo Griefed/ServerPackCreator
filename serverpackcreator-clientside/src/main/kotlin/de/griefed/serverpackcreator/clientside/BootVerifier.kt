@@ -80,6 +80,19 @@ class BootVerifier(
     private val otherVersionRecheckLimit: Int = 2,
     private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
     private val learnedModIds: LearnedModIds = LearnedModIds(),
+    /**
+     * What a modloader build declares it **provides**, as id → version, so a staged jar demanding one of
+     * those ids is judged rather than skipped.
+     *
+     * Defaults to knowing nothing, which is the pre-2026-09-12 behaviour and correct for any caller that
+     * cannot see an install: `DependencyBacktrack` then treats such a demand as naming something absent, as
+     * it always did. The grinder supplies it by reading the cached install layer's own loader jar, which is
+     * the only place the answer actually lives — quilt-loader's `quilt.mod.json` declares
+     * `provides: [{ "id": "fabricloader", "version": "0.19.3" }]`, and it differs per build.
+     */
+    private val loaderProvides:
+        (loader: String, loaderVersion: String, minecraftVersion: String) -> Map<String, String> =
+            { _, _, _ -> emptyMap() },
     private val alternatePlatforms: List<ModPlatform> = emptyList(),
     private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
@@ -156,6 +169,14 @@ class BootVerifier(
          * it *asked* for describes a run that did not happen.
          */
         val minecraftVersion: String? = null,
+        /**
+         * The modloader build the console says actually started, or `null` when it never announced one.
+         *
+         * Kept beside the requested build rather than replacing it: measured 2026-09-11, all 16 Quilt boots
+         * ran `0.30.1` while staging had asked for `0.31.0-beta.4`, and the two provide *different*
+         * `fabricloader` versions — so a row naming only one of them cannot be audited either way.
+         */
+        val observedLoaderVersion: String? = null,
         /**
          * The id of the operator rule that decided or annotated this outcome, or `null` when the built-in
          * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
@@ -1238,7 +1259,7 @@ class BootVerifier(
         unmappedDependencyNote(unmapped)?.let { log.warn(it) }
         // Judge the staged jars against each other before spending a container on them: a set whose own
         // descriptors contradict each other is refused by the loader, and the CANDIDATE wears the verdict.
-        dependencyToDemote(modsDir, mainFile, injected, loader, minecraftVersion, excludedDependencies)
+        dependencyToDemote(modsDir, mainFile, injected, loader, loaderVersion, minecraftVersion, excludedDependencies)
             ?.let { demoted ->
                 return stageBootPack(
                     project, loader, mainFile, minecraftVersion, loaderVersionOverride, attemptDirName,
@@ -1284,6 +1305,7 @@ class BootVerifier(
         mainFile: ModFile,
         injected: List<InjectedDependency>,
         loader: String,
+        loaderVersion: String,
         minecraftVersion: String,
         alreadyExcluded: Set<String>
     ): String? {
@@ -1303,15 +1325,34 @@ class BootVerifier(
         val publishedVersionOf = (injected.map { it.fileName to it.version } + (mainFile.fileName to mainFile.version))
             .toMap()
 
-        // Nested first, so a top-level jar of the same id wins: that is the copy staging deliberately
+        // The loader's own `provides` first of all, so a jar demanding one of them is judged instead of
+        // being skipped as naming something absent -- and last in precedence, because a staged jar claiming
+        // the same id is a real file the loader will load. Measured 2026-09-11: quilt-loader 0.30.1 provides
+        // `fabricloader 0.19.3` while 0.31.0-beta.4 provides `0.19.5`, and `fabric-language-kotlin` demands
+        // `[0.19.5, ∞)` -- twelve published rows died on that, invisibly, because `fabricloader` is
+        // environment-provided and therefore never staged for anything to compare against.
+        //
+        // Nested next, so a top-level jar of the same id wins: that is the copy staging deliberately
         // chose and the one a demotion would act on. Nested entries can therefore only fill a gap.
-        val stagedVersions = nestedVersions(stagedJars) + scanned.flatMap { mod ->
+        val provided = loaderProvides(loader, loaderVersion, minecraftVersion)
+        val stagedVersions = provided + nestedVersions(stagedJars) + scanned.flatMap { mod ->
             val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
             // A dependency names an id, and one jar answers to several: its own, plus everything it
             // `provides` -- Fabric API declares `id: fabric-api` and `provides: [fabric]`.
             (listOf(mod.modID) + mod.provides).map { it to version }
         }.toMap()
-        val requirements = scanned.flatMap { mod ->
+        // The platform ids the scanners strip, read back off each staged jar for exactly the ids the
+        // loader was able to describe -- so a demand on `fabricloader` is judged, and nothing else is.
+        val platformDemands = scanned.flatMap { mod ->
+            BundledJars.demandsOn(mod.file, provided.keys).mapNotNull { requirement ->
+                requirement.versionConstraint?.let { constraint ->
+                    DependencyBacktrack.Requirement(
+                        mod.file.name, mod.file.name == mainFile.fileName, requirement.modID, constraint
+                    )
+                }
+            }
+        }
+        val requirements = platformDemands + scanned.flatMap { mod ->
             mod.dependencies
                 .filterNot { it.optional }
                 .mapNotNull { requirement ->
@@ -1494,12 +1535,22 @@ class BootVerifier(
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
             val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}", rules)
-                .copy(
-                    bootedLoader = pack.loader,
-                    bootedFile = pack.bootedFile,
-                    minecraftVersion = pack.minecraftVersion,
-                    stagedDependencies = pack.injectedDependencies.map { it.fileName }
-                )
+                .let { classified ->
+                    // Read from the console rather than from the pack: what staging asked for is already
+                    // known, and the whole point is that the two can disagree.
+                    val observed = BootLoaderVersion.observedIn(classified.console?.lines().orEmpty())
+                    classified.copy(
+                        bootedLoader = pack.loader,
+                        bootedFile = pack.bootedFile,
+                        minecraftVersion = pack.minecraftVersion,
+                        observedLoaderVersion = observed,
+                        detail = listOfNotNull(
+                            classified.detail,
+                            BootLoaderVersion.disagreementNote(pack.loaderVersion, observed)
+                        ).joinToString(" "),
+                        stagedDependencies = pack.injectedDependencies.map { it.fileName }
+                    )
+                }
                 // Annotation only: `attribute` returns an outcome whose result is this one's, always.
                 .let { attribute(it, pack.injectedDependencies, pack.candidateStem) }
             // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the

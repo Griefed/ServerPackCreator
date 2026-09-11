@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.loader.LoaderProvidedIds
 import de.griefed.serverpackcreator.grinder.loader.LoaderStepDown
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
@@ -249,6 +250,11 @@ class ContainerCandidateVerifier(
                             ::knownLoaderVersionsNewestFirst
                         ),
                         workDirectory = File(workDirectory, "boot"),
+                        // What the installed loader answers to, read out of the install layer itself, so a
+                        // staged jar demanding `fabricloader` is judged rather than skipped as naming
+                        // something absent. The Minecraft version is the pack's; a tuple that is not
+                        // installed yet answers nothing, which is the old behaviour.
+                        loaderProvides = LoaderProvidedIds(loaderCache)::of,
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources, containerUser),
                         packPostProcessor = ::overlayLoaderInstall,
                         minecraftAcceptable = imageJava::supports,

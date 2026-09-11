@@ -27,6 +27,11 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 /**
+ * This module's reader for a Fabric/Quilt descriptor, answering three questions about one jar: what it
+ * carries inside itself via **jar-in-jar**, what those bundled jars demand, and what the jar itself demands
+ * of the *platform*. One parser, because two would drift — the failure this module's own context file opens
+ * with.
+ *
  * The mod-ids — and the versions — a jar already carries inside itself, via Fabric/Quilt **jar-in-jar**.
  *
  * A mod may ship its own libraries as nested jars, which the loader puts on the classpath — so a dependency
@@ -168,6 +173,39 @@ object BundledJars {
         }
         return fabric + quilt
     }
+
+    /**
+     * The version ranges [jar]'s **own** descriptor demands of [ids] — the platform ids the API's scanners
+     * deliberately filter out.
+     *
+     * **Why it cannot come from the scanner.** `FabricScanner.dependencyExclusions` strips
+     * `(fabricloader|java|minecraft)` and `QuiltScanner` does the same, correctly: those are the platform,
+     * not mods to stage, and reporting them would have `ModListCompiler` try to *rescue* a loader into a
+     * pack. But a demand on one of them is still a demand, and the loader enforces it.
+     *
+     * Measured on the public grinder 2026-09-11: **twelve** published `DEPENDENCY_FAILURE` rows are
+     * `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)` against the `0.19.3` that quilt-loader
+     * 0.30.1 provides. The demand was invisible at every layer — stripped by the scanner, and unjudgeable
+     * anyway because nothing knew what the loader provides.
+     *
+     * Narrowed to [ids] on purpose rather than returning everything: the caller passes exactly the ids it
+     * has a *version* for, so this can only ever add a comparison that can actually be made, and never a
+     * second copy of the requirement the scanner already reports.
+     */
+    fun demandsOn(jar: File, ids: Set<String>): List<ModDependency> {
+        if (ids.isEmpty()) {
+            return emptyList()
+        }
+        return ownDescriptorOf(jar)?.let { descriptor -> dependsOf(descriptor).filter { it.modID in ids } }
+            .orEmpty()
+    }
+
+    /** [jar]'s own top-level descriptor in either loader's spelling, or `null` when it has none. */
+    private fun ownDescriptorOf(jar: File): JsonNode? = runCatching {
+        ZipFile(jar).use { archive ->
+            readDescriptor(archive, "fabric.mod.json") ?: readDescriptor(archive, "quilt.mod.json")
+        }
+    }.getOrNull()
 
     /**
      * The id→version pairs on which [claims] all agree, with every contested id dropped.
