@@ -6174,3 +6174,22 @@ pass has a shorter list rather than the same one.
 
 **Suites after iteration 3:** api **421** (1 skipped), clientside **568**, grinder **516** (29 skipped),
 app **149**, plugin-grinder **73**, plugin-example **3** — and `./gradlew build` green.
+
+### Equivalence for the whole audit branch (2026-09-11)
+
+`develop`'s unmodified test tree at `9f660add0`, for **all three** modules the branch touches, run against
+its final production code — the recipe in the root `CLAUDE.md`:
+
+```
+api        413 pre-existing guards, 0 failures
+clientside 554 pre-existing guards, 0 failures
+grinder    514 pre-existing guards, 0 failures
+```
+
+**Zero compile errors**, so no signature moved anywhere — which is the claim worth having after a pass that
+edited five production files: the only behaviour any pre-existing guard could see is unchanged, and the three
+behaviours that *did* change (the `unless` arm seeing a bundled alternative, a dead pin asked once, an
+untrusted scheme not becoming a link) are each carried by their own new guard and each mutation-verified.
+
+Full build green with the frontend's Vitest suite included: **api 421, clientside 568, grinder 516, app 149,
+plugin-grinder 73, plugin-example 3 — 1,730 tests, 0 failures.**
