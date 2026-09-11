@@ -80,15 +80,22 @@ modpack's manifest) or checks it before generation.
 Each modloader stores its mod-metadata differently, so there's one scanner per loader, all reachable
 through a single facade.
 
-- `ModScanner` — the **one-stop entry point**: holds every per-loader scanner so callers pick the
-  right one without knowing the details.
-- `Scanner` — the common interface every scanner implements.
+- `ModScanner` — the **one-stop entry point**: `scannerFor(modloader, minecraftVersion)` answers the
+  scanner that reads what that loader read *at that point in its history*, so callers pick the right
+  one without knowing the details.
+- `ModJarScanner` — the common interface every scanner implements.
+- `LoaderDescriptors` — which descriptor file evidences a loader on a given Minecraft version, and the
+  era boundaries behind it. The single home for that knowledge: `scannerFor` dispatches through it, and
+  it is what `-clientside`'s pre-boot loader gate asks instead of keeping its own copy.
 - `FabricScanner` — reads `fabric.mod.json`. `QuiltScanner` — reads `quilt.mod.json`.
-- `ForgeAnnotationScanner` — reads `fml-cache-annotation.json` (older Forge).
-  `ForgeTomlScanner` — reads `mods.toml` (newer Forge). `NeoForgeTomlScanner` — reads
-  `neoforge.mods.toml` (NeoForge, MC 1.16.5+).
-- `JsonBasedScanner` — shared helper code for the JSON-based scanners (Fabric/Quilt/old-Forge).
-- `ScanningException` — thrown when a jar's metadata can't be read.
+  `QuiltPackScanner` merges the Fabric descriptor most Quilt mods also ship; `FabricFamilyScanner` is
+  the shared base of the two.
+- `ForgeAnnotationScanner` — reads `META-INF/fml_cache_annotation.json` (Forge before Minecraft 1.13).
+  `ForgeTomlScanner` — reads `META-INF/mods.toml` (Forge from 1.13, and NeoForge before 1.20.5).
+  `NeoForgeTomlScanner` — reads `META-INF/neoforge.mods.toml` (NeoForge from **1.20.5**).
+- `JsonDescriptorScanner` — shared helper code for the JSON-based scanners (Fabric/Quilt).
+- `ScannedMod` — one scanned jar: its id, what it provides, its dependencies and its declared
+  Minecraft range. `MissingDescriptorException` — thrown when a jar carries no descriptor to read.
 
 # Package de.griefed.serverpackcreator.api.serverpack
 

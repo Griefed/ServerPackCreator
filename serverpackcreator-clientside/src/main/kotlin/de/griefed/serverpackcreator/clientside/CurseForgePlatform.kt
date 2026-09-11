@@ -203,14 +203,16 @@ class CurseForgePlatform(
      */
     private fun toModFile(fileNode: JsonNode, webBase: String): ModFile {
         val gameVersions = fileNode.path("gameVersions").map { it.asText() }
+        // `textOrNull`, never `asText()`: a JSON-null yields the literal "null", which then resolves to
+        // nothing and is reported as an unmet dependency named `null` -- noise that reads like a finding.
         val requiredDeps = fileNode.path("dependencies")
             .filter { it.path("relationType").asInt() == requiredRelationType }
-            .map { it.path("modId").asText() }
+            .mapNotNull { it.textOrNull("modId") }
         // Required and optional, which is the pool worth identifying; 1 (embedded) is already inside the
         // jar and 5 (incompatible) must never be fetched in order to be identified.
         val linkedDeps = fileNode.path("dependencies")
             .filter { it.path("relationType").asInt() in linkableRelationTypes }
-            .map { it.path("modId").asText() }
+            .mapNotNull { it.textOrNull("modId") }
         val fileId = fileNode.path("id").asLong()
         return ModFile(
             fileName = fileNode.path("fileName").asText(),

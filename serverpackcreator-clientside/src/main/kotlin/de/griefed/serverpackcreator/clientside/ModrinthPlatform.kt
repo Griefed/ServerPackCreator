@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.clientside
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Resolves `modrinth.com` project-links via Modrinth's public REST API (no API-key; a descriptive
@@ -110,6 +111,45 @@ class ModrinthPlatform(
      * mods at all.
      */
     /**
+     * Project ids already looked up from a `version_id`, so a pin costs one request however many of a
+     * project's versions declare it.
+     *
+     * `resolve` reads a project's **whole** version list -- hundreds of nodes for an actively published
+     * library -- and a pinned dependency is normally pinned by every one of them. Without this the fix for
+     * the dropped pin would itself be a request per version, which is the cost shape this module already
+     * paid for once with CurseForge's paging.
+     */
+    private val projectOfVersion = ConcurrentHashMap<String, String>()
+
+    /**
+     * The project a dependency entry names, or `null` when it names nothing resolvable.
+     *
+     * A Modrinth dependency carries `project_id`, `version_id`, or both. **A pin gives only the version
+     * id** -- the author wanted one exact build -- and reading `project_id` alone dropped the whole entry
+     * silently: never staged, and invisible to `askLinkedProjects`, which reads the same list. One GET of
+     * `/version/{id}` says which project it is.
+     *
+     * Fails toward *dropping*, which is what it already did: a lookup that 404s or times out leaves the
+     * dependency unrecorded rather than recording a ref that names nothing. The **build** is deliberately
+     * not honoured — `pickDependencyFile` chooses among a project's files by loader, Minecraft version and
+     * obtainability, and pinning one file would override all three to satisfy a constraint the loader
+     * itself does not enforce.
+     */
+    private fun projectBehind(dependency: JsonNode): String? {
+        dependency.textOrNull("project_id")?.let { return it }
+        val versionId = dependency.textOrNull("version_id") ?: return null
+        projectOfVersion[versionId]?.let { return it }
+        val resolved = runCatching {
+            objectMapper.readTree(httpFetcher.get("$apiBase/version/$versionId", headers)).textOrNull("project_id")
+        }.getOrElse {
+            log.warn("Could not resolve the project behind pinned Modrinth version '$versionId': ${it.message}")
+            null
+        } ?: return null
+        projectOfVersion[versionId] = resolved
+        return resolved
+    }
+
+    /**
      * Dependency types worth resolving a project for. `required` is staged; `optional` is only ever asked
      * what it is, which is how a mod id no table knows gets matched to the project that provides it.
      */
@@ -120,12 +160,12 @@ class ModrinthPlatform(
         val mcVersions = version.path("game_versions").map { it.asText() }.toSortedSet()
         val requiredDeps = version.path("dependencies")
             .filter { it.path("dependency_type").asText() == "required" }
-            .mapNotNull { it.path("project_id").asText(null) }
+            .mapNotNull { projectBehind(it) }
         // Everything the page links that could legitimately be staged: `embedded` is already inside the
         // jar (BundledJars' case) and `incompatible` must never be fetched to be identified.
         val linkedDeps = version.path("dependencies")
             .filter { it.path("dependency_type").asText() in linkableDependencyTypes }
-            .mapNotNull { it.path("project_id").asText(null) }
+            .mapNotNull { projectBehind(it) }
         return modFilesOf(version).map { file ->
             ModFile(
                 fileName = file.path("filename").asText(),
