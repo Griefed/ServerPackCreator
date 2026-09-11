@@ -250,6 +250,40 @@ internal class LoaderReselectionTest {
         )
     }
 
+    /**
+     * **Both disagreements are recorded, because only one of them can be answered here.**
+     *
+     * `refuseForSelfDeclaration` reports the loader mismatch first — correctly, since no other Minecraft
+     * version makes a jar into a mod for a loader whose descriptor it does not carry — and it used to *null*
+     * the Minecraft channel to enforce "exactly one retry" through the data. That loses a reachable boot:
+     * where the declared loader has no build for this Minecraft the loader retry cannot fire, and the
+     * version retry that could have fired has been erased. A `mods.toml`-only jar requested as NeoForge on
+     * 1.20.6 is the live shape — at 1.20.4 that same file *is* a NeoForge descriptor, so re-selecting the
+     * version is what finds a genuine NeoForge boot rather than borrowing Forge's.
+     *
+     * "Exactly one retry" is `prepareBootPack`'s to enforce, in its control flow, and the two guards above
+     * are what hold it there: they assert the staging sequence is `Forge, NeoForge` and not one longer.
+     */
+    @Test
+    fun aJarDisagreeingAboutBothRecordsBothChannels(@TempDir workDir: File) {
+        val jar = requireNotNull(
+            downloaderFor(LoaderDescriptors.NEOFORGE_TOML).download(tickedForge, workDir)
+        )
+
+        val refusal = requireNotNull(
+            BootVerifier.refuseForSelfDeclaration(jar, "Forge", neoTomlRelease) { "~1.16.5" }
+        ) { "the fixture must be refused, or this guard asserts nothing" }
+
+        Assertions.assertEquals(
+            setOf("NeoForge"), refusal.declaredLoaders,
+            "the loader channel carries what the jar declares"
+        )
+        Assertions.assertEquals(
+            "~1.16.5", refusal.declaredMinecraftConstraint,
+            "and the Minecraft channel still carries the range, because the retry order is the caller's job"
+        )
+    }
+
     /** A jar that declares the loader it was asked about is staged once and left alone. */
     @Test
     fun aJarThatDeclaresTheRequestedLoaderIsNotReselected(@TempDir workDir: File) {

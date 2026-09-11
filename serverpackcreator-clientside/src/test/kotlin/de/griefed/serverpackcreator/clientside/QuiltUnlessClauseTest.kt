@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.ByteArrayOutputStream
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
@@ -142,6 +143,50 @@ internal class QuiltUnlessClauseTest {
             ("fabric.mod.json" to """{"schemaVersion":1,"id":"fabric-api","provides":["fabric"]}""")
     )
 
+    /**
+     * `terralith`'s descriptor with the same `unless`, plus a **declared nested jar** carrying the
+     * alternative — `sodium`'s shape, which declares nine of them, all Fabric API modules.
+     */
+    private val bundlingCandidate = "quilt.mod.json" to """
+        {"schema_version":1,"quilt_loader":{"id":"terralith","version":"2.5.14",
+          "jars":["META-INF/jars/fabric-resource-loader-v0-0.116.17.jar"],
+          "depends":[{"id":"quilt_resource_loader","versions":"*","unless":"fabric-resource-loader-v0"}]}}
+    """.trimIndent()
+
+    /** The nested module as a real jar-in-jar, so `BundledJars` reads an archive rather than a stub. */
+    private fun nestedResourceLoader(): ByteArray {
+        val bytes = ByteArrayOutputStream()
+        JarOutputStream(bytes).use { out ->
+            out.putNextEntry(JarEntry("fabric.mod.json"))
+            out.write("""{"schemaVersion":1,"id":"fabric-resource-loader-v0","version":"0.116.17"}""".toByteArray())
+            out.closeEntry()
+        }
+        return bytes.toByteArray()
+    }
+
+    /**
+     * [downloaderFor] plus the nested jar inside the candidate, and it **records every file it fetched** —
+     * which is the only way to see that a dropped requirement costs no download.
+     */
+    private fun bundlingDownloader(bodies: Map<String, Pair<String, String>>, fetched: MutableList<String>) =
+        JarDownloader { modFile, targetDirectory ->
+            fetched.add(modFile.fileName)
+            val (descriptor, body) = bodies[modFile.fileName] ?: return@JarDownloader null
+            targetDirectory.mkdirs()
+            File(targetDirectory, modFile.fileName).also { jar ->
+                JarOutputStream(jar.outputStream()).use { out ->
+                    out.putNextEntry(JarEntry(descriptor))
+                    out.write(body.toByteArray())
+                    out.closeEntry()
+                    if (descriptor == "quilt.mod.json" && body.contains("META-INF/jars/")) {
+                        out.putNextEntry(JarEntry("META-INF/jars/fabric-resource-loader-v0-0.116.17.jar"))
+                        out.write(nestedResourceLoader())
+                        out.closeEntry()
+                    }
+                }
+            }
+        }
+
     private fun stagedMods(workDir: File): List<String> =
         File(workDir, AttemptDirectory.nameFor("Modrinth", "terralith", "Quilt") + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
@@ -171,6 +216,41 @@ internal class QuiltUnlessClauseTest {
         Assertions.assertFalse(
             detail.contains("Required dependency"),
             "the requirement names an alternative that is present; refusing on it is the defect ($detail)"
+        )
+    }
+
+    /**
+     * **The cheap path, which is the one that was dead.** `stageableRequirements` is supposed to drop a
+     * requirement whose `unless` alternative is already in the pack — and the alternative most often *is*,
+     * as a **jar-in-jar**: read from the live `fabric-api-0.116.17+1.21.1.jar`, its descriptor declares
+     * `id=fabric-api` and `provides=["fabric"]`, and `fabric-resource-loader-v0` exists only as
+     * `META-INF/jars/fabric-resource-loader-v0-0.116.17.jar`. So the id lands in `bundledIds`, never in
+     * `providedIds`, and an arm testing only the latter cannot fire for its own documented case.
+     *
+     * Asserted through a **recording downloader**, because the observable cost is a fetch that should not
+     * happen: without the fix the requirement survives, `alternativeFor` resolves Fabric API and stages a
+     * second copy of a library the loader already has on the classpath.
+     */
+    @Test
+    fun anUnlessAlternativeAlreadyBundledCostsNoDownload(@TempDir workDir: File) {
+        val fetched = mutableListOf<String>()
+        val bodies = descriptors + ("Terralith_1.21.x_v2.5.14.jar" to bundlingCandidate)
+
+        BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platform,
+            httpDownloader = bundlingDownloader(bodies, fetched),
+            loaderVersionPolicy = unbootableLoaderVersion,
+            workDirectory = workDir
+        ).prepareBootPack(candidate, "Quilt")
+
+        Assertions.assertEquals(
+            listOf("Terralith_1.21.x_v2.5.14.jar"), fetched,
+            "the alternative is inside the candidate; fetching the project that ships it buys nothing"
+        )
+        Assertions.assertEquals(
+            listOf("Terralith_1.21.x_v2.5.14.jar"), stagedMods(workDir),
+            "and nothing extra ends up in mods/"
         )
     }
 

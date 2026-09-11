@@ -115,6 +115,43 @@ internal class PinnedDependencyRefTest {
         )
     }
 
+    /**
+     * **The memo has to cover the failure too.** A `version_id` that no longer resolves — a deleted version,
+     * a rate-limited response, a timeout — is re-asked once per version node that pins it, because the cache
+     * is written only after a successful read. `resolve` walks a project's **whole** version list, which is
+     * exactly the cost shape the memo exists to prevent, so leaving it open on the error path re-creates it
+     * for the case that is already going badly.
+     */
+    @Test
+    fun aFailedPinLookupIsAttemptedOnce() {
+        val attempts = mutableListOf<String>()
+        val deadPin = ModrinthPlatform(
+            HttpFetcher { url, _ ->
+                when {
+                    url.endsWith("/version") -> modrinthVersions.replace("AAAAAAAA", "DEADBEEF")
+                    url.contains("/version/DEADBEEF") -> {
+                        attempts.add(url)
+                        throw IllegalStateException("410 Gone")
+                    }
+
+                    else -> """{"slug":"some-mod","client_side":"required","server_side":"required"}"""
+                }
+            },
+            ObjectMapper()
+        )
+
+        val files = deadPin.resolve("https://modrinth.com/mod/some-mod").files
+
+        Assertions.assertEquals(
+            1, attempts.size,
+            "two versions pin the same dead build, and it is one fact either way: $attempts"
+        )
+        Assertions.assertTrue(
+            files.all { it.requiredDependencies.isEmpty() },
+            "a pin nothing can resolve is still dropped, exactly as it was before the memo existed"
+        )
+    }
+
     /** **The fabricated ref.** A JSON-null `modId` is absent, not a dependency called `null`. */
     @Test
     fun aNullCurseForgeModIdIsNotADependency() {
