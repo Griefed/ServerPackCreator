@@ -103,9 +103,12 @@ class VerdictTableModel : AbstractTableModel() {
             // recorded none: a table cell reading "null" looks like a value.
             4 -> verdict.declared.orEmpty()
             5 -> verdict.jarScan.orEmpty()
-            6 -> verdict.loader
-            7 -> verdict.platform
-            8 -> verdict.scannedAt
+            // The row's identity, so it leads the pair it forms with the loader. Empty for a row from a
+            // daemon that predates the line axis, for the same reason `declared` is.
+            6 -> verdict.minecraftLine.orEmpty()
+            7 -> verdict.loader
+            8 -> verdict.platform
+            9 -> verdict.scannedAt
             else -> verdict.detail
         }
     }
@@ -144,7 +147,7 @@ class VerdictTableModel : AbstractTableModel() {
          * 161 of 2057 rows on the live feed are `CONTRADICTORY`.
          */
         private val COLUMNS = listOf(
-            "", "Name", "Entry", "Verdict", "Declared", "JAR sideness", "Loader", "Platform",
+            "", "Name", "Entry", "Verdict", "Declared", "JAR sideness", "Minecraft", "Loader", "Platform",
             "Scanned", "Detail"
         )
     }

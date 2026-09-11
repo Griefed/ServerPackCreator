@@ -37,6 +37,7 @@ internal class VerdictTableModelTest {
         projectUrl = "https://modrinth.com/mod/$slug",
         platform = "Modrinth",
         loader = "Fabric",
+        minecraftLine = "1.21",
         verdict = verdict,
         suggestedEntry = entry,
         fileName = null,
@@ -189,6 +190,7 @@ internal class VerdictTableModelTest {
         Assertions.assertEquals("creativecore", cells["Name"])
         Assertions.assertEquals("creativecore-", cells["Entry"])
         Assertions.assertEquals("INCONCLUSIVE", cells["Verdict"])
+        Assertions.assertEquals("1.21", cells["Minecraft"])
         Assertions.assertEquals("Fabric", cells["Loader"])
         Assertions.assertEquals("Modrinth", cells["Platform"])
         Assertions.assertEquals("because", cells["Detail"])
@@ -245,6 +247,38 @@ internal class VerdictTableModelTest {
 
         Assertions.assertEquals("CONTRADICTORY", model.getValueAt(0, names.indexOf("Declared")))
         Assertions.assertEquals("SERVER_OR_BOTH", model.getValueAt(0, names.indexOf("JAR sideness")))
+    }
+
+    /**
+     * **The Minecraft line is the row's identity**, and without it a project's several rows are
+     * indistinguishable: one project is ground once per era, and the same loader routinely holds more than
+     * one of them, so `Loader` alone no longer tells two rows apart.
+     */
+    @Test
+    fun oneProjectsRowsAreToldApartByTheirMinecraftLine() {
+        val model = VerdictTableModel().apply {
+            setRows(
+                listOf(
+                    verdict("aether").copy(minecraftLine = "1.21", loader = "NeoForge"),
+                    verdict("aether").copy(minecraftLine = "1.20", loader = "NeoForge")
+                )
+            )
+        }
+        val era = (0 until model.columnCount).map { model.getColumnName(it) }.indexOf("Minecraft")
+
+        Assertions.assertEquals(
+            listOf("1.21", "1.20"), listOf(model.getValueAt(0, era), model.getValueAt(1, era)),
+            "two rows of one project under one loader, and only this column separates them"
+        )
+    }
+
+    /** A daemon older than the line axis sends no era, and an absent one must not render as a real one. */
+    @Test
+    fun aRowFromADaemonWithoutTheLineAxisShowsNoEra() {
+        val model = VerdictTableModel().apply { setRows(listOf(verdict("jei").copy(minecraftLine = null))) }
+        val names = (0 until model.columnCount).map { model.getColumnName(it) }
+
+        Assertions.assertEquals("", model.getValueAt(0, names.indexOf("Minecraft")))
     }
 
     /**

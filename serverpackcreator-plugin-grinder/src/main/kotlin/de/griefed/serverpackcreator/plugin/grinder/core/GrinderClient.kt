@@ -146,6 +146,9 @@ class GrinderClient(
                 projectUrl = row.textOrNull("projectUrl").orEmpty(),
                 platform = row.textOrNull("platform").orEmpty(),
                 loader = row.textOrNull("loader").orEmpty(),
+            // Absent from a daemon older than the line axis, and left absent here rather than defaulted:
+            // an era nobody recorded must not read as an era that was.
+            minecraftLine = row.textOrNull("minecraftLine"),
                 verdict = row.textOrNull("verdict").orEmpty(),
                 suggestedEntry = row.textOrNull("suggestedEntry"),
                 fileName = row.textOrNull("fileName"),
