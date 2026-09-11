@@ -1696,7 +1696,17 @@ class BootVerifier(
                 // Quilt's `unless`: the descriptor itself says this requirement is met if that id is here
                 // instead, and the loader honours it. `geophilic`, `terralith`, `trek` and `true-ending`
                 // all declare `quilt_resource_loader unless fabric-resource-loader-v0`.
-                requirement.unlessProvided.any { it.trim().lowercase() in providedIds } ||
+                //
+                // **Both sets, because the alternative is usually a jar-in-jar.** Read from the live
+                // `fabric-api-0.116.17+1.21.1.jar`: its descriptor declares `id=fabric-api` and
+                // `provides=["fabric"]`, while `fabric-resource-loader-v0` exists only as
+                // `META-INF/jars/fabric-resource-loader-v0-0.116.17.jar`. An arm testing `providedIds`
+                // alone therefore could not fire for the case it was written for -- the requirement
+                // survived and `alternativeFor` re-downloaded a library the loader already had.
+                requirement.unlessProvided.any {
+                    val alternative = it.trim()
+                    alternative in bundledIds || alternative.lowercase() in providedIds
+                } ||
                 requirement.modID.lowercase() in environmentProvidedIds ||
                 refFor(requirement.modID)?.let { it in alreadyResolved } == true
         }
