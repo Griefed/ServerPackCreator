@@ -6038,3 +6038,29 @@ of `prepareBootPack`, which loses nothing and restores the reachable NeoForge bo
 history-shape findings on unpushed commits — recordable, and worth stating as the standing lesson rather than
 rewriting four commits. M-6 wants a measurement, not a redesign, before it is judged. M-7 and M-8 are
 doc-truth fixes.
+
+### Resolution — iteration 1 (2026-09-11, branch `claude-audit-unverifiable-i1`)
+
+**Closed with code, each mutation-verified (the mutation failed exactly its own guard and nothing else):**
+
+| Finding | How |
+|---|---|
+| M-2 / A-1 | `stageableRequirements`' `unless` arm now consults `bundledIds` as well as `providedIds`, each with the comparison its neighbours use. Pinned red first by `anUnlessAlternativeAlreadyBundledCostsNoDownload`, which asserts through a **recording downloader** that the alternative costs no fetch. |
+| M-4 | `refuseForSelfDeclaration` fills **both** channels; `prepareBootPack` owns the order — loader retry first, version retry only when that one does not apply. "At most one retry" moved from the data to the control flow, which is where it belongs, and the reachable NeoForge-on-an-older-Minecraft boot is back. |
+| L-3 / A-6 | `projectBehind` remembers an *unresolvable* pin in `unresolvablePins`, so a dead `version_id` is asked once. The pin measured **4** requests for one dead id, which also exposed that `filesOf` asks twice per node (`requiredDependencies` and `relatedDependencies`); the memo now covers both. |
+| M-6 | Not a redesign — a **bound, asserted**: `anUnmappableIdCrossesForExactlyOneExtraResolve` pins one extra resolve per id for the `Unmapped` state, which is the common one and the one the first cut of that feature omitted. |
+| M-3 / A-5 | `UnlessClauseShapesTest` in `-api`: all three `unless` shapes, an unusable clause, no clause, and a bare-string dependency. First assertions of `unlessProvided` anywhere. |
+| A-2, A-3, A-4, A-7, A-8 | Six guards for rules that were asserted nowhere — the CurseForge channel path, the availability gate holding the channel filter inside it, `loaderToVerifyUnder`'s two-step tie-break, the registry's platform-less-alias fall-through, and `descriptorsFor` on an unreadable version. |
+| M-7, M-8, A-9, L-4 | Doc truth: `fileName` named everywhere the old `filenamePattern` was, with the renamed guard cited; the "single-page" sentence corrected to one page *per asked version*; the channel rule scoped to `pickBootableCandidate`; `ModScanner.kt` ends with a newline. |
+
+**Recorded, deliberately not rewritten — M-1, M-5, L-1, L-2.** All four are facts about the *shape* of
+commits that are already merged into `develop`. Rewriting them would mean rebasing 21 commits and
+re-verifying nine pins, and the thing it would produce is a red that nobody ever observed — manufactured
+evidence, which is worse than an honest record. This is the same remedy the root `CLAUDE.md` chose for
+`358675fbf`. The lesson is already captured there ("a guard that cannot compile is not a red pin, and both
+honest ways out beat a fake boundary"); what iteration 1 adds is the *measurement* that proves it happened,
+in the pin table above.
+
+**Suites after iteration 1:** api **421** (1 skipped), clientside **566**, grinder **514** (29 skipped),
+app **149**, plugin-grinder **73** — **1,723 tests, 0 failures**. Against the pre-iteration counts that is
++8 in `-api` and +12 in `-clientside`.

@@ -740,3 +740,19 @@ loader re-selection leaves `bootedLoader` different from the verdict's loader, w
    "Modrinth")` is `Alias("timeless-and-classics-guns")` (closes A-7).
 8. `LoaderDescriptorsTest` (or `ModScannerDispatchTest`) — `descriptorsFor("NeoForge", "")` and
    `descriptorsFor("NeoForge", "26")` answer the modern set rather than throwing (closes A-8).
+
+### Resolution — iteration 1 (2026-09-11)
+
+Every finding above is closed; the detail and the mutation results are in `REFACTOR-AUDIT.md`'s matching
+resolution section rather than duplicated here. Two of them changed what the code does — the `unless` arm now
+sees a bundled alternative (A-1) and a dead pin is asked once (A-6) — and one changed where a rule lives
+(the retry order, M-4). The other eight were guards for behaviour that was already correct, which is why
+each was **mutation-verified** rather than trusted: A-2 (forcing `fromCurseForge` to RELEASE fails both new
+CurseForge guards), A-3 (hoisting the channel filter above the availability gate fails its guard), A-4
+(dropping the platform-tagged preference fails its guard).
+
+**One process note worth keeping, because it nearly cost a false conclusion.** The first run of the A-2
+mutation reported the *wrong* failing test: a regex edit had left an orphaned `when` body, so that build
+never compiled, and the parser happily read the **previous** run's `test-results` XML. A mutation check that
+cannot compile says nothing, and its output looks exactly like a result. Clear `build/test-results` before a
+mutation run, and treat "no results" as a distinct outcome from "zero red".
