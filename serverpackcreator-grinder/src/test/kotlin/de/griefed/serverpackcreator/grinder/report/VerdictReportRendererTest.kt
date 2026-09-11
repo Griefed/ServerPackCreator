@@ -196,7 +196,9 @@ internal class VerdictReportRendererTest {
             loader = "SENTINELLOADER",
             suggestedEntry = "SENTINELPATTERN",
             projectUrl = "https://example.invalid/SENTINELPROJECT",
-            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED).copy(
+            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED,
+            minecraftLine = "SENTINELLINE", minecraftVersion = "SENTINELMCVERSION"
+        ).copy(
             declared = Declaration.SERVER,
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
@@ -209,7 +211,8 @@ internal class VerdictReportRendererTest {
         val cells = row.split("</td>").dropLast(1)
 
         val expected = listOf(
-            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER", "SENTINELLOADER",
+            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER",
+            "SENTINELLINE", "SENTINELMCVERSION", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
             "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
         )
