@@ -46,27 +46,40 @@ internal class GrinderTest {
     private fun candidate(slug: String, popularity: Long = 1) =
         GrindCandidate("https://modrinth.com/mod/$slug", slug, popularity, ModPlatforms.MODRINTH)
 
+    /**
+     * One row per Minecraft version-line, each naming the loader that line was ground under. The report's
+     * rows are lines, so this counts them rather than counting loaders — which is how the same project came
+     * to be reported three times about one era.
+     */
     @Test
-    fun recordsOneVerdictPerLoaderFromTheReport() {
+    fun recordsOneVerdictPerMinecraftLineFromTheReport() {
         val store = InMemoryVerdictStore()
         val verifier = CandidateVerifier { c ->
             clientsideReport(
                 c.slug,
                 listOf(
-                    loaderVerdict("Forge", "${c.slug}-", Verdict.CONFIRMED),
-                    loaderVerdict("Fabric", "${c.slug}-fabric-", Verdict.INCONCLUSIVE)
+                    loaderVerdict(
+                        "NeoForge", "${c.slug}-", Verdict.CONFIRMED,
+                        minecraftLine = "1.21", minecraftVersion = "1.21.1"
+                    ),
+                    loaderVerdict(
+                        "Forge", "${c.slug}-", Verdict.INCONCLUSIVE,
+                        minecraftLine = "1.12", minecraftVersion = "1.12.2"
+                    )
                 )
             )
         }
         val outcome = Grinder(verifier, store).grind(candidate("jei"))
 
         Assertions.assertEquals(GrindOutcome.VERIFIED, outcome)
-        Assertions.assertEquals(2, store.all().size)
         Assertions.assertEquals(
-            setOf("Forge" to Verdict.CONFIRMED, "Fabric" to Verdict.INCONCLUSIVE),
-            store.all().map { it.loader to it.verdict }.toSet()
+            setOf(
+                Triple("1.21", "NeoForge", Verdict.CONFIRMED),
+                Triple("1.12", "Forge", Verdict.INCONCLUSIVE)
+            ),
+            store.all().map { Triple(it.minecraftLine, it.loader, it.verdict) }.toSet()
         )
-        Assertions.assertEquals("jei-", store.all().first { it.loader == "Forge" }.suggestedEntry)
+        Assertions.assertEquals("jei-", store.all().first { it.minecraftLine == "1.21" }.suggestedEntry)
     }
 
     /**
