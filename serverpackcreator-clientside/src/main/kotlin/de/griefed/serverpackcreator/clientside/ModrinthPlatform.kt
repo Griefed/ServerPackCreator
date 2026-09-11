@@ -122,6 +122,17 @@ class ModrinthPlatform(
     private val projectOfVersion = ConcurrentHashMap<String, String>()
 
     /**
+     * Pins that were asked about and answered nothing, so the failure costs one request too.
+     *
+     * A second collection rather than a sentinel value in [projectOfVersion], because a map whose values
+     * sometimes mean "no project" is a map every reader has to be warned about. `resolve` reads a project's
+     * whole version list and both dependency lists of every node, so an unmemoised failure is a request per
+     * node per list — precisely the cost the success memo exists to prevent, left open for the case that is
+     * already going badly.
+     */
+    private val unresolvablePins = ConcurrentHashMap.newKeySet<String>()
+
+    /**
      * The project a dependency entry names, or `null` when it names nothing resolvable.
      *
      * A Modrinth dependency carries `project_id`, `version_id`, or both. **A pin gives only the version
@@ -130,7 +141,8 @@ class ModrinthPlatform(
      * `/version/{id}` says which project it is.
      *
      * Fails toward *dropping*, which is what it already did: a lookup that 404s or times out leaves the
-     * dependency unrecorded rather than recording a ref that names nothing. The **build** is deliberately
+     * dependency unrecorded rather than recording a ref that names nothing — and the failure is remembered
+     * in [unresolvablePins], so it is asked once like a success. The **build** is deliberately
      * not honoured — `pickDependencyFile` chooses among a project's files by loader, Minecraft version and
      * obtainability, and pinning one file would override all three to satisfy a constraint the loader
      * itself does not enforce.
@@ -139,12 +151,19 @@ class ModrinthPlatform(
         dependency.textOrNull("project_id")?.let { return it }
         val versionId = dependency.textOrNull("version_id") ?: return null
         projectOfVersion[versionId]?.let { return it }
+        if (versionId in unresolvablePins) {
+            return null
+        }
         val resolved = runCatching {
             objectMapper.readTree(httpFetcher.get("$apiBase/version/$versionId", headers)).textOrNull("project_id")
         }.getOrElse {
             log.warn("Could not resolve the project behind pinned Modrinth version '$versionId': ${it.message}")
             null
-        } ?: return null
+        }
+        if (resolved == null) {
+            unresolvablePins.add(versionId)
+            return null
+        }
         projectOfVersion[versionId] = resolved
         return resolved
     }
