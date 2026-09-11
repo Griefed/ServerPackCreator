@@ -115,7 +115,7 @@ internal class DependencyMinecraftRangeTest {
     }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", "some-mod", "Fabric") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", "some-mod", "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /** Stage the pack and return what ended up in `mods/`. */

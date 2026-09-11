@@ -168,7 +168,7 @@ internal class NestedDependencyConflictTest {
     }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", "createaddition", "Fabric") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", "createaddition", "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     private fun stage(

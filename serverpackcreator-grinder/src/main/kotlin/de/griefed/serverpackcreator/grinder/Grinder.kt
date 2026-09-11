@@ -158,7 +158,11 @@ class Grinder(
                     bootedLoader = verdict.bootedLoader,
                     firedRule = verdict.firedRule,
                     decidedBy = verdict.decidedBy?.name,
-                    stagedDependencies = verdict.stagedDependencies
+                    stagedDependencies = verdict.stagedDependencies,
+                    // The row's identity, and the version behind it. A project is ground once per Minecraft
+                    // line now, so this is what the table sorts and filters by -- and what the store keys on.
+                    minecraftLine = verdict.minecraftLine,
+                    minecraftVersion = verdict.minecraftVersion
                 )
             )
         }
@@ -168,8 +172,10 @@ class Grinder(
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
                 report.perLoader
-                    .joinToString(", ") { "${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})" }
-                    .ifEmpty { "no loader verdicts" } +
+                    .joinToString(", ") {
+                        "${it.minecraftLine ?: "?"}/${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})"
+                    }
+                    .ifEmpty { "no verdicts" } +
                 " after ${Duration.between(startedAt, clock()).seconds}s"
         )
         status?.endCandidate(GrindOutcome.VERIFIED)

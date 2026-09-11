@@ -217,8 +217,9 @@ internal object VerdictReportRenderer {
         if (logNames.isEmpty()) {
             return "&mdash;"
         }
-        val prefix = AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader) +
-            BootLogStore.ATTEMPT_SEPARATOR
+        val prefix = AttemptDirectory.nameFor(
+            verdict.platform, verdict.slug, verdict.loader, verdict.minecraftLine.orEmpty()
+        ) + BootLogStore.ATTEMPT_SEPARATOR
         val links = logNames.sorted().joinToString("") { name ->
             val label = name.removePrefix(prefix)
             """<a href="/boot-log?name=${esc(urlEncode(name))}">${esc(label)}</a><br>"""

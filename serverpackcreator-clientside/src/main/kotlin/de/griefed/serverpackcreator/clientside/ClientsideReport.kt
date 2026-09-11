@@ -42,7 +42,9 @@ enum class JarScan {
 /**
  * The per-loader verdict: the suggested list-entry plus every signal that produced the [confidence].
  *
- * @param loader            Canonical loader-name (Forge, Fabric, …).
+ * @param loader            Canonical loader-name (Forge, Fabric, …) — the one loader this Minecraft line was
+ *                          ground under, chosen by `BootCandidateSelector.LOADER_PRIORITY`. A *choice*,
+ *                          not the verdict's identity; see `minecraftLine` for that.
  * @param suggestedEntry    Derived clientside-list entry (file-name stem), or `null` if not derivable.
  * @param declaredClientSide Platform-declared client support (Modrinth; UNKNOWN for CurseForge).
  * @param declaredServerSide Platform-declared server support (Modrinth; UNKNOWN for CurseForge).
@@ -104,7 +106,26 @@ data class LoaderVerdict(
      */
     val verdict: Verdict = Verdict.INCONCLUSIVE,
     /** What the mod claims about itself — recorded because a *contradicted* claim is the finding. */
-    val declared: Declaration? = null
+    val declared: Declaration? = null,
+    /**
+     * The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null` for a verdict
+     * built by a fixture that predates the axis; production always sets it.
+     *
+     * **This is the verdict's identity, and [loader] is not.** A project is ground once per line, under
+     * whichever loader that line publishes for, so two verdicts of one project differ by line — and the same
+     * loader routinely wins several of them.
+     */
+    val minecraftLine: String? = null,
+    /**
+     * The exact Minecraft version inside [minecraftLine] the pack was staged at, or `null` when none was
+     * chosen.
+     *
+     * Taken from the *target*, not from the boot: a grind prevented before any container ran still has a
+     * version it was about, and a row that cannot say which era it concerns cannot be read. Where a re-check
+     * settled the verdict on another version, `BootVerifier.BootOutcome.minecraftVersion` is what this
+     * carries instead, for the same reason [bootedLoader] exists.
+     */
+    val minecraftVersion: String? = null
 )
 
 /**

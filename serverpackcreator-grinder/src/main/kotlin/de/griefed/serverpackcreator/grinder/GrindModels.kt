@@ -83,7 +83,7 @@ object ModPlatforms {
 }
 
 /**
- * The accumulated verdict for one `(project, loader)` — one row behind the eventual sortable / CSV
+ * The accumulated verdict for one `(project, Minecraft version-line)` — one row behind the sortable / CSV
  * table. [suggestedEntry] is the clientside-list name-pattern (the file-name stem), [confidence] the
  * clientside engine's per-loader verdict; together with the project link they are exactly the columns
  * the table exposes.
@@ -97,7 +97,10 @@ data class GrindVerdict(
     val slug: String,
     /** Link to the project, carried through so a reader of the report can check the verdict against the source. */
     val projectUrl: String,
-    /** The modloader this verdict is about. One project yields one verdict per loader, since sideness can differ. */
+    /**
+     * The modloader this line was ground under — the first of `BootCandidateSelector.LOADER_PRIORITY` the
+     * line publishes a build for. Evidence a reader needs, not the row's identity; see [minecraftLine].
+     */
     val loader: String,
     /** The line to add to the clientside fallback-list if accepted, or `null` when nothing is being suggested. */
     val suggestedEntry: String?,
@@ -169,7 +172,23 @@ data class GrindVerdict(
      * rows not one value ended in `.jar` and 270 were byte-identical to [suggestedEntry]. The real name
      * keeps the loader token a project's rename history erases *and* the version that identifies the build.
      */
-    val fileName: String? = null
+    val fileName: String? = null,
+    /**
+     * The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null` for a row written
+     * before the grind axis moved off the modloader.
+     *
+     * **This is the verdict's identity, and [loader] is not.** A project is ground once per line under
+     * whichever loader that line publishes for, so the same loader routinely holds several of a project's
+     * rows. Nullable so a store written by an older build still deserialises — every row is otherwise
+     * skipped and the whole store comes back empty.
+     */
+    val minecraftLine: String? = null,
+    /**
+     * The exact Minecraft version the pack was staged at, or `null` when unrecorded. Narrower than
+     * [minecraftLine] and shown beside it for the same reason [fileName] is shown beside [suggestedEntry]:
+     * one is the row's identity, the other is what a maintainer reproduces the boot with.
+     */
+    val minecraftVersion: String? = null
 )
 
 /**

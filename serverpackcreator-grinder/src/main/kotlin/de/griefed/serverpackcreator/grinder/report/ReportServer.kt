@@ -112,8 +112,13 @@ class ReportServer(
      * Shared by the sort and the cell so the number a row is ordered by is the same number it then shows —
      * two lookups written separately is exactly how those drift.
      */
-    private fun logNamesFor(logsByOwner: Map<String, List<String>>, verdict: GrindVerdict): List<String> =
-        logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
+    private fun logNamesFor(logsByOwner: Map<String, List<String>>, verdict: GrindVerdict): List<String> {
+        // A row written before the axis moved has no line and therefore no name to look up. Answered
+        // explicitly rather than by building a name that happens to match nothing: its logs really are
+        // orphaned -- they carry the old three-part owner -- and the budget is what reclaims them.
+        val line = verdict.minecraftLine ?: return emptyList()
+        return logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader, line)].orEmpty()
+    }
 
     /** Register the routes, start serving on a small thread pool, and return `this` for chaining. */
     fun start(): ReportServer {

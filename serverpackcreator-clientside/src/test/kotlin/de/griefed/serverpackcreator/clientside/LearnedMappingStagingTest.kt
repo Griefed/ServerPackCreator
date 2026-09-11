@@ -137,7 +137,7 @@ internal class LearnedMappingStagingTest {
     )
 
     private fun stagedMods(workDir: File, slug: String): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", slug, "Fabric") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", slug, "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /**

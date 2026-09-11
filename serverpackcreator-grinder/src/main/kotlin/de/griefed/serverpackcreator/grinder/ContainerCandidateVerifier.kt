@@ -98,9 +98,14 @@ class ContainerCandidateVerifier(
             // line would otherwise strand forever, and then check the store against its ceiling.
             crashLogs?.let { store ->
                 val (platform, slug) = reapTarget(candidate, resolved)
-                report.perLoader.map { it.loader }.distinct().forEach { loader ->
-                    store.pruneExcept(platform, slug, loader, keptLogNames.toSet())
-                }
+                // Per target, not per loader: one loader now owns several of a project's rows (one per
+                // Minecraft line), and pruning by loader alone would delete the other lines' consoles.
+                report.perLoader
+                    .mapNotNull { verdict -> verdict.minecraftLine?.let { verdict.loader to it } }
+                    .distinct()
+                    .forEach { (loader, minecraftLine) ->
+                        store.pruneExcept(platform, slug, loader, minecraftLine, keptLogNames.toSet())
+                    }
                 store.enforceBudget()
             }
             return report

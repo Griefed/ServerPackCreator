@@ -27,8 +27,8 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Pins that a verdict names the artifact it is **about** — the one staging selected — rather than whichever
- * file of that loader the platform happened to list first.
+ * Pins that a verdict names the artifact it is **about** — the one staging selected for that verdict's own
+ * Minecraft version-line — rather than whichever file of that loader the platform happened to list first.
  *
  * **The reported case, measured against the live CurseForge API on 2026-09-11.** `CurseForge/aether`'s Forge
  * row read `Filename = aether-1.12.2-v1.5.4.1.jar` while its detail was a `DEPENDENCY_FAILURE` naming
@@ -116,17 +116,22 @@ internal class SampledFileMatchesTheBootedFileTest {
             "the shipped manifest must offer two Forge-capable releases on different Minecraft lines"
         )
 
-        val verdict = ClientsideVerifier(
+        val report = ClientsideVerifier(
             platforms = listOf(platform()),
             metadataScanner = MetadataScanner(apiWrapper.modScanner),
             // No download, so the scan degrades and only the selection is under test.
             jarDownloader = JarDownloader { _, _ -> null },
             workDirectory = workDir
-        ).report("https://www.curseforge.com/minecraft/mc-mods/themod").perLoader.single()
+        ).report("https://www.curseforge.com/minecraft/mc-mods/themod")
 
         Assertions.assertEquals(
-            newerFileName, verdict.sampleFile,
-            "the row must name the build a boot would stage, not whichever file the platform listed first"
+            mapOf(
+                BootCandidateSelector.minecraftLine(newerRelease) to newerFileName,
+                BootCandidateSelector.minecraftLine(olderRelease) to olderFileName
+            ),
+            report.perLoader.associate { it.minecraftLine to it.sampleFile },
+            "each row must name the build its own Minecraft line would stage, not whichever file the " +
+                "platform listed first"
         )
     }
 
@@ -148,7 +153,7 @@ internal class SampledFileMatchesTheBootedFileTest {
         )
         val requested = mutableListOf<String>()
 
-        val verdict = ClientsideVerifier(
+        val report = ClientsideVerifier(
             platforms = listOf(platform()),
             metadataScanner = MetadataScanner(apiWrapper.modScanner),
             jarDownloader = JarDownloader { _, _ -> null },
@@ -162,17 +167,18 @@ internal class SampledFileMatchesTheBootedFileTest {
                     workDirectory = workDir
                 )
             }
-        ).report("https://www.curseforge.com/minecraft/mc-mods/themod").perLoader.single()
+        ).report("https://www.curseforge.com/minecraft/mc-mods/themod")
 
         Assertions.assertEquals(
-            listOf(newerFileName), requested,
-            "staging must have selected the newer Minecraft build -- otherwise this test is not exercising " +
+            listOf(newerFileName, olderFileName), requested,
+            "one staging attempt per Minecraft line, newest first -- otherwise this test is not exercising " +
                 "the disagreement it exists for"
         )
         Assertions.assertEquals(
-            requested.single(), verdict.sampleFile,
-            "the verdict has to name the artifact staging actually worked on; anything else attributes one " +
-                "file's evidence to another file"
+            requested,
+            report.perLoader.map { it.sampleFile },
+            "every verdict has to name the artifact staging actually worked on for its own line; anything " +
+                "else attributes one file's evidence to another file"
         )
     }
 }

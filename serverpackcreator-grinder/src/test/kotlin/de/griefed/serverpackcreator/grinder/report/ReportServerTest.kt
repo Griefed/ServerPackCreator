@@ -64,7 +64,7 @@ internal class ReportServerTest {
         val secret = File(logDir.parentFile, "secret.txt").apply { writeText("not yours") }
         val crashLogs = BootLogStore(logDir)
         val name = crashLogs.keep(
-            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric"),
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric", "1.20"),
             BootLogStore.attemptKey("Fabric", "0.19.3", "26.2"),
             listOf(BootArtifacts.Artifact("console.log", "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft", false))
         ).single()
@@ -105,7 +105,7 @@ internal class ReportServerTest {
     fun sortsTheTableByHowManyLogsEachRowHas(@TempDir logDir: File) {
         val crashLogs = BootLogStore(logDir)
         crashLogs.keep(
-            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric"),
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric", "1.20"),
             BootLogStore.attemptKey("Fabric", "0.16.9", "1.21.1"),
             listOf(
                 BootArtifacts.Artifact("console.log", "crashed", false),

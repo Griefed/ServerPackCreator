@@ -374,7 +374,11 @@ class BootVerifier(
                 file,
                 minecraftVersion,
                 loaderVersionOverride = null,
-                attemptDirName = AttemptDirectory.nameFor(project.platform, project.slug, loader)
+                // The crashing attempt's directory, so its pack and console survive the re-check -- which
+                // means the crashing target's Minecraft line, never this candidate's.
+                attemptDirName = AttemptDirectory.nameFor(
+                    project.platform, project.slug, loader, BootCandidateSelector.minecraftLine(booted.minecraftVersion)
+                )
             )
             if (staged is Prepared.Failed) {
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
@@ -1082,7 +1086,9 @@ class BootVerifier(
         )
         return stageBootPack(
             project, reselected, mainFile, minecraftVersion, loaderVersionOverride,
-            attemptDirName = AttemptDirectory.nameFor(project.platform, project.slug, loader)
+            attemptDirName = AttemptDirectory.nameFor(
+                project.platform, project.slug, loader, BootCandidateSelector.minecraftLine(minecraftVersion)
+            )
         )
     }
 
@@ -1171,7 +1177,9 @@ class BootVerifier(
         mainFile: ModFile,
         minecraftVersion: String,
         loaderVersionOverride: String?,
-        attemptDirName: String = AttemptDirectory.nameFor(project.platform, project.slug, loader),
+        attemptDirName: String = AttemptDirectory.nameFor(
+            project.platform, project.slug, loader, BootCandidateSelector.minecraftLine(minecraftVersion)
+        ),
         excludedDependencies: Set<String> = emptySet()
     ): Prepared {
         val loaderVersion = loaderVersionOverride

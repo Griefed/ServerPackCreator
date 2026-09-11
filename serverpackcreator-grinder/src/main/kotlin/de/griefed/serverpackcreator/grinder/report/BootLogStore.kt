@@ -73,8 +73,8 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
      * parsing a stored name apart: slugs and loaders both contain `-`, so a name has no unambiguous split,
      * which is why [ATTEMPT_SEPARATOR] is a character neither of them uses.
      */
-    fun namesFor(platform: String, slug: String, loader: String): List<String> {
-        val prefix = AttemptDirectory.nameFor(platform, slug, loader) + ATTEMPT_SEPARATOR
+    fun namesFor(platform: String, slug: String, loader: String, minecraftLine: String): List<String> {
+        val prefix = AttemptDirectory.nameFor(platform, slug, loader, minecraftLine) + ATTEMPT_SEPARATOR
         return list().filter { it.startsWith(prefix) }
     }
 
@@ -87,8 +87,14 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
      * would grow with uptime rather than with the catalog. That is the failure this daemon already paid for
      * once, at 98 GB.
      */
-    fun pruneExcept(platform: String, slug: String, loader: String, keep: Set<String>): Int =
-        namesFor(platform, slug, loader)
+    fun pruneExcept(
+        platform: String,
+        slug: String,
+        loader: String,
+        minecraftLine: String,
+        keep: Set<String>
+    ): Int =
+        namesFor(platform, slug, loader, minecraftLine)
             .filterNot { it in keep }
             .count { name -> runCatching { File(directory, name).delete() }.getOrDefault(false) }
 

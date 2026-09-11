@@ -36,6 +36,7 @@ import java.io.File
  * @param workDirectory      Scratch directory for downloaded jars.
  * @param bootVerifierFactory When non-null, builds a [BootVerifier] for the resolved platform to add
  *                            the server-boot signal (Phase 2); when null, the report is metadata-only.
+ * @param linePolicy         Which of the project's Minecraft version-lines get ground — one verdict each.
  * @author Griefed
  */
 class ClientsideVerifier(
@@ -43,7 +44,8 @@ class ClientsideVerifier(
     private val metadataScanner: MetadataScanner,
     private val jarDownloader: JarDownloader,
     private val workDirectory: File,
-    private val bootVerifierFactory: ((ModPlatform) -> BootVerifier)? = null
+    private val bootVerifierFactory: ((ModPlatform) -> BootVerifier)? = null,
+    private val linePolicy: MinecraftLinePolicy = MinecraftLinePolicy()
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -58,8 +60,13 @@ class ClientsideVerifier(
         val project = platform.resolve(projectUrl)
         val bootVerifier = bootVerifierFactory?.invoke(platform)
 
-        val assessed = project.loaders.map { loader -> verdictFor(project, loader, bootVerifier) }
-        val perLoader = reconcileAcrossLoaders(project, assessed)
+        // A line the boot could never install is not a question worth asking, so selection is handed the
+        // very gate the boot applies. Without a boot verifier there is no gate to ask and every line the
+        // project publishes for is eligible -- the report is metadata-only, and nothing is installed.
+        val bootable = bootVerifier?.bootableCombination() ?: { _, _ -> true }
+        val targets = BootCandidateSelector.pickGrindTargets(project.files, linePolicy, bootable)
+        val assessed = targets.map { target -> verdictFor(project, target, bootVerifier) }
+        val perLoader = reconcileAcrossTargets(project, assessed)
         val suggestedEntries = perLoader.mapNotNull { it.suggestedEntry }.distinct().sorted()
 
         return ClientsideReport(
@@ -86,8 +93,13 @@ class ClientsideVerifier(
     )
 
     /**
-     * Second pass over the per-loader verdicts: a crash cannot stand as clientside evidence when **another
-     * loader of the same project booted a server with the same list-entry**.
+     * Second pass over the project's verdicts: a crash cannot stand as clientside evidence when **another
+     * target of the same project booted a server with the same list-entry**.
+     *
+     * "Target", not "loader", since the axis became the Minecraft version-line: two targets of one project
+     * may share a loader and differ by line, and a clean boot on the 1.20 line disproves a 1.21 crash for
+     * exactly the reason a clean NeoForge boot disproved a Forge crash — the published entry is matched with
+     * `startsWith` and would strip both.
      *
      * **Why the entry and not the loader:** what gets published is a loader-agnostic file-name stem, matched
      * with `startsWith`. Measured 2026-08-23 — `iron-chests` produced `Forge → CRASHED` and
@@ -99,14 +111,15 @@ class ClientsideVerifier(
      * The crash itself is preserved (`bootResult`, the excerpt): it happened, and it is worth diagnosing.
      * Only its *standing* changes, down to whatever the metadata alone supports.
      */
-    private fun reconcileAcrossLoaders(project: ProjectFiles, assessed: List<LoaderAssessment>): List<LoaderVerdict> {
+    private fun reconcileAcrossTargets(project: ProjectFiles, assessed: List<LoaderAssessment>): List<LoaderVerdict> {
         val verdicts = assessed.map { it.verdict }
         val reconciled = assessed.map { assessment ->
             val disproving = loaderDisprovingTheCrash(assessment.verdict, verdicts)
                 ?: return@map assessment.verdict
             log.info(
-                "${project.slug}: ${assessment.verdict.loader} crashed, but ${disproving.loader} booted the same " +
-                    "entry '${assessment.verdict.suggestedEntry}' cleanly — the crash is not a sideness signal."
+                "${project.slug}: ${assessment.verdict.loader} on Minecraft ${assessment.verdict.minecraftLine} " +
+                    "crashed, but ${disproving.loader} on ${disproving.minecraftLine} booted the same entry " +
+                    "'${assessment.verdict.suggestedEntry}' cleanly — the crash is not a sideness signal."
             )
             supersededByLoader(
                 verdict = assessment.verdict,
@@ -122,37 +135,34 @@ class ClientsideVerifier(
         return propagateClientOnlyProof(reconciled)
     }
 
-    /** Compute the verdict for a single [loader] of the resolved [project], optionally booting it. */
-    private fun verdictFor(project: ProjectFiles, loader: String, bootVerifier: BootVerifier?): LoaderAssessment {
+    /** Compute the verdict for one [target] of the resolved [project], optionally booting it. */
+    private fun verdictFor(
+        project: ProjectFiles,
+        target: BootCandidateSelector.GrindTarget,
+        bootVerifier: BootVerifier?
+    ): LoaderAssessment {
+        val loader = target.loader
+        // The stem stays derived from the loader's WHOLE history, deliberately: it is what `/as-properties`
+        // publishes and matches with `startsWith`, so it has to cover every build ever released. Narrowing
+        // it to the line would publish an entry that misses the builds it was never shown.
         val loaderFiles = project.files.filter { loader in it.loaders }
         val stem = FilenameStemDeriver.deriveStem(loaderFiles.map { it.fileName })
-        // The combination staging would choose, so the scan reads the jar this verdict is about and the
-        // report names it. `loaderFiles.firstOrNull()` is the platform's newest *upload*, which is a
-        // different file whenever an old build was re-published -- the aether row that prompted this.
-        //
-        // Loader availability is deliberately not consulted: this verifier holds no `LoaderVersionPolicy`,
-        // and the boot applies its own gate anyway. Where the two picks differ the boot's wins, because
-        // `sampleFile` below prefers what actually staged.
-        val selected = BootCandidateSelector.pickBootableCandidate(loaderFiles, loader) { true }
-        // A file the platform published with no Minecraft version at all is unbootable and so is never
-        // selected, but it is still the only thing there is to scan -- so it stays the sample.
-        val sample = selected?.first ?: loaderFiles.firstOrNull()
-        val sampleMinecraftVersion = selected?.second
-            ?: sample?.minecraftVersions?.maxWithOrNull(BootCandidateSelector.minecraftComparator)
-            ?: ""
+        // The artifact this verdict is about is the target's, so the scan reads the jar that boots and the
+        // report names it -- rather than the platform's newest *upload*, which is a different file whenever
+        // an old build was re-published (the aether row that prompted this).
+        val sample = target.file
 
         val jarScan = when {
-            sample == null -> JarScan.ERROR
             sample.locked -> JarScan.DEFERRED
-            else -> scanSample(sample, sampleMinecraftVersion, loader, project)
+            else -> scanSample(sample, target, project)
         }
 
         // The boot needs the metadata verdict too: a crash that *contradicts* a declared server support is
         // re-checked against other versions of the mod before it may stand (see BootVerifier.verify).
         val declaresServer = declaresServerSupport(project.serverSide, jarScan)
         val bootOutcome = bootVerifier?.let { verifier ->
-            runCatching { verifier.verify(project, loader, declaresServer) }
-                .onFailure { log.warn("Boot-test for $loader failed: ${it.message}") }
+            runCatching { verifier.verify(project, target, declaresServer) }
+                .onFailure { log.warn("Boot-test for $loader / Minecraft ${target.minecraftLine} failed: ${it.message}") }
                 .getOrNull()
         }
 
@@ -184,7 +194,12 @@ class ClientsideVerifier(
                 // re-checks boot other builds entirely. Naming the file we guessed at instead of the one
                 // that ran is what made a `DEPENDENCY_FAILURE` read as being about a build with no
                 // dependencies.
-                sampleFile = bootOutcome?.bootedFile ?: sample?.fileName,
+                sampleFile = bootOutcome?.bootedFile ?: sample.fileName,
+                minecraftLine = target.minecraftLine,
+                // The target's version unless a re-check moved the evidence somewhere else, which is the
+                // same precedence `sampleFile` and `bootedLoader` follow: report what ran, and where nothing
+                // ran, report what it was going to be.
+                minecraftVersion = bootOutcome?.minecraftVersion ?: target.minecraftVersion,
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail
@@ -192,24 +207,28 @@ class ClientsideVerifier(
     }
 
     /**
-     * Download [sample] and read its declared sideness at [minecraftVersion], degrading to [JarScan.ERROR]
-     * on failure.
+     * Download [sample] and read its declared sideness at [target]'s Minecraft version, degrading to
+     * [JarScan.ERROR] on failure.
      *
-     * The version is passed in rather than derived here: the scanner is chosen per Minecraft version, and
-     * this used to ask `sample.minecraftVersions.maxOrNull()` -- a *lexicographic* maximum, which answers
-     * `1.9` for a file tagged `1.9` and `1.20.1`. The caller already knows which version staging picked,
-     * and it picks it with [BootCandidateSelector.minecraftComparator].
+     * The version comes from the target rather than from the file: the scanner is chosen per Minecraft
+     * version, and this used to ask `sample.minecraftVersions.maxOrNull()` — a *lexicographic* maximum,
+     * which answers `1.9` for a file tagged `1.9` and `1.20.1`. It also stages into the target's own
+     * directory, since one loader may now own several of them.
      */
-    private fun scanSample(sample: ModFile, minecraftVersion: String, loader: String, project: ProjectFiles): JarScan {
+    private fun scanSample(sample: ModFile, target: BootCandidateSelector.GrindTarget, project: ProjectFiles): JarScan {
+        val loader = target.loader
         val jar = jarDownloader.download(
             sample,
-            File(workDirectory, AttemptDirectory.nameFor(project.platform, project.slug, loader))
+            File(
+                workDirectory,
+                AttemptDirectory.nameFor(project.platform, project.slug, loader, target.minecraftLine)
+            )
         )
         if (jar == null) {
             log.warn("Could not download ${sample.fileName} for $loader; jar-scan unavailable.")
             return JarScan.ERROR
         }
-        return when (metadataScanner.scan(jar, loader, minecraftVersion)) {
+        return when (metadataScanner.scan(jar, loader, target.minecraftVersion)) {
             MetadataScanner.Result.CLIENT -> JarScan.CLIENT
             MetadataScanner.Result.SERVER_OR_BOTH -> JarScan.SERVER_OR_BOTH
             MetadataScanner.Result.ERROR -> JarScan.ERROR
@@ -403,7 +422,11 @@ class ClientsideVerifier(
             }
             val entry = verdict.suggestedEntry?.trim()?.ifEmpty { null } ?: return null
             return allVerdicts.firstOrNull { other ->
-                other.loader != verdict.loader &&
+                // Another *target*, which two verdicts of one project always are: they differ by Minecraft
+                // line, and the same loader routinely wins more than one. Comparing loaders would refuse a
+                // 1.20 boot the right to disprove a 1.21 crash of the same loader, whose published entry it
+                // shares and would therefore be stripped by.
+                other !== verdict &&
                     other.bootResult == BootResult.SURVIVED &&
                     other.bootedLoader == other.loader &&
                     other.suggestedEntry?.trim() == entry

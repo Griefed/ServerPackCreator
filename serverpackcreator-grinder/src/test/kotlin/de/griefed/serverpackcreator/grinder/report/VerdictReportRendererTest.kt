@@ -138,8 +138,8 @@ internal class VerdictReportRendererTest {
         val crashed = grindVerdict("creativecore", "Fabric", verdict = Verdict.CONFIRMED)
         val clean = grindVerdict("jei", "Forge", verdict = Verdict.ERROR)
         val kept = listOf(
-            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~console.log",
-            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
+            "Modrinth-creativecore-Fabric-1.20~Fabric_0.19.3_mc26.2~console.log",
+            "Modrinth-creativecore-Fabric-1.20~Fabric_0.19.3_mc26.2~logs-latest.log"
         )
 
         val html = VerdictReportRenderer.toHtml(pageOf(listOf(crashed, clean))) { verdict ->

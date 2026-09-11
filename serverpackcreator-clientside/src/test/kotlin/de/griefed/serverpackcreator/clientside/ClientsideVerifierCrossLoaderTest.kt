@@ -182,6 +182,29 @@ internal class ClientsideVerifierCrossLoaderTest {
         Assertions.assertNull(ClientsideVerifier.loaderDisprovingTheCrash(onlyLoader, listOf(onlyLoader)))
     }
 
+    /**
+     * **The disproof crosses Minecraft version-lines, not only loaders.** Since a project is ground once per
+     * line under a single loader, two of its rows routinely share a loader and differ by era — and a clean
+     * boot on one still disproves a crash on the other, for exactly the reason a clean NeoForge boot
+     * disproved a Forge crash: they derive the same published entry, which `startsWith`-matches and would
+     * strip the build that was proven to boot a server.
+     *
+     * Comparing loaders instead of asking "another row" is what would refuse this, and it is the one
+     * regression the axis change could introduce here.
+     */
+    @Test
+    fun aCleanBootOnAnotherMinecraftLineOfTheSameLoaderDisprovesTheCrash() {
+        val newer = verdict("NeoForge", "ironchest-", BootResult.CRASHED, Verdict.CONFIRMED)
+            .copy(minecraftLine = "1.21", minecraftVersion = "1.21.1")
+        val older = verdict("NeoForge", "ironchest-", BootResult.SURVIVED)
+            .copy(minecraftLine = "1.20", minecraftVersion = "1.20.1")
+
+        Assertions.assertSame(
+            older, ClientsideVerifier.loaderDisprovingTheCrash(newer, listOf(newer, older)),
+            "the entry both rows publish is what gets matched, and one of the two builds behind it booted"
+        )
+    }
+
     // --- what a superseded crash then reports -------------------------------------------------------
 
     /**

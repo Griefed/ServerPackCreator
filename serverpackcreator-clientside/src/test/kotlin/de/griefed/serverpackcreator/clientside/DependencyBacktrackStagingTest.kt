@@ -127,7 +127,7 @@ internal class DependencyBacktrackStagingTest {
     }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", "zoomify", "Fabric") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", "zoomify", "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /**

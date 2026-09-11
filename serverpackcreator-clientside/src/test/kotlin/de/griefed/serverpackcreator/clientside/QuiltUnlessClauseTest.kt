@@ -188,7 +188,7 @@ internal class QuiltUnlessClauseTest {
         }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", "terralith", "Quilt") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", "terralith", "Quilt", BootCandidateSelector.minecraftLine(quiltRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     private fun stage(bodies: Map<String, Pair<String, String>>, workDir: File): BootVerifier.Prepared =
