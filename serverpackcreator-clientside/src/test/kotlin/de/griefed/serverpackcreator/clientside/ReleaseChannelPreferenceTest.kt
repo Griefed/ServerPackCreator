@@ -83,6 +83,20 @@ internal class ReleaseChannelPreferenceTest {
         ObjectMapper()
     )
 
+    /** The files the real [CurseForgePlatform] reports for canned `/files` nodes. */
+    private fun curseForge(vararg fileNodes: String): List<ModFile> = CurseForgePlatform(
+        "test-key",
+        HttpFetcher { url, _ ->
+            if (url.contains("/files")) {
+                """{"data":[${fileNodes.joinToString(",")}],
+                    "pagination":{"index":0,"resultCount":${fileNodes.size},"totalCount":${fileNodes.size}}}"""
+            } else {
+                """{"data":[{"id":900,"slug":"hybrid-aquatic","links":{"websiteUrl":"https://cf/ha"}}]}"""
+            }
+        },
+        ObjectMapper()
+    ).resolve("https://www.curseforge.com/minecraft/mc-mods/hybrid-aquatic").files
+
     private fun pick(versions: String, loader: String = "Forge") = BootCandidateSelector.pickBootableCandidate(
         platform(versions).resolve("https://modrinth.com/mod/hybrid-aquatic").files,
         loader
@@ -138,6 +152,75 @@ internal class ReleaseChannelPreferenceTest {
         Assertions.assertEquals(
             "[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar", pick(untyped)?.first?.fileName,
             "with nothing to distinguish them the newest Minecraft wins, exactly as before"
+        )
+    }
+
+    /**
+     * **CurseForge's half of the rule, which had no assertion at all.** `ReleaseChannel.fromCurseForge` has
+     * one call site and the two existing CurseForge fixtures set `releaseType:1` incidentally, so `2`→BETA,
+     * `3`→ALPHA and the fail-toward-RELEASE for an absent field were unexercised — on the larger of the two
+     * catalogs, and the one with no sideness field, i.e. where booting an unrepresentative build costs most.
+     *
+     * Driven through the real `CurseForgePlatform` for the same reason the Modrinth guards are: a channel
+     * that does not survive the platform parse cannot matter, and a test constructing `ModFile`s itself
+     * cannot see a producer dropping it.
+     */
+    @Test
+    fun curseForgeReleaseTypesBecomeChannels() {
+        val files = curseForge(
+            """{"id":1,"fileName":"stable.jar","gameVersions":["1.20.1","Forge"],"releaseType":1,
+                "downloadUrl":"https://edge/stable.jar"}""",
+            """{"id":2,"fileName":"beta.jar","gameVersions":["1.20.4","Forge"],"releaseType":2,
+                "downloadUrl":"https://edge/beta.jar"}""",
+            """{"id":3,"fileName":"alpha.jar","gameVersions":["1.20.6","Forge"],"releaseType":3,
+                "downloadUrl":"https://edge/alpha.jar"}""",
+            """{"id":4,"fileName":"untyped.jar","gameVersions":["1.19.2","Forge"],
+                "downloadUrl":"https://edge/untyped.jar"}"""
+        )
+
+        Assertions.assertEquals(
+            mapOf(
+                "stable.jar" to ReleaseChannel.RELEASE,
+                "beta.jar" to ReleaseChannel.BETA,
+                "alpha.jar" to ReleaseChannel.ALPHA,
+                "untyped.jar" to ReleaseChannel.RELEASE
+            ),
+            files.associate { it.fileName to it.channel },
+            "1/2/3 are CurseForge's own numbering, and an absent field reads as a release like everywhere else"
+        )
+    }
+
+    /** And the preference then behaves as it does on Modrinth: the stable older build is what gets booted. */
+    @Test
+    fun aCurseForgeReleaseBeatsANewerMinecraftBeta() {
+        val files = curseForge(
+            """{"id":1,"fileName":"stable.jar","gameVersions":["1.20.1","Forge"],"releaseType":1,
+                "downloadUrl":"https://edge/stable.jar"}""",
+            """{"id":2,"fileName":"beta.jar","gameVersions":["1.20.4","Forge"],"releaseType":2,
+                "downloadUrl":"https://edge/beta.jar"}"""
+        )
+
+        Assertions.assertEquals(
+            "stable.jar", BootCandidateSelector.pickBootableCandidate(files, "Forge") { true }?.first?.fileName
+        )
+    }
+
+    /**
+     * **The channel narrows *within* the availability gate, never above it.** The rule is a preference, and
+     * a release for a Minecraft the loader cannot boot is not a candidate at all — so the beta gets its
+     * turn. Hoisting the channel filter above `loaderVersionAvailable` would pass every other guard here
+     * while making a project whose only release targets an unsupported Minecraft unverifiable.
+     */
+    @Test
+    fun theChannelPreferenceNeverOverridesLoaderAvailability() {
+        val picked = BootCandidateSelector.pickBootableCandidate(
+            platform(versionsJson).resolve("https://modrinth.com/mod/hybrid-aquatic").files,
+            "Forge"
+        ) { minecraftVersion -> minecraftVersion != "1.20.1" }
+
+        Assertions.assertEquals(
+            "[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar", picked?.first?.fileName,
+            "the only releases are 1.20.1 builds and this loader has no build there, so the beta is all there is"
         )
     }
 

@@ -151,4 +151,41 @@ internal class ModScannerDispatchTest {
             Assertions.assertNull(modScanner.scannerFor(modloader, "1.20.1"), "modloader '$modloader'")
         }
     }
+
+    /**
+     * The **gate's** entry point gets the same guarantee as the scanner's.
+     *
+     * `JarSelfDeclaration` in `-clientside` asks `descriptorsFor`, not `scannerFor`, and its answer decides
+     * whether a jar is refused before any container is spent. An unreadable Minecraft version reached the
+     * same unguarded comparator, so pinning only the dispatch left the more consequential caller uncovered.
+     * Both answer the modern era, which is the safe direction: the older descriptor exists only in jars a
+     * decade old.
+     */
+    @Test
+    fun anUnreadableMinecraftVersionStillAnswersTheModernDescriptors() {
+        listOf("", "26", "1.x.y", "not-a-version").forEach { minecraftVersion ->
+            Assertions.assertEquals(
+                setOf(LoaderDescriptors.NEOFORGE_TOML),
+                Assertions.assertDoesNotThrow<Set<String>> {
+                    LoaderDescriptors.descriptorsFor("NeoForge", minecraftVersion)
+                },
+                "'$minecraftVersion' must not throw out of the pre-boot gate"
+            )
+            Assertions.assertEquals(
+                setOf(LoaderDescriptors.FORGE_TOML),
+                LoaderDescriptors.descriptorsFor("Forge", minecraftVersion),
+                "'$minecraftVersion' reads as modern Forge too, exactly as the dispatch does"
+            )
+        }
+    }
+
+    /** A loader this object knows nothing about evidences nothing — it can never refuse a boot. */
+    @Test
+    fun anUnknownLoaderEvidencesNothing() {
+        Assertions.assertEquals(emptySet<String>(), LoaderDescriptors.descriptorsFor("Rift", "1.13"))
+        Assertions.assertEquals(
+            emptySet<String>(), LoaderDescriptors.descriptorsFor("LegacyFabric", "1.8.9"),
+            "LegacyFabric reads Fabric's descriptor, so no jar can carry evidence against it"
+        )
+    }
 }

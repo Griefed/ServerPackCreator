@@ -174,6 +174,44 @@ internal class CrossPlatformDependencyTest {
         Assertions.assertEquals(listOf("Modrinth/somelib"), asked, "nothing else exists to ask")
     }
 
+    /**
+     * **The commoner of the two crossing states, and its cost.** `Unmapped` — an id whose only local
+     * mapping is a guess that resolved to nothing — is where most unresolvable manifest ids land, so it is
+     * the path that decides what this feature spends of an API key's quota. One extra resolve per id, and
+     * the home platform is still asked first.
+     *
+     * Gating the crossing on `Unsatisfied` alone (the first cut) left exactly this case out, which is why
+     * the bound is asserted here rather than argued for in a comment.
+     */
+    @Test
+    fun anUnmappableIdCrossesForExactlyOneExtraResolve(@TempDir workDir: File) {
+        val unmappable = object : ModPlatform {
+            override val name: String = "Modrinth"
+            override fun handles(projectUrl: String): Boolean = true
+            override fun resolve(projectUrl: String): ProjectFiles = candidate
+            override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? {
+                asked.add("Modrinth/$nativeRef")
+                // The slug guess names nothing at all -- not a project with no usable build, nothing.
+                return null
+            }
+        }
+
+        BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = unmappable,
+            httpDownloader = downloader,
+            loaderVersionPolicy = unbootableLoaderVersion,
+            workDirectory = workDir,
+            alternatePlatforms = listOf(other(publishes = true)),
+            learnedModIds = LearnedModIds()
+        ).prepareBootPack(candidate, "Fabric")
+
+        Assertions.assertEquals(
+            listOf("Modrinth/somelib", "CurseForge/somelib"), asked,
+            "one ask each: this is the state most unresolvable ids reach, so its cost is the feature's cost"
+        )
+    }
+
     /** The other platform having nothing either leaves the original refusal standing, with its own reason. */
     @Test
     fun anUnsatisfiedDependencyStaysUnsatisfiedWhenNeitherPlatformHasIt(@TempDir workDir: File) {

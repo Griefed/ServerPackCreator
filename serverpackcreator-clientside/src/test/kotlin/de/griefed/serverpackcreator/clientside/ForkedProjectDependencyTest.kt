@@ -186,6 +186,43 @@ internal class ForkedProjectDependencyTest {
         )
     }
 
+    /**
+     * **The reason the CurseForge side of that entry is `null`, pinned.** No numeric CurseForge id could be
+     * verified for either observed fork, and a wrong one stages somebody else's mod — so a table entry that
+     * carries no ref for a platform falls through to that platform's own slug guess instead of resolving to
+     * nothing. Without this the entry would have *removed* CurseForge's pre-existing guess, which is a
+     * regression rather than a fix.
+     */
+    @Test
+    fun anEntryWithNoRefForAPlatformFallsBackToThatPlatformsGuess() {
+        Assertions.assertEquals(
+            ModIdMapping.Guess("tacz"), KnownModIds.mappingFor("tacz", "CurseForge"),
+            "CurseForge addresses this by whatever its own search resolves, not by Modrinth's slug"
+        )
+        Assertions.assertEquals(
+            ModIdMapping.Alias("timeless-and-classics-guns"), KnownModIds.mappingFor("tacz", "Modrinth"),
+            "and the platform the project *was* verified on still gets the mapping"
+        )
+        Assertions.assertEquals(
+            ModIdMapping.None, KnownModIds.mappingFor("tacz", "SomeFuturePlatform"),
+            "a platform this registry knows nothing about still gets nothing, not a guess"
+        )
+    }
+
+    /** A fork that happens to equal the primary contributes nothing — one ref, asked once. */
+    @Test
+    fun aForkIsNeverOfferedTwice() {
+        Assertions.assertEquals(
+            listOf("create", "create-fabric"),
+            KnownModIds.mappingsFor("create", "Modrinth").map { it.ref },
+            "the primary comes first and each ref appears once"
+        )
+        Assertions.assertEquals(
+            listOf("create"), KnownModIds.mappingsFor("create", "CurseForge").map { it.ref },
+            "the fork carries no CurseForge ref, so that platform is left with its own guess alone"
+        )
+    }
+
     /** Every ordinary id is unchanged: one mapping, exactly as before, so this adds no request anywhere. */
     @Test
     fun anIdWithNoKnownForkStillYieldsOneMapping() {

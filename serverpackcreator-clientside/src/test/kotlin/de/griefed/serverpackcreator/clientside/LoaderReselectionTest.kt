@@ -284,6 +284,49 @@ internal class LoaderReselectionTest {
         )
     }
 
+    /**
+     * **Which declared loader gets picked, asserted directly.** The rule is reached through staging only
+     * with a *single* declared loader, so neither half of it was pinned: prefer one the platform also
+     * tagged — the author's two statements agreeing is better evidence than either alone — and otherwise
+     * take the alphabetically first, purely so the choice is deterministic rather than dependent on set
+     * iteration order. A jar declaring two bootable loaders neither of which its page mentions offers
+     * nothing to choose on, and picking by file name is the silently-plausible-value trap.
+     */
+    @Test
+    fun theDeclaredLoaderThePlatformAlsoTaggedWins() {
+        Assertions.assertEquals(
+            "NeoForge",
+            BootVerifier.loaderToVerifyUnder(setOf("Forge", "NeoForge"), tagged = setOf("NeoForge")) { true },
+            "the page and the descriptor agreeing on NeoForge outranks Forge sorting first"
+        )
+    }
+
+    /** With nothing tagged in common the answer is stable rather than arbitrary. */
+    @Test
+    fun anUntaggedChoiceIsAlphabeticalAndStable() {
+        Assertions.assertEquals(
+            "Forge",
+            BootVerifier.loaderToVerifyUnder(setOf("NeoForge", "Forge"), tagged = setOf("Fabric")) { true }
+        )
+        Assertions.assertEquals(
+            "Forge",
+            BootVerifier.loaderToVerifyUnder(setOf("Forge", "NeoForge"), tagged = emptySet()) { true },
+            "and it does not depend on the order the set happens to iterate in"
+        )
+    }
+
+    /** Nothing bootable means nothing to re-select to, which is what keeps this from being an amnesty. */
+    @Test
+    fun aDeclarationNothingCanBootYieldsNoChoice() {
+        Assertions.assertNull(
+            BootVerifier.loaderToVerifyUnder(setOf("Forge", "NeoForge"), tagged = setOf("Forge")) { false }
+        )
+        Assertions.assertNull(
+            BootVerifier.loaderToVerifyUnder(emptySet(), tagged = setOf("Forge")) { true },
+            "and a jar that declares nothing was never refused for its loader in the first place"
+        )
+    }
+
     /** A jar that declares the loader it was asked about is staged once and left alone. */
     @Test
     fun aJarThatDeclaresTheRequestedLoaderIsNotReselected(@TempDir workDir: File) {
