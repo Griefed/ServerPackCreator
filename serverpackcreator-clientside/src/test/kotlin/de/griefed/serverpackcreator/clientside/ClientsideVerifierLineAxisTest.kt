@@ -74,7 +74,7 @@ internal class ClientsideVerifierLineAxisTest {
     /** One row per line, newest line first, each naming the loader that line was ground under. */
     @Test
     fun oneVerdictPerMinecraftLineNotOnePerLoader(@TempDir workDir: File) {
-        val perLine = report(aetherFiles, workDir).perLoader
+        val perLine = report(aetherFiles, workDir).perTarget
 
         Assertions.assertEquals(
             listOf("1.21" to "NeoForge", "1.20" to "NeoForge", "1.12" to "Forge"),
@@ -88,7 +88,7 @@ internal class ClientsideVerifierLineAxisTest {
     fun everyVerdictNamesTheVersionItWasStagedAt(@TempDir workDir: File) {
         Assertions.assertEquals(
             listOf("1.21.1", "1.20.1", "1.12.2"),
-            report(aetherFiles, workDir).perLoader.map { it.minecraftVersion }
+            report(aetherFiles, workDir).perTarget.map { it.minecraftVersion }
         )
     }
 
@@ -99,7 +99,7 @@ internal class ClientsideVerifierLineAxisTest {
      */
     @Test
     fun oneLoaderCanOwnSeveralRows(@TempDir workDir: File) {
-        val neoForgeRows = report(aetherFiles, workDir).perLoader.filter { it.loader == "NeoForge" }
+        val neoForgeRows = report(aetherFiles, workDir).perTarget.filter { it.loader == "NeoForge" }
 
         Assertions.assertEquals(
             listOf("1.21", "1.20"), neoForgeRows.map { it.minecraftLine },
@@ -115,7 +115,7 @@ internal class ClientsideVerifierLineAxisTest {
      */
     @Test
     fun twoLinesOfOneLoaderShareTheirPublishedEntry(@TempDir workDir: File) {
-        val entries = report(aetherFiles, workDir).perLoader
+        val entries = report(aetherFiles, workDir).perTarget
             .filter { it.loader == "NeoForge" }
             .map { it.suggestedEntry }
 
@@ -127,7 +127,7 @@ internal class ClientsideVerifierLineAxisTest {
     fun thePolicyDecidesHowManyRowsAProjectGets(@TempDir workDir: File) {
         val perLine = report(aetherFiles, workDir, MinecraftLinePolicy(newestCount = 1, anchors = emptySet()))
 
-        Assertions.assertEquals(listOf("1.21"), perLine.perLoader.map { it.minecraftLine })
+        Assertions.assertEquals(listOf("1.21"), perLine.perTarget.map { it.minecraftLine })
     }
 
     /** A project publishing nothing bootable yields no rows rather than an empty-looking one. */
@@ -137,6 +137,6 @@ internal class ClientsideVerifierLineAxisTest {
             ModFile("mod.jar", setOf("Forge"), emptySet(), "https://cdn/x", null, emptyList())
         )
 
-        Assertions.assertEquals(emptyList<LoaderVerdict>(), report(noVersions, workDir).perLoader)
+        Assertions.assertEquals(emptyList<GrindTargetVerdict>(), report(noVersions, workDir).perTarget)
     }
 }

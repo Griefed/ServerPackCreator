@@ -70,7 +70,7 @@ class Grinder(
         // Not `store`: this class already has one, of a different type, and shadowing it here made the two
         // reads three lines apart look like the same collaborator.
         val queue = requeue ?: return
-        val blamed = report.perLoader.mapNotNull { it.blamedDependencyUrl }.distinct()
+        val blamed = report.perTarget.mapNotNull { it.blamedDependencyUrl }.distinct()
         if (blamed.isEmpty()) {
             return
         }
@@ -132,7 +132,7 @@ class Grinder(
             )
         }
         val now = clock()
-        for (verdict in report.perLoader) {
+        for (verdict in report.perTarget) {
             store.record(
                 GrindVerdict(
                     platform = report.platform,
@@ -171,7 +171,7 @@ class Grinder(
         // claim than one that booted, and only the log can tell them apart afterwards.
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
-                report.perLoader
+                report.perTarget
                     .joinToString(", ") {
                         "${it.minecraftLine ?: "?"}/${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})"
                     }

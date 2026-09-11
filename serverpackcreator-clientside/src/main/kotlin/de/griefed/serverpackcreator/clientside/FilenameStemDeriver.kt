@@ -53,7 +53,7 @@ object FilenameStemDeriver {
      *
      * Called once per loader-group, so a project shipping for several loaders commonly yields several
      * *different* stems — `sodium-fabric-` for Fabric against `embeddium-` for Forge/NeoForge — and each is
-     * an independent list-entry. That divergence is why `ClientsideVerifier.loaderDisprovingTheCrash`
+     * an independent list-entry. That divergence is why `ClientsideVerifier.targetDisprovingTheCrash`
      * compares **entries** rather than loaders: where the stems differ, one loader's published entry strips
      * nothing the other proved bootable, so there is no contradiction to reconcile.
      * Returns `null` when [fileNames] is empty.

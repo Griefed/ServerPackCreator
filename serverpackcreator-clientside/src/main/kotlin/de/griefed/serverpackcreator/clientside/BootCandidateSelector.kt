@@ -304,7 +304,7 @@ object BootCandidateSelector {
      * run. Two boots that close to the crashing combination re-test its environment, not the mod.
      *
      * **Crossing the loader is a wider claim than [pickBootableCandidate] makes, and it is gated to match.**
-     * A mod really can be client-only on one loader, which is why `ClientsideVerifier.loaderDisprovingTheCrash`
+     * A mod really can be client-only on one loader, which is why `ClientsideVerifier.targetDisprovingTheCrash`
      * refuses to let any survival clear any crash. This sample is spent only where the crash already
      * *contradicts* a declared server support (`BootVerifier.shouldRecheckAgainstOtherVersions`), i.e. where
      * one of the two signals is known to be wrong — and a project the author declares server-capable, that

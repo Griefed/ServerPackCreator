@@ -29,7 +29,7 @@ import java.io.File
  * Pins how the **one sampled artifact** is named in a verdict — both halves, because they are different
  * things and were briefly conflated.
  *
- * `LoaderVerdict.sampleFile` carries that artifact's published name **verbatim**, extension and all: it is
+ * `GrindTargetVerdict.sampleFile` carries that artifact's published name **verbatim**, extension and all: it is
  * what a maintainer types into a platform's search box. It was a *derived stem* of that file until
  * 2026-09-10, under the name `filenamePattern`, and Griefed's report was exactly that — the column "most
  * often equals some sort of pattern" instead of the filename it was meant to be.
@@ -101,7 +101,7 @@ internal class SampledArtifactNamingTest {
             // No download, so the jar scan degrades and only the naming is under test.
             jarDownloader = JarDownloader { _, _ -> null },
             workDirectory = workDir
-        ).report("https://modrinth.com/mod/hybrid-aquatic").perLoader.single()
+        ).report("https://modrinth.com/mod/hybrid-aquatic").perTarget.single()
 
         Assertions.assertEquals(
             published, verdict.sampleFile,

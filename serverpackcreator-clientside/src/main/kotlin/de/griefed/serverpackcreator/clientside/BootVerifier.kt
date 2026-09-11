@@ -333,7 +333,7 @@ class BootVerifier(
      *
      * **The sample spans loaders, so a candidate is staged under its own loader, not [loader].** See
      * [BootCandidateSelector.pickRecheckCandidates] for why, and why crossing the loader is admissible here
-     * and not in `ClientsideVerifier.loaderDisprovingTheCrash`. Every attempt nonetheless stages into the
+     * and not in `ClientsideVerifier.targetDisprovingTheCrash`. Every attempt nonetheless stages into the
      * *crashing* loader's directory: all attempts for one candidate share one `boot.log`, which
      * [restoreDecisiveConsole] repairs at the end of [verify], and staging into another loader's directory
      * would wipe the pack and console that loader's own verdict is about to be built from.
@@ -1061,7 +1061,7 @@ class BootVerifier(
      * from its own pack and console — the same reasoning as the cross-loader crash re-check's.
      *
      * The verdict still says what ran: `BootOutcome.bootedLoader` is stamped from the staged pack, so a
-     * re-selected boot has `bootedLoader != loader`, which `ClientsideVerifier.loaderDisprovingTheCrash`
+     * re-selected boot has `bootedLoader != loader`, which `ClientsideVerifier.targetDisprovingTheCrash`
      * already requires to be equal before one loader may clear another's crash.
      */
     private fun reselectOnLoaderContradiction(
@@ -1953,7 +1953,7 @@ class BootVerifier(
          * strips the mod from every server pack built against the fallback list, and that is worth one boot
          * whatever the metadata says. This arm exists because the axis moved: a project used to be ground
          * under every loader it publishes for, so a wrong crash routinely met a clean boot from a sibling
-         * loader in the same run (`iron-chests`, 2026-08-23) and `ClientsideVerifier.loaderDisprovingTheCrash`
+         * loader in the same run (`iron-chests`, 2026-08-23) and `ClientsideVerifier.targetDisprovingTheCrash`
          * threw it out for free. One loader per Minecraft line means that sibling is no longer booted unless
          * something asks for it, and this is what asks.
          *

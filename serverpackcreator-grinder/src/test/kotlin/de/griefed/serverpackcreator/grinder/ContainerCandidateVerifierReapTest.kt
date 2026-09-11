@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.clientside.BootResult
 import de.griefed.serverpackcreator.clientside.BootVerifier
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.LoaderVerdict
+import de.griefed.serverpackcreator.clientside.GrindTargetVerdict
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -63,7 +63,7 @@ internal class ContainerCandidateVerifierReapTest {
             .writeText(text)
     }
 
-    private fun verdict(loader: String, bootResult: BootResult?) = LoaderVerdict(
+    private fun verdict(loader: String, bootResult: BootResult?) = GrindTargetVerdict(
         loader = loader,
         suggestedEntry = "$loader-",
         declaredClientSide = DeclaredSupport.UNKNOWN,
@@ -160,7 +160,7 @@ internal class ContainerCandidateVerifierReapTest {
     @Test
     fun theResolvedReportsIdentityIsWhatGetsReaped() {
         val queued = candidate(ModPlatforms.CURSEFORGE, "creative-core")
-        val resolved = clientsideReport(slug = "creativecore", perLoader = emptyList(), platform = ModPlatforms.MODRINTH)
+        val resolved = clientsideReport(slug = "creativecore", perTarget = emptyList(), platform = ModPlatforms.MODRINTH)
 
         Assertions.assertEquals(
             ModPlatforms.MODRINTH to "creativecore",

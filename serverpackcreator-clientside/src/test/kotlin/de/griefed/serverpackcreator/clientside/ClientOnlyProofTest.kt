@@ -54,7 +54,7 @@ internal class ClientOnlyProofTest {
         BootVerifier.BootOutcome(BootResult.CRASHED, null, "NeoForge 26.2.0.76 / Minecraft 26.2 → CRASHED", decidedBy = decision)
 
     private fun verdict(loader: String, entry: String, result: BootResult?, decision: BootDecision? = null) =
-        LoaderVerdict(
+        GrindTargetVerdict(
             loader = loader, suggestedEntry = entry,
             declaredClientSide = DeclaredSupport.REQUIRED, declaredServerSide = DeclaredSupport.UNSUPPORTED,
             jarScan = JarScan.SERVER_OR_BOTH, bootResult = result, bootedLoader = loader,
@@ -121,7 +121,7 @@ internal class ClientOnlyProofTest {
         val survived = verdict("Fabric", "sodium-", BootResult.SURVIVED)
 
         Assertions.assertNull(
-            ClientsideVerifier.loaderDisprovingTheCrash(proven, listOf(proven, survived)),
+            ClientsideVerifier.targetDisprovingTheCrash(proven, listOf(proven, survived)),
             "a clean boot cannot disprove the mod having reached the client"
         )
     }
@@ -134,7 +134,7 @@ internal class ClientOnlyProofTest {
 
         Assertions.assertEquals(
             "NeoForge",
-            ClientsideVerifier.loaderDisprovingTheCrash(unexplained, listOf(unexplained, survived))?.loader,
+            ClientsideVerifier.targetDisprovingTheCrash(unexplained, listOf(unexplained, survived))?.loader,
             "one build's crash must still not condemn a mod another loader boots cleanly"
         )
     }

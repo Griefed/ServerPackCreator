@@ -129,7 +129,7 @@ internal class SampledFileMatchesTheBootedFileTest {
                 BootCandidateSelector.minecraftLine(newerRelease) to newerFileName,
                 BootCandidateSelector.minecraftLine(olderRelease) to olderFileName
             ),
-            report.perLoader.associate { it.minecraftLine to it.sampleFile },
+            report.perTarget.associate { it.minecraftLine to it.sampleFile },
             "each row must name the build its own Minecraft line would stage, not whichever file the " +
                 "platform listed first"
         )
@@ -176,7 +176,7 @@ internal class SampledFileMatchesTheBootedFileTest {
         )
         Assertions.assertEquals(
             requested,
-            report.perLoader.map { it.sampleFile },
+            report.perTarget.map { it.sampleFile },
             "every verdict has to name the artifact staging actually worked on for its own line; anything " +
                 "else attributes one file's evidence to another file"
         )

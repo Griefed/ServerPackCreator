@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test
  * The real name serves the stem's documented purpose strictly better — it keeps the loader token history
  * erases *and* the version, which is what identifies the artifact on the platform.
  *
- * `LoaderVerdict.sampleFile` had the right value all along; `Grinder.grind`'s hand-written 18-field copy
+ * `GrindTargetVerdict.sampleFile` had the right value all along; `Grinder.grind`'s hand-written 18-field copy
  * simply never carried it. That is the same mapping `claude-docs/ANALYSIS-AUDIT.md` flagged on 2026-09-05 as
  * asserted only five fields deep.
  */

@@ -4295,6 +4295,12 @@ and `VerdictStoreTest.distinctLoadersOfOneProjectCoexist` both pass — because 
 verdicts with no Minecraft line, which is exactly what a row written by an older build looks like, and those
 still key on the loader. The legacy path is therefore exercised by 1,084 guards that know nothing about it.
 
+**Naming, afterwards.** `LoaderVerdict` became `GrindTargetVerdict` and `ClientsideReport.perLoader` became
+`perTarget`, in a `refactor:` of its own once the behaviour was settled: a collection called `perLoader`
+holding one entry per Minecraft era is the kind of stale name this repository treats as a defect. **Entries
+above this one are deliberately left spelling the old names** — they record what was true when they were
+written, and rewriting a historical log to match today's symbols is how a record stops being one.
+
 **Still outstanding, and it needs a host this session did not have:** the end-to-end run against Docker with
 `CURSEFORGE_API_KEY` — `./gradlew :serverpackcreator-grinder:installDist` (it is *not* rebuilt by `test`)
 then a one-shot grind of `https://www.curseforge.com/minecraft/mc-mods/aether`, expecting a `1.12 / Forge`

@@ -178,7 +178,7 @@ internal class BootVerifierCrashRecheckTest {
      *
      * This arm exists because the axis moved. A project used to be ground under every loader it publishes
      * for, so a wrong crash routinely met a clean boot from a sibling loader *in the same run* and
-     * `ClientsideVerifier.loaderDisprovingTheCrash` threw it out for free — that is the `iron-chests` story.
+     * `ClientsideVerifier.targetDisprovingTheCrash` threw it out for free — that is the `iron-chests` story.
      * One loader per Minecraft line means nobody boots that sibling unless something asks, and
      * `pickRecheckCandidates` now spends the first attempt on exactly it.
      */

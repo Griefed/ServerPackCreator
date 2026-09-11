@@ -130,7 +130,7 @@ loader. It is now `1.21/NeoForge`, `1.20/NeoForge`, `1.12/Forge`.
 - **`suggestedEntry` is deliberately still the loader's whole history**, not the line's. `/as-properties`
   matches it with `startsWith`, so narrowing it to one era would publish a pattern missing the builds it was
   never shown — and it is also what lets two lines of one loader disprove each other's crash, since
-  `ClientsideVerifier.loaderDisprovingTheCrash` compares entries.
+  `ClientsideVerifier.targetDisprovingTheCrash` compares entries.
 - **The crash guard the axis owed** is in `-clientside`: a *decisive* crash now re-checks even when the
   metadata agrees with it, and `pickRecheckCandidates` spends its first attempt on the crashing era's **other
   loader** — the boot that used to disprove a wrong crash for free when every loader was ground. Detail in

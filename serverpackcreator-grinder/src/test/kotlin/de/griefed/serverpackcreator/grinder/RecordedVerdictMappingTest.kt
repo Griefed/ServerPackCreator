@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 
 /**
- * Pins that `Grinder.grind` carries **every** field from a `LoaderVerdict` to the `GrindVerdict` it records.
+ * Pins that `Grinder.grind` carries **every** field from a `GrindTargetVerdict` to the `GrindVerdict` it records.
  *
  * That mapping is eighteen fields assigned by hand. Before this, `GrinderTest` — the only test that drives
  * `grind` and inspects what was stored — asserted five of them (`bootedLoader`, `declaredClientSide`,
@@ -56,7 +56,7 @@ internal class RecordedVerdictMappingTest {
     private val recordedAt = Instant.parse("2026-09-05T12:00:00Z")
 
     /** One loader verdict with a distinct sentinel in every field the mapping copies. */
-    private val sentinelVerdict = loaderVerdict(
+    private val sentinelVerdict = targetVerdict(
         loader = "SENTINEL_LOADER",
         suggestedEntry = "SENTINEL_ENTRY",
         verdict = Verdict.CONFIRMED,
@@ -82,7 +82,7 @@ internal class RecordedVerdictMappingTest {
         val verifier = CandidateVerifier {
             clientsideReport(
                 slug = "sentinel-slug",
-                perLoader = listOf(sentinelVerdict),
+                perTarget = listOf(sentinelVerdict),
                 platform = "SENTINEL_PLATFORM",
                 projectUrl = "https://modrinth.com/mod/SENTINEL_URL"
             )

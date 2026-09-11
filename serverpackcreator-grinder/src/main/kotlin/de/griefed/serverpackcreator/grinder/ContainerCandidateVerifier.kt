@@ -102,7 +102,7 @@ class ContainerCandidateVerifier(
                 val (platform, slug) = reapTarget(candidate, resolved)
                 // Per target, not per loader: one loader now owns several of a project's rows (one per
                 // Minecraft line), and pruning by loader alone would delete the other lines' consoles.
-                report.perLoader
+                report.perTarget
                     .mapNotNull { verdict -> verdict.minecraftLine?.let { verdict.loader to it } }
                     .distinct()
                     .forEach { (loader, minecraftLine) ->

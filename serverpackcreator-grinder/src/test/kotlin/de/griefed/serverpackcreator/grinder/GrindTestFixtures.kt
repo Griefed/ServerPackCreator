@@ -24,8 +24,8 @@ import org.junit.jupiter.api.Assertions
 import java.io.File
 import java.time.Instant
 
-/** Build a minimal [LoaderVerdict] for tests, defaulting the signals not under test. */
-internal fun loaderVerdict(
+/** Build a minimal [GrindTargetVerdict] for tests, defaulting the signals not under test. */
+internal fun targetVerdict(
     loader: String,
     suggestedEntry: String?,
     verdict: Verdict = Verdict.INCONCLUSIVE,
@@ -37,7 +37,7 @@ internal fun loaderVerdict(
     sampleFile: String? = null,
     minecraftLine: String = "1.20",
     minecraftVersion: String = "1.20.1"
-) = LoaderVerdict(
+) = GrindTargetVerdict(
     loader = loader,
     suggestedEntry = suggestedEntry,
     declaredClientSide = declaredClientSide,
@@ -56,7 +56,7 @@ internal fun loaderVerdict(
 /** Build a [ClientsideReport] from a set of per-loader verdicts. */
 internal fun clientsideReport(
     slug: String,
-    perLoader: List<LoaderVerdict>,
+    perTarget: List<GrindTargetVerdict>,
     platform: String = "Modrinth",
     projectUrl: String = "https://modrinth.com/mod/$slug"
 ) = ClientsideReport(
@@ -64,8 +64,8 @@ internal fun clientsideReport(
     slug = slug,
     projectUrl = projectUrl,
     phase = "metadata + server-boot",
-    suggestedEntries = perLoader.mapNotNull { it.suggestedEntry }.distinct().sorted(),
-    perLoader = perLoader,
+    suggestedEntries = perTarget.mapNotNull { it.suggestedEntry }.distinct().sorted(),
+    perTarget = perTarget,
     fileNames = emptyList()
 )
 

@@ -53,7 +53,7 @@ enum class JarScan {
  * @param bootedLoader      Which loader actually produced [bootResult], or `null` when no boot ran. Usually
  *                          [loader]; it differs when a cross-loader crash re-check decided the outcome, and
  *                          the difference is load-bearing — only a loader's *own* clean boot may disprove
- *                          another loader's crash (see `ClientsideVerifier.loaderDisprovingTheCrash`).
+ *                          another loader's crash (see `ClientsideVerifier.targetDisprovingTheCrash`).
  * @param bootCrashExcerpt  The slice of the crashed console a maintainer reads to judge *why* it crashed, or
  *                          `null` when the boot did not crash. Kept even when a later pass strips the crash of
  *                          its standing: the server did crash, and that is still worth diagnosing.
@@ -68,7 +68,7 @@ enum class JarScan {
  * @param note              Optional caveat (e.g. a metadata/jar-scan contradiction, or a boot detail).
  * @author Griefed
  */
-data class LoaderVerdict(
+data class GrindTargetVerdict(
     val loader: String,
     val suggestedEntry: String?,
     val declaredClientSide: DeclaredSupport,
@@ -138,7 +138,7 @@ data class LoaderVerdict(
  * @param projectUrl       Original issue-link.
  * @param phase            Which signals were collected ("metadata-only" in Phase 1).
  * @param suggestedEntries Distinct list-entries across all loaders.
- * @param perLoader        Per-loader verdicts.
+ * @param perTarget        Per-loader verdicts.
  * @param fileNames        Every published file-name, so the maintainer can sanity-check the stems.
  * @author Griefed
  */
@@ -148,6 +148,6 @@ data class ClientsideReport(
     val projectUrl: String,
     val phase: String,
     val suggestedEntries: List<String>,
-    val perLoader: List<LoaderVerdict>,
+    val perTarget: List<GrindTargetVerdict>,
     val fileNames: List<String>
 )

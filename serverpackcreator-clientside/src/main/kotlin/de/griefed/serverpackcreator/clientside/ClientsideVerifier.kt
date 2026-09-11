@@ -66,8 +66,8 @@ class ClientsideVerifier(
         val bootable = bootVerifier?.bootableCombination() ?: { _, _ -> true }
         val targets = BootCandidateSelector.pickGrindTargets(project.files, linePolicy, bootable)
         val assessed = targets.map { target -> verdictFor(project, target, bootVerifier) }
-        val perLoader = reconcileAcrossTargets(project, assessed)
-        val suggestedEntries = perLoader.mapNotNull { it.suggestedEntry }.distinct().sorted()
+        val perTarget = reconcileAcrossTargets(project, assessed)
+        val suggestedEntries = perTarget.mapNotNull { it.suggestedEntry }.distinct().sorted()
 
         return ClientsideReport(
             platform = project.platform,
@@ -75,19 +75,19 @@ class ClientsideVerifier(
             projectUrl = project.projectUrl,
             phase = if (bootVerifier != null) "metadata + server-boot" else "metadata-only",
             suggestedEntries = suggestedEntries,
-            perLoader = perLoader,
+            perTarget = perTarget,
             fileNames = project.fileNames.sorted()
         )
     }
 
     /**
-     * One loader's verdict plus the boot detail behind it, kept apart so [reconcileAcrossLoaders] can
+     * One loader's verdict plus the boot detail behind it, kept apart so [reconcileAcrossTargets] can
      * *rebuild* a superseded verdict's note instead of appending a correction to a claim that is no longer
-     * true. Internal to the two passes; the report only ever sees [LoaderVerdict].
+     * true. Internal to the two passes; the report only ever sees [GrindTargetVerdict].
      */
     private data class LoaderAssessment(
         /** The verdict as the loader's own signals produced it, before any cross-loader reconciliation. */
-        val verdict: LoaderVerdict,
+        val verdict: GrindTargetVerdict,
         /** What the boot reported, or `null` when none ran — the one part of the note worth carrying over. */
         val bootDetail: String?
     )
@@ -111,17 +111,17 @@ class ClientsideVerifier(
      * The crash itself is preserved (`bootResult`, the excerpt): it happened, and it is worth diagnosing.
      * Only its *standing* changes, down to whatever the metadata alone supports.
      */
-    private fun reconcileAcrossTargets(project: ProjectFiles, assessed: List<LoaderAssessment>): List<LoaderVerdict> {
+    private fun reconcileAcrossTargets(project: ProjectFiles, assessed: List<LoaderAssessment>): List<GrindTargetVerdict> {
         val verdicts = assessed.map { it.verdict }
         val reconciled = assessed.map { assessment ->
-            val disproving = loaderDisprovingTheCrash(assessment.verdict, verdicts)
+            val disproving = targetDisprovingTheCrash(assessment.verdict, verdicts)
                 ?: return@map assessment.verdict
             log.info(
                 "${project.slug}: ${assessment.verdict.loader} on Minecraft ${assessment.verdict.minecraftLine} " +
                     "crashed, but ${disproving.loader} on ${disproving.minecraftLine} booted the same entry " +
                     "'${assessment.verdict.suggestedEntry}' cleanly — the crash is not a sideness signal."
             )
-            supersededByLoader(
+            supersededByTarget(
                 verdict = assessment.verdict,
                 disproving = disproving,
                 metadataOnly = verdictOf(
@@ -169,7 +169,7 @@ class ClientsideVerifier(
         val assessed = verdictOf(project.serverSide, project.clientSide, jarScan, bootOutcome, bootVerifier != null)
         val note = assessed.note
         return LoaderAssessment(
-            verdict = LoaderVerdict(
+            verdict = GrindTargetVerdict(
                 verdict = assessed.verdict,
                 declared = assessed.declared,
                 loader = loader,
@@ -360,7 +360,7 @@ class ClientsideVerifier(
          * cannot say where its evidence came from cannot be audited. Returns [verdicts] untouched when
          * nothing proved anything.
          */
-        internal fun propagateClientOnlyProof(verdicts: List<LoaderVerdict>): List<LoaderVerdict> {
+        internal fun propagateClientOnlyProof(verdicts: List<GrindTargetVerdict>): List<GrindTargetVerdict> {
             val proof = verdicts.firstOrNull { it.decidedBy?.provesClientOnly == true } ?: return verdicts
             return verdicts.map { verdict ->
                 if (verdict === proof) {
@@ -407,10 +407,10 @@ class ClientsideVerifier(
          * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStem`
          * documents.
          */
-        internal fun loaderDisprovingTheCrash(
-            verdict: LoaderVerdict,
-            allVerdicts: List<LoaderVerdict>
-        ): LoaderVerdict? {
+        internal fun targetDisprovingTheCrash(
+            verdict: GrindTargetVerdict,
+            allVerdicts: List<GrindTargetVerdict>
+        ): GrindTargetVerdict? {
             // Client-only evidence is about the mod, not the build that produced it, so no other loader's
             // clean boot disproves it. An *unexplained* crash still is disprovable -- that guard is why
             // `iron-chests` stopped publishing off one bad build, and it stays.
@@ -444,12 +444,12 @@ class ClientsideVerifier(
          * `bootResult` and the crash excerpt are kept untouched: the server did crash, and that is worth
          * diagnosing even though it says nothing about which side the mod belongs on.
          */
-        internal fun supersededByLoader(
-            verdict: LoaderVerdict,
-            disproving: LoaderVerdict,
+        internal fun supersededByTarget(
+            verdict: GrindTargetVerdict,
+            disproving: GrindTargetVerdict,
             metadataOnly: VerdictAssessment,
             bootDetail: String?
-        ): LoaderVerdict {
+        ): GrindTargetVerdict {
             val metadataNote = metadataOnly.note
             val supersedes = "Crashed, but ${disproving.loader} booted a server with the same entry " +
                 "'${verdict.suggestedEntry?.trim()}' — the crash belongs to that build, not to the mod's sideness."

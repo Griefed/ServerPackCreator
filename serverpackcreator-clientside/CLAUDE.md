@@ -33,7 +33,7 @@ over `project.loaders`, each picking that loader's newest Minecraft.
 - **A file's *versions* are narrowed to the line, not just its files.** One published file is routinely
   tagged across lines, and `pickBootableCandidate` takes the newest version it is *shown*; handing it the
   whole set lets a 1.20 row boot at 1.21.
-- **`loaderDisprovingTheCrash` asks for another *row*, not another loader** (`other !== verdict`). Two rows
+- **`targetDisprovingTheCrash` asks for another *row*, not another loader** (`other !== verdict`). Two rows
   of one project now routinely share a loader and differ by era, and a clean 1.20 boot disproves a 1.21 crash
   for exactly the reason a clean NeoForge boot disproved a Forge one: they publish the same entry.
 - **`suggestedEntry` is deliberately still the stem over the *loader's whole history*.** `/as-properties`
@@ -79,7 +79,7 @@ over `project.loaders`, each picking that loader's newest Minecraft.
   files, one being the stray `CreativeCore-sources.jar`. That name shares no delimited prefix with the
   `CreativeCore_FABRIC_v*.jar` builds, so `FilenameStemDeriver` fell back to stripping the version off the
   *shortest* name and published `CreativeCore-sources` — an entry matching nothing the project ships. It
-  also cost the mod its cross-loader disproof: `loaderDisprovingTheCrash` compares entries, and that stem
+  also cost the mod its cross-loader disproof: `targetDisprovingTheCrash` compares entries, and that stem
   matched neither other loader's `CreativeCore_`, so a Fabric crash stood as HIGH while NeoForge had booted
   a server in the same run. **CurseForge has no equivalent flag** — its file list is plain uploads, so an
   author who publishes a source jar as a normal file there is still unfiltered; nothing has been seen doing
@@ -186,7 +186,7 @@ over `project.loaders`, each picking that loader's newest Minecraft.
   where the `CreativeCore_FABRIC_` stem above was confirmed. **Diversity is a preference, not a filter** — it
   relaxes to a new line, then a new loader, then whatever is left, so a project publishing one loader and one
   Minecraft line samples exactly as deeply as before; `aSingleMinecraftLineStillSpendsTheWholeBudget` pins that
-  direction. **Landmine — crossing the loader here is a wider claim than `loaderDisprovingTheCrash` permits**,
+  direction. **Landmine — crossing the loader here is a wider claim than `targetDisprovingTheCrash` permits**,
   and the difference is the gate: that pass applies to *any* crash, so it insists on a matching entry, while
   this sample is spent only where the crash already contradicts a declared server support, i.e. where one of
   the two signals is known to be wrong. Do not loosen one by pointing at the other. Two consequences worth
@@ -203,8 +203,8 @@ over `project.loaders`, each picking that loader's newest Minecraft.
   scan: a gate reading the platform alone never arms for a CurseForge mod, i.e. never for the report that
   prompted this. Conservative in every other direction, like the re-check below: crashes elsewhere
   corroborate, and an attempt that learned nothing leaves the crash standing.
-- **A crash cannot outrank another loader's clean boot** (`ClientsideVerifier.reconcileAcrossLoaders`, over the
-  pure `loaderDisprovingTheCrash` / `supersededByLoader`). `report()` runs a second pass once every loader is
+- **A crash cannot outrank another loader's clean boot** (`ClientsideVerifier.reconcileAcrossTargets`, over the
+  pure `targetDisprovingTheCrash` / `supersededByTarget`). `report()` runs a second pass once every loader is
   in: where one loader CRASHED and another SURVIVED deriving the **same** list-entry, the crash stops counting
   as sideness evidence and the confidence drops to what `aggregate` yields with no boot. **Why the entry and
   not the loader:** the published artefact is a loader-agnostic file-name stem matched with `startsWith`, so
@@ -220,8 +220,8 @@ over `project.loaders`, each picking that loader's newest Minecraft.
   **LANDMINE — `bootResult` alone is not enough; check *whose* boot it was.** Since the other-version re-check
   began spanning loaders, `reconcileOtherVersionRecheck` can decide one loader's verdict from another loader's
   clean boot, leaving `bootResult == SURVIVED` on a loader that crashed. `BootOutcome.bootedLoader` (stamped by
-  `runPrepared`, carried to `LoaderVerdict.bootedLoader`) records which loader actually ran, and
-  `loaderDisprovingTheCrash` requires `other.bootedLoader == other.loader`. **Since 2026-09-11 the *other*
+  `runPrepared`, carried to `GrindTargetVerdict.bootedLoader`) records which loader actually ran, and
+  `targetDisprovingTheCrash` requires `other.bootedLoader == other.loader`. **Since 2026-09-11 the *other*
   row it looks for is any other target (`other !== verdict`), not any other loader** — two rows of one
   project may share a loader and differ by Minecraft era. Without the `bootedLoader` check the guard fires on
   evidence it does not have: the build that booted belongs to a third loader whose stem may differ, so the
@@ -962,7 +962,7 @@ over `project.loaders`, each picking that loader's newest Minecraft.
     says what happens if you try. Exactly one retry fires, the loader one first, gated on the declared loader
     actually having a build for that Minecraft, and it stages into the **requested** loader's attempt
     directory so the borrowed loader keeps the pack and console its own verdict is built from.
-    `BootOutcome.bootedLoader` then differs from the verdict's loader, which `loaderDisprovingTheCrash`
+    `BootOutcome.bootedLoader` then differs from the verdict's loader, which `targetDisprovingTheCrash`
     already requires to match — so a re-selected boot cannot disprove another loader's crash.
   - **One mod id is served by an original and a cross-loader fork, and only one of them publishes for the
     boot.** `create` is `[forge, neoforge]`; the Fabric port is the separate project `create-fabric`; both
@@ -1164,8 +1164,8 @@ over `project.loaders`, each picking that loader's newest Minecraft.
   matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
   ServerStarterJar prints the refusal in full and exits 0.
 
-- **Two names for one project, and only one of them is publishable** (`LoaderVerdict.sampleFile`,
-  2026-09-04). Do not look for a `filenamePattern` or a `fileName` on `LoaderVerdict`: the former was
+- **Two names for one project, and only one of them is publishable** (`GrindTargetVerdict.sampleFile`,
+  2026-09-04). Do not look for a `filenamePattern` or a `fileName` on `GrindTargetVerdict`: the former was
   **deleted** on 2026-09-10 and the latter belongs to the grinder's `GrindVerdict`, which is fed from
   `sampleFile`.
   `suggestedEntry` is the longest common prefix over a project's *whole* history and must stay that way —
