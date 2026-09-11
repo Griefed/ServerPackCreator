@@ -76,7 +76,9 @@ class ContainerCandidateVerifier(
      * re-derived for the next. The daemon hands in a file-backed one ([JsonLearnedModIds]); the default
      * keeps a verifier constructed in a test free of a home directory.
      */
-    private val learnedModIds: LearnedModIds = LearnedModIds()
+    private val learnedModIds: LearnedModIds = LearnedModIds(),
+    /** Which Minecraft version-lines of a project are ground — one verdict each. */
+    private val minecraftLines: MinecraftLinePolicy = MinecraftLinePolicy()
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -260,7 +262,8 @@ class ContainerCandidateVerifier(
                             keepAttemptArtifacts(staged, outcome, crashLogs, keptLogNames)
                         }
                     )
-                }
+                },
+                linePolicy = minecraftLines
             ).report(candidate.projectUrl)
         }
     }

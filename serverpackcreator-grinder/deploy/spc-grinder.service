@@ -138,6 +138,18 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # re-derived by REVERIFY_TTL_DAYS. `0` restores the old write-through behaviour.
 #Environment=SPC_GRINDER_STORE_FLUSH_SECONDS=30
 
+# Which Minecraft version-lines each project is ground on -- one verdict per line, under a single modloader
+# (NeoForge, then Forge, Fabric, Quilt, LegacyFabric, whichever that line publishes for). This is the biggest
+# lever on what a sweep costs, because it multiplies the boots per project.
+#
+# LINES_NEWEST is however many of the project's own newest lines are always ground, so a new Minecraft
+# release needs no edit here. LINE_ANCHORS are older eras ground as well, when the project publishes for
+# them -- a comma-separated list, and blank means none. Measured over the 200 most-downloaded Modrinth mods
+# on 2026-09-11: the defaults below cost 3.83 boots per project, "2 + no anchors" costs 2.00, and every line
+# would cost 7.38. Whatever you pick, keep REVERIFY_TTL_DAYS longer than a full sweep takes.
+#Environment=SPC_GRINDER_MINECRAFT_LINES_NEWEST=2
+#Environment=SPC_GRINDER_MINECRAFT_LINE_ANCHORS=1.21,1.20,1.12
+
 # Freshness, in days. Raise REVERIFY_TTL_DAYS above the time a full sweep takes, or the crawl never
 # reaches the tail because the head keeps going stale.
 #Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=30
