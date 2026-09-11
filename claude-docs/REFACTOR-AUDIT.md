@@ -6064,3 +6064,28 @@ in the pin table above.
 **Suites after iteration 1:** api **421** (1 skipped), clientside **566**, grinder **514** (29 skipped),
 app **149**, plugin-grinder **73** — **1,723 tests, 0 failures**. Against the pre-iteration counts that is
 +8 in `-api` and +12 in `-clientside`.
+
+## 2026-09-11 — audit: iteration 2 (29 commits, `86d3d441b..claude-audit-unverifiable-i1`)
+
+Second pass, this time including iteration 1's own eight commits — auditing the fixes is the point of
+repeating. **Equivalence was re-run for iteration 1 first**, by the root `CLAUDE.md` recipe:
+`develop`'s unmodified test tree against iteration 1's production code, **api 413 base guards / 0 failures,
+clientside 554 / 0 failures, zero compile errors** — no signature moved and nothing regressed.
+
+### HIGH — none
+
+### MEDIUM
+
+| # | Commit | Where | Rule broken |
+|---|---|---|---|
+| I2-1 | `4d605add2` (iteration 1) | `serverpackcreator-clientside/CLAUDE.md:1101` | **The doc fix names a field that does not exist.** It says `LoaderVerdict.fileName`; `-clientside` has no such property. `ab188dff4` *deleted* `LoaderVerdict.filenamePattern` and re-purposed the pre-existing `sampleFile` to be the report column, and `fileName` is the **grinder's** `GrindVerdict.fileName`. Correcting a stale name with a second wrong one is worse than leaving it: the first at least pointed at something that had existed. |
+| I2-2 | `ab188dff4` | `serverpackcreator-clientside/src/test/.../FilenamePatternTest.kt:26,43,90` | **A whole test class documents a subject that no longer exists.** It opens *"Pins the filename pattern: the second, narrower entry derived from the one file actually sampled"* and closes with *"the two columns are deliberately different, and this is the pin that says so"* — but the column stopped being a derived entry on 2026-09-10 and now carries the artifact's name verbatim. Its assertions still hold, because they call `FilenameStemDeriver.deriveStem` directly and that function is unchanged; what is false is the role they claim to pin. Single-file `deriveStem` survives in exactly one place — `Prepared.Ready.candidateStem`, which tells the candidate's stack frames from a dependency's during blame attribution. Pass 1 missed this because the class greps as `pattern`, never as `filenamePattern`. |
+| I2-3 | `4e7087083` (iteration 1) | `serverpackcreator-clientside/src/test/.../LoaderReselectionTest.kt` | **The fix's own consequence is pinned only as data.** `aJarDisagreeingAboutBothRecordsBothChannels` asserts the two fields of one `Prepared.Failed`; nothing asserts what the commit message claims — that the *version* retry now fires when the loader retry cannot, and that the re-staged attempt gets past the descriptor gate. "A test that only asserts shape is not a pin." |
+| I2-4 | `ab188dff4` | `ClientsideVerifier.kt:168` | **Nobody asserts the producer.** Griefed's ask was that the field carry *the full filename as it appears on the platform*; the guards for it either **inject** the value (`FilenameColumnTest` builds `grindVerdict(…, fileName)` fixtures) or pin the *mapping* (`RecordedVerdictMappingTest`'s sentinel). Nothing holds `ClientsideVerifier` to setting `sampleFile` from `ModFile.fileName` verbatim — which is precisely the `DependencySlugTest` lesson this module already learned: a test constructing the value under test cannot see a producer constructing it wrongly. And the shape it would regress to is the one that was just removed, a `deriveStem` of the sampled file. |
+
+### LOW
+
+| # | Commit | Finding |
+|---|---|---|
+| I2-5 | `99fefabfe`, `8c9415d0e`, `4d605add2` | Commit shape in iteration 1: three unrelated defect pins in one `test(...)` commit, six guards across two modules in another, and one source-file newline riding along with a docs commit. Accepted rather than churned — the convention permits grouping *related* work and one audit pass is that, each fix commit names its own guard, and bisecting a single defect still lands on its own `fix:`. Recorded so the judgement is visible rather than implicit. |
+| I2-6 | `e775fbd42` (iteration 1) | **Verified and deliberately not changed.** A requirement satisfied by a nested jar of a *different* staged jar is still not dropped: `bundledIds` is scoped to the jar whose requirements are being read, and `provided` holds only top-level identities (`modID` + `provides`), never nested ids. The loader does load jar-in-jar libraries, so such a requirement *is* satisfied — but staging an explicit top-level build is not wrong, it is what the author's own declaration asks for, and second-guessing another jar's bundled version is what `DependencyBacktrack` exists for. Cost is one redundant download in a narrow shape. Left as is, with the reasoning recorded so it is not rediscovered as a defect. |

@@ -756,3 +756,45 @@ mutation reported the *wrong* failing test: a regex edit had left an orphaned `w
 never compiled, and the parser happily read the **previous** run's `test-results` XML. A mutation check that
 cannot compile says nothing, and its output looks exactly like a result. Clear `build/test-results` before a
 mutation run, and treat "no results" as a distinct outcome from "zero red".
+
+## 2026-09-11 — test depth & coverage: iteration 2
+
+Suites entering iteration 2: api **421** (1 skipped), clientside **566**, grinder **514** (29 skipped),
+app **149**, plugin-grinder **73** — 1,723 tests, 0 failures. Equivalence for iteration 1's production code
+against `develop`'s unmodified test tree: **api 413 / 0, clientside 554 / 0, no compile errors.**
+
+### MEDIUM
+
+| # | Where | Finding |
+|---|---|---|
+| B-1 | `FilenamePatternTest` (whole class) | Six guards whose **stated subject no longer exists** — the "narrower entry derived from the sampled file" became the file's verbatim name on 2026-09-10. They still pass because they call `FilenameStemDeriver.deriveStem` directly, so what has rotted is the *why*, not the *what*: single-file `deriveStem` is now load-bearing only for `Prepared.Ready.candidateStem`, i.e. telling the candidate's stack frames from a dependency's when a crash is blamed. A reader looking for the guard on the Filename column lands here and learns the wrong thing about what that column holds. |
+| B-2 | `ClientsideVerifier.kt:168` | The **producer** of that column is unguarded. Every existing assertion about it either injects the value into a fixture or pins the mapping one layer downstream, which is the arrangement `DependencySlugTest` exists to warn about. The regression it cannot see is the exact code that was removed: re-deriving a stem from the sampled file. |
+| B-3 | `LoaderReselectionTest` | Iteration 1's retry-order fix is asserted as **data** (two fields of one refusal) and not as **behaviour** (the version retry firing when the loader retry cannot, and the re-staged attempt clearing the descriptor gate). |
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| B-4 | `serverpackcreator-clientside/CLAUDE.md:1101` | Iteration 1's own doc fix names `LoaderVerdict.fileName`, a property that does not exist — see `REFACTOR-AUDIT` I2-1. |
+
+### Verified clean — do not re-litigate
+
+- **Iteration 1's three production changes are equivalent to `develop` for every pre-existing guard**
+  (413 + 554, zero failures, zero compile errors), so none of them moved a signature or a behaviour the old
+  tree could see. The behaviour each one *did* change is covered by its own new guard.
+- **`unresolvablePins` cannot grow without bound**: it is per platform instance, and a platform instance is
+  built per candidate, so its ceiling is the distinct `version_id`s pinned by one project's version list.
+- **`fromCurseForge`, `loaderToVerifyUnder` and the channel-inside-the-gate ordering are now all
+  mutation-verified** (iteration 1's resolution section lists which mutation kills which guard).
+
+### Suggested tests (specific)
+
+1. Rename `FilenamePatternTest` to what it pins — single-file stem derivation, as used by `candidateStem` —
+   and correct its doc; keep every assertion (closes B-1 without losing coverage).
+2. A `-clientside` guard that `LoaderVerdict.sampleFile` is the sampled `ModFile.fileName` **verbatim**,
+   extension and all, driven through the real `ClientsideVerifier` rather than a constructed verdict
+   (closes B-2; fails if anyone re-derives a stem there).
+3. `LoaderReselectionTest.theVersionRetryFiresWhenTheLoaderRetryCannot` — a `mods.toml`-only jar requested
+   as NeoForge at a version ≥1.20.5 whose own range accepts an older release, with Forge withheld so the
+   loader retry cannot fire; assert two staging attempts, both NeoForge, and that the second clears the
+   descriptor gate because `mods.toml` names NeoForge below 1.20.5 (closes B-3).
