@@ -4267,3 +4267,36 @@ commit's two). It was written from memory instead of from
 *"cite names, not snapshots"* convention exists to prevent, in the one place the convention says a number may
 appear. Recorded rather than rewritten because the branch is local and the message is otherwise accurate —
 re-derive counts, never quote them from recall.
+
+### Equivalence against `develop`, measured
+
+Per this repository's convention, `develop`'s **unmodified** test tree was run against the branch's
+production code in a detached worktree. A deliberate behaviour change cannot come out green, so the value is
+the enumeration.
+
+**Two signature changes, and nothing else fails to compile**, across 20 files:
+
+- `AttemptDirectory.nameFor` gained `minecraftLine` — 18 files, every one of them building a staging path.
+- `BootLogStore.namesFor` / `pruneExcept` gained `minecraftLine` — 2 files.
+
+Adapted by adding that one argument and **editing no assertion**, `develop`'s guards then ran:
+**clientside 568, 1 failed; grinder 516, 7 failed** (29 gated ITs skipped). All eight are the deliberate
+change, and each is restated on the branch rather than deleted:
+
+| Guard | Why it moved |
+|---|---|
+| `aCrashIsReCheckedOnAnotherLoaderRatherThanTwiceOnItsOwn` | the re-check spends its first attempt on the crashing era's other loader |
+| `adoptingTheLegacyCrashLogsMovesThemOnceAndIsIdempotent` | an adopted console records no Minecraft version and is reachable from no row |
+| `emitsHeaderAndOrdersConfirmationsFirst`, `emptyVerdictsStillEmitTheHeader`, `servesTheHtmlTableAndTheCsvExport`, `everyColumnRendersTheValueItsHeaderNames` | the `Minecraft` / `MinecraftVersion` columns |
+| `sortsTheTableByHowManyLogsEachRowHas`, `onlyARowWithKeptLogsGetsLinks` | a row's logs are addressed by a four-part owner |
+
+**What did *not* fail is the more interesting half.** `GrinderTest.recordsOneVerdictPerLoaderFromTheReport`
+and `VerdictStoreTest.distinctLoadersOfOneProjectCoexist` both pass — because `develop`'s fixtures build
+verdicts with no Minecraft line, which is exactly what a row written by an older build looks like, and those
+still key on the loader. The legacy path is therefore exercised by 1,084 guards that know nothing about it.
+
+**Still outstanding, and it needs a host this session did not have:** the end-to-end run against Docker with
+`CURSEFORGE_API_KEY` — `./gradlew :serverpackcreator-grinder:installDist` (it is *not* rebuilt by `test`)
+then a one-shot grind of `https://www.curseforge.com/minecraft/mc-mods/aether`, expecting a `1.12 / Forge`
+row with no dependency staged, `1.20 / NeoForge`, `1.21 / NeoForge` staging `curios`, and every row's
+`Filename` matching the artifact its `Detail` describes.
