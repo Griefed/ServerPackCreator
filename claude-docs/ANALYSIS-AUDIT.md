@@ -806,3 +806,28 @@ B-3, because it inverted a finding: the behavioural guard demanded by the analys
 that was already supposed to be fixed**, which is how iteration 1's M-4 was exposed as a false finding. A
 guard that asserts shape can be green and prove nothing; a guard that asserts the consequence can be red and
 prove the *finding* wrong. Both directions are worth having, and only the second one catches a bad diagnosis.
+
+## 2026-09-11 — test depth & coverage: iteration 3
+
+Suites entering iteration 3: api **421**, clientside **568**, grinder **514**, app **149**,
+plugin-grinder **73**.
+
+The third pass deliberately looked where the first two had not: at the **consumers** of the value the range
+changed from a derived stem to a verbatim, author-controlled filename, and at the seam the cross-platform
+fallback is wired through. Both came back clean, and the reasoning is recorded in `REFACTOR-AUDIT.md`'s
+iteration-3 "verified clean" list so a fourth pass does not re-derive it: HTML/CSV/JSON escaping, path
+traversal on `/boot-log`, the `!==` identity the alternate-platform filter depends on, and the exclusion set
+crossing platforms.
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| C-1 | `VerdictReportRenderer.kt:200` | The Project cell's `href` takes any scheme. Escaping stops markup, not `javascript:`. Not attacker-reachable today (operator-queued URLs and CurseForge's own `websiteUrl`), and the server is loopback by default — but it is one `SPC_GRINDER_HOST` away from being served, so the cheap allowlist is worth having. Needs a guard asserting an untrusted scheme renders as text. |
+| C-2 | `ClientsideVerifier.kt:245` | An unnecessary safe call on a smart-cast non-null receiver — a compiler warning in a file this range touched. |
+
+### Suggested tests (specific)
+
+1. `VerdictReportRendererTest.aProjectUrlWithAnUntrustedSchemeIsNotLinked` — a verdict whose `projectUrl` is
+   `javascript:alert(1)` renders as escaped text with no `<a href`, while an `https://` one still renders as
+   a link (closes C-1).

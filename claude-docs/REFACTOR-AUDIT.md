@@ -6114,3 +6114,45 @@ changing — it cannot tell you the line matters.
 
 **Suites after iteration 2:** api **421**, clientside **568**, grinder **514**. Equivalence for iteration 1
 re-confirmed at the top of this section.
+
+## 2026-09-11 — audit: iteration 3 (33 commits, `86d3d441b..claude-audit-unverifiable-i1`)
+
+Third pass, over ground the first two did not cover: the **consumers** of the field the range made verbatim,
+the seam the cross-platform fallback is wired through, and the one convention item neither earlier pass had
+actually checked — "no new compiler warnings".
+
+### HIGH — none. MEDIUM — none.
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| I3-1 | `VerdictReportRenderer.kt:200` | The Project cell builds `<a href="${esc(verdict.projectUrl)}">` with **no scheme allowlist**. HTML-escaping a URL does not stop `javascript:` from being a working href, and the report server carries no authentication and can be bound off loopback with `SPC_GRINDER_HOST`. The string is not attacker-supplied today — it is either the URL an operator queued or CurseForge's own `links.websiteUrl` — so this is a hardening fix, not a live hole. |
+| I3-2 | `ClientsideVerifier.kt:245` | `outcome.decidedBy?.ruleId` inside `if (outcome.decidedBy == BootDecision.OPERATOR_RULE)`, where it is already smart-cast non-null — a compiler warning. **Pre-existing** (introduced by "credit the deciding rule, not one that merely matched alongside", outside this range) but in a file `ab188dff4` touched, so Boy-Scout applies. |
+
+### Verified clean — do not re-litigate
+
+- **No new compiler warnings.** Every warning the five touched compile tasks emit predates `86d3d441b`:
+  deprecated nightconfig `valueMap()` in `ForgeTomlScanner`/`PackConfig`, deprecated `Locale` constructors in
+  `I18nConfig`, deprecated Jackson URL overloads, and two safe-call warnings in
+  `ClientLibraryEvidenceTest` — none of those files are in the range's diff. The one warning in a file the
+  range *did* touch (I3-2) is traceable to a commit from 2026-09-05.
+- **Making the Filename column verbatim introduced no injection exposure**, which is the question an
+  author-controlled string reaching three renderers has to answer: the HTML table escapes `& < > " '` and
+  routes **every** cell through `esc()`, the CSV exporter is RFC-4180 (quotes a field containing a comma,
+  quote, CR or LF and doubles embedded quotes), and `/verdicts.json` goes through Jackson. The value was
+  author-controlled before the change too — a stem of an author's filename — so the exposure did not widen.
+- **`/boot-log?name=` cannot escape the store.** `BootLogStore.read` resolves the name against the store
+  directory and refuses anything `isInsideStore` rejects, logging the refusal.
+- **The `!==` filter the cross-platform fallback relies on holds.** `ClientsideVerifier` picks
+  `platforms.firstOrNull { it.handles(projectUrl) }` and passes **that instance** to `bootVerifierFactory`,
+  so `platforms.filter { it !== platform }` at both call sites really does exclude the candidate's own
+  platform. Reference equality across a module seam is worth checking rather than assuming; it is correct
+  here.
+- **Carrying the backtrack's exclusions across platforms is right, not a leak.** `excluded` holds *file
+  names* and `withoutExcluded` filters on them; a mod jar has the same name on both platforms, so a build
+  ruled out for conflicting is ruled out wherever it is served from.
+- **`ModFile.channel` was appended last**, so every positional construction in the test trees keeps its
+  meaning — and `-clientside` is unpublished anyway.
+- **`GrindTestFixtures` gained a defaulted parameter only**, so no existing grinder guard changed meaning;
+  and the `FILENAME` column kept its `FilterKind.TEXT` and its accessor shape across the rename.
