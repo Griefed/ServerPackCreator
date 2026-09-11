@@ -9,9 +9,52 @@
 ## What it does
 
 Given a Modrinth/CurseForge project-link: pick the platform, resolve the project's files, derive the
-clientside-list file-name stem(s), and combine signals into a per-loader `Verdict`. Driven by the
+clientside-list file-name stem(s), and combine signals into one `Verdict` **per Minecraft version-line** —
+see *The grind axis* below; it was per *loader* until 2026-09-11. Driven by the
 app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clientsideapply`) and the
 `clientside-*.yml` workflows — see `serverpackcreator-app/CLAUDE.md` for the verb wiring and CI.
+
+## The grind axis is the Minecraft version-line (2026-09-11)
+
+`ClientsideVerifier.report` asks `BootCandidateSelector.pickGrindTargets` for one `GrindTarget` per Minecraft
+version-line `MinecraftLinePolicy` selects, each under the first of `LOADER_PRIORITY`
+(`NeoForge, Forge, Fabric, Quilt, LegacyFabric`) that line publishes a bootable build for. It used to map
+over `project.loaders`, each picking that loader's newest Minecraft.
+
+**Why:** sideness is a property of a *build*. Measured over the 200 most-downloaded Modrinth mods on
+2026-09-11, the loader axis spent 3.06 boots per project covering a mean of **1.6** distinct lines, and
+`CurseForge/aether`'s 1.12.2 build — a wholly separate codebase — was never booted under any loader.
+
+- **`pickGrindTargets` runs the priority order twice, and the second pass is load-bearing.** An untagged file
+  (CurseForge published no modloader facet before Minecraft 1.13) matches *every* loader, so a single pass
+  would hand one to NeoForge while Forge had a file its author tagged — a jar staged for a loader that will
+  ignore it, which can boot cleanly and publish a false `CLEAR`. Hence `pickBootableCandidate`'s
+  `untaggedFallback` switch: off for the first pass, on for the second.
+- **A file's *versions* are narrowed to the line, not just its files.** One published file is routinely
+  tagged across lines, and `pickBootableCandidate` takes the newest version it is *shown*; handing it the
+  whole set lets a 1.20 row boot at 1.21.
+- **`loaderDisprovingTheCrash` asks for another *row*, not another loader** (`other !== verdict`). Two rows
+  of one project now routinely share a loader and differ by era, and a clean 1.20 boot disproves a 1.21 crash
+  for exactly the reason a clean NeoForge boot disproved a Forge one: they publish the same entry.
+- **`suggestedEntry` is deliberately still the stem over the *loader's whole history*.** `/as-properties`
+  matches it with `startsWith`, so narrowing it to one era would publish a pattern missing every build it was
+  never shown — and it is what makes the cross-row disproof above reachable at all.
+- **LANDMINE — `AttemptDirectory` is now `<platform>-<slug>-<loader>-<line>` and `ownerOf` cuts TWO parts.**
+  One loader wins several lines, so the three-part name had the second target wipe the first's pack and
+  console mid-run. Keep `nameFor`'s part count and `SUFFIX_PARTS` in lockstep.
+- **The crash guard the axis owed.** A project used to be ground under every loader, so a wrong crash met a
+  sibling loader's clean boot *in the same run* and was thrown out for free (`iron-chests`). Two halves
+  replace that: `shouldRecheckAgainstOtherVersions` also arms on a **decisive** crash — one about to reach
+  `CONFIRMED`, which in practice means `OPERATOR_RULE`, the one decisive signal nothing else cross-checks —
+  and `pickRecheckCandidates` spends its **first** attempt on the crashing era's other loader, because every
+  *other* line is already a first-class verdict the report reconciles against for free. That is also a
+  straight improvement to the `creativecore` case the diversity ladder was written for: the first pick is now
+  NeoForge / 26.2, the very boot that contradicted the crash, instead of two Fabric neighbours that learned
+  nothing.
+- **`BootVerifier` has two entry points.** `verify(project, target, …)` boots the combination the caller
+  chose and never re-selects — re-selecting would answer a crash on one era with a boot on another —
+  while `verify(project, loader, …)` keeps the old select-it-yourself behaviour. `bootableCombination()` is
+  public so the *caller* selects with the same gate the boot applies, rather than a second copy of it.
 
 ## Engine details & landmines (durable)
 
@@ -178,7 +221,9 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   began spanning loaders, `reconcileOtherVersionRecheck` can decide one loader's verdict from another loader's
   clean boot, leaving `bootResult == SURVIVED` on a loader that crashed. `BootOutcome.bootedLoader` (stamped by
   `runPrepared`, carried to `LoaderVerdict.bootedLoader`) records which loader actually ran, and
-  `loaderDisprovingTheCrash` requires `other.bootedLoader == other.loader`. Without it the guard fires on
+  `loaderDisprovingTheCrash` requires `other.bootedLoader == other.loader`. **Since 2026-09-11 the *other*
+  row it looks for is any other target (`other !== verdict`), not any other loader** — two rows of one
+  project may share a loader and differ by Minecraft era. Without the `bootedLoader` check the guard fires on
   evidence it does not have: the build that booted belongs to a third loader whose stem may differ, so the
   published entry would strip nothing proven bootable — `embeddium-` (Forge/NeoForge) versus `sodium-fabric-`
   is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems` documents — and the note would
@@ -189,13 +234,14 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   **The crash is not erased:** `bootResult` and the excerpt stay, because the server did crash and that is
   worth diagnosing; only its *standing* changes. The note is **rebuilt**, not appended to — its old text ended
   in "a strong clientside signal", and bolting a correction onto a false sentence is how prose goes stale.
-- **The two crash guards layer, and both cost.** The within-loader other-version re-check runs *during* the
-  crashing loader's own boot; cross-loader reconciliation runs after every loader is in. So a crash on a
-  project whose other loader survives still pays the two extra boots first — loaders are assessed in sorted
-  order (`Fabric, Forge, NeoForge, Quilt`), and nothing looks ahead. Deliberate: the extra boots also produce
-  the *within*-loader answer, which is the more specific one.
-- **LANDMINE — a slug is not an identity; scratch space is owned by `(platform, slug, loader)`.**
-  `AttemptDirectory` (this module) builds `<platform>-<slug>-<loader>` and reads it back to its owner, and
+- **The two crash guards layer, and both cost.** The other-version re-check runs *during* the crashing
+  target's own boot; cross-row reconciliation runs after every target is in. So a crash on a project whose
+  other row survives still pays the extra boot first — targets are assessed newest-Minecraft-line first, and
+  nothing looks ahead. Deliberate: the extra boot also produces the *within*-era answer, which is the more
+  specific one, and since 2026-09-11 it is spent on the crashing era's sibling loader, which nothing else
+  boots.
+- **LANDMINE — a slug is not an identity; scratch space is owned by `(platform, slug, loader, Minecraft line)`.**
+  `AttemptDirectory` (this module) builds `<platform>-<slug>-<loader>-<line>` and reads it back to its owner, and
   **both halves live there because three callers must agree**: `ClientsideVerifier` (jar-scan downloads),
   `BootVerifier` (staged packs) and the grinder's `BootWorkspaceReaper`, which decides what to *delete* from
   the name alone. They used to agree only by separate string literals happening to match. **Why the
@@ -208,9 +254,11 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   Fabric boot exited **127** (a shell that could not find the command it was given, because the pack had
   gone), and two re-checks came back INCONCLUSIVE on a file the other run had booted to a ready-line minutes
   earlier. Every one of those is a boot scored as evidence about a mod when it was evidence about a deleted
-  directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
-  slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
-  before this change match no owner and are cleared by the grinder's startup `reapAll()`.
+  directory, and a crash is the one outcome that reaches HIGH. Cut exactly `SUFFIX_PARTS` trailing segments
+  when parsing — slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`.
+  **Since 2026-09-11 the line is part of the name and `SUFFIX_PARTS` is two**, because one loader now wins
+  several of a project's Minecraft lines and the three-part name let the second wipe the first. Directories
+  staged before a naming change match no owner and are cleared by the grinder's startup `reapAll()`.
 - **Every rung names itself, and only two are decisive** (`BootDecision`). `CRASHED` is reachable from
   `clientOnlyClassMarker`, which no broken harness can fabricate, *and* from the bare exit-code rung, which
   means only "exited non-zero, nothing recognised why" — and afterwards the two were indistinguishable, so the

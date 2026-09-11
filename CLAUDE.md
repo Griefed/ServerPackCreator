@@ -317,12 +317,12 @@ evidence consulted occasionally, not context every session needs.
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
 | api            | 421 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 568           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| clientside     | 603           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 149           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
-| plugin-grinder | 73            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
+| plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | web-frontend   | 32 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 516 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 529 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -362,3 +362,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.
+- **An axis chosen for how work is *produced* asks the same question repeatedly and never asks the others.**
+  The grinder ground a mod once per modloader because that is how a boot is parameterised — and spent 3.06
+  boots per project on a mean of 1.6 distinct Minecraft eras, never booting `aether`'s 1.12.2 build at all.
+  The axis worth keying on is the one along which the *answer* varies.
+- **A report row that names a thing it did not use cannot be audited, and reads as a different bug.** The
+  aether row named `aether-1.12.2-v1.5.4.1.jar` while its dependency failure belonged to the 1.20.1 jar
+  staging had actually selected; checked against the platform page, that reads as broken dependency
+  resolution rather than as broken attribution. Two selections for one row is the defect — make one.
+- **Changing a key's shape is not the same as changing its value, and a one-hop migration does not
+  generalise.** `supersededLegacyKey` computes the superseded key from fields the new row still carries,
+  which works when the mapping is one-to-one and cannot work when several rows collapse into one. Removal by
+  *prefix* is the shape that generalises, and it is why a key component worth migrating past needs a marker
+  in it.

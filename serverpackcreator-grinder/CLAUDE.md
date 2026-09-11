@@ -48,10 +48,12 @@ file small enough to stay useful. Read the one for the subsystem you are touchin
 
 - **Orchestration** (`Grinder`, `GrindPool`, `VerdictStore`, `VerdictCsvExporter`): `Grinder.grind`
   verifies one candidate (skipping already-ground projects, *swallowing* a thrown boot so a bad mod
-  can't sink a worker) via the `CandidateVerifier` seam and records one `GrindVerdict` per loader.
+  can't sink a worker) via the `CandidateVerifier` seam and records one `GrindVerdict` per **Minecraft
+  version-line** — see the axis entry below.
   `GrindPool.grindAll` drains a **popularity-ranked** batch across N worker threads (N ≈ host-RAM /
   per-boot-memory — each in-flight grind holds a booting container). `VerdictStore` (in-memory default)
-  accumulates, keyed by `slug+loader` (re-verify replaces, not duplicates); `VerdictCsvExporter`
+  accumulates, keyed by `platform + project + Minecraft version-line` (re-verify replaces, not duplicates);
+  `VerdictCsvExporter`
   renders RFC-4180 CSV (`Name, Project, NamePattern, Confidence, Loader, Detail`, highest-confidence
   first). **`CandidateVerifier` is the seam that collapses the integration-bound boot pipeline**, so
   the whole orchestration is unit-tested with fakes.
@@ -91,6 +93,48 @@ file small enough to stay useful. Read the one for the subsystem you are touchin
   file logged and treated as empty. **Pure cache — deleting it costs downloads, never correctness**, which
   is also why `--clear` taking it with the rest of the home is harmless. Written only when something is
   genuinely *new*, because every staged dependency re-declares its own id on every candidate that uses it.
+
+## The grind axis is the Minecraft version-line (2026-09-11)
+
+**A project is ground once per Minecraft version-line, under exactly one modloader** — the first of
+`BootCandidateSelector.LOADER_PRIORITY` (`NeoForge, Forge, Fabric, Quilt, LegacyFabric`) that line publishes
+a build for. It used to be once per *loader*, each picking that loader's newest Minecraft.
+
+**Why:** sideness is a property of a build, and builds differ far more across Minecraft eras than across
+loaders of one era. Measured over the 200 most-downloaded Modrinth mods on 2026-09-11: 3.06 boots per project
+covering a mean of **1.6** distinct lines. `CurseForge/aether` cost three boots — Fabric and NeoForge both on
+1.21.1, Forge on 1.20.1 — while its 1.12.2 build, a wholly separate codebase, was never booted under any
+loader. It is now `1.21/NeoForge`, `1.20/NeoForge`, `1.12/Forge`.
+
+- **Which lines** is `MinecraftLinePolicy` (`-clientside`): the project's newest N ∪ an operator anchor list,
+  wired from `SPC_GRINDER_MINECRAFT_LINES_NEWEST` / `SPC_GRINDER_MINECRAFT_LINE_ANCHORS`. Defaults cost
+  **1.25x** the old axis; "every line" would be 2.41x, which breaks the rule that
+  `SPC_GRINDER_REVERIFY_TTL_DAYS` must outlast a sweep. **A project always gets at least its newest line** —
+  a candidate recording *no* verdict is indistinguishable from one the engine failed on, so the freshness
+  check would re-select it every sweep for ever.
+- **LANDMINE — the loader is no longer a row's identity, and the scratch directory knows it.**
+  `AttemptDirectory.nameFor` is `<platform>-<slug>-<loader>-<line>` and `ownerOf` cuts **two** trailing
+  parts. One loader routinely wins two lines (NeoForge on 1.21 and 1.20), so the three-part name would have
+  the second target wipe the first's pack and console mid-run — the `creativecore` failure exactly. Keep
+  `nameFor`'s part count and `ownerOf`'s `SUFFIX_PARTS` in lockstep or the reaper silently re-scopes.
+- **LANDMINE — every boot log written before 2026-09-11 carries the old three-part owner** and is therefore
+  unreachable from any row; `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` is what reclaims it. A console adopted by
+  `adoptLegacy` records no Minecraft version anywhere, so it is attributable to no line at all — pinned as
+  such, deliberately, because inventing one would file real evidence under an era it may not be about.
+- **The store migrates per project as it is re-ground** (`supersededLoaderKeys`). `supersededLegacyKey` could
+  not be extended: it computes the superseded key from fields the *new* verdict still carries, which works
+  for the one-to-one `slug:`→`id:` hop and cannot work here, because several loader rows collapse into one
+  line row and the line row can name only the loader it picked. Hence removal by **prefix**, and hence the
+  `mc:` marker in the key. Never sweep on any other trigger: the deployed store holds tens of thousands of
+  loader-keyed rows and they must not go before a replacement exists.
+- **`suggestedEntry` is deliberately still the loader's whole history**, not the line's. `/as-properties`
+  matches it with `startsWith`, so narrowing it to one era would publish a pattern missing the builds it was
+  never shown — and it is also what lets two lines of one loader disprove each other's crash, since
+  `ClientsideVerifier.loaderDisprovingTheCrash` compares entries.
+- **The crash guard the axis owed** is in `-clientside`: a *decisive* crash now re-checks even when the
+  metadata agrees with it, and `pickRecheckCandidates` spends its first attempt on the crashing era's **other
+  loader** — the boot that used to disprove a wrong crash for free when every loader was ground. Detail in
+  `serverpackcreator-clientside/CLAUDE.md`.
 
 ## Cross-cutting landmines (do not let these load lazily)
 

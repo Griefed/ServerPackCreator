@@ -4198,3 +4198,72 @@ attributed to a measured cause. The module's own `CLAUDE.md` carries the six fix
   NeoForge jars. Third instance of this exact shape after `MetadataScanner`/`ModListCompiler` and the two
   `Quilt to Fabric` maps. **The fix is always to delete the duplicate, never to correct it**, and the
   question to ask of any new lookup table is which existing one already answers it.
+
+---
+
+## 2026-09-11 — the grind axis moves from the modloader to the Minecraft version-line
+
+**The report that started it** named two things: *"we only really need to check one instance of a given mod"*,
+with the loader priority NeoForge → Forge → Fabric → Quilt and separate checks per major Minecraft version;
+and a specific row — `CurseForge/aether`, `aether-1.12.2-v1.5.4.1.jar`, Forge — carrying a
+`DEPENDENCY_FAILURE` for `curios-forge` against a build that has no dependencies at all.
+
+**The second half was diagnosed before anything was changed, against the live CurseForge API**, and it was
+not what the row said it was:
+
+- `aether-1.20.1-1.5.2-neoforge.jar` is tagged `['NeoForge', '1.20.1', 'Forge']` — one file, two loaders —
+  and `pickBootableCandidate` orders newest-Minecraft-first inside a release channel, so the **Forge** grind
+  staged *that* jar. Its `META-INF/mods.toml` declares `modId = "curios"`, `mandatory = true`,
+  `versionRange = "[5.3.1+1.20.1,)"`, which is where `curios-forge-<v>+1.20.1.jar` came from and what
+  `DependencyAttribution` blamed.
+- `aether-1.12.2-v1.5.4.1.jar` was re-uploaded in 2025, making it the newest-*uploaded* Forge-tagged file —
+  which is what `loaderFiles.firstOrNull()` returned. Downloaded and opened: its `mcmod.info` declares
+  `"dependencies": []`, and CurseForge lists `curios` against it only as relationType `1`
+  (`EmbeddedLibrary`), which `CurseForgePlatform` correctly ignores.
+
+So the dependency resolution was right about the file it ran, and the row named a different file. **Two
+selections for one row** — one for the jar scan and the report, one for the boot — and the fix is to make
+one. Shipped first, on its own, because it is a defect independent of the axis.
+
+**The axis itself was costed before it was designed.** Over the 200 most-downloaded Modrinth mods,
+2026-09-11: 3.06 boots per project under the loader axis, covering a mean of **1.6** distinct Minecraft
+lines. Uncapped per-line grinding would be 7.38 boots per project (2.41x), which breaks the rule that
+`SPC_GRINDER_REVERIFY_TTL_DAYS` must outlast a sweep; newest-2 plus the anchors `1.21,1.20,1.12` is 3.83
+(1.25x) and is what ships. That table is in `serverpackcreator-grinder/README.md` §5 beside the knobs,
+because the number an operator needs is the one that decides their TTL.
+
+**Three things the design had to buy back**, each of which the loader axis had been providing for free:
+
+1. **Scratch-space isolation.** One loader now wins several of a project's lines, so
+   `<platform>-<slug>-<loader>` had the second target wipe the first's pack mid-run — the `creativecore`
+   failure exactly. `AttemptDirectory` gained the line and `ownerOf` cuts two parts.
+2. **The cross-loader crash disproof.** `iron-chests` published a wrong `HIGH` until a sibling loader's clean
+   boot in the same run threw it out; that sibling is no longer booted unless something asks. Two halves ask:
+   `shouldRecheckAgainstOtherVersions` also arms on a *decisive* crash (one about to publish), and
+   `pickRecheckCandidates` spends its **first** attempt on the crashing era's other loader. That is also a
+   straight improvement to `creativecore`, whose diverse sample reached NeoForge two eras away when the boot
+   that actually contradicted the crash was NeoForge on the crashing version.
+3. **A row identity the store agrees with.** The axis change alone left `verdictKey` built from the loader,
+   so `aether`'s two NeoForge rows collided and one overwrote the other — caught by a pin written
+   deliberately red before the fix.
+
+**What generalises** (the root `CLAUDE.md` carries the short forms):
+
+- **An axis chosen for how the work is *produced* asks one question repeatedly and never asks the others.**
+  A boot is parameterised by a loader, so the grind was keyed on one — and the answer varies by *era*.
+- **A one-hop key migration does not generalise to a many-to-one one.** `supersededLegacyKey` computes the
+  superseded key from fields the new row still carries; three loader rows collapsing into one line row leaves
+  nothing to compute from. Removal by **prefix** is the shape that works, which is why the key carries an
+  `mc:` marker at all.
+- **Evidence keyed by a name outlives neither a rename nor a re-key.** Every boot log written before this
+  carries the old three-part owner and is now reachable from no row; the log budget reclaims it. A console
+  `adoptLegacy` moved records no Minecraft version anywhere, so it is attributable to no line — pinned as
+  such rather than filed under a guessed era.
+
+**A number in a commit message here was wrong.** `fix(clientside): re-check a publishable crash…` states
+"Clientside suite: 610 tests"; the measured figure is **603** (`601` after the axis commit, plus that
+commit's two). It was written from memory instead of from
+`serverpackcreator-clientside/build/test-results/test/*.xml`, which is the exact failure this repository's
+*"cite names, not snapshots"* convention exists to prevent, in the one place the convention says a number may
+appear. Recorded rather than rewritten because the branch is local and the message is otherwise accurate —
+re-derive counts, never quote them from recall.

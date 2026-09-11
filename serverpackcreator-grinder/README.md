@@ -92,7 +92,8 @@ Best first run: it proves your Docker setup end-to-end in a few minutes.
 ./gradlew :serverpackcreator-grinder:run --args="https://modrinth.com/mod/modmenu"
 ```
 
-Pass any number of project URLs. The grinder resolves each, boots it per modloader, records verdicts, then
+Pass any number of project URLs. The grinder resolves each, boots it once per Minecraft version-line (see
+§5, *What gets ground*), records verdicts, then
 **keeps the report server up** until you Ctrl-C.
 
 ---
@@ -526,13 +527,18 @@ on <file>` means other versions crashed too, `but <file> booted cleanly` means t
 no longer a crash, and `no other version … to re-check against` means the mod publishes only the one version,
 so the sample behind the verdict is a single build.
 
-**A crash is also weighed against the project's other loaders.** What this list publishes is a file-name stem
+**A crash is also weighed against the project's other rows.** What this list publishes is a file-name stem
 matched with `startsWith`, and that stem is loader-agnostic — so if one loader crashed while another booted a
 server under the *same* stem, publishing the crash would strip a build that demonstrably works. Such a verdict
 keeps its boot result but not its confidence, and its detail ends in `booted a server with the same entry`.
-A crash whose stem is unique to its loader is unaffected: sideness can genuinely differ per loader.
+A crash whose stem is unique to its row is unaffected: sideness can genuinely differ per loader. And because
+a project is ground once per Minecraft version-line, "another row" is usually another **era** — a clean boot
+on 1.20 disproves a 1.21 crash publishing the same stem, for exactly the same reason a clean NeoForge boot
+disproves a Forge one.
 
-The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
+The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + project + Minecraft version-line — the
+loader is recorded but is not the row's identity, since one loader routinely holds several of a project's
+rows. The same slug on
 Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
 one entry per platform with the next `offset`, the number of completed `sweeps`, and — for CurseForge — the
 `partition` being walked (`gameVersion|modLoaderType|direction`, `*` meaning "no filter"). Read it to tell
@@ -676,7 +682,7 @@ Lines worth grepping for:
 
 | Pattern | Means |
 |---|---|
-| `Grinding ` / `Done .*→` | candidate started / finished, with its per-loader verdicts |
+| `Grinding ` / `Done .*→` | candidate started / finished, with one verdict per Minecraft line (`1.21/NeoForge=CLEAR`) |
 | `Reusing cached` | an installed loader build was reused instead of installing a newer one |
 | `not the newest build` | a crash is being re-checked on the newest loader before it counts |
 | `although the metadata declares` | a crash contradicts the mod's claimed server support; other versions of the mod are being booted to settle it |
@@ -695,7 +701,7 @@ Each boot streams the server's console into its attempt directory **as it happen
 followed:
 
 ```bash
-tail -f ~/.spc-grinder/work/verify/boot/<slug>-<Loader>/boot.log
+tail -f ~/.spc-grinder/work/verify/boot/<Platform>-<slug>-<Loader>-<MinecraftLine>/boot.log
 ```
 
 The loader install — the slow part on a cold cache, minutes of library downloads — streams the same way into the
@@ -707,7 +713,8 @@ tail -f ~/.spc-grinder/cache/<minecraft>/<loader>/<version>/.spc-install.log
 
 Both survive a killed boot, which is the point: output is written as it arrives rather than at the end. Once a
 boot finishes, `boot.log` is rewritten with the authoritative console. The attempt directory is reused per
-`(slug, loader)` and wiped at the start of each new attempt, so copy anything you want to keep.
+`(platform, slug, loader, Minecraft line)` and wiped at the start of each new attempt, so copy anything you
+want to keep.
 
 As an alternative you can attach to the container directly:
 
@@ -722,7 +729,7 @@ docker logs -f <name>
 |---|---|---|
 | `~/.spc-grinder/logs/serverpackcreator.log` | the daemon log (log4j) | yes, automatically |
 | `~/.spc-grinder/logs/plugins.log` | SPC plugin log — normally empty here | yes |
-| `<work>/verify/boot/<slug>-<Loader>/boot.log` | one boot's console | no; replaced per attempt |
+| `<work>/verify/boot/<Platform>-<slug>-<Loader>-<MinecraftLine>/boot.log` | one boot's console | no; replaced per attempt |
 | `<cache>/<mc>/<loader>/<ver>/.spc-install.log` | one loader install's console | no; removed with the tuple |
 
 Those first two paths are `~/.spc-grinder` because the daemon **tells SPC that its home directory is
