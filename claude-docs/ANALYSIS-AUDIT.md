@@ -831,3 +831,9 @@ crossing platforms.
 1. `VerdictReportRendererTest.aProjectUrlWithAnUntrustedSchemeIsNotLinked` — a verdict whose `projectUrl` is
    `javascript:alert(1)` renders as escaped text with no `<a href`, while an `https://` one still renders as
    a link (closes C-1).
+
+### Resolution — iteration 3 (2026-09-11)
+
+Both closed, both mutation-verified; detail in `REFACTOR-AUDIT.md`. The pass's real output is its
+"verified clean" list: five consumer-side questions an author-controlled string reaching three renderers
+raises, answered once and written down, so the next pass starts from a shorter list instead of the same one.

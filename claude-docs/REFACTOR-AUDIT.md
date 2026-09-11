@@ -6156,3 +6156,21 @@ actually checked — "no new compiler warnings".
   meaning — and `-clientside` is unpublished anyway.
 - **`GrindTestFixtures` gained a defaulted parameter only**, so no existing grinder guard changed meaning;
   and the `FILENAME` column kept its `FilterKind.TEXT` and its accessor shape across the rename.
+
+### Resolution — iteration 3 (2026-09-11)
+
+| Finding | How |
+|---|---|
+| I3-1 / C-1 | `VerdictReportRenderer.projectCell` links only `http`/`https` and shows anything else as escaped text. Pinned **red** first (`expected <false> but was <true>` — `javascript:` really did reach the href), with a counterweight asserting an ordinary row is still a link so the fix could not be "stop linking". **Mutation-verified:** forcing `followable` back to `true` fails exactly that guard. |
+| I3-2 / C-2 | The unnecessary safe call is gone, and the range's own diff now emits no compiler warning at all. |
+
+**Three passes, and what each one was actually good for.** Pass 1 found the defects a careful read finds —
+a gate consulting the wrong set, a memo that skipped its failure path, guards that were never written. Pass 2
+found the *first pass's own mistake*, because it wrote the behavioural guard pass 1 had only argued for, and
+that guard went red against code that was supposed to be fixed. Pass 3 found almost nothing in the code and
+earned its keep by *recording what it ruled out* — escaping in three renderers, path traversal, an identity
+comparison across a module seam, an exclusion set crossing platforms, and the warning inventory — so a fourth
+pass has a shorter list rather than the same one.
+
+**Suites after iteration 3:** api **421** (1 skipped), clientside **568**, grinder **516** (29 skipped),
+app **149**, plugin-grinder **73**, plugin-example **3** — and `./gradlew build` green.
