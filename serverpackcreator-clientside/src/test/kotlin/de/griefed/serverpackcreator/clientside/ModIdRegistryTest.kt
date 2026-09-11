@@ -319,4 +319,65 @@ internal class ModIdRegistryTest {
             KnownModIds.mappingFor("some_other_config_lib_v3", "Modrinth")
         )
     }
+
+    /**
+     * **Six ids observed going unresolved on the public grinder, 2026-09-11**, each a published
+     * `DEPENDENCY_FAILURE` whose named library exists under a slug the id does not spell — so the optimistic
+     * slug guess found nothing, the boot went ahead without the library, and the loader refused the pack.
+     *
+     * Asserted as *aliases* rather than guesses, which is the difference that matters: only an alias may
+     * refuse a boot, and each of these is a project we know the id names. Every Modrinth ref was verified by
+     * downloading that project's own jar and reading the id out of its descriptor; every CurseForge id by
+     * its published file names carrying the id (`kotlinforforge-5.12.0-all.jar`, `refinedstorage-*.jar`).
+     */
+    @Test
+    fun theIdsObservedGoingUnresolvedResolveToTheirProjects() {
+        val expected = mapOf(
+            "obscure_api" to "obscure-api",
+            "farmersdelight" to "farmers-delight",
+            "refinedstorage" to "refined-storage",
+            "kotlinforforge" to "kotlin-for-forge",
+            "rhino" to "rhino",
+            "wover" to "worldweaver"
+        )
+
+        Assertions.assertEquals(
+            expected,
+            expected.keys.associateWith { KnownModIds.refFor(it, "Modrinth") },
+            "a slug guess found none of these, which is what sent six boots out without their library"
+        )
+        expected.keys.forEach { id ->
+            Assertions.assertTrue(
+                KnownModIds.mappingFor(id, "Modrinth") is ModIdMapping.Alias,
+                "'$id' names a project we verified, so failing to stage it is a real gap and may refuse"
+            )
+        }
+    }
+
+    /**
+     * The CurseForge numeric ids, which cannot be guessed at all — that platform addresses a project by a
+     * number, so an id that is not the slug resolves to nothing without one.
+     *
+     * `obscure_api` is deliberately absent: CurseForge publishes it as "Obscure API [Forge Edition]", which
+     * implies a sibling edition a single ref would send every Fabric boot to. Same reason `tacz` carries no
+     * numeric id, and the opposite of inventing one.
+     */
+    @Test
+    fun theCurseForgeIdsAreCarriedWhereTheyCouldBeVerified() {
+        Assertions.assertEquals(
+            mapOf(
+                "farmersdelight" to "398521",
+                "refinedstorage" to "243076",
+                "kotlinforforge" to "351264",
+                "rhino" to "416294",
+                "wover" to "1037172"
+            ),
+            listOf("farmersdelight", "refinedstorage", "kotlinforforge", "rhino", "wover")
+                .associateWith { KnownModIds.refFor(it, "CurseForge") }
+        )
+        Assertions.assertTrue(
+            KnownModIds.mappingFor("obscure_api", "CurseForge") is ModIdMapping.Guess,
+            "an unverified numeric id would stage whatever project happens to hold it, so this stays a guess"
+        )
+    }
 }
