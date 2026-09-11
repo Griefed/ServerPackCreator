@@ -365,9 +365,13 @@ object BootCandidateSelector {
      *
      * A line is the granularity at which mod code actually differs: builds within one are ports of the same
      * source across a patch release, which is why re-checking a crash on the version next to it learns so
-     * little.
+     * little — and, since 2026-09-11, why it is the axis a project is ground on.
+     *
+     * Public because the grinder needs it too: `BootLogStore` reads a kept artifact's recorded Minecraft
+     * version back to the line its owner is filed under. A second copy of this rule in that module is
+     * exactly the duplication this repository has paid for three times.
      */
-    internal fun minecraftLine(minecraftVersion: String): String =
+    fun minecraftLine(minecraftVersion: String): String =
         minecraftVersion.split('.').take(2).joinToString(".")
 
     /**

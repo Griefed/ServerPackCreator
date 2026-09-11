@@ -183,6 +183,57 @@ internal class BootLogStoreTest {
         Assertions.assertFalse(legacy.exists(), "an emptied legacy directory is removed rather than left to confuse")
     }
 
+    /**
+     * **The consoles behind verdicts that are still published must stay reachable from their rows.** The
+     * owner gained the Minecraft version-line on 2026-09-11, so every artifact written before then is filed
+     * under a three-part owner that `namesFor` — which rebuilds a four-part prefix — can never find. Left
+     * alone they would be reclaimed by the budget while the CONFIRMED exclusions they evidence kept serving.
+     *
+     * The line is not guessed: the attempt segment beside the owner already records `_mc<version>`.
+     */
+    @Test
+    fun artifactsWrittenBeforeTheLineAreReFiledUnderIt() {
+        File(directory, "Modrinth-iron-chests-NeoForge~NeoForge_21.1.0_mc1.21.1~console.log")
+            .writeText("the crash this verdict published on")
+
+        Assertions.assertEquals(1, store().migrateOwnerNames())
+        Assertions.assertEquals(
+            listOf("Modrinth-iron-chests-NeoForge-1.21~NeoForge_21.1.0_mc1.21.1~console.log"),
+            store().namesFor(ModPlatforms.MODRINTH, "iron-chests", "NeoForge", "1.21"),
+            "a slug containing the separator still has to come back from its own row"
+        )
+        Assertions.assertEquals(
+            "the crash this verdict published on",
+            store().read(store().namesFor(ModPlatforms.MODRINTH, "iron-chests", "NeoForge", "1.21").single())
+        )
+    }
+
+    /** Idempotent: a name already carrying its line is left exactly where it is. */
+    @Test
+    fun aSecondMigrationMovesNothing() {
+        store().keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge", "1.20"), attempt(), artifacts("console.log")
+        )
+
+        Assertions.assertEquals(0, store().migrateOwnerNames())
+        Assertions.assertEquals(1, store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge", "1.20").size)
+    }
+
+    /**
+     * **A console that records no Minecraft version is left alone rather than filed under a guessed one.**
+     * `adoptLegacy` gives such a name [BootLogStore.LEGACY_ATTEMPT], which carries no `_mc` — and inventing
+     * an era for real evidence is worse than leaving it reachable only from the index.
+     */
+    @Test
+    fun anArtifactRecordingNoMinecraftVersionIsNotMoved(@TempDir legacy: File) {
+        File(legacy, "Modrinth-jei-Forge.log").writeText("an old crash console")
+        store().adoptLegacy(legacy)
+        val before = store().list()
+
+        Assertions.assertEquals(0, store().migrateOwnerNames())
+        Assertions.assertEquals(before, store().list())
+    }
+
     /** An absent legacy directory is the normal case on a fresh install, not a failure. */
     @Test
     fun adoptingAnAbsentLegacyDirectoryIsANoOp(@TempDir parent: File) {
