@@ -221,9 +221,10 @@ class ContainerCandidateVerifier(
     /** Run the actual verification, leaving the staging cleanup to [verify]. */
     private fun verifyStaged(candidate: GrindCandidate, keptLogNames: MutableList<String>): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
+        val platforms = supportedPlatforms(curseForgeApiKey)
         return run {
             ClientsideVerifier(
-                platforms = supportedPlatforms(curseForgeApiKey),
+                platforms = platforms,
                 metadataScanner = MetadataScanner(apiWrapper.modScanner),
                 jarDownloader = httpDownloader,
                 workDirectory = File(workDirectory, "verify"),
@@ -247,6 +248,9 @@ class ContainerCandidateVerifier(
                         bootTimeout = bootTimeout,
                         consoleRules = consoleRules,
                         learnedModIds = learnedModIds,
+                        // A dependency this platform cannot supply may exist on the other one, and the
+                        // staged file is just a jar. Empty when no CurseForge key is configured.
+                        alternatePlatforms = platforms.filter { it !== platform },
                         bootArtifactSink = { staged, outcome ->
                             keepAttemptArtifacts(staged, outcome, crashLogs, keptLogNames)
                         }

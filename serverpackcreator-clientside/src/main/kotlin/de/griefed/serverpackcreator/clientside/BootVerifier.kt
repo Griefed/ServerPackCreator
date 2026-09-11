@@ -80,6 +80,7 @@ class BootVerifier(
     private val otherVersionRecheckLimit: Int = 2,
     private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
     private val learnedModIds: LearnedModIds = LearnedModIds(),
+    private val alternatePlatforms: List<ModPlatform> = emptyList(),
     private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -370,7 +371,13 @@ class BootVerifier(
         injected: MutableList<InjectedDependency>,
         excluded: Set<String>,
         provided: MutableSet<String>,
-        stagedFromRef: String? = null
+        stagedFromRef: String? = null,
+        /**
+         * Which platform [stagedFromRef] belongs to. Defaults to this verifier's own; a cross-platform
+         * dependency says so, because a ref learned under the wrong platform resolves to nothing there and
+         * the next candidate would trust it.
+         */
+        stagedFromPlatform: String = platform.name
     ): Boolean {
         val staged = httpDownloader.download(file, modsDir)
             ?: return false
@@ -388,7 +395,7 @@ class BootVerifier(
         // rather than a guess. Only for something fetched *by ref* -- the candidate itself was resolved from
         // a project URL and teaches nothing about how to find it by id.
         if (stagedFromRef != null) {
-            learnedModIds.learn(platform.name, stagedFromRef, identity)
+            learnedModIds.learn(stagedFromPlatform, stagedFromRef, identity)
         }
         if (depth > 0 && injected.none { it.fileName == file.fileName }) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
@@ -615,18 +622,21 @@ class BootVerifier(
             val firstPlan = planFor()
             // The alternative is only reached when the primary could not be staged, which is the order the
             // descriptor implies: `unless` names a substitute, not a preference.
-            val planned = alternativeFor(requirement, firstPlan, loader, minecraftVersion, excluded)
+            val locally = alternativeFor(requirement, firstPlan, loader, minecraftVersion, excluded)
+            // Cheaper than the probe below -- a request or two against the other site, rather than a jar
+            // download -- and it fires on a disjoint state anyway: this answers "resolvable here, nothing
+            // usable", the probe answers "resolvable nowhere".
+            val elsewhere = acrossPlatforms(requirement, locally, loader, minecraftVersion, excluded)
+            val planned = elsewhere.plan
             // Only here, and only for a requirement that is REQUIRED (optional ones never reach this loop)
             // and unresolvable by every cheaper route, is a download worth spending to find out what a
             // linked project is. Re-planning afterwards rather than using the probe's answer directly keeps
             // one code path deciding what gets staged.
-            val plan = if (planned is ManifestDependencyPlan.Unmapped &&
+            // The probe only ever asks this platform, so a plan it produces belongs to this one.
+            val reprobed = planned is ManifestDependencyPlan.Unmapped &&
                 askLinkedProjects(requirement.modID, file, loader, minecraftVersion, modsDir, excluded, probed)
-            ) {
-                planFor()
-            } else {
-                planned
-            }
+            val plan = if (reprobed) planFor() else planned
+            val plannedBy = if (reprobed) platform.name else elsewhere.platformName
             val dependencyFile = when (plan) {
                 is ManifestDependencyPlan.Unmapped -> {
                     log.info("Manifest dependency '${plan.modID}' maps to nothing this platform carries.")
@@ -651,7 +661,10 @@ class BootVerifier(
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped,
-                    injected, excluded, provided, stagedFromRef = plan.ref
+                    injected, excluded, provided, stagedFromRef = plan.ref,
+                    // Whoever published the file is who the ref belongs to: a CurseForge id filed under
+                    // Modrinth is a mapping that resolves to nothing, and the next candidate would trust it.
+                    stagedFromPlatform = plannedBy
                 )
             ) {
                 log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
@@ -692,9 +705,10 @@ class BootVerifier(
         ref: String,
         loader: String,
         minecraftVersion: String,
-        excluded: Set<String>
+        excluded: Set<String>,
+        askedPlatform: ModPlatform = platform
     ): ProjectFiles? {
-        val exact = platform.resolveDependency(ref, minecraftVersion) ?: return null
+        val exact = askedPlatform.resolveDependency(ref, minecraftVersion) ?: return null
         if (BootCandidateSelector.pickDependencyFile(
                 exact.withoutExcluded(excluded).files, loader, minecraftVersion
             ) != null
@@ -708,7 +722,63 @@ class BootVerifier(
         // Handing the exact version back as well keeps the answer a superset: a widened resolve must never
         // lose a file the narrow one had, or a project whose only usable build the excluded set had dropped
         // would report a different reason on the second look.
-        return platform.resolveDependency(ref, minecraftVersion, neighbours) ?: exact
+        return askedPlatform.resolveDependency(ref, minecraftVersion, neighbours) ?: exact
+    }
+
+    /** A dependency plan together with the platform whose catalog produced it. */
+    private data class PlatformPlan(val plan: ManifestDependencyPlan, val platformName: String)
+
+    /**
+     * [primary] unless the **other** platform publishes a build of the same mod that this one does not.
+     *
+     * **Why a dependency may cross and a candidate may not.** The candidate is the subject of the
+     * experiment and its platform is part of the question being asked; a dependency is scenery — the pack
+     * needs the library loaded, and which site hosts the jar says nothing about whether the pack boots with
+     * it. Measured: `tacz` resolves to `timeless-and-classics-guns`, whose Minecraft 1.21.1 build is
+     * published on CurseForge only, so a Modrinth candidate was refused for a jar any launcher installs.
+     *
+     * **Only the manifest route can cross**, because only it knows the mod *id*: a platform ref is that
+     * platform's own identifier and names nothing on the other side. That is also what bounds the cost —
+     * this is reached from a requirement that is required, declared by the jar, and already unsatisfiable
+     * here, whose only other outcome is a refused boot. Where no other platform is configured (no
+     * CurseForge key, say) the list is empty and nothing changes at all.
+     *
+     * The mappings and the learned refs are taken **per platform**, since neither travels.
+     */
+    private fun acrossPlatforms(
+        requirement: ModDependency,
+        primary: ManifestDependencyPlan,
+        loader: String,
+        minecraftVersion: String,
+        excluded: Set<String>
+    ): PlatformPlan {
+        // Both failing states cross, because the difference between them is about *our* platform's
+        // confidence, not about whether the other one has the mod: an id that mapped nowhere here
+        // (`Unmapped`) and one whose only local project publishes nothing usable (`Unsatisfied`) are the
+        // same question asked of the other site. `Unmapped` is the commoner of the two, which is why this
+        // sits *above* `askLinkedProjects` -- that already fires on it and pays a whole jar download.
+        if (primary is ManifestDependencyPlan.Stage) {
+            return PlatformPlan(primary, platform.name)
+        }
+        for (other in alternatePlatforms) {
+            val plan = planManifestDependency(
+                requirement, loader, minecraftVersion,
+                mappingsFor = {
+                    learnedModIds.mappingsFor(it, other.name) { id -> KnownModIds.mappingsFor(id, other.name) }
+                },
+                resolveRef = { resolveDependencyAcrossTheLine(it, loader, minecraftVersion, excluded, other) },
+                excluded = excluded
+            )
+            if (plan is ManifestDependencyPlan.Stage) {
+                log.info(
+                    "Manifest dependency '${requirement.modID}' has no usable build on ${platform.name} for " +
+                        "$loader / Minecraft $minecraftVersion, and ${other.name} publishes " +
+                        "${plan.file.fileName} — staging that."
+                )
+                return PlatformPlan(plan, other.name)
+            }
+        }
+        return PlatformPlan(primary, platform.name)
     }
 
     /**
