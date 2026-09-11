@@ -869,8 +869,13 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     - `LegacyFabric`'s descriptor set is deliberately **empty**: it reads Fabric's file, so no jar can carry
       evidence against it, and a non-empty set would make `{Fabric}` mean `{Fabric, LegacyFabric}`.
   - **Quilt's `unless` clause is how a Quilt mod says "or the Fabric module".** `ModDependency.unlessProvided`
-    (`-api`) carries it and `stageableRequirements` drops a requirement whose alternative is already
-    provided. QSL publishes nothing for 1.21.1+ while `fabric-api` 1.21.1 has 36 versions, so `geophilic`,
+    (`-api`) carries it and `stageableRequirements` drops a requirement whose alternative is already in the
+    pack — **testing `bundledIds` as well as `providedIds`, which is not optional**: read from the live
+    `fabric-api-0.116.17+1.21.1.jar`, its descriptor declares `id=fabric-api` and `provides=["fabric"]`
+    while `fabric-resource-loader-v0` exists only as a nested jar, so an arm consulting `providedIds` alone
+    could not fire for the canonical case and the requirement went the expensive way through
+    `alternativeFor`, re-downloading a library the loader already had. QSL publishes nothing for 1.21.1+
+    while `fabric-api` 1.21.1 has 36 versions, so `geophilic`,
     `terralith`, `trek` and `true-ending` refused everywhere. `quilt_base` hard-required with **no** `unless`
     (`shatterbyte-lib`, `notenoughrecipebook`) stays genuinely UNVERIFIABLE — do not put it back into
     `environmentProvidedIds`.
@@ -885,6 +890,13 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     real `mods.toml`) versus the `[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar` beta whose only descriptor is
     a `fabric.mod.json`. **A preference, never a filter** — `faster-random` publishes an alpha and zero
     releases for its loader.
+  - **The two disagreement channels are mutually exclusive by construction, not by nulling one.** A jar's
+    Minecraft range is read by `scannerFor(loader, minecraftVersion)` — the *mismatching* loader's own
+    scanner — so on a loader mismatch it can never be read, and `refuseForSelfDeclaration` fills both
+    channels honestly while `prepareBootPack` orders the retries (loader first, version only when that one
+    does not apply). `aLoaderMismatchLeavesNoRangeToRetryOn` pins the invariant, so a scanner that ever
+    merged descriptors the way `QuiltPackScanner` merges Fabric's turns it into a red guard rather than a
+    silently suppressed range.
   - **LANDMINE — the patch-version fallback needs the platform's cooperation, and CurseForge gives none
     unasked.** `pickDependencyFile`'s neighbour rung searches *the files in hand*, and
     `CurseForgePlatform.resolveDependency` narrows its page with `gameVersion=<exact>` — so every file in
