@@ -96,7 +96,36 @@ object KnownModIds {
         // Modrinth `qsl` (qvIfYCYJ) and CurseForge `634179`, both titled "Quilted Fabric API (QFAPI) /
         // Quilt Standard Libraries (QSL)".
         "quilted_fabric_api" to PlatformRef("qsl", "634179"),
-        "qsl" to PlatformRef("qsl", "634179")
+        "qsl" to PlatformRef("qsl", "634179"),
+        // A renamed project: the mod id matches no slug on either platform. Verified 2026-09-11 --
+        // `https://api.modrinth.com/v2/project/tacz` answers 404, `timeless-and-classics-guns` answers
+        // 200. Guessing `tacz` is a request that can only miss, and a refusal nobody can act on.
+        // CurseForge is deliberately left to its own slug guess: the numeric id could not be verified
+        // here, and inventing one would send every lookup to whatever project happens to hold it.
+        "tacz" to PlatformRef("timeless-and-classics-guns", null)
+    )
+
+    /**
+     * A **second** project serving the same mod id, tried only after the primary answers nothing.
+     *
+     * Cross-loader ports deliberately keep the original's mod id — that is what makes them drop-in — so one
+     * id legitimately names two projects, of which only one publishes for the loader being booted. Measured
+     * against the live Modrinth API on 2026-09-11: `create` publishes `[forge, neoforge]`, `create-fabric`
+     * publishes `[fabric, quilt]`, and a Fabric mod declaring `create` reached the first and was refused.
+     *
+     * **An alternative, never a replacement, and the table must not grow a loader dimension.** Mapping
+     * `create` onto `create-fabric` outright would send every Forge and NeoForge boot to a project with no
+     * Forge build — three broken rows traded for many. The primary stays first and
+     * `BootCandidateSelector.pickDependencyFile`'s loader filter is what actually decides, which is the
+     * same division of labour [LearnedModIds] relies on for the forks it learns from staged jars.
+     *
+     * Keep it to forks **observed** going unresolved, like [notFabricApi] and [notQsl]: this class exists
+     * to avoid a large hand-written table of guesses that goes stale in silence.
+     */
+    private val alternatives: Map<String, List<PlatformRef>> = mapOf(
+        // CurseForge omitted for the same reason as above -- unverified here, and a wrong numeric id is
+        // worse than no second try, because it stages somebody else's mod.
+        "create" to listOf(PlatformRef("create-fabric", null))
     )
 
     /** Fabric API itself, the project every one of its modules resolves to. */
@@ -221,8 +250,23 @@ object KnownModIds {
      * yields exactly one entry; the shape exists so an observed second project can be added without every
      * caller learning about it.
      */
-    fun mappingsFor(modId: String, platform: String): List<ModIdMapping> =
-        listOf(mappingFor(modId, platform))
+    fun mappingsFor(modId: String, platform: String): List<ModIdMapping> {
+        val primary = mappingFor(modId, platform)
+        val forks = alternatives[modId.trim().lowercase()].orEmpty()
+            .mapNotNull { refOn(it, platform) }
+            .filter { it != primary.ref }
+        // A fork is an [ModIdMapping.Alias]: it is a project we know serves this id, so failing to stage it
+        // is a real gap rather than a guess that missed. That matters only when the primary is an alias
+        // too -- a `Guess` primary already cannot refuse, whatever follows it.
+        return listOf(primary) + forks.map { ModIdMapping.Alias(it) }
+    }
+
+    /** How [platform] addresses [ref], or `null` when it carries no ref for that platform. */
+    private fun refOn(ref: PlatformRef, platform: String): String? = when (platform) {
+        MODRINTH -> ref.modrinth
+        CURSEFORGE -> ref.curseForge
+        else -> null
+    }
 
     fun mappingFor(modId: String, platform: String): ModIdMapping {
         val id = modId.trim().lowercase()
@@ -233,14 +277,11 @@ object KnownModIds {
             ?: fabricApi.takeIf { isFabricApiModule(id) }
             ?: quiltStandardLibraries.takeIf { isQslModule(id) }
             ?: yetAnotherConfigLib.takeIf { yaclModulePattern.matches(id) }
-        alias?.let {
-            val ref = when (platform) {
-                MODRINTH -> it.modrinth
-                CURSEFORGE -> it.curseForge
-                else -> null
-            }
-            return ref?.let { known -> ModIdMapping.Alias(known) } ?: ModIdMapping.None
-        }
+        // A table entry that carries no ref for this platform says nothing *about this platform*, so the
+        // slug guess still gets its turn rather than the id resolving to nothing. No existing entry is
+        // affected -- all four carry both refs -- and it is what lets a project be mapped on one platform
+        // without inventing an id for the other, which would stage somebody else's mod.
+        alias?.let { known -> refOn(known, platform)?.let { return ModIdMapping.Alias(it) } }
         return if (platform == MODRINTH || platform == CURSEFORGE) ModIdMapping.Guess(id) else ModIdMapping.None
     }
 }
