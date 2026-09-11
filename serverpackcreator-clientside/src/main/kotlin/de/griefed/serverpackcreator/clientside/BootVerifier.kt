@@ -150,6 +150,13 @@ class BootVerifier(
          */
         val bootedFile: String? = null,
         /**
+         * The Minecraft version this attempt actually booted on, or `null` when nothing staged. The third
+         * of the triple with [bootedLoader] and [bootedFile], and carried for the same reason: a re-check
+         * may settle the verdict from a boot on a different version entirely, and a row naming the version
+         * it *asked* for describes a run that did not happen.
+         */
+        val minecraftVersion: String? = null,
+        /**
          * The id of the operator rule that decided or annotated this outcome, or `null` when the built-in
          * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
          * that fires too broadly means *counting* the verdicts it decided.
@@ -215,8 +222,42 @@ class BootVerifier(
      * the mod before it may stand. It defaults to `false`, which spends no extra boots: a caller that does
      * not know the metadata has nothing for the crash to contradict.
      */
-    fun verify(project: ProjectFiles, loader: String, metadataDeclaresServerSupport: Boolean = false): BootOutcome {
-        val prepared = prepareBootPack(project, loader)
+    fun verify(project: ProjectFiles, loader: String, metadataDeclaresServerSupport: Boolean = false): BootOutcome =
+        verifyPrepared(project, loader, prepareBootPack(project, loader), metadataDeclaresServerSupport) {
+            prepareBootPack(project, loader, it)
+        }
+
+    /**
+     * [verify] for a combination the caller chose — one loader on one Minecraft version-line, as
+     * [BootCandidateSelector.pickGrindTargets] picks them.
+     *
+     * **The newest-build re-check re-stages this same target**, never a fresh selection: re-selecting would
+     * answer a crash on one line with a boot on another, which is a different mod's worth of code and
+     * exactly the confusion the per-line axis exists to remove.
+     */
+    fun verify(
+        project: ProjectFiles,
+        target: BootCandidateSelector.GrindTarget,
+        metadataDeclaresServerSupport: Boolean = false
+    ): BootOutcome =
+        verifyPrepared(project, target.loader, prepareBootPack(project, target), metadataDeclaresServerSupport) {
+            prepareBootPack(project, target, it)
+        }
+
+    /**
+     * The shared body of both [verify] entry points: boot [prepared], run the two crash re-checks, and put
+     * the decisive attempt's console back.
+     *
+     * [restageOnLoaderVersion] re-stages the *same* combination on a given loader build, which is what the
+     * newest-build re-check needs and is the one step the two entry points must not share a selection for.
+     */
+    private fun verifyPrepared(
+        project: ProjectFiles,
+        loader: String,
+        prepared: Prepared,
+        metadataDeclaresServerSupport: Boolean,
+        restageOnLoaderVersion: (String) -> Prepared
+    ): BootOutcome {
         if (prepared is Prepared.Failed) {
             // Say so out loud. This reason used to be returned as a detail string and then dropped by
             // `ClientsideVerifier.aggregate` whenever the metadata already decided the confidence, which made a
@@ -227,7 +268,7 @@ class BootVerifier(
         }
         val ready = prepared as Prepared.Ready
         val outcome = boot(ready)
-        val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome)
+        val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome, restageOnLoaderVersion)
         val decided = recheckCrashOnOtherModVersions(project, loader, ready, loaderChecked, metadataDeclaresServerSupport)
         // Every attempt above wrote the same boot.log, so the file currently holds the *last* boot's console
         // while `decided` may be an earlier one. Put the reported verdict's own console back.
@@ -255,7 +296,8 @@ class BootVerifier(
         project: ProjectFiles,
         loader: String,
         first: Prepared.Ready,
-        outcome: BootOutcome
+        outcome: BootOutcome,
+        restageOnLoaderVersion: (String) -> Prepared
     ): BootOutcome {
         val newest = loaderVersionPolicy.latestVersion(loader, first.minecraftVersion)
         // The null check is redundant with shouldRecheckOnNewestBuild (which is false for a null newest) but
@@ -268,7 +310,7 @@ class BootVerifier(
             "${project.slug}: $loader ${first.loaderVersion} did not boot cleanly and is not the newest build — " +
                 "re-checking on $loader $newest before trusting the outcome."
         )
-        val restaged = prepareBootPack(project, loader, loaderVersionOverride = newest)
+        val restaged = restageOnLoaderVersion(newest)
         if (restaged is Prepared.Failed) {
             log.warn("Could not re-stage ${project.slug} on $loader $newest (${restaged.detail}); keeping the crash.")
             return outcome
@@ -951,6 +993,40 @@ class BootVerifier(
                 cause = PreventionCause.UPSTREAM_UNAVAILABLE
             )
         val (mainFile, minecraftVersion) = candidate
+        return prepareChosen(project, loader, mainFile, minecraftVersion, loaderVersionOverride, bootable)
+    }
+
+    /**
+     * [prepareBootPack] for a combination the **caller** chose — one loader on one Minecraft version-line,
+     * as [BootCandidateSelector.pickGrindTargets] picks them.
+     *
+     * The selection is not repeated here. `pickGrindTargets` is handed [bootableCombination] to choose with,
+     * so a target already satisfies the same gate, and asking twice would be a second predicate free to
+     * disagree with the first. A combination that *is* unbootable still refuses honestly one step later,
+     * where `stageBootPack` finds no loader build for it.
+     */
+    fun prepareBootPack(
+        project: ProjectFiles,
+        target: BootCandidateSelector.GrindTarget,
+        loaderVersionOverride: String? = null
+    ): Prepared = prepareChosen(
+        project, target.loader, target.file, target.minecraftVersion, loaderVersionOverride, bootableCombination()
+    )
+
+    /**
+     * Stage [mainFile] for [loader] on [minecraftVersion], then apply at most one re-selection retry when the
+     * downloaded jar's own descriptor contradicts the choice. The shared tail of both [prepareBootPack]
+     * entry points, so a caller choosing its own combination gets the same retries as one that let selection
+     * choose.
+     */
+    private fun prepareChosen(
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        minecraftVersion: String,
+        loaderVersionOverride: String?,
+        bootable: (String, String) -> Boolean
+    ): Prepared {
         val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
         // At most one retry, enforced here rather than by which channel a refusal carries: the loader
         // mismatch is tried first, because where a jar disagrees about both, no other Minecraft version
@@ -1071,7 +1147,7 @@ class BootVerifier(
      * Takes the loader per call rather than closing over one, because the crash re-check's sample spans
      * loaders and has to gate each candidate against its own.
      */
-    private fun bootableCombination(): (String, String) -> Boolean {
+    fun bootableCombination(): (String, String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         return { loader, minecraftVersion ->
             minecraftVersion in releaseVersions &&
@@ -1390,6 +1466,7 @@ class BootVerifier(
                 .copy(
                     bootedLoader = pack.loader,
                     bootedFile = pack.bootedFile,
+                    minecraftVersion = pack.minecraftVersion,
                     stagedDependencies = pack.injectedDependencies.map { it.fileName }
                 )
                 // Annotation only: `attribute` returns an outcome whose result is this one's, always.
