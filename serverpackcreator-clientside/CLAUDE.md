@@ -1104,18 +1104,23 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
   ServerStarterJar prints the refusal in full and exits 0.
 
-- **Two patterns, and only one of them is publishable** (`LoaderVerdict.fileName`, 2026-09-04; the field was
-  called `filenamePattern` until 2026-09-10, and the docs outlived the name).
+- **Two names for one project, and only one of them is publishable** (`LoaderVerdict.sampleFile`,
+  2026-09-04). Do not look for a `filenamePattern` or a `fileName` on `LoaderVerdict`: the former was
+  **deleted** on 2026-09-10 and the latter belongs to the grinder's `GrindVerdict`, which is fed from
+  `sampleFile`.
   `suggestedEntry` is the longest common prefix over a project's *whole* history and must stay that way —
   it is what the fallback list matches with `startsWith`, so it has to cover every build ever released.
   The cost is that any project which renamed its files loses whatever the rename dropped:
   `iris` published `iris-` for Fabric and Quilt against `iris-neoforge-` for NeoForge, the difference being
   that its oldest Fabric jars are `iris-mc1.16.5-1.0.0.jar`, from before the loader went into the name,
   while all 42 NeoForge files carry it.
-  `fileName` carries the sampled artifact's **own name, verbatim** — the name it has when downloaded — and
-  the grinder shows the two side by side. It was a *stem* of that one file until 2026-09-10, which is why the
-  landmine below is about a narrow pattern: a stem of one file is still what must never be published.
-  - **LANDMINE — never publish the narrow one.** Serving `fileName` from `/as-properties` would stop
+  `sampleFile` carries the sampled artifact's **own name, verbatim** — the name it has when downloaded, which
+  is what a maintainer types into a platform's search box — and the grinder shows the two side by side. It
+  was a *derived stem* of that one file until 2026-09-10, which is Griefed's report: the column "most often
+  equals some sort of pattern" rather than a filename. `SampledArtifactNamingTest` pins both halves, and
+  single-file `deriveStem` survives for `Prepared.Ready.candidateStem`, which is how blame attribution tells
+  the candidate's frames from a dependency's.
+  - **LANDMINE — never publish the narrow one.** Serving `sampleFile` from `/as-properties` would stop
     excluding every build the broad stem covers, which for `iris` is its entire pre-2022 history. The two
     are separate fields for that reason and `theSampledFilenameIsNotWhatGetsPublished` fails the build on a
     swap.

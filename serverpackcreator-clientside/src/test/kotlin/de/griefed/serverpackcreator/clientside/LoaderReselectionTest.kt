@@ -80,6 +80,16 @@ internal class LoaderReselectionTest {
         }
 
     /**
+     * The newest real release where NeoForge still reads Forge's `META-INF/mods.toml` — i.e. below 1.20.5 —
+     * and publishes a build. That is where a `mods.toml`-only jar is *both* loaders' descriptor, which is
+     * what the version retry exists to reach.
+     */
+    private val sharedTomlRelease = apiWrapper.versionMeta.minecraft.serverReleases()
+        .map { it.minecraftVersion }
+        .filter { !LoaderDescriptors.neoForgeUsesNeoToml(it) && resolver.latest("NeoForge", it) != null }
+        .maxWithOrNull(BootCandidateSelector.minecraftComparator)
+
+    /**
      * Records the loader of every staging attempt, and can make a loader unavailable.
      *
      * `preferredVersion` is asked once per `stageBootPack` call, so its argument list *is* the re-selection
@@ -124,22 +134,36 @@ internal class LoaderReselectionTest {
     }
 
     /** A descriptor with no dependency table, so nothing but the loader is under test. */
-    private val descriptorBody = """
+    private fun descriptorBody(minecraftRange: String? = null) = """
         modLoader="javafml"
         loaderVersion="[1,)"
         license="MIT"
         [[mods]]
         modId="bellsandwhistles"
         version="0.4.5"
-    """.trimIndent()
+    """.trimIndent() + (
+        minecraftRange?.let {
+            """
 
-    /** Writes the real jar the gate will read, carrying [descriptor] and nothing else. */
-    private fun downloaderFor(descriptor: String) = JarDownloader { file, targetDirectory ->
+            [[dependencies.bellsandwhistles]]
+            modId="minecraft"
+            mandatory=true
+            versionRange="$it"
+            """.trimIndent()
+        } ?: ""
+        )
+
+    /**
+     * Writes the real jar the gate will read, carrying [descriptor] and nothing else — plus, when
+     * [minecraftRange] is given, a `[[dependencies]]` entry declaring it, which is what makes the jar
+     * disagree about the Minecraft version as well as the loader.
+     */
+    private fun downloaderFor(descriptor: String, minecraftRange: String? = null) = JarDownloader { file, targetDirectory ->
         targetDirectory.mkdirs()
         File(targetDirectory, file.fileName).also { jar ->
             JarOutputStream(jar.outputStream()).use { out ->
                 out.putNextEntry(JarEntry(descriptor))
-                out.write(descriptorBody.toByteArray())
+                out.write(descriptorBody(minecraftRange).toByteArray())
                 out.closeEntry()
             }
         }
@@ -255,14 +279,18 @@ internal class LoaderReselectionTest {
      *
      * `refuseForSelfDeclaration` reports the loader mismatch first — correctly, since no other Minecraft
      * version makes a jar into a mod for a loader whose descriptor it does not carry — and it used to *null*
-     * the Minecraft channel to enforce "exactly one retry" through the data. That loses a reachable boot:
-     * where the declared loader has no build for this Minecraft the loader retry cannot fire, and the
-     * version retry that could have fired has been erased. A `mods.toml`-only jar requested as NeoForge on
-     * 1.20.6 is the live shape — at 1.20.4 that same file *is* a NeoForge descriptor, so re-selecting the
-     * version is what finds a genuine NeoForge boot rather than borrowing Forge's.
+     * the Minecraft channel to enforce "exactly one retry" through the data. It no longer does: each channel
+     * says what the jar said, and `prepareBootPack`'s control flow decides which retry to spend.
      *
-     * "Exactly one retry" is `prepareBootPack`'s to enforce, in its control flow, and the two guards above
-     * are what hold it there: they assert the staging sequence is `Forge, NeoForge` and not one longer.
+     * **This is a behaviour-neutral simplification, not a rescued boot.** A real scan cannot hand this
+     * function both, because the range is read by the *mismatching* loader's own scanner —
+     * `aLoaderMismatchLeavesNoRangeToRetryOn` pins exactly that. What the change buys is that the ordering
+     * no longer depends on an invariant proved in another unit: if a scanner ever merged descriptors the way
+     * `QuiltPackScanner` merges Fabric's, the old `takeIf` would have silently suppressed a range that had
+     * become meaningful.
+     *
+     * "Exactly one retry" is `prepareBootPack`'s to enforce, and the two guards above are what hold it
+     * there: they assert the staging sequence is `Forge, NeoForge` and not one longer.
      */
     @Test
     fun aJarDisagreeingAboutBothRecordsBothChannels(@TempDir workDir: File) {
@@ -324,6 +352,53 @@ internal class LoaderReselectionTest {
         Assertions.assertNull(
             BootVerifier.loaderToVerifyUnder(emptySet(), tagged = setOf("Forge")) { true },
             "and a jar that declares nothing was never refused for its loader in the first place"
+        )
+    }
+
+    /**
+     * **Why the two retries can never collide, which is the fact worth pinning.**
+     *
+     * The Minecraft range comes from `scannerFor(loader, minecraftVersion)` — the scanner for the loader
+     * *being booted*. When the loader is the thing that mismatches, that scanner reads a descriptor the jar
+     * does not carry, so `ScannedMod.minecraftConstraint` is `null` and there is no range to retry on. A
+     * `mods.toml`-only jar requested as NeoForge on 1.20.5+ is the case: `neoForgeTomlScanner` looks for
+     * `META-INF/neoforge.mods.toml`, finds nothing, and reads no range — even though the jar states one.
+     *
+     * So the two channels are mutually exclusive **by construction**, not by the refusal nulling one of
+     * them. That is why `prepareBootPack` can order the retries without checking for the combination, and
+     * why the guard above only has to show that the *function* reports both when both are handed to it.
+     *
+     * Recorded as a guard rather than a comment because it is a claim about another unit's behaviour: if a
+     * scanner ever merged descriptors the way `QuiltPackScanner` merges Fabric's, a range would become
+     * readable here and this would go red — which is exactly when somebody needs to re-think the ordering.
+     */
+    @Test
+    fun aLoaderMismatchLeavesNoRangeToRetryOn(@TempDir workDir: File) {
+        val tickedNeoForge = tickedForge.copy(loaders = setOf("NeoForge"))
+        val policy = RecordingPolicy(unavailable = setOf("Forge"))
+
+        val prepared = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platformOf(tickedNeoForge),
+            // The jar declares a Minecraft range *and* carries only Forge's descriptor.
+            httpDownloader = downloaderFor(LoaderDescriptors.FORGE_TOML, minecraftRange = "[1.0,1.20.5)"),
+            loaderVersionPolicy = policy,
+            workDirectory = workDir
+        ).prepareBootPack(projectOf(tickedNeoForge), "NeoForge")
+
+        Assertions.assertEquals(
+            listOf("NeoForge"), policy.stagedFor,
+            "no retry is possible: Forge has no build here and the range was never readable"
+        )
+        val refusal = prepared as? BootVerifier.Prepared.Failed
+        Assertions.assertEquals(
+            setOf("Forge"), refusal?.declaredLoaders,
+            "the loader channel is what a mismatching jar fills"
+        )
+        Assertions.assertNull(
+            refusal?.declaredMinecraftConstraint,
+            "and the range is not readable, because the scanner that would read it is the mismatching " +
+                "loader's own: ${refusal?.detail}"
         )
     }
 
