@@ -846,6 +846,83 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     `fabric-language-kotlin` and `quilt_loader` must not be claimed for Fabric API or QSL — they are now
     guesses at their own slugs, which refuse nothing).
 
+- **SIX WAYS A MOD THAT RUNS EVERYWHERE WAS PUBLISHED `UNVERIFIABLE` (2026-09-10/11).** The bucket was one
+  day old and already held 42 rows; 27 were ours. Attribution, measurements and the deferrals are in
+  `claude-docs/REFACTOR-LOG.md` — what follows is the part a future session must not rediscover.
+  - **Which descriptor evidences a loader is a function of the Minecraft version, and it has exactly one
+    home: `LoaderDescriptors` in `-api`.** This module held a second, flat, version-blind copy and read every
+    `META-INF/mods.toml` as Forge's — so **13 genuine NeoForge jars on Minecraft 1.20.2–1.20.4 were refused**,
+    for a fact `-api`'s own `CLAUDE.md` already stated. Same shape as the
+    `MetadataScanner`/`ModListCompiler` drift at the top of this file, which is why the duplicate was
+    **deleted** rather than corrected. `ModScanner.scannerFor` asks the same object.
+    - **Declaring a descriptor is not reading one.** NeoForge's declaring set contains `mods.toml` at *every*
+      version, not only below 1.20.5: on 1.20.1 a `neoforge.mods.toml`-only jar must not pass as Forge, and
+      the first cut of this let it.
+    - **What the gate gives up, deliberately:** on 1.20.2–1.20.4 a `mods.toml`-only jar is accepted for a
+      NeoForge boot, because there the file really is a NeoForge descriptor and nothing in the archive tells
+      the two apart. A Forge jar staged for a NeoForge boot there still fails at runtime and
+      `runtimeMismatchMarkers` scores it INCONCLUSIVE. `JarSelfDeclarationTest` asks its refusal at 1.21.1
+      for that reason — the 1.20.4 version of that expectation was encoding the bug.
+    - `LegacyFabric`'s descriptor set is deliberately **empty**: it reads Fabric's file, so no jar can carry
+      evidence against it, and a non-empty set would make `{Fabric}` mean `{Fabric, LegacyFabric}`.
+  - **Quilt's `unless` clause is how a Quilt mod says "or the Fabric module".** `ModDependency.unlessProvided`
+    (`-api`) carries it and `stageableRequirements` drops a requirement whose alternative is already
+    provided. QSL publishes nothing for 1.21.1+ while `fabric-api` 1.21.1 has 36 versions, so `geophilic`,
+    `terralith`, `trek` and `true-ending` refused everywhere. `quilt_base` hard-required with **no** `unless`
+    (`shatterbyte-lib`, `notenoughrecipebook`) stays genuinely UNVERIFIABLE — do not put it back into
+    `environmentProvidedIds`.
+  - **The release channel outranks Minecraft recency** (`ReleaseChannel`, Griefed's rule: *newest Release for
+    any loader; Beta or Alpha only when no release exists*). `pickBootableCandidate` sorts newest-Minecraft
+    first, and authors publish experimental newer-Minecraft ports as **betas** while the stable line sits on
+    an older version — so the ordering did not merely permit a beta, it **preferred** one, for exactly the
+    projects that have a stable alternative. `hybrid-aquatic`: 16 stable Forge releases (all 1.20.1, all with
+    real `mods.toml`) versus the `[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar` beta whose only descriptor is
+    a `fabric.mod.json`. **A preference, never a filter** — `faster-random` publishes an alpha and zero
+    releases for its loader.
+  - **LANDMINE — the patch-version fallback needs the platform's cooperation, and CurseForge gives none
+    unasked.** `pickDependencyFile`'s neighbour rung searches *the files in hand*, and
+    `CurseForgePlatform.resolveDependency` narrows its page with `gameVersion=<exact>` — so every file in
+    hand carries the exact version and the neighbour rung **could never match anything the exact rung did
+    not**. Inert on that platform from the day it shipped; all six rows it closed were Modrinth.
+    `BootVerifier.resolveDependencyAcrossTheLine` asks for the exact version first and alone, then for the
+    line's other releases, so the common case is still one request. The widening is a **second
+    `resolveDependency` overload** defaulting to the narrow one: Modrinth returns a whole history in one
+    response, so the default is correct there and every implementation stays valid. **Keep the narrowing** —
+    it is what fixed the `architectury-api` window bug.
+  - **The jar outranks the platform's loader tick, and answering that is its own retry** (Griefed's call).
+    Ten rows were a mis-tick: `bellsandwhistles-0.4.5-1.21.1.jar` carries only `neoforge.mods.toml` and is
+    ticked Forge. `Prepared.Failed.declaredLoaders` is a **sibling** of `declaredMinecraftConstraint`, never
+    a widening of it — re-selecting a *version* cannot answer a *loader* mismatch, and the existing landmine
+    says what happens if you try. Exactly one retry fires, the loader one first, gated on the declared loader
+    actually having a build for that Minecraft, and it stages into the **requested** loader's attempt
+    directory so the borrowed loader keeps the pack and console its own verdict is built from.
+    `BootOutcome.bootedLoader` then differs from the verdict's loader, which `loaderDisprovingTheCrash`
+    already requires to match — so a re-selected boot cannot disprove another loader's crash.
+  - **One mod id is served by an original and a cross-loader fork, and only one of them publishes for the
+    boot.** `create` is `[forge, neoforge]`; the Fabric port is the separate project `create-fabric`; both
+    declare `create`, because keeping the id is what makes a port drop-in. `KnownModIds.alternatives` is
+    tried **after** the primary — mapping `create` onto the fork outright would send every Forge and NeoForge
+    boot to a project with no Forge build. `LearnedModIds` already keeps every prover for the same reason and
+    cannot help the first time, because the candidate that would teach it is the one being refused.
+    **No CurseForge numeric ids are invented for these**: unverifiable without the key, and a wrong one
+    stages somebody else's mod, so a table entry with no ref for a platform falls through to that platform's
+    slug guess.
+  - **A dependency may be fetched from the other platform; a candidate may not.** The candidate's platform is
+    part of the question being asked; a dependency is scenery, and the staged file is just a jar. Only the
+    **manifest** route can cross, because only it knows the mod *id* — a platform ref names nothing on the
+    other side. `stagedFromPlatform` exists so the learned ref is filed against whoever proved it; under the
+    wrong platform it resolves to nothing and the next candidate trusts it. Both failing plan states cross
+    (`Unmapped` **and** `Unsatisfied`): the difference between them is our confidence in our own mapping, not
+    whether the other site has the mod.
+  - **Two platform-boundary readers were losing or inventing a dependency.** A Modrinth entry may carry a
+    `version_id` with a **null** `project_id` — an author pinning one exact build — and reading `project_id`
+    alone dropped it silently from both dependency lists, so `askLinkedProjects` could not recover it either.
+    `projectBehind` resolves the pin with one **memoised** GET (`resolve` walks a whole version list, and a
+    pin is normally repeated by every version of it) and honours the *project*, never the pinned file, since
+    `pickDependencyFile` chooses by loader, Minecraft version and obtainability. On CurseForge a JSON-null
+    `modId` read as the literal ref `"null"` — the documented `textOrNull` hazard, and the last live instance
+    of it — and was reported as an unmet dependency named `null`.
+
 - **A PREVENTED GRIND IS NOW BLAMED ON SOMEBODY: `ERROR`, `LOCKED` OR `UNVERIFIABLE` (2026-09-09).**
   `Verdict.ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and it was
   carrying three unrelated things. Measured over the public grinder's **53 `ERROR` rows**: 15 were the mod's

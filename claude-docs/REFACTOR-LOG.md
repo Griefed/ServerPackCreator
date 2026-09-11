@@ -4010,3 +4010,104 @@ is `fix:` rather than `refactor:`. The first three are argument-only, with every
 Nothing else in the base tree noticed, which is the claim worth having: the behaviour that moved is the
 behaviour that was meant to.
 
+
+## 2026-09-10/11 — the `UNVERIFIABLE` bucket, read the same way the `ERROR` one was
+
+`LOCKED` and `UNVERIFIABLE` had been live for a day, and the new bucket immediately held **42 rows** (out of
+3931 verdicts: `CONFIRMED` 104, `CLEAR` 3597, `INCONCLUSIVE` 157, `ERROR` 8, `LOCKED` 32). Griefed's
+directive was the right one: *these mods do run on a client or a server, other launchers install them fine,
+and the grinder must too.* Every row was attributed to a measured cause, against the live APIs and by opening
+the actual jars — **27 of 42 were ours**, and the remaining 15 are genuine upstream facts (two of which now
+report better).
+
+| Cause | Rows | Fixed |
+|---|---|---|
+| NeoForge on Minecraft ≤1.20.4 ships `META-INF/mods.toml`; the loader gate was version-blind | **13** | yes |
+| Quilt's `unless` clause ignored | **5** (4 fixable) | yes |
+| Platform metadata mis-ticks a loader the jar was never built for | **10** | yes |
+| Mod id ≠ project slug, or the fork is a separate project | **3** | yes |
+| CurseForge patch-neighbour fallback **provably inert** | **2** (+2) | yes |
+| Pre-1.13 Forge descriptor (`mcmod.info`) recognised nowhere | **1** | yes |
+| A **beta** picked over 16 stable releases | **1** | yes |
+| `quilt_base` hard-required with no `unless`; `yacl` has no Forge builds; a dead project | 5 | upstream |
+
+### The eight changes, and what each one is really about
+
+- **One home for "which descriptor evidences loader L on Minecraft V"** (`LoaderDescriptors`, in `-api`).
+  `-api` already had `NEOFORGE_TOML_MINIMUM_MINECRAFT = "1.20.5"` and its own `CLAUDE.md` said outright that
+  NeoForge on 1.20.2–1.20.4 still ships `mods.toml`; `-clientside`'s `JarSelfDeclaration` held a **second,
+  flat, version-blind copy** and refused 13 genuine NeoForge jars on exactly those versions. This is the
+  `MetadataScanner`/`ModListCompiler` landmine again, so the fix **removed** the duplicate rather than adding
+  a third. `ModScanner.scannerFor` now dispatches through the same object, which as a side effect fixed
+  `scannerFor("NeoForge", "26")` throwing — the NeoForge arm compared unguarded where the Forge arm already
+  fell back, and `ModListCompiler` does not wrap the call, so it aborted **generation** in the published
+  module.
+- **Declaring a descriptor is not reading one.** The first cut of the era gate put only `neoforge.mods.toml`
+  in NeoForge's declaring set above 1.20.5 and accepted a `neoforge.mods.toml`-only jar for a *Forge* boot at
+  1.20.1. NeoForge declares both files at every version for that reason.
+- **An existing expectation encoded the bug.** `aForgeJarIsRefusedForANeoForgeBoot` asked at Minecraft
+  1.20.4, where a `mods.toml` genuinely is a NeoForge descriptor. It moved to 1.21.1 with a doc stating what
+  the gate gives up in 1.20.2–1.20.4 and that `runtimeMismatchMarkers` already scores that INCONCLUSIVE —
+  the stop-and-flag signal working as intended, which is why the commit is `fix:`.
+- **Quilt's `unless`.** `{"id": "quilt_resource_loader", "unless": "fabric-resource-loader-v0"}` is what
+  Quilt Loader honours and what `QuiltScanner` discarded. QSL publishes nothing for 1.21.1+ while
+  `fabric-api` 1.21.1 has 36 versions, so four mods that run everywhere refused everywhere.
+- **The release channel was read nowhere.** `grep releaseType\|version_type` hit only `-api`'s Mojang
+  metadata. `hybrid-aquatic` has **16 stable Forge releases** and 10 `[Sinytra]` betas, and
+  newest-Minecraft-first *prefers* a beta systematically: authors publish experimental newer-Minecraft ports
+  as betas while the stable line sits on an older version. A preference, never a filter — `faster-random`
+  publishes an alpha and zero releases for its loader.
+- **The patch-version fallback was inert on CurseForge from the day it shipped.** `resolveDependency` narrows
+  its page with `gameVersion=<exact>`, so every file in hand carries the exact version and the neighbour rung
+  could never match anything the exact rung did not. All six rows it closed were Modrinth. The widened ask is
+  a **second overload** defaulting to the narrow one, so Modrinth — which returns a whole history in one
+  response — needs no change and every implementation stays valid.
+- **The jar wins over the web form** (Griefed's call). A `neoforge.mods.toml`-only jar ticked Forge is now
+  verified under NeoForge. `Prepared.Failed.declaredLoaders` is a **sibling** channel to
+  `declaredMinecraftConstraint`, not a widening of it: the landmine says re-selecting a version cannot answer
+  a loader mismatch, and a refusal offered the wrong retry would re-stage down its whole version list
+  learning nothing. Exactly one retry fires, the loader one first, and it stages into the **requested**
+  loader's directory so the borrowed loader's own verdict keeps its pack and console.
+- **One mod id, two projects, and neither the fork table nor the platform boundary could say so.** `create`
+  publishes `[forge, neoforge]`; the Fabric port is the separate project `create-fabric`, and both declare
+  the id `create`. `KnownModIds.alternatives` is tried **after** the primary, because mapping `create` onto
+  the fork outright would send every Forge boot to a project with no Forge build. And a dependency the
+  candidate's own platform cannot supply is now fetched from the other one — only the *manifest* route can
+  cross, because only it knows the mod id.
+
+### Three things worth carrying beyond this pass
+
+- **A test can pass against unfixed code because one fixture value is a prefix of another.**
+  `CurseForgeDependencyLineTest` matched `contains("gameVersion=$older")`, and `1.20` is a prefix of
+  `1.20.6`: the request for the *newer* version matched the *older* fixture arm and the whole test went green
+  before the fix existed. Parsing the value and comparing it exactly is what gave it teeth. The repo's
+  existing rule — *run the pin and read why it failed* — catches this only if you also ask why it **passed**.
+- **A guard that cannot compile is not a red pin.** Two fixes here needed a new parameter before their guard
+  could even be expressed. Where the seam was separable it landed as its own behaviour-preserving
+  `refactor:` commit first (`KnownModIds.mappingsFor`), and the pin went red against it for the right reason.
+  Where it was not (`alternatePlatforms` on the constructor), the commit says so and quotes the mutation that
+  reproduces the red — an honest boundary beats a fake one.
+- **A refusal state's *name* is about our confidence, not about the world.** The cross-platform fallback's
+  first cut fired only on `Unsatisfied`, and the commonest real case is `Unmapped` — the difference between
+  them is how much *this* platform trusts its own mapping, which says nothing about whether the other site
+  has the mod. Its guard caught that, which is the argument for driving these through real staging rather
+  than asserting on a plan.
+
+**Equivalence checked against `86d3d441b`'s unmodified test tree**, by the recipe in the root `CLAUDE.md`:
+**api 412 pre-existing guards, zero failures; clientside 523, two failures** — both
+`JarSelfDeclarationTest`'s `mods.toml`-only jar against a NeoForge boot at Minecraft 1.20.2/1.20.4, i.e.
+exactly the one deliberate change, and both already restated at 1.21.1 in the HEAD tree. **Three** files
+needed adapting, all reference-only: `JarSelfDeclarationTest` on `declaredLoaders` taking the Minecraft
+version (passed `1.21.1`, where every one of its five base expectations is unchanged), and
+`LearnedIdCollisionTest`/`LearnedModIdsTest` on `mappingsFor`'s `orElse` returning a list. Every assertion
+byte-identical.
+
+**Each new gate was mutation-verified, and each failed exactly its own guards:** dropping the bootability
+check on the re-selected loader; never setting `declaredLoaders`; forcing `alsoVersions` back to an empty
+list; dropping the fork alternatives; never consulting the other platform.
+
+**Two items were deferred with reasons, as B36 and B37** — Sinytra Connector as a boot strategy (the row that
+prompted it was a beta whose project ships 16 stable Forge builds, and the repo has already measured the
+Connector attempt failing with every dependency staged correctly), and search-then-confirm for a mod id no
+registry resolves (three cheaper routes landed first and this pass produced no instance the search would be
+needed for).
