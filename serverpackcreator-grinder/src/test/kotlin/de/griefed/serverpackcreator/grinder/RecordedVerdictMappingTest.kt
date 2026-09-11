@@ -41,8 +41,10 @@ import java.time.Instant
  *
  * The unasserted fields were the ones that matter most: **`verdict`** is what `/as-properties` gates
  * publication on, `declared`, `firedRule` and `decidedBy` are what make a published exclusion auditable, and
- * `filenamePattern` and `detail` are report columns. Writing `filenamePattern = verdict.suggestedEntry`, or
- * swapping `declared` for `declaredServerSide`, would have left the whole suite green.
+ * `fileName` and `detail` are report columns. Writing `fileName = verdict.suggestedEntry`, or swapping
+ * `declared` for `declaredServerSide`, would have left the whole suite green — and the first of those is not
+ * hypothetical: until 2026-09-10 that field was called `filenamePattern` and *was* fed `suggestedEntry` for
+ * two thirds of the store's rows.
  *
  * Every field gets a **distinct** sentinel, which is the point: equal values cannot detect a swap. The two
  * `DeclaredSupport` fields take different constants for exactly that reason, and the enums are chosen so no

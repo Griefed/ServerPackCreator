@@ -42,9 +42,10 @@ plus a native view of the daemon's own dashboard.
 ## Landmines & decisions (do not relearn)
 
 - **`suggestedEntry` is the only field that becomes an exclusion entry.** That is what the daemon's own
-  `FallbackPropertiesRenderer` publishes, so the two agree. `filenamePattern` is deliberately **not** a
-  fallback: it is a regex over a *filename*, and SPC's default exclusion filter is not the regex one, so
-  offering it would silently exclude nothing. A row with no `suggestedEntry` is therefore not tickable —
+  `FallbackPropertiesRenderer` publishes, so the two agree. `fileName` — the sampled artifact's own name,
+  called `filenamePattern` until 2026-09-10 — is deliberately **not** a fallback: it names one *file*, and
+  SPC's default exclusion filter matches a prefix rather than a whole name, so offering it would exclude
+  that one build and nothing else. A row with no `suggestedEntry` is therefore not tickable —
   and `VerdictTableModel` makes its checkbox non-editable rather than rendering an unticked box that
   does nothing when clicked.
 - **A blank entry is refused in two places, and both are needed.** An empty string matches *every* mod

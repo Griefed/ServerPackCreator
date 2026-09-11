@@ -46,9 +46,12 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   warning when it truncates. **Why:** the newest 50 files are 50 files *across all loaders*, so a project that
   migrated Forge → NeoForge keeps publishing NeoForge builds until its older Forge builds fall out of the
   window — leaving the crash re-check nothing of that loader to try, precisely for the projects that produce a
-  false clientside verdict. Most projects still cost one call. `resolveDependency` stays single-page on
-  purpose: it needs *a* usable file for one loader/Minecraft pair, not a history, and paging every dependency
-  of every candidate would multiply what a catalog sweep spends of the API key's quota.
+  false clientside verdict. Most projects still cost one call. `resolveDependency` stays **one page per
+  asked version** on purpose: it needs *a* usable file for one loader/Minecraft pair, not a history, and
+  paging every dependency of every candidate would multiply what a catalog sweep spends of the API key's
+  quota. It asks for the version being booted and nothing else, until that answers nothing usable — then one
+  more page per patch neighbour, which is the only way a version-line is reachable on a platform that cannot
+  show a caller what it did not ask about (see the patch-fallback landmine below).
 - **LANDMINE — `DeclaredSupport` and `api.modscanning.Sideness` are different concepts; do not merge them.**
   This module's enum was itself called `Sideness` until 2026-08-14, which made them look like duplicates
   of one idea. They are not, and the confidence model depends on the difference:
@@ -871,8 +874,11 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     `terralith`, `trek` and `true-ending` refused everywhere. `quilt_base` hard-required with **no** `unless`
     (`shatterbyte-lib`, `notenoughrecipebook`) stays genuinely UNVERIFIABLE — do not put it back into
     `environmentProvidedIds`.
-  - **The release channel outranks Minecraft recency** (`ReleaseChannel`, Griefed's rule: *newest Release for
-    any loader; Beta or Alpha only when no release exists*). `pickBootableCandidate` sorts newest-Minecraft
+  - **The release channel outranks Minecraft recency — for the CANDIDATE'S OWN build only**
+    (`ReleaseChannel`, Griefed's rule: *newest Release for any loader; Beta or Alpha only when no release
+    exists*). `pickDependencyFile` and `pickRecheckCandidates` are deliberately channel-blind: a dependency
+    only has to *load*, and the crash re-check is spending its budget on **diversity** of Minecraft line and
+    loader, which a channel filter would narrow. Do not "finish the job" by adding it to either. `pickBootableCandidate` sorts newest-Minecraft
     first, and authors publish experimental newer-Minecraft ports as **betas** while the stable line sits on
     an older version — so the ordering did not merely permit a beta, it **preferred** one, for exactly the
     projects that have a stable alternative. `hybrid-aquatic`: 16 stable Forge releases (all 1.20.1, all with
@@ -1098,18 +1104,20 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
   ServerStarterJar prints the refusal in full and exits 0.
 
-- **Two patterns, and only one of them is publishable** (`LoaderVerdict.filenamePattern`, 2026-09-04).
+- **Two patterns, and only one of them is publishable** (`LoaderVerdict.fileName`, 2026-09-04; the field was
+  called `filenamePattern` until 2026-09-10, and the docs outlived the name).
   `suggestedEntry` is the longest common prefix over a project's *whole* history and must stay that way —
   it is what the fallback list matches with `startsWith`, so it has to cover every build ever released.
   The cost is that any project which renamed its files loses whatever the rename dropped:
   `iris` published `iris-` for Fabric and Quilt against `iris-neoforge-` for NeoForge, the difference being
   that its oldest Fabric jars are `iris-mc1.16.5-1.0.0.jar`, from before the loader went into the name,
   while all 42 NeoForge files carry it.
-  `filenamePattern` runs the same `FilenameStemDeriver.deriveStem` over the **sampled file alone**, so it
-  keeps the token history erodes, and the grinder shows the two side by side.
-  - **LANDMINE — never publish the narrow one.** Serving `filenamePattern` from `/as-properties` would stop
-    excluding every build the narrow form misses, which for `iris` is its entire pre-2022 history. The two
-    are separate fields for that reason and `theFilenamePatternIsNotWhatGetsPublished` fails the build on a
+  `fileName` carries the sampled artifact's **own name, verbatim** — the name it has when downloaded — and
+  the grinder shows the two side by side. It was a *stem* of that one file until 2026-09-10, which is why the
+  landmine below is about a narrow pattern: a stem of one file is still what must never be published.
+  - **LANDMINE — never publish the narrow one.** Serving `fileName` from `/as-properties` would stop
+    excluding every build the broad stem covers, which for `iris` is its entire pre-2022 history. The two
+    are separate fields for that reason and `theSampledFilenameIsNotWhatGetsPublished` fails the build on a
     swap.
   - A **Quilt** row reads `iris-fabric-`, which is correct and not a leak: Quilt boots Fabric builds, and
     this describes the artifact, not the row's label. That is the whole point — it is what a maintainer
