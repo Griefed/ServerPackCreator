@@ -649,10 +649,16 @@ class BootVerifier(
         val requirements = declared ?: return
 
         val bundled = BundledJars.idsIn(staged)
+        // A bundled library's own demands bind exactly like a staged one's, and nothing else reads them:
+        // `highlight` declares `resourcefullib: "*"`, which the bundled copy satisfies -- while that copy
+        // declares `fabric-api: "*"`, which was never staged and killed the boot, charged to `highlight`.
+        // Appended rather than merged, so the host's own declaration still leads and `stageableRequirements`
+        // applies one dedupe to the pair.
+        val declaredAndBundled = requirements + BundledJars.requirementsIn(staged)
         // Scoped to this jar, which is also the scope of `file.relatedDependencies`: several unresolved ids
         // in one descriptor share a single round of probing instead of re-fetching the same links each time.
         val probed = mutableSetOf<String>()
-        for (requirement in stageableRequirements(requirements, visited, bundled, provided) { platformRefFor(it) }) {
+        for (requirement in stageableRequirements(declaredAndBundled, visited, bundled, provided) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
@@ -934,8 +940,25 @@ class BootVerifier(
         mainFile: ModFile,
         minecraftVersion: String
     ): ScannedMod? = scanned.firstOrNull { mod ->
-        mod.file.name != mainFile.fileName &&
-            mod.minecraftConstraint?.let { !VersionConstraint.satisfies(minecraftVersion, it) } == true
+        mod.file.name != mainFile.fileName && excludesTheVersion(mod, minecraftVersion)
+    }
+
+    /**
+     * Whether [mod]'s own descriptor — **or any jar it bundles** — positively excludes [minecraftVersion].
+     *
+     * The nested half is not a refinement: a bundled library is on the classpath exactly like a staged one,
+     * and its declared range binds exactly like a staged one's, while the *host* jar's descriptor may say
+     * nothing at all. Measured live on Quilt — `quilted-fabric-api-11.0.0-alpha.3+0.102.0-1.21.jar` bundles
+     * `qsl_base-10.0.0-alpha.1+1.21.jar`, which pins `minecraft [1.21, 1.21]` exactly. Staged into a
+     * Minecraft 1.21.1 pack it refuses the whole pack, and the *candidate* wore the INCONCLUSIVE.
+     *
+     * Same fail-toward-accepting rule as the top-level read: an unreadable jar yields no demands at all, and
+     * a range [VersionConstraint] cannot parse is accepted.
+     */
+    private fun excludesTheVersion(mod: ScannedMod, minecraftVersion: String): Boolean {
+        val declared = listOfNotNull(mod.minecraftConstraint) +
+            BundledJars.minecraftDemandsIn(mod.file).values
+        return declared.any { !VersionConstraint.satisfies(minecraftVersion, it) }
     }
 
     /**

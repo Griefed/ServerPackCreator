@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -101,8 +102,27 @@ internal class DependencyMinecraftRangeTest {
             library.takeIf { nativeRef == "some-lib" }
     }
 
-    /** Writes the real jar the scanners will read, so nothing here is mocked below the descriptor. */
-    private fun downloaderFor(bodies: Map<String, String>) = JarDownloader { file, targetDirectory ->
+    /** The bytes of a one-descriptor jar, to be written as an entry of another jar. */
+    private fun nestedJarBytes(body: String): ByteArray {
+        val buffer = ByteArrayOutputStream()
+        JarOutputStream(buffer).use { out ->
+            out.putNextEntry(JarEntry("fabric.mod.json"))
+            out.write("""{"schemaVersion":1,$body}""".toByteArray())
+            out.closeEntry()
+        }
+        return buffer.toByteArray()
+    }
+
+    /**
+     * Writes the real jar the scanners will read, so nothing here is mocked below the descriptor.
+     *
+     * [nested] maps a file name to the `path to descriptor body` of a jar bundled inside it, which is how
+     * the jar-in-jar case is expressed: the host declares the path and ships the jar.
+     */
+    private fun downloaderFor(
+        bodies: Map<String, String>,
+        nested: Map<String, Pair<String, String>> = emptyMap()
+    ) = JarDownloader { file, targetDirectory ->
         val body = bodies[file.fileName] ?: return@JarDownloader null
         targetDirectory.mkdirs()
         File(targetDirectory, file.fileName).also { jar ->
@@ -110,6 +130,11 @@ internal class DependencyMinecraftRangeTest {
                 out.putNextEntry(JarEntry("fabric.mod.json"))
                 out.write("""{"schemaVersion":1,$body}""".toByteArray())
                 out.closeEntry()
+                nested[file.fileName]?.let { (path, nestedBody) ->
+                    out.putNextEntry(JarEntry(path))
+                    out.write(nestedJarBytes(nestedBody))
+                    out.closeEntry()
+                }
             }
         }
     }
@@ -119,11 +144,15 @@ internal class DependencyMinecraftRangeTest {
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /** Stage the pack and return what ended up in `mods/`. */
-    private fun stage(bodies: Map<String, String>, workDir: File): List<String> {
+    private fun stage(
+        bodies: Map<String, String>,
+        workDir: File,
+        nested: Map<String, Pair<String, String>> = emptyMap()
+    ): List<String> {
         BootVerifier(
             apiWrapper = apiWrapper,
             platform = platform,
-            httpDownloader = downloaderFor(bodies),
+            httpDownloader = downloaderFor(bodies, nested),
             loaderVersionPolicy = unbootableLoaderVersion,
             workDirectory = workDir
         ).prepareBootPack(candidate, "Fabric")
@@ -157,6 +186,38 @@ internal class DependencyMinecraftRangeTest {
         Assertions.assertEquals(
             listOf("some-lib-1.0.0.jar", "some-mod-1.0.0.jar"), staged,
             "the 2.0.0 build declares Minecraft '$excludingRange' and cannot load in a $fabricRelease pack"
+        )
+    }
+
+    /**
+     * **A bundled jar's pin counts as the jar that carries it**, because a jar-in-jar library is on the
+     * classpath exactly like a staged one — while the host's own descriptor may say nothing at all.
+     *
+     * Measured live 2026-09-11, four published rows:
+     * `quilted-fabric-api-11.0.0-alpha.3+0.102.0-1.21.jar` bundles `qsl_base-10.0.0-alpha.1+1.21.jar`, which
+     * pins `minecraft [1.21, 1.21]` exactly. Staged into a Minecraft 1.21.1 pack it refused the whole pack
+     * with *"Quilt Base API requires version [1.21, 1.21] of minecraft"*, and the candidate wore the
+     * INCONCLUSIVE. Nothing read the nested descriptor, so nothing could have predicted it.
+     */
+    @Test
+    fun aDependencyBundlingAJarThatExcludesThePacksMinecraftIsDemoted(@TempDir workDir: File) {
+        val staged = stage(
+            mapOf(
+                "some-mod-1.0.0.jar" to """"id":"somemod","depends":{"some-lib":"*"}""",
+                "some-lib-2.0.0.jar" to
+                    """"id":"some-lib","jars":[{"file":"META-INF/jars/inner.jar"}]""",
+                "some-lib-1.0.0.jar" to """"id":"some-lib""""
+            ),
+            workDir,
+            nested = mapOf(
+                "some-lib-2.0.0.jar" to
+                    ("META-INF/jars/inner.jar" to """"id":"inner","depends":{"minecraft":"$excludingRange"}""")
+            )
+        )
+
+        Assertions.assertEquals(
+            listOf("some-lib-1.0.0.jar", "some-mod-1.0.0.jar"), staged,
+            "the 2.0.0 build says nothing itself, and the jar it ships cannot load in a $fabricRelease pack"
         )
     }
 
