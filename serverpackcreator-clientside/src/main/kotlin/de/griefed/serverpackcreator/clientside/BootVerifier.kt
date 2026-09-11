@@ -142,6 +142,14 @@ class BootVerifier(
          */
         val bootedLoader: String? = null,
         /**
+         * The published file name of the artifact this attempt actually staged, or `null` when nothing
+         * staged. Its sibling [bootedLoader]'s counterpart, and needed for the same reason: staging
+         * re-selects — on a loader or Minecraft range the jar declares, and on a crash re-check that boots
+         * another build entirely — so the file a caller *chose* and the file that *ran* are routinely
+         * different, and a verdict naming the former attributes one build's evidence to another.
+         */
+        val bootedFile: String? = null,
+        /**
          * The id of the operator rule that decided or annotated this outcome, or `null` when the built-in
          * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
          * that fires too broadly means *counting* the verdicts it decided.
@@ -1140,7 +1148,8 @@ class BootVerifier(
         return Prepared.Ready(
             serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
             injectedDependencies = injected.toList(),
-            candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName))
+            candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName)),
+            bootedFile = mainFile.fileName
         )
     }
 
@@ -1248,7 +1257,13 @@ class BootVerifier(
             /** The dependency jars staged beside the candidate, for attribution and for the verdict record. */
             val injectedDependencies: List<InjectedDependency> = emptyList(),
             /** The candidate's own file-name stem, so attribution can tell its frames from a dependency's. */
-            val candidateStem: String? = null
+            val candidateStem: String? = null,
+            /**
+             * The published name of the candidate file this attempt staged, verbatim — what the verdict
+             * reports as the artifact it is about. Carried rather than derived from [candidateStem], which
+             * is a *stem* and has already dropped the version that identifies the build.
+             */
+            val bootedFile: String? = null
         ) : Prepared {
             /**
              * This attempt's staging directory name — the `(platform, slug, loader)` tuple
@@ -1372,7 +1387,11 @@ class BootVerifier(
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
             val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}", rules)
-                .copy(bootedLoader = pack.loader, stagedDependencies = pack.injectedDependencies.map { it.fileName })
+                .copy(
+                    bootedLoader = pack.loader,
+                    bootedFile = pack.bootedFile,
+                    stagedDependencies = pack.injectedDependencies.map { it.fileName }
+                )
                 // Annotation only: `attribute` returns an outcome whose result is this one's, always.
                 .let { attribute(it, pack.injectedDependencies, pack.candidateStem) }
             // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the

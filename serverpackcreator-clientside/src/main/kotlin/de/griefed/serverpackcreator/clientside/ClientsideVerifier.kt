@@ -126,12 +126,25 @@ class ClientsideVerifier(
     private fun verdictFor(project: ProjectFiles, loader: String, bootVerifier: BootVerifier?): LoaderAssessment {
         val loaderFiles = project.files.filter { loader in it.loaders }
         val stem = FilenameStemDeriver.deriveStem(loaderFiles.map { it.fileName })
-        val sample = loaderFiles.firstOrNull()
+        // The combination staging would choose, so the scan reads the jar this verdict is about and the
+        // report names it. `loaderFiles.firstOrNull()` is the platform's newest *upload*, which is a
+        // different file whenever an old build was re-published -- the aether row that prompted this.
+        //
+        // Loader availability is deliberately not consulted: this verifier holds no `LoaderVersionPolicy`,
+        // and the boot applies its own gate anyway. Where the two picks differ the boot's wins, because
+        // `sampleFile` below prefers what actually staged.
+        val selected = BootCandidateSelector.pickBootableCandidate(loaderFiles, loader) { true }
+        // A file the platform published with no Minecraft version at all is unbootable and so is never
+        // selected, but it is still the only thing there is to scan -- so it stays the sample.
+        val sample = selected?.first ?: loaderFiles.firstOrNull()
+        val sampleMinecraftVersion = selected?.second
+            ?: sample?.minecraftVersions?.maxWithOrNull(BootCandidateSelector.minecraftComparator)
+            ?: ""
 
         val jarScan = when {
             sample == null -> JarScan.ERROR
             sample.locked -> JarScan.DEFERRED
-            else -> scanSample(sample, loader, project)
+            else -> scanSample(sample, sampleMinecraftVersion, loader, project)
         }
 
         // The boot needs the metadata verdict too: a crash that *contradicts* a declared server support is
@@ -165,16 +178,29 @@ class ClientsideVerifier(
                 // The artifact's own published name. The whole history's common prefix
                 // (`suggestedEntry`) is what gets published and loses the loader token for any project that
                 // ever renamed its files; this is what a maintainer looks up on the platform page.
-                sampleFile = sample?.fileName,
+                //
+                // The boot's answer outranks the metadata pick, and only the boot can give it: staging
+                // re-selects on a loader or Minecraft contradiction the jar declares, and the crash
+                // re-checks boot other builds entirely. Naming the file we guessed at instead of the one
+                // that ran is what made a `DEPENDENCY_FAILURE` read as being about a build with no
+                // dependencies.
+                sampleFile = bootOutcome?.bootedFile ?: sample?.fileName,
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail
         )
     }
 
-    /** Download a sample file and read its declared sideness, degrading to [JarScan.ERROR] on failure. */
-    private fun scanSample(sample: ModFile, loader: String, project: ProjectFiles): JarScan {
-        val minecraftVersion = sample.minecraftVersions.maxOrNull() ?: ""
+    /**
+     * Download [sample] and read its declared sideness at [minecraftVersion], degrading to [JarScan.ERROR]
+     * on failure.
+     *
+     * The version is passed in rather than derived here: the scanner is chosen per Minecraft version, and
+     * this used to ask `sample.minecraftVersions.maxOrNull()` -- a *lexicographic* maximum, which answers
+     * `1.9` for a file tagged `1.9` and `1.20.1`. The caller already knows which version staging picked,
+     * and it picks it with [BootCandidateSelector.minecraftComparator].
+     */
+    private fun scanSample(sample: ModFile, minecraftVersion: String, loader: String, project: ProjectFiles): JarScan {
         val jar = jarDownloader.download(
             sample,
             File(workDirectory, AttemptDirectory.nameFor(project.platform, project.slug, loader))
