@@ -197,7 +197,7 @@ internal object VerdictReportRenderer {
     private fun rowHtml(verdict: GrindVerdict, logNames: List<String>): String {
         val cells = VerdictField.entries.map { field ->
             if (field == VerdictField.PROJECT) {
-                """<a href="${esc(verdict.projectUrl)}" rel="noopener noreferrer">${esc(verdict.projectUrl)}</a>"""
+                projectCell(verdict.projectUrl)
             } else {
                 esc(field.text(verdict))
             }
@@ -224,6 +224,25 @@ internal object VerdictReportRenderer {
             """<a href="/boot-log?name=${esc(urlEncode(name))}">${esc(label)}</a><br>"""
         }
         return "<details><summary>${logNames.size} log(s)</summary>$links</details>"
+    }
+
+    /**
+     * The Project cell: a link when the URL is one a browser should follow, the escaped text otherwise.
+     *
+     * **Escaping is not an allowlist.** `esc` stops a value breaking out of the attribute; it leaves
+     * `javascript:` a working href. This value is not the daemon's own — it is the URL an operator queued or
+     * the `links.websiteUrl` a platform published for the project — and the report server has no
+     * authentication and binds loopback only until `SPC_GRINDER_HOST` says otherwise. The text is still
+     * shown either way, because a reader has to be able to see which project a row is about.
+     */
+    private fun projectCell(projectUrl: String): String {
+        val followable = projectUrl.startsWith("http://", ignoreCase = true) ||
+            projectUrl.startsWith("https://", ignoreCase = true)
+        return if (followable) {
+            """<a href="${esc(projectUrl)}" rel="noopener noreferrer">${esc(projectUrl)}</a>"""
+        } else {
+            esc(projectUrl)
+        }
     }
 
     private fun esc(value: String): String = value

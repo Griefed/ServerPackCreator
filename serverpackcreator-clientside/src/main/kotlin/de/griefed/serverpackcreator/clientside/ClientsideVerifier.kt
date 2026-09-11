@@ -242,7 +242,7 @@ class ClientsideVerifier(
                     // ladder's own decision -- and naming that as the confirming evidence sends an operator
                     // asking "which rule excluded this mod?" to a rule that declined to.
                     if (outcome.decidedBy == BootDecision.OPERATOR_RULE) {
-                        outcome.firedRule ?: outcome.decidedBy?.ruleId
+                        outcome.firedRule ?: outcome.decidedBy.ruleId
                     } else {
                         outcome.decidedBy?.ruleId
                     }
