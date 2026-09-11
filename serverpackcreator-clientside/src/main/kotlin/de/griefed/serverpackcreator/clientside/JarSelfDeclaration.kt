@@ -60,7 +60,7 @@ object JarSelfDeclaration {
      * The loaders a descriptor can evidence on [minecraftVersion] — the canonical names
      * [SupportedModloaders] spells, minus any whose descriptor set is empty there.
      *
-     * A loader outside this set can never be refused (see [contradiction]'s last accept arm), which is
+     * A loader outside this set can never be refused (see [contradictingLoaders]' last accept arm), which is
      * exactly right for `LegacyFabric`: it reads Fabric's descriptor, so no jar can carry evidence against
      * it, and `LoaderCompatibility` already accepts a Fabric jar for its boot.
      */
@@ -114,6 +114,29 @@ object JarSelfDeclaration {
     }.getOrDefault(false)
 
     /**
+     * The loaders [jar]'s descriptors name when **none** of them can run under [loader] on
+     * [minecraftVersion] — i.e. the set a caller may re-select from — or empty when there is no such
+     * disagreement.
+     *
+     * Split out of [contradiction] so the *rule* has one home: a caller answering the mismatch by verifying
+     * the jar under the loader it really declares needs the same acceptability question the refusal asked,
+     * and a second copy of it would be free to drift into accepting what the gate refuses.
+     */
+    fun contradictingLoaders(jar: File, loader: String, minecraftVersion: String): Set<String> {
+        val declared = declaredLoaders(jar, minecraftVersion)
+        // The cross-loading claim is [LoaderCompatibility]'s, and it needs the Minecraft version: NeoForge
+        // loads a Forge jar on 1.20.1 and on nothing else, so asking without one can only be wrong twice.
+        // That is a claim about the *jar* loading unchanged, and stays separate from which descriptor a
+        // loader reads -- NeoForge's package rename (1.20.2) and its descriptor rename (1.20.5) are two
+        // different dates, and merging them is what made this gate wrong.
+        val acceptable = declared.isEmpty() ||
+            loader in declared ||
+            LoaderCompatibility.alsoRuns(loader, minecraftVersion).any { it in declared } ||
+            loader !in declaringLoaders(minecraftVersion)
+        return if (acceptable) emptySet() else declared
+    }
+
+    /**
      * Why [jar] must not be booted as [loader] on [minecraftVersion], or `null` to go ahead.
      *
      * [minecraftConstraint] is the jar's own declared Minecraft range, from
@@ -126,18 +149,9 @@ object JarSelfDeclaration {
         minecraftVersion: String,
         minecraftConstraint: String?
     ): String? {
-        val declared = declaredLoaders(jar, minecraftVersion)
-        // The cross-loading claim is [LoaderCompatibility]'s, and it needs the Minecraft version: NeoForge
-        // loads a Forge jar on 1.20.1 and on nothing else, so asking without one can only be wrong twice.
-        // That is a claim about the *jar* loading unchanged, and stays separate from which descriptor a
-        // loader reads -- NeoForge's package rename (1.20.2) and its descriptor rename (1.20.5) are two
-        // different dates, and merging them is what made this gate wrong.
-        val acceptable = declared.isEmpty() ||
-            loader in declared ||
-            LoaderCompatibility.alsoRuns(loader, minecraftVersion).any { it in declared } ||
-            loader !in declaringLoaders(minecraftVersion)
-        if (!acceptable) {
-            return "${jar.name} carries only ${declared.sorted().joinToString("/")} descriptor(s), " +
+        val mismatched = contradictingLoaders(jar, loader, minecraftVersion)
+        if (mismatched.isNotEmpty()) {
+            return "${jar.name} carries only ${mismatched.sorted().joinToString("/")} descriptor(s), " +
                 "so it is not a $loader mod"
         }
         // VersionConstraint fails toward accept on its own, so an unparseable range never reaches a refusal.

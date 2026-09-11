@@ -874,7 +874,59 @@ class BootVerifier(
             )
         val (mainFile, minecraftVersion) = candidate
         val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+        // At most one retry, and the two answer different refusals -- the loader mismatch first, because
+        // where a jar disagrees about both, no other Minecraft version makes it a mod for this loader.
+        reselectOnLoaderContradiction(staged, project, loader, mainFile, minecraftVersion, loaderVersionOverride, bootable)
+            ?.let { return it }
         return reselectOnMinecraftContradiction(staged, project, loader, mainFile, loaderVersionOverride, bootable)
+    }
+
+    /**
+     * Answer a "the jar carries another loader's descriptor" refusal by verifying it under the loader it
+     * really declares, or `null` when that is not the refusal and the Minecraft retry should have its turn.
+     *
+     * **Why the jar wins over the page** (Griefed's call). A platform's loader tick is a web form; the
+     * descriptor is what the file was built against, and it is what the loader reads at runtime. Measured on
+     * the public grinder 2026-09-10, ten `UNVERIFIABLE` rows are nothing but a mis-tick —
+     * `bellsandwhistles-0.4.5-1.21.1.jar` carries only `META-INF/neoforge.mods.toml` and is ticked Forge,
+     * `Highlighter-1.19.4-forge-1.1.5.jar` is ticked Fabric — and every launcher installs those jars under
+     * the loader they name. Refusing them publishes a verdict about our reading of the page.
+     *
+     * **What keeps it from becoming an amnesty.** The declared loader must have a build for the Minecraft
+     * being booted (`bootable`), so a jar declaring loaders none of which can run there still refuses with
+     * its original reason. The retry calls [stageBootPack], not [prepareBootPack], so a second contradiction
+     * surfaces rather than loops. And it stages into the **requested** loader's scratch directory: staging
+     * wipes the directory it uses, and the loader whose descriptor was borrowed has its own verdict to build
+     * from its own pack and console — the same reasoning as the cross-loader crash re-check's.
+     *
+     * The verdict still says what ran: `BootOutcome.bootedLoader` is stamped from the staged pack, so a
+     * re-selected boot has `bootedLoader != loader`, which `ClientsideVerifier.loaderDisprovingTheCrash`
+     * already requires to be equal before one loader may clear another's crash.
+     */
+    private fun reselectOnLoaderContradiction(
+        staged: Prepared,
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        minecraftVersion: String,
+        loaderVersionOverride: String?,
+        bootable: (String, String) -> Boolean
+    ): Prepared? {
+        if (staged !is Prepared.Failed || staged.declaredLoaders.isEmpty()) {
+            return null
+        }
+        val reselected = loaderToVerifyUnder(staged.declaredLoaders, mainFile.loaders) {
+            bootable(it, minecraftVersion)
+        } ?: return null
+        log.info(
+            "${mainFile.fileName} carries ${staged.declaredLoaders.sorted().joinToString("/")} descriptor(s) " +
+                "while ${project.platform} ticked it $loader, so verifying ${project.slug} under $reselected " +
+                "on Minecraft $minecraftVersion — the loader its own descriptor names."
+        )
+        return stageBootPack(
+            project, reselected, mainFile, minecraftVersion, loaderVersionOverride,
+            attemptDirName = AttemptDirectory.nameFor(project.platform, project.slug, loader)
+        )
     }
 
     /**
@@ -1156,7 +1208,19 @@ class BootVerifier(
              * wrong loader's descriptor offers no second version to try, whereas a Minecraft range usually
              * does, because the platform commonly tags more versions than the descriptor admits.
              */
-            val declaredMinecraftConstraint: String? = null
+            val declaredMinecraftConstraint: String? = null,
+            /**
+             * The loaders the staged jar's descriptors actually name, set **only** when *that* is why
+             * staging stopped — i.e. the jar carries no descriptor the loader being booted reads.
+             * Empty for every other refusal, including the Minecraft-range disagreement above.
+             *
+             * The sibling of [declaredMinecraftConstraint], and deliberately a separate channel rather
+             * than a widening of it: re-selecting a *version* cannot answer a *loader* mismatch, and a
+             * refusal that offered the Minecraft retry this set would re-stage the jar down its whole
+             * version list, learning nothing each time. Exactly one of the two may be non-empty per
+             * refusal, and [prepareBootPack] tries at most one retry.
+             */
+            val declaredLoaders: Set<String> = emptySet()
         ) : Prepared
     }
 
@@ -1249,6 +1313,29 @@ class BootVerifier(
         }
 
         /**
+         * Which of the loaders a jar's descriptors [declared] to verify it under, or `null` when none of
+         * them can be booted on the Minecraft version in question.
+         *
+         * Prefers one the platform also [tagged] for the file — the author's two statements agreeing is
+         * better evidence than either alone, and a file ticked Forge *and* NeoForge whose jar only declares
+         * NeoForge should be verified as NeoForge rather than as whatever sorts first. Failing that it is
+         * alphabetical, purely so the choice is deterministic: a jar declaring two bootable loaders neither
+         * of which its page mentions offers nothing to choose on, and picking by file name is the
+         * silently-plausible-value trap this module has already paid for.
+         *
+         * [bootable] is what stops this becoming an amnesty — a `mods.toml` names Forge and NeoForge on
+         * Minecraft 1.19.4, where NeoForge published nothing at all.
+         */
+        internal fun loaderToVerifyUnder(
+            declared: Set<String>,
+            tagged: Set<String>,
+            bootable: (String) -> Boolean
+        ): String? {
+            val usable = declared.filter(bootable)
+            return usable.firstOrNull { it in tagged } ?: usable.minOrNull()
+        }
+
+        /**
          * Refuse a boot the staged jar's own descriptor contradicts, or `null` to go ahead.
          *
          * Scans the jar for its declared Minecraft range and compares that, plus the descriptors it carries,
@@ -1269,13 +1356,21 @@ class BootVerifier(
             // loader-descriptor mismatch reports itself, and only the Minecraft disagreement can be answered
             // by trying another version. Getting this wrong would re-select on a refusal re-selection cannot fix.
             val minecraftDisagreement = declared?.takeIf { !VersionConstraint.satisfies(minecraftVersion, it) }
+            // Asked again rather than parsed back out of `contradiction`: the acceptability rule lives in
+            // JarSelfDeclaration and must have one home, and this costs a second read of the archive only
+            // on the refusal path. The two channels are mutually exclusive because the loader mismatch is
+            // reported first, so a jar disagreeing about both offers the loader retry and not the version
+            // one -- which is the right way round: booting another version under a loader whose descriptor
+            // the jar does not carry still cannot load the mod.
+            val mismatchedLoaders = JarSelfDeclaration.contradictingLoaders(jar, loader, minecraftVersion)
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
                     "The platform's declared versions are what its author ticked, not what the jar was built for.",
                 // A web-form tick contradicting the jar is the author's mistake: nothing we can retry, and
                 // no statement about whether the mod belongs on a server.
                 cause = PreventionCause.UPSTREAM_UNAVAILABLE,
-                declaredMinecraftConstraint = minecraftDisagreement
+                declaredMinecraftConstraint = minecraftDisagreement.takeIf { mismatchedLoaders.isEmpty() },
+                declaredLoaders = mismatchedLoaders
             )
         }
 
