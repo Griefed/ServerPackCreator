@@ -1940,14 +1940,26 @@ class BootVerifier(
         }
 
         /**
-         * Whether a crash is worth spending boots on *other versions of the mod*: only a CRASHED outcome,
-         * only when the metadata claims server support (so the two signals contradict each other), and only
-         * within a non-zero boot budget.
+         * Whether a crash is worth spending boots on *other versions of the mod*: only a CRASHED outcome that
+         * client-only evidence has not already settled, within a non-zero boot budget, and then for one of
+         * two reasons.
          *
-         * Deliberately narrow. Where the metadata already leans clientside the crash *confirms* it, and in a
-         * catalog sweep that agreement is the common case — re-checking it would spend boots to learn nothing
-         * while the crawl falls behind. The contradiction is the only case where one of the signals must be
-         * wrong, and therefore the only case worth paying to resolve.
+         * **The metadata contradicts it.** The mod claims server support and the server died, so one of the
+         * two signals must be wrong. Deliberately narrow: where the metadata already leans clientside the
+         * crash *confirms* it, and in a catalog sweep that agreement is the common case — re-checking it
+         * would spend boots to learn nothing while the crawl falls behind.
+         *
+         * **Or it is about to be published.** A crash a *decisive* rung explains reaches `CONFIRMED`, which
+         * strips the mod from every server pack built against the fallback list, and that is worth one boot
+         * whatever the metadata says. This arm exists because the axis moved: a project used to be ground
+         * under every loader it publishes for, so a wrong crash routinely met a clean boot from a sibling
+         * loader in the same run (`iron-chests`, 2026-08-23) and `ClientsideVerifier.loaderDisprovingTheCrash`
+         * threw it out for free. One loader per Minecraft line means that sibling is no longer booted unless
+         * something asks for it, and this is what asks.
+         *
+         * In practice the second arm reaches `OPERATOR_RULE` alone — the other decisive rungs all prove
+         * client-only and are excluded above — which is exactly right: a hand-written rule is the one
+         * decisive signal nobody has cross-checked.
          */
         internal fun shouldRecheckAgainstOtherVersions(
             outcome: BootOutcome,
@@ -1958,7 +1970,8 @@ class BootVerifier(
             // run on a server"; client-only evidence has settled that, so the boots would buy nothing and
             // a survivor among them would actively discard the proof.
             outcome.decidedBy?.provesClientOnly != true &&
-            metadataDeclaresServerSupport && limit > 0
+            (metadataDeclaresServerSupport || outcome.decidedBy?.decisive == true) &&
+            limit > 0
 
         /**
          * Fold the other-version [attempts] into the verdict for the crash in [first]. One clean boot wins

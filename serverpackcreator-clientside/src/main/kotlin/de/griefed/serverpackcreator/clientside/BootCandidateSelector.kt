@@ -330,9 +330,22 @@ object BootCandidateSelector {
             .distinctBy { it.loader to it.minecraftVersion }
             .toMutableList()
 
-        val usedLines = mutableSetOf(minecraftLine(bootedMinecraftVersion))
+        val bootedLine = minecraftLine(bootedMinecraftVersion)
+        val usedLines = mutableSetOf(bootedLine)
         val usedLoaders = mutableSetOf<String>()
         val picked = ArrayList<RecheckCandidate>(limit)
+        // **The crashing line's own other loader goes first, and nothing else can supply it.** Since a
+        // project is ground once per Minecraft line under a single loader, every *other* line is already a
+        // first-class verdict that `ClientsideVerifier` reconciles against for free — so spending the budget
+        // there re-buys evidence the run produces anyway, while the sibling loader of this era is booted by
+        // nobody unless this asks for it. That sibling is what used to throw out a wrong crash in the same
+        // run (`iron-chests`: Forge crashed, NeoForge booted, same entry).
+        pool.firstOrNull { minecraftLine(it.minecraftVersion) == bootedLine && it.loader != bootedLoader }
+            ?.let { sibling ->
+                pool.remove(sibling)
+                usedLoaders.add(sibling.loader)
+                picked.add(sibling)
+            }
         while (picked.size < limit && pool.isNotEmpty()) {
             val next = pool.firstOrNull { it.loader !in usedLoaders && minecraftLine(it.minecraftVersion) !in usedLines }
                 ?: pool.firstOrNull { minecraftLine(it.minecraftVersion) !in usedLines }

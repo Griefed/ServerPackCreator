@@ -158,11 +158,18 @@ internal class BootCandidateSelectorTest {
     /**
      * The shape that prompted the change, in miniature: `creativecore` crashed on Fabric / Minecraft 26.2
      * while NeoForge booted a server, and the two re-checks it spent both went to Fabric 26.1.2 and 26.1.
-     * The diverse sample keeps one same-loader answer and spends the other on a different loader *and* a
-     * different Minecraft line.
+     *
+     * **The first pick is now the crashing era's *other loader*, and that is the direct answer.** Since a
+     * project is ground once per Minecraft line, every other line is already a first-class verdict the
+     * report reconciles against for free — so spending the budget there re-buys evidence the run produces
+     * anyway, while the sibling loader of this era is booted by nobody unless this asks. For the reported
+     * case that is NeoForge / 26.2: the very boot that contradicted the crash, reached in one attempt
+     * instead of two spent on neighbouring Fabric versions that learned nothing.
+     *
+     * The diverse ladder still runs for the rest of the budget, which is what the second pick shows.
      */
     @Test
-    fun aCrashIsReCheckedOnAnotherLoaderRatherThanTwiceOnItsOwn() {
+    fun aCrashIsReCheckedOnItsOwnErasOtherLoaderFirst() {
         val files = listOf(
             file("CreativeCore_FABRIC_v2.14.16_mc26.2.jar", setOf("Fabric"), setOf("26.2")),
             file("CreativeCore_NEOFORGE_v2.14.16_mc26.2.jar", setOf("NeoForge"), setOf("26.2")),
@@ -178,12 +185,12 @@ internal class BootCandidateSelectorTest {
 
         Assertions.assertEquals(
             listOf(
-                Triple("CreativeCore_FABRIC_v2.14.16_mc26.1.2.jar", "Fabric", "26.1.2"),
-                Triple("CreativeCore_NEOFORGE_v2.13.39_mc1.21.1.jar", "NeoForge", "1.21.1")
+                Triple("CreativeCore_NEOFORGE_v2.14.16_mc26.2.jar", "NeoForge", "26.2"),
+                Triple("CreativeCore_FABRIC_v2.14.16_mc26.1.2.jar", "Fabric", "26.1.2")
             ),
             picked.map { Triple(it.file.fileName, it.loader, it.minecraftVersion) },
-            "expected the 26.1 line on the crashing loader, then a different loader on a different line — " +
-                "never 26.1.2 and 26.1, which are the same line"
+            "expected the crashing era's other loader first — the boot that actually contradicted this " +
+                "crash — and only then the diverse ladder; never 26.1.2 and 26.1, which are the same line"
         )
     }
 
