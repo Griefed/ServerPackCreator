@@ -5950,3 +5950,91 @@ step that separates them, and it costs one run.
 **Suites after the fixes:** clientside **523**, grinder **514** (29 skipped), plugin-grinder **73**, api
 **412** (1 skipped). All re-derived from `build/test-results`.
 
+
+## 2026-09-11 — audit: the UNVERIFIABLE pass (21 commits, `86d3d441b..develop`, iteration 1)
+
+Range: `851098c17` … `9f660add0` — 9 `test(...)` pins, 9 `fix(...)`, 1 `refactor(...)`, 2 `docs`. All of it is
+already fast-forwarded into `develop` and unpushed (`origin/develop` is still `86d3d441b`), so everything
+below is fixable without rewriting shared history.
+
+**Two measurements were made for this audit rather than taken on trust.**
+
+*Every pin, run at its own commit, filtered to its own test class, in a detached worktree:*
+
+| pin commit | class | result at that commit |
+|---|---|---|
+| `851098c17` | `JarSelfDeclarationTest` | **NO RESULTS — `compileTestKotlin` fails** |
+| `0c1001104` | `ModScannerDispatchTest` | 7 tests, **0 red** |
+| `cbddb26bc` | `GrinderTest` | 17 tests, 1 red |
+| `c1ac29d6d` | `QuiltUnlessClauseTest` | 2 tests, 1 red |
+| `4eadf4e95` | `ReleaseChannelPreferenceTest` | 5 tests, 1 red |
+| `3853b7751` | `CurseForgeDependencyLineTest` | 2 tests, 2 red |
+| `c51d67e8c` | `LoaderReselectionTest` | 5 tests, 2 red |
+| `7c8207a7f` | `ForkedProjectDependencyTest` | 4 tests, 2 red |
+| `9643d2d82` | `PinnedDependencyRefTest` | 4 tests, 4 red |
+
+*And the one mutation claim a commit message makes about a green pin, re-run here:* dropping the
+`runCatching` from `LoaderDescriptors.atLeast` fails exactly `anUnparseableMinecraftVersionAlsoFallsBackFor‑
+NeoForge` and `anUnparseableMinecraftVersionFallsBackToTheModernForgeScanner` — 2 of 7. The claim holds.
+
+### HIGH — none
+
+Checked and not found, so this is a statement rather than an omission: no behaviour change is mixed into the
+one `refactor:` commit (see the clean list), no dependency points outward from `-api`, and every published
+change is additive (`LoaderDescriptors` is a new object; `ModDependency.unlessProvided` is appended last to a
+plain `class` with `@JvmOverloads`, so no `copy()`/`componentN` surface exists to break and every previous
+constructor overload survives).
+
+### MEDIUM
+
+| # | Commit | Where | Rule broken |
+|---|---|---|---|
+| M-1 | `851098c17` | `serverpackcreator-clientside/src/test/.../JarSelfDeclarationTest.kt:67` | **The pin commit does not compile.** Its `declaredLoaders(jar, "1.21.1")` call needs the 2-arg signature that first exists in `3d61e97c6`, so `git checkout 851098c17 && ./gradlew :serverpackcreator-clientside:test` produces **no test results at all**. Nobody can watch that pin go red — and the range now contains a commit where the module's test tree does not build, which is the shape of this repo's own landmine about green builds that never compiled the test sources. "Pin first means *commit* first, red." |
+| M-2 | `1443d9f46` | `BootVerifier.kt:1699` | The `unless` drop arm reads `providedIds` only, never `bundledIds` — so it cannot fire for the case its own comment names. **Measured against the live artifact:** `fabric-api-0.116.17+1.21.1.jar` declares `id=fabric-api`, `provides=["fabric"]`, and ships `fabric-resource-loader-v0` *only* as `META-INF/jars/fabric-resource-loader-v0-0.116.17.jar` — i.e. in `bundledIds`. The arm directly above it does consult `bundledIds` for the primary id, which makes this an oversight rather than a decision. A bug found while auditing, surfaced here rather than worked around. |
+| M-3 | `1443d9f46` | `QuiltScanner.kt:138`, `ScannedMod.kt:126` | `readUnless` handles three shapes (bare string, object with `id`, array of either) and **two of them are exercised nowhere**: `grep unlessProvided` over both test trees returns nothing, and `QuiltUnlessClauseTest` — two tests — writes only `"unless":"<id>"`. Parsing in a published module, and this repo's rule is that manifest/version parsing gets its test first *because it fails silently*. |
+| M-4 | `355d322ef` | `BootVerifier.kt:1442` | `declaredMinecraftConstraint = minecraftDisagreement.takeIf { mismatchedLoaders.isEmpty() }` is a second behaviour change, to a *different* feature (the Minecraft re-selection), with no guard and no statement of its consequence. **Failure scenario:** a `mods.toml`-only jar, requested NeoForge, tagged for 1.20.6 and 1.20.4, descriptor range `[1.20.4,1.20.5)`. Before: the Minecraft channel was populated, the retry re-staged at 1.20.4, and at 1.20.4 a `mods.toml` names NeoForge too — a genuine **NeoForge** boot. After: the channel is nulled and the loader retry stages under **Forge**, so the NeoForge row's evidence is a Forge boot. Not a false verdict (`bootedLoader` records it) but strictly weaker evidence than was reachable before. |
+| M-5 | `7028c7ecd` | commit shape | Test and behaviour change in one commit (`CrossPlatformDependencyTest.kt` lands with the fix). Disclosed in the message together with the mutation that reproduces the red, which is the honest mitigation — but the boundary does not exist in history, so `git checkout 7028c7ecd^` shows nothing. |
+| M-6 | `7028c7ecd` | `BootVerifier.kt:748,760` | `acrossPlatforms` fires on `Unmapped` **as well as** `Unsatisfied` — i.e. on the common state — once per requirement, with no dedupe across requirements, staged jars, the three boot attempts, or the up-to-ten backtrack re-stages, and **no measurement of the added request volume** against a quota-bearing key on a catalog sweep. This repo has paid for that shape twice already (the un-narrowed CurseForge page; `MAX_BACKTRACKS`' re-downloads). |
+| M-7 | `ab188dff4` | `serverpackcreator-clientside/CLAUDE.md:1101,1108,1110,1112`; `serverpackcreator-plugin-grinder/CLAUDE.md:45`; `RecordedVerdictMappingTest.kt:44` | The rename `filenamePattern` → `fileName` left its own landmine unfindable: the module docs still name the field `filenamePattern` and still cite a guard `theFilenamePatternIsNotWhatGetsPublished` that no longer exists (it is now `theSampledFilenameIsNotWhatGetsPublished`). The test KDoc is in a file that same commit edited. "Cite names, not snapshots"; Boy-Scout on touched files. |
+| M-8 | `cf78607ab` | `serverpackcreator-clientside/CLAUDE.md:49` | Still says "`resolveDependency` stays single-page on purpose". Now half true: it issues one page **per asked version** — the exact one, then one per patch neighbour when the exact answers nothing. |
+
+### LOW
+
+| # | Commit | Where | Rule broken |
+|---|---|---|---|
+| L-1 | `0c1001104` | commit shape | The pin landed **green** (measured above) because the bug it covers was fixed inside `3d61e97c6`, so a bug found during the work never got its own commit. Honestly disclosed, and the mutation check it offers instead is re-verified above — teeth demonstrated, boundary missing. |
+| L-2 | `37e2d2797` | commit shape | Four concerns: the CurseForge `modId` fix, the Modrinth pinned-dependency fix, `NeoForgeTomlScanner`'s KDoc and `module.md`. Two independent behaviour changes plus docs, one of them in the published module. |
+| L-3 | `37e2d2797` | `ModrinthPlatform.kt:138` | `projectBehind` does not memoise a **failed** lookup — `?: return null` precedes the cache write — so a dead `version_id` is re-fetched once per version node that pins it, with a WARN each time. That is precisely the cost the memo exists to prevent, left open on the error path; `thePinIsLookedUpOnce` pins only the success path. |
+| L-4 | `3d61e97c6` | `ModScanner.kt` (EOF) | Still ends without a trailing newline (byte-identical before and after: `}\n}`), in a file this commit rewrote substantially. Nit, and every future diff of that file carries the marker. |
+
+### Verified clean — do not re-litigate
+
+- **`ModDependency`'s published surface.** Plain `class` with `@JvmOverloads constructor`, `unlessProvided`
+  appended **last** — no data-class `copy()`/`componentN` to break, every prior JVM overload preserved.
+  Source *and* binary compatible.
+- **`LegacyFabric`'s deliberately-empty descriptor set cannot reach scanner dispatch.**
+  `LoaderDescriptors.descriptorsFor` is consumed only by `JarSelfDeclaration.kt:69,89`; `scannerFor` uses the
+  two era predicates and still answers `fabricScanner` for the `"LegacyFabric", "Fabric"` arm.
+- **`89730de84` is a genuine `refactor:`.** Its only test edits are `KnownModIds.mappingFor` → `mappingsFor`
+  and `ModIdMapping.None` → `listOf(ModIdMapping.None)` — nine lines, every assertion, argument and expected
+  value byte-identical, which is exactly the reference-only carve-out.
+- **`MAX_INJECTED_DEPENDENCIES` cannot be double-counted by the two new staging fallbacks.** `injected` is
+  deduped by **file name** at `BootVerifier.kt:400`, so `alternativeFor`/`acrossPlatforms` staging a project
+  already in the pack costs a redundant download, never a spurious refusal (B6's shape stays closed).
+- **The trailing-lambda landmine is honoured:** `alternatePlatforms` is inserted *before* `bootArtifactSink`
+  in the constructor.
+- **`ReleaseChannel`'s precedence is pinned behaviourally**, not merely by enum declaration order — release
+  beats beta and beta beats alpha are separate guards, so a reordering fails a test rather than passing.
+- **No call site was left behind by the two rewirings:** `alternativeFor` reaches both the plural mappings and
+  `resolveDependencyAcrossTheLine` (`BootVerifier.kt:819,821`).
+- **No new `!!`, no new `var`, no `TODO`/`FIXME`** in any main-source addition across the 21 commits.
+
+### Recommendation
+
+M-2 and L-3 are defects with concrete failure scenarios and belong in their own `fix:` commits. M-3 is a
+missing pin in a published parser and should be written before anything else touches `readUnless`. M-4 is
+best closed by moving the "exactly one retry" rule out of the *data* (`takeIf`) and into the *control flow*
+of `prepareBootPack`, which loses nothing and restores the reachable NeoForge boot. M-1, M-5, L-1 and L-2 are
+history-shape findings on unpushed commits — recordable, and worth stating as the standing lesson rather than
+rewriting four commits. M-6 wants a measurement, not a redesign, before it is judged. M-7 and M-8 are
+doc-truth fixes.
