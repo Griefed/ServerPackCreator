@@ -56,6 +56,62 @@ over `project.loaders`, each picking that loader's newest Minecraft.
   while `verify(project, loader, …)` keeps the old select-it-yourself behaviour. `bootableCombination()` is
   public so the *caller* selects with the same gate the boot applies, rather than a second copy of it.
 
+## SIX WAYS A DEPENDENCY FAILED THAT WERE OURS (2026-09-11/12)
+
+Every one of the public grinder's **40** `DEPENDENCY_FAILURE` rows was traced to its kept console and its
+cause verified against the live platform APIs. 28 were ours and are fixed; the rest are recorded at the end
+so nobody re-opens them. The lessons, not the list:
+
+- **A jar-in-jar library is on the classpath exactly like a staged one, so its demands bind exactly like a
+  staged one's.** `BundledJars` reported only what a nested jar *provides*. `highlight` declares
+  `resourcefullib: "*"` and ships it — so the requirement was rightly dropped — while the bundled copy
+  declares `fabric-api: "*"`, which nothing read: Fabric API was never staged and the boot died charged to
+  `highlight`. Same shape, different consequence, for a bundled **Minecraft pin**:
+  `quilted-fabric-api-…+0.102.0-1.21.jar` bundles `qsl_base-…+1.21.jar`, which pins `minecraft [1.21, 1.21]`
+  *exactly*, and QFAPI's own descriptor says nothing that would predict it — four rows.
+  `requirementsIn` and `minecraftDemandsIn` are separate because an unmet mod dependency is *staged* while a
+  wrong-Minecraft bundle can only be answered by dropping the jar carrying it.
+- **A demand the loader itself must satisfy was invisible at three layers, and all three had to move.**
+  Twelve rows are `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)`. Read from the published
+  jars: quilt-loader `0.30.1` provides `fabricloader 0.19.3`, `0.31.0-beta.4` provides `0.19.5`. The demand
+  was (1) stripped by `FabricScanner.dependencyExclusions`, correctly — those are the platform, not mods to
+  stage — so `BundledJars.demandsOn` reads it back, narrowed to ids the loader could describe; (2)
+  unjudgeable because nothing knew what a loader provides, hence the `loaderProvides` seam, which the
+  grinder fills by reading the install layer's own loader jar rather than from a table that would go stale
+  every release; and (3) skipped by `DependencyBacktrack`, which passes over a requirement naming something
+  not staged. **A correct fix at any one layer would have changed nothing.**
+- **LANDMINE — what we ask the installer for is not always what boots.** All **16 of 16** Quilt boots in
+  that sample printed `Quilt Loader 0.30.1` while their verdicts reported the `0.31.0-beta.4` staging chose.
+  `BootLoaderVersion` reads the build the console announces and states the disagreement in the detail. The
+  newest-build re-check is deliberately **not** armed off it: if the installer keeps producing 0.30.1 that
+  costs a boot per row and fixes nothing. **Open:** why a tuple labelled `0.31.0-beta.4` holds
+  quilt-loader 0.30.1 needs the daemon's install cache to answer.
+- **"Untagged means Forge" is false above Minecraft 1.13, and the assumption was load-bearing.**
+  `pickUntagged`'s safety argument is that untagged CurseForge files predate the modloader facet. Measured:
+  `TerraBlender (Forge)` publishes `TerraBlender-forge-26.2-26.2.0.0.2.jar` with `gameVersions=['26.2']` —
+  untagged, in 2026 — so it matched a Fabric *and* a NeoForge boot, and `biomes-o-plenty` was staged the
+  Forge build of its own dependency on both. The dependency fallback is now gated below 1.13; the
+  **candidate's** is not, because `refuseForSelfDeclaration` reads the downloaded jar and a dependency gets
+  no such guard.
+- **The version range lives in the jar, never in the platform ref.** `ModFile.requiredDependencies` carries
+  opaque ids and no version, so the platform route took the newest build for the Minecraft version even
+  where the candidate demanded a specific one — `cobblemon-additions` needs `cobblemon >=1.7.1` and got
+  `1.6.1`. `PlatformDependencyDemand.demandedConstraint` finds it through the same fuzzy id-to-slug match
+  `isDemanded` already makes; one matcher, not two.
+- **A search fallback was tested and rejected, and that result is worth more than the table.** Six ids
+  resolve to no slug (`farmersdelight` → `farmers-delight`, `kotlinforforge` → `kotlin-for-forge`, …).
+  Searching for them returns *other people's mods*: CurseForge answers `farmersdelight` with "Dirty Bowls
+  Delight" and `rhino` with "TS Modify"; Modrinth answers `kotlinforforge` and `obscure_api` with nothing.
+  So `KnownModIds` grew by six **verified** entries — every Modrinth ref checked by reading the id out of
+  that project's own jar, every CurseForge id by its published file names — and not by a smarter guess.
+
+**Not ours, recorded so they are not re-opened.** Three are upstream-unsatisfiable — `emotecraft` demands
+`playeranimator [2.0.3.1+1.21.5,)` and Modrinth publishes exactly one build for 1.21.5, `2.0.2+1.21.5`. Two
+are the Sinytra Connector placeholder (`continuity`). Four were never dependency failures at all
+(`tweakeroo`'s 1.12.2 MixinTweaker coremod, `cull-less-leaves` requiring a client-only `sodium` the loader
+disabled, and two mixin failures now filed as such). One — `aether` on Forge staging a NeoForge jar — is
+closed by the per-line axis and `reselectOnLoaderContradiction`.
+
 ## Engine details & landmines (durable)
 
 - **`MetadataScanner` no longer mirrors `ModListCompiler` — since 2026-08-15 both dispatch through

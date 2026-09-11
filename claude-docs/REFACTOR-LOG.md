@@ -4306,3 +4306,53 @@ written, and rewriting a historical log to match today's symbols is how a record
 then a one-shot grind of `https://www.curseforge.com/minecraft/mc-mods/aether`, expecting a `1.12 / Forge`
 row with no dependency staged, `1.20 / NeoForge`, `1.21 / NeoForge` staging `curios`, and every row's
 `Filename` matching the artifact its `Detail` describes.
+
+---
+
+## 2026-09-12 — the public grinder's 40 `DEPENDENCY_FAILURE` rows, read one by one
+
+Griefed pointed at the live report filtered on `f.decision=DEPENDENCY_FAILURE` and asked for them to be
+solved. Every row was traced to its **kept console** (`/boot-logs`, 40 of 40 had one) and every cause
+verified against the live platform APIs before a line of code moved. 28 were ours.
+
+**The method is the reusable part.** The verdict detail names none of this — `DEPENDENCY_FAILURE` is a
+console rung, so the detail says only `Forge 48.1.0 / Minecraft 1.20.2 → INCONCLUSIVE (exit 0)`. The console
+says which mod demanded what of whom, and `stagedDependencies` says what we actually put in the pack; the
+two together located every one of these without touching the daemon. That is the argument for both fields
+existing, and for the report being precise.
+
+**Counting them was what made the shape visible.** 16 of the 40 are Quilt, 12 of those one cause; 7 are a
+mod id that is not its project's slug; 5 are a jar-in-jar library nobody read. A single row of any of those
+reads like a one-off.
+
+Six fixes landed, each pinned and mutation-verified; the module's own `CLAUDE.md` carries the detail. What
+generalises:
+
+- **A demand can be invisible at several layers at once, and fixing one changes nothing.** The
+  `fabric-language-kotlin` / `fabricloader` case needed the scanner's deliberate exclusion read back, a new
+  seam for what a loader *provides*, and `DependencyBacktrack` to stop skipping it — three edits before one
+  row moved. Worth checking, before claiming a fix, that nothing downstream of it discards the result.
+- **A documented safety argument is a claim about the world, and the world changes.** `pickUntagged` was
+  justified by "untagged CurseForge files are pre-1.13, so untagged *means* Forge". `TerraBlender (Forge)`
+  publishes an untagged jar for Minecraft 26.2 — in 2026. The comment was true when written and had quietly
+  stopped being true, which is the failure mode a measured comment is supposed to prevent and cannot.
+- **Test the tempting fix before building it.** Seven rows are ids that resolve to no slug, and the obvious
+  answer is a name search. Tried against both live APIs first: CurseForge answers `farmersdelight` with
+  "Dirty Bowls Delight" and `rhino` with "TS Modify"; Modrinth answers `kotlinforforge` with nothing. A
+  search would have staged other people's mods into verification packs. Six verified table entries instead —
+  and the *negative* result is the more valuable half, because it is what stops the next reader trying it.
+- **What we asked for is not always what ran, and the report should say so.** All 16 of 16 Quilt boots ran
+  quilt-loader `0.30.1` while their rows reported the `0.31.0-beta.4` staging chose — and the two provide
+  different `fabricloader` versions, which is the whole of the twelve-row failure. This is the same defect
+  class as the aether row that opened the previous entry: **a row naming something it did not use reads as a
+  different bug entirely.**
+
+**Open, and it needs the host.** Why a tuple labelled `0.31.0-beta.4` holds quilt-loader 0.30.1 is not
+answerable from the report: it is either the Quilt installer declining a beta, a stepped-down build the
+marker did not record, or a stale layer. `ls ~/.spc-grinder/cache/*Quilt*/` and the tuple's
+`.spc-install.log` settle it. The newest-build re-check is deliberately left unarmed until then, because
+arming it against an installer that keeps producing 0.30.1 costs a boot per row and fixes nothing.
+
+**Deliberately not fixed**, with reasons, so they are not re-opened: three rows are upstream-unsatisfiable
+(`emotecraft` demands `playeranimator [2.0.3.1+1.21.5,)`; Modrinth publishes exactly one 1.21.5 build,
+`2.0.2+1.21.5`), two are the Sinytra Connector placeholder, and four were never dependency failures at all.
