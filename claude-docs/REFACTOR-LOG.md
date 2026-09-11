@@ -4102,6 +4102,21 @@ version (passed `1.21.1`, where every one of its five base expectations is uncha
 `LearnedIdCollisionTest`/`LearnedModIdsTest` on `mappingsFor`'s `orElse` returning a list. Every assertion
 byte-identical.
 
+**The two facts only a real jar could settle were settled by real jars**, per the root `CLAUDE.md`'s
+"ask a real runtime" rule, and both are one `unzip -l` rather than a test:
+
+```
+architectury-11.1.17-neoforge.jar  (NeoForge, MC 1.20.4)  ->  META-INF/mods.toml
+architectury-13.0.11-neoforge.jar  (NeoForge, MC 1.21.1)  ->  META-INF/neoforge.mods.toml
+Geophilic v3.6.mod.jar        quilt_loader.depends: quilt_resource_loader unless fabric-resource-loader-v0
+Terralith_1.21.x_v2.5.14.jar  quilt_loader.depends: quilt_resource_loader unless fabric-resource-loader-v0
+```
+
+The first pair *is* the era boundary the gate now encodes — a NeoForge build below 1.20.5 carries the file
+the gate used to read as Forge's, and nothing in either archive distinguishes the two loaders there. The
+second pair is the clause `QuiltScanner` discarded, in the shape the scanner reads (an object under
+`quilt_loader.depends`, not a bare string).
+
 **Each new gate was mutation-verified, and each failed exactly its own guards:** dropping the bootability
 check on the re-selected loader; never setting `declaredLoaders`; forcing `alsoVersions` back to an empty
 list; dropping the fork alternatives; never consulting the other platform.
