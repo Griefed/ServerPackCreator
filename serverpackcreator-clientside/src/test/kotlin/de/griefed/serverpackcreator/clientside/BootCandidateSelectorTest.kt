@@ -788,6 +788,40 @@ internal class BootCandidateSelectorTest {
      * And a file tagged for a *different* loader is still refused — untagged means "the author told us
      * nothing", which is not the same as "the author told us this is Fabric".
      */
+    /**
+     * **An untagged file is evidence of Forge only where CurseForge had no modloader facet.** The safety
+     * argument for the untagged fallback is that such files are pre-1.13, so only Forge is reachable anyway
+     * — and that is empirically false. Measured against the live API on 2026-09-11, `TerraBlender (Forge)`
+     * publishes `TerraBlender-forge-26.2-26.2.0.0.2.jar` with `gameVersions=['26.2']`: untagged, for
+     * Minecraft 26.2, in 2026.
+     *
+     * `biomes-o-plenty` was staged that Forge build as its own dependency on a **Fabric** and a **NeoForge**
+     * boot alike; neither loader could see it, and `terrablender` came out `[MISSING]` in two published rows.
+     */
+    @Test
+    fun anUntaggedDependencyIsNotPickedWhereThePlatformTagsLoaders() {
+        val untaggedForgeBuild = listOf(file("TerraBlender-forge-26.2-26.2.0.0.2.jar", emptySet(), setOf("26.2")))
+
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(untaggedForgeBuild, "Fabric", "26.2"),
+            "a refusal naming the real gap beats a jar the loader will ignore"
+        )
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(untaggedForgeBuild, "NeoForge", "26.2")
+        )
+    }
+
+    /** Below the facet the fallback stays, which is what keeps an all-untagged 1.12.2 project usable. */
+    @Test
+    fun anUntaggedDependencyIsStillPickedBeforeTheFacetExisted() {
+        val mtlib = listOf(file("MTLib-3.0.7.jar", emptySet(), setOf("1.12.2")))
+
+        Assertions.assertEquals(
+            "MTLib-3.0.7.jar",
+            BootCandidateSelector.pickDependencyFile(mtlib, "Forge", "1.12.2")?.fileName
+        )
+    }
+
     @Test
     fun stillRefusesAFileTaggedForAnotherLoader() {
         val fabricOnly = listOf(file("something-fabric.jar", setOf("Fabric"), setOf("1.20.1")))

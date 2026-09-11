@@ -516,7 +516,36 @@ object BootCandidateSelector {
         pickForLoader(files, loader, minecraftVersion)
             ?: LoaderCompatibility.alsoRuns(loader, compatibleAt)
                 .firstNotNullOfOrNull { pickForLoader(files, it, minecraftVersion) }
-            ?: pickUntagged(files, minecraftVersion)
+            ?: pickUntagged(files, minecraftVersion).takeIf { predatesTheLoaderFacet(minecraftVersion) }
+
+    /**
+     * Whether [minecraftVersion] is old enough that an untagged file *means* Forge, rather than merely
+     * saying nothing.
+     *
+     * **The assumption this guards was empirically false.** [pickUntagged]'s safety argument is that
+     * untagged files are pre-1.13, from before CurseForge had a modloader facet, so only Forge is reachable
+     * anyway. Measured against the live API on 2026-09-11, `TerraBlender (Forge)` publishes
+     * `TerraBlender-forge-26.2-26.2.0.0.2.jar` with `gameVersions=['26.2']` — **untagged, for Minecraft
+     * 26.2, in 2026**. So an untagged file matched a *Fabric* and a *NeoForge* boot alike, and
+     * `biomes-o-plenty` was staged the Forge build of its own dependency on both: the loaders could not see
+     * it, and `terrablender` came out `[MISSING]` in two published rows.
+     *
+     * Where the facet exists, an untagged file is genuinely unknown and the fallback is dropped — a refusal
+     * naming the real gap beats a jar the loader will ignore. Below it the fallback stays, which is what
+     * keeps `mtlib` (all 15 of its files untagged, all 1.12.2) gradeable at all.
+     *
+     * **The candidate's own fallback is deliberately untouched.** `pickBootableCandidate` keeps it for every
+     * version, because `BootVerifier.refuseForSelfDeclaration` reads the downloaded jar's descriptor before
+     * the boot and refuses one carrying another loader's — a guard no *dependency* gets.
+     */
+    private fun predatesTheLoaderFacet(minecraftVersion: String): Boolean =
+        minecraftComparator.compare(minecraftVersion, LOADER_FACET_SINCE) < 0
+
+    /**
+     * The Minecraft version from which CurseForge tags a file's modloader, so an absent tag stops being
+     * evidence of Forge and becomes an absence of information.
+     */
+    private const val LOADER_FACET_SINCE = "1.13"
 
     /** Newest file carrying both [loader] and [minecraftVersion], or `null` when the project publishes none. */
     private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
