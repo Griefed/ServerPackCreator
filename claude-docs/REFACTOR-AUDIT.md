@@ -6089,3 +6089,28 @@ clientside 554 / 0 failures, zero compile errors** — no signature moved and no
 |---|---|---|
 | I2-5 | `99fefabfe`, `8c9415d0e`, `4d605add2` | Commit shape in iteration 1: three unrelated defect pins in one `test(...)` commit, six guards across two modules in another, and one source-file newline riding along with a docs commit. Accepted rather than churned — the convention permits grouping *related* work and one audit pass is that, each fix commit names its own guard, and bisecting a single defect still lands on its own `fix:`. Recorded so the judgement is visible rather than implicit. |
 | I2-6 | `e775fbd42` (iteration 1) | **Verified and deliberately not changed.** A requirement satisfied by a nested jar of a *different* staged jar is still not dropped: `bundledIds` is scoped to the jar whose requirements are being read, and `provided` holds only top-level identities (`modID` + `provides`), never nested ids. The loader does load jar-in-jar libraries, so such a requirement *is* satisfied — but staging an explicit top-level build is not wrong, it is what the author's own declaration asks for, and second-guessing another jar's bundled version is what `DependencyBacktrack` exists for. Cost is one redundant download in a narrow shape. Left as is, with the reasoning recorded so it is not rediscovered as a defect. |
+
+### Resolution — iteration 2 (2026-09-11)
+
+| Finding | How |
+|---|---|
+| I2-1 / B-4 | `serverpackcreator-clientside/CLAUDE.md` now names `LoaderVerdict.sampleFile` and says outright that `filenamePattern` was **deleted** and `fileName` belongs to the grinder's `GrindVerdict` — so neither wrong name can be looked for again. |
+| I2-2 / B-1 | `FilenamePatternTest` → **`SampledArtifactNamingTest`**, with every assertion kept and the doc rewritten to say which consumer each half speaks for: `sampleFile` for the report column, single-file `deriveStem` for `Prepared.Ready.candidateStem`. `theHistoricalStemStaysBroaderThanTheFilenamePattern` → `…ThanASingleFilesStem`. |
+| I2-4 / B-2 | `theSampledFileIsTheArtifactsOwnNameVerbatim` drives the real `ClientsideVerifier` over a real published name and asserts `sampleFile` verbatim beside `suggestedEntry` from the same run. **Mutation-verified:** re-deriving a stem there — the code that was removed on 2026-09-10 — fails it and nothing else. |
+| I2-3 / B-3 | **The finding that corrected a previous finding.** The behavioural guard written for it went red against the already-fixed code, which is how M-4 turned out to be wrong: the range is read by `scannerFor(loader, minecraftVersion)`, i.e. the *mismatching* loader's own scanner, so on a loader mismatch it can never be read and the two channels are mutually exclusive **by construction**. `aLoaderMismatchLeavesNoRangeToRetryOn` pins that instead, and the data-level guard is re-documented to stop overclaiming. |
+| I2-5, I2-6 | Recorded with their reasoning; no change. |
+
+**M-4 is hereby corrected, in place, because an audit log that keeps a wrong finding is worse than one that
+never made it.** Its "failure scenario" assumed the jar's Minecraft range would be readable on a loader
+mismatch. It is not. Iteration 1's change to `refuseForSelfDeclaration` survives on different grounds — the
+retry order no longer rests on an invariant proved in another unit, so a scanner that ever merged descriptors
+would turn that into a red guard rather than a silently suppressed range — but it rescued no boot, and the
+commit message claiming it did is answered by `3e1e1355d`.
+
+**The lesson, which is the reusable part:** *writing the behavioural guard is what tested the finding.* M-4
+survived a code read, a diff read and a mutation check; what killed it was asserting the consequence
+end-to-end and watching it fail on fixed code. A mutation check only proves a guard notices its own line
+changing — it cannot tell you the line matters.
+
+**Suites after iteration 2:** api **421**, clientside **568**, grinder **514**. Equivalence for iteration 1
+re-confirmed at the top of this section.

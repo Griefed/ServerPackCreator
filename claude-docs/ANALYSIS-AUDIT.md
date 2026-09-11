@@ -798,3 +798,11 @@ against `develop`'s unmodified test tree: **api 413 / 0, clientside 554 / 0, no 
    as NeoForge at a version ≥1.20.5 whose own range accepts an older release, with Forge withheld so the
    loader retry cannot fire; assert two staging attempts, both NeoForge, and that the second clears the
    descriptor gate because `mods.toml` names NeoForge below 1.20.5 (closes B-3).
+
+### Resolution — iteration 2 (2026-09-11)
+
+All four closed; detail in `REFACTOR-AUDIT.md`'s iteration-2 resolution. The one worth repeating here is
+B-3, because it inverted a finding: the behavioural guard demanded by the analysis went **red against code
+that was already supposed to be fixed**, which is how iteration 1's M-4 was exposed as a false finding. A
+guard that asserts shape can be green and prove nothing; a guard that asserts the consequence can be red and
+prove the *finding* wrong. Both directions are worth having, and only the second one catches a bad diagnosis.
