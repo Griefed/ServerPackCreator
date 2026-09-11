@@ -500,7 +500,11 @@ class BootVerifier(
                 continue
             }
             val dependencyFile = BootCandidateSelector.pickDependencyFile(
-                dependencyProject.withoutExcluded(excluded).files, loader, minecraftVersion
+                dependencyProject.withoutExcluded(excluded).files, loader, minecraftVersion,
+                // The ref carries no range; the jar does. Without this the newest build for the Minecraft
+                // version was taken even where the candidate had demanded a specific one -- and the loader
+                // then refused the pack, charging the candidate for it.
+                versionConstraint = PlatformDependencyDemand.demandedConstraint(declared, dependencyProject)
             )
             if (dependencyFile == null) {
                 // Asked twice on purpose: the same pick over the *unfiltered* list separates "this project
