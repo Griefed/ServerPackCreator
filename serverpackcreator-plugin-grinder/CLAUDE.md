@@ -166,3 +166,11 @@ Installing a second plugin exposed `ApiPlugins.getAllExtensionsOfPlugin` ignorin
 so every tab was added once per *installed plugin* and every generation extension ran that many times
 (`Grinder | Tetris | Grinder | Tetris`). Fixed in `-api`, pinned by `ExtensionScopingTest`, recorded in
 `claude-docs/API-BEHAVIOUR-CHANGES.md`. It had been invisible because one plugin times one plugin is one.
+
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+GUI plugin over a grinder's `/verdicts.json` + `/status`; ticked entries reach `packConfig.clientMods` through a `PreGenExtension`, so one selection covers GUI, CLI and web. Verified end-to-end 2026-09-06 against a live `ReportServer`. Full state and landmines: **`serverpackcreator-plugin-grinder/CLAUDE.md`**.

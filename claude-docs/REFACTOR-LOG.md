@@ -4126,3 +4126,75 @@ prompted it was a beta whose project ships 16 stable Forge builds, and the repo 
 Connector attempt failing with every dependency staged correctly), and search-then-confirm for a mod id no
 registry resolves (three cheaper routes landed first and this pass produced no instance the search would be
 needed for).
+
+## Moved out of the root `CLAUDE.md` on 2026-09-11 — the three "Since then" narratives
+
+> These sat in the always-loaded root file, which the file's own header designates *this* file for
+> ("Per-sprint **narrative** history → `git log` and `claude-docs/REFACTOR-LOG.md`"). Verbatim, so nothing
+> was lost; the lessons that generalise beyond their incident stayed behind as one-liners in the root.
+
+**Since then (2026-09-06): the grinder plugin**, a second pf4j plugin module (`-plugin-grinder`) plus the
+`/verdicts.json` feed it reads. Two things worth carrying forward beyond that module's own docs:
+
+- **`ApiPlugins.getAllExtensionsOfPlugin` ignored its `plugin` argument**, so every tab was added once per
+  *installed plugin* and every generation extension ran that many times. Invisible for as long as this
+  repository shipped exactly one plugin — one times one is one — and visible the first time two were
+  installed together, as a tab strip reading `Grinder | Tetris | Grinder | Tetris`. Fixed, pinned by
+  `ExtensionScopingTest` (which builds its second plugin by cloning the example jar), recorded in
+  `claude-docs/API-BEHAVIOUR-CHANGES.md`. **The general lesson: a defect whose multiplier is the count of
+  something the repo only ever has one of cannot be found by testing what the repo ships.**
+- **CLOSED 2026-09-08 — the plugin-loading recursion** (was: "the example plugin dies with a
+  `StackOverflowError` in `CustomPluginFactory`, pre-existing, GUI unaffected"). Both halves of that
+  description turned out to be understated: it is not confined to CLI, and it is unbounded recursion rather
+  than one failed instantiation. **Plugin loading now happens after the API it reaches into exists** —
+  `ApiPlugins.loadAndStart()` instead of the constructor's `init`, called **last** by `stageThree`, and
+  `ApiWrapper.api()` publishes its singleton **before** running setup. Measured on one startup with the
+  example plugin installed: **53 ApiWrapper constructions, 268 `example-kotlin` log lines, an
+  OutOfMemoryError** — reported by Griefed as the example plugin's output appearing "a gazillion times" —
+  against **0 / 7 / 0** after. Detail and the two rows it owes an embedder:
+  `serverpackcreator-api/CLAUDE.md` and `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  **The lesson worth carrying:** the api suite had the example plugin installed and stayed green for
+  months, because whichever test called `ApiWrapper.api()` first did so before anything copied a jar into
+  `tests/plugins`. The defect needs a populated plugins directory at *first* startup — every real run, and
+  no test. A fixture that is installed *after* the thing it is meant to exercise has already run is not a
+  fixture.
+
+**Since then (2026-09-09): the grinder's `ERROR` bucket, read.** Two things generalise beyond the clientside
+module, whose own `CLAUDE.md` carries the detail and the landmines:
+
+- **A bucket that mixes "somebody must fix this" with "nobody can" is not readable, and stops being read.**
+  `Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* and held, out
+  of 53 published rows, **17 CurseForge distribution opt-outs and ~18 combinations nothing upstream ever
+  published for**. Neither is anybody's problem, and both were sitting in the one column an operator scans
+  to find work. `LOCKED` and `UNVERIFIABLE` now carry them, and what remains in `ERROR` is actionable by
+  construction. The general form: *a category defined by its consequence ("the grind did not happen") will
+  accumulate everything with that consequence, whatever its cause* — so define it by the cause, and make the
+  type carry it (`PreventionCause`) rather than a sentence a reader has to parse.
+- **A defect whose evidence is a published report can be diagnosed without touching the host.**
+  `chefs-delight`'s refusal printed the bare mod id `farmersdelight`; the platform route labels with the
+  resolved project's *slug* (`farmers-delight`), and the manifest route refuses only on a confident mapping,
+  which the id table does not give that id. Two facts in the code plus one string in the feed located the
+  bug in `LearnedModIds` — no shell on the daemon, no log. Worth doing before asking for access: the report
+  is evidence, and its wording is part of it. That is also the argument for the wording being precise, which
+  is why `unsatisfiedLabel` and `UnmetReason` exist at all.
+
+**Since then (2026-09-10/11): the `UNVERIFIABLE` bucket, read the same way.** 42 rows, 27 of them ours, all
+attributed to a measured cause. The module's own `CLAUDE.md` carries the six fixes; three lessons generalise:
+
+- **A test can pass against unfixed code because one fixture value is a prefix of another.** A guard for the
+  CurseForge version-line matched `contains("gameVersion=$older")`, and `1.20` is a prefix of `1.20.6` — so
+  the request for the *newer* version matched the *older* fixture arm and the whole test went green before
+  the fix existed. This file already says *run the pin and read why it failed*; the missing half is **ask why
+  it passed**, whenever a fixture's values could contain one another. Parsing the value and comparing it
+  exactly is what gave that guard teeth.
+- **A guard that cannot compile is not a red pin, and the honest options are both better than a fake
+  boundary.** Two fixes here needed a new parameter before their guard could be expressed at all. Where the
+  seam was separable it landed first as its own behaviour-preserving `refactor:` commit and the pin went red
+  against it; where it was not, the commit says so and quotes the mutation that reproduces the red. Committing
+  a test that does not compile proves nothing, and neither does quietly merging pin and fix.
+- **Duplicated knowledge drifts in the direction of whichever copy is easier to reach.** `-api` knew that
+  NeoForge below Minecraft 1.20.5 ships `META-INF/mods.toml` — it is in the dispatch constant *and* in that
+  module's `CLAUDE.md` — while `-clientside` held a flat, version-blind second copy and refused 13 genuine
+  NeoForge jars. Third instance of this exact shape after `MetadataScanner`/`ModListCompiler` and the two
+  `Quilt to Fabric` maps. **The fix is always to delete the duplicate, never to correct it**, and the
+  question to ask of any new lookup table is which existing one already answers it.

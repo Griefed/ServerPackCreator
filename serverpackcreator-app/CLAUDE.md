@@ -369,3 +369,11 @@ PackConfig dirty-check) and `requiredJavaVersion(minecraftVersion)` — live in
 remaining ~1,330 lines are legitimate view code (MigLayout wiring, combo-box models, status-icon
 updates, event handlers) whose domain logic already lives in the tested API. Don't mechanically
 extract thin Swing getters.
+
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database.

@@ -13,56 +13,29 @@
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
->   communication style) → `~/.claude/CLAUDE.md` (user level, applies to all projects), so they
->   don't ship in this public repo's shared file. **See that file before advising.**
+>   communication style) reach a session from the **user's own settings**, not from this repo — they
+>   deliberately don't ship in a public shared file. Follow them as given; they outrank style choices here.
 >
 > **Engineering principles (binding):** KISS, MVC, TDD, SOLID. Operational naming, documentation,
 > module-boundary and Kotlin rules are in **## Conventions** below — follow them for all code.
 
 ---
 
-## What is ServerPackCreator?
-
-ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt, LegacyFabric and
-NeoForge Minecraft-modpack.
-
-It is a Kotlin application and API: the API lives in `serverpackcreator-api`, the application in
-`serverpackcreator-app`, the SPA in `serverpackcreator-web-frontend`.
-
----
-
 ## Module map
 
-Each in-build module has its own `CLAUDE.md` with the details — the entries below are the map only.
+What each module *is* comes from `settings.gradle.kts`, `README.md` and the module's own `CLAUDE.md`
+(lazy-loaded when you work there). What is listed below is only what those cannot tell you: the
+constraints.
 
-- **serverpackcreator-api** — core library, published to Maven Central. Packages: `config`,
-  `serverpack`, `modscanning`, `versionmeta`, `plugins` (pf4j API), `utilities`, plus `ApiWrapper`
-  (composition root), `ApiProperties`, `ApiPlugins`. **Plugins compile against this module — its
-  public surface is a compatibility constraint.** See `serverpackcreator-api/CLAUDE.md`.
-- **serverpackcreator-clientside** — the clientside-mod verification engine (platforms, metadata +
-  server-boot signals, downloaders, fallback-list editor). Depends only on `-api`; **not** published
-  to Maven, so it churns freely. Reused by the app's CLI verbs and the planned grinder service. See
-  `serverpackcreator-clientside/CLAUDE.md`.
-- **serverpackcreator-app** — four apps in one module under `de.griefed.serverpackcreator.app`:
-  `cli`, `gui` (Swing), `web` (Spring Boot 4 backend), `updater`. Entry point `ServerPackCreator.kt`
-    + `Mode.kt`. See `serverpackcreator-app/CLAUDE.md`.
-- **serverpackcreator-plugin-example** — pf4j example plugin exercising every extension point.
-  Documentation-by-example: must always reflect current API idiom. See
-  `serverpackcreator-plugin-example/CLAUDE.md`.
-- **serverpackcreator-plugin-grinder** — pf4j plugin bridging SPC to a grinder daemon: a GUI tab
-  (Confirmed / Other Verdicts / Dashboard / Settings) over the daemon's `/verdicts.json` and `/status`,
-  and a `PreGenExtension` folding the ticked entries into `packConfig.clientMods` for **every**
-  generation — GUI, CLI and web. Depends on `-api` only; not published. It is the pick-and-choose
-  alternative to `/as-properties`, which publishes every `CONFIRMED` finding or none. See
-  `serverpackcreator-plugin-grinder/CLAUDE.md`.
-- **serverpackcreator-web-frontend** — Quasar 2 / Vue 3 SPA, JavaScript (TS migration planned),
-  Pinia stores, built into the app's web backend via the org.siouan frontend Gradle plugin. See
-  `serverpackcreator-web-frontend/CLAUDE.md`.
-- **serverpackcreator-grinder** — standalone fire-and-forget service that boot-verifies mods at scale
-  in isolated, network-less **Docker containers** (docker-java). Depends on `-clientside` (+ `-api`);
-  no Spring/Swing; not published. Foundation stage: the container-backed `ServerRunner`. See
-  `serverpackcreator-grinder/CLAUDE.md`.
-- Not in the Gradle build: `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
+- **`serverpackcreator-api` is published to Maven Central, so its public surface is a compatibility
+  constraint** — plugins compile against it. Governed by the **API compatibility policy** below.
+- **Every other module is unpublished and therefore churns freely** (`-clientside`, `-app`,
+  `-grinder`, both plugin modules, the frontend). `-clientside` in particular is free to change shape;
+  `-plugin-example` is the exception that must always reflect *current* API idiom, because it is
+  documentation by example.
+- **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
+- Not in the Gradle build, so `settings.gradle.kts` will not mention them:
+  `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
 - **CI lives in `.forgejo/workflows`** — Forgejo (`git.griefed.de`) is the canonical CI and the origin of
   every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
   the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
@@ -184,11 +157,11 @@ evidence consulted occasionally, not context every session needs.
   the **symbol name** over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a
   number genuinely earns its place — a measurement, a byte count — say what produced it, so a reader can
   re-run it instead of trusting it.
-- **KISS + MVC + TDD + SOLID** — always.
-- **No shortcuts:** fix bugs when found, don't defer.
-- **No assumptions:** read the code, check the docs before advising.
-- **git:** never push yourself; let the user push. One branch per feature/fix; group related work;
-  prefix Claude-created branches with `claude-`.
+
+- **Fix bugs when you find them and read before you advise.** A defect noticed in passing gets surfaced
+  and fixed in its own commit, never deferred as "out of scope"; a claim about this codebase gets checked
+  against the code or the docs first. (The other two bullets that used to sit here — the principles list and
+  the git workflow — are stated in the header and in **## Branching & git workflow**.)
 
 ### Module boundaries (architecture — SOLID / MVC)
 
@@ -338,17 +311,18 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-11):**
+**Current status (2026-09-11).** Counts are a snapshot and go stale — re-derive them from
+`<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
-| Module         | Tests         | Notes                                                                                |
-|----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 421 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes. |
-| clientside     | 568           | Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Six verdicts** — `CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE` since 2026-09-04, plus `LOCKED`/`UNVERIFIABLE` since 2026-09-09 — and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. The two newest split out of `ERROR`, which was promising "an operator's problem" while holding 17 CurseForge distribution opt-outs and ~18 upstream gaps out of 53 published rows. Same pass closed three ways a dependency read as *unavailable* while being obtainable — one already in the pack refusing its own boot, one mod id served by two projects of which only the first was remembered, and an exact-Minecraft rule too strict inside a version-line. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. **And on 2026-09-10/11 the new `UNVERIFIABLE` bucket was read the same way `ERROR` had been**, closing six ways a mod that runs everywhere was published as unverifiable: the loader gate was version-blind about which descriptor a loader reads, Quilt's `unless` clause was discarded, a beta outranked 16 stable releases, the patch-version fallback was inert on CurseForge by construction, a mis-ticked loader refused instead of re-selecting, and one mod id served by a fork or by the other platform resolved to nothing. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**. |
-| app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
-| plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
-| plugin-grinder | 73            | GUI plugin over a grinder's `/verdicts.json` + `/status`; ticked entries reach `packConfig.clientMods` through a `PreGenExtension`, so one selection covers GUI, CLI and web. Verified end-to-end 2026-09-06 against a live `ReportServer`. Full state and landmines: **`serverpackcreator-plugin-grinder/CLAUDE.md`**. |
-| web-frontend   | 32 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage; `types/api.ts` mod-lists are `string[]` since the web module embedded them (2026-08-17); `RunConfigurationCard` asserts the *rendered* lists, not the props it passed in — the pass-through version stayed green with the card reverted to the pre-branch object shape (2026-08-18) |
-| grinder        | 516 (29 skip) | Continuous fire-and-forget boot-verification in network-less Docker containers, with a persisted catalog crawl cursor so coverage accumulates. Runs as a systemd service. **The report server carries no authentication** and binds loopback unless `SPC_GRINDER_HOST` says otherwise. **`SPC_GRINDER_MEMORY_GIB` is measured, not arbitrary** — the JVM derives each boot's heap from it, and it is the divisor in the worker-sizing formula. Full state, landmines and measurements: **`serverpackcreator-grinder/CLAUDE.md`**. |
+| Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
+|----------------|---------------|------------------------------------------------------------------|
+| api            | 421 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 568           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| app            | 149           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
+| plugin-grinder | 73            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
+| web-frontend   | 32 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
+| grinder        | 516 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -369,68 +343,22 @@ settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, ver
 brittle QTable rendering). The GUI `GlobalScope.launch` anti-pattern is resolved (see Open issues),
 GUI-verified. **Next (optional):** broaden component-test coverage further.
 
-**Since then (2026-09-06): the grinder plugin**, a second pf4j plugin module (`-plugin-grinder`) plus the
-`/verdicts.json` feed it reads. Two things worth carrying forward beyond that module's own docs:
+**Lessons that generalise beyond their incident.** The narratives they came from — the grinder plugin
+(2026-09-06), the `ERROR` bucket (2026-09-09) and the `UNVERIFIABLE` bucket (2026-09-10/11) — are in
+`claude-docs/REFACTOR-LOG.md`; the module-specific detail is in each module's own `CLAUDE.md`.
 
-- **`ApiPlugins.getAllExtensionsOfPlugin` ignored its `plugin` argument**, so every tab was added once per
-  *installed plugin* and every generation extension ran that many times. Invisible for as long as this
-  repository shipped exactly one plugin — one times one is one — and visible the first time two were
-  installed together, as a tab strip reading `Grinder | Tetris | Grinder | Tetris`. Fixed, pinned by
-  `ExtensionScopingTest` (which builds its second plugin by cloning the example jar), recorded in
-  `claude-docs/API-BEHAVIOUR-CHANGES.md`. **The general lesson: a defect whose multiplier is the count of
-  something the repo only ever has one of cannot be found by testing what the repo ships.**
-- **CLOSED 2026-09-08 — the plugin-loading recursion** (was: "the example plugin dies with a
-  `StackOverflowError` in `CustomPluginFactory`, pre-existing, GUI unaffected"). Both halves of that
-  description turned out to be understated: it is not confined to CLI, and it is unbounded recursion rather
-  than one failed instantiation. **Plugin loading now happens after the API it reaches into exists** —
-  `ApiPlugins.loadAndStart()` instead of the constructor's `init`, called **last** by `stageThree`, and
-  `ApiWrapper.api()` publishes its singleton **before** running setup. Measured on one startup with the
-  example plugin installed: **53 ApiWrapper constructions, 268 `example-kotlin` log lines, an
-  OutOfMemoryError** — reported by Griefed as the example plugin's output appearing "a gazillion times" —
-  against **0 / 7 / 0** after. Detail and the two rows it owes an embedder:
-  `serverpackcreator-api/CLAUDE.md` and `claude-docs/API-BEHAVIOUR-CHANGES.md`.
-  **The lesson worth carrying:** the api suite had the example plugin installed and stayed green for
-  months, because whichever test called `ApiWrapper.api()` first did so before anything copied a jar into
-  `tests/plugins`. The defect needs a populated plugins directory at *first* startup — every real run, and
-  no test. A fixture that is installed *after* the thing it is meant to exercise has already run is not a
-  fixture.
-
-**Since then (2026-09-09): the grinder's `ERROR` bucket, read.** Two things generalise beyond the clientside
-module, whose own `CLAUDE.md` carries the detail and the landmines:
-
-- **A bucket that mixes "somebody must fix this" with "nobody can" is not readable, and stops being read.**
-  `Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* and held, out
-  of 53 published rows, **17 CurseForge distribution opt-outs and ~18 combinations nothing upstream ever
-  published for**. Neither is anybody's problem, and both were sitting in the one column an operator scans
-  to find work. `LOCKED` and `UNVERIFIABLE` now carry them, and what remains in `ERROR` is actionable by
-  construction. The general form: *a category defined by its consequence ("the grind did not happen") will
-  accumulate everything with that consequence, whatever its cause* — so define it by the cause, and make the
-  type carry it (`PreventionCause`) rather than a sentence a reader has to parse.
-- **A defect whose evidence is a published report can be diagnosed without touching the host.**
-  `chefs-delight`'s refusal printed the bare mod id `farmersdelight`; the platform route labels with the
-  resolved project's *slug* (`farmers-delight`), and the manifest route refuses only on a confident mapping,
-  which the id table does not give that id. Two facts in the code plus one string in the feed located the
-  bug in `LearnedModIds` — no shell on the daemon, no log. Worth doing before asking for access: the report
-  is evidence, and its wording is part of it. That is also the argument for the wording being precise, which
-  is why `unsatisfiedLabel` and `UnmetReason` exist at all.
-
-**Since then (2026-09-10/11): the `UNVERIFIABLE` bucket, read the same way.** 42 rows, 27 of them ours, all
-attributed to a measured cause. The module's own `CLAUDE.md` carries the six fixes; three lessons generalise:
-
-- **A test can pass against unfixed code because one fixture value is a prefix of another.** A guard for the
-  CurseForge version-line matched `contains("gameVersion=$older")`, and `1.20` is a prefix of `1.20.6` — so
-  the request for the *newer* version matched the *older* fixture arm and the whole test went green before
-  the fix existed. This file already says *run the pin and read why it failed*; the missing half is **ask why
-  it passed**, whenever a fixture's values could contain one another. Parsing the value and comparing it
-  exactly is what gave that guard teeth.
-- **A guard that cannot compile is not a red pin, and the honest options are both better than a fake
-  boundary.** Two fixes here needed a new parameter before their guard could be expressed at all. Where the
-  seam was separable it landed first as its own behaviour-preserving `refactor:` commit and the pin went red
-  against it; where it was not, the commit says so and quotes the mutation that reproduces the red. Committing
-  a test that does not compile proves nothing, and neither does quietly merging pin and fix.
-- **Duplicated knowledge drifts in the direction of whichever copy is easier to reach.** `-api` knew that
-  NeoForge below Minecraft 1.20.5 ships `META-INF/mods.toml` — it is in the dispatch constant *and* in that
-  module's `CLAUDE.md` — while `-clientside` held a flat, version-blind second copy and refused 13 genuine
-  NeoForge jars. Third instance of this exact shape after `MetadataScanner`/`ModListCompiler` and the two
-  `Quilt to Fabric` maps. **The fix is always to delete the duplicate, never to correct it**, and the
-  question to ask of any new lookup table is which existing one already answers it.
+- **A defect whose multiplier is the count of something the repo only ever has one of cannot be found by
+  testing what the repo ships.** One installed plugin made a per-plugin loop invisible for months.
+- **A fixture installed *after* the thing it is meant to exercise has already run is not a fixture.** The
+  api suite stayed green for months against an unbounded plugin-loading recursion for exactly that reason.
+- **A category defined by its consequence will accumulate everything with that consequence, whatever the
+  cause** — so define it by the cause and make the type carry it (`PreventionCause`), not a sentence.
+- **A defect whose evidence is a published report can be diagnosed without touching the host.** The
+  report's wording is part of the evidence, which is the argument for it being precise.
+- **A test can pass against unfixed code because one fixture value is a prefix of another.** Ask why a
+  guard *passed*, not only why it failed, whenever fixture values could contain one another.
+- **A guard that cannot compile is not a red pin.** Land the seam first as its own behaviour-preserving
+  commit, or say in the message that the boundary is missing and quote the mutation that reproduces the red.
+- **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
+  the duplicate rather than correcting it, and ask of any new lookup table which existing one already
+  answers it.
