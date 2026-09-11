@@ -238,4 +238,43 @@ internal class VerdictReportRendererTest {
             "the table has exactly one column the CSV does not: Logs, which is a set of links rather than a value"
         )
     }
+
+    /**
+     * **A URL is rendered as a link only when its scheme is one a browser should follow.**
+     *
+     * HTML-escaping a href stops markup from breaking out of the attribute; it does nothing about
+     * `javascript:`, which is a working href in every browser. The report server carries **no
+     * authentication** and binds loopback only until `SPC_GRINDER_HOST` says otherwise, and a verdict's
+     * `projectUrl` is not this daemon's own string — it is whatever an operator queued, or CurseForge's
+     * `links.websiteUrl` for a project. Neither is hostile today, which is exactly when an allowlist is
+     * cheap: after the first row that is, it is an incident.
+     *
+     * The value is still **shown**, escaped, because a reader has to be able to see what the row is about.
+     */
+    @Test
+    fun aProjectUrlWithAnUntrustedSchemeIsShownButNotLinked() {
+        val html = VerdictReportRenderer.toHtml(
+            pageOf(listOf(grindVerdict("jei", "Forge", projectUrl = "javascript:alert(document.domain)")))
+        )
+
+        Assertions.assertFalse(
+            html.contains("<a href=\"javascript:"),
+            "a scheme a browser executes must never reach an href"
+        )
+        Assertions.assertTrue(
+            html.contains("javascript:alert(document.domain)"),
+            "but the row still has to say which project it is about"
+        )
+    }
+
+    /** And an ordinary project link is unchanged — this narrows nothing that matters. */
+    @Test
+    fun anHttpsProjectUrlIsStillALink() {
+        val html = VerdictReportRenderer.toHtml(pageOf(listOf(grindVerdict("jei", "Forge"))))
+
+        Assertions.assertTrue(
+            html.contains("<a href=\"https://modrinth.com/mod/jei\""),
+            "every real row is a link, and stays one"
+        )
+    }
 }
