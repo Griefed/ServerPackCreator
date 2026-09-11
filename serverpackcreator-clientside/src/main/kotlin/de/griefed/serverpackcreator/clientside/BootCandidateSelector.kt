@@ -57,10 +57,17 @@ object BootCandidateSelector {
      * *means* Forge; and for anything newer, `BootVerifier.refuseForSelfDeclaration` reads the downloaded
      * jar's own descriptor before the boot and refuses one carrying only another loader's. The cost of being
      * wrong is a refused attempt, not a wrong verdict.
+     *
+     * [untaggedFallback] turns that last arm off. [pickGrindTargets] needs it: it asks several loaders about
+     * one Minecraft line in priority order, and an untagged file matches *every* loader — so with the arm on,
+     * the highest-priority loader would claim an untagged file while a loader further down had a file its
+     * author actually tagged. Off for the first pass, on for the second, which keeps "a file whose author did
+     * state a loader always wins" true across loaders as well as within one.
      */
     fun pickBootableCandidate(
         files: List<ModFile>,
         loader: String,
+        untaggedFallback: Boolean = true,
         loaderVersionAvailable: (minecraftVersion: String) -> Boolean
     ): Pair<ModFile, String>? =
         // The channel is the outermost preference, so a stable build on an older Minecraft beats a beta on a
@@ -72,7 +79,9 @@ object BootCandidateSelector {
         // A preference, never a filter: every channel is tried in turn, so a project publishing only betas
         // (or only an alpha, as `faster-random` does for Forge) is ground exactly as deeply as before.
         ReleaseChannel.entries.firstNotNullOfOrNull { channel ->
-            pickBootableCandidateFrom(files.filter { it.channel == channel }, loader, loaderVersionAvailable)
+            pickBootableCandidateFrom(
+                files.filter { it.channel == channel }, loader, untaggedFallback, loaderVersionAvailable
+            )
         }
 
     /**
@@ -81,15 +90,17 @@ object BootCandidateSelector {
      *
      * An untagged file states no loader rather than stating another one — see [pickUntagged]. Last resort, so
      * a file whose author did tag it always wins and this only adds a candidate where there was none: an
-     * all-untagged project (every one of mtlib's 15 files) was never ground at all.
+     * all-untagged project (every one of mtlib's 15 files) was never ground at all. [untaggedFallback] drops
+     * that arm entirely, for a caller comparing several loaders over one file set.
      */
     private fun pickBootableCandidateFrom(
         files: List<ModFile>,
         loader: String,
+        untaggedFallback: Boolean,
         loaderVersionAvailable: (minecraftVersion: String) -> Boolean
     ): Pair<ModFile, String>? =
         newestOf(files.filter { loader in it.loaders }, loaderVersionAvailable)
-            ?: newestOf(files.filter { it.loaders.isEmpty() }, loaderVersionAvailable)
+            ?: newestOf(files.filter { untaggedFallback && it.loaders.isEmpty() }, loaderVersionAvailable)
 
     /** The newest bootable (file, Minecraft version) pair among [files], or `null`. */
     private fun newestOf(
@@ -99,6 +110,96 @@ object BootCandidateSelector {
         files.flatMap { file -> file.minecraftVersions.map { file to it } }
             .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
             .firstOrNull { loaderVersionAvailable(it.second) }
+
+    /**
+     * One unit of grinding: which Minecraft version-line, which loader, which published file, and which
+     * exact version inside the line.
+     *
+     * The loader is carried because it is a *choice* rather than the subject — one loader per line is what
+     * the project is ground on, and which one it was is evidence a reader needs when the verdict is argued
+     * with.
+     */
+    data class GrindTarget(
+        /** The Minecraft version-line this target is about, as [minecraftLine] spells it. */
+        val minecraftLine: String,
+        /** The loader chosen for this line, the first of [LOADER_PRIORITY] the line publishes a build for. */
+        val loader: String,
+        /** The published file to boot. */
+        val file: ModFile,
+        /** The exact Minecraft version inside [minecraftLine] the pack boots at. */
+        val minecraftVersion: String
+    )
+
+    /**
+     * Which loader to grind a Minecraft line under, most-preferred first.
+     *
+     * **Why one loader per line rather than all of them.** A project's Forge and NeoForge builds of one era
+     * are usually the same source compiled twice, so booting both re-asks a question already answered; its
+     * 1.12.2 and 1.21 builds are different code, and that difference was never asked about at all. The order
+     * favours the loader whose build is most likely to be the maintained one: NeoForge is where modern Forge
+     * development went, Forge still carries the older eras, and Fabric precedes Quilt because Quilt boots
+     * Fabric builds anyway (see [LoaderCompatibility]) while the reverse is false. `LegacyFabric` is last
+     * because it exists only for versions the others predate.
+     *
+     * **Every supported modloader must appear here**, which `GrindTargetSelectionTest` fails the build over:
+     * a loader missing from the order is silently never ground, exactly as a verdict missing from the
+     * grinder's rank sorts behind everything without saying so.
+     */
+    val LOADER_PRIORITY = listOf("NeoForge", "Forge", "Fabric", "Quilt", "LegacyFabric")
+
+    /**
+     * The targets to grind for a project publishing [files]: one per Minecraft version-line [linePolicy]
+     * selects, each under the first loader of [LOADER_PRIORITY] that line has a bootable build for.
+     *
+     * A line no loader can boot is dropped rather than reported — there is nothing to run, so a verdict about
+     * it would be a verdict about our own selection. Newest line first, which is [linePolicy]'s ordering.
+     *
+     * **Two passes over the priority order, and the second is what keeps a stated loader winning.** An
+     * untagged file (CurseForge published no modloader facet before Minecraft 1.13) matches every loader, so
+     * a single pass would let NeoForge claim one while Forge had a file its author actually tagged. The first
+     * pass therefore asks for tagged files only, and the untagged fallback runs after every loader has been
+     * asked — which is the same "a tag is a statement, an empty set is the absence of one" rule
+     * [pickBootableCandidate] applies within one loader, applied across them.
+     */
+    fun pickGrindTargets(
+        files: List<ModFile>,
+        linePolicy: MinecraftLinePolicy = MinecraftLinePolicy(),
+        loaderVersionAvailable: (loader: String, minecraftVersion: String) -> Boolean
+    ): List<GrindTarget> {
+        val lines = files.flatMap { it.minecraftVersions }.map { minecraftLine(it) }.distinct()
+        return linePolicy.select(lines).mapNotNull { line ->
+            val within = filesWithin(files, line)
+            targetFor(line, within, untaggedFallback = false, loaderVersionAvailable)
+                ?: targetFor(line, within, untaggedFallback = true, loaderVersionAvailable)
+        }
+    }
+
+    /** The first loader of [LOADER_PRIORITY] with a bootable build of [files] on [line], or `null`. */
+    private fun targetFor(
+        line: String,
+        files: List<ModFile>,
+        untaggedFallback: Boolean,
+        loaderVersionAvailable: (loader: String, minecraftVersion: String) -> Boolean
+    ): GrindTarget? = LOADER_PRIORITY.firstNotNullOfOrNull { loader ->
+        pickBootableCandidate(files, loader, untaggedFallback) { loaderVersionAvailable(loader, it) }
+            ?.let { (file, version) -> GrindTarget(line, loader, file, version) }
+    }
+
+    /**
+     * [files] narrowed to [line], each file keeping only the Minecraft versions that belong to it.
+     *
+     * The versions are narrowed and not merely the files, because one published file is routinely tagged
+     * across lines — `aether-1.20.1-1.5.2-neoforge.jar` carries `1.20.1` alone but JEI's builds commonly
+     * carry several — and [pickBootableCandidate] picks the newest version it is *shown*. Handing it the
+     * whole set would let a 1.20 line's pick boot at 1.21, which is the one thing a per-line axis exists to
+     * stop.
+     */
+    private fun filesWithin(files: List<ModFile>, line: String): List<ModFile> =
+        files.mapNotNull { file ->
+            file.minecraftVersions.filter { minecraftLine(it) == line }
+                .takeIf { it.isNotEmpty() }
+                ?.let { file.copy(minecraftVersions = it.toSet()) }
+        }
 
     /**
      * The newest Minecraft version of [file] that both [loaderVersionAvailable] allows and the jar's own
