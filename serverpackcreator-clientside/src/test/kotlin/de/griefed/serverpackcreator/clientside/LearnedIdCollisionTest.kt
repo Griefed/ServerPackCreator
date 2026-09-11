@@ -104,7 +104,7 @@ internal class LearnedIdCollisionTest {
                 // happens to be the real project's slug here, which is exactly why a guess is worth keeping.
                 ModIdMapping.Guess("create")
             ),
-            learned.mappingsFor("create", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+            learned.mappingsFor("create", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") }
         )
         Assertions.assertEquals("create-fabric", learned.refFor("create", "Modrinth"))
     }
@@ -120,7 +120,7 @@ internal class LearnedIdCollisionTest {
 
         Assertions.assertEquals(
             listOf(ModIdMapping.Alias("some-fork"), ModIdMapping.Guess("mysterylib")),
-            learned.mappingsFor("mysterylib", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+            learned.mappingsFor("mysterylib", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") }
         )
     }
 
@@ -132,7 +132,7 @@ internal class LearnedIdCollisionTest {
 
         Assertions.assertEquals(
             listOf(ModIdMapping.Alias("fabric-api")),
-            learned.mappingsFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
+            learned.mappingsFor("fabric", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") },
             "the table's `fabric -> fabric-api` alias is the same project a jar just proved"
         )
     }
@@ -142,11 +142,11 @@ internal class LearnedIdCollisionTest {
     fun anUnlearnedIdIsStillJustTheRegistrysAnswer() {
         Assertions.assertEquals(
             listOf(ModIdMapping.Alias("fabric-api")),
-            LearnedModIds().mappingsFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+            LearnedModIds().mappingsFor("fabric", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") }
         )
         Assertions.assertEquals(
             emptyList<ModIdMapping>(),
-            LearnedModIds().mappingsFor("whatever", "SomeOtherPlatform") { ModIdMapping.None },
+            LearnedModIds().mappingsFor("whatever", "SomeOtherPlatform") { listOf(ModIdMapping.None) },
             "a platform the registry knows nothing about offers nothing to try"
         )
     }

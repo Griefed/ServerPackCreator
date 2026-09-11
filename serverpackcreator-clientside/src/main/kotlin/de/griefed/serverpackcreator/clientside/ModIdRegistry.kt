@@ -213,6 +213,17 @@ object KnownModIds {
      * unresolvable unless it was one of the four aliases: `modtweaker` never staged `mtlib`, a project
      * CurseForge publishes under exactly that slug.
      */
+    /**
+     * Everything worth trying for [modId] on [platform], best first.
+     *
+     * One id can legitimately name more than one project, so the registry answers a *list* for the same
+     * reason [LearnedModIds.mappingsFor] does — and this is the list that one appends to. Today every id
+     * yields exactly one entry; the shape exists so an observed second project can be added without every
+     * caller learning about it.
+     */
+    fun mappingsFor(modId: String, platform: String): List<ModIdMapping> =
+        listOf(mappingFor(modId, platform))
+
     fun mappingFor(modId: String, platform: String): ModIdMapping {
         val id = modId.trim().lowercase()
         if (id.isEmpty()) {

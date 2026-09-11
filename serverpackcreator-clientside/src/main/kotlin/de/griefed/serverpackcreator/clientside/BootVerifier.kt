@@ -604,7 +604,7 @@ class BootVerifier(
                     // Learned first: a descriptor this process actually read outranks a table entry and a
                     // slug guess alike, and it is the half that grows on its own.
                     mappingsFor = {
-                        learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
+                        learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingsFor(id, platform.name) }
                     },
                     // Deliberately UNfiltered: the planner applies `excluded` itself, so it can tell a project
                     // publishing nothing usable from one whose builds staging dropped.
@@ -746,7 +746,7 @@ class BootVerifier(
                 ModDependency(alternative, versionConstraint = requirement.versionConstraint),
                 loader, minecraftVersion,
                 mappingsFor = {
-                    learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingFor(id, platform.name) }
+                    learnedModIds.mappingsFor(it, platform.name) { id -> KnownModIds.mappingsFor(id, platform.name) }
                 },
                 resolveRef = { resolveDependencyAcrossTheLine(it, loader, minecraftVersion, excluded) },
                 excluded = excluded
