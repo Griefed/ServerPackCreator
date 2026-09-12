@@ -84,9 +84,9 @@ object ModPlatforms {
 
 /**
  * The accumulated verdict for one `(project, Minecraft version-line)` — one row behind the sortable / CSV
- * table. [suggestedEntry] is the clientside-list name-pattern (the file-name stem), [confidence] the
- * clientside engine's per-loader verdict; together with the project link they are exactly the columns
- * the table exposes.
+ * table. [suggestedEntry] is the clientside-list name-pattern (the file-name stem), [verdict] the
+ * clientside engine's conclusion for that line; together with the project link they are exactly the
+ * columns the table exposes.
  *
  * @author Griefed
  */
@@ -104,7 +104,7 @@ data class GrindVerdict(
     val loader: String,
     /** The line to add to the clientside fallback-list if accepted, or `null` when nothing is being suggested. */
     val suggestedEntry: String?,
-    /** Human-readable evidence behind [confidence] — the boot outcome and exit detail, as shown in the report. */
+    /** Human-readable evidence behind [verdict] — the boot outcome and exit detail, as shown in the report. */
     val detail: String,
     /** When this verdict was reached, which the re-verify TTL compares against to decide staleness. */
     val verifiedAt: Instant,

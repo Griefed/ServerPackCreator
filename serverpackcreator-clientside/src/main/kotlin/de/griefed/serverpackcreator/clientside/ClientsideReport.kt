@@ -40,7 +40,8 @@ enum class JarScan {
 }
 
 /**
- * The per-loader verdict: the suggested list-entry plus every signal that produced the [confidence].
+ * The verdict for one Minecraft version-line: the suggested list-entry plus every signal that produced
+ * the [verdict].
  *
  * @param loader            Canonical loader-name (Forge, Fabric, …) — the one loader this Minecraft line was
  *                          ground under, chosen by `BootCandidateSelector.LOADER_PRIORITY`. A *choice*,
@@ -57,7 +58,6 @@ enum class JarScan {
  * @param bootCrashExcerpt  The slice of the crashed console a maintainer reads to judge *why* it crashed, or
  *                          `null` when the boot did not crash. Kept even when a later pass strips the crash of
  *                          its standing: the server did crash, and that is still worth diagnosing.
- * @param confidence        Aggregate confidence for this loader.
  * @param sampleFile        The **published file name** of the artifact this verdict sampled, verbatim.
  *                          Narrower than [suggestedEntry], which is the common prefix over the project's
  *                          *whole* history and must stay broad enough for the published `startsWith` list:

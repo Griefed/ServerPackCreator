@@ -156,6 +156,33 @@ Two things generalise beyond GitLab:
   exiting; **the `release`, `virustotal` and release-body-update steps still use `curl -sf`** and have the
   same blindness waiting for them.
 
+## A Gradle task without a project path runs in every project
+
+**LANDMINE — the release's `maven` job is the only place in this repo that fans a task out over all
+seven projects, so it is the only place an unpublished module can break a release.** `Publish Maven`
+ran `./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication`, and the *unqualified*
+first task means "in every project". On `9.0.0-alpha.8` (run `472`, job `Publish Maven`)
+`serverpackcreator-plugin-grinder` had no `module.md` — which `serverpackcreator.dokka-conventions`
+includes as a File in every source set — so its `dokkaGeneratePublicationJavadoc` died with
+`.../serverpackcreator-plugin-grinder/module.md (No such file or directory)` and the build stopped
+there. The job is now `:serverpackcreator-api:dokkaJavadocJar`, and the convention plugin refuses to
+configure a module that has no `module.md`, so the same mistake fails on the next `./gradlew` instead.
+
+**What the incident cost, and what it did not.** `maven` is the `needs:` of both `mirror` and `news`,
+so one unpublished module's docs skipped the GitHub mirror *and* the Discord announcement of a release
+that was otherwise complete. It cost nothing to repair: the log contains **no** `publishMavenJavaPublicationTo*`,
+`publishToSonatype` or `closeAndReleaseSonatypeStagingRepository` line at all, because the failure was in
+the job's *first* `./gradlew` invocation. Nothing reached Sonatype, GitHub Packages, GitLab or the Forgejo
+registry, so re-running `maven` alone is safe here — which is **not** the general case (see *Repairing one
+is per-job* above: those four targets reject a re-published version). Check the log for a `publish*` line
+before assuming a failed `maven` job is re-runnable.
+
+**The general rule: in a release job, name the project.** Everywhere else in this directory Dokka is
+already scoped — `:serverpackcreator-api:dokkaGenerateHtml` in `assets` — and `-api` is the only
+published module, so nothing about a release ever wanted the other six. A bare task name silently
+recruits every module that applies the same convention plugin, including ones added months later by
+someone who never reads this workflow.
+
 ## The release pipeline's two silent killers
 
 Both bit the same run on 2026-08-22 (`release-generate.yml`, branch `alpha`). Neither is visible in the

@@ -294,6 +294,8 @@ class LoaderCache(
     /** Make a token safe to use as a path segment, collapsing anything unusual to an underscore. */
     private fun sanitize(token: String): String = token.replace(Regex("[^A-Za-z0-9._-]"), "_")
 
+    /** The on-disk contract of a cache entry — marker file and keys — plus the one message a failed
+     *  install logs, kept here so both can be pinned without a cache instance. */
     companion object {
         /** Completion marker, written only after a successful install; its presence means cache-hit. */
         const val MARKER = ".spc-installed"

@@ -28,19 +28,6 @@ data class PlatformRef(
 )
 
 /**
- * Bridges the two vocabularies a dependency is spelled in: a jar manifest names a **mod id** (`fabric`),
- * while a platform wants its own **project ref** — a Modrinth slug (`fabric-api`) or a CurseForge numeric
- * id (`306612`).
- *
- * **Deliberately tiny, and it must stay that way.** The platform-declared dependency path already resolves
- * everything the platform itself knows about; this exists only for the ids that path never sees, because
- * the author declared them in the jar and nowhere else. A large hand-written table of guesses would be
- * un-pinned data that goes stale in silence — exactly the failure class this repository has paid for
- * before. Grow it only for an id that has actually been observed going unresolved.
- *
- * @author Griefed
- */
-/**
  * How a manifest mod id was turned into a platform ref, which is what decides whether failing to honour it
  * may refuse a boot.
  *
@@ -74,6 +61,19 @@ sealed interface ModIdMapping {
     }
 }
 
+/**
+ * Bridges the two vocabularies a dependency is spelled in: a jar manifest names a **mod id** (`fabric`),
+ * while a platform wants its own **project ref** — a Modrinth slug (`fabric-api`) or a CurseForge numeric
+ * id (`306612`).
+ *
+ * **Deliberately tiny, and it must stay that way.** The platform-declared dependency path already resolves
+ * everything the platform itself knows about; this exists only for the ids that path never sees, because
+ * the author declared them in the jar and nowhere else. A large hand-written table of guesses would be
+ * un-pinned data that goes stale in silence — exactly the failure class this repository has paid for
+ * before. Grow it only for an id that has actually been observed going unresolved.
+ *
+ * @author Griefed
+ */
 object KnownModIds {
 
     /** Modrinth's project name, as the platform classes report it. */
@@ -291,6 +291,14 @@ object KnownModIds {
         else -> null
     }
 
+    /**
+     * What [platform] should be asked for, given the manifest id [modId], and how much that answer is worth.
+     *
+     * Tries the alias table first, then the Fabric-API family shape, and falls back to the id itself as a
+     * slug. The three outcomes are [ModIdMapping.Alias] (known, may refuse a boot), [ModIdMapping.Guess]
+     * (optimistic, never refuses) and [ModIdMapping.None] — which is why the caller does not have to decide
+     * how much to trust what it gets back.
+     */
     fun mappingFor(modId: String, platform: String): ModIdMapping {
         val id = modId.trim().lowercase()
         if (id.isEmpty()) {

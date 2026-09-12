@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * the jar and the jar says what it is.
  *
  * **A learned mapping is evidence and is treated as one.** A jar staged under ref `R` whose descriptor
- * declares id `X` proves this platform serves `X` at `R`, so [mappingFor] answers [ModIdMapping.Alias] —
+ * declares id `X` proves this platform serves `X` at `R`, so [KnownModIds.mappingFor] answers [ModIdMapping.Alias] —
  * with the right to refuse a boot that an alias carries — while an id nothing has proved falls through to
  * whatever the registry makes of it, usually a [ModIdMapping.Guess].
  *

@@ -63,10 +63,11 @@ internal enum class VerdictField(
     /**
      * What this column *orders* by, defaulting to [text].
      *
-     * Overridden only by [CONFIDENCE], whose cell text is an enum name: sorted as text it runs
-     * alphabetically, and alphabetically `INCONCLUSIVE` — which means nothing was learned — outranks both
-     * `MEDIUM` and `LOW`. Observed live before this existed. Keeping it here rather than in the sorter is
-     * also what collapses the rank table onto one declaration, instead of one copy per layer.
+     * Overridden by [VERDICT], whose cell text is an enum name: sorted as text it runs alphabetically,
+     * and alphabetically `CLEAR` — the row with nothing left to do — outranks `CONFIRMED`, the one a
+     * maintainer came for. Observed live before this existed. [MINECRAFT] overrides it for the same class
+     * of reason, `1.9` outranking `1.20` as text. Keeping it here rather than in the sorter is also what
+     * collapses the rank table onto one declaration, instead of one copy per layer.
      */
     val sortKey: (GrindVerdict) -> String = text
 ) {
@@ -150,8 +151,8 @@ internal enum class VerdictField(
          * Verdict ordering, the findings first — **the** rank table.
          *
          * Both the report's default order and `/export.csv`'s hand-maintained copy used to declare this
-         * separately, so the table and the export could drift into disagreeing about what "highest
-         * confidence first" means. Pinned by `theCsvDefaultOrderIsTheSameOrdering`.
+         * separately, so the table and the export could drift into disagreeing about what "the findings
+         * first" means. Pinned by `theCsvDefaultOrderIsTheSameOrdering`.
          */
         val VERDICT_RANK = mapOf(
             // What a maintainer came for, in order: the findings; then the consoles a new rule gets written
