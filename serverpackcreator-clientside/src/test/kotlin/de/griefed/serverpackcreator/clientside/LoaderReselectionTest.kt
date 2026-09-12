@@ -239,8 +239,12 @@ internal class LoaderReselectionTest {
         Assertions.assertEquals(
             listOf("Forge", "NeoForge"), policy.stagedFor, "there is no re-staged attempt to place otherwise"
         )
-        val requested = File(workDir, AttemptDirectory.nameFor("Modrinth", "bells-and-whistles", "Forge"))
-        val borrowed = File(workDir, AttemptDirectory.nameFor("Modrinth", "bells-and-whistles", "NeoForge"))
+        val requested = File(workDir, AttemptDirectory.nameFor(
+            "Modrinth", "bells-and-whistles", "Forge", BootCandidateSelector.minecraftLine(neoTomlRelease)
+        ))
+        val borrowed = File(workDir, AttemptDirectory.nameFor(
+            "Modrinth", "bells-and-whistles", "NeoForge", BootCandidateSelector.minecraftLine(neoTomlRelease)
+        ))
 
         Assertions.assertEquals(
             listOf(tickedForge.fileName),

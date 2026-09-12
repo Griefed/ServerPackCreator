@@ -31,7 +31,12 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  * @param slug The project's short name, as the platform spells it — the Name column.
  * @param projectUrl The project page, so a row can be opened rather than searched for.
  * @param platform Modrinth, CurseForge, or whatever a future daemon crawls.
- * @param loader The modloader this verdict was reached under; one project can hold several.
+ * @param loader The modloader this verdict was reached under — the one the grinder picked for this
+ *               Minecraft line, not the project's only one.
+ * @param minecraftLine The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null`
+ *                      from a daemon that predates the line axis. **This is the row's identity**: a project
+ *                      is ground once per line, so one project holds several rows and the same loader
+ *                      routinely holds more than one of them.
  * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`, `LOCKED`,
  *                `UNVERIFIABLE`), kept as a string rather than an enum so a class added by a newer daemon
  *                still renders — which is what let `LOCKED` and `UNVERIFIABLE` arrive without a plugin
@@ -49,6 +54,7 @@ data class GrinderVerdict(
     val projectUrl: String,
     val platform: String,
     val loader: String,
+    val minecraftLine: String? = null,
     val verdict: String,
     val suggestedEntry: String?,
     val fileName: String?,

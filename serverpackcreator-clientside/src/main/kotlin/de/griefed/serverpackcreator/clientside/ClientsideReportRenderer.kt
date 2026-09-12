@@ -59,7 +59,7 @@ object ClientsideReportRenderer {
         builder.appendLine("### Per-loader confidence")
         builder.appendLine("| Loader | Suggested entry | Declared (client/server) | Jar scan | Boot | Verdict |")
         builder.appendLine("|---|---|---|---|---|---|")
-        for (verdict in report.perLoader) {
+        for (verdict in report.perTarget) {
             builder.appendLine(
                 "| ${verdict.loader} | ${code(verdict.suggestedEntry)} | " +
                         "${verdict.declaredClientSide} / ${verdict.declaredServerSide} | " +
@@ -70,7 +70,7 @@ object ClientsideReportRenderer {
 
         // Surface the crash-output inline so a maintainer can judge *why* the server died — a crash
         // raises confidence but is no proof of clientside-only-ness.
-        for (verdict in report.perLoader) {
+        for (verdict in report.perTarget) {
             val excerpt = verdict.bootCrashExcerpt ?: continue
             builder.appendLine("<details><summary>💥 ${verdict.loader} server crash output</summary>")
             builder.appendLine()
@@ -81,7 +81,7 @@ object ClientsideReportRenderer {
             builder.appendLine()
         }
 
-        val notes = report.perLoader.mapNotNull { it.note }.distinct()
+        val notes = report.perTarget.mapNotNull { it.note }.distinct()
         if (notes.isNotEmpty()) {
             builder.appendLine("> [!NOTE]")
             notes.forEach { builder.appendLine("> - $it") }
@@ -109,7 +109,7 @@ object ClientsideReportRenderer {
      * under another loader. That is honest evidence about the mod and misleading evidence about the loader, so
      * the cell has to say `SURVIVED (via NeoForge)` rather than let a row claim a boot it never had.
      */
-    private fun bootCell(verdict: LoaderVerdict): String {
+    private fun bootCell(verdict: GrindTargetVerdict): String {
         val result = verdict.bootResult ?: return "—"
         val via = verdict.bootedLoader?.takeIf { it != verdict.loader } ?: return result.toString()
         return "$result (via $via)"

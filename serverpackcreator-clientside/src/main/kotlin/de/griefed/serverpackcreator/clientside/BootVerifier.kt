@@ -80,6 +80,19 @@ class BootVerifier(
     private val otherVersionRecheckLimit: Int = 2,
     private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
     private val learnedModIds: LearnedModIds = LearnedModIds(),
+    /**
+     * What a modloader build declares it **provides**, as id → version, so a staged jar demanding one of
+     * those ids is judged rather than skipped.
+     *
+     * Defaults to knowing nothing, which is the pre-2026-09-12 behaviour and correct for any caller that
+     * cannot see an install: `DependencyBacktrack` then treats such a demand as naming something absent, as
+     * it always did. The grinder supplies it by reading the cached install layer's own loader jar, which is
+     * the only place the answer actually lives — quilt-loader's `quilt.mod.json` declares
+     * `provides: [{ "id": "fabricloader", "version": "0.19.3" }]`, and it differs per build.
+     */
+    private val loaderProvides:
+        (loader: String, loaderVersion: String, minecraftVersion: String) -> Map<String, String> =
+            { _, _, _ -> emptyMap() },
     private val alternatePlatforms: List<ModPlatform> = emptyList(),
     private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
@@ -141,6 +154,29 @@ class BootVerifier(
          * stem is about the build that actually booted.
          */
         val bootedLoader: String? = null,
+        /**
+         * The published file name of the artifact this attempt actually staged, or `null` when nothing
+         * staged. Its sibling [bootedLoader]'s counterpart, and needed for the same reason: staging
+         * re-selects — on a loader or Minecraft range the jar declares, and on a crash re-check that boots
+         * another build entirely — so the file a caller *chose* and the file that *ran* are routinely
+         * different, and a verdict naming the former attributes one build's evidence to another.
+         */
+        val bootedFile: String? = null,
+        /**
+         * The Minecraft version this attempt actually booted on, or `null` when nothing staged. The third
+         * of the triple with [bootedLoader] and [bootedFile], and carried for the same reason: a re-check
+         * may settle the verdict from a boot on a different version entirely, and a row naming the version
+         * it *asked* for describes a run that did not happen.
+         */
+        val minecraftVersion: String? = null,
+        /**
+         * The modloader build the console says actually started, or `null` when it never announced one.
+         *
+         * Kept beside the requested build rather than replacing it: measured 2026-09-11, all 16 Quilt boots
+         * ran `0.30.1` while staging had asked for `0.31.0-beta.4`, and the two provide *different*
+         * `fabricloader` versions — so a row naming only one of them cannot be audited either way.
+         */
+        val observedLoaderVersion: String? = null,
         /**
          * The id of the operator rule that decided or annotated this outcome, or `null` when the built-in
          * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
@@ -207,8 +243,42 @@ class BootVerifier(
      * the mod before it may stand. It defaults to `false`, which spends no extra boots: a caller that does
      * not know the metadata has nothing for the crash to contradict.
      */
-    fun verify(project: ProjectFiles, loader: String, metadataDeclaresServerSupport: Boolean = false): BootOutcome {
-        val prepared = prepareBootPack(project, loader)
+    fun verify(project: ProjectFiles, loader: String, metadataDeclaresServerSupport: Boolean = false): BootOutcome =
+        verifyPrepared(project, loader, prepareBootPack(project, loader), metadataDeclaresServerSupport) {
+            prepareBootPack(project, loader, it)
+        }
+
+    /**
+     * [verify] for a combination the caller chose — one loader on one Minecraft version-line, as
+     * [BootCandidateSelector.pickGrindTargets] picks them.
+     *
+     * **The newest-build re-check re-stages this same target**, never a fresh selection: re-selecting would
+     * answer a crash on one line with a boot on another, which is a different mod's worth of code and
+     * exactly the confusion the per-line axis exists to remove.
+     */
+    fun verify(
+        project: ProjectFiles,
+        target: BootCandidateSelector.GrindTarget,
+        metadataDeclaresServerSupport: Boolean = false
+    ): BootOutcome =
+        verifyPrepared(project, target.loader, prepareBootPack(project, target), metadataDeclaresServerSupport) {
+            prepareBootPack(project, target, it)
+        }
+
+    /**
+     * The shared body of both [verify] entry points: boot [prepared], run the two crash re-checks, and put
+     * the decisive attempt's console back.
+     *
+     * [restageOnLoaderVersion] re-stages the *same* combination on a given loader build, which is what the
+     * newest-build re-check needs and is the one step the two entry points must not share a selection for.
+     */
+    private fun verifyPrepared(
+        project: ProjectFiles,
+        loader: String,
+        prepared: Prepared,
+        metadataDeclaresServerSupport: Boolean,
+        restageOnLoaderVersion: (String) -> Prepared
+    ): BootOutcome {
         if (prepared is Prepared.Failed) {
             // Say so out loud. This reason used to be returned as a detail string and then dropped by
             // `ClientsideVerifier.aggregate` whenever the metadata already decided the confidence, which made a
@@ -219,7 +289,7 @@ class BootVerifier(
         }
         val ready = prepared as Prepared.Ready
         val outcome = boot(ready)
-        val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome)
+        val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome, restageOnLoaderVersion)
         val decided = recheckCrashOnOtherModVersions(project, loader, ready, loaderChecked, metadataDeclaresServerSupport)
         // Every attempt above wrote the same boot.log, so the file currently holds the *last* boot's console
         // while `decided` may be an earlier one. Put the reported verdict's own console back.
@@ -247,7 +317,8 @@ class BootVerifier(
         project: ProjectFiles,
         loader: String,
         first: Prepared.Ready,
-        outcome: BootOutcome
+        outcome: BootOutcome,
+        restageOnLoaderVersion: (String) -> Prepared
     ): BootOutcome {
         val newest = loaderVersionPolicy.latestVersion(loader, first.minecraftVersion)
         // The null check is redundant with shouldRecheckOnNewestBuild (which is false for a null newest) but
@@ -260,7 +331,7 @@ class BootVerifier(
             "${project.slug}: $loader ${first.loaderVersion} did not boot cleanly and is not the newest build — " +
                 "re-checking on $loader $newest before trusting the outcome."
         )
-        val restaged = prepareBootPack(project, loader, loaderVersionOverride = newest)
+        val restaged = restageOnLoaderVersion(newest)
         if (restaged is Prepared.Failed) {
             log.warn("Could not re-stage ${project.slug} on $loader $newest (${restaged.detail}); keeping the crash.")
             return outcome
@@ -283,7 +354,7 @@ class BootVerifier(
      *
      * **The sample spans loaders, so a candidate is staged under its own loader, not [loader].** See
      * [BootCandidateSelector.pickRecheckCandidates] for why, and why crossing the loader is admissible here
-     * and not in `ClientsideVerifier.loaderDisprovingTheCrash`. Every attempt nonetheless stages into the
+     * and not in `ClientsideVerifier.targetDisprovingTheCrash`. Every attempt nonetheless stages into the
      * *crashing* loader's directory: all attempts for one candidate share one `boot.log`, which
      * [restoreDecisiveConsole] repairs at the end of [verify], and staging into another loader's directory
      * would wipe the pack and console that loader's own verdict is about to be built from.
@@ -324,7 +395,11 @@ class BootVerifier(
                 file,
                 minecraftVersion,
                 loaderVersionOverride = null,
-                attemptDirName = AttemptDirectory.nameFor(project.platform, project.slug, loader)
+                // The crashing attempt's directory, so its pack and console survive the re-check -- which
+                // means the crashing target's Minecraft line, never this candidate's.
+                attemptDirName = AttemptDirectory.nameFor(
+                    project.platform, project.slug, loader, BootCandidateSelector.minecraftLine(booted.minecraftVersion)
+                )
             )
             if (staged is Prepared.Failed) {
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
@@ -425,7 +500,11 @@ class BootVerifier(
                 continue
             }
             val dependencyFile = BootCandidateSelector.pickDependencyFile(
-                dependencyProject.withoutExcluded(excluded).files, loader, minecraftVersion
+                dependencyProject.withoutExcluded(excluded).files, loader, minecraftVersion,
+                // The ref carries no range; the jar does. Without this the newest build for the Minecraft
+                // version was taken even where the candidate had demanded a specific one -- and the loader
+                // then refused the pack, charging the candidate for it.
+                versionConstraint = PlatformDependencyDemand.demandedConstraint(declared, dependencyProject)
             )
             if (dependencyFile == null) {
                 // Asked twice on purpose: the same pick over the *unfiltered* list separates "this project
@@ -595,10 +674,16 @@ class BootVerifier(
         val requirements = declared ?: return
 
         val bundled = BundledJars.idsIn(staged)
+        // A bundled library's own demands bind exactly like a staged one's, and nothing else reads them:
+        // `highlight` declares `resourcefullib: "*"`, which the bundled copy satisfies -- while that copy
+        // declares `fabric-api: "*"`, which was never staged and killed the boot, charged to `highlight`.
+        // Appended rather than merged, so the host's own declaration still leads and `stageableRequirements`
+        // applies one dedupe to the pair.
+        val declaredAndBundled = requirements + BundledJars.requirementsIn(staged)
         // Scoped to this jar, which is also the scope of `file.relatedDependencies`: several unresolved ids
         // in one descriptor share a single round of probing instead of re-fetching the same links each time.
         val probed = mutableSetOf<String>()
-        for (requirement in stageableRequirements(requirements, visited, bundled, provided) { platformRefFor(it) }) {
+        for (requirement in stageableRequirements(declaredAndBundled, visited, bundled, provided) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
             // seen once must not be resolved twice even when the first attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
@@ -880,8 +965,25 @@ class BootVerifier(
         mainFile: ModFile,
         minecraftVersion: String
     ): ScannedMod? = scanned.firstOrNull { mod ->
-        mod.file.name != mainFile.fileName &&
-            mod.minecraftConstraint?.let { !VersionConstraint.satisfies(minecraftVersion, it) } == true
+        mod.file.name != mainFile.fileName && excludesTheVersion(mod, minecraftVersion)
+    }
+
+    /**
+     * Whether [mod]'s own descriptor — **or any jar it bundles** — positively excludes [minecraftVersion].
+     *
+     * The nested half is not a refinement: a bundled library is on the classpath exactly like a staged one,
+     * and its declared range binds exactly like a staged one's, while the *host* jar's descriptor may say
+     * nothing at all. Measured live on Quilt — `quilted-fabric-api-11.0.0-alpha.3+0.102.0-1.21.jar` bundles
+     * `qsl_base-10.0.0-alpha.1+1.21.jar`, which pins `minecraft [1.21, 1.21]` exactly. Staged into a
+     * Minecraft 1.21.1 pack it refuses the whole pack, and the *candidate* wore the INCONCLUSIVE.
+     *
+     * Same fail-toward-accepting rule as the top-level read: an unreadable jar yields no demands at all, and
+     * a range [VersionConstraint] cannot parse is accepted.
+     */
+    private fun excludesTheVersion(mod: ScannedMod, minecraftVersion: String): Boolean {
+        val declared = listOfNotNull(mod.minecraftConstraint) +
+            BundledJars.minecraftDemandsIn(mod.file).values
+        return declared.any { !VersionConstraint.satisfies(minecraftVersion, it) }
     }
 
     /**
@@ -943,6 +1045,40 @@ class BootVerifier(
                 cause = PreventionCause.UPSTREAM_UNAVAILABLE
             )
         val (mainFile, minecraftVersion) = candidate
+        return prepareChosen(project, loader, mainFile, minecraftVersion, loaderVersionOverride, bootable)
+    }
+
+    /**
+     * [prepareBootPack] for a combination the **caller** chose — one loader on one Minecraft version-line,
+     * as [BootCandidateSelector.pickGrindTargets] picks them.
+     *
+     * The selection is not repeated here. `pickGrindTargets` is handed [bootableCombination] to choose with,
+     * so a target already satisfies the same gate, and asking twice would be a second predicate free to
+     * disagree with the first. A combination that *is* unbootable still refuses honestly one step later,
+     * where `stageBootPack` finds no loader build for it.
+     */
+    fun prepareBootPack(
+        project: ProjectFiles,
+        target: BootCandidateSelector.GrindTarget,
+        loaderVersionOverride: String? = null
+    ): Prepared = prepareChosen(
+        project, target.loader, target.file, target.minecraftVersion, loaderVersionOverride, bootableCombination()
+    )
+
+    /**
+     * Stage [mainFile] for [loader] on [minecraftVersion], then apply at most one re-selection retry when the
+     * downloaded jar's own descriptor contradicts the choice. The shared tail of both [prepareBootPack]
+     * entry points, so a caller choosing its own combination gets the same retries as one that let selection
+     * choose.
+     */
+    private fun prepareChosen(
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        minecraftVersion: String,
+        loaderVersionOverride: String?,
+        bootable: (String, String) -> Boolean
+    ): Prepared {
         val staged = stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
         // At most one retry, enforced here rather than by which channel a refusal carries: the loader
         // mismatch is tried first, because where a jar disagrees about both, no other Minecraft version
@@ -973,7 +1109,7 @@ class BootVerifier(
      * from its own pack and console — the same reasoning as the cross-loader crash re-check's.
      *
      * The verdict still says what ran: `BootOutcome.bootedLoader` is stamped from the staged pack, so a
-     * re-selected boot has `bootedLoader != loader`, which `ClientsideVerifier.loaderDisprovingTheCrash`
+     * re-selected boot has `bootedLoader != loader`, which `ClientsideVerifier.targetDisprovingTheCrash`
      * already requires to be equal before one loader may clear another's crash.
      */
     private fun reselectOnLoaderContradiction(
@@ -998,7 +1134,9 @@ class BootVerifier(
         )
         return stageBootPack(
             project, reselected, mainFile, minecraftVersion, loaderVersionOverride,
-            attemptDirName = AttemptDirectory.nameFor(project.platform, project.slug, loader)
+            attemptDirName = AttemptDirectory.nameFor(
+                project.platform, project.slug, loader, BootCandidateSelector.minecraftLine(minecraftVersion)
+            )
         )
     }
 
@@ -1063,7 +1201,7 @@ class BootVerifier(
      * Takes the loader per call rather than closing over one, because the crash re-check's sample spans
      * loaders and has to gate each candidate against its own.
      */
-    private fun bootableCombination(): (String, String) -> Boolean {
+    fun bootableCombination(): (String, String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         return { loader, minecraftVersion ->
             minecraftVersion in releaseVersions &&
@@ -1087,7 +1225,9 @@ class BootVerifier(
         mainFile: ModFile,
         minecraftVersion: String,
         loaderVersionOverride: String?,
-        attemptDirName: String = AttemptDirectory.nameFor(project.platform, project.slug, loader),
+        attemptDirName: String = AttemptDirectory.nameFor(
+            project.platform, project.slug, loader, BootCandidateSelector.minecraftLine(minecraftVersion)
+        ),
         excludedDependencies: Set<String> = emptySet()
     ): Prepared {
         val loaderVersion = loaderVersionOverride
@@ -1123,7 +1263,7 @@ class BootVerifier(
         unmappedDependencyNote(unmapped)?.let { log.warn(it) }
         // Judge the staged jars against each other before spending a container on them: a set whose own
         // descriptors contradict each other is refused by the loader, and the CANDIDATE wears the verdict.
-        dependencyToDemote(modsDir, mainFile, injected, loader, minecraftVersion, excludedDependencies)
+        dependencyToDemote(modsDir, mainFile, injected, loader, loaderVersion, minecraftVersion, excludedDependencies)
             ?.let { demoted ->
                 return stageBootPack(
                     project, loader, mainFile, minecraftVersion, loaderVersionOverride, attemptDirName,
@@ -1140,7 +1280,8 @@ class BootVerifier(
         return Prepared.Ready(
             serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
             injectedDependencies = injected.toList(),
-            candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName))
+            candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName)),
+            bootedFile = mainFile.fileName
         )
     }
 
@@ -1168,6 +1309,7 @@ class BootVerifier(
         mainFile: ModFile,
         injected: List<InjectedDependency>,
         loader: String,
+        loaderVersion: String,
         minecraftVersion: String,
         alreadyExcluded: Set<String>
     ): String? {
@@ -1187,15 +1329,34 @@ class BootVerifier(
         val publishedVersionOf = (injected.map { it.fileName to it.version } + (mainFile.fileName to mainFile.version))
             .toMap()
 
-        // Nested first, so a top-level jar of the same id wins: that is the copy staging deliberately
+        // The loader's own `provides` first of all, so a jar demanding one of them is judged instead of
+        // being skipped as naming something absent -- and last in precedence, because a staged jar claiming
+        // the same id is a real file the loader will load. Measured 2026-09-11: quilt-loader 0.30.1 provides
+        // `fabricloader 0.19.3` while 0.31.0-beta.4 provides `0.19.5`, and `fabric-language-kotlin` demands
+        // `[0.19.5, ∞)` -- twelve published rows died on that, invisibly, because `fabricloader` is
+        // environment-provided and therefore never staged for anything to compare against.
+        //
+        // Nested next, so a top-level jar of the same id wins: that is the copy staging deliberately
         // chose and the one a demotion would act on. Nested entries can therefore only fill a gap.
-        val stagedVersions = nestedVersions(stagedJars) + scanned.flatMap { mod ->
+        val provided = loaderProvides(loader, loaderVersion, minecraftVersion)
+        val stagedVersions = provided + nestedVersions(stagedJars) + scanned.flatMap { mod ->
             val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
             // A dependency names an id, and one jar answers to several: its own, plus everything it
             // `provides` -- Fabric API declares `id: fabric-api` and `provides: [fabric]`.
             (listOf(mod.modID) + mod.provides).map { it to version }
         }.toMap()
-        val requirements = scanned.flatMap { mod ->
+        // The platform ids the scanners strip, read back off each staged jar for exactly the ids the
+        // loader was able to describe -- so a demand on `fabricloader` is judged, and nothing else is.
+        val platformDemands = scanned.flatMap { mod ->
+            BundledJars.demandsOn(mod.file, provided.keys).mapNotNull { requirement ->
+                requirement.versionConstraint?.let { constraint ->
+                    DependencyBacktrack.Requirement(
+                        mod.file.name, mod.file.name == mainFile.fileName, requirement.modID, constraint
+                    )
+                }
+            }
+        }
+        val requirements = platformDemands + scanned.flatMap { mod ->
             mod.dependencies
                 .filterNot { it.optional }
                 .mapNotNull { requirement ->
@@ -1248,7 +1409,13 @@ class BootVerifier(
             /** The dependency jars staged beside the candidate, for attribution and for the verdict record. */
             val injectedDependencies: List<InjectedDependency> = emptyList(),
             /** The candidate's own file-name stem, so attribution can tell its frames from a dependency's. */
-            val candidateStem: String? = null
+            val candidateStem: String? = null,
+            /**
+             * The published name of the candidate file this attempt staged, verbatim — what the verdict
+             * reports as the artifact it is about. Carried rather than derived from [candidateStem], which
+             * is a *stem* and has already dropped the version that identifies the build.
+             */
+            val bootedFile: String? = null
         ) : Prepared {
             /**
              * This attempt's staging directory name — the `(platform, slug, loader)` tuple
@@ -1372,7 +1539,22 @@ class BootVerifier(
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
             val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}", rules)
-                .copy(bootedLoader = pack.loader, stagedDependencies = pack.injectedDependencies.map { it.fileName })
+                .let { classified ->
+                    // Read from the console rather than from the pack: what staging asked for is already
+                    // known, and the whole point is that the two can disagree.
+                    val observed = BootLoaderVersion.observedIn(classified.console?.lines().orEmpty())
+                    classified.copy(
+                        bootedLoader = pack.loader,
+                        bootedFile = pack.bootedFile,
+                        minecraftVersion = pack.minecraftVersion,
+                        observedLoaderVersion = observed,
+                        detail = listOfNotNull(
+                            classified.detail,
+                            BootLoaderVersion.disagreementNote(pack.loaderVersion, observed)
+                        ).joinToString(" "),
+                        stagedDependencies = pack.injectedDependencies.map { it.fileName }
+                    )
+                }
                 // Annotation only: `attribute` returns an outcome whose result is this one's, always.
                 .let { attribute(it, pack.injectedDependencies, pack.candidateStem) }
             // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the
@@ -1836,14 +2018,26 @@ class BootVerifier(
         }
 
         /**
-         * Whether a crash is worth spending boots on *other versions of the mod*: only a CRASHED outcome,
-         * only when the metadata claims server support (so the two signals contradict each other), and only
-         * within a non-zero boot budget.
+         * Whether a crash is worth spending boots on *other versions of the mod*: only a CRASHED outcome that
+         * client-only evidence has not already settled, within a non-zero boot budget, and then for one of
+         * two reasons.
          *
-         * Deliberately narrow. Where the metadata already leans clientside the crash *confirms* it, and in a
-         * catalog sweep that agreement is the common case — re-checking it would spend boots to learn nothing
-         * while the crawl falls behind. The contradiction is the only case where one of the signals must be
-         * wrong, and therefore the only case worth paying to resolve.
+         * **The metadata contradicts it.** The mod claims server support and the server died, so one of the
+         * two signals must be wrong. Deliberately narrow: where the metadata already leans clientside the
+         * crash *confirms* it, and in a catalog sweep that agreement is the common case — re-checking it
+         * would spend boots to learn nothing while the crawl falls behind.
+         *
+         * **Or it is about to be published.** A crash a *decisive* rung explains reaches `CONFIRMED`, which
+         * strips the mod from every server pack built against the fallback list, and that is worth one boot
+         * whatever the metadata says. This arm exists because the axis moved: a project used to be ground
+         * under every loader it publishes for, so a wrong crash routinely met a clean boot from a sibling
+         * loader in the same run (`iron-chests`, 2026-08-23) and `ClientsideVerifier.targetDisprovingTheCrash`
+         * threw it out for free. One loader per Minecraft line means that sibling is no longer booted unless
+         * something asks for it, and this is what asks.
+         *
+         * In practice the second arm reaches `OPERATOR_RULE` alone — the other decisive rungs all prove
+         * client-only and are excluded above — which is exactly right: a hand-written rule is the one
+         * decisive signal nobody has cross-checked.
          */
         internal fun shouldRecheckAgainstOtherVersions(
             outcome: BootOutcome,
@@ -1854,7 +2048,8 @@ class BootVerifier(
             // run on a server"; client-only evidence has settled that, so the boots would buy nothing and
             // a survivor among them would actively discard the proof.
             outcome.decidedBy?.provesClientOnly != true &&
-            metadataDeclaresServerSupport && limit > 0
+            (metadataDeclaresServerSupport || outcome.decidedBy?.decisive == true) &&
+            limit > 0
 
         /**
          * Fold the other-version [attempts] into the verdict for the crash in [first]. One clean boot wins
@@ -2037,15 +2232,29 @@ internal enum class UnmetReason {
      * Whose problem this reason is, which is what decides the published verdict.
      *
      * Stated per reason rather than folded at the call site, so a reason added later cannot reach a refusal
-     * without somebody deciding whether it is ours, the platform's or nobody's. `DROPPED_BY_BACKTRACK` is
-     * deliberately ours: staging dropped those builds itself trying to make the pack coherent, and an
-     * operator seeing it should be asking whether the backtrack was right.
+     * without somebody deciding whether it is ours, the platform's or nobody's.
+     *
+     * **`DROPPED_BY_BACKTRACK` was ours until 2026-09-12, and that was a mis-blame.** The reasoning was
+     * "staging dropped those builds itself", which describes the *mechanism*; this property is about the
+     * *blame*, and staging only ever drops a build because something upstream **declared** an
+     * incompatibility — a version range one jar states about another, or a Minecraft range a jar states
+     * about itself. Neither is a host failure, and no operator can act on either: the host worked
+     * perfectly. Running out of backtracks is not this case at all — `dependencyToDemote` then logs and
+     * boots anyway rather than refusing.
+     *
+     * Measured on the public grinder 2026-09-12: **6 of its 7 `ERROR` rows** were this, telling an operator
+     * their host was broken over `bellsandwhistles` needing a `create-fabric` build whose every candidate
+     * conflicts. `ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and the
+     * module's `CLAUDE.md` already recorded this exact residue as open. `UNVERIFIABLE` is what it means.
+     *
+     * The fold still protects the loud case: `preventionCauseFor` takes the most actionable cause present,
+     * so a refusal mixing a genuine download failure with a backtrack drop is still `HOST`.
      */
     val preventionCause: PreventionCause
         get() = when (this) {
-            UNRESOLVED, NO_USABLE_FILE -> PreventionCause.UPSTREAM_UNAVAILABLE
+            UNRESOLVED, NO_USABLE_FILE, DROPPED_BY_BACKTRACK -> PreventionCause.UPSTREAM_UNAVAILABLE
             DISTRIBUTION_LOCKED -> PreventionCause.DISTRIBUTION_LOCKED
-            DROPPED_BY_BACKTRACK, DOWNLOAD_FAILED -> PreventionCause.HOST
+            DOWNLOAD_FAILED -> PreventionCause.HOST
         }
 
     /**

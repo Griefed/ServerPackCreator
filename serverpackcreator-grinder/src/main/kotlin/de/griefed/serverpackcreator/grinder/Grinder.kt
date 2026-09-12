@@ -70,7 +70,7 @@ class Grinder(
         // Not `store`: this class already has one, of a different type, and shadowing it here made the two
         // reads three lines apart look like the same collaborator.
         val queue = requeue ?: return
-        val blamed = report.perLoader.mapNotNull { it.blamedDependencyUrl }.distinct()
+        val blamed = report.perTarget.mapNotNull { it.blamedDependencyUrl }.distinct()
         if (blamed.isEmpty()) {
             return
         }
@@ -132,7 +132,7 @@ class Grinder(
             )
         }
         val now = clock()
-        for (verdict in report.perLoader) {
+        for (verdict in report.perTarget) {
             store.record(
                 GrindVerdict(
                     platform = report.platform,
@@ -158,7 +158,14 @@ class Grinder(
                     bootedLoader = verdict.bootedLoader,
                     firedRule = verdict.firedRule,
                     decidedBy = verdict.decidedBy?.name,
-                    stagedDependencies = verdict.stagedDependencies
+                    stagedDependencies = verdict.stagedDependencies,
+                    // The row's identity, and the version behind it. A project is ground once per Minecraft
+                    // line now, so this is what the table sorts and filters by -- and what the store keys on.
+                    minecraftLine = verdict.minecraftLine,
+                    minecraftVersion = verdict.minecraftVersion,
+                    // The evidence behind a row that did not produce its own: a sibling loader's proof.
+                    inheritedProofFrom = verdict.inheritedProofFrom,
+                    inheritedProofRule = verdict.inheritedProofRule
                 )
             )
         }
@@ -167,9 +174,11 @@ class Grinder(
         // claim than one that booted, and only the log can tell them apart afterwards.
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
-                report.perLoader
-                    .joinToString(", ") { "${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})" }
-                    .ifEmpty { "no loader verdicts" } +
+                report.perTarget
+                    .joinToString(", ") {
+                        "${it.minecraftLine ?: "?"}/${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})"
+                    }
+                    .ifEmpty { "no verdicts" } +
                 " after ${Duration.between(startedAt, clock()).seconds}s"
         )
         status?.endCandidate(GrindOutcome.VERIFIED)

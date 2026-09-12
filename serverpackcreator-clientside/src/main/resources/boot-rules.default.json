@@ -29,7 +29,7 @@
   },
   {
     "id": "client-only-class",
-    "pattern": "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)",
+    "pattern": "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client|NoClassDefFoundError: com/mojang/blaze3d|ClassNotFoundException: com\\.mojang\\.blaze3d)",
     "verdict": "CONFIRMED",
     "note": "The decisive signal, and the one thing the expensive boot exists to catch: the server loaded the mod and then died reaching for a client-only class. Outranks every excuse below -- a clientside mod may phone home AND die on a client class, and this must still win. Known gap: Fabric intermediary names (class_NNNN) are not matched, because that scheme is intermediary for every class and not only client ones, so a pattern would trade these false negatives for false positives.",
     "source": "CONSOLE"
@@ -50,7 +50,7 @@
   },
   {
     "id": "dependency-failure",
-    "pattern": "(Missing or unsupported mandatory dependencies|Unmet dependency listing|Incompatible mods found|requires .{1,80} or above|requires any version of|requires version .{1,80} of |ClassMetadataNotFoundException|ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
+    "pattern": "(Missing or unsupported mandatory dependencies|Unmet dependency listing|Incompatible mods found|requires .{1,80} or above|requires any version of|requires version .{1,80} of |ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
     "verdict": "INCONCLUSIVE",
     "note": "A mod refused for unsatisfied required dependencies never got a fair test: it was rejected before its own code ran. The largest single failure class measured -- 36 of 112 kept logs in 2026-07-30, and Quilt's 'requires version [x, y) of z' phrasing alone was 63 of 200 published crash logs in 2026-08-29.",
     "source": "CONSOLE"
@@ -64,7 +64,7 @@
   },
   {
     "id": "mixin-apply-failure",
-    "pattern": "(InvalidInjectionException|InvalidMixinException|MixinApplyError|MixinTransformerError|FAILED during APPLY|Critical injection failure|Mixin transformation of .{1,120} failed)",
+    "pattern": "(ClassMetadataNotFoundException|InvalidInjectionException|InvalidMixinException|MixinApplyError|MixinTransformerError|FAILED during APPLY|Critical injection failure|Mixin transformation of .{1,120} failed)",
     "verdict": "INCONCLUSIVE",
     "note": "A mixin that could not be applied or injected: the jar and the Minecraft it was booted on disagree about what exists, so the mod's own server code never ran. Stays below client-only-class -- a mod reaching a client-only class THROUGH a mixin is a genuine signal.",
     "source": "CONSOLE"

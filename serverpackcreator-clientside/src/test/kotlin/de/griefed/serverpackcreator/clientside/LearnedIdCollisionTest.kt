@@ -343,7 +343,7 @@ internal class LearnedIdCollisionTest {
     }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", "chefs-delight", "Fabric") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", "chefs-delight", "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /**

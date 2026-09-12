@@ -129,7 +129,7 @@ internal class CurseForgeDependencyLineTest {
     }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("CurseForge", "combat-roll", "Forge") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("CurseForge", "combat-roll", "Forge", BootCandidateSelector.minecraftLine(line.first())) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /**

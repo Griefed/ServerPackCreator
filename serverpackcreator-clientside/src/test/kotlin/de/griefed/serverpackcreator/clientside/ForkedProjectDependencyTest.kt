@@ -135,7 +135,7 @@ internal class ForkedProjectDependencyTest {
             loaderVersionPolicy = unbootableLoaderVersion,
             workDirectory = workDir
         ).prepareBootPack(candidate, "Fabric")
-        return File(workDir, AttemptDirectory.nameFor("Modrinth", "some-addon", "Fabric") + "/modpack/mods")
+        return File(workDir, AttemptDirectory.nameFor("Modrinth", "some-addon", "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted().orEmpty()
     }
 

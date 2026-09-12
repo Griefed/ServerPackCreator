@@ -54,7 +54,7 @@ internal class ClientOnlyProofTest {
         BootVerifier.BootOutcome(BootResult.CRASHED, null, "NeoForge 26.2.0.76 / Minecraft 26.2 → CRASHED", decidedBy = decision)
 
     private fun verdict(loader: String, entry: String, result: BootResult?, decision: BootDecision? = null) =
-        LoaderVerdict(
+        GrindTargetVerdict(
             loader = loader, suggestedEntry = entry,
             declaredClientSide = DeclaredSupport.REQUIRED, declaredServerSide = DeclaredSupport.UNSUPPORTED,
             jarScan = JarScan.SERVER_OR_BOTH, bootResult = result, bootedLoader = loader,
@@ -121,7 +121,7 @@ internal class ClientOnlyProofTest {
         val survived = verdict("Fabric", "sodium-", BootResult.SURVIVED)
 
         Assertions.assertNull(
-            ClientsideVerifier.loaderDisprovingTheCrash(proven, listOf(proven, survived)),
+            ClientsideVerifier.targetDisprovingTheCrash(proven, listOf(proven, survived)),
             "a clean boot cannot disprove the mod having reached the client"
         )
     }
@@ -134,7 +134,7 @@ internal class ClientOnlyProofTest {
 
         Assertions.assertEquals(
             "NeoForge",
-            ClientsideVerifier.loaderDisprovingTheCrash(unexplained, listOf(unexplained, survived))?.loader,
+            ClientsideVerifier.targetDisprovingTheCrash(unexplained, listOf(unexplained, survived))?.loader,
             "one build's crash must still not condemn a mod another loader boots cleanly"
         )
     }
@@ -183,6 +183,80 @@ internal class ClientOnlyProofTest {
         Assertions.assertEquals(
             listOf(Verdict.INCONCLUSIVE, Verdict.INCONCLUSIVE),
             ClientsideVerifier.propagateClientOnlyProof(listOf(a, b)).map { it.verdict }
+        )
+    }
+
+    /**
+     * **A clean boot on a mod that claims the server beats an inherited proof.** Measured on the public
+     * grinder 2026-09-12: **27 rows across 16 projects** were published as clientside while their own boot
+     * reached the ready line and their metadata claimed server support — `agricraft`, `galosphere`,
+     * `zombie-awareness`, `immersive-lanterns`, `joy-of-painting` among them.
+     *
+     * `CurseForge/agricraft` is the clearest: its NeoForge build fails registering one `@SubscribeEvent`
+     * class that touches `net/minecraft/client/gui/Gui`, which is a defect in *that build*, while its Fabric
+     * and Forge builds each boot a dedicated server to the ready line. All three rows published, so a
+     * crop-breeding mod is stripped from every server pack built against the list.
+     *
+     * The inference propagation rests on — *a mod's features do not change with the loader* — is invalid
+     * exactly when the reaching is one build's bug, and a sibling's clean boot **on a mod that claims the
+     * server** is what says so. That is the same contradiction
+     * `BootVerifier.shouldRecheckAgainstOtherVersions` already treats as "one of these two signals is wrong".
+     */
+    @Test
+    fun aCleanBootOnAModClaimingTheServerIsNotOverruled() {
+        val proving = verdict("NeoForge", "agricraft-", BootResult.CRASHED, BootDecision.FML_INVALID_DIST)
+        val booted = verdict("Fabric", "agricraft-", BootResult.SURVIVED)
+            .copy(declared = Declaration.SERVER)
+
+        val propagated = ClientsideVerifier.propagateClientOnlyProof(listOf(proving, booted))
+
+        Assertions.assertEquals(
+            Verdict.CONFIRMED, propagated.first { it.loader == "NeoForge" }.verdict,
+            "the proving loader keeps its own finding; only the propagation is gated"
+        )
+        Assertions.assertNotEquals(
+            Verdict.CONFIRMED, propagated.first { it.loader == "Fabric" }.verdict,
+            "this build ran a dedicated server to the ready line and the mod claims the server"
+        )
+    }
+
+    /**
+     * **`sodium` is unaffected, which is the case propagation was built for.** It declares
+     * `client_side: required` / `server_side: unsupported`, so the gate never opens: a clean boot proves
+     * nothing about a mod that never claimed the server, and its stems differ per loader
+     * (`sodium-neoforge-` vs `sodium-fabric-`), so excluding only the proving loader would leave half the
+     * project shipping into every server pack.
+     */
+    @Test
+    fun aCleanBootOnAModThatClaimsNoServerStillInherits() {
+        val proving = verdict("NeoForge", "sodium-neoforge-", BootResult.CRASHED, BootDecision.LWJGL_ON_A_DEDICATED_SERVER)
+        val booted = verdict("Fabric", "sodium-fabric-", BootResult.SURVIVED)
+            .copy(declared = Declaration.CLIENT)
+
+        val propagated = ClientsideVerifier.propagateClientOnlyProof(listOf(proving, booted))
+
+        Assertions.assertEquals(
+            Verdict.CONFIRMED, propagated.first { it.loader == "Fabric" }.verdict,
+            "nothing here contradicts the proof -- the mod never claimed the server"
+        )
+    }
+
+    /**
+     * A **borrowed** survival does not open the gate either. `reconcileOtherVersionRecheck` can settle one
+     * loader's verdict from another loader's clean boot, leaving `bootResult == SURVIVED` on a loader that
+     * crashed — the same landmine `targetDisprovingTheCrash` guards with `bootedLoader == loader`.
+     */
+    @Test
+    fun aSurvivalBorrowedFromAnotherLoaderDoesNotOverruleAProof() {
+        val proving = verdict("NeoForge", "mod-", BootResult.CRASHED, BootDecision.CLIENT_ONLY_CLASS)
+        val borrowed = verdict("Fabric", "mod-", BootResult.SURVIVED)
+            .copy(bootedLoader = "Quilt", declared = Declaration.SERVER)
+
+        val propagated = ClientsideVerifier.propagateClientOnlyProof(listOf(proving, borrowed))
+
+        Assertions.assertEquals(
+            Verdict.CONFIRMED, propagated.first { it.loader == "Fabric" }.verdict,
+            "this loader's own boot never survived; a third loader's did"
         )
     }
 }

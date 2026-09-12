@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.clientside
 
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
+
 /**
  * Whether a jar actually asks for a dependency its **platform** attributes to it.
  *
@@ -61,6 +63,30 @@ object PlatformDependencyDemand {
         val declared = declaredIds ?: return true
         val slug = normalise(project.slug)
         return declared.any { id -> namesTheSameThing(normalise(id), slug) || resolvesTo(id, project) }
+    }
+
+    /**
+     * The version range the jar declares for [project], or `null` when it names it without one — or does not
+     * name it at all.
+     *
+     * **The platform route had no constraint to pass.** `ModFile.requiredDependencies` is a list of *refs*
+     * and carries no range, so `pickDependencyFile` was called without one and took the newest build for the
+     * Minecraft version; where the jar had actually demanded a *specific* one, the pack was then refused by
+     * the loader and the candidate wore the verdict. Measured on the public grinder 2026-09-11:
+     * `cobblemon-additions` demands `cobblemon >=1.7.1` and was staged `Cobblemon-fabric-1.6.1+1.21.1`, and
+     * `create-enchantment-industry` pins `create_dragons_plus 1.11.4-p1` and was staged `1.11.8`.
+     *
+     * The jar is where the range lives, and the same fuzzy id-to-slug match [isDemanded] already makes is
+     * what finds it — one matcher, not two. Still only a **preference** downstream:
+     * `BootCandidateSelector.pickDependencyFile` narrows by the constraint and then falls back to the whole
+     * set, so an unsatisfiable range costs nothing it did not already cost.
+     */
+    fun demandedConstraint(declared: List<ModDependency>?, project: ProjectFiles): String? {
+        val slug = normalise(project.slug)
+        return declared
+            ?.firstOrNull { namesTheSameThing(normalise(it.modID), slug) || resolvesTo(it.modID, project) }
+            ?.versionConstraint
+            ?.takeIf { it.isNotBlank() }
     }
 
     /** Punctuation is spelling, not identity: `ftb-library-forge` and `ftblibrary` are one project. */

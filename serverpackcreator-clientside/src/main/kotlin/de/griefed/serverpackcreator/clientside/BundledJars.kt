@@ -21,11 +21,17 @@ package de.griefed.serverpackcreator.clientside
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import java.io.File
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 /**
+ * This module's reader for a Fabric/Quilt descriptor, answering three questions about one jar: what it
+ * carries inside itself via **jar-in-jar**, what those bundled jars demand, and what the jar itself demands
+ * of the *platform*. One parser, because two would drift — the failure this module's own context file opens
+ * with.
+ *
  * The mod-ids — and the versions — a jar already carries inside itself, via Fabric/Quilt **jar-in-jar**.
  *
  * A mod may ship its own libraries as nested jars, which the loader puts on the classpath — so a dependency
@@ -59,6 +65,15 @@ object BundledJars {
     /** Quilt declares `quilt_loader.jars: [ "…" ]` — a list of plain strings, not objects. */
     private const val QUILT_LOADER = "quilt_loader"
 
+    /** Both loaders spell a descriptor's hard requirements the same way, at different nesting depths. */
+    private const val DEPENDS = "depends"
+
+    /**
+     * The id both loaders use for the game itself, which is a *range* rather than something to stage —
+     * [minecraftDemandsIn] answers it and [requirementsIn] drops it.
+     */
+    private const val MINECRAFT = "minecraft"
+
     private val mapper = jacksonObjectMapper()
 
     /**
@@ -91,6 +106,106 @@ object BundledJars {
             idsOf(descriptor).map { id -> id to version }
         }
     )
+
+    /**
+     * What a nested jar **demands**, as the loader will enforce it — every `depends` entry each bundled
+     * descriptor declares, minus `minecraft` (which [minecraftDemandsIn] answers instead, because it is a
+     * different question with a different consequence).
+     *
+     * **Why this is needed at all, measured.** `highlight` declares `depends: { "resourcefullib": "*" }`
+     * and ships `META-INF/jars/resourcefullib-fabric-26.2-5.0.3.jar`, so [idsIn] rightly drops that
+     * requirement — nothing needs downloading. But the bundled jar's *own* descriptor declares
+     * `depends: { "fabric-api": "*" }`, and nothing read it: Fabric API was never staged, and the boot died
+     * with *"Resourceful Lib requires any version of fabric-api, which is missing"* — charged to `highlight`.
+     *
+     * Jar-in-jar is ordinary, so this is a class rather than one mod's quirk: a bundled library is on the
+     * classpath exactly like a staged one, and its demands bind exactly like a staged one's.
+     *
+     * The loader's own ids (`fabricloader`, `java`, …) are left in, as they are for a top-level descriptor —
+     * `BootVerifier.stageableRequirements` is the one place that decides what the environment provides, and
+     * a second copy of that list here is the drift this module opens its context file with.
+     */
+    fun requirementsIn(jar: File): List<ModDependency> = nestedDescriptorsOf(jar)
+        .flatMap { dependsOf(it) }
+        .filter { it.modID != MINECRAFT }
+        .distinctBy { it.modID to it.versionConstraint }
+
+    /**
+     * The Minecraft range each bundled id declares for itself, for the ids that declare one.
+     *
+     * The sibling of [requirementsIn], split out because the consequence differs: an unmet *mod* dependency
+     * is staged, while a bundled jar built for another Minecraft can only be answered by dropping the jar
+     * that carries it — `BootVerifier.outsideThePacksMinecraft`'s case.
+     *
+     * **Measured live, and it is why the top-level read is not enough.** Quilt's
+     * `quilted-fabric-api-11.0.0-alpha.3+0.102.0-1.21.jar` bundles `qsl_base-10.0.0-alpha.1+1.21.jar`, whose
+     * descriptor pins `minecraft [1.21, 1.21]` — exactly, not a line. Staged into a Minecraft **1.21.1**
+     * pack it refuses with *"Quilt Base API requires version [1.21, 1.21] of minecraft"*, and QFAPI's own
+     * top-level descriptor says nothing that would have predicted it.
+     */
+    fun minecraftDemandsIn(jar: File): Map<String, String> = unambiguous(
+        nestedDescriptorsOf(jar).flatMap { descriptor ->
+            val range = dependsOf(descriptor).firstOrNull { it.modID == MINECRAFT }?.versionConstraint
+                ?: return@flatMap emptyList()
+            idsOf(descriptor).map { id -> id to range }
+        }
+    )
+
+    /**
+     * One descriptor's `depends` block, in either loader's spelling: Fabric's object of `id: range`, and
+     * Quilt's list under `quilt_loader.depends` whose entries are either a plain id or `{ id, versions }`.
+     *
+     * A range that is not a plain string — Quilt permits an object, and Fabric an array of alternatives —
+     * yields `null` rather than a guess, which `VersionConstraint` then reads as "no opinion". Erring toward
+     * accepting is this module's standing rule: a range we cannot read must never manufacture a refusal.
+     */
+    private fun dependsOf(descriptor: JsonNode): List<ModDependency> {
+        val fabric = descriptor.path(DEPENDS).fields().asSequence()
+            .filter { it.key.isNotBlank() }
+            .map { ModDependency(it.key, versionConstraint = it.value.textOrNull()) }
+            .toList()
+        val quilt = descriptor.path(QUILT_LOADER).path(DEPENDS).mapNotNull { node ->
+            when {
+                node.isTextual -> node.textOrNull()?.let { ModDependency(it) }
+                else -> node.path("id").textOrNull()
+                    ?.let { ModDependency(it, versionConstraint = node.path("versions").textOrNull()) }
+            }
+        }
+        return fabric + quilt
+    }
+
+    /**
+     * The version ranges [jar]'s **own** descriptor demands of [ids] — the platform ids the API's scanners
+     * deliberately filter out.
+     *
+     * **Why it cannot come from the scanner.** `FabricScanner.dependencyExclusions` strips
+     * `(fabricloader|java|minecraft)` and `QuiltScanner` does the same, correctly: those are the platform,
+     * not mods to stage, and reporting them would have `ModListCompiler` try to *rescue* a loader into a
+     * pack. But a demand on one of them is still a demand, and the loader enforces it.
+     *
+     * Measured on the public grinder 2026-09-11: **twelve** published `DEPENDENCY_FAILURE` rows are
+     * `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)` against the `0.19.3` that quilt-loader
+     * 0.30.1 provides. The demand was invisible at every layer — stripped by the scanner, and unjudgeable
+     * anyway because nothing knew what the loader provides.
+     *
+     * Narrowed to [ids] on purpose rather than returning everything: the caller passes exactly the ids it
+     * has a *version* for, so this can only ever add a comparison that can actually be made, and never a
+     * second copy of the requirement the scanner already reports.
+     */
+    fun demandsOn(jar: File, ids: Set<String>): List<ModDependency> {
+        if (ids.isEmpty()) {
+            return emptyList()
+        }
+        return ownDescriptorOf(jar)?.let { descriptor -> dependsOf(descriptor).filter { it.modID in ids } }
+            .orEmpty()
+    }
+
+    /** [jar]'s own top-level descriptor in either loader's spelling, or `null` when it has none. */
+    private fun ownDescriptorOf(jar: File): JsonNode? = runCatching {
+        ZipFile(jar).use { archive ->
+            readDescriptor(archive, "fabric.mod.json") ?: readDescriptor(archive, "quilt.mod.json")
+        }
+    }.getOrNull()
 
     /**
      * The id→version pairs on which [claims] all agree, with every contested id dropped.

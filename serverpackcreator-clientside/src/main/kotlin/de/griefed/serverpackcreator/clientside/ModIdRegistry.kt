@@ -102,7 +102,30 @@ object KnownModIds {
         // 200. Guessing `tacz` is a request that can only miss, and a refusal nobody can act on.
         // CurseForge is deliberately left to its own slug guess: the numeric id could not be verified
         // here, and inventing one would send every lookup to whatever project happens to hold it.
-        "tacz" to PlatformRef("timeless-and-classics-guns", null)
+        "tacz" to PlatformRef("timeless-and-classics-guns", null),
+        // --- observed unresolved on the public grinder, 2026-09-11 --------------------------------------
+        // Each of the six below was a published `DEPENDENCY_FAILURE` whose named library exists on both
+        // platforms under a slug the id does not spell, so the slug guess found nothing and the boot went
+        // ahead without it. A *search* was tested and rejected before adding these: CurseForge answers
+        // `farmersdelight` with "Dirty Bowls Delight" and `rhino` with "TS Modify", and Modrinth answers
+        // `kotlinforforge` and `obscure_api` with nothing at all -- so a text search would stage somebody
+        // else's mod. Every Modrinth ref here is verified by that project's own jar declaring the id, and
+        // every CurseForge id by its published file names carrying it.
+        //
+        // `aquamirae` needed `obscure_api`; `nethers-delight` needed `farmersdelight`;
+        // `refined-storage-addons` (twice) needed `refinedstorage`; `slice-and-dice` needed
+        // `kotlinforforge` via kubejs; `create-enchantment-industry` needed `rhino`, also via kubejs; and
+        // `betternether` needed `wover`.
+        //
+        // CurseForge is left unmapped for `obscure_api` alone: it is published there as "Obscure API
+        // [Forge Edition]", which implies a sibling edition this single ref would send every Fabric boot to
+        // -- the same reason `tacz` above carries no numeric id.
+        "obscure_api" to PlatformRef("obscure-api", null),
+        "farmersdelight" to PlatformRef("farmers-delight", "398521"),
+        "refinedstorage" to PlatformRef("refined-storage", "243076"),
+        "kotlinforforge" to PlatformRef("kotlin-for-forge", "351264"),
+        "rhino" to PlatformRef("rhino", "416294"),
+        "wover" to PlatformRef("worldweaver", "1037172")
     )
 
     /**

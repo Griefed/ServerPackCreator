@@ -42,7 +42,7 @@ internal class BootWorkspaceReaperTest {
      * uses, so the fixture cannot drift away from the layout under test.
      */
     private fun attempt(slug: String, loader: String, platform: String = ModPlatforms.MODRINTH) =
-        AttemptDirectory.nameFor(platform, slug, loader)
+        AttemptDirectory.nameFor(platform, slug, loader, "1.20")
 
     /** Build one attempt's staging exactly as `BootVerifier`/`ClientsideVerifier` lay it out. */
     private fun stageAttempt(

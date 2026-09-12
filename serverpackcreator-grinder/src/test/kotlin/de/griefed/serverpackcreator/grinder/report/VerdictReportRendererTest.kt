@@ -138,8 +138,8 @@ internal class VerdictReportRendererTest {
         val crashed = grindVerdict("creativecore", "Fabric", verdict = Verdict.CONFIRMED)
         val clean = grindVerdict("jei", "Forge", verdict = Verdict.ERROR)
         val kept = listOf(
-            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~console.log",
-            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
+            "Modrinth-creativecore-Fabric-1.20~Fabric_0.19.3_mc26.2~console.log",
+            "Modrinth-creativecore-Fabric-1.20~Fabric_0.19.3_mc26.2~logs-latest.log"
         )
 
         val html = VerdictReportRenderer.toHtml(pageOf(listOf(crashed, clean))) { verdict ->
@@ -196,11 +196,15 @@ internal class VerdictReportRendererTest {
             loader = "SENTINELLOADER",
             suggestedEntry = "SENTINELPATTERN",
             projectUrl = "https://example.invalid/SENTINELPROJECT",
-            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED).copy(
+            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED,
+            minecraftLine = "SENTINELLINE", minecraftVersion = "SENTINELMCVERSION"
+        ).copy(
             declared = Declaration.SERVER,
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
             decidedBy = "SENTINELDECISION",
+            inheritedProofFrom = "SENTINELPROOF",
+            inheritedProofRule = "sentinel-rule",
             fileName = "SENTINELFILENAME"
         )
 
@@ -209,9 +213,11 @@ internal class VerdictReportRendererTest {
         val cells = row.split("</td>").dropLast(1)
 
         val expected = listOf(
-            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER", "SENTINELLOADER",
+            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER",
+            "SENTINELLINE", "SENTINELMCVERSION", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
-            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
+            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELPROOF", "SENTINELDEP", "1970",
+            "SENTINELLOG"
         )
         Assertions.assertEquals(expected.size, cells.size, "one sentinel per column; got ${cells.size} cells")
         expected.forEachIndexed { index, sentinel ->

@@ -24,8 +24,8 @@ import org.junit.jupiter.api.Assertions
 import java.io.File
 import java.time.Instant
 
-/** Build a minimal [LoaderVerdict] for tests, defaulting the signals not under test. */
-internal fun loaderVerdict(
+/** Build a minimal [GrindTargetVerdict] for tests, defaulting the signals not under test. */
+internal fun targetVerdict(
     loader: String,
     suggestedEntry: String?,
     verdict: Verdict = Verdict.INCONCLUSIVE,
@@ -34,8 +34,10 @@ internal fun loaderVerdict(
     declaredServerSide: DeclaredSupport = DeclaredSupport.UNKNOWN,
     jarScan: JarScan = JarScan.ERROR,
     bootedLoader: String? = null,
-    sampleFile: String? = null
-) = LoaderVerdict(
+    sampleFile: String? = null,
+    minecraftLine: String = "1.20",
+    minecraftVersion: String = "1.20.1"
+) = GrindTargetVerdict(
     loader = loader,
     suggestedEntry = suggestedEntry,
     declaredClientSide = declaredClientSide,
@@ -46,13 +48,15 @@ internal fun loaderVerdict(
     bootCrashExcerpt = null,
     verdict = verdict,
     sampleFile = sampleFile,
-    note = note
+    note = note,
+    minecraftLine = minecraftLine,
+    minecraftVersion = minecraftVersion
 )
 
 /** Build a [ClientsideReport] from a set of per-loader verdicts. */
 internal fun clientsideReport(
     slug: String,
-    perLoader: List<LoaderVerdict>,
+    perTarget: List<GrindTargetVerdict>,
     platform: String = "Modrinth",
     projectUrl: String = "https://modrinth.com/mod/$slug"
 ) = ClientsideReport(
@@ -60,8 +64,8 @@ internal fun clientsideReport(
     slug = slug,
     projectUrl = projectUrl,
     phase = "metadata + server-boot",
-    suggestedEntries = perLoader.mapNotNull { it.suggestedEntry }.distinct().sorted(),
-    perLoader = perLoader,
+    suggestedEntries = perTarget.mapNotNull { it.suggestedEntry }.distinct().sorted(),
+    perTarget = perTarget,
     fileNames = emptyList()
 )
 
@@ -80,10 +84,15 @@ internal fun grindVerdict(
     // A fixture standing for a finding should stand for a LEGITIMATE one, so it defaults to the
     // decision that is decisive evidence. The publication gate's refusal of a non-decisive verdict is
     // pinned explicitly in VerdictPublicationTest rather than implied by every fixture here.
-    decidedBy: String? = BootDecision.CLIENT_ONLY_CLASS.name
+    decidedBy: String? = BootDecision.CLIENT_ONLY_CLASS.name,
+    // A row's identity is its Minecraft line, so a fixture without one stands for a *legacy* row -- which is
+    // a different thing and has its own guards. Defaulted here so the ordinary fixture is an ordinary row.
+    minecraftLine: String? = "1.20",
+    minecraftVersion: String? = "1.20.1"
 ) = GrindVerdict(
     platform, slug, projectUrl, loader, suggestedEntry, detail, verifiedAt,
-    decidedBy = decidedBy, verdict = verdict
+    decidedBy = decidedBy, verdict = verdict,
+    minecraftLine = minecraftLine, minecraftVersion = minecraftVersion
 )
 
 /** [GrinderApplication]'s source, for the guards that can only be stated against `main`'s own text. */

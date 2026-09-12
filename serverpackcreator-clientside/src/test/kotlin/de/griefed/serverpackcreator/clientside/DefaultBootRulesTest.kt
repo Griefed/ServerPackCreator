@@ -165,4 +165,71 @@ internal class DefaultBootRulesTest {
             "duplicate rule ids make precedence ambiguous"
         )
     }
+
+    /**
+     * **A mixin subsystem exception is a mixin failure, whatever it was reaching for.**
+     * `ClassMetadataNotFoundException` sat in `dependency-failure`, and on the public grinder 2026-09-11 it
+     * caught two rows that are nothing of the kind: `CurseForge/ars-nouveau` reaching
+     * `net.minecraft.core.BlockSourceImpl` (a class its Minecraft no longer has) and
+     * `CurseForge/yungs-better-caves` reaching `com.llamalad7.mixinextras.injector.wrapoperation.Operation`.
+     *
+     * Both stay INCONCLUSIVE either way — the rungs are neighbours — so nothing published changes. What
+     * changes is that the `Decision` column, which is how an operator filters, stops calling a mixin failure
+     * a missing dependency.
+     */
+    @Test
+    fun aMixinMetadataFailureIsDecidedByTheMixinRung() {
+        val decided = BootLogClassifier.classify(
+            listOf(
+                "Caused by: org.spongepowered.asm.mixin.throwables.ClassMetadataNotFoundException: " +
+                    "net.minecraft.core.BlockSourceImpl"
+            ),
+            exitCode = 1,
+            timedOut = false,
+            ConsoleRuleSet.EMPTY
+        )
+
+        Assertions.assertEquals(BootDecision.MIXIN_APPLY_FAILURE, decided.decidedBy)
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, decided.result)
+    }
+
+    /** The MixinTweaker miss stays where it is: a 1.12.2 coremod really is an absent dependency. */
+    @Test
+    fun theMissingMixinTweakerStaysADependencyFailure() {
+        val decided = BootLogClassifier.classify(
+            listOf("java.lang.ClassNotFoundException: org.spongepowered.asm.launch.MixinTweaker"),
+            exitCode = 1,
+            timedOut = false,
+            ConsoleRuleSet.EMPTY
+        )
+
+        Assertions.assertEquals(BootDecision.DEPENDENCY_FAILURE, decided.decidedBy)
+    }
+
+    /**
+     * **`com.mojang.blaze3d` is a client-only class exactly as `net.minecraft.client` is**, and it was not in
+     * the marker. Measured on the public grinder 2026-09-12: `Modrinth/vulkanmod` — a Vulkan *renderer*,
+     * whose metadata reads CONTRADICTORY — crashed with
+     *
+     *     Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem
+     *
+     * and was filed INCONCLUSIVE off the bare exit code, publishing nothing. A lost true positive, and the
+     * one direction this engine cannot afford in bulk: it exists to find exactly this.
+     *
+     * Safe to trust over the exit code for the same reason the neighbouring markers are: a dedicated server
+     * ships no rendering layer, so no environment failure can fabricate it.
+     */
+    @Test
+    fun reachingMojangsRenderingLayerIsClientOnlyEvidence() {
+        listOf(
+            "Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem",
+            "Caused by: java.lang.ClassNotFoundException: com.mojang.blaze3d.systems.RenderSystem"
+        ).forEach { line ->
+            val decided = BootLogClassifier.classify(listOf(line), exitCode = 1, timedOut = false, ConsoleRuleSet.EMPTY)
+
+            Assertions.assertEquals(BootDecision.CLIENT_ONLY_CLASS, decided.decidedBy, line)
+            Assertions.assertEquals(BootResult.CRASHED, decided.result, line)
+            Assertions.assertTrue(decided.decidedBy.provesClientOnly, "and it is evidence about the mod, not the build")
+        }
+    }
 }

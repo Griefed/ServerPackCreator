@@ -50,7 +50,12 @@ object VerdictCsvExporter {
             // The table's own ordering, through the same key rather than a second rank table kept in step
             // by hand -- the two used to declare confidence order separately.
             verdicts.sortedWith(
-                compareBy({ VerdictField.VERDICT.sortKey(it) }, { it.slug }, { it.loader })
+                compareBy<GrindVerdict> { VerdictField.VERDICT.sortKey(it) }
+                    .thenBy { it.slug }
+                    // Newest era first inside a project: the line a pack is most likely being built on
+                    // leads, and the loader stays the last tie-break because a legacy row carries no line.
+                    .thenByDescending { VerdictField.MINECRAFT.sortKey(it) }
+                    .thenBy { it.loader }
             )
         }
         // Cells come from the same VerdictField list the table renders from, so the two cannot describe

@@ -78,7 +78,8 @@ plus a native view of the daemon's own dashboard.
   string renderer and show "true"/"false" instead of a checkbox. The `java.lang.Boolean::class.java`
   spelling picks the right class but raises a compiler warning.
 - **The table shows the conclusion and the two readings behind it** (2026-09-08). Columns are
-  `[tick] Name · Entry · Verdict · Declared · JAR sideness · Loader · Platform · Scanned · Detail`, with
+  `[tick] Name · Entry · Verdict · Declared · JAR sideness · Minecraft · Loader · Platform · Scanned · Detail`,
+  with
   the two evidence columns immediately after `Verdict` because that is the order a reader needs them in.
   They are worth the width: on the live feed, **161 of 2057** rows are `CONTRADICTORY` — the platform's
   declaration and the jar's own descriptor disagreeing about the same mod — and that is exactly the row a

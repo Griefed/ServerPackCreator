@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.clientside.BootResult
 import de.griefed.serverpackcreator.clientside.BootVerifier
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.LoaderVerdict
+import de.griefed.serverpackcreator.clientside.GrindTargetVerdict
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -57,13 +57,13 @@ internal class ContainerCandidateVerifierReapTest {
 
     /** Stage a finished attempt's kept console exactly where `BootVerifier` and the reaper leave it. */
     private fun stagedConsole(bootRoot: File, platform: String, slug: String, loader: String, text: String) {
-        File(bootRoot, AttemptDirectory.nameFor(platform, slug, loader))
+        File(bootRoot, AttemptDirectory.nameFor(platform, slug, loader, "1.20"))
             .apply { mkdirs() }
             .resolve("boot.log")
             .writeText(text)
     }
 
-    private fun verdict(loader: String, bootResult: BootResult?) = LoaderVerdict(
+    private fun verdict(loader: String, bootResult: BootResult?) = GrindTargetVerdict(
         loader = loader,
         suggestedEntry = "$loader-",
         declaredClientSide = DeclaredSupport.UNKNOWN,
@@ -151,7 +151,7 @@ internal class ContainerCandidateVerifierReapTest {
 
     /** One staged attempt, shaped as `BootVerifier` leaves it: a pack beside the attempt's own log file. */
     private fun preparedAttempt(work: File, slug: String, loader: String): BootVerifier.Prepared.Ready {
-        val attemptDir = File(work, "boot/" + AttemptDirectory.nameFor(ModPlatforms.MODRINTH, slug, loader))
+        val attemptDir = File(work, "boot/" + AttemptDirectory.nameFor(ModPlatforms.MODRINTH, slug, loader, "1.20"))
         val pack = File(attemptDir, "serverpack").apply { mkdirs() }
         return BootVerifier.Prepared.Ready(pack, File(attemptDir, "boot.log"), "1.20.1", loader, "47.2.0")
     }
@@ -160,7 +160,7 @@ internal class ContainerCandidateVerifierReapTest {
     @Test
     fun theResolvedReportsIdentityIsWhatGetsReaped() {
         val queued = candidate(ModPlatforms.CURSEFORGE, "creative-core")
-        val resolved = clientsideReport(slug = "creativecore", perLoader = emptyList(), platform = ModPlatforms.MODRINTH)
+        val resolved = clientsideReport(slug = "creativecore", perTarget = emptyList(), platform = ModPlatforms.MODRINTH)
 
         Assertions.assertEquals(
             ModPlatforms.MODRINTH to "creativecore",
