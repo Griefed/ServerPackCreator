@@ -29,7 +29,7 @@
   },
   {
     "id": "client-only-class",
-    "pattern": "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)",
+    "pattern": "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client|NoClassDefFoundError: com/mojang/blaze3d|ClassNotFoundException: com\\.mojang\\.blaze3d)",
     "verdict": "CONFIRMED",
     "note": "The decisive signal, and the one thing the expensive boot exists to catch: the server loaded the mod and then died reaching for a client-only class. Outranks every excuse below -- a clientside mod may phone home AND die on a client class, and this must still win. Known gap: Fabric intermediary names (class_NNNN) are not matched, because that scheme is intermediary for every class and not only client ones, so a pattern would trade these false negatives for false positives.",
     "source": "CONSOLE"

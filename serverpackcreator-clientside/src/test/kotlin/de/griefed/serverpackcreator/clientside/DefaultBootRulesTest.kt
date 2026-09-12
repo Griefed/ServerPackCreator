@@ -205,4 +205,31 @@ internal class DefaultBootRulesTest {
 
         Assertions.assertEquals(BootDecision.DEPENDENCY_FAILURE, decided.decidedBy)
     }
+
+    /**
+     * **`com.mojang.blaze3d` is a client-only class exactly as `net.minecraft.client` is**, and it was not in
+     * the marker. Measured on the public grinder 2026-09-12: `Modrinth/vulkanmod` — a Vulkan *renderer*,
+     * whose metadata reads CONTRADICTORY — crashed with
+     *
+     *     Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem
+     *
+     * and was filed INCONCLUSIVE off the bare exit code, publishing nothing. A lost true positive, and the
+     * one direction this engine cannot afford in bulk: it exists to find exactly this.
+     *
+     * Safe to trust over the exit code for the same reason the neighbouring markers are: a dedicated server
+     * ships no rendering layer, so no environment failure can fabricate it.
+     */
+    @Test
+    fun reachingMojangsRenderingLayerIsClientOnlyEvidence() {
+        listOf(
+            "Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem",
+            "Caused by: java.lang.ClassNotFoundException: com.mojang.blaze3d.systems.RenderSystem"
+        ).forEach { line ->
+            val decided = BootLogClassifier.classify(listOf(line), exitCode = 1, timedOut = false, ConsoleRuleSet.EMPTY)
+
+            Assertions.assertEquals(BootDecision.CLIENT_ONLY_CLASS, decided.decidedBy, line)
+            Assertions.assertEquals(BootResult.CRASHED, decided.result, line)
+            Assertions.assertTrue(decided.decidedBy.provesClientOnly, "and it is evidence about the mod, not the build")
+        }
+    }
 }
