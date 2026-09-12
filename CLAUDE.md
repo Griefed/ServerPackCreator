@@ -311,18 +311,18 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-11).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-09-12).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
 | api            | 421 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 635           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| clientside     | 641           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 149           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | web-frontend   | 32 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 529 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 532 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -375,3 +375,17 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   which works when the mapping is one-to-one and cannot work when several rows collapse into one. Removal by
   *prefix* is the shape that generalises, and it is why a key component worth migrating past needs a marker
   in it.
+- **A fix written against one artifact is a fix for one artifact.** The Connector-placeholder redirect was
+  correct, tested and documented — and blind to the second of the two shims the *same project* publishes,
+  because it hard-coded `META-INF/mods.toml` while `LoaderDescriptors` already owned the versioned answer.
+  That is the fourth instance of duplicated knowledge drifting toward the easier copy. When a fix keys on a
+  file name, ask which other spellings of that name exist before calling it done.
+- **A prior decision holds only under its premises, and a structural change is a change of premises.** B36
+  recorded that a Connector boot is worth attempting anyway — right when the shim cost one of three boots,
+  wrong once the per-line axis made it cost one of one. Nothing about Connector changed. Re-read the recorded
+  calls a structural change touches instead of treating them as settled.
+- **A selection made on metadata needs a way for the artifact to re-open it.** A platform's loader tick
+  decided the boot, the downloaded jar disagreed, and only one narrow form of disagreement — *carries a
+  different descriptor* — could reopen the choice. The re-selection machinery already existed; what was
+  missing was reasons to invoke it. Carrying a loader's descriptor and being able to run under it are
+  different questions.
