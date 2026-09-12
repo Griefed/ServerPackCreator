@@ -25,20 +25,22 @@ tooling edits the list and opens the pull-request itself.
 
 ## ELI5: how does it decide? Two signals, two phases
 
-It never just guesses — it gathers *evidence* and reports how confident it is
-([Confidence][de.griefed.serverpackcreator.clientside.Confidence]):
+It never just guesses — it gathers *evidence* and publishes one
+[Verdict][de.griefed.serverpackcreator.clientside.Verdict] per Minecraft version-line:
 
 1. **Metadata signal (Phase 1 — cheap, no server boot).** Ask two sources what the mod *claims*:
    - the hosting platform (Modrinth literally declares `client_side` / `server_side`; CurseForge
      has *no such field*, so its answer is always `UNKNOWN`), and
    - the mod's own jar metadata (`fabric.mod.json`, `mods.toml`, …), read with SPC's real scanners.
-   This tops out at **MEDIUM** confidence — a claim is not proof.
+   A claim only ever *declares*: a metadata rule sets `declares` and may not carry a verdict, because a
+   declaration never stands in for a boot.
 
 2. **Boot signal (Phase 2 — expensive, actually runs a server).** Force the mod (plus its required
-   dependencies) into a freshly generated server pack and **boot it**. The asymmetry is the whole
-   point: *a crash is strong proof it's client-only* (→ **HIGH**, and it even catches a mod that
-   *lies* by declaring server-support yet crashing), but *a clean boot proves nothing* — plenty of
-   client mods start up quietly.
+   dependencies) into a freshly generated server pack and **boot it**. The console is what decides:
+   a rule matching it is the only route to `CONFIRMED` — which is what catches a mod that *lies* by
+   declaring server-support yet crashing — and a boot that ran cleanly and matched nothing is the
+   opposite proof, `CLEAR`. A crash nothing recognised is neither: the bare exit-code rung means
+   "exited non-zero, nothing said why" and stays `INCONCLUSIVE`, raw material for the next rule.
 
 ## ELI5: the pipeline, end to end
 
@@ -50,7 +52,7 @@ issue link ──▶ pick platform ──▶ resolve to ProjectFiles ──▶ d
                                           └─▶ [Phase 2] build server pack + boot it
                                                                          (boot signal)
                                           ▼
-                              aggregate per-loader Confidence ──▶ ClientsideReport
+                        one Verdict per Minecraft version-line ──▶ ClientsideReport
                                           ▼
               render Markdown issue-comment  ·  (if approved) edit list files + open PR
 ```
@@ -65,8 +67,12 @@ issue link ──▶ pick platform ──▶ resolve to ProjectFiles ──▶ d
   project: its files + declared sideness). This is the platform-agnostic shape everything else
   speaks.
 - [ClientsideReport][de.griefed.serverpackcreator.clientside.ClientsideReport] —
-  `Confidence`, `JarScan`, `GrindTargetVerdict` (the verdict for one loader) and `ClientsideReport` (the
-  whole machine-readable answer). The output of the investigation.
+  `JarScan`, `GrindTargetVerdict` (the verdict for one Minecraft version-line) and `ClientsideReport`
+  (the whole machine-readable answer). The output of the investigation.
+- [Verdict][de.griefed.serverpackcreator.clientside.Verdict] — the six states the engine publishes:
+  `CONFIRMED`, `CLEAR`, `INCONCLUSIVE`, `ERROR`, `LOCKED`, `UNVERIFIABLE`. It replaced a `BootResult` ×
+  `Confidence` pairing that conflated *what happened* with *how sure are we* and could not say whether
+  the grind ran at all — which `grindRan` now answers directly.
 
 **Talking to the hosting platforms (turn a URL into `ProjectFiles`):**
 - [ModPlatform][de.griefed.serverpackcreator.clientside.ModPlatform] — the interface
@@ -113,8 +119,8 @@ issue link ──▶ pick platform ──▶ resolve to ProjectFiles ──▶ d
 **Putting it together and reporting:**
 - [ClientsideVerifier][de.griefed.serverpackcreator.clientside.ClientsideVerifier] — the
   top-level conductor for Phase 1 (and Phase 2 when a boot-verifier is supplied): pick the platform,
-  resolve files, derive the entry, scan, optionally boot, and *aggregate* every signal into a
-  per-loader `Confidence`.
+  resolve files, derive the entry, scan, optionally boot, and combine every signal into one `Verdict`
+  per Minecraft version-line.
 - [ClientsideReportRenderer][de.griefed.serverpackcreator.clientside.ClientsideReportRenderer] —
   turns the report into the Markdown comment posted on the issue. It carries a hidden marker (so the
   comment can be updated in place) and a hidden JSON copy of the data (so the accept-workflow reads
