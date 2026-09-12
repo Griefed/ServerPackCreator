@@ -91,11 +91,22 @@ object JarSelfDeclaration {
      *
      * One jar can name several loaders two ways, and they are different: a genuine multi-loader jar carries
      * several descriptors, while an *ambiguous* one carries a single file that several loaders read.
+     *
+     * **A Connector placeholder's TOML declares nothing**, which is a third way and the reason
+     * [isConnectorPlaceholder] exists: the stub is there to get the file past Forge's mod discovery, not to
+     * describe a Forge mod, so what the jar declares is whatever its *other* descriptor says. Only the
+     * stub's own path is discounted — a placeholder that somehow carried a real second TOML would still
+     * name that loader.
      */
     fun declaredLoaders(jar: File, minecraftVersion: String): Set<String> = runCatching {
         ZipFile(jar).use { archive ->
+            // A Connector placeholder's TOML is a stub, so it declares nothing about the loader that reads
+            // it -- see `isConnectorPlaceholder`. Read once, here, rather than re-opened per loader.
+            val stubbedDescriptors = if (carriesPlaceholderMarker(archive)) PROPERTY_BEARING_DESCRIPTORS else emptyList()
             declaringLoaders(minecraftVersion).filterTo(mutableSetOf()) { loader ->
-                LoaderDescriptors.descriptorsFor(loader, minecraftVersion).any { archive.getEntry(it) != null }
+                LoaderDescriptors.descriptorsFor(loader, minecraftVersion)
+                    .filterNot { it in stubbedDescriptors }
+                    .any { archive.getEntry(it) != null }
             }
         }
     }.getOrDefault(emptySet())
@@ -118,18 +129,23 @@ object JarSelfDeclaration {
      * descriptor does not mask a marker in the second: each is parsed inside its own `runCatching`.
      */
     fun isConnectorPlaceholder(jar: File): Boolean = runCatching {
-        ZipFile(jar).use { archive ->
-            PROPERTY_BEARING_DESCRIPTORS.any { path ->
-                val descriptor = archive.getEntry(path) ?: return@any false
-                runCatching {
-                    // Addressed as a path rather than by walking `valueMap()`: the key carries a colon, not
-                    // a dot, so nightconfig's own path splitting cannot mistake it for two segments.
-                    archive.getInputStream(descriptor).use { TomlParser().parse(it) }
-                        .get<Any?>(listOf(TOML_PROPERTIES, CONNECTOR_PLACEHOLDER_PROPERTY)) == true
-                }.getOrDefault(false)
-            }
-        }
+        ZipFile(jar).use { carriesPlaceholderMarker(it) }
     }.getOrDefault(false)
+
+    /**
+     * [isConnectorPlaceholder]'s question against an already-open [archive], so [declaredLoaders] can ask it
+     * without a second open of the same file.
+     */
+    private fun carriesPlaceholderMarker(archive: ZipFile): Boolean =
+        PROPERTY_BEARING_DESCRIPTORS.any { path ->
+            val descriptor = archive.getEntry(path) ?: return@any false
+            runCatching {
+                // Addressed as a path rather than by walking `valueMap()`: the key carries a colon, not a
+                // dot, so nightconfig's own path splitting cannot mistake it for two segments.
+                archive.getInputStream(descriptor).use { TomlParser().parse(it) }
+                    .get<Any?>(listOf(TOML_PROPERTIES, CONNECTOR_PLACEHOLDER_PROPERTY)) == true
+            }.getOrDefault(false)
+        }
 
     /**
      * The loaders [jar]'s descriptors name when **none** of them can run under [loader] on
