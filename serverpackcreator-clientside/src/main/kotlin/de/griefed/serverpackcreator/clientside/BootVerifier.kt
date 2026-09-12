@@ -2210,7 +2210,7 @@ internal sealed interface ManifestDependencyPlan {
  * **The refusal used to name only the mod.** Five distinct failures reached `unsatisfied` and three of them
  * printed the bare slug, so `Required dependency unavailable … balm` meant *"the project publishes nothing
  * usable"*, *"the download died"* and *"we dropped every build ourselves while backtracking"* alike. That is
- * the same standard [BootDecision.decidedBy] enforces on a boot verdict — a verdict that cannot name its own
+ * the same standard [BootVerifier.BootOutcome.decidedBy] enforces on a boot verdict — a verdict that cannot name its own
  * evidence cannot be audited — reaching the one refusal that publishes `ERROR` without ever booting.
  *
  * It travels **beside** the name rather than inside it, because `unsatisfied` is keyed by name so that one
@@ -2278,7 +2278,7 @@ internal enum class UnmetReason {
      * result straight into a string. Neither can reach that value today, so both would have printed the
      * literal `null` only after some later edit, with nothing to warn them. Whether a reason is worth
      * *appending to a refusal* is a rendering decision, and it now lives in the renderer
-     * ([refuseForMissingDependencies]) rather than in a nullable return.
+     * (`refuseForMissingDependencies`) rather than in a nullable return.
      *
      * @param platformName Where to look the project up, which is only worth saying for an opt-out.
      */
