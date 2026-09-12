@@ -64,6 +64,16 @@ listOf(tasks.dokkaGeneratePublicationJavadoc, tasks.dokkaGeneratePublicationHtml
 tasks.register<Jar>("dokkaJavadocJar") {
     dependsOn(tasks.dokkaGeneratePublicationJavadoc)
     archiveClassifier.set("javadoc")
+    // The two publications both write an `index.html`, so the jar has a name collision whenever BOTH
+    // output directories are populated -- and only then, which is why it has never failed in CI: the
+    // task depends on the Javadoc publication alone, and `build/dokka` is empty in a fresh checkout.
+    // Locally it is not: `:serverpackcreator-api:dokkaGenerateHtml` (which the release's `assets` job
+    // runs, in a different job on a different runner) or any earlier `dokkaGeneratePublicationHtml`
+    // leaves it populated, after which this task dies with "Entry index.html is a duplicate but no
+    // duplicate handling strategy has been set". EXCLUDE rather than INCLUDE: the Javadoc tree is added
+    // first, so its `index.html` wins and the jar keeps the entry point a `-javadoc.jar` is expected to
+    // have, instead of carrying two entries under one name.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
     from(dokka.dokkaPublications.html.flatMap { it.outputDirectory })
 }
