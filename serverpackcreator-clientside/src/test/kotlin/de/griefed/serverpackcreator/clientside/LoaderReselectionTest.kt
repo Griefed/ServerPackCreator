@@ -80,16 +80,6 @@ internal class LoaderReselectionTest {
         }
 
     /**
-     * The newest real release where NeoForge still reads Forge's `META-INF/mods.toml` — i.e. below 1.20.5 —
-     * and publishes a build. That is where a `mods.toml`-only jar is *both* loaders' descriptor, which is
-     * what the version retry exists to reach.
-     */
-    private val sharedTomlRelease = apiWrapper.versionMeta.minecraft.serverReleases()
-        .map { it.minecraftVersion }
-        .filter { !LoaderDescriptors.neoForgeUsesNeoToml(it) && resolver.latest("NeoForge", it) != null }
-        .maxWithOrNull(BootCandidateSelector.minecraftComparator)
-
-    /**
      * Records the loader of every staging attempt, and can make a loader unavailable.
      *
      * `preferredVersion` is asked once per `stageBootPack` call, so its argument list *is* the re-selection
