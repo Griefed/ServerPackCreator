@@ -2232,15 +2232,29 @@ internal enum class UnmetReason {
      * Whose problem this reason is, which is what decides the published verdict.
      *
      * Stated per reason rather than folded at the call site, so a reason added later cannot reach a refusal
-     * without somebody deciding whether it is ours, the platform's or nobody's. `DROPPED_BY_BACKTRACK` is
-     * deliberately ours: staging dropped those builds itself trying to make the pack coherent, and an
-     * operator seeing it should be asking whether the backtrack was right.
+     * without somebody deciding whether it is ours, the platform's or nobody's.
+     *
+     * **`DROPPED_BY_BACKTRACK` was ours until 2026-09-12, and that was a mis-blame.** The reasoning was
+     * "staging dropped those builds itself", which describes the *mechanism*; this property is about the
+     * *blame*, and staging only ever drops a build because something upstream **declared** an
+     * incompatibility — a version range one jar states about another, or a Minecraft range a jar states
+     * about itself. Neither is a host failure, and no operator can act on either: the host worked
+     * perfectly. Running out of backtracks is not this case at all — `dependencyToDemote` then logs and
+     * boots anyway rather than refusing.
+     *
+     * Measured on the public grinder 2026-09-12: **6 of its 7 `ERROR` rows** were this, telling an operator
+     * their host was broken over `bellsandwhistles` needing a `create-fabric` build whose every candidate
+     * conflicts. `ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and the
+     * module's `CLAUDE.md` already recorded this exact residue as open. `UNVERIFIABLE` is what it means.
+     *
+     * The fold still protects the loud case: `preventionCauseFor` takes the most actionable cause present,
+     * so a refusal mixing a genuine download failure with a backtrack drop is still `HOST`.
      */
     val preventionCause: PreventionCause
         get() = when (this) {
-            UNRESOLVED, NO_USABLE_FILE -> PreventionCause.UPSTREAM_UNAVAILABLE
+            UNRESOLVED, NO_USABLE_FILE, DROPPED_BY_BACKTRACK -> PreventionCause.UPSTREAM_UNAVAILABLE
             DISTRIBUTION_LOCKED -> PreventionCause.DISTRIBUTION_LOCKED
-            DROPPED_BY_BACKTRACK, DOWNLOAD_FAILED -> PreventionCause.HOST
+            DOWNLOAD_FAILED -> PreventionCause.HOST
         }
 
     /**
