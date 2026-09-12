@@ -303,7 +303,9 @@ internal class LoaderReselectionTest {
         )
 
         val refusal = requireNotNull(
-            BootVerifier.refuseForSelfDeclaration(jar, "Forge", neoTomlRelease) { "~1.16.5" }
+            BootVerifier.refuseForSelfDeclaration(
+                jar, "Forge", neoTomlRelease, minecraftConstraint = { "~1.16.5" }
+            )
         ) { "the fixture must be refused, or this guard asserts nothing" }
 
         Assertions.assertEquals(

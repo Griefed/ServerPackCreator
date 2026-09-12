@@ -102,14 +102,26 @@ class BootVerifier(
     private val maxDependencyDepth = 4
 
     /**
-     * [refuseForSelfDeclaration] with this verifier's scanner supplying the jar's declared Minecraft range.
-     * Split so the decision itself stays testable without an [ApiWrapper].
+     * [refuseForSelfDeclaration] with this verifier's collaborators supplying the two facts it cannot read
+     * off the jar: the declared Minecraft range, from the scanner, and which build of any loader exists for
+     * this Minecraft, from the version policy. Split so the decision itself stays testable without an
+     * [ApiWrapper].
+     *
+     * `latestVersion` rather than `preferredVersion`, deliberately: the question is whether the ecosystem
+     * *contains* a build the jar accepts, and a caching preference for an older build must never be able to
+     * condemn a loader — that is the same separation the crash re-check draws.
      */
     private fun refuseForSelfDeclaration(jar: File, loader: String, minecraftVersion: String): Prepared.Failed? =
-        refuseForSelfDeclaration(jar, loader, minecraftVersion) { candidate ->
-            apiWrapper.modScanner.scannerFor(loader, minecraftVersion)
-                ?.scan(listOf(candidate))?.singleOrNull()?.minecraftConstraint
-        }
+        refuseForSelfDeclaration(
+            jar,
+            loader,
+            minecraftVersion,
+            minecraftConstraint = { candidate ->
+                apiWrapper.modScanner.scannerFor(loader, minecraftVersion)
+                    ?.scan(listOf(candidate))?.singleOrNull()?.minecraftConstraint
+            },
+            loaderVersionFor = { candidate -> loaderVersionPolicy.latestVersion(candidate, minecraftVersion) }
+        )
 
     /**
      * Boot one prepared attempt with this verifier's collaborators. **The single call site of
@@ -1602,11 +1614,13 @@ class BootVerifier(
             jar: File,
             loader: String,
             minecraftVersion: String,
-            minecraftConstraint: (File) -> String?
+            minecraftConstraint: (File) -> String?,
+            loaderVersionFor: (loader: String) -> String? = { null }
         ): Prepared.Failed? {
             val declared = runCatching { minecraftConstraint(jar) }.getOrNull()
-            val contradiction = JarSelfDeclaration.contradiction(jar, loader, minecraftVersion, declared)
-                ?: return null
+            val contradiction =
+                JarSelfDeclaration.contradiction(jar, loader, minecraftVersion, declared, loaderVersionFor)
+                    ?: return null
             // Re-asked rather than inferred from `contradiction` being non-null: that string is also how a
             // loader-descriptor mismatch reports itself, and only the Minecraft disagreement can be answered
             // by trying another version. Getting this wrong would re-select on a refusal re-selection cannot fix.
@@ -1622,7 +1636,8 @@ class BootVerifier(
             // erased. A `mods.toml`-only jar requested as NeoForge on 1.20.6 is that shape -- at 1.20.4 the
             // same file *is* a NeoForge descriptor, so re-selecting the version finds a genuine NeoForge
             // boot instead of borrowing Forge's.
-            val mismatchedLoaders = JarSelfDeclaration.contradictingLoaders(jar, loader, minecraftVersion)
+            val mismatchedLoaders =
+                JarSelfDeclaration.contradictingLoaders(jar, loader, minecraftVersion, loaderVersionFor)
             return Prepared.Failed(
                 "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
                     "The platform's declared versions are what its author ticked, not what the jar was built for.",

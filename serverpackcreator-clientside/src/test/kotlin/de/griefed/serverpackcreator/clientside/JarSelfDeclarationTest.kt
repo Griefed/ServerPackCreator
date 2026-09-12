@@ -505,6 +505,99 @@ internal class JarSelfDeclarationTest {
         )
     }
 
+    /**
+     * A jar demanding a loader build that loader never shipped for this Minecraft names the *other* loader
+     * to verify it under, rather than spending a container proving the arithmetic.
+     *
+     * **The reported case, read from the live `Iceberg-1.20.1-forge-1.1.25.jar` on 2026-09-12.** Its
+     * `META-INF/mods.toml` declares `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"`, and
+     * Modrinth ticks the file `forge, neoforge` — so [BootCandidateSelector.LOADER_PRIORITY] took NeoForge
+     * for the 1.20 line. NeoForge's 1.20.1 fork froze at **47.1.106** and registers itself under the mod id
+     * `forge`, so the console read *"Mod iceberg requires forge 47.2 or above"* and the line published
+     * `INCONCLUSIVE (exit 0)` — while Forge 1.20.1 is at 47.4.23 and satisfies it outright.
+     *
+     * The descriptor gate could not see this: `mods.toml` names Forge **and** NeoForge on 1.20.1, so
+     * [JarSelfDeclaration.contradictingLoaders] accepted and nothing reopened the loader choice.
+     *
+     * **Only a positive, readable impossibility refuses**, like everything else here — the two guards below
+     * pin the accepting halves, because a gate that refused on doubt would turn every unreadable range into
+     * a mass-INCONCLUSIVE event.
+     */
+    @Test
+    fun aLoaderThatCannotReachTheDemandedBuildNamesTheOneThatCan(@TempDir dir: File) {
+        val iceberg = icebergShaped(dir)
+
+        Assertions.assertEquals(
+            setOf("Forge"),
+            JarSelfDeclaration.contradictingLoaders(iceberg, "NeoForge", "1.20.1", forgeEraBuilds),
+            "NeoForge froze at 47.1.106 on 1.20.1 and the jar demands [47.2,), so Forge is where it can run"
+        )
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(iceberg, "Forge", "1.20.1", forgeEraBuilds).isEmpty(),
+            "Forge 47.4.23 satisfies [47.2,), so the boot the jar can actually survive is never refused"
+        )
+    }
+
+    /** An unknown build is not an impossible one: with no version to compare, the boot goes ahead. */
+    @Test
+    fun aLoaderWhoseBuildIsUnknownIsNotRefused(@TempDir dir: File) {
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(icebergShaped(dir), "NeoForge", "1.20.1") { null }.isEmpty()
+        )
+    }
+
+    /**
+     * And neither is a jar that demands nothing of its loader — `MouseTweaks-neoforge-mc26.2-2.31.jar`
+     * declares no `[[dependencies]]` block at all, which is ordinary and says nothing.
+     */
+    @Test
+    fun aJarDemandingNothingOfItsLoaderIsNotRefused(@TempDir dir: File) {
+        val silent = jarWithContent(
+            dir, "MouseTweaks-neoforge-mc26.2-2.31.jar",
+            "META-INF/neoforge.mods.toml" to """
+                modLoader="javafml"
+                [[mods]]
+                modId="mousetweaks"
+            """.trimIndent()
+        )
+
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(silent, "NeoForge", "26.2", forgeEraBuilds).isEmpty()
+        )
+    }
+
+    /** `Iceberg-1.20.1-forge-1.1.25.jar`'s descriptor, read from the live file. */
+    private fun icebergShaped(dir: File): File = jarWithContent(
+        dir, "Iceberg-1.20.1-forge-1.1.25.jar",
+        "META-INF/mods.toml" to """
+            modLoader="javafml"
+            loaderVersion="[47,)"
+            [[mods]]
+            modId="iceberg"
+            [[dependencies.iceberg]]
+            	modId="forge"
+            	mandatory=true
+            	versionRange="[47.2,)"
+            	ordering="NONE"
+            	side="BOTH"
+            [[dependencies.iceberg]]
+            	modId="minecraft"
+            	mandatory=true
+            	versionRange="[1.20.1,)"
+            	ordering="NONE"
+            	side="BOTH"
+        """.trimIndent()
+    )
+
+    /** What SPC's metadata answers for Minecraft 1.20.1 — the one era where NeoForge is a Forge fork. */
+    private val forgeEraBuilds: (String) -> String? = { loader ->
+        when (loader) {
+            "Forge" -> "47.4.23"
+            "NeoForge" -> "47.1.106"
+            else -> null
+        }
+    }
+
     /** Everything else is not one — including a real multi-loader jar, which carries both descriptors too. */
     @Test
     fun anythingWithoutTheMarkerIsNotAConnectorPlaceholder(@TempDir dir: File) {
