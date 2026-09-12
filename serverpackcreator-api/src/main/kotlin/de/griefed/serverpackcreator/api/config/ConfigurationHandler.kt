@@ -59,6 +59,7 @@ class ConfigurationHandler(
     /** Logger for check results, exposed because the checks report through it rather than returning text. */
     val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** The Nekodetector scan guard, which runs without a handler instance and so carries its own logger. */
     companion object {
         /** Logger for the scan guard below, which is a companion member and cannot use the instance logger. */
         private val scanLog by lazy { cachedLoggerOf(ConfigurationHandler::class.java) }

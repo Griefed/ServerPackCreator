@@ -151,6 +151,7 @@ data class Classification(
      */
     val decidedBy: BootDecision = BootDecision.EXIT_CODE
 ) {
+    /** Construction for the rule-less case, so a ladder verdict does not have to pass an explicit `null`. */
     companion object {
         /** A verdict the built-in ladder reached with no rule involved. */
         internal fun of(result: BootResult, decidedBy: BootDecision) = Classification(result, null, decidedBy)
