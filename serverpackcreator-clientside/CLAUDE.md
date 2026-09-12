@@ -834,6 +834,28 @@ positive strips a working mod out of every pack built against the list.
     scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
   - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
     a real NeoForge build still beats the Forge fallback wherever a project publishes one.
+- **Only Forge and NeoForge can produce clientside *proof* — Fabric and Quilt structurally cannot**
+  (measured 2026-09-12, 717 live rows). Fabric honours `environment: "client"` and simply does not run a
+  client-only mod's entrypoints on a dedicated server, so the mod is inert rather than fatal and the boot
+  reaches the ready line. Forge and NeoForge load everything and die, which is what leaves evidence.
+  - **The numbers.** All **26** published `CONFIRMED` rows belong to 7 projects, and every one of the 8 that
+    rests on its *own* evidence was booted under NeoForge — `LWJGL_ON_A_DEDICATED_SERVER` ×4,
+    `FML_INVALID_DIST` ×2 (a Forge-family dist check with no Fabric analogue), `CLIENT_ONLY_CLASS` ×1. The
+    other 18 inherited it. **No Fabric or Quilt boot has ever produced its own clientside proof.**
+  - **It is a controlled comparison, not a sampling artefact.** `iris`, `sodium`, `sodium-extra` and
+    `reeses-sodium-options` each have a Fabric row that SURVIVED and a NeoForge row of the same era that
+    died decisively. Same mod, same Minecraft, opposite outcome — the loader is the variable.
+  - **This is what `BootCandidateSelector.LOADER_PRIORITY` is actually for.** `NeoForge > Forge > Fabric >
+    Quilt` reads like a popularity order and is not: it is the order in which a boot can *say something*.
+    Anything that moves a line off Forge/NeoForge — the Connector redirect below included — trades a chance
+    of proof for an honest `CLEAR`, which is the right trade only when the Forge-family boot could not have
+    produced proof anyway. Both 2026-09-12 redirects clear that bar: the Forge shim died on its own stub
+    before loading anything, and the NeoForge shim SURVIVED.
+  - **The open consequence.** A well-behaved Fabric-only mod declaring `environment: "client"` is
+    unreachable for `CONFIRMED` by boot, however plainly it is clientside — 90 of 114 `declared=CLIENT` rows
+    are `CLEAR`. Publishing those would mean letting metadata carry a verdict, which this engine forbids on
+    purpose (*the console decides; metadata only declares*). Not a defect; a stated limit of the evidence
+    model, and the thing to re-open if the fallback list is ever judged too short.
 - **Carrying a loader's descriptor is not the same as being able to run under it** (2026-09-12).
   `JarSelfDeclaration.demandedLoaderVersion` reads the `versionRange` the jar puts on its *platform*
   dependency entry (`forge`/`neoforge`), and `contradictingLoaders` drops any declared loader whose newest
