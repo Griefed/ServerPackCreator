@@ -136,6 +136,23 @@ loader. It is now `1.21/NeoForge`, `1.20/NeoForge`, `1.12/Forge`.
   loader** — the boot that used to disprove a wrong crash for free when every loader was ground. Detail in
   `serverpackcreator-clientside/CLAUDE.md`.
 
+## The audit grades evidence, so it has to know where the evidence lives (2026-09-12)
+
+`GrinderAuditIT` asks one question of a live daemon — *is every published `CONFIRMED` backed by a decision
+`BootDecision.decisive` marks?* — and it had two ways to answer wrongly, both found by reading the public
+store rather than by running it:
+
+- **It built the old three-part `platform-name-loader` tuple.** Since the grind axis became the Minecraft
+  line, a kept console's owner carries the line too, so the tuple matched nothing and the audit
+  *assume-skipped* with "no kept console belongs to a published CONFIRMED". **A green run that graded
+  nothing is the worst outcome an audit has**, and it is the shape to check for first whenever a naming
+  scheme moves.
+- **It knew nothing about inherited proofs.** `propagateClientOnlyProof` confers CONFIRMED on a target whose
+  evidence is a *sibling's* console; its own is usually a clean boot, so re-deriving from it reads
+  `READY_LINE`. Measured: **86 of 140** published rows, i.e. the guard failing wholesale on a design working
+  as intended. `GrindVerdict.inheritedProofFrom`/`inheritedProofRule` carry it now — the `Inherited proof`
+  column — and the audit grades such a row at the sibling that owns the evidence, once, where it exists.
+
 ## Cross-cutting landmines (do not let these load lazily)
 
 These bite regardless of which subsystem you are in, so they stay in this always-loaded-for-the-module file even

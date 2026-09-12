@@ -4356,3 +4356,55 @@ arming it against an installer that keeps producing 0.30.1 costs a boot per row 
 **Deliberately not fixed**, with reasons, so they are not re-opened: three rows are upstream-unsatisfiable
 (`emotecraft` demands `playeranimator [2.0.3.1+1.21.5,)`; Modrinth publishes exactly one 1.21.5 build,
 `2.0.2+1.21.5`), two are the Sinytra Connector placeholder, and four were never dependency failures at all.
+
+---
+
+## 2026-09-12 (later) — the rest of the grinder's report, and a false positive in the published list
+
+With the dependency failures closed, the whole store was measured rather than sampled: **4475 rows**, of
+which the buckets worth acting on are `INCONCLUSIVE` (177) and `ERROR` (7). Reading them produced one
+finding that matters more than the other three put together.
+
+**The published exclusion list contained false positives, and our own audit could not see them.**
+`propagateClientOnlyProof` carries one build's client-only proof to every target of the project. Measured:
+**22 rows across 12 projects** were published as clientside while booting dedicated servers *themselves* and
+while declared `SERVER` — `agricraft`, `galosphere`, `zombie-awareness`, `immersive-lanterns`,
+`joy-of-painting`. `CurseForge/agricraft` is a crop-breeding mod whose NeoForge build fails registering one
+`@SubscribeEvent` class touching `net/minecraft/client/gui/Gui`, while its Fabric and Forge builds each reach
+the ready line. All three rows went to `/as-properties`.
+
+The inference propagation rests on — *a mod's features do not change with the loader* — is exactly invalid
+when the reaching is one build's defect, and a sibling's clean boot on a mod that claims the server is what
+says so. The gate is deliberately narrow: the claim must be `Declaration.SERVER` (platform **and** jar
+agreeing) rather than `declaresServerSupport`, because the latter accepts `JarScan.SERVER_OR_BOTH` — which
+is also what a scan that read *nothing* returns. The weak reading matches 27 rows, the strong one 22.
+
+**And the audit built to catch this was reporting 86 false alarms.** An inherited proof lived only in the
+detail's prose, so a row's `decidedBy` stayed its own boot rung and `GrinderAuditIT` — which re-derives
+evidence from the kept consoles — read 86 of 140 published rows as resting on none. It also still built the
+pre-axis three-part tuple, so against the current daemon it would have matched no console at all and
+*assume-skipped*: a green run that graded nothing.
+
+Two smaller ones: `com.mojang.blaze3d` was missing from the client-only marker, so `vulkanmod` — a Vulkan
+renderer — was filed INCONCLUSIVE off the bare exit code; and `DROPPED_BY_BACKTRACK` blamed the host for
+what is an upstream gap, which was 6 of the 7 `ERROR` rows.
+
+**What generalises:**
+
+- **A guard that cannot fail is worse than no guard, and it fails silently in two ways**: by matching nothing
+  (the three-part tuple, which *assume-skips* to green) and by matching everything (86 false alarms). Both
+  were invisible without running it against real data. Whenever a naming scheme or a verdict path moves, ask
+  what the audit now matches.
+- **Evidence must be a field.** The propagation was correct and its reasoning was recorded — in prose. Prose
+  is not queryable, so the one mechanism that checks publications could not see it. This module's own rule —
+  *a verdict that cannot name its own evidence cannot be audited* — applies to inherited evidence too.
+- **A predicate correct for one question can be wrong for another.** `declaresServerSupport` arms the crash
+  re-check, where accepting an unread jar scan is the conservative direction; as a gate on *publication* the
+  same leniency opens on most of the catalogue. Re-read what a shared predicate means before reusing it.
+- **"Deliberately ours" can be a mis-blame rather than a decision.** `DROPPED_BY_BACKTRACK` was documented as
+  `HOST` because "staging dropped those builds itself" — true of the mechanism, false of the blame. The
+  recorded residue said closing it needed a second exclusion channel; it needed re-reading the sentence.
+- **Reading 66 consoles produced one rule.** The EXIT_CODE bucket is mostly genuine runtime version
+  mismatches, correctly INCONCLUSIVE — the hypothesis that it hid systematic wrong-Minecraft staging was
+  tested and **disproved**. The single marker it did yield was worth the read, and so is knowing the rest of
+  that bucket is not ours.

@@ -112,6 +112,45 @@ are the Sinytra Connector placeholder (`continuity`). Four were never dependency
 disabled, and two mixin failures now filed as such). One — `aether` on Forge staging a NeoForge jar — is
 closed by the per-line axis and `reselectOnLoaderContradiction`.
 
+## A CLEAN BOOT OUTRANKS AN INHERITED CLIENT-ONLY PROOF (2026-09-12)
+
+`propagateClientOnlyProof` carries one build's client-only proof to every other target of the project, on
+the reasoning that *a mod's features do not change with the loader*. **That inference is invalid when the
+reaching is one build's defect**, and 22 rows across 12 projects were published as clientside because of it —
+`agricraft`, `galosphere`, `zombie-awareness`, `immersive-lanterns`, `joy-of-painting`, `modonomicon`,
+`toadlib` — each while booting dedicated servers of its own. `CurseForge/agricraft`, a crop-breeding mod,
+fails registering one `@SubscribeEvent` class touching `net/minecraft/client/gui/Gui` on NeoForge; its Fabric
+and Forge builds each reach the ready line. All three rows published to `/as-properties`.
+
+`contradictsTheProof` now blocks the propagation onto a target that booted a server **itself** and whose mod
+is declared `Declaration.SERVER`. Narrow in three directions, each load-bearing:
+
+- **The claim is `Declaration.SERVER`, never `declaresServerSupport`.** That predicate — correct for arming
+  the crash re-check — accepts `JarScan.SERVER_OR_BOTH`, which is *also* what a scan that read nothing
+  returns. Reading an absent answer as a claim opens the gate on most of the catalogue: measured, the weak
+  reading matches 27 rows and this one 22, the five dropped being `CONTRADICTORY`, where by this module's own
+  rule neither source is evidence.
+- **`sodium` is untouched**, declaring `client_side: required` — the case propagation exists for, since its
+  stems differ per loader and excluding only the proving one leaves half the project shipping.
+- **The survival must be the target's own** (`bootedLoader == loader`), the same landmine
+  `targetDisprovingTheCrash` guards.
+
+**The cost is accepted and is the cheaper direction.** A mod whose metadata wrongly claims the server and
+boots cleanly stops inheriting — `controlify` is one — so it ships unused into a server pack, where a false
+positive strips a working mod out of every pack built against the list.
+
+- **LANDMINE — an inherited proof is a *field*, not prose, and the audit depends on it.**
+  `GrindTargetVerdict.inheritedProofFrom`/`inheritedProofRule` (the grinder's `Inherited proof` column).
+  Before them the proof lived only in the note, so a row's `decidedBy` stayed its own boot's rung —
+  `READY_LINE` for a clean one — and `GrinderAuditIT`, which re-derives evidence from the kept consoles, read
+  **86 of 140** published rows as resting on none. The guard built to catch wrong publications was failing
+  wholesale on a design working as intended, and an audit that cries wolf gets ignored.
+- **`com.mojang.blaze3d` is client-only evidence** and was missing from the marker, which matched only
+  `net.minecraft.client`. `Modrinth/vulkanmod` — a Vulkan renderer — crashed on
+  `NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem` and was filed INCONCLUSIVE off the bare
+  exit code. Safe over the exit code for the same reason its neighbours are: a dedicated server ships no
+  rendering layer, so no environment failure can fabricate it.
+
 ## Engine details & landmines (durable)
 
 - **`MetadataScanner` no longer mirrors `ModListCompiler` — since 2026-08-15 both dispatch through
@@ -613,10 +652,15 @@ closed by the per-line axis and `reselectOnLoaderContradiction`.
     outright, where a version range is one mod's opinion about another. `UnmetReason.DROPPED_BY_BACKTRACK`
     therefore reads *"every usable build was dropped making the pack coherent"* — two things reach it now,
     and naming only the version conflict made the sentence false for the other.
-  - **Known residue:** a project whose *every* build declares the wrong Minecraft ends as
-    `ERROR`/`DROPPED_BY_BACKTRACK` rather than `UNVERIFIABLE`, because the cause cannot tell "we dropped it"
-    from "we dropped it because upstream's builds do not fit" without a second exclusion channel. Strictly
-    better than the boot it replaces; recorded so it is not rediscovered as a defect.
+  - **CLOSED 2026-09-12, and the "second exclusion channel" it asked for was not needed.**
+    `DROPPED_BY_BACKTRACK` mapped to `PreventionCause.HOST` on the reasoning that "staging dropped those
+    builds itself" — which describes the *mechanism*, where `preventionCause` is about the *blame*. Both
+    things that reach this reason are upstream **declarations** (a version range one jar states about
+    another, a Minecraft range a jar states about itself), so there was nothing to tell apart: it is
+    `UPSTREAM_UNAVAILABLE`, and the row is `UNVERIFIABLE`. Measured that day: **6 of the public grinder's 7
+    `ERROR` rows** were this, telling an operator their host was broken over a dependency whose every
+    candidate build conflicts. Running out of backtracks is a different path entirely —
+    `dependencyToDemote` then logs and boots anyway rather than refusing.
 
 - **THE JAR IS THE AUTHORITY ON WHAT IT NEEDS; THE PLATFORM PAGE IS A SELF-REPORT** (2026-09-08). Two
   consequences, both new, and together they are the beginning of the end of the hand-written id table.
