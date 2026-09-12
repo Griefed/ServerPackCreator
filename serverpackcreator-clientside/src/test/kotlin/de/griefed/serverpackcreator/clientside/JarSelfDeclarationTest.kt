@@ -62,28 +62,82 @@ internal class JarSelfDeclarationTest {
             }
         }
 
+    /**
+     * The answer is read **at a Minecraft version**, because which file a loader reads has moved twice.
+     * `1.21.1` is used here as a version past both boundaries, where each descriptor names exactly one
+     * loader; the eras themselves are pinned by the three guards further down.
+     */
     @Test
     fun aJarNamesTheLoadersWhoseDescriptorsItCarries(@TempDir dir: File) {
-        Assertions.assertEquals(setOf("Fabric"), JarSelfDeclaration.declaredLoaders(jar(dir, "f.jar", "fabric.mod.json")))
-        Assertions.assertEquals(setOf("Quilt"), JarSelfDeclaration.declaredLoaders(jar(dir, "q.jar", "quilt.mod.json")))
-        Assertions.assertEquals(setOf("Forge"), JarSelfDeclaration.declaredLoaders(jar(dir, "fo.jar", "META-INF/mods.toml")))
-        Assertions.assertEquals(
-            setOf("NeoForge"),
-            JarSelfDeclaration.declaredLoaders(jar(dir, "n.jar", "META-INF/neoforge.mods.toml"))
-        )
+        fun declared(name: String, vararg entries: String) =
+            JarSelfDeclaration.declaredLoaders(jar(dir, name, *entries), "1.21.1")
+
+        Assertions.assertEquals(setOf("Fabric"), declared("f.jar", "fabric.mod.json"))
+        Assertions.assertEquals(setOf("Quilt"), declared("q.jar", "quilt.mod.json"))
+        Assertions.assertEquals(setOf("Forge"), declared("fo.jar", "META-INF/mods.toml"))
+        Assertions.assertEquals(setOf("NeoForge"), declared("n.jar", "META-INF/neoforge.mods.toml"))
         Assertions.assertEquals(
             setOf("Forge", "NeoForge"),
-            JarSelfDeclaration.declaredLoaders(jar(dir, "both.jar", "META-INF/mods.toml", "META-INF/neoforge.mods.toml")),
+            declared("both.jar", "META-INF/mods.toml", "META-INF/neoforge.mods.toml"),
             "a jar really can carry both, and then either boot is legitimate"
         )
     }
 
-    /** The live NeoForge failure: a Forge jar, because one platform file claimed both loaders. */
+    /**
+     * **Two loaders from one file is a different fact from two loaders from two files**, and only the
+     * version tells them apart. Before Minecraft 1.20.5 a lone `mods.toml` names Forge *and* NeoForge
+     * because both read it — the presence of that file distinguishes nothing — while after 1.20.5 the same
+     * jar names Forge alone.
+     */
+    @Test
+    fun oneDescriptorCanNameTwoLoadersBeforeTheRename(@TempDir dir: File) {
+        val modsTomlOnly = jar(dir, "ambiguous.jar", "META-INF/mods.toml")
+
+        Assertions.assertEquals(
+            setOf("Forge", "NeoForge"), JarSelfDeclaration.declaredLoaders(modsTomlOnly, "1.20.4"),
+            "both loaders read mods.toml on 1.20.4, so it cannot say which the jar is for"
+        )
+        Assertions.assertEquals(
+            setOf("Forge"), JarSelfDeclaration.declaredLoaders(modsTomlOnly, "1.20.6"),
+            "from 1.20.5 NeoForge has its own descriptor, so mods.toml names Forge and nothing else"
+        )
+    }
+
+    /** And the legacy Forge descriptors name Forge only while Forge is the loader that reads them. */
+    @Test
+    fun theLegacyForgeDescriptorsNameForgeBeforeMinecraft113(@TempDir dir: File) {
+        Assertions.assertEquals(
+            setOf("Forge"),
+            JarSelfDeclaration.declaredLoaders(jar(dir, "legacy.jar", "mcmod.info"), "1.12.2")
+        )
+        Assertions.assertEquals(
+            emptySet<String>(),
+            JarSelfDeclaration.declaredLoaders(jar(dir, "legacy.jar", "mcmod.info"), "1.20.1"),
+            "from 1.13 nothing reads mcmod.info, so it is not evidence of any loader"
+        )
+    }
+
+    /**
+     * The live NeoForge failure: a Forge jar, because one platform file claimed both loaders.
+     *
+     * **Asked at 1.21.1, where it can be asked.** This guard used to run at 1.20.4, and could not keep that
+     * version once the eras were measured: Forge and NeoForge both read `mods.toml` until Minecraft 1.20.5,
+     * so there the descriptor is *ambiguous* rather than contradictory, and refusing on it condemned 13
+     * genuine NeoForge jars. The `DamageVignette` shape is still caught wherever the descriptors differ.
+     *
+     * **What the gate gives up in the 1.20.2–1.20.4 band, and why that is affordable.** A jar that really is
+     * Forge-only, ticked NeoForge, now reaches a container and dies on
+     * `Missing language javafml version [46,)` — which `BootLogClassifier`'s `runtimeMismatchMarkers` already
+     * scores INCONCLUSIVE, *not* as sideness evidence. So the cost is one wasted boot in the false case, and
+     * the gain is a real verdict in the thirteen true ones. A cheap catch was traded for correctness, not for
+     * a wrong verdict — which is also what this object's fail-toward-accept design already prescribes when
+     * the evidence cannot distinguish.
+     */
     @Test
     fun aForgeJarIsRefusedForANeoForgeBoot(@TempDir dir: File) {
         val contradiction = JarSelfDeclaration.contradiction(
             jar(dir, "damagevignette-forge.jar", "META-INF/mods.toml"),
-            loader = "NeoForge", minecraftVersion = "1.20.4", minecraftConstraint = null
+            loader = "NeoForge", minecraftVersion = "1.21.1", minecraftConstraint = null
         )
 
         Assertions.assertNotNull(contradiction)
@@ -206,17 +260,107 @@ internal class JarSelfDeclarationTest {
         )
     }
 
-    /** Above 1.20.1 the packages diverge, so the same jar is refused again — the band is one version wide. */
+    /**
+     * **Once NeoForge has a descriptor of its own, a `mods.toml`-only jar is refused again.**
+     *
+     * This test used to include 1.20.2 and 1.20.4, and that was wrong: it conflated two different NeoForge
+     * changes. The **package** rename (`net.minecraftforge` → `net.neoforged`) landed with 1.20.2, which is
+     * what ends *jar parity* and is why `LoaderCompatibility` stays one version wide. The **descriptor**
+     * rename landed with 1.20.5 — `META-INF/mods.toml` → `META-INF/neoforge.mods.toml`. Between them, both
+     * loaders read the same file, so its presence is *ambiguous* rather than contradictory, and a gate whose
+     * whole design is "refuse only on a positive, readable contradiction" must not refuse on it.
+     *
+     * Measured against the live Modrinth API on 2026-09-10, on two independent mods:
+     *
+     * | Minecraft | `architectury-api` | `jei` |
+     * |---|---|---|
+     * | 1.20.2 | `META-INF/mods.toml` | — |
+     * | 1.20.4 | `META-INF/mods.toml` | `META-INF/mods.toml` |
+     * | 1.20.6 | `META-INF/neoforge.mods.toml` | `META-INF/neoforge.mods.toml` |
+     * | 1.21.1 | `META-INF/neoforge.mods.toml` | `META-INF/neoforge.mods.toml` |
+     *
+     * `-api`'s `ModScanner` had this right all along (`NEOFORGE_TOML_MINIMUM_MINECRAFT = "1.20.5"`), and
+     * `serverpackcreator-api/CLAUDE.md` says so in words — this object simply held a second, version-blind
+     * copy of the same knowledge.
+     */
     @Test
-    fun aNeoForgeBootAboveMinecraft1201StillRefusesAForgeJar(@TempDir dir: File) {
+    fun aNeoForgeBootRefusesAForgeJarOnceTheDescriptorsDiverge(@TempDir dir: File) {
         val forgeOnly = jar(dir, "forgeonly.jar", "META-INF/mods.toml")
 
-        for (minecraftVersion in listOf("1.20.2", "1.20.4", "1.20.6", "1.21.1", "26.2")) {
+        for (minecraftVersion in listOf("1.20.6", "1.21.1", "26.2")) {
             Assertions.assertNotNull(
                 JarSelfDeclaration.contradiction(forgeOnly, "NeoForge", minecraftVersion, null),
-                "NeoForge $minecraftVersion renamed its packages away from Forge's and cannot load this jar"
+                "NeoForge $minecraftVersion reads neoforge.mods.toml, so a mods.toml-only jar is not one"
             )
         }
+    }
+
+    /**
+     * **The 13 rows this batch was opened for.** Every jar the live grinder refused this way carries *only*
+     * `META-INF/mods.toml` at Minecraft 1.20.2 or 1.20.4 — including files whose own names say `neoforge`:
+     * `botarium-neoforge-1.20.4-3.2.1.jar`, `decorative_blocks-NeoForge-1.20.4-5.0.2.jar`,
+     * `emitrades-neoforge-1.3.0+mc1.20.4.jar`, `majrusz-library-neoforge-1.20.2-6.0.1.jar`,
+     * `rebornstorage-1.20.4-5.1.2-neoforge.jar`. They are not mis-ticks; that *is* NeoForge's descriptor
+     * for that Minecraft range.
+     *
+     * Note what this does **not** claim: NeoForge 1.20.4 cannot load a genuinely Forge-built jar (the
+     * packages diverged at 1.20.2). It claims only that the descriptor cannot tell the two apart there, so
+     * the gate has no evidence and must fall through to the boot. A jar that really is Forge-only then fails
+     * on `Missing language javafml version`, which `runtimeMismatchMarkers` already scores as INCONCLUSIVE
+     * rather than as sideness.
+     */
+    @Test
+    fun aNeoForgeBootAcceptsAModsTomlJarBeforeTheDescriptorRename(@TempDir dir: File) {
+        val neoForge1204 = jar(dir, "botarium-neoforge-1.20.4-3.2.1.jar", "META-INF/mods.toml")
+
+        for (minecraftVersion in listOf("1.20.2", "1.20.3", "1.20.4")) {
+            Assertions.assertNull(
+                JarSelfDeclaration.contradiction(neoForge1204, "NeoForge", minecraftVersion, null),
+                "NeoForge $minecraftVersion reads mods.toml, so carrying one is not evidence against it"
+            )
+        }
+    }
+
+    /**
+     * **A pre-1.13 Forge mod declares itself in `mcmod.info`, which the gate could not see** — so a jar that
+     * also ships a Fabric descriptor looked Fabric-only and its Forge boot was refused.
+     *
+     * Read from the live file: `SkyHanni-6.0.0-mc1.8.9.jar` carries `mcmod.info` **and** `fabric.mod.json`,
+     * and neither `META-INF/mods.toml` nor `META-INF/fml_cache_annotation.json`. The gate fails *open* for a
+     * jar that declares nothing at all, so it is the *visible* Fabric descriptor that flipped this one from
+     * fail-open to fail-closed.
+     *
+     * Both legacy paths count: `mcmod.info` is what an author writes, and
+     * `META-INF/fml_cache_annotation.json` is what `-api`'s `ForgeAnnotationScanner` reads.
+     */
+    @Test
+    fun aLegacyForgeJarIsNotMistakenForFabricOnly(@TempDir dir: File) {
+        val skyhanni = jar(dir, "SkyHanni-6.0.0-mc1.8.9.jar", "mcmod.info", "fabric.mod.json")
+        val annotated = jar(dir, "old-forge.jar", "META-INF/fml_cache_annotation.json", "fabric.mod.json")
+
+        Assertions.assertNull(
+            JarSelfDeclaration.contradiction(skyhanni, "Forge", "1.8.9", null),
+            "mcmod.info is the Forge descriptor before 1.13, so this jar does declare Forge"
+        )
+        Assertions.assertNull(
+            JarSelfDeclaration.contradiction(annotated, "Forge", "1.12.2", null),
+            "the FML annotation cache is the other legacy Forge descriptor"
+        )
+        Assertions.assertNotNull(
+            JarSelfDeclaration.contradiction(skyhanni, "Forge", "1.20.1", null),
+            "from 1.13 Forge reads mods.toml, so a legacy descriptor is no longer evidence of Forge"
+        )
+    }
+
+    /** And a legacy Forge descriptor still says nothing about Quilt — the concession is loader-specific. */
+    @Test
+    fun aLegacyForgeJarIsStillRefusedForQuilt(@TempDir dir: File) {
+        Assertions.assertNotNull(
+            JarSelfDeclaration.contradiction(
+                jar(dir, "SkyHanni-6.0.0-mc1.8.9.jar", "mcmod.info"),
+                loader = "Quilt", minecraftVersion = "1.8.9", minecraftConstraint = null
+            )
+        )
     }
 
     /**
@@ -256,6 +400,202 @@ internal class JarSelfDeclarationTest {
         )
 
         Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
+    }
+
+    /**
+     * **The same marker, in the descriptor NeoForge renamed.** Read from the live
+     * `continuity-3.0.0+1.21.neoforge.jar` on 2026-09-12: byte-for-byte the placeholder shape above, except
+     * that the stub lives at `META-INF/neoforge.mods.toml` because NeoForge moved its descriptor there on
+     * Minecraft 1.20.5. Nothing else about the jar differs — the same `[properties] "connector:placeholder"`,
+     * the same `fabric.mod.json` beside it declaring `"environment": "client"`.
+     *
+     * Measured on the public grinder the same day, that one path cost the project its 1.21 verdict:
+     * `Modrinth/continuity`'s NeoForge row read `SERVER_OR_BOTH` off the stub — whose `[[dependencies]]`
+     * entries carry no `side`, which [de.griefed.serverpackcreator.api.modscanning.ForgeTomlScanner] reads
+     * as *assume SERVER* — and came out `CONTRADICTORY` against a platform declaring
+     * `client_side=REQUIRED`, while its Forge row on the 1.20 line read `CLIENT` off the identical
+     * `fabric.mod.json`. One project, two placeholders, two answers.
+     */
+    @Test
+    fun aConnectorPlaceholderNamesItselfInItsNeoForgeModsTomlToo(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity.neoforge.jar",
+            "META-INF/neoforge.mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
+    }
+
+    /**
+     * **A placeholder declares only the loader its *real* descriptor names**, so the gate refuses the boot
+     * the platform ticked and hands back the loader to re-select to.
+     *
+     * The stub is not a Forge mod; it is a Fabric mod wearing enough TOML to get past Forge's mod discovery
+     * until Connector takes over. Counting it as a Forge declaration is what let the shim keep the boot:
+     * `contradictingLoaders` saw `Forge` among the declared set, accepted, and the container then spent
+     * itself proving something about Sinytra Connector.
+     *
+     * Measured on the public grinder 2026-09-12, and the reason this is worth a refusal rather than a note:
+     * under the per-line axis the shim costs the **whole** Minecraft line. `Modrinth/continuity`'s 1.20 row
+     * booted `continuity-3.0.0+1.20.1.forge.jar` and died on the stub's own version-less dependency entries
+     * (`Expected range: '', Actual version: '1.0.0-beta.49+1.20.1'` — Forge reads an absent `versionRange`
+     * as a range matching nothing, so *both* dependencies were staged, both were loaded, and both were
+     * refused), while `continuity-3.0.0+1.20.1.jar` — the release a Fabric user installs, same mod, same
+     * Minecraft version — was never booted at all.
+     *
+     * [MetadataScanner] has redirected the *scan* to Fabric since 2026-09-06. This is the boot making the
+     * same call, so the two stop disagreeing about one fact.
+     */
+    @Test
+    fun aConnectorPlaceholderDeclaresOnlyTheLoaderItsRealDescriptorNames(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity-3.0.0+1.20.1.forge.jar",
+            "META-INF/mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertEquals(
+            setOf("Fabric"), JarSelfDeclaration.declaredLoaders(placeholder, "1.20.1"),
+            "the stub speaks for Connector, not for the mod, so only the fabric.mod.json declares anything"
+        )
+        Assertions.assertEquals(
+            setOf("Fabric"), JarSelfDeclaration.contradictingLoaders(placeholder, "Forge", "1.20.1"),
+            "a Forge boot of a placeholder must be refused, naming Fabric as the loader to re-select to"
+        )
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(placeholder, "Fabric", "1.20.1").isEmpty(),
+            "and the re-selected Fabric boot of the very same file must then be accepted"
+        )
+    }
+
+    /**
+     * The NeoForge-era placeholder is the same refusal, and is the half that costs `continuity` its 1.21
+     * line: `continuity-3.0.0+1.21.neoforge.jar` stubs `META-INF/neoforge.mods.toml` instead.
+     */
+    @Test
+    fun aNeoForgeEraPlaceholderIsRefusedTheSameWay(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity-3.0.0+1.21.neoforge.jar",
+            "META-INF/neoforge.mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertEquals(
+            setOf("Fabric"), JarSelfDeclaration.contradictingLoaders(placeholder, "NeoForge", "1.21.1"),
+            "the marker moved with the descriptor; the refusal must move with it"
+        )
+    }
+
+    /**
+     * A jar demanding a loader build that loader never shipped for this Minecraft names the *other* loader
+     * to verify it under, rather than spending a container proving the arithmetic.
+     *
+     * **The reported case, read from the live `Iceberg-1.20.1-forge-1.1.25.jar` on 2026-09-12.** Its
+     * `META-INF/mods.toml` declares `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"`, and
+     * Modrinth ticks the file `forge, neoforge` — so [BootCandidateSelector.LOADER_PRIORITY] took NeoForge
+     * for the 1.20 line. NeoForge's 1.20.1 fork froze at **47.1.106** and registers itself under the mod id
+     * `forge`, so the console read *"Mod iceberg requires forge 47.2 or above"* and the line published
+     * `INCONCLUSIVE (exit 0)` — while Forge 1.20.1 is at 47.4.23 and satisfies it outright.
+     *
+     * The descriptor gate could not see this: `mods.toml` names Forge **and** NeoForge on 1.20.1, so
+     * [JarSelfDeclaration.contradictingLoaders] accepted and nothing reopened the loader choice.
+     *
+     * **Only a positive, readable impossibility refuses**, like everything else here — the two guards below
+     * pin the accepting halves, because a gate that refused on doubt would turn every unreadable range into
+     * a mass-INCONCLUSIVE event.
+     */
+    @Test
+    fun aLoaderThatCannotReachTheDemandedBuildNamesTheOneThatCan(@TempDir dir: File) {
+        val iceberg = icebergShaped(dir)
+
+        Assertions.assertEquals(
+            setOf("Forge"),
+            JarSelfDeclaration.contradictingLoaders(iceberg, "NeoForge", "1.20.1", forgeEraBuilds),
+            "NeoForge froze at 47.1.106 on 1.20.1 and the jar demands [47.2,), so Forge is where it can run"
+        )
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(iceberg, "Forge", "1.20.1", forgeEraBuilds).isEmpty(),
+            "Forge 47.4.23 satisfies [47.2,), so the boot the jar can actually survive is never refused"
+        )
+    }
+
+    /** An unknown build is not an impossible one: with no version to compare, the boot goes ahead. */
+    @Test
+    fun aLoaderWhoseBuildIsUnknownIsNotRefused(@TempDir dir: File) {
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(icebergShaped(dir), "NeoForge", "1.20.1") { null }.isEmpty()
+        )
+    }
+
+    /**
+     * And neither is a jar that demands nothing of its loader — `MouseTweaks-neoforge-mc26.2-2.31.jar`
+     * declares no `[[dependencies]]` block at all, which is ordinary and says nothing.
+     */
+    @Test
+    fun aJarDemandingNothingOfItsLoaderIsNotRefused(@TempDir dir: File) {
+        val silent = jarWithContent(
+            dir, "MouseTweaks-neoforge-mc26.2-2.31.jar",
+            "META-INF/neoforge.mods.toml" to """
+                modLoader="javafml"
+                [[mods]]
+                modId="mousetweaks"
+            """.trimIndent()
+        )
+
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(silent, "NeoForge", "26.2", forgeEraBuilds).isEmpty()
+        )
+    }
+
+    /** `Iceberg-1.20.1-forge-1.1.25.jar`'s descriptor, read from the live file. */
+    private fun icebergShaped(dir: File): File = jarWithContent(
+        dir, "Iceberg-1.20.1-forge-1.1.25.jar",
+        "META-INF/mods.toml" to """
+            modLoader="javafml"
+            loaderVersion="[47,)"
+            [[mods]]
+            modId="iceberg"
+            [[dependencies.iceberg]]
+            	modId="forge"
+            	mandatory=true
+            	versionRange="[47.2,)"
+            	ordering="NONE"
+            	side="BOTH"
+            [[dependencies.iceberg]]
+            	modId="minecraft"
+            	mandatory=true
+            	versionRange="[1.20.1,)"
+            	ordering="NONE"
+            	side="BOTH"
+        """.trimIndent()
+    )
+
+    /** What SPC's metadata answers for Minecraft 1.20.1 — the one era where NeoForge is a Forge fork. */
+    private val forgeEraBuilds: (String) -> String? = { loader ->
+        when (loader) {
+            "Forge" -> "47.4.23"
+            "NeoForge" -> "47.1.106"
+            else -> null
+        }
     }
 
     /** Everything else is not one — including a real multi-loader jar, which carries both descriptors too. */

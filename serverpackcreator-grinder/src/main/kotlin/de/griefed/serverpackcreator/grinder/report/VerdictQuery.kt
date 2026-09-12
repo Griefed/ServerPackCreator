@@ -76,7 +76,7 @@ internal enum class VerdictField(
     // Beside the pattern it narrows, never instead of it: PATTERN is what `/as-properties` publishes and
     // has to match every build ever released, while this names the one artifact that was sampled. Blank
     // when nothing was sampled -- repeating the broad stem here would imply a file was examined.
-    FILENAME("Filename", "Filename", "filename", FilterKind.TEXT, { it.filenamePattern ?: "" }),
+    FILENAME("Filename", "Filename", "filename", FilterKind.TEXT, { it.fileName ?: "" }),
     VERDICT(
         "Verdict", "Verdict", "verdict", FilterKind.CHOICE, { it.verdict.name },
         // Zero-padded so the rank sorts as text alongside every other column, without the sorter needing
@@ -88,6 +88,21 @@ internal enum class VerdictField(
         // Blank, never "UNKNOWN" or "null": every CurseForge project declares nothing at all, and a word
         // here would tell a reader we asked and were told rather than that nobody ever said.
         { it.declared?.name ?: "" }
+    ),
+    // The row's identity, so it sits beside the loader that produced its evidence rather than instead of
+    // it. A CHOICE, because a reader's question is "what does this mod do on 1.12?" -- a small, closed set
+    // per catalogue -- and ordered numerically, or `1.9` would outrank `1.20` in the table exactly as it
+    // did in the selector before `minecraftComparator` existed.
+    MINECRAFT(
+        "Minecraft", "Minecraft", "minecraft", FilterKind.CHOICE, { it.minecraftLine ?: "" },
+        sortKey = { verdict ->
+            verdict.minecraftLine.orEmpty().split('.').joinToString(".") { "%04d".format(it.toIntOrNull() ?: 0) }
+        }
+    ),
+    // The exact build behind the line, beside it for the same reason FILENAME sits beside PATTERN: one is
+    // the row's identity, the other is what a maintainer reproduces the boot with.
+    MINECRAFT_VERSION(
+        "Version", "MinecraftVersion", "minecraft-version", FilterKind.TEXT, { it.minecraftVersion ?: "" }
     ),
     LOADER("Loader", "Loader", "loader", FilterKind.CHOICE, { it.loader }),
     PLATFORM("Platform", "Platform", "platform", FilterKind.CHOICE, { it.platform }),
@@ -115,6 +130,18 @@ internal enum class VerdictField(
      * one the publication gate now refuses to publish.
      */
     DECISION("Decision", "Decision", "decision", FilterKind.CHOICE, { it.decidedBy ?: "" }),
+    // Beside the decision, never instead of it: DECISION is what *this* row's own boot did, and this is the
+    // sibling whose proof it inherited. A row showing `READY_LINE` here and a loader there is a clean boot
+    // excluded because another build of the same mod reached client-only code -- which is the one shape a
+    // reader cannot otherwise tell from a published CONFIRMED resting on nothing.
+    PROOF(
+        "Inherited proof", "InheritedProof", "proof", FilterKind.CHOICE,
+        { verdict ->
+            verdict.inheritedProofFrom?.let { from ->
+                verdict.inheritedProofRule?.let { rule -> "$from ($rule)" } ?: from
+            } ?: ""
+        }
+    ),
     DEPENDENCIES("Dependencies", "Dependencies", "dependencies", FilterKind.TEXT, { it.stagedDependencies.joinToString(", ") }),
     SCANNED("Scanned (UTC)", "Scanned", "scanned", FilterKind.TEXT, { ScanDate.of(it.verifiedAt) });
 
@@ -411,7 +438,14 @@ internal object VerdictSelection {
         // The default order IS the verdict sort, expressed through the same key, so the two can never
         // disagree about what "the findings first" means.
         null -> matched.sortedWith(
-            compareBy({ VerdictField.VERDICT.sortKey(it) }, { it.slug }, { it.loader })
+            compareBy<GrindVerdict> { VerdictField.VERDICT.sortKey(it) }
+                .thenBy { it.slug }
+                // Newest era first inside a project, which is both the order the grind produces and the one
+                // a reader wants: the line a pack is most likely being built on leads. The loader stays the
+                // last tie-break, because a legacy row carries no line and two of them would otherwise be
+                // ordered arbitrarily.
+                .thenByDescending { VerdictField.MINECRAFT.sortKey(it) }
+                .thenBy { it.loader }
         )
 
         // Only the COUNT is reversed, and the slug/loader tie-break is appended afterwards so it runs the
@@ -421,7 +455,10 @@ internal object VerdictSelection {
         is SortKey.Logs -> {
             val byCount = compareBy<GrindVerdict> { logCount(it) }
             matched.sortedWith(
-                (if (query.descending) byCount.reversed() else byCount).thenBy { it.slug }.thenBy { it.loader }
+                (if (query.descending) byCount.reversed() else byCount)
+                    .thenBy { it.slug }
+                    .thenByDescending { VerdictField.MINECRAFT.sortKey(it) }
+                    .thenBy { it.loader }
             )
         }
 

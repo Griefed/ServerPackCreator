@@ -5950,3 +5950,246 @@ step that separates them, and it costs one run.
 **Suites after the fixes:** clientside **523**, grinder **514** (29 skipped), plugin-grinder **73**, api
 **412** (1 skipped). All re-derived from `build/test-results`.
 
+
+## 2026-09-11 — audit: the UNVERIFIABLE pass (21 commits, `86d3d441b..develop`, iteration 1)
+
+Range: `851098c17` … `9f660add0` — 9 `test(...)` pins, 9 `fix(...)`, 1 `refactor(...)`, 2 `docs`. All of it is
+already fast-forwarded into `develop` and unpushed (`origin/develop` is still `86d3d441b`), so everything
+below is fixable without rewriting shared history.
+
+**Two measurements were made for this audit rather than taken on trust.**
+
+*Every pin, run at its own commit, filtered to its own test class, in a detached worktree:*
+
+| pin commit | class | result at that commit |
+|---|---|---|
+| `851098c17` | `JarSelfDeclarationTest` | **NO RESULTS — `compileTestKotlin` fails** |
+| `0c1001104` | `ModScannerDispatchTest` | 7 tests, **0 red** |
+| `cbddb26bc` | `GrinderTest` | 17 tests, 1 red |
+| `c1ac29d6d` | `QuiltUnlessClauseTest` | 2 tests, 1 red |
+| `4eadf4e95` | `ReleaseChannelPreferenceTest` | 5 tests, 1 red |
+| `3853b7751` | `CurseForgeDependencyLineTest` | 2 tests, 2 red |
+| `c51d67e8c` | `LoaderReselectionTest` | 5 tests, 2 red |
+| `7c8207a7f` | `ForkedProjectDependencyTest` | 4 tests, 2 red |
+| `9643d2d82` | `PinnedDependencyRefTest` | 4 tests, 4 red |
+
+*And the one mutation claim a commit message makes about a green pin, re-run here:* dropping the
+`runCatching` from `LoaderDescriptors.atLeast` fails exactly `anUnparseableMinecraftVersionAlsoFallsBackFor‑
+NeoForge` and `anUnparseableMinecraftVersionFallsBackToTheModernForgeScanner` — 2 of 7. The claim holds.
+
+### HIGH — none
+
+Checked and not found, so this is a statement rather than an omission: no behaviour change is mixed into the
+one `refactor:` commit (see the clean list), no dependency points outward from `-api`, and every published
+change is additive (`LoaderDescriptors` is a new object; `ModDependency.unlessProvided` is appended last to a
+plain `class` with `@JvmOverloads`, so no `copy()`/`componentN` surface exists to break and every previous
+constructor overload survives).
+
+### MEDIUM
+
+| # | Commit | Where | Rule broken |
+|---|---|---|---|
+| M-1 | `851098c17` | `serverpackcreator-clientside/src/test/.../JarSelfDeclarationTest.kt:67` | **The pin commit does not compile.** Its `declaredLoaders(jar, "1.21.1")` call needs the 2-arg signature that first exists in `3d61e97c6`, so `git checkout 851098c17 && ./gradlew :serverpackcreator-clientside:test` produces **no test results at all**. Nobody can watch that pin go red — and the range now contains a commit where the module's test tree does not build, which is the shape of this repo's own landmine about green builds that never compiled the test sources. "Pin first means *commit* first, red." |
+| M-2 | `1443d9f46` | `BootVerifier.kt:1699` | The `unless` drop arm reads `providedIds` only, never `bundledIds` — so it cannot fire for the case its own comment names. **Measured against the live artifact:** `fabric-api-0.116.17+1.21.1.jar` declares `id=fabric-api`, `provides=["fabric"]`, and ships `fabric-resource-loader-v0` *only* as `META-INF/jars/fabric-resource-loader-v0-0.116.17.jar` — i.e. in `bundledIds`. The arm directly above it does consult `bundledIds` for the primary id, which makes this an oversight rather than a decision. A bug found while auditing, surfaced here rather than worked around. |
+| M-3 | `1443d9f46` | `QuiltScanner.kt:138`, `ScannedMod.kt:126` | `readUnless` handles three shapes (bare string, object with `id`, array of either) and **two of them are exercised nowhere**: `grep unlessProvided` over both test trees returns nothing, and `QuiltUnlessClauseTest` — two tests — writes only `"unless":"<id>"`. Parsing in a published module, and this repo's rule is that manifest/version parsing gets its test first *because it fails silently*. |
+| M-4 | `355d322ef` | `BootVerifier.kt:1442` | `declaredMinecraftConstraint = minecraftDisagreement.takeIf { mismatchedLoaders.isEmpty() }` is a second behaviour change, to a *different* feature (the Minecraft re-selection), with no guard and no statement of its consequence. **Failure scenario:** a `mods.toml`-only jar, requested NeoForge, tagged for 1.20.6 and 1.20.4, descriptor range `[1.20.4,1.20.5)`. Before: the Minecraft channel was populated, the retry re-staged at 1.20.4, and at 1.20.4 a `mods.toml` names NeoForge too — a genuine **NeoForge** boot. After: the channel is nulled and the loader retry stages under **Forge**, so the NeoForge row's evidence is a Forge boot. Not a false verdict (`bootedLoader` records it) but strictly weaker evidence than was reachable before. |
+| M-5 | `7028c7ecd` | commit shape | Test and behaviour change in one commit (`CrossPlatformDependencyTest.kt` lands with the fix). Disclosed in the message together with the mutation that reproduces the red, which is the honest mitigation — but the boundary does not exist in history, so `git checkout 7028c7ecd^` shows nothing. |
+| M-6 | `7028c7ecd` | `BootVerifier.kt:748,760` | `acrossPlatforms` fires on `Unmapped` **as well as** `Unsatisfied` — i.e. on the common state — once per requirement, with no dedupe across requirements, staged jars, the three boot attempts, or the up-to-ten backtrack re-stages, and **no measurement of the added request volume** against a quota-bearing key on a catalog sweep. This repo has paid for that shape twice already (the un-narrowed CurseForge page; `MAX_BACKTRACKS`' re-downloads). |
+| M-7 | `ab188dff4` | `serverpackcreator-clientside/CLAUDE.md:1101,1108,1110,1112`; `serverpackcreator-plugin-grinder/CLAUDE.md:45`; `RecordedVerdictMappingTest.kt:44` | The rename `filenamePattern` → `fileName` left its own landmine unfindable: the module docs still name the field `filenamePattern` and still cite a guard `theFilenamePatternIsNotWhatGetsPublished` that no longer exists (it is now `theSampledFilenameIsNotWhatGetsPublished`). The test KDoc is in a file that same commit edited. "Cite names, not snapshots"; Boy-Scout on touched files. |
+| M-8 | `cf78607ab` | `serverpackcreator-clientside/CLAUDE.md:49` | Still says "`resolveDependency` stays single-page on purpose". Now half true: it issues one page **per asked version** — the exact one, then one per patch neighbour when the exact answers nothing. |
+
+### LOW
+
+| # | Commit | Where | Rule broken |
+|---|---|---|---|
+| L-1 | `0c1001104` | commit shape | The pin landed **green** (measured above) because the bug it covers was fixed inside `3d61e97c6`, so a bug found during the work never got its own commit. Honestly disclosed, and the mutation check it offers instead is re-verified above — teeth demonstrated, boundary missing. |
+| L-2 | `37e2d2797` | commit shape | Four concerns: the CurseForge `modId` fix, the Modrinth pinned-dependency fix, `NeoForgeTomlScanner`'s KDoc and `module.md`. Two independent behaviour changes plus docs, one of them in the published module. |
+| L-3 | `37e2d2797` | `ModrinthPlatform.kt:138` | `projectBehind` does not memoise a **failed** lookup — `?: return null` precedes the cache write — so a dead `version_id` is re-fetched once per version node that pins it, with a WARN each time. That is precisely the cost the memo exists to prevent, left open on the error path; `thePinIsLookedUpOnce` pins only the success path. |
+| L-4 | `3d61e97c6` | `ModScanner.kt` (EOF) | Still ends without a trailing newline (byte-identical before and after: `}\n}`), in a file this commit rewrote substantially. Nit, and every future diff of that file carries the marker. |
+
+### Verified clean — do not re-litigate
+
+- **`ModDependency`'s published surface.** Plain `class` with `@JvmOverloads constructor`, `unlessProvided`
+  appended **last** — no data-class `copy()`/`componentN` to break, every prior JVM overload preserved.
+  Source *and* binary compatible.
+- **`LegacyFabric`'s deliberately-empty descriptor set cannot reach scanner dispatch.**
+  `LoaderDescriptors.descriptorsFor` is consumed only by `JarSelfDeclaration.kt:69,89`; `scannerFor` uses the
+  two era predicates and still answers `fabricScanner` for the `"LegacyFabric", "Fabric"` arm.
+- **`89730de84` is a genuine `refactor:`.** Its only test edits are `KnownModIds.mappingFor` → `mappingsFor`
+  and `ModIdMapping.None` → `listOf(ModIdMapping.None)` — nine lines, every assertion, argument and expected
+  value byte-identical, which is exactly the reference-only carve-out.
+- **`MAX_INJECTED_DEPENDENCIES` cannot be double-counted by the two new staging fallbacks.** `injected` is
+  deduped by **file name** at `BootVerifier.kt:400`, so `alternativeFor`/`acrossPlatforms` staging a project
+  already in the pack costs a redundant download, never a spurious refusal (B6's shape stays closed).
+- **The trailing-lambda landmine is honoured:** `alternatePlatforms` is inserted *before* `bootArtifactSink`
+  in the constructor.
+- **`ReleaseChannel`'s precedence is pinned behaviourally**, not merely by enum declaration order — release
+  beats beta and beta beats alpha are separate guards, so a reordering fails a test rather than passing.
+- **No call site was left behind by the two rewirings:** `alternativeFor` reaches both the plural mappings and
+  `resolveDependencyAcrossTheLine` (`BootVerifier.kt:819,821`).
+- **No new `!!`, no new `var`, no `TODO`/`FIXME`** in any main-source addition across the 21 commits.
+
+### Recommendation
+
+M-2 and L-3 are defects with concrete failure scenarios and belong in their own `fix:` commits. M-3 is a
+missing pin in a published parser and should be written before anything else touches `readUnless`. M-4 is
+best closed by moving the "exactly one retry" rule out of the *data* (`takeIf`) and into the *control flow*
+of `prepareBootPack`, which loses nothing and restores the reachable NeoForge boot. M-1, M-5, L-1 and L-2 are
+history-shape findings on unpushed commits — recordable, and worth stating as the standing lesson rather than
+rewriting four commits. M-6 wants a measurement, not a redesign, before it is judged. M-7 and M-8 are
+doc-truth fixes.
+
+### Resolution — iteration 1 (2026-09-11, branch `claude-audit-unverifiable-i1`)
+
+**Closed with code, each mutation-verified (the mutation failed exactly its own guard and nothing else):**
+
+| Finding | How |
+|---|---|
+| M-2 / A-1 | `stageableRequirements`' `unless` arm now consults `bundledIds` as well as `providedIds`, each with the comparison its neighbours use. Pinned red first by `anUnlessAlternativeAlreadyBundledCostsNoDownload`, which asserts through a **recording downloader** that the alternative costs no fetch. |
+| M-4 | `refuseForSelfDeclaration` fills **both** channels; `prepareBootPack` owns the order — loader retry first, version retry only when that one does not apply. "At most one retry" moved from the data to the control flow, which is where it belongs, and the reachable NeoForge-on-an-older-Minecraft boot is back. |
+| L-3 / A-6 | `projectBehind` remembers an *unresolvable* pin in `unresolvablePins`, so a dead `version_id` is asked once. The pin measured **4** requests for one dead id, which also exposed that `filesOf` asks twice per node (`requiredDependencies` and `relatedDependencies`); the memo now covers both. |
+| M-6 | Not a redesign — a **bound, asserted**: `anUnmappableIdCrossesForExactlyOneExtraResolve` pins one extra resolve per id for the `Unmapped` state, which is the common one and the one the first cut of that feature omitted. |
+| M-3 / A-5 | `UnlessClauseShapesTest` in `-api`: all three `unless` shapes, an unusable clause, no clause, and a bare-string dependency. First assertions of `unlessProvided` anywhere. |
+| A-2, A-3, A-4, A-7, A-8 | Six guards for rules that were asserted nowhere — the CurseForge channel path, the availability gate holding the channel filter inside it, `loaderToVerifyUnder`'s two-step tie-break, the registry's platform-less-alias fall-through, and `descriptorsFor` on an unreadable version. |
+| M-7, M-8, A-9, L-4 | Doc truth: `fileName` named everywhere the old `filenamePattern` was, with the renamed guard cited; the "single-page" sentence corrected to one page *per asked version*; the channel rule scoped to `pickBootableCandidate`; `ModScanner.kt` ends with a newline. |
+
+**Recorded, deliberately not rewritten — M-1, M-5, L-1, L-2.** All four are facts about the *shape* of
+commits that are already merged into `develop`. Rewriting them would mean rebasing 21 commits and
+re-verifying nine pins, and the thing it would produce is a red that nobody ever observed — manufactured
+evidence, which is worse than an honest record. This is the same remedy the root `CLAUDE.md` chose for
+`358675fbf`. The lesson is already captured there ("a guard that cannot compile is not a red pin, and both
+honest ways out beat a fake boundary"); what iteration 1 adds is the *measurement* that proves it happened,
+in the pin table above.
+
+**Suites after iteration 1:** api **421** (1 skipped), clientside **566**, grinder **514** (29 skipped),
+app **149**, plugin-grinder **73** — **1,723 tests, 0 failures**. Against the pre-iteration counts that is
++8 in `-api` and +12 in `-clientside`.
+
+## 2026-09-11 — audit: iteration 2 (29 commits, `86d3d441b..claude-audit-unverifiable-i1`)
+
+Second pass, this time including iteration 1's own eight commits — auditing the fixes is the point of
+repeating. **Equivalence was re-run for iteration 1 first**, by the root `CLAUDE.md` recipe:
+`develop`'s unmodified test tree against iteration 1's production code, **api 413 base guards / 0 failures,
+clientside 554 / 0 failures, zero compile errors** — no signature moved and nothing regressed.
+
+### HIGH — none
+
+### MEDIUM
+
+| # | Commit | Where | Rule broken |
+|---|---|---|---|
+| I2-1 | `4d605add2` (iteration 1) | `serverpackcreator-clientside/CLAUDE.md:1101` | **The doc fix names a field that does not exist.** It says `LoaderVerdict.fileName`; `-clientside` has no such property. `ab188dff4` *deleted* `LoaderVerdict.filenamePattern` and re-purposed the pre-existing `sampleFile` to be the report column, and `fileName` is the **grinder's** `GrindVerdict.fileName`. Correcting a stale name with a second wrong one is worse than leaving it: the first at least pointed at something that had existed. |
+| I2-2 | `ab188dff4` | `serverpackcreator-clientside/src/test/.../FilenamePatternTest.kt:26,43,90` | **A whole test class documents a subject that no longer exists.** It opens *"Pins the filename pattern: the second, narrower entry derived from the one file actually sampled"* and closes with *"the two columns are deliberately different, and this is the pin that says so"* — but the column stopped being a derived entry on 2026-09-10 and now carries the artifact's name verbatim. Its assertions still hold, because they call `FilenameStemDeriver.deriveStem` directly and that function is unchanged; what is false is the role they claim to pin. Single-file `deriveStem` survives in exactly one place — `Prepared.Ready.candidateStem`, which tells the candidate's stack frames from a dependency's during blame attribution. Pass 1 missed this because the class greps as `pattern`, never as `filenamePattern`. |
+| I2-3 | `4e7087083` (iteration 1) | `serverpackcreator-clientside/src/test/.../LoaderReselectionTest.kt` | **The fix's own consequence is pinned only as data.** `aJarDisagreeingAboutBothRecordsBothChannels` asserts the two fields of one `Prepared.Failed`; nothing asserts what the commit message claims — that the *version* retry now fires when the loader retry cannot, and that the re-staged attempt gets past the descriptor gate. "A test that only asserts shape is not a pin." |
+| I2-4 | `ab188dff4` | `ClientsideVerifier.kt:168` | **Nobody asserts the producer.** Griefed's ask was that the field carry *the full filename as it appears on the platform*; the guards for it either **inject** the value (`FilenameColumnTest` builds `grindVerdict(…, fileName)` fixtures) or pin the *mapping* (`RecordedVerdictMappingTest`'s sentinel). Nothing holds `ClientsideVerifier` to setting `sampleFile` from `ModFile.fileName` verbatim — which is precisely the `DependencySlugTest` lesson this module already learned: a test constructing the value under test cannot see a producer constructing it wrongly. And the shape it would regress to is the one that was just removed, a `deriveStem` of the sampled file. |
+
+### LOW
+
+| # | Commit | Finding |
+|---|---|---|
+| I2-5 | `99fefabfe`, `8c9415d0e`, `4d605add2` | Commit shape in iteration 1: three unrelated defect pins in one `test(...)` commit, six guards across two modules in another, and one source-file newline riding along with a docs commit. Accepted rather than churned — the convention permits grouping *related* work and one audit pass is that, each fix commit names its own guard, and bisecting a single defect still lands on its own `fix:`. Recorded so the judgement is visible rather than implicit. |
+| I2-6 | `e775fbd42` (iteration 1) | **Verified and deliberately not changed.** A requirement satisfied by a nested jar of a *different* staged jar is still not dropped: `bundledIds` is scoped to the jar whose requirements are being read, and `provided` holds only top-level identities (`modID` + `provides`), never nested ids. The loader does load jar-in-jar libraries, so such a requirement *is* satisfied — but staging an explicit top-level build is not wrong, it is what the author's own declaration asks for, and second-guessing another jar's bundled version is what `DependencyBacktrack` exists for. Cost is one redundant download in a narrow shape. Left as is, with the reasoning recorded so it is not rediscovered as a defect. |
+
+### Resolution — iteration 2 (2026-09-11)
+
+| Finding | How |
+|---|---|
+| I2-1 / B-4 | `serverpackcreator-clientside/CLAUDE.md` now names `LoaderVerdict.sampleFile` and says outright that `filenamePattern` was **deleted** and `fileName` belongs to the grinder's `GrindVerdict` — so neither wrong name can be looked for again. |
+| I2-2 / B-1 | `FilenamePatternTest` → **`SampledArtifactNamingTest`**, with every assertion kept and the doc rewritten to say which consumer each half speaks for: `sampleFile` for the report column, single-file `deriveStem` for `Prepared.Ready.candidateStem`. `theHistoricalStemStaysBroaderThanTheFilenamePattern` → `…ThanASingleFilesStem`. |
+| I2-4 / B-2 | `theSampledFileIsTheArtifactsOwnNameVerbatim` drives the real `ClientsideVerifier` over a real published name and asserts `sampleFile` verbatim beside `suggestedEntry` from the same run. **Mutation-verified:** re-deriving a stem there — the code that was removed on 2026-09-10 — fails it and nothing else. |
+| I2-3 / B-3 | **The finding that corrected a previous finding.** The behavioural guard written for it went red against the already-fixed code, which is how M-4 turned out to be wrong: the range is read by `scannerFor(loader, minecraftVersion)`, i.e. the *mismatching* loader's own scanner, so on a loader mismatch it can never be read and the two channels are mutually exclusive **by construction**. `aLoaderMismatchLeavesNoRangeToRetryOn` pins that instead, and the data-level guard is re-documented to stop overclaiming. |
+| I2-5, I2-6 | Recorded with their reasoning; no change. |
+
+**M-4 is hereby corrected, in place, because an audit log that keeps a wrong finding is worse than one that
+never made it.** Its "failure scenario" assumed the jar's Minecraft range would be readable on a loader
+mismatch. It is not. Iteration 1's change to `refuseForSelfDeclaration` survives on different grounds — the
+retry order no longer rests on an invariant proved in another unit, so a scanner that ever merged descriptors
+would turn that into a red guard rather than a silently suppressed range — but it rescued no boot, and the
+commit message claiming it did is answered by `3e1e1355d`.
+
+**The lesson, which is the reusable part:** *writing the behavioural guard is what tested the finding.* M-4
+survived a code read, a diff read and a mutation check; what killed it was asserting the consequence
+end-to-end and watching it fail on fixed code. A mutation check only proves a guard notices its own line
+changing — it cannot tell you the line matters.
+
+**Suites after iteration 2:** api **421**, clientside **568**, grinder **514**. Equivalence for iteration 1
+re-confirmed at the top of this section.
+
+## 2026-09-11 — audit: iteration 3 (33 commits, `86d3d441b..claude-audit-unverifiable-i1`)
+
+Third pass, over ground the first two did not cover: the **consumers** of the field the range made verbatim,
+the seam the cross-platform fallback is wired through, and the one convention item neither earlier pass had
+actually checked — "no new compiler warnings".
+
+### HIGH — none. MEDIUM — none.
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| I3-1 | `VerdictReportRenderer.kt:200` | The Project cell builds `<a href="${esc(verdict.projectUrl)}">` with **no scheme allowlist**. HTML-escaping a URL does not stop `javascript:` from being a working href, and the report server carries no authentication and can be bound off loopback with `SPC_GRINDER_HOST`. The string is not attacker-supplied today — it is either the URL an operator queued or CurseForge's own `links.websiteUrl` — so this is a hardening fix, not a live hole. |
+| I3-2 | `ClientsideVerifier.kt:245` | `outcome.decidedBy?.ruleId` inside `if (outcome.decidedBy == BootDecision.OPERATOR_RULE)`, where it is already smart-cast non-null — a compiler warning. **Pre-existing** (introduced by "credit the deciding rule, not one that merely matched alongside", outside this range) but in a file `ab188dff4` touched, so Boy-Scout applies. |
+
+### Verified clean — do not re-litigate
+
+- **No new compiler warnings.** Every warning the five touched compile tasks emit predates `86d3d441b`:
+  deprecated nightconfig `valueMap()` in `ForgeTomlScanner`/`PackConfig`, deprecated `Locale` constructors in
+  `I18nConfig`, deprecated Jackson URL overloads, and two safe-call warnings in
+  `ClientLibraryEvidenceTest` — none of those files are in the range's diff. The one warning in a file the
+  range *did* touch (I3-2) is traceable to a commit from 2026-09-05.
+- **Making the Filename column verbatim introduced no injection exposure**, which is the question an
+  author-controlled string reaching three renderers has to answer: the HTML table escapes `& < > " '` and
+  routes **every** cell through `esc()`, the CSV exporter is RFC-4180 (quotes a field containing a comma,
+  quote, CR or LF and doubles embedded quotes), and `/verdicts.json` goes through Jackson. The value was
+  author-controlled before the change too — a stem of an author's filename — so the exposure did not widen.
+- **`/boot-log?name=` cannot escape the store.** `BootLogStore.read` resolves the name against the store
+  directory and refuses anything `isInsideStore` rejects, logging the refusal.
+- **The `!==` filter the cross-platform fallback relies on holds.** `ClientsideVerifier` picks
+  `platforms.firstOrNull { it.handles(projectUrl) }` and passes **that instance** to `bootVerifierFactory`,
+  so `platforms.filter { it !== platform }` at both call sites really does exclude the candidate's own
+  platform. Reference equality across a module seam is worth checking rather than assuming; it is correct
+  here.
+- **Carrying the backtrack's exclusions across platforms is right, not a leak.** `excluded` holds *file
+  names* and `withoutExcluded` filters on them; a mod jar has the same name on both platforms, so a build
+  ruled out for conflicting is ruled out wherever it is served from.
+- **`ModFile.channel` was appended last**, so every positional construction in the test trees keeps its
+  meaning — and `-clientside` is unpublished anyway.
+- **`GrindTestFixtures` gained a defaulted parameter only**, so no existing grinder guard changed meaning;
+  and the `FILENAME` column kept its `FilterKind.TEXT` and its accessor shape across the rename.
+
+### Resolution — iteration 3 (2026-09-11)
+
+| Finding | How |
+|---|---|
+| I3-1 / C-1 | `VerdictReportRenderer.projectCell` links only `http`/`https` and shows anything else as escaped text. Pinned **red** first (`expected <false> but was <true>` — `javascript:` really did reach the href), with a counterweight asserting an ordinary row is still a link so the fix could not be "stop linking". **Mutation-verified:** forcing `followable` back to `true` fails exactly that guard. |
+| I3-2 / C-2 | The unnecessary safe call is gone, and the range's own diff now emits no compiler warning at all. |
+
+**Three passes, and what each one was actually good for.** Pass 1 found the defects a careful read finds —
+a gate consulting the wrong set, a memo that skipped its failure path, guards that were never written. Pass 2
+found the *first pass's own mistake*, because it wrote the behavioural guard pass 1 had only argued for, and
+that guard went red against code that was supposed to be fixed. Pass 3 found almost nothing in the code and
+earned its keep by *recording what it ruled out* — escaping in three renderers, path traversal, an identity
+comparison across a module seam, an exclusion set crossing platforms, and the warning inventory — so a fourth
+pass has a shorter list rather than the same one.
+
+**Suites after iteration 3:** api **421** (1 skipped), clientside **568**, grinder **516** (29 skipped),
+app **149**, plugin-grinder **73**, plugin-example **3** — and `./gradlew build` green.
+
+### Equivalence for the whole audit branch (2026-09-11)
+
+`develop`'s unmodified test tree at `9f660add0`, for **all three** modules the branch touches, run against
+its final production code — the recipe in the root `CLAUDE.md`:
+
+```
+api        413 pre-existing guards, 0 failures
+clientside 554 pre-existing guards, 0 failures
+grinder    514 pre-existing guards, 0 failures
+```
+
+**Zero compile errors**, so no signature moved anywhere — which is the claim worth having after a pass that
+edited five production files: the only behaviour any pre-existing guard could see is unchanged, and the three
+behaviours that *did* change (the `unless` arm seeing a bundled alternative, a dead pin asked once, an
+untrusted scheme not becoming a link) are each carried by their own new guard and each mutation-verified.
+
+Full build green with the frontend's Vitest suite included: **api 421, clientside 568, grinder 516, app 149,
+plugin-grinder 73, plugin-example 3 — 1,730 tests, 0 failures.**

@@ -167,7 +167,7 @@ internal class ModrinthPlatformTest {
      * shares no delimited prefix with `CreativeCore-sources`, so [FilenameStemDeriver] fell back to the
      * shortest name and published `CreativeCore-sources` as the clientside list-entry — an entry matching
      * nothing, which also made the crashing loader's entry differ from every other loader's and so slipped
-     * past `ClientsideVerifier.loaderDisprovingTheCrash`.
+     * past `ClientsideVerifier.targetDisprovingTheCrash`.
      */
     @Test
     fun aSourceJarDoesNotPoisonTheDerivedListEntry() {

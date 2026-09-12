@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.BootArtifacts
+import de.griefed.serverpackcreator.clientside.BootCandidateSelector
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -73,8 +74,8 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
      * parsing a stored name apart: slugs and loaders both contain `-`, so a name has no unambiguous split,
      * which is why [ATTEMPT_SEPARATOR] is a character neither of them uses.
      */
-    fun namesFor(platform: String, slug: String, loader: String): List<String> {
-        val prefix = AttemptDirectory.nameFor(platform, slug, loader) + ATTEMPT_SEPARATOR
+    fun namesFor(platform: String, slug: String, loader: String, minecraftLine: String): List<String> {
+        val prefix = AttemptDirectory.nameFor(platform, slug, loader, minecraftLine) + ATTEMPT_SEPARATOR
         return list().filter { it.startsWith(prefix) }
     }
 
@@ -87,8 +88,14 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
      * would grow with uptime rather than with the catalog. That is the failure this daemon already paid for
      * once, at 98 GB.
      */
-    fun pruneExcept(platform: String, slug: String, loader: String, keep: Set<String>): Int =
-        namesFor(platform, slug, loader)
+    fun pruneExcept(
+        platform: String,
+        slug: String,
+        loader: String,
+        minecraftLine: String,
+        keep: Set<String>
+    ): Int =
+        namesFor(platform, slug, loader, minecraftLine)
             .filterNot { it in keep }
             .count { name -> runCatching { File(directory, name).delete() }.getOrDefault(false) }
 
@@ -162,6 +169,59 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
     }
 
     /**
+     * Re-file every artifact whose owner predates the Minecraft version-line, returning how many moved.
+     *
+     * **Why it can be done exactly rather than guessed.** The owner gained the line on 2026-09-11
+     * ([AttemptDirectory.nameFor]), so a name written before then is `<platform>-<slug>-<loader>~…` and
+     * reachable from no row — `namesFor` rebuilds a four-part prefix and finds nothing. But the attempt
+     * segment beside it already records what was booted, `<loader>_<loaderVersion>_mc<version>`, so the line
+     * the owner is missing is sitting in the same file name. Nothing is invented.
+     *
+     * That matters because these are the consoles behind verdicts that are **still published**: a CONFIRMED
+     * exclusion has to stay auditable, and the alternative was letting the budget reclaim real evidence
+     * while its verdict kept serving.
+     *
+     * Idempotent, and deliberately conservative in three places. An owner whose last part already looks like
+     * a version-line is left alone. An attempt segment carrying no `_mc` — [LEGACY_ATTEMPT], from before
+     * per-attempt naming — records no version at all and is left alone rather than filed under a guessed
+     * era. And a rename that fails, or whose target already exists, is skipped with a warning: this runs at
+     * startup and must never stop a daemon that has verdicts to serve.
+     */
+    fun migrateOwnerNames(): Int = list().count { name ->
+        val parts = name.split(ATTEMPT_SEPARATOR, limit = 3)
+        val owner = parts[0]
+        val line = parts.getOrNull(1)?.substringAfter(MINECRAFT_MARKER, "")?.takeIf { it.isNotBlank() }
+            ?.let { BootCandidateSelector.minecraftLine(it) }
+        when {
+            line == null -> false
+            ownerNamesALine(owner) -> false
+            else -> rename(name, "$owner-$line$ATTEMPT_SEPARATOR${parts[1]}$ATTEMPT_SEPARATOR${parts[2]}")
+        }
+    }
+
+    /** Move [from] to [to] inside the store, reporting whether it went. A failure is logged, never thrown. */
+    private fun rename(from: String, to: String): Boolean {
+        val target = File(directory, to)
+        if (target.exists()) {
+            log.warn("Not re-filing boot artifact '$from': '$to' already exists.")
+            return false
+        }
+        return runCatching { File(directory, from).renameTo(target) }
+            .onFailure { log.warn("Could not re-file boot artifact '$from': ${it.message}") }
+            .getOrDefault(false)
+    }
+
+    /**
+     * Whether [owner]'s last `-` segment is a Minecraft version-line, i.e. the name is already migrated.
+     *
+     * Told apart by shape because that is the only signal the name carries: a line is digits and dots
+     * (`1.20`, `26.2`) and no loader is, so the two can never be confused. Asked of the *last* segment
+     * alone, since a slug may contain `-` and several of them do.
+     */
+    private fun ownerNamesALine(owner: String): Boolean =
+        MINECRAFT_LINE.matches(owner.substringAfterLast('-'))
+
+    /**
      * Every kept artifact's name, alphabetical, so an index page has something stable to list. Recognised by
      * *shape* — `<tuple>~<attempt>~<artifact>` — rather than by extension, so an artifact keeps whatever
      * extension it was born with and a stray file in the directory is still not mistaken for one of ours.
@@ -215,6 +275,12 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
          * placeholder says.
          */
         const val LEGACY_ATTEMPT = "archived-crash"
+
+        /** What [attemptKey] puts in front of the Minecraft version, and what [migrateOwnerNames] reads back. */
+        private const val MINECRAFT_MARKER = "_mc"
+
+        /** A Minecraft version-line: digits and dots, which no loader name is. */
+        private val MINECRAFT_LINE = Regex("\\d+(\\.\\d+)*")
 
         /** Default ceiling for the whole store, matching `SPC_GRINDER_BOOT_LOG_BUDGET_MIB`'s documented default. */
         const val DEFAULT_BUDGET_BYTES = 2048L * 1024 * 1024

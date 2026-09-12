@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 
 /**
- * Pins that `Grinder.grind` carries **every** field from a `LoaderVerdict` to the `GrindVerdict` it records.
+ * Pins that `Grinder.grind` carries **every** field from a `GrindTargetVerdict` to the `GrindVerdict` it records.
  *
  * That mapping is eighteen fields assigned by hand. Before this, `GrinderTest` — the only test that drives
  * `grind` and inspects what was stored — asserted five of them (`bootedLoader`, `declaredClientSide`,
@@ -41,8 +41,10 @@ import java.time.Instant
  *
  * The unasserted fields were the ones that matter most: **`verdict`** is what `/as-properties` gates
  * publication on, `declared`, `firedRule` and `decidedBy` are what make a published exclusion auditable, and
- * `filenamePattern` and `detail` are report columns. Writing `filenamePattern = verdict.suggestedEntry`, or
- * swapping `declared` for `declaredServerSide`, would have left the whole suite green.
+ * `fileName` and `detail` are report columns. Writing `fileName = verdict.suggestedEntry`, or swapping
+ * `declared` for `declaredServerSide`, would have left the whole suite green — and the first of those is not
+ * hypothetical: until 2026-09-10 that field was called `filenamePattern` and *was* fed `suggestedEntry` for
+ * two thirds of the store's rows.
  *
  * Every field gets a **distinct** sentinel, which is the point: equal values cannot detect a swap. The two
  * `DeclaredSupport` fields take different constants for exactly that reason, and the enums are chosen so no
@@ -54,7 +56,7 @@ internal class RecordedVerdictMappingTest {
     private val recordedAt = Instant.parse("2026-09-05T12:00:00Z")
 
     /** One loader verdict with a distinct sentinel in every field the mapping copies. */
-    private val sentinelVerdict = loaderVerdict(
+    private val sentinelVerdict = targetVerdict(
         loader = "SENTINEL_LOADER",
         suggestedEntry = "SENTINEL_ENTRY",
         verdict = Verdict.CONFIRMED,
@@ -62,9 +64,12 @@ internal class RecordedVerdictMappingTest {
         declaredClientSide = DeclaredSupport.REQUIRED,
         declaredServerSide = DeclaredSupport.UNSUPPORTED,
         jarScan = JarScan.CLIENT,
-        bootedLoader = "SENTINEL_BOOTED"
+        bootedLoader = "SENTINEL_BOOTED",
+        // Sentinelled here since 2026-09-10. This guard exists to prove every field the mapping copies
+        // arrives, and it used to sentinel the *derived stem* instead -- which round-tripped fine while
+        // `sampleFile`, the field the report actually needs, was dropped and left `null` in the fixture.
+        sampleFile = "SENTINEL_FILENAME"
     ).copy(
-        filenamePattern = "SENTINEL_FILENAME",
         declared = Declaration.SERVER,
         firedRule = "SENTINEL_RULE",
         decidedBy = BootDecision.FML_INVALID_DIST,
@@ -77,7 +82,7 @@ internal class RecordedVerdictMappingTest {
         val verifier = CandidateVerifier {
             clientsideReport(
                 slug = "sentinel-slug",
-                perLoader = listOf(sentinelVerdict),
+                perTarget = listOf(sentinelVerdict),
                 platform = "SENTINEL_PLATFORM",
                 projectUrl = "https://modrinth.com/mod/SENTINEL_URL"
             )
@@ -104,13 +109,13 @@ internal class RecordedVerdictMappingTest {
         Assertions.assertEquals(recordedAt, row.verifiedAt)
     }
 
-    /** The two published patterns, which must not be confused with one another. */
+    /** The broad published stem and the sampled artifact's own name, which must not be confused. */
     @Test
     fun bothPatternsAreCarriedAndNotSwapped() {
         val row = recorded()
 
         Assertions.assertEquals("SENTINEL_ENTRY", row.suggestedEntry, "the broad, published stem")
-        Assertions.assertEquals("SENTINEL_FILENAME", row.filenamePattern, "the sampled artifact's pattern")
+        Assertions.assertEquals("SENTINEL_FILENAME", row.fileName, "the sampled artifact's own file name")
     }
 
     /** **The verdict itself** — the field the publication gate reads. */

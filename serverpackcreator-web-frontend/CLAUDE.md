@@ -101,3 +101,11 @@
   means driving both plus stubbing them as passthroughs, and they are display-only duplicates of data already
   guarded at the populate path. A data-shape assertion there would only re-assert the axios mock, which is
   the very defect this entry is about.
+
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage; `types/api.ts` mod-lists are `string[]` since the web module embedded them (2026-08-17); `RunConfigurationCard` asserts the *rendered* lists, not the props it passed in — the pass-through version stayed green with the card reverted to the pre-branch object shape (2026-08-18)

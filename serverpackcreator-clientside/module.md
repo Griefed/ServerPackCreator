@@ -65,7 +65,7 @@ issue link ──▶ pick platform ──▶ resolve to ProjectFiles ──▶ d
   project: its files + declared sideness). This is the platform-agnostic shape everything else
   speaks.
 - [ClientsideReport][de.griefed.serverpackcreator.clientside.ClientsideReport] —
-  `Confidence`, `JarScan`, `LoaderVerdict` (the verdict for one loader) and `ClientsideReport` (the
+  `Confidence`, `JarScan`, `GrindTargetVerdict` (the verdict for one loader) and `ClientsideReport` (the
   whole machine-readable answer). The output of the investigation.
 
 **Talking to the hosting platforms (turn a URL into `ProjectFiles`):**

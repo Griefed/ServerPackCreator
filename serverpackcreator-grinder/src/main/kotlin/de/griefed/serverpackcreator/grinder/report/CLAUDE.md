@@ -82,9 +82,11 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
 - **`BootLogStore` (was `CrashLogStore`) keeps every *attempt* of every boot that did not survive** — the
   container console, the server's own `logs/`, and its `crash-reports/`, collected by `BootArtifacts` in
   `-clientside` (which is also where the size cap and the never-read-a-huge-file-whole guarantee now live).
-  - **Names are never parsed apart.** A stored name is `<tuple>~<attempt>~<artifact>.log`; both a slug and a
-    loader contain `-`, so `namesFor` rebuilds the tuple prefix and filters on it. `~` is the separator
-    precisely because no part uses it.
+  - **Names are never parsed apart.** A stored name is `<tuple>~<attempt>~<artifact>.log`, where the tuple
+    is `AttemptDirectory`'s `<platform>-<slug>-<loader>-<Minecraft line>`; a slug contains `-`, so `namesFor`
+    rebuilds the prefix and filters on it. `~` is the separator precisely because no part uses it.
+    **The tuple gained the Minecraft line on 2026-09-11**, so every name written before then is unreachable
+    from any row and is reclaimed by `enforceBudget` rather than by `pruneExcept`.
   - **`pruneExcept` is the bound that actually holds.** Naming an attempt after what it booted means a
     re-grind replaces the attempts it writes *again* — but a re-check sampling a different loader or
     Minecraft line writes new names, so the previous grind's files would live forever. `enforceBudget`

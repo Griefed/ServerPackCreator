@@ -83,7 +83,7 @@ internal class GrindLoopTest {
     ): GrindLoop {
         val verifier = CandidateVerifier { candidate ->
             ground.add(candidate.slug)
-            clientsideReport(candidate.slug, listOf(loaderVerdict("Forge", "${candidate.slug}-", verdict = Verdict.ERROR)))
+            clientsideReport(candidate.slug, listOf(targetVerdict("Forge", "${candidate.slug}-", verdict = Verdict.ERROR)))
         }
         return GrindLoop(
             grinder = Grinder(verifier, InMemoryVerdictStore()),
@@ -154,7 +154,7 @@ internal class GrindLoopTest {
         val verifier = CandidateVerifier { candidate ->
             duringFirstGrind.add(status.snapshot().passCandidates)
             ground.add(candidate.slug)
-            clientsideReport(candidate.slug, listOf(loaderVerdict("Forge", "${candidate.slug}-", verdict = Verdict.ERROR)))
+            clientsideReport(candidate.slug, listOf(targetVerdict("Forge", "${candidate.slug}-", verdict = Verdict.ERROR)))
         }
         val running = AtomicBoolean(true)
 

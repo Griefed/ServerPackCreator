@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.clientside
 
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -135,4 +136,51 @@ internal class PlatformDependencyDemandTest {
             "a fragment that short would claim half the catalogue"
         )
     }
+
+    /**
+     * **The range lives in the jar, not in the ref.** `ModFile.requiredDependencies` carries opaque platform
+     * ids and no version, so the platform route picked the newest build for the Minecraft version even where
+     * the candidate had demanded a specific one. Measured on the public grinder 2026-09-11:
+     * `cobblemon-additions` demands `cobblemon >=1.7.1` and was staged `Cobblemon-fabric-1.6.1+1.21.1`.
+     */
+    @Test
+    fun theRangeTheJarDeclaresForAProjectIsFound() {
+        val cobblemon = project("cobblemon")
+
+        Assertions.assertEquals(
+            ">=1.7.1",
+            PlatformDependencyDemand.demandedConstraint(
+                listOf(ModDependency("cobblemon", versionConstraint = ">=1.7.1")), cobblemon
+            )
+        )
+    }
+
+    /** Named without a range, or not named at all, is the same answer: nothing to narrow by. */
+    @Test
+    fun aDependencyNamedWithoutARangeNarrowsNothing() {
+        val cobblemon = project("cobblemon")
+
+        Assertions.assertNull(
+            PlatformDependencyDemand.demandedConstraint(listOf(ModDependency("cobblemon")), cobblemon)
+        )
+        Assertions.assertNull(
+            PlatformDependencyDemand.demandedConstraint(listOf(ModDependency("something-else", versionConstraint = "1.0")), cobblemon)
+        )
+        Assertions.assertNull(PlatformDependencyDemand.demandedConstraint(null, cobblemon))
+    }
+
+    /**
+     * The same fuzzy id-to-slug match `isDemanded` makes, because one matcher is the point: a mod id is
+     * routinely the slug plus or minus a loader suffix.
+     */
+    @Test
+    fun theRangeIsFoundThroughTheSameFuzzyMatchAsTheDemandItself() {
+        Assertions.assertEquals(
+            ">=5.0",
+            PlatformDependencyDemand.demandedConstraint(
+                listOf(ModDependency("balm-fabric", versionConstraint = ">=5.0")), project("balm")
+            )
+        )
+    }
+
 }

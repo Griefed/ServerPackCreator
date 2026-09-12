@@ -129,12 +129,19 @@ class LearnedModIds(
      * resolve on the path that was already failing and is the only route left for an id whose projects have
      * all been ground but none of which fits.
      *
-     * @param orElse The unlearned answer, normally [KnownModIds.mappingFor] bound to this platform.
+     * @param orElse The unlearned answers, normally [KnownModIds.mappingsFor] bound to this platform.
      */
-    fun mappingsFor(modId: String, platform: String, orElse: (String) -> ModIdMapping): List<ModIdMapping> {
+    fun mappingsFor(
+        modId: String,
+        platform: String,
+        orElse: (String) -> List<ModIdMapping>
+    ): List<ModIdMapping> {
         val learnedRefs = refsFor(modId, platform)
-        val registry = orElse(modId).takeIf { it.ref != null && it.ref !in learnedRefs }
-        return learnedRefs.map { ModIdMapping.Alias(it) } + listOfNotNull(registry)
+        // A list rather than one mapping because the registry can legitimately offer several: an id served
+        // by a project and by a cross-loader fork of it. Anything already proved by a staged jar is dropped
+        // here rather than in the registry, which knows nothing about what this process has learned.
+        val registry = orElse(modId).filter { it.ref != null && it.ref !in learnedRefs }
+        return learnedRefs.map { ModIdMapping.Alias(it) } + registry
     }
 
     /**

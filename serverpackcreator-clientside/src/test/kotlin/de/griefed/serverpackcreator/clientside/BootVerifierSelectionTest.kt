@@ -117,8 +117,8 @@ internal class BootVerifierSelectionTest {
 
         Assertions.assertEquals(
             listOf(
-                AttemptDirectory.nameFor("CurseForge", "testmod", "Forge"),
-                AttemptDirectory.nameFor("Modrinth", "testmod", "Forge")
+                AttemptDirectory.nameFor("CurseForge", "testmod", "Forge", BootCandidateSelector.minecraftLine(forgeRelease)),
+                AttemptDirectory.nameFor("Modrinth", "testmod", "Forge", BootCandidateSelector.minecraftLine(forgeRelease))
             ).sorted(),
             workDir.listFiles()?.map { it.name }?.sorted() ?: emptyList<String>(),
             "the second platform's staging must not have wiped and reused the first's directory"

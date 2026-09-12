@@ -64,7 +64,7 @@ internal class ReportServerTest {
         val secret = File(logDir.parentFile, "secret.txt").apply { writeText("not yours") }
         val crashLogs = BootLogStore(logDir)
         val name = crashLogs.keep(
-            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric"),
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric", "1.20"),
             BootLogStore.attemptKey("Fabric", "0.19.3", "26.2"),
             listOf(BootArtifacts.Artifact("console.log", "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft", false))
         ).single()
@@ -105,7 +105,7 @@ internal class ReportServerTest {
     fun sortsTheTableByHowManyLogsEachRowHas(@TempDir logDir: File) {
         val crashLogs = BootLogStore(logDir)
         crashLogs.keep(
-            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric"),
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric", "1.20"),
             BootLogStore.attemptKey("Fabric", "0.16.9", "1.21.1"),
             listOf(
                 BootArtifacts.Artifact("console.log", "crashed", false),
@@ -146,7 +146,7 @@ internal class ReportServerTest {
             val csv = get(server.port, "/export.csv")
             Assertions.assertEquals(200, csv.statusCode())
             Assertions.assertTrue(csv.headers().firstValue("Content-Type").orElse("").contains("text/csv"))
-            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Filename,Verdict,Declared,Loader,Platform"))
+            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Filename,Verdict,Declared,Minecraft,MinecraftVersion,Loader"))
             Assertions.assertTrue(csv.body().contains("jei-"))
         } finally {
             server.stop()

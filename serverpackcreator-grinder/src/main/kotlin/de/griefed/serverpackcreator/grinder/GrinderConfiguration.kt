@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.BootResult
+import de.griefed.serverpackcreator.clientside.MinecraftLinePolicy
 import java.io.File
 import java.time.Duration
 
@@ -114,7 +115,16 @@ internal data class GrinderConfiguration(
      */
     val storeFlush: Duration,
     /** CurseForge API key, or `null` — without it CurseForge cannot be resolved at all. */
-    val curseForgeApiKey: String?
+    val curseForgeApiKey: String?,
+    /**
+     * Which of a project's Minecraft version-lines get ground — one verdict each.
+     *
+     * The single largest lever on what a sweep costs, since it multiplies the boots per project: measured
+     * over the 200 most-downloaded Modrinth mods on 2026-09-11, the shipped default is 3.83 boots/project
+     * against the old per-loader axis's 3.06, while "every line" would be 7.38. Size it against
+     * [reverifyTtl], which must outlast a full sweep.
+     */
+    val minecraftLines: MinecraftLinePolicy
 ) {
     companion object {
         /**
@@ -149,7 +159,9 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_CACHE_TTL_DAYS", "7"),
             Knob("SPC_GRINDER_INTERVAL", "21600"),
             Knob("SPC_GRINDER_SCAN_DELAY", "15"),
-            Knob("SPC_GRINDER_STORE_FLUSH_SECONDS", "30")
+            Knob("SPC_GRINDER_STORE_FLUSH_SECONDS", "30"),
+            Knob("SPC_GRINDER_MINECRAFT_LINES_NEWEST", "2"),
+            Knob("SPC_GRINDER_MINECRAFT_LINE_ANCHORS", "1.21,1.20,1.12")
         )
 
         /** The default home, used when `SPC_GRINDER_HOME` says nothing. */
@@ -226,7 +238,20 @@ internal data class GrinderConfiguration(
                 storeFlush = Duration.ofSeconds(
                     number("SPC_GRINDER_STORE_FLUSH_SECONDS", "30").toLongOrNull() ?: 30
                 ),
-                curseForgeApiKey = optional("CURSEFORGE_API_KEY")
+                curseForgeApiKey = optional("CURSEFORGE_API_KEY"),
+                minecraftLines = MinecraftLinePolicy(
+                    // Floored at one by the policy itself, not here: a configuration selecting *no* line
+                    // would record no verdict for any candidate, which is indistinguishable from a grind
+                    // that failed and re-selects the project every sweep for ever.
+                    newestCount = intIn("SPC_GRINDER_MINECRAFT_LINES_NEWEST", 2, allowed = 0..Int.MAX_VALUE),
+                    // A blank list is a legitimate choice -- "only the newest N" -- so it is read as the
+                    // empty set rather than coerced to the default, unlike an unparseable number.
+                    anchors = text("SPC_GRINDER_MINECRAFT_LINE_ANCHORS", "1.21,1.20,1.12")
+                        .split(',')
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                        .toSet()
+                )
             )
         }
     }

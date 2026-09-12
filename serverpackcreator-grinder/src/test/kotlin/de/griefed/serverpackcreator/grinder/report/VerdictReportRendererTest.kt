@@ -138,8 +138,8 @@ internal class VerdictReportRendererTest {
         val crashed = grindVerdict("creativecore", "Fabric", verdict = Verdict.CONFIRMED)
         val clean = grindVerdict("jei", "Forge", verdict = Verdict.ERROR)
         val kept = listOf(
-            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~console.log",
-            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
+            "Modrinth-creativecore-Fabric-1.20~Fabric_0.19.3_mc26.2~console.log",
+            "Modrinth-creativecore-Fabric-1.20~Fabric_0.19.3_mc26.2~logs-latest.log"
         )
 
         val html = VerdictReportRenderer.toHtml(pageOf(listOf(crashed, clean))) { verdict ->
@@ -196,12 +196,16 @@ internal class VerdictReportRendererTest {
             loader = "SENTINELLOADER",
             suggestedEntry = "SENTINELPATTERN",
             projectUrl = "https://example.invalid/SENTINELPROJECT",
-            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED).copy(
+            detail = "SENTINELDETAIL", verdict = Verdict.CONFIRMED,
+            minecraftLine = "SENTINELLINE", minecraftVersion = "SENTINELMCVERSION"
+        ).copy(
             declared = Declaration.SERVER,
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
             decidedBy = "SENTINELDECISION",
-            filenamePattern = "SENTINELFILENAME"
+            inheritedProofFrom = "SENTINELPROOF",
+            inheritedProofRule = "sentinel-rule",
+            fileName = "SENTINELFILENAME"
         )
 
         val row = VerdictReportRenderer.toHtml(pageOf(listOf(verdict))) { listOf("SENTINELLOG") }
@@ -209,9 +213,11 @@ internal class VerdictReportRendererTest {
         val cells = row.split("</td>").dropLast(1)
 
         val expected = listOf(
-            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER", "SENTINELLOADER",
+            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER",
+            "SENTINELLINE", "SENTINELMCVERSION", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
-            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
+            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELPROOF", "SENTINELDEP", "1970",
+            "SENTINELLOG"
         )
         Assertions.assertEquals(expected.size, cells.size, "one sentinel per column; got ${cells.size} cells")
         expected.forEachIndexed { index, sentinel ->
@@ -236,6 +242,45 @@ internal class VerdictReportRendererTest {
         Assertions.assertEquals(
             headerCount - 1, csvColumnCount,
             "the table has exactly one column the CSV does not: Logs, which is a set of links rather than a value"
+        )
+    }
+
+    /**
+     * **A URL is rendered as a link only when its scheme is one a browser should follow.**
+     *
+     * HTML-escaping a href stops markup from breaking out of the attribute; it does nothing about
+     * `javascript:`, which is a working href in every browser. The report server carries **no
+     * authentication** and binds loopback only until `SPC_GRINDER_HOST` says otherwise, and a verdict's
+     * `projectUrl` is not this daemon's own string — it is whatever an operator queued, or CurseForge's
+     * `links.websiteUrl` for a project. Neither is hostile today, which is exactly when an allowlist is
+     * cheap: after the first row that is, it is an incident.
+     *
+     * The value is still **shown**, escaped, because a reader has to be able to see what the row is about.
+     */
+    @Test
+    fun aProjectUrlWithAnUntrustedSchemeIsShownButNotLinked() {
+        val html = VerdictReportRenderer.toHtml(
+            pageOf(listOf(grindVerdict("jei", "Forge", projectUrl = "javascript:alert(document.domain)")))
+        )
+
+        Assertions.assertFalse(
+            html.contains("<a href=\"javascript:"),
+            "a scheme a browser executes must never reach an href"
+        )
+        Assertions.assertTrue(
+            html.contains("javascript:alert(document.domain)"),
+            "but the row still has to say which project it is about"
+        )
+    }
+
+    /** And an ordinary project link is unchanged — this narrows nothing that matters. */
+    @Test
+    fun anHttpsProjectUrlIsStillALink() {
+        val html = VerdictReportRenderer.toHtml(pageOf(listOf(grindVerdict("jei", "Forge"))))
+
+        Assertions.assertTrue(
+            html.contains("<a href=\"https://modrinth.com/mod/jei\""),
+            "every real row is a link, and stays one"
         )
     }
 }

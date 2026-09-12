@@ -9,9 +9,147 @@
 ## What it does
 
 Given a Modrinth/CurseForge project-link: pick the platform, resolve the project's files, derive the
-clientside-list file-name stem(s), and combine signals into a per-loader `Verdict`. Driven by the
+clientside-list file-name stem(s), and combine signals into one `Verdict` **per Minecraft version-line** —
+see *The grind axis* below; it was per *loader* until 2026-09-11. Driven by the
 app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clientsideapply`) and the
 `clientside-*.yml` workflows — see `serverpackcreator-app/CLAUDE.md` for the verb wiring and CI.
+
+## The grind axis is the Minecraft version-line (2026-09-11)
+
+`ClientsideVerifier.report` asks `BootCandidateSelector.pickGrindTargets` for one `GrindTarget` per Minecraft
+version-line `MinecraftLinePolicy` selects, each under the first of `LOADER_PRIORITY`
+(`NeoForge, Forge, Fabric, Quilt, LegacyFabric`) that line publishes a bootable build for. It used to map
+over `project.loaders`, each picking that loader's newest Minecraft.
+
+**Why:** sideness is a property of a *build*. Measured over the 200 most-downloaded Modrinth mods on
+2026-09-11, the loader axis spent 3.06 boots per project covering a mean of **1.6** distinct lines, and
+`CurseForge/aether`'s 1.12.2 build — a wholly separate codebase — was never booted under any loader.
+
+- **`pickGrindTargets` runs the priority order twice, and the second pass is load-bearing.** An untagged file
+  (CurseForge published no modloader facet before Minecraft 1.13) matches *every* loader, so a single pass
+  would hand one to NeoForge while Forge had a file its author tagged — a jar staged for a loader that will
+  ignore it, which can boot cleanly and publish a false `CLEAR`. Hence `pickBootableCandidate`'s
+  `untaggedFallback` switch: off for the first pass, on for the second.
+- **A file's *versions* are narrowed to the line, not just its files.** One published file is routinely
+  tagged across lines, and `pickBootableCandidate` takes the newest version it is *shown*; handing it the
+  whole set lets a 1.20 row boot at 1.21.
+- **`targetDisprovingTheCrash` asks for another *row*, not another loader** (`other !== verdict`). Two rows
+  of one project now routinely share a loader and differ by era, and a clean 1.20 boot disproves a 1.21 crash
+  for exactly the reason a clean NeoForge boot disproved a Forge one: they publish the same entry.
+- **`suggestedEntry` is deliberately still the stem over the *loader's whole history*.** `/as-properties`
+  matches it with `startsWith`, so narrowing it to one era would publish a pattern missing every build it was
+  never shown — and it is what makes the cross-row disproof above reachable at all.
+- **LANDMINE — `AttemptDirectory` is now `<platform>-<slug>-<loader>-<line>` and `ownerOf` cuts TWO parts.**
+  One loader wins several lines, so the three-part name had the second target wipe the first's pack and
+  console mid-run. Keep `nameFor`'s part count and `SUFFIX_PARTS` in lockstep.
+- **The crash guard the axis owed.** A project used to be ground under every loader, so a wrong crash met a
+  sibling loader's clean boot *in the same run* and was thrown out for free (`iron-chests`). Two halves
+  replace that: `shouldRecheckAgainstOtherVersions` also arms on a **decisive** crash — one about to reach
+  `CONFIRMED`, which in practice means `OPERATOR_RULE`, the one decisive signal nothing else cross-checks —
+  and `pickRecheckCandidates` spends its **first** attempt on the crashing era's other loader, because every
+  *other* line is already a first-class verdict the report reconciles against for free. That is also a
+  straight improvement to the `creativecore` case the diversity ladder was written for: the first pick is now
+  NeoForge / 26.2, the very boot that contradicted the crash, instead of two Fabric neighbours that learned
+  nothing.
+- **`BootVerifier` has two entry points.** `verify(project, target, …)` boots the combination the caller
+  chose and never re-selects — re-selecting would answer a crash on one era with a boot on another —
+  while `verify(project, loader, …)` keeps the old select-it-yourself behaviour. `bootableCombination()` is
+  public so the *caller* selects with the same gate the boot applies, rather than a second copy of it.
+
+## SIX WAYS A DEPENDENCY FAILED THAT WERE OURS (2026-09-11/12)
+
+Every one of the public grinder's **40** `DEPENDENCY_FAILURE` rows was traced to its kept console and its
+cause verified against the live platform APIs. 28 were ours and are fixed; the rest are recorded at the end
+so nobody re-opens them. The lessons, not the list:
+
+- **A jar-in-jar library is on the classpath exactly like a staged one, so its demands bind exactly like a
+  staged one's.** `BundledJars` reported only what a nested jar *provides*. `highlight` declares
+  `resourcefullib: "*"` and ships it — so the requirement was rightly dropped — while the bundled copy
+  declares `fabric-api: "*"`, which nothing read: Fabric API was never staged and the boot died charged to
+  `highlight`. Same shape, different consequence, for a bundled **Minecraft pin**:
+  `quilted-fabric-api-…+0.102.0-1.21.jar` bundles `qsl_base-…+1.21.jar`, which pins `minecraft [1.21, 1.21]`
+  *exactly*, and QFAPI's own descriptor says nothing that would predict it — four rows.
+  `requirementsIn` and `minecraftDemandsIn` are separate because an unmet mod dependency is *staged* while a
+  wrong-Minecraft bundle can only be answered by dropping the jar carrying it.
+- **A demand the loader itself must satisfy was invisible at three layers, and all three had to move.**
+  Twelve rows are `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)`. Read from the published
+  jars: quilt-loader `0.30.1` provides `fabricloader 0.19.3`, `0.31.0-beta.4` provides `0.19.5`. The demand
+  was (1) stripped by `FabricScanner.dependencyExclusions`, correctly — those are the platform, not mods to
+  stage — so `BundledJars.demandsOn` reads it back, narrowed to ids the loader could describe; (2)
+  unjudgeable because nothing knew what a loader provides, hence the `loaderProvides` seam, which the
+  grinder fills by reading the install layer's own loader jar rather than from a table that would go stale
+  every release; and (3) skipped by `DependencyBacktrack`, which passes over a requirement naming something
+  not staged. **A correct fix at any one layer would have changed nothing.**
+- **LANDMINE — what we ask the installer for is not always what boots.** All **16 of 16** Quilt boots in
+  that sample printed `Quilt Loader 0.30.1` while their verdicts reported the `0.31.0-beta.4` staging chose.
+  `BootLoaderVersion` reads the build the console announces and states the disagreement in the detail. The
+  newest-build re-check is deliberately **not** armed off it: if the installer keeps producing 0.30.1 that
+  costs a boot per row and fixes nothing. **Open:** why a tuple labelled `0.31.0-beta.4` holds
+  quilt-loader 0.30.1 needs the daemon's install cache to answer.
+- **"Untagged means Forge" is false above Minecraft 1.13, and the assumption was load-bearing.**
+  `pickUntagged`'s safety argument is that untagged CurseForge files predate the modloader facet. Measured:
+  `TerraBlender (Forge)` publishes `TerraBlender-forge-26.2-26.2.0.0.2.jar` with `gameVersions=['26.2']` —
+  untagged, in 2026 — so it matched a Fabric *and* a NeoForge boot, and `biomes-o-plenty` was staged the
+  Forge build of its own dependency on both. The dependency fallback is now gated below 1.13; the
+  **candidate's** is not, because `refuseForSelfDeclaration` reads the downloaded jar and a dependency gets
+  no such guard.
+- **The version range lives in the jar, never in the platform ref.** `ModFile.requiredDependencies` carries
+  opaque ids and no version, so the platform route took the newest build for the Minecraft version even
+  where the candidate demanded a specific one — `cobblemon-additions` needs `cobblemon >=1.7.1` and got
+  `1.6.1`. `PlatformDependencyDemand.demandedConstraint` finds it through the same fuzzy id-to-slug match
+  `isDemanded` already makes; one matcher, not two.
+- **A search fallback was tested and rejected, and that result is worth more than the table.** Six ids
+  resolve to no slug (`farmersdelight` → `farmers-delight`, `kotlinforforge` → `kotlin-for-forge`, …).
+  Searching for them returns *other people's mods*: CurseForge answers `farmersdelight` with "Dirty Bowls
+  Delight" and `rhino` with "TS Modify"; Modrinth answers `kotlinforforge` and `obscure_api` with nothing.
+  So `KnownModIds` grew by six **verified** entries — every Modrinth ref checked by reading the id out of
+  that project's own jar, every CurseForge id by its published file names — and not by a smarter guess.
+
+**Not ours, recorded so they are not re-opened.** Three are upstream-unsatisfiable — `emotecraft` demands
+`playeranimator [2.0.3.1+1.21.5,)` and Modrinth publishes exactly one build for 1.21.5, `2.0.2+1.21.5`. Two
+are the Sinytra Connector placeholder (`continuity`). Four were never dependency failures at all
+(`tweakeroo`'s 1.12.2 MixinTweaker coremod, `cull-less-leaves` requiring a client-only `sodium` the loader
+disabled, and two mixin failures now filed as such). One — `aether` on Forge staging a NeoForge jar — is
+closed by the per-line axis and `reselectOnLoaderContradiction`.
+
+## A CLEAN BOOT OUTRANKS AN INHERITED CLIENT-ONLY PROOF (2026-09-12)
+
+`propagateClientOnlyProof` carries one build's client-only proof to every other target of the project, on
+the reasoning that *a mod's features do not change with the loader*. **That inference is invalid when the
+reaching is one build's defect**, and 22 rows across 12 projects were published as clientside because of it —
+`agricraft`, `galosphere`, `zombie-awareness`, `immersive-lanterns`, `joy-of-painting`, `modonomicon`,
+`toadlib` — each while booting dedicated servers of its own. `CurseForge/agricraft`, a crop-breeding mod,
+fails registering one `@SubscribeEvent` class touching `net/minecraft/client/gui/Gui` on NeoForge; its Fabric
+and Forge builds each reach the ready line. All three rows published to `/as-properties`.
+
+`contradictsTheProof` now blocks the propagation onto a target that booted a server **itself** and whose mod
+is declared `Declaration.SERVER`. Narrow in three directions, each load-bearing:
+
+- **The claim is `Declaration.SERVER`, never `declaresServerSupport`.** That predicate — correct for arming
+  the crash re-check — accepts `JarScan.SERVER_OR_BOTH`, which is *also* what a scan that read nothing
+  returns. Reading an absent answer as a claim opens the gate on most of the catalogue: measured, the weak
+  reading matches 27 rows and this one 22, the five dropped being `CONTRADICTORY`, where by this module's own
+  rule neither source is evidence.
+- **`sodium` is untouched**, declaring `client_side: required` — the case propagation exists for, since its
+  stems differ per loader and excluding only the proving one leaves half the project shipping.
+- **The survival must be the target's own** (`bootedLoader == loader`), the same landmine
+  `targetDisprovingTheCrash` guards.
+
+**The cost is accepted and is the cheaper direction.** A mod whose metadata wrongly claims the server and
+boots cleanly stops inheriting — `controlify` is one — so it ships unused into a server pack, where a false
+positive strips a working mod out of every pack built against the list.
+
+- **LANDMINE — an inherited proof is a *field*, not prose, and the audit depends on it.**
+  `GrindTargetVerdict.inheritedProofFrom`/`inheritedProofRule` (the grinder's `Inherited proof` column).
+  Before them the proof lived only in the note, so a row's `decidedBy` stayed its own boot's rung —
+  `READY_LINE` for a clean one — and `GrinderAuditIT`, which re-derives evidence from the kept consoles, read
+  **86 of 140** published rows as resting on none. The guard built to catch wrong publications was failing
+  wholesale on a design working as intended, and an audit that cries wolf gets ignored.
+- **`com.mojang.blaze3d` is client-only evidence** and was missing from the marker, which matched only
+  `net.minecraft.client`. `Modrinth/vulkanmod` — a Vulkan renderer — crashed on
+  `NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem` and was filed INCONCLUSIVE off the bare
+  exit code. Safe over the exit code for the same reason its neighbours are: a dedicated server ships no
+  rendering layer, so no environment failure can fabricate it.
 
 ## Engine details & landmines (durable)
 
@@ -36,7 +174,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   files, one being the stray `CreativeCore-sources.jar`. That name shares no delimited prefix with the
   `CreativeCore_FABRIC_v*.jar` builds, so `FilenameStemDeriver` fell back to stripping the version off the
   *shortest* name and published `CreativeCore-sources` — an entry matching nothing the project ships. It
-  also cost the mod its cross-loader disproof: `loaderDisprovingTheCrash` compares entries, and that stem
+  also cost the mod its cross-loader disproof: `targetDisprovingTheCrash` compares entries, and that stem
   matched neither other loader's `CreativeCore_`, so a Fabric crash stood as HIGH while NeoForge had booted
   a server in the same run. **CurseForge has no equivalent flag** — its file list is plain uploads, so an
   author who publishes a source jar as a normal file there is still unfiltered; nothing has been seen doing
@@ -46,9 +184,12 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   warning when it truncates. **Why:** the newest 50 files are 50 files *across all loaders*, so a project that
   migrated Forge → NeoForge keeps publishing NeoForge builds until its older Forge builds fall out of the
   window — leaving the crash re-check nothing of that loader to try, precisely for the projects that produce a
-  false clientside verdict. Most projects still cost one call. `resolveDependency` stays single-page on
-  purpose: it needs *a* usable file for one loader/Minecraft pair, not a history, and paging every dependency
-  of every candidate would multiply what a catalog sweep spends of the API key's quota.
+  false clientside verdict. Most projects still cost one call. `resolveDependency` stays **one page per
+  asked version** on purpose: it needs *a* usable file for one loader/Minecraft pair, not a history, and
+  paging every dependency of every candidate would multiply what a catalog sweep spends of the API key's
+  quota. It asks for the version being booted and nothing else, until that answers nothing usable — then one
+  more page per patch neighbour, which is the only way a version-line is reachable on a platform that cannot
+  show a caller what it did not ask about (see the patch-fallback landmine below).
 - **LANDMINE — `DeclaredSupport` and `api.modscanning.Sideness` are different concepts; do not merge them.**
   This module's enum was itself called `Sideness` until 2026-08-14, which made them look like duplicates
   of one idea. They are not, and the confidence model depends on the difference:
@@ -140,7 +281,7 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   where the `CreativeCore_FABRIC_` stem above was confirmed. **Diversity is a preference, not a filter** — it
   relaxes to a new line, then a new loader, then whatever is left, so a project publishing one loader and one
   Minecraft line samples exactly as deeply as before; `aSingleMinecraftLineStillSpendsTheWholeBudget` pins that
-  direction. **Landmine — crossing the loader here is a wider claim than `loaderDisprovingTheCrash` permits**,
+  direction. **Landmine — crossing the loader here is a wider claim than `targetDisprovingTheCrash` permits**,
   and the difference is the gate: that pass applies to *any* crash, so it insists on a matching entry, while
   this sample is spent only where the crash already contradicts a declared server support, i.e. where one of
   the two signals is known to be wrong. Do not loosen one by pointing at the other. Two consequences worth
@@ -157,8 +298,8 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   scan: a gate reading the platform alone never arms for a CurseForge mod, i.e. never for the report that
   prompted this. Conservative in every other direction, like the re-check below: crashes elsewhere
   corroborate, and an attempt that learned nothing leaves the crash standing.
-- **A crash cannot outrank another loader's clean boot** (`ClientsideVerifier.reconcileAcrossLoaders`, over the
-  pure `loaderDisprovingTheCrash` / `supersededByLoader`). `report()` runs a second pass once every loader is
+- **A crash cannot outrank another loader's clean boot** (`ClientsideVerifier.reconcileAcrossTargets`, over the
+  pure `targetDisprovingTheCrash` / `supersededByTarget`). `report()` runs a second pass once every loader is
   in: where one loader CRASHED and another SURVIVED deriving the **same** list-entry, the crash stops counting
   as sideness evidence and the confidence drops to what `aggregate` yields with no boot. **Why the entry and
   not the loader:** the published artefact is a loader-agnostic file-name stem matched with `startsWith`, so
@@ -174,8 +315,10 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   **LANDMINE — `bootResult` alone is not enough; check *whose* boot it was.** Since the other-version re-check
   began spanning loaders, `reconcileOtherVersionRecheck` can decide one loader's verdict from another loader's
   clean boot, leaving `bootResult == SURVIVED` on a loader that crashed. `BootOutcome.bootedLoader` (stamped by
-  `runPrepared`, carried to `LoaderVerdict.bootedLoader`) records which loader actually ran, and
-  `loaderDisprovingTheCrash` requires `other.bootedLoader == other.loader`. Without it the guard fires on
+  `runPrepared`, carried to `GrindTargetVerdict.bootedLoader`) records which loader actually ran, and
+  `targetDisprovingTheCrash` requires `other.bootedLoader == other.loader`. **Since 2026-09-11 the *other*
+  row it looks for is any other target (`other !== verdict`), not any other loader** — two rows of one
+  project may share a loader and differ by Minecraft era. Without the `bootedLoader` check the guard fires on
   evidence it does not have: the build that booted belongs to a third loader whose stem may differ, so the
   published entry would strip nothing proven bootable — `embeddium-` (Forge/NeoForge) versus `sodium-fabric-`
   is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems` documents — and the note would
@@ -186,13 +329,14 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   **The crash is not erased:** `bootResult` and the excerpt stay, because the server did crash and that is
   worth diagnosing; only its *standing* changes. The note is **rebuilt**, not appended to — its old text ended
   in "a strong clientside signal", and bolting a correction onto a false sentence is how prose goes stale.
-- **The two crash guards layer, and both cost.** The within-loader other-version re-check runs *during* the
-  crashing loader's own boot; cross-loader reconciliation runs after every loader is in. So a crash on a
-  project whose other loader survives still pays the two extra boots first — loaders are assessed in sorted
-  order (`Fabric, Forge, NeoForge, Quilt`), and nothing looks ahead. Deliberate: the extra boots also produce
-  the *within*-loader answer, which is the more specific one.
-- **LANDMINE — a slug is not an identity; scratch space is owned by `(platform, slug, loader)`.**
-  `AttemptDirectory` (this module) builds `<platform>-<slug>-<loader>` and reads it back to its owner, and
+- **The two crash guards layer, and both cost.** The other-version re-check runs *during* the crashing
+  target's own boot; cross-row reconciliation runs after every target is in. So a crash on a project whose
+  other row survives still pays the extra boot first — targets are assessed newest-Minecraft-line first, and
+  nothing looks ahead. Deliberate: the extra boot also produces the *within*-era answer, which is the more
+  specific one, and since 2026-09-11 it is spent on the crashing era's sibling loader, which nothing else
+  boots.
+- **LANDMINE — a slug is not an identity; scratch space is owned by `(platform, slug, loader, Minecraft line)`.**
+  `AttemptDirectory` (this module) builds `<platform>-<slug>-<loader>-<line>` and reads it back to its owner, and
   **both halves live there because three callers must agree**: `ClientsideVerifier` (jar-scan downloads),
   `BootVerifier` (staged packs) and the grinder's `BootWorkspaceReaper`, which decides what to *delete* from
   the name alone. They used to agree only by separate string literals happening to match. **Why the
@@ -205,9 +349,11 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   Fabric boot exited **127** (a shell that could not find the command it was given, because the pack had
   gone), and two re-checks came back INCONCLUSIVE on a file the other run had booted to a ready-line minutes
   earlier. Every one of those is a boot scored as evidence about a mod when it was evidence about a deleted
-  directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
-  slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
-  before this change match no owner and are cleared by the grinder's startup `reapAll()`.
+  directory, and a crash is the one outcome that reaches HIGH. Cut exactly `SUFFIX_PARTS` trailing segments
+  when parsing — slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`.
+  **Since 2026-09-11 the line is part of the name and `SUFFIX_PARTS` is two**, because one loader now wins
+  several of a project's Minecraft lines and the three-part name let the second wipe the first. Directories
+  staged before a naming change match no owner and are cleared by the grinder's startup `reapAll()`.
 - **Every rung names itself, and only two are decisive** (`BootDecision`). `CRASHED` is reachable from
   `clientOnlyClassMarker`, which no broken harness can fabricate, *and* from the bare exit-code rung, which
   means only "exited non-zero, nothing recognised why" — and afterwards the two were indistinguishable, so the
@@ -506,10 +652,15 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     outright, where a version range is one mod's opinion about another. `UnmetReason.DROPPED_BY_BACKTRACK`
     therefore reads *"every usable build was dropped making the pack coherent"* — two things reach it now,
     and naming only the version conflict made the sentence false for the other.
-  - **Known residue:** a project whose *every* build declares the wrong Minecraft ends as
-    `ERROR`/`DROPPED_BY_BACKTRACK` rather than `UNVERIFIABLE`, because the cause cannot tell "we dropped it"
-    from "we dropped it because upstream's builds do not fit" without a second exclusion channel. Strictly
-    better than the boot it replaces; recorded so it is not rediscovered as a defect.
+  - **CLOSED 2026-09-12, and the "second exclusion channel" it asked for was not needed.**
+    `DROPPED_BY_BACKTRACK` mapped to `PreventionCause.HOST` on the reasoning that "staging dropped those
+    builds itself" — which describes the *mechanism*, where `preventionCause` is about the *blame*. Both
+    things that reach this reason are upstream **declarations** (a version range one jar states about
+    another, a Minecraft range a jar states about itself), so there was nothing to tell apart: it is
+    `UPSTREAM_UNAVAILABLE`, and the row is `UNVERIFIABLE`. Measured that day: **6 of the public grinder's 7
+    `ERROR` rows** were this, telling an operator their host was broken over a dependency whose every
+    candidate build conflicts. Running out of backtracks is a different path entirely —
+    `dependencyToDemote` then logs and boots anyway rather than refusing.
 
 - **THE JAR IS THE AUTHORITY ON WHAT IT NEEDS; THE PLATFORM PAGE IS A SELF-REPORT** (2026-09-08). Two
   consequences, both new, and together they are the beginning of the end of the hand-written id table.
@@ -683,12 +834,60 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
   - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
     a real NeoForge build still beats the Forge fallback wherever a project publishes one.
-- **A Sinytra Connector *placeholder* is a Fabric mod, and the Forge scanner reads a stub** (2026-09-06).
-  `JarSelfDeclaration.isConnectorPlaceholder` reads `[properties] "connector:placeholder" = true` out of
-  `META-INF/mods.toml`, and `MetadataScanner` then scans such a jar as **Fabric**. Read from the live
-  `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past Forge's mod discovery
-  (version-less dependency entries on `connectormod` and `fabric_api`), while the `fabric.mod.json` beside it
-  holds the real mod — `"environment": "client"` included.
+- **Only Forge and NeoForge can produce clientside *proof* — Fabric and Quilt structurally cannot**
+  (measured 2026-09-12, 717 live rows). Fabric honours `environment: "client"` and simply does not run a
+  client-only mod's entrypoints on a dedicated server, so the mod is inert rather than fatal and the boot
+  reaches the ready line. Forge and NeoForge load everything and die, which is what leaves evidence.
+  - **The numbers.** All **26** published `CONFIRMED` rows belong to 7 projects, and every one of the 8 that
+    rests on its *own* evidence was booted under NeoForge — `LWJGL_ON_A_DEDICATED_SERVER` ×4,
+    `FML_INVALID_DIST` ×2 (a Forge-family dist check with no Fabric analogue), `CLIENT_ONLY_CLASS` ×1. The
+    other 18 inherited it. **No Fabric or Quilt boot has ever produced its own clientside proof.**
+  - **It is a controlled comparison, not a sampling artefact.** `iris`, `sodium`, `sodium-extra` and
+    `reeses-sodium-options` each have a Fabric row that SURVIVED and a NeoForge row of the same era that
+    died decisively. Same mod, same Minecraft, opposite outcome — the loader is the variable.
+  - **This is what `BootCandidateSelector.LOADER_PRIORITY` is actually for.** `NeoForge > Forge > Fabric >
+    Quilt` reads like a popularity order and is not: it is the order in which a boot can *say something*.
+    Anything that moves a line off Forge/NeoForge — the Connector redirect below included — trades a chance
+    of proof for an honest `CLEAR`, which is the right trade only when the Forge-family boot could not have
+    produced proof anyway. Both 2026-09-12 redirects clear that bar: the Forge shim died on its own stub
+    before loading anything, and the NeoForge shim SURVIVED.
+  - **The open consequence.** A well-behaved Fabric-only mod declaring `environment: "client"` is
+    unreachable for `CONFIRMED` by boot, however plainly it is clientside — 90 of 114 `declared=CLIENT` rows
+    are `CLEAR`. Publishing those would mean letting metadata carry a verdict, which this engine forbids on
+    purpose (*the console decides; metadata only declares*). Not a defect; a stated limit of the evidence
+    model, and the thing to re-open if the fallback list is ever judged too short.
+- **Carrying a loader's descriptor is not the same as being able to run under it** (2026-09-12).
+  `JarSelfDeclaration.demandedLoaderVersion` reads the `versionRange` the jar puts on its *platform*
+  dependency entry (`forge`/`neoforge`), and `contradictingLoaders` drops any declared loader whose newest
+  build on that Minecraft cannot satisfy it — then names the ones that can, so
+  `reselectOnLoaderContradiction` re-stages there.
+  - **The case, live 2026-09-12.** `Iceberg-1.20.1-forge-1.1.25.jar` declares
+    `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"` and Modrinth ticks it `forge, neoforge`,
+    so `LOADER_PRIORITY` took NeoForge for the 1.20 line. NeoForge's 1.20.1 fork froze at **47.1.106** and
+    registers as `forge`, so the console read *"Mod iceberg requires forge 47.2 or above"* and the line
+    published `INCONCLUSIVE (exit 0)` — while Forge 1.20.1 is at 47.4.23 and satisfies it outright. The
+    descriptor gate could not see it: `mods.toml` names Forge **and** NeoForge on 1.20.1, so the requested
+    loader *was* declared and nothing reopened the choice.
+  - **Which id a loader answers to is `LoaderCompatibility`'s fact, asked not restated.** NeoForge is
+    `forge` on the one parity version and `neoforge` everywhere after, so `platformIdsFor` derives the era
+    from `alsoRuns` rather than holding a second copy of "1.20.1".
+  - **`latestVersion`, never `preferredVersion`.** The question is whether the ecosystem *contains* a build
+    the jar accepts; a warm-cache preference for an older build must never be able to condemn a loader.
+  - **It never fires when nothing is reachable.** There would be nothing to re-select to, and throwing the
+    candidate away is the expensive outcome, not the safe one — the same "fail toward accept" rule the rest
+    of `JarSelfDeclaration` follows. `aether-1.20.1-neoforge.jar` is the near-miss control: it demands
+    `[47.1.0,)`, which 47.1.106 does satisfy, and is refused by nothing.
+  - **The range is read here, not via `ForgeTomlScanner`**, which consumes the platform entry for sideness
+    and discards its `versionRange` — so the number never reaches a `ScannedMod`. Reading it in the gate also
+    keeps a `-clientside` question from putting a requirement on the published `-api`.
+- **A Sinytra Connector *placeholder* is a Fabric mod, and is scanned AND booted as one** (2026-09-06,
+  completed 2026-09-12). `JarSelfDeclaration.isConnectorPlaceholder` reads
+  `[properties] "connector:placeholder" = true` out of **either** TOML descriptor, `MetadataScanner` scans
+  such a jar as **Fabric**, and `declaredLoaders` discounts the stubbed path so `contradictingLoaders`
+  refuses the Forge/NeoForge boot and `reselectOnLoaderContradiction` re-stages the same file under Fabric.
+  Read from the live `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past
+  Forge's mod discovery (version-less dependency entries on `connectormod` and `fabric_api`), while the
+  `fabric.mod.json` beside it holds the real mod — `"environment": "client"` included.
   **Measured live 2026-09-06:** that project's Forge row read `jarScan=SERVER_OR_BOTH` and
   `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same project's*
   Fabric row read `CLIENT` off the identical descriptor. The contradiction was manufactured by the scanner
@@ -700,13 +899,26 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   - **Keyed on the marker, never on carrying both descriptors.** A genuine multi-loader jar ships a real
     `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; hijacking those would
     answer a Forge question with a Fabric answer.
-  - **The boot is still attempted** (Griefed's call): a working Connector setup should still be verified, and
-    the row's INCONCLUSIVE then stands on its own evidence rather than on a false contradiction.
-  - **Why that boot failed is NOT ours, and the staging was right.** The grinder staged the newest Sinytra
-    Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API (`0.92.6+1.11.15+1.20.1`) — the
-    only ones Modrinth publishes for 1.20.1 — and Connector under Forge 47.4.23 still logged *"Dependency
-    resolution found 0 candidates to load"* and never converted the jar, leaving Forge to read the stub's
-    version-less ranges and refuse. Do not "fix" this by staging more dependencies; they were all there.
+  - **Both TOML spellings carry the marker, and missing one costs a whole line.** NeoForge moved its
+    descriptor to `META-INF/neoforge.mods.toml` on Minecraft 1.20.5, and a placeholder built for that era
+    stamps the identical marker there. The 2026-09-06 fix read `META-INF/mods.toml` only, so
+    `continuity-3.0.0+1.21.neoforge.jar` still scanned `SERVER_OR_BOTH` → `CONTRADICTORY` six days later.
+    `PROPERTY_BEARING_DESCRIPTORS` is deliberately version-blind: the marker means the same thing wherever
+    it appears, and `descriptorsFor` would need a Minecraft version this question does not have.
+  - **The boot is no longer attempted under the tagged loader** (2026-09-12, reversing the 2026-09-06 call
+    and closing B36). That call was made when the Forge row was the project's only Forge evidence; the
+    per-line axis made the shim cost the **whole** Minecraft line instead. Measured live 2026-09-12:
+    `continuity`'s 1.20 row booted the shim and published INCONCLUSIVE, while
+    `continuity-3.0.0+1.20.1.jar` — same mod, same Minecraft version, the release a Fabric user installs —
+    was never booted at all.
+  - **Why that Connector boot failed is NOT ours, and the staging was right.** The grinder staged the newest
+    Sinytra Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API
+    (`0.92.6+1.11.15+1.20.1`) — the only ones Modrinth publishes for 1.20.1 — and Connector under Forge
+    47.4.23 logged *"Dependency resolution found 0 candidates to load"*, never converted the jar, and left
+    FML to read the stub's version-less ranges: `Expected range: '', Actual version:
+    '1.0.0-beta.49+1.20.1'`. **Both dependencies were present and loaded**, and Forge reads an absent
+    `versionRange` as a range matching nothing. Do not "fix" this by staging more dependencies; they were
+    all there, and that is precisely why the shim is not worth a container.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
   are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
   `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
@@ -845,6 +1057,98 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
     CurseForge were rewritten, three of them intent-preserving (`fabric-permissions-api-v0`,
     `fabric-language-kotlin` and `quilt_loader` must not be claimed for Fabric API or QSL — they are now
     guesses at their own slugs, which refuse nothing).
+
+- **SIX WAYS A MOD THAT RUNS EVERYWHERE WAS PUBLISHED `UNVERIFIABLE` (2026-09-10/11).** The bucket was one
+  day old and already held 42 rows; 27 were ours. Attribution, measurements and the deferrals are in
+  `claude-docs/REFACTOR-LOG.md` — what follows is the part a future session must not rediscover.
+  - **Which descriptor evidences a loader is a function of the Minecraft version, and it has exactly one
+    home: `LoaderDescriptors` in `-api`.** This module held a second, flat, version-blind copy and read every
+    `META-INF/mods.toml` as Forge's — so **13 genuine NeoForge jars on Minecraft 1.20.2–1.20.4 were refused**,
+    for a fact `-api`'s own `CLAUDE.md` already stated. Same shape as the
+    `MetadataScanner`/`ModListCompiler` drift at the top of this file, which is why the duplicate was
+    **deleted** rather than corrected. `ModScanner.scannerFor` asks the same object.
+    - **Declaring a descriptor is not reading one.** NeoForge's declaring set contains `mods.toml` at *every*
+      version, not only below 1.20.5: on 1.20.1 a `neoforge.mods.toml`-only jar must not pass as Forge, and
+      the first cut of this let it.
+    - **What the gate gives up, deliberately:** on 1.20.2–1.20.4 a `mods.toml`-only jar is accepted for a
+      NeoForge boot, because there the file really is a NeoForge descriptor and nothing in the archive tells
+      the two apart. A Forge jar staged for a NeoForge boot there still fails at runtime and
+      `runtimeMismatchMarkers` scores it INCONCLUSIVE. `JarSelfDeclarationTest` asks its refusal at 1.21.1
+      for that reason — the 1.20.4 version of that expectation was encoding the bug.
+    - `LegacyFabric`'s descriptor set is deliberately **empty**: it reads Fabric's file, so no jar can carry
+      evidence against it, and a non-empty set would make `{Fabric}` mean `{Fabric, LegacyFabric}`.
+  - **Quilt's `unless` clause is how a Quilt mod says "or the Fabric module".** `ModDependency.unlessProvided`
+    (`-api`) carries it and `stageableRequirements` drops a requirement whose alternative is already in the
+    pack — **testing `bundledIds` as well as `providedIds`, which is not optional**: read from the live
+    `fabric-api-0.116.17+1.21.1.jar`, its descriptor declares `id=fabric-api` and `provides=["fabric"]`
+    while `fabric-resource-loader-v0` exists only as a nested jar, so an arm consulting `providedIds` alone
+    could not fire for the canonical case and the requirement went the expensive way through
+    `alternativeFor`, re-downloading a library the loader already had. QSL publishes nothing for 1.21.1+
+    while `fabric-api` 1.21.1 has 36 versions, so `geophilic`,
+    `terralith`, `trek` and `true-ending` refused everywhere. `quilt_base` hard-required with **no** `unless`
+    (`shatterbyte-lib`, `notenoughrecipebook`) stays genuinely UNVERIFIABLE — do not put it back into
+    `environmentProvidedIds`.
+  - **The release channel outranks Minecraft recency — for the CANDIDATE'S OWN build only**
+    (`ReleaseChannel`, Griefed's rule: *newest Release for any loader; Beta or Alpha only when no release
+    exists*). `pickDependencyFile` and `pickRecheckCandidates` are deliberately channel-blind: a dependency
+    only has to *load*, and the crash re-check is spending its budget on **diversity** of Minecraft line and
+    loader, which a channel filter would narrow. Do not "finish the job" by adding it to either. `pickBootableCandidate` sorts newest-Minecraft
+    first, and authors publish experimental newer-Minecraft ports as **betas** while the stable line sits on
+    an older version — so the ordering did not merely permit a beta, it **preferred** one, for exactly the
+    projects that have a stable alternative. `hybrid-aquatic`: 16 stable Forge releases (all 1.20.1, all with
+    real `mods.toml`) versus the `[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar` beta whose only descriptor is
+    a `fabric.mod.json`. **A preference, never a filter** — `faster-random` publishes an alpha and zero
+    releases for its loader.
+  - **The two disagreement channels are mutually exclusive by construction, not by nulling one.** A jar's
+    Minecraft range is read by `scannerFor(loader, minecraftVersion)` — the *mismatching* loader's own
+    scanner — so on a loader mismatch it can never be read, and `refuseForSelfDeclaration` fills both
+    channels honestly while `prepareBootPack` orders the retries (loader first, version only when that one
+    does not apply). `aLoaderMismatchLeavesNoRangeToRetryOn` pins the invariant, so a scanner that ever
+    merged descriptors the way `QuiltPackScanner` merges Fabric's turns it into a red guard rather than a
+    silently suppressed range.
+  - **LANDMINE — the patch-version fallback needs the platform's cooperation, and CurseForge gives none
+    unasked.** `pickDependencyFile`'s neighbour rung searches *the files in hand*, and
+    `CurseForgePlatform.resolveDependency` narrows its page with `gameVersion=<exact>` — so every file in
+    hand carries the exact version and the neighbour rung **could never match anything the exact rung did
+    not**. Inert on that platform from the day it shipped; all six rows it closed were Modrinth.
+    `BootVerifier.resolveDependencyAcrossTheLine` asks for the exact version first and alone, then for the
+    line's other releases, so the common case is still one request. The widening is a **second
+    `resolveDependency` overload** defaulting to the narrow one: Modrinth returns a whole history in one
+    response, so the default is correct there and every implementation stays valid. **Keep the narrowing** —
+    it is what fixed the `architectury-api` window bug.
+  - **The jar outranks the platform's loader tick, and answering that is its own retry** (Griefed's call).
+    Ten rows were a mis-tick: `bellsandwhistles-0.4.5-1.21.1.jar` carries only `neoforge.mods.toml` and is
+    ticked Forge. `Prepared.Failed.declaredLoaders` is a **sibling** of `declaredMinecraftConstraint`, never
+    a widening of it — re-selecting a *version* cannot answer a *loader* mismatch, and the existing landmine
+    says what happens if you try. Exactly one retry fires, the loader one first, gated on the declared loader
+    actually having a build for that Minecraft, and it stages into the **requested** loader's attempt
+    directory so the borrowed loader keeps the pack and console its own verdict is built from.
+    `BootOutcome.bootedLoader` then differs from the verdict's loader, which `targetDisprovingTheCrash`
+    already requires to match — so a re-selected boot cannot disprove another loader's crash.
+  - **One mod id is served by an original and a cross-loader fork, and only one of them publishes for the
+    boot.** `create` is `[forge, neoforge]`; the Fabric port is the separate project `create-fabric`; both
+    declare `create`, because keeping the id is what makes a port drop-in. `KnownModIds.alternatives` is
+    tried **after** the primary — mapping `create` onto the fork outright would send every Forge and NeoForge
+    boot to a project with no Forge build. `LearnedModIds` already keeps every prover for the same reason and
+    cannot help the first time, because the candidate that would teach it is the one being refused.
+    **No CurseForge numeric ids are invented for these**: unverifiable without the key, and a wrong one
+    stages somebody else's mod, so a table entry with no ref for a platform falls through to that platform's
+    slug guess.
+  - **A dependency may be fetched from the other platform; a candidate may not.** The candidate's platform is
+    part of the question being asked; a dependency is scenery, and the staged file is just a jar. Only the
+    **manifest** route can cross, because only it knows the mod *id* — a platform ref names nothing on the
+    other side. `stagedFromPlatform` exists so the learned ref is filed against whoever proved it; under the
+    wrong platform it resolves to nothing and the next candidate trusts it. Both failing plan states cross
+    (`Unmapped` **and** `Unsatisfied`): the difference between them is our confidence in our own mapping, not
+    whether the other site has the mod.
+  - **Two platform-boundary readers were losing or inventing a dependency.** A Modrinth entry may carry a
+    `version_id` with a **null** `project_id` — an author pinning one exact build — and reading `project_id`
+    alone dropped it silently from both dependency lists, so `askLinkedProjects` could not recover it either.
+    `projectBehind` resolves the pin with one **memoised** GET (`resolve` walks a whole version list, and a
+    pin is normally repeated by every version of it) and honours the *project*, never the pinned file, since
+    `pickDependencyFile` chooses by loader, Minecraft version and obtainability. On CurseForge a JSON-null
+    `modId` read as the literal ref `"null"` — the documented `textOrNull` hazard, and the last live instance
+    of it — and was reported as an unmet dependency named `null`.
 
 - **A PREVENTED GRIND IS NOW BLAMED ON SOMEBODY: `ERROR`, `LOCKED` OR `UNVERIFIABLE` (2026-09-09).**
   `Verdict.ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and it was
@@ -1021,18 +1325,25 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   matched the line at all. `fml-invalid-dist` also stops a zero exit hiding a crash, since NeoForge's
   ServerStarterJar prints the refusal in full and exits 0.
 
-- **Two patterns, and only one of them is publishable** (`LoaderVerdict.filenamePattern`, 2026-09-04).
+- **Two names for one project, and only one of them is publishable** (`GrindTargetVerdict.sampleFile`,
+  2026-09-04). Do not look for a `filenamePattern` or a `fileName` on `GrindTargetVerdict`: the former was
+  **deleted** on 2026-09-10 and the latter belongs to the grinder's `GrindVerdict`, which is fed from
+  `sampleFile`.
   `suggestedEntry` is the longest common prefix over a project's *whole* history and must stay that way —
   it is what the fallback list matches with `startsWith`, so it has to cover every build ever released.
   The cost is that any project which renamed its files loses whatever the rename dropped:
   `iris` published `iris-` for Fabric and Quilt against `iris-neoforge-` for NeoForge, the difference being
   that its oldest Fabric jars are `iris-mc1.16.5-1.0.0.jar`, from before the loader went into the name,
   while all 42 NeoForge files carry it.
-  `filenamePattern` runs the same `FilenameStemDeriver.deriveStem` over the **sampled file alone**, so it
-  keeps the token history erodes, and the grinder shows the two side by side.
-  - **LANDMINE — never publish the narrow one.** Serving `filenamePattern` from `/as-properties` would stop
-    excluding every build the narrow form misses, which for `iris` is its entire pre-2022 history. The two
-    are separate fields for that reason and `theFilenamePatternIsNotWhatGetsPublished` fails the build on a
+  `sampleFile` carries the sampled artifact's **own name, verbatim** — the name it has when downloaded, which
+  is what a maintainer types into a platform's search box — and the grinder shows the two side by side. It
+  was a *derived stem* of that one file until 2026-09-10, which is Griefed's report: the column "most often
+  equals some sort of pattern" rather than a filename. `SampledArtifactNamingTest` pins both halves, and
+  single-file `deriveStem` survives for `Prepared.Ready.candidateStem`, which is how blame attribution tells
+  the candidate's frames from a dependency's.
+  - **LANDMINE — never publish the narrow one.** Serving `sampleFile` from `/as-properties` would stop
+    excluding every build the broad stem covers, which for `iris` is its entire pre-2022 history. The two
+    are separate fields for that reason and `theSampledFilenameIsNotWhatGetsPublished` fails the build on a
     swap.
   - A **Quilt** row reads `iris-fabric-`, which is correct and not a leak: Quilt boots Fabric builds, and
     this describes the artifact, not the row's label. That is the whole point — it is what a maintainer
@@ -1098,12 +1409,19 @@ so the threshold is testable at all: both real callers are integration-shaped an
 **Landmine:** any new poll/park loop that bounds a boot must use it rather than `System.currentTimeMillis()`, or that
 path silently reacquires the bug.
 
-## Refactor state — condensed summary
+## Refactor state — condensed summary (removed 2026-09-11)
 
-> Moved here from the root `CLAUDE.md` on 2026-09-05. It lived in that file's always-loaded
-> *Refactor state* table, where it cost every session in every part of the repo ~2.9k tokens for
-> detail only relevant while working in this module. Kept **verbatim** rather than diffed against the
-> sections above, so nothing could be lost in the move — expect it to restate them in condensed form.
-> Read it as an index into the detail above; when the two disagree, the sections above are authoritative.
+> This was a **verbatim** copy of the sections above, moved here from the root `CLAUDE.md` on 2026-09-05
+> and kept un-diffed so nothing would be lost in that move. Its own header said to read it as an index and
+> that "when the two disagree, the sections above are authoritative" — so it was 12,110 characters
+> (~3,027 est. tokens) restating this file to itself, and every drift between the two was a chance to
+> believe the wrong half. The sections above are the record; `git show 5a38e8da2:serverpackcreator-clientside/CLAUDE.md`
+> has the removed text, and `claude-docs/REFACTOR-LOG.md` has the narrative it summarised.
 
-Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned; `MetadataScanner` dispatches through `ModScanner.scannerFor`; the locked-file browser download treats an aborted navigation as the download starting, which is the only way CurseForge's `/download` ever succeeds. A crash now has to survive **three** checks before it counts as clientside: the newest loader build, other versions of the mod (when it contradicts a declared server support), and — after every loader is in — another loader that booted a server with the *same* list-entry. One build's crash and a clientside mod used to be indistinguishable evidence, and the published entry is a loader-agnostic stem, so one loader's crash was stripping another loader's proven-bootable build (2026-08-23). The other-version re-check now spends its budget on a *diverse* sample — a new Minecraft version-line and a new loader per pick — rather than the two versions either side of the crashing one, and a Modrinth version's non-primary files (source jars) are no longer mod files at all; both were needed to stop `creativecore` publishing HIGH (2026-08-23). Per-attempt scratch space is owned by `(platform, slug, loader)` via `AttemptDirectory`, not by `(slug, loader)` — the same slug on two platforms is two candidates the grinder runs in parallel, and the shared directory was being wiped out from under a running container (2026-08-23). A verdict now records **which loader actually booted** (`bootedLoader`), because a cross-loader re-check can decide one loader's verdict from another's clean boot — and only a loader's *own* boot may disprove another's crash (2026-08-23). A **modloader that never bootstrapped** is INCONCLUSIVE, not CRASHED: `Could not find parent layer for module` is the ServerStarterJar and Forge's `SecureModuleClassLoader` disagreeing about module layers, so the server dies before FML exists and no mod is loaded — `ars-nouveau` was headed for a HIGH off it. The JVM's `Error: could not open` for an unreadable `@argfile` joined the launch-failure guard at the same time, since Forge now boots from one (2026-08-23) **A crash is only evidence when the harness gave the mod a fair run** (2026-08-29, from a census of 200 of the 609 crash logs the live grinder publishes; 130 of them carried no client-side evidence at all yet every one scored CRASHED). Two fixes came out of it. `BootCandidateSelector` now fixes the **Minecraft version across both loader attempts** instead of preferring it inside each: a Quilt-tagged Fabric API for the wrong version used to satisfy the first attempt, so the Quilt-to-Fabric fallback holding the right version was never reached, and 20 of the 35 sampled Quilt boots were handed a `+26.3` Fabric API for packs as old as 1.19.2 — Quilt Loader refused the pack and the *candidate* wore the verdict. A dependency matching no file for the pack's Minecraft version is now **not staged at all**, because a near-miss dependency only manufactures a conflict to blame on the mod, whereas a near-miss *candidate* still tests the candidate. `BootLogClassifier` gained `sandboxNetworkMarkers` and widened `dependencyFailureMarkers` (Quilt's `requires version [x, y) of z`, mixin `ClassMetadataNotFoundException`, the legacy `MixinTweaker` CNFE) — both in the band **below** `clientOnlyClassMarker`, which is the whole design: an excuse may never outrank decisive client-only evidence. Boots run `--network none`, so a mod whose loader phones home cannot pass here and fails nowhere else (OneConfig fetches its stage1 from `api.polyfrost.org`, falls back to a Swing dialog — the `Fontconfig error: No writable cache directories` tail — and exits). Re-classifying the real logs: the 21 Griefed sent went 21 CRASHED → 11 CRASHED/10 INCONCLUSIVE, the 200-log sample 200 → 113/87, with both true positives (`arcane-vortex` invalid-dist, `avm-mod` `class_746`) retained. **Known gap, deliberately unfixed:** `clientOnlyClassMarker` misses Fabric intermediary names — `class_NNNN` is intermediary for *every* class, not only client ones, so a pattern would trade these false negatives for false positives; it needs a version-specific ID list or nothing. A staged dependency is counted **by file, not by ref** (2026-08-30): a project is reachable under the platform ref an author linked (`P7dR8mSH`) and the mod id its manifest declares (`fabric` → slug `fabric-api`), which are different strings for one project, so `stageableRequirements`' ref-level dedupe cannot see it — B6's gate caught `amblekit` recording one jar twice. Cosmetic in the report, but it also double-counted toward `MAX_INJECTED_DEPENDENCIES`, refusing packs that were within the cap and scoring them INCONCLUSIVE. **The clientside test tree also did not compile from clean** between `18f59b4bf` and 2026-08-30: an abstract `ModPlatform.name` was added without updating two anonymous implementations in tests, and Gradle's incremental compilation never recompiled them — every green build in between was green without ever compiling those files. `--rerun-tasks` is what exposes that class of thing — a *plain* build of the same commit says `BUILD SUCCESSFUL in 5s` off the build cache (`org.gradle.caching=true`), which is exactly why it survived local full builds. **CI caught it and nobody looked**: `test.yml` runs `./gradlew build` on every push, and runs #301 (`592f1ce21`) and #306 (`388b6e3a2`) both went **failure** on `develop` and stayed unactioned for about a week. The gate existed; the response did not. Check the pipeline after a push rather than assuming green. **A SURVIVED boot is evidence, and `aggregate` was throwing it away** (2026-09-01, from the live store's INCONCLUSIVE rows): the fold consulted `bootResult` only for CRASHED, so a clean boot fell through to the metadata — and with the jar scan errored and the platform declaring nothing, which is *every* CurseForge project, there was no metadata to fall through to and the most expensive signal the engine produces read "we learned nothing". SURVIVED yielded LOW, ranked below `metadataClient` so a clean boot could not overturn a client-only declaration; `better-stats`, `tcdcommons` and `yacl` are the measured rows. **That precedence was deliberately reversed by the 2026-09-04 redesign below — the console now decides and a clean boot is `CLEAR` whatever the mod declared — but the finding that produced it still stands:** a boot that reached its ready-line is the most expensive signal this engine produces and must never read as "we learned nothing", which is why `CLEAR` exists as its own verdict rather than folding into INCONCLUSIVE. In the same pass, a staging refusal stopped saying only `Could not download <file>` — 21 live verdicts read exactly that, all CurseForge, all distribution-locked, which is a sentence a 404 and *a host with no Chromium* produce identically. **The descriptor gate became a filter rather than a veto on 2026-09-03**: selection sees only platform metadata (the jar is not downloaded yet), so a jar whose own declared range excludes the newest *tagged* Minecraft version used to cost the whole candidate. JEI is the measured case, and the descriptor is upstream-wrong rather than misread — `jei-1.21.1-forge-19.52.0.422.jar` is tagged for 1.21 **and** 1.21.1 while declaring `versionRange="[1.21, 1.21.1)"`, and JEI's own `gradle.properties` pairs `minecraftVersion=1.21.1` with `minecraftVersionRange=[1.21, 1.21.1)`, building the range as `[start, thisVersion)` where it should be `[start, nextVersion)`. `ForgeTomlScanner.getVersionRange` is verbatim and `VersionConstraint.mavenRangeHolds` trims its bounds exactly like Maven's own `parseRestriction`, so the parser is not the bug and must not be "fixed"; `reselectOnMinecraftContradiction` re-stages once on the newest version the jar accepts and keeps the original refusal when there is none. It matters beyond one lost boot because a staging refusal publishes INCONCLUSIVE, which overwrites a decisive verdict — the missing-runtime-image harm shape, permanent instead of windowed. **An optional dependency stopped being a requirement on 2026-09-04.** Neither `mandatory` (Forge's `mods.toml`) nor `type` (NeoForge's `neoforge.mods.toml`, default `"required"`, also taking `optional`/`incompatible`/`discouraged`) was read anywhere in `-api`, so `ModDependency` could not carry the distinction and every declared entry was a hard requirement. `advancement-plaques` 1.7.2 was refused with *"Required dependency unavailable … prism"* though its own toml marks `prism` and `toastcontrol` `mandatory=false` and Modrinth lists prism `optional` — an INCONCLUSIVE spent on a mod that never required it. Both **platforms** were already correct (`dependency_type == "required"`, `relationType == 3`); only the manifest half was missing. Optional entries are still *recorded* on `ScannedMod` and merely flagged — stripping them would also drop them from `ModListCompiler`'s dependency rescue and could remove mods from a user's server pack, against this module's keep-the-superfluous-mod rule — so the filter lives in `stageableRequirements`, at the boot-staging consumer. Absent or unreadable means **required**, which is NeoForge's own default and the safe direction: a required dependency read as optional boots a mod without what it needs and can publish a *wrong* verdict, while the reverse only refuses a boot. **The result-system was redesigned on 2026-09-04, and the vocabulary is now four verdicts:** `CONFIRMED` / `CLEAR` / `ERROR` / `INCONCLUSIVE`, replacing `BootResult` × `Confidence`. The pairing conflated *what happened* with *how sure are we* and could not say the thing an operator most needed: **whether the grind ran at all**. `ERROR` is that missing verdict — a grind that could not be performed (no runtime image, a staging refusal, a failed download) — and its absence is what let the missing-runtime-image outage publish a host-wide defect as one INCONCLUSIVE per candidate, overwriting decisive verdicts the 30-day TTL would have left alone. `CLEAR` is the other half: a boot that ran clean and matched nothing is *proven server-safe*, which a single INCONCLUSIVE bucket destroys — "we proved it is fine" and "we learned nothing" are different claims. **Only a rule reaches CONFIRMED**, and only from a rung `BootDecision.decisive` marks, so the bare exit-code rung ("exited non-zero, nothing recognised why" — 27 of 43 published HIGHs rested on it) can no longer publish anything. **Every clientside-determining rule now lives in `boot-rules.default.json`**, bundled in the `-clientside` jar and editable: the eleven hardcoded marker groups moved there verbatim, and `BootLogClassifier` compiles its patterns back out of it by rule id, so an operator's edit reaches the engine and the two copies cannot drift. **File order is the ladder** — fair-run guards, then the decisive client-only evidence, then the excuses — and both inversions are pinned (`DefaultBootRulesTest`). **The console decides and the metadata only declares** (`ConsoleOutranksMetadataTest`): a `RuleSource.METADATA` rule sets `declares`, may not set `verdict`, and a mod claiming **server** whose console reaches a client-only class is CONFIRMED **client** — that contradiction is the target, since an honestly-declared client mod is already excludable from its metadata and costs nothing to find. Metadata facts render as **one canonical line** so a pattern naming two fields is an AND, which is the only way the platform-vs-jar contradiction stays expressible.
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Six verdicts** — `CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE` since 2026-09-04, plus `LOCKED`/`UNVERIFIABLE` since 2026-09-09 — and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. The two newest split out of `ERROR`, which was promising "an operator's problem" while holding 17 CurseForge distribution opt-outs and ~18 upstream gaps out of 53 published rows. Same pass closed three ways a dependency read as *unavailable* while being obtainable — one already in the pack refusing its own boot, one mod id served by two projects of which only the first was remembered, and an exact-Minecraft rule too strict inside a version-line. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **Since 2026-09-12 the loader a row is ground under is re-opened after staging, twice over**: a Connector placeholder is *booted* as the Fabric mod it wraps rather than only scanned as one, and a jar demanding a loader build that loader never shipped for that Minecraft names the loader that can run it. **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. **And on 2026-09-10/11 the new `UNVERIFIABLE` bucket was read the same way `ERROR` had been**, closing six ways a mod that runs everywhere was published as unverifiable: the loader gate was version-blind about which descriptor a loader reads, Quilt's `unless` clause was discarded, a beta outranked 16 stable releases, the patch-version fallback was inert on CurseForge by construction, a mis-ticked loader refused instead of re-selecting, and one mod id served by a fork or by the other platform resolved to nothing. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**.

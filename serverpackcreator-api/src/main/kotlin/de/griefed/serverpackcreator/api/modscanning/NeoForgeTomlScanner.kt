@@ -22,7 +22,12 @@ package de.griefed.serverpackcreator.api.modscanning
 import com.electronwill.nightconfig.toml.TomlParser
 
 /**
- * `neoforge.mods.toml`-based scanning of NeoForge-Minecraft mods for Minecraft 1.16.5 and newer.
+ * `META-INF/neoforge.mods.toml`-based scanning of NeoForge mods for Minecraft **1.20.5** and newer.
+ *
+ * The boundary is NeoForge's descriptor rename, and [LoaderDescriptors.neoForgeUsesNeoToml] is where it is
+ * stated — `ModScanner.scannerFor` asks that, never a literal. **A NeoForge mod below 1.20.5 still ships
+ * `META-INF/mods.toml`** and is therefore read by [ForgeTomlScanner], which is why this scanner sees only
+ * the newer era.
  *
  * @param tomlParser To parse .toml-files.
  * @Griefed

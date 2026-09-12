@@ -447,3 +447,11 @@ Follow root **Refactor discipline**: characterization tests first, verbatim move
 facade, suites green. The Phase 1a characterization tests (ConfigurationHandler manifest parsing;
 ServerPackHandler file-gathering/cleanup/icon/properties/placeholders) pin behavior through the
 facades — keep them green.
+
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes.
