@@ -80,24 +80,18 @@ internal class LoaderReselectionTest {
         }
 
     /**
-     * The newest real release where NeoForge still reads Forge's `META-INF/mods.toml` — i.e. below 1.20.5 —
-     * and publishes a build. That is where a `mods.toml`-only jar is *both* loaders' descriptor, which is
-     * what the version retry exists to reach.
-     */
-    private val sharedTomlRelease = apiWrapper.versionMeta.minecraft.serverReleases()
-        .map { it.minecraftVersion }
-        .filter { !LoaderDescriptors.neoForgeUsesNeoToml(it) && resolver.latest("NeoForge", it) != null }
-        .maxWithOrNull(BootCandidateSelector.minecraftComparator)
-
-    /**
      * Records the loader of every staging attempt, and can make a loader unavailable.
      *
      * `preferredVersion` is asked once per `stageBootPack` call, so its argument list *is* the re-selection
      * history. `latestVersion` is what the bootability gate reads, so withholding it is how a loader with no
-     * build for this Minecraft is expressed. Both answer a build that cannot be installed, which is what
-     * keeps staging exercised and no server ever launched.
+     * build for this Minecraft is expressed, and [builds] is how a loader's *published build number* is
+     * stated — the one a jar's declared loader range is judged against. `preferredVersion` always answers a
+     * build that cannot be installed, which is what keeps staging exercised and no server ever launched.
      */
-    private class RecordingPolicy(private val unavailable: Set<String> = emptySet()) : LoaderVersionPolicy {
+    private class RecordingPolicy(
+        private val unavailable: Set<String> = emptySet(),
+        private val builds: Map<String, String> = emptyMap()
+    ) : LoaderVersionPolicy {
         val stagedFor = mutableListOf<String>()
 
         override fun preferredVersion(loader: String, minecraftVersion: String): String? {
@@ -106,7 +100,7 @@ internal class LoaderReselectionTest {
         }
 
         override fun latestVersion(loader: String, minecraftVersion: String): String? =
-            "0.0.0-no-such-build".takeIf { loader !in unavailable }
+            (builds[loader] ?: "0.0.0-no-such-build").takeIf { loader !in unavailable }
     }
 
     /** The mis-ticked file: the platform says Forge, and only the descriptor knows better. */
@@ -258,6 +252,127 @@ internal class LoaderReselectionTest {
     }
 
     /**
+     * **A Sinytra Connector placeholder is staged under Fabric**, end to end and through the real
+     * `prepareBootPack`, because the predicate change is worth nothing if it does not reach re-selection.
+     *
+     * The shape is `continuity-3.0.0+1.20.1.forge.jar`'s: a `META-INF/mods.toml` whose only content of
+     * consequence is `[properties] "connector:placeholder" = true`, beside the `fabric.mod.json` that holds
+     * the mod. Measured live 2026-09-12, booting the stub under the loader the platform ticked spent the
+     * whole 1.20 line on Forge refusing the stub's own version-less dependency entries.
+     */
+    @Test
+    fun aConnectorPlaceholderIsStagedUnderFabric(@TempDir workDir: File) {
+        val policy = RecordingPolicy()
+        val prepared = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platformOf(tickedForge),
+            httpDownloader = connectorPlaceholderDownloader,
+            loaderVersionPolicy = policy,
+            workDirectory = workDir
+        ).prepareBootPack(projectOf(tickedForge), "Forge")
+
+        Assertions.assertEquals(
+            listOf("Forge", "Fabric"), policy.stagedFor,
+            "the stub speaks for Connector, so the boot moves to the loader the fabric.mod.json names"
+        )
+        Assertions.assertFalse(
+            (prepared as? BootVerifier.Prepared.Failed)?.detail.orEmpty().contains("not a Forge mod"),
+            "and the placeholder's refusal is answered rather than published"
+        )
+    }
+
+    /**
+     * **A loader that cannot reach the build the jar demands hands the boot to one that can**, end to end.
+     *
+     * `Iceberg-1.20.1-forge-1.1.25.jar`'s shape: a `mods.toml` both loaders read on [parityRelease],
+     * demanding `forge [47.2,)`. There NeoForge publishes `47.1.106` and Forge `47.4.23`, exactly as SPC's
+     * metadata answers — so the declared set is both loaders and only one of them can reach the demand.
+     *
+     * **The era is the whole point**, and getting it wrong is how this guard first passed against a fixture
+     * that proved nothing: one release later NeoForge registers as `neoforge`, a `forge` entry is no longer
+     * a statement about it, and there is correctly nothing to refuse.
+     */
+    @Test
+    fun aLoaderThatCannotReachTheDemandedBuildHandsOver(@TempDir workDir: File) {
+        val policy = RecordingPolicy(builds = mapOf("NeoForge" to "47.1.106", "Forge" to "47.4.23"))
+        val tickedBoth =
+            tickedForge.copy(loaders = setOf("Forge", "NeoForge"), minecraftVersions = setOf(parityRelease))
+        val prepared = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platformOf(tickedBoth),
+            httpDownloader = demandingForgeDownloader,
+            loaderVersionPolicy = policy,
+            workDirectory = workDir
+        ).prepareBootPack(projectOf(tickedBoth), "NeoForge")
+
+        Assertions.assertEquals(
+            listOf("NeoForge", "Forge"), policy.stagedFor,
+            "NeoForge cannot reach [47.2,) on this Minecraft, and Forge can"
+        )
+        Assertions.assertFalse(
+            (prepared as? BootVerifier.Prepared.Failed)?.detail.orEmpty().contains("newest build"),
+            "the impossibility is answered rather than published"
+        )
+    }
+
+    /**
+     * The one Minecraft release where NeoForge *is* Forge — it reads Forge's `mods.toml` and registers under
+     * the mod id `forge`, so a `forge` dependency entry is a statement about NeoForge there and nowhere else.
+     * Derived from [LoaderCompatibility] rather than written as "1.20.1", so the fixture states the era and
+     * a second copy of the number cannot drift from the one the gate reads.
+     */
+    private val parityRelease = requireNotNull(
+        apiWrapper.versionMeta.minecraft.serverReleases()
+            .map { it.minecraftVersion }
+            .firstOrNull { "Forge" in LoaderCompatibility.alsoRuns("NeoForge", it) }
+    ) { "SPC's metadata must offer the Minecraft release NeoForge and Forge share builds on" }
+
+    /** Writes the two-entry placeholder jar: a stub `mods.toml` carrying the marker, plus the real descriptor. */
+    private val connectorPlaceholderDownloader = JarDownloader { file, targetDirectory ->
+        targetDirectory.mkdirs()
+        File(targetDirectory, file.fileName).also { jar ->
+            JarOutputStream(jar.outputStream()).use { out ->
+                out.putNextEntry(JarEntry(LoaderDescriptors.FORGE_TOML))
+                out.write(
+                    """
+                    modLoader = "javafml"
+                    [properties]
+                    "connector:placeholder" = true
+                    [[mods]]
+                    modId = "bellsandwhistles"
+                    """.trimIndent().toByteArray()
+                )
+                out.closeEntry()
+                out.putNextEntry(JarEntry(LoaderDescriptors.FABRIC))
+                out.write("""{"id":"bellsandwhistles","environment":"client"}""".toByteArray())
+                out.closeEntry()
+            }
+        }
+    }
+
+    /** Writes a `mods.toml`-only jar demanding a Forge build newer than NeoForge ever shipped for its era. */
+    private val demandingForgeDownloader = JarDownloader { file, targetDirectory ->
+        targetDirectory.mkdirs()
+        File(targetDirectory, file.fileName).also { jar ->
+            JarOutputStream(jar.outputStream()).use { out ->
+                out.putNextEntry(JarEntry(LoaderDescriptors.FORGE_TOML))
+                out.write(
+                    """
+                    modLoader="javafml"
+                    [[mods]]
+                    modId="bellsandwhistles"
+                    [[dependencies.bellsandwhistles]]
+                    modId="forge"
+                    mandatory=true
+                    versionRange="[47.2,)"
+                    """.trimIndent().toByteArray()
+                )
+                out.closeEntry()
+            }
+        }
+    }
+
+    /**
      * **Not an amnesty.** A jar declaring a loader that has no build for this Minecraft is refused exactly
      * as before — `Highlighter-1.19.4-forge-1.1.5.jar` is the shape: its `mods.toml` names Forge and
      * NeoForge, neither of which NeoForge published for 1.19.4.
@@ -303,7 +418,9 @@ internal class LoaderReselectionTest {
         )
 
         val refusal = requireNotNull(
-            BootVerifier.refuseForSelfDeclaration(jar, "Forge", neoTomlRelease) { "~1.16.5" }
+            BootVerifier.refuseForSelfDeclaration(
+                jar, "Forge", neoTomlRelease, minecraftConstraint = { "~1.16.5" }
+            )
         ) { "the fixture must be refused, or this guard asserts nothing" }
 
         Assertions.assertEquals(

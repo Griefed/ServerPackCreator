@@ -4408,3 +4408,101 @@ what is an upstream gap, which was 6 of the 7 `ERROR` rows.
   mismatches, correctly INCONCLUSIVE — the hypothesis that it hid systematic wrong-Minecraft staging was
   tested and **disproved**. The single marker it did yield was worth the read, and so is knowing the rest of
   that bucket is not ours.
+
+
+## 2026-09-12 — one field report, two ways the loader for a line was wrong
+
+Griefed filtered the public grinder on `decidedBy=DEPENDENCY_FAILURE` and said *"continuity has an issue,
+again"*. One row matched. It was the third time `Modrinth/continuity` has been the subject, and this time it
+exposed a class rather than a case: **the loader a line is ground under is chosen from platform metadata,
+and nothing re-opens that choice when the downloaded jar turns out not to be a mod for it.**
+
+### The row, and why the shim never had a chance
+
+`continuity` is a Fabric mod. Its Forge and NeoForge files on Modrinth are **Sinytra Connector placeholders**
+— a `mods.toml` whose only job is to get the file past Forge's mod discovery, wrapped around the real
+`fabric.mod.json`. `LOADER_PRIORITY` is `NeoForge > Forge > Fabric > Quilt`, so under the per-line axis the
+1.20 line went to Forge and the 1.21 line to NeoForge, and **both** landed on a shim. The 26.1 and 26.2
+lines, where continuity publishes no shim, went to Fabric and came out clean — which is the control.
+
+The 1.20 console says what happened, and it is not what the verdict says:
+
+```
+[or.si.co.lo.DependencyResolver/]: Dependency resolution found 0 candidates to load
+[ne.mi.fm.lo.ModSorter/LOADING]: Missing or unsupported mandatory dependencies:
+	Mod ID: 'fabric_api',   Requested by: 'continuity', Expected range: '', Actual version: '0.92.6+1.11.15+1.20.1'
+	Mod ID: 'connectormod', Requested by: 'continuity', Expected range: '', Actual version: '1.0.0-beta.49+1.20.1'
+```
+
+**Both dependencies were staged, both were loaded, and Forge named their versions while refusing them.** The
+stub declares them with no `versionRange`, and Forge reads an absent range as one that matches nothing. So
+`DEPENDENCY_FAILURE` was true of the console and false of the mod: staging had done everything right.
+Meanwhile `continuity-3.0.0+1.20.1.jar` — same mod, same Minecraft version, the release a Fabric user
+installs — was never booted, because the line only gets one boot now.
+
+### The half that was a repeat
+
+A placeholder redirect already existed: since 2026-09-06 `MetadataScanner` scans such a jar as Fabric. It
+read `META-INF/mods.toml` and nothing else, and NeoForge moved its descriptor to
+`META-INF/neoforge.mods.toml` on Minecraft 1.20.5 — so `continuity-3.0.0+1.21.neoforge.jar`, carrying the
+identical `[properties] "connector:placeholder" = true` one path over, scanned `SERVER_OR_BOTH` and published
+`CONTRADICTORY` against a platform declaring `client_side=REQUIRED`. The fix from six days earlier had been
+written against one of the project's two shims.
+
+### The half that was new, and B36 reversed
+
+The scan and the boot were making different decisions about one fact. `declaredLoaders` now discounts a
+stubbed descriptor, so `contradictingLoaders` refuses the Forge/NeoForge boot and names Fabric, and the
+`reselectOnLoaderContradiction` machinery that already exists re-stages the same file there. No new
+machinery, no extra container — the refusal happens before one is spent.
+
+That reverses B36, which recorded Griefed's 2026-09-06 call that a working Connector setup is still worth
+verifying. **The premise changed, not the reasoning**: that call was made when the Forge row was the
+project's only Forge evidence and cost nothing else. Under the per-line axis the shim costs the whole
+Minecraft line. Griefed made the reversal explicitly when the measurement was put in front of them.
+
+### The second row, which arrived mid-session
+
+The sweep was running, and a second `DEPENDENCY_FAILURE` appeared: `Modrinth/iceberg`, NeoForge, 1.20.1.
+`Iceberg-1.20.1-forge-1.1.25.jar` declares `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"`,
+and Modrinth ticks the file `forge, neoforge`, so priority took NeoForge. NeoForge's 1.20.1 fork froze at
+**47.1.106** and registers under the mod id `forge`; the console read *"Mod iceberg requires forge 47.2 or
+above"*. Forge 1.20.1 is at 47.4.23 and satisfies it outright.
+
+The descriptor gate could not see this, and that is the interesting part: `mods.toml` names Forge **and**
+NeoForge on 1.20.1, so the requested loader *was* declared. Carrying a loader's descriptor and being able to
+run under it are different questions, and only the first was being asked. `demandedLoaderVersion` now reads
+the range the jar puts on its platform entry, and `contradictingLoaders` drops any declared loader whose
+newest build cannot reach it.
+
+### What was checked and is *not* ours
+
+45 of 557 rows read `declared=CONTRADICTORY`, almost all NeoForge builds of obviously client-only mods, and
+it looked like the same root. It is not. Read from the live jars: `sodium-neoforge-0.9.2` declares
+`side="BOTH"` on its `neoforge` dependency, `entityculling-neoforge-1.10.5` and `moreculling-neoforge-1.0.10`
+the same, and `MouseTweaks-neoforge-2.31` declares no dependency block at all. The scanner reads them
+correctly; the authors do not maintain `side=` in NeoForge descriptors, because there it barely does
+anything. The platform says `server_side: UNSUPPORTED` and the jar says `BOTH` — a real disagreement between
+two real sources, reported accurately. Worth stating so the bucket is not re-opened as a bug.
+
+**What generalises:**
+
+- **A fix written against one artifact is a fix for one artifact.** The placeholder redirect was correct,
+  tested, documented — and blind to the second of the two shims the very same project publishes, because it
+  hard-coded a descriptor path that `LoaderDescriptors` already owns the versioned answer to. Three instances
+  of "duplicated knowledge drifts toward whichever copy is easier to reach" are now four. When a fix keys on
+  a file name, ask which *other* spellings of that file exist before calling it done.
+- **A prior decision is a decision under its premises, and an axis change is a change of premises.** B36's
+  "verify the Connector setup anyway" was right when the shim cost one of three boots and wrong when it cost
+  one of one. Nothing about Connector changed. Re-read the recorded calls a structural change touches, rather
+  than treating them as settled.
+- **A selection made on metadata needs a way to be re-opened by the artifact.** Both defects are the same
+  shape: the platform's loader tick decided the boot, the downloaded jar disagreed, and only one narrow form
+  of disagreement — *carries a different descriptor* — could reopen it. The machinery to re-select already
+  existed; what was missing was reasons to invoke it.
+- **The console said the dependencies were present.** `Expected range: '', Actual version: '…'` names both
+  halves, and reading it is what separated "our staging is wrong" from "the author declared an unsatisfiable
+  range". A row that says `DEPENDENCY_FAILURE` is a claim about the console, not about the dependency
+  resolution that produced the pack.
+- **A neighbouring bucket that looks like the same bug is worth ten minutes and four downloads.** The 45
+  CONTRADICTORY rows would have been a plausible and wholly wasted pass.
