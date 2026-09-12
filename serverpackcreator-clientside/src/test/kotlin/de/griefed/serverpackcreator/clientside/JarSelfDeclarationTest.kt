@@ -433,6 +433,78 @@ internal class JarSelfDeclarationTest {
         Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
     }
 
+    /**
+     * **A placeholder declares only the loader its *real* descriptor names**, so the gate refuses the boot
+     * the platform ticked and hands back the loader to re-select to.
+     *
+     * The stub is not a Forge mod; it is a Fabric mod wearing enough TOML to get past Forge's mod discovery
+     * until Connector takes over. Counting it as a Forge declaration is what let the shim keep the boot:
+     * `contradictingLoaders` saw `Forge` among the declared set, accepted, and the container then spent
+     * itself proving something about Sinytra Connector.
+     *
+     * Measured on the public grinder 2026-09-12, and the reason this is worth a refusal rather than a note:
+     * under the per-line axis the shim costs the **whole** Minecraft line. `Modrinth/continuity`'s 1.20 row
+     * booted `continuity-3.0.0+1.20.1.forge.jar` and died on the stub's own version-less dependency entries
+     * (`Expected range: '', Actual version: '1.0.0-beta.49+1.20.1'` — Forge reads an absent `versionRange`
+     * as a range matching nothing, so *both* dependencies were staged, both were loaded, and both were
+     * refused), while `continuity-3.0.0+1.20.1.jar` — the release a Fabric user installs, same mod, same
+     * Minecraft version — was never booted at all.
+     *
+     * [MetadataScanner] has redirected the *scan* to Fabric since 2026-09-06. This is the boot making the
+     * same call, so the two stop disagreeing about one fact.
+     */
+    @Test
+    fun aConnectorPlaceholderDeclaresOnlyTheLoaderItsRealDescriptorNames(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity-3.0.0+1.20.1.forge.jar",
+            "META-INF/mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertEquals(
+            setOf("Fabric"), JarSelfDeclaration.declaredLoaders(placeholder, "1.20.1"),
+            "the stub speaks for Connector, not for the mod, so only the fabric.mod.json declares anything"
+        )
+        Assertions.assertEquals(
+            setOf("Fabric"), JarSelfDeclaration.contradictingLoaders(placeholder, "Forge", "1.20.1"),
+            "a Forge boot of a placeholder must be refused, naming Fabric as the loader to re-select to"
+        )
+        Assertions.assertTrue(
+            JarSelfDeclaration.contradictingLoaders(placeholder, "Fabric", "1.20.1").isEmpty(),
+            "and the re-selected Fabric boot of the very same file must then be accepted"
+        )
+    }
+
+    /**
+     * The NeoForge-era placeholder is the same refusal, and is the half that costs `continuity` its 1.21
+     * line: `continuity-3.0.0+1.21.neoforge.jar` stubs `META-INF/neoforge.mods.toml` instead.
+     */
+    @Test
+    fun aNeoForgeEraPlaceholderIsRefusedTheSameWay(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity-3.0.0+1.21.neoforge.jar",
+            "META-INF/neoforge.mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertEquals(
+            setOf("Fabric"), JarSelfDeclaration.contradictingLoaders(placeholder, "NeoForge", "1.21.1"),
+            "the marker moved with the descriptor; the refusal must move with it"
+        )
+    }
+
     /** Everything else is not one — including a real multi-loader jar, which carries both descriptors too. */
     @Test
     fun anythingWithoutTheMarkerIsNotAConnectorPlaceholder(@TempDir dir: File) {
