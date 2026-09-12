@@ -188,7 +188,21 @@ data class GrindVerdict(
      * [minecraftLine] and shown beside it for the same reason [fileName] is shown beside [suggestedEntry]:
      * one is the row's identity, the other is what a maintainer reproduces the boot with.
      */
-    val minecraftVersion: String? = null
+    val minecraftVersion: String? = null,
+    /**
+     * The loader whose build proved this mod reaches client-only code, when this verdict **inherited** that
+     * proof rather than producing it — `null` otherwise, including for the proving row itself.
+     *
+     * **This is the row's evidence, and without it the row has none to show.** An inherited proof used to
+     * live only in [detail]'s prose, so [decidedBy] stayed the row's own boot rung — `READY_LINE` for a clean
+     * one — and `GrinderAuditIT`, which re-derives evidence from the kept consoles, read such a row as a
+     * published CONFIRMED resting on nothing. Measured 2026-09-12 against the live store: **86 of 140**
+     * published rows, i.e. the guard built to catch wrong publications failing wholesale on a design working
+     * as intended. An audit that cries wolf gets ignored.
+     */
+    val inheritedProofFrom: String? = null,
+    /** The rule id of the rung that proved it, for the same reason [inheritedProofFrom] exists. */
+    val inheritedProofRule: String? = null
 )
 
 /**

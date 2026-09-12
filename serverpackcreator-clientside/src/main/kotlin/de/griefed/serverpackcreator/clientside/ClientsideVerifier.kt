@@ -360,14 +360,67 @@ class ClientsideVerifier(
          * cannot say where its evidence came from cannot be audited. Returns [verdicts] untouched when
          * nothing proved anything.
          */
+        /**
+         * Whether [verdict]'s own evidence contradicts an inherited client-only proof: it booted a dedicated
+         * server **itself**, and the mod claims the server.
+         *
+         * **Why a clean boot is allowed to win here and nowhere else.** This module's standing rule is that a
+         * clean boot proves nothing about sideness — a client mod can start a server without being any use on
+         * one. That holds against the mod's *own* crash. It does not hold against a crash borrowed from a
+         * sibling build: the inference propagation rests on is *a mod's features do not change with the
+         * loader*, and that is invalid precisely when the reaching is one build's defect. A sibling that ran a
+         * dedicated server to the ready line, for a mod whose metadata claims the server, is what says so.
+         *
+         * Measured on the public grinder 2026-09-12: 27 rows across 16 projects were published this way.
+         * `CurseForge/agricraft` — a crop-breeding mod declaring SERVER and scanning SERVER_OR_BOTH — failed
+         * to register one `@SubscribeEvent` class touching `net/minecraft/client/gui/Gui` on NeoForge, while
+         * its Fabric and Forge builds each reached the ready line. All three rows published.
+         *
+         * **Deliberately narrow in three directions, or it destroys the case propagation exists for.**
+         *
+         * The claim is [Declaration.SERVER] — the platform *and* the jar agreeing — never
+         * [declaresServerSupport], which this module uses to arm the crash re-check. That predicate accepts
+         * `JarScan.SERVER_OR_BOTH`, and `SERVER_OR_BOTH` is also what a scan that read *nothing* returns
+         * ("nothing was read, so nothing declared the mod client-only"); reading an absent answer as a claim
+         * would open this gate on most of the catalogue. Measured on the live store 2026-09-12: the weak
+         * reading matches 27 rows, this one 22, and the five it drops are `CONTRADICTORY` — where the two
+         * sources disagree, so by this module's own rule neither is evidence.
+         *
+         * `sodium` declares `client_side: required`, so the gate never opens for it and its Fabric entry is
+         * still excluded — which is the whole reason this propagation was written.
+         *
+         * And the survival must be this loader's **own**: `reconcileOtherVersionRecheck` can settle one
+         * loader's verdict from another's clean boot, the same landmine [targetDisprovingTheCrash] guards
+         * with `bootedLoader == loader`.
+         *
+         * **The cost is accepted and is the cheaper direction.** A mod whose metadata wrongly claims the
+         * server and which boots cleanly stops inheriting — `controlify` is one — so it ships unused into a
+         * server pack. A false positive strips a working mod out of every pack built against the list;
+         * `/as-properties`' own rule is that a clean boot proves nothing while a wrong entry does real
+         * damage. The proving loader keeps its finding either way, so wherever the stems match the mod is
+         * still excluded.
+         */
+        private fun contradictsTheProof(verdict: GrindTargetVerdict): Boolean =
+            verdict.bootResult == BootResult.SURVIVED &&
+                verdict.bootedLoader == verdict.loader &&
+                verdict.declared == Declaration.SERVER
+
         internal fun propagateClientOnlyProof(verdicts: List<GrindTargetVerdict>): List<GrindTargetVerdict> {
             val proof = verdicts.firstOrNull { it.decidedBy?.provesClientOnly == true } ?: return verdicts
             return verdicts.map { verdict ->
-                if (verdict === proof) {
+                if (verdict === proof || contradictsTheProof(verdict)) {
                     verdict
                 } else {
                     verdict.copy(
                         verdict = Verdict.CONFIRMED,
+                        // The evidence, as a field rather than only as prose. Without it the row's own
+                        // `decidedBy` is its own boot's rung -- `READY_LINE` for a clean one -- so anything
+                        // re-deriving evidence from the consoles reads a published CONFIRMED as resting on
+                        // none. Measured 2026-09-12: that is 86 of 140 published rows, i.e. `GrinderAuditIT`
+                        // failing wholesale on a deliberate design. A verdict must be able to name its own
+                        // evidence.
+                        inheritedProofFrom = proof.loader,
+                        inheritedProofRule = proof.decidedBy?.ruleId,
                         note = listOfNotNull(
                             verdict.note,
                             // A prevented grind being superseded must not vanish: publishing this entry is

@@ -130,6 +130,18 @@ internal enum class VerdictField(
      * one the publication gate now refuses to publish.
      */
     DECISION("Decision", "Decision", "decision", FilterKind.CHOICE, { it.decidedBy ?: "" }),
+    // Beside the decision, never instead of it: DECISION is what *this* row's own boot did, and this is the
+    // sibling whose proof it inherited. A row showing `READY_LINE` here and a loader there is a clean boot
+    // excluded because another build of the same mod reached client-only code -- which is the one shape a
+    // reader cannot otherwise tell from a published CONFIRMED resting on nothing.
+    PROOF(
+        "Inherited proof", "InheritedProof", "proof", FilterKind.CHOICE,
+        { verdict ->
+            verdict.inheritedProofFrom?.let { from ->
+                verdict.inheritedProofRule?.let { rule -> "$from ($rule)" } ?: from
+            } ?: ""
+        }
+    ),
     DEPENDENCIES("Dependencies", "Dependencies", "dependencies", FilterKind.TEXT, { it.stagedDependencies.joinToString(", ") }),
     SCANNED("Scanned (UTC)", "Scanned", "scanned", FilterKind.TEXT, { ScanDate.of(it.verifiedAt) });
 

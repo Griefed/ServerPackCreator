@@ -162,7 +162,10 @@ class Grinder(
                     // The row's identity, and the version behind it. A project is ground once per Minecraft
                     // line now, so this is what the table sorts and filters by -- and what the store keys on.
                     minecraftLine = verdict.minecraftLine,
-                    minecraftVersion = verdict.minecraftVersion
+                    minecraftVersion = verdict.minecraftVersion,
+                    // The evidence behind a row that did not produce its own: a sibling loader's proof.
+                    inheritedProofFrom = verdict.inheritedProofFrom,
+                    inheritedProofRule = verdict.inheritedProofRule
                 )
             )
         }

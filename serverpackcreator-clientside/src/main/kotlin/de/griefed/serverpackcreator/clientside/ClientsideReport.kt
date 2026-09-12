@@ -125,7 +125,20 @@ data class GrindTargetVerdict(
      * settled the verdict on another version, `BootVerifier.BootOutcome.minecraftVersion` is what this
      * carries instead, for the same reason [bootedLoader] exists.
      */
-    val minecraftVersion: String? = null
+    val minecraftVersion: String? = null,
+    /**
+     * The loader whose build proved this mod reaches client-only code, when this verdict **inherited** that
+     * proof rather than producing it — `null` otherwise.
+     *
+     * **A verdict has to be able to name its own evidence.** An inherited proof used to live only in the
+     * note's prose, so the row's `decidedBy` stayed its own boot's rung — `READY_LINE` for a clean one — and
+     * anything re-deriving evidence from the consoles read a published `CONFIRMED` as resting on none.
+     * Measured 2026-09-12 against the public grinder: 86 of 140 published rows, i.e. `GrinderAuditIT`
+     * failing wholesale on a design that was working as intended.
+     */
+    val inheritedProofFrom: String? = null,
+    /** The rule id of the rung that proved it, for the same reason [inheritedProofFrom] exists. */
+    val inheritedProofRule: String? = null
 )
 
 /**

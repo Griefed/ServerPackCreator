@@ -206,7 +206,7 @@ internal class ClientOnlyProofTest {
     fun aCleanBootOnAModClaimingTheServerIsNotOverruled() {
         val proving = verdict("NeoForge", "agricraft-", BootResult.CRASHED, BootDecision.FML_INVALID_DIST)
         val booted = verdict("Fabric", "agricraft-", BootResult.SURVIVED)
-            .copy(declaredServerSide = DeclaredSupport.REQUIRED, jarScan = JarScan.SERVER_OR_BOTH)
+            .copy(declared = Declaration.SERVER)
 
         val propagated = ClientsideVerifier.propagateClientOnlyProof(listOf(proving, booted))
 
@@ -231,7 +231,7 @@ internal class ClientOnlyProofTest {
     fun aCleanBootOnAModThatClaimsNoServerStillInherits() {
         val proving = verdict("NeoForge", "sodium-neoforge-", BootResult.CRASHED, BootDecision.LWJGL_ON_A_DEDICATED_SERVER)
         val booted = verdict("Fabric", "sodium-fabric-", BootResult.SURVIVED)
-            .copy(declaredServerSide = DeclaredSupport.UNSUPPORTED, jarScan = JarScan.CLIENT)
+            .copy(declared = Declaration.CLIENT)
 
         val propagated = ClientsideVerifier.propagateClientOnlyProof(listOf(proving, booted))
 
@@ -250,7 +250,7 @@ internal class ClientOnlyProofTest {
     fun aSurvivalBorrowedFromAnotherLoaderDoesNotOverruleAProof() {
         val proving = verdict("NeoForge", "mod-", BootResult.CRASHED, BootDecision.CLIENT_ONLY_CLASS)
         val borrowed = verdict("Fabric", "mod-", BootResult.SURVIVED)
-            .copy(bootedLoader = "Quilt", declaredServerSide = DeclaredSupport.REQUIRED)
+            .copy(bootedLoader = "Quilt", declared = Declaration.SERVER)
 
         val propagated = ClientsideVerifier.propagateClientOnlyProof(listOf(proving, borrowed))
 

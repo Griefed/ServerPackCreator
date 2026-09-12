@@ -203,6 +203,8 @@ internal class VerdictReportRendererTest {
             firedRule = "SENTINELRULE",
             stagedDependencies = listOf("SENTINELDEP"),
             decidedBy = "SENTINELDECISION",
+            inheritedProofFrom = "SENTINELPROOF",
+            inheritedProofRule = "sentinel-rule",
             fileName = "SENTINELFILENAME"
         )
 
@@ -214,7 +216,8 @@ internal class VerdictReportRendererTest {
             "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "SENTINELFILENAME", "CONFIRMED", "SERVER",
             "SENTINELLINE", "SENTINELMCVERSION", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
-            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
+            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELPROOF", "SENTINELDEP", "1970",
+            "SENTINELLOG"
         )
         Assertions.assertEquals(expected.size, cells.size, "one sentinel per column; got ${cells.size} cells")
         expected.forEachIndexed { index, sentinel ->
