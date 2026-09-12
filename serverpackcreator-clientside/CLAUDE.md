@@ -834,12 +834,38 @@ positive strips a working mod out of every pack built against the list.
     scores an unstageable requirement INCONCLUSIVE, losing the whole boot.
   - Both concessions stay one-way: Forge never gained the ability to read `META-INF/neoforge.mods.toml`, and
     a real NeoForge build still beats the Forge fallback wherever a project publishes one.
-- **A Sinytra Connector *placeholder* is a Fabric mod, and the Forge scanner reads a stub** (2026-09-06).
-  `JarSelfDeclaration.isConnectorPlaceholder` reads `[properties] "connector:placeholder" = true` out of
-  `META-INF/mods.toml`, and `MetadataScanner` then scans such a jar as **Fabric**. Read from the live
-  `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past Forge's mod discovery
-  (version-less dependency entries on `connectormod` and `fabric_api`), while the `fabric.mod.json` beside it
-  holds the real mod — `"environment": "client"` included.
+- **Carrying a loader's descriptor is not the same as being able to run under it** (2026-09-12).
+  `JarSelfDeclaration.demandedLoaderVersion` reads the `versionRange` the jar puts on its *platform*
+  dependency entry (`forge`/`neoforge`), and `contradictingLoaders` drops any declared loader whose newest
+  build on that Minecraft cannot satisfy it — then names the ones that can, so
+  `reselectOnLoaderContradiction` re-stages there.
+  - **The case, live 2026-09-12.** `Iceberg-1.20.1-forge-1.1.25.jar` declares
+    `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"` and Modrinth ticks it `forge, neoforge`,
+    so `LOADER_PRIORITY` took NeoForge for the 1.20 line. NeoForge's 1.20.1 fork froze at **47.1.106** and
+    registers as `forge`, so the console read *"Mod iceberg requires forge 47.2 or above"* and the line
+    published `INCONCLUSIVE (exit 0)` — while Forge 1.20.1 is at 47.4.23 and satisfies it outright. The
+    descriptor gate could not see it: `mods.toml` names Forge **and** NeoForge on 1.20.1, so the requested
+    loader *was* declared and nothing reopened the choice.
+  - **Which id a loader answers to is `LoaderCompatibility`'s fact, asked not restated.** NeoForge is
+    `forge` on the one parity version and `neoforge` everywhere after, so `platformIdsFor` derives the era
+    from `alsoRuns` rather than holding a second copy of "1.20.1".
+  - **`latestVersion`, never `preferredVersion`.** The question is whether the ecosystem *contains* a build
+    the jar accepts; a warm-cache preference for an older build must never be able to condemn a loader.
+  - **It never fires when nothing is reachable.** There would be nothing to re-select to, and throwing the
+    candidate away is the expensive outcome, not the safe one — the same "fail toward accept" rule the rest
+    of `JarSelfDeclaration` follows. `aether-1.20.1-neoforge.jar` is the near-miss control: it demands
+    `[47.1.0,)`, which 47.1.106 does satisfy, and is refused by nothing.
+  - **The range is read here, not via `ForgeTomlScanner`**, which consumes the platform entry for sideness
+    and discards its `versionRange` — so the number never reaches a `ScannedMod`. Reading it in the gate also
+    keeps a `-clientside` question from putting a requirement on the published `-api`.
+- **A Sinytra Connector *placeholder* is a Fabric mod, and is scanned AND booted as one** (2026-09-06,
+  completed 2026-09-12). `JarSelfDeclaration.isConnectorPlaceholder` reads
+  `[properties] "connector:placeholder" = true` out of **either** TOML descriptor, `MetadataScanner` scans
+  such a jar as **Fabric**, and `declaredLoaders` discounts the stubbed path so `contradictingLoaders`
+  refuses the Forge/NeoForge boot and `reselectOnLoaderContradiction` re-stages the same file under Fabric.
+  Read from the live `continuity-3.0.0+1.20.1.forge.jar`: the `mods.toml` exists only to get the file past
+  Forge's mod discovery (version-less dependency entries on `connectormod` and `fabric_api`), while the
+  `fabric.mod.json` beside it holds the real mod — `"environment": "client"` included.
   **Measured live 2026-09-06:** that project's Forge row read `jarScan=SERVER_OR_BOTH` and
   `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same project's*
   Fabric row read `CLIENT` off the identical descriptor. The contradiction was manufactured by the scanner
@@ -851,13 +877,26 @@ positive strips a working mod out of every pack built against the list.
   - **Keyed on the marker, never on carrying both descriptors.** A genuine multi-loader jar ships a real
     `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; hijacking those would
     answer a Forge question with a Fabric answer.
-  - **The boot is still attempted** (Griefed's call): a working Connector setup should still be verified, and
-    the row's INCONCLUSIVE then stands on its own evidence rather than on a false contradiction.
-  - **Why that boot failed is NOT ours, and the staging was right.** The grinder staged the newest Sinytra
-    Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API (`0.92.6+1.11.15+1.20.1`) — the
-    only ones Modrinth publishes for 1.20.1 — and Connector under Forge 47.4.23 still logged *"Dependency
-    resolution found 0 candidates to load"* and never converted the jar, leaving Forge to read the stub's
-    version-less ranges and refuse. Do not "fix" this by staging more dependencies; they were all there.
+  - **Both TOML spellings carry the marker, and missing one costs a whole line.** NeoForge moved its
+    descriptor to `META-INF/neoforge.mods.toml` on Minecraft 1.20.5, and a placeholder built for that era
+    stamps the identical marker there. The 2026-09-06 fix read `META-INF/mods.toml` only, so
+    `continuity-3.0.0+1.21.neoforge.jar` still scanned `SERVER_OR_BOTH` → `CONTRADICTORY` six days later.
+    `PROPERTY_BEARING_DESCRIPTORS` is deliberately version-blind: the marker means the same thing wherever
+    it appears, and `descriptorsFor` would need a Minecraft version this question does not have.
+  - **The boot is no longer attempted under the tagged loader** (2026-09-12, reversing the 2026-09-06 call
+    and closing B36). That call was made when the Forge row was the project's only Forge evidence; the
+    per-line axis made the shim cost the **whole** Minecraft line instead. Measured live 2026-09-12:
+    `continuity`'s 1.20 row booted the shim and published INCONCLUSIVE, while
+    `continuity-3.0.0+1.20.1.jar` — same mod, same Minecraft version, the release a Fabric user installs —
+    was never booted at all.
+  - **Why that Connector boot failed is NOT ours, and the staging was right.** The grinder staged the newest
+    Sinytra Connector (`1.0.0-beta.49+1.20.1`) and the newest Forgified Fabric API
+    (`0.92.6+1.11.15+1.20.1`) — the only ones Modrinth publishes for 1.20.1 — and Connector under Forge
+    47.4.23 logged *"Dependency resolution found 0 candidates to load"*, never converted the jar, and left
+    FML to read the stub's version-less ranges: `Expected range: '', Actual version:
+    '1.0.0-beta.49+1.20.1'`. **Both dependencies were present and loaded**, and Forge reads an absent
+    `versionRange` as a range matching nothing. Do not "fix" this by staging more dependencies; they were
+    all there, and that is precisely why the shim is not worth a container.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`) and
   are **not obtainable** — the author opted out of third-party distribution, so there is nothing to fetch.
   `HttpJarDownloader` returns `null`, `ClientsideVerifier` records `JarScan.DEFERRED`, and the staging
@@ -1363,4 +1402,4 @@ path silently reacquires the bug.
 > every part of the repo for detail only relevant while working in this module — the same move
 > this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
 
-Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Six verdicts** — `CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE` since 2026-09-04, plus `LOCKED`/`UNVERIFIABLE` since 2026-09-09 — and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. The two newest split out of `ERROR`, which was promising "an operator's problem" while holding 17 CurseForge distribution opt-outs and ~18 upstream gaps out of 53 published rows. Same pass closed three ways a dependency read as *unavailable* while being obtainable — one already in the pack refusing its own boot, one mod id served by two projects of which only the first was remembered, and an exact-Minecraft rule too strict inside a version-line. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. **And on 2026-09-10/11 the new `UNVERIFIABLE` bucket was read the same way `ERROR` had been**, closing six ways a mod that runs everywhere was published as unverifiable: the loader gate was version-blind about which descriptor a loader reads, Quilt's `unless` clause was discarded, a beta outranked 16 stable releases, the patch-version fallback was inert on CurseForge by construction, a mis-ticked loader refused instead of re-selecting, and one mod id served by a fork or by the other platform resolved to nothing. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**.
+Extracted from `-app`: platforms, metadata + server-boot signals, downloaders, fallback-list editor. **Six verdicts** — `CONFIRMED`/`CLEAR`/`ERROR`/`INCONCLUSIVE` since 2026-09-04, plus `LOCKED`/`UNVERIFIABLE` since 2026-09-09 — and every clientside-determining rule lives in the bundled `boot-rules.default.json`. **The console decides; metadata only declares** — a `RuleSource.METADATA` rule may not carry a verdict. The two newest split out of `ERROR`, which was promising "an operator's problem" while holding 17 CurseForge distribution opt-outs and ~18 upstream gaps out of 53 published rows. Same pass closed three ways a dependency read as *unavailable* while being obtainable — one already in the pack refusing its own boot, one mod id served by two projects of which only the first was remembered, and an exact-Minecraft rule too strict inside a version-line. Since 2026-09-06 three field reports are closed here: NeoForge runs Forge builds on Minecraft 1.20.1 (`LoaderCompatibility`), a Sinytra Connector placeholder is scanned as the Fabric mod it wraps, and a pack whose own jars contradict each other backtracks a dependency instead of booting (`DependencyBacktrack`). **Since 2026-09-12 the loader a row is ground under is re-opened after staging, twice over**: a Connector placeholder is *booted* as the Fabric mod it wraps rather than only scanned as one, and a jar demanding a loader build that loader never shipped for that Minecraft names the loader that can run it. **That backtrack then demoted almost everything for a day** — a CurseForge `ModFile.version` is the author-typed `displayName`, which `numbersOf` read as ~zero — so since 2026-09-08 a version the parser cannot hold yields *no opinion*, a staging refusal names which of five things went wrong (`UnmetReason`), and a jar-in-jar library counts as staged when the set is judged. **And on 2026-09-10/11 the new `UNVERIFIABLE` bucket was read the same way `ERROR` had been**, closing six ways a mod that runs everywhere was published as unverifiable: the loader gate was version-blind about which descriptor a loader reads, Quilt's `unless` clause was discarded, a beta outranked 16 stable releases, the patch-version fallback was inert on CurseForge by construction, a mis-ticked loader refused instead of re-selecting, and one mod id served by a fork or by the other platform resolved to nothing. Full state, landmines and measurements: **`serverpackcreator-clientside/CLAUDE.md`**.
