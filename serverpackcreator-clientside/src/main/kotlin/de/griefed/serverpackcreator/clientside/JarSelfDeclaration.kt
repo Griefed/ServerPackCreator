@@ -47,8 +47,17 @@ import java.util.zip.ZipFile
  */
 object JarSelfDeclaration {
 
-    /** Where Forge keeps its descriptor — the one entry this object reads rather than merely lists. */
-    private const val FORGE_DESCRIPTOR = LoaderDescriptors.FORGE_TOML
+    /**
+     * The descriptors this object *reads* rather than merely lists, newest spelling first.
+     *
+     * Both, and only these two, because the placeholder marker lives in a TOML `[properties]` table and
+     * these are the only two descriptors that have one — and because NeoForge renamed its file on Minecraft
+     * 1.20.5, so which of the pair a wrapped jar carries is a fact about its Minecraft era, not about
+     * whether it is wrapped. Version-blind on purpose: the marker means the same thing wherever it appears,
+     * so asking [LoaderDescriptors.descriptorsFor] here would need a Minecraft version this question does
+     * not have and would answer with a subset of what it must search.
+     */
+    private val PROPERTY_BEARING_DESCRIPTORS = listOf(LoaderDescriptors.NEOFORGE_TOML, LoaderDescriptors.FORGE_TOML)
 
     /** The `mods.toml` table free-form mod properties live under. */
     private const val TOML_PROPERTIES = "properties"
@@ -100,16 +109,25 @@ object JarSelfDeclaration {
      * `mods.toml` beside a real `fabric.mod.json` and each speaks for its own loader; only
      * `[properties] "connector:placeholder" = true` says *"the Forge descriptor here is not the mod"*.
      *
+     * **Both TOML spellings are searched, and that is the whole of the NeoForge half.** A wrapped jar for
+     * Minecraft 1.20.5 or later stamps the identical marker into `META-INF/neoforge.mods.toml`, because that
+     * is where NeoForge reads from — see [PROPERTY_BEARING_DESCRIPTORS].
+     *
      * Fails toward `false` like everything else in this object: an unopenable jar, an absent descriptor or a
-     * `mods.toml` the parser chokes on all mean *"nothing said so"*.
+     * descriptor the parser chokes on all mean *"nothing said so"*. Note that an unparseable *first*
+     * descriptor does not mask a marker in the second: each is parsed inside its own `runCatching`.
      */
     fun isConnectorPlaceholder(jar: File): Boolean = runCatching {
         ZipFile(jar).use { archive ->
-            val descriptor = archive.getEntry(FORGE_DESCRIPTOR) ?: return false
-            // Addressed as a path rather than by walking `valueMap()`: the key carries a colon, not a dot,
-            // so nightconfig's own path splitting cannot mistake it for two segments.
-            archive.getInputStream(descriptor).use { TomlParser().parse(it) }
-                .get<Any?>(listOf(TOML_PROPERTIES, CONNECTOR_PLACEHOLDER_PROPERTY)) == true
+            PROPERTY_BEARING_DESCRIPTORS.any { path ->
+                val descriptor = archive.getEntry(path) ?: return@any false
+                runCatching {
+                    // Addressed as a path rather than by walking `valueMap()`: the key carries a colon, not
+                    // a dot, so nightconfig's own path splitting cannot mistake it for two segments.
+                    archive.getInputStream(descriptor).use { TomlParser().parse(it) }
+                        .get<Any?>(listOf(TOML_PROPERTIES, CONNECTOR_PLACEHOLDER_PROPERTY)) == true
+                }.getOrDefault(false)
+            }
         }
     }.getOrDefault(false)
 
