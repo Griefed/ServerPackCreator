@@ -402,6 +402,37 @@ internal class JarSelfDeclarationTest {
         Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
     }
 
+    /**
+     * **The same marker, in the descriptor NeoForge renamed.** Read from the live
+     * `continuity-3.0.0+1.21.neoforge.jar` on 2026-09-12: byte-for-byte the placeholder shape above, except
+     * that the stub lives at `META-INF/neoforge.mods.toml` because NeoForge moved its descriptor there on
+     * Minecraft 1.20.5. Nothing else about the jar differs — the same `[properties] "connector:placeholder"`,
+     * the same `fabric.mod.json` beside it declaring `"environment": "client"`.
+     *
+     * Measured on the public grinder the same day, that one path cost the project its 1.21 verdict:
+     * `Modrinth/continuity`'s NeoForge row read `SERVER_OR_BOTH` off the stub — whose `[[dependencies]]`
+     * entries carry no `side`, which [de.griefed.serverpackcreator.api.modscanning.ForgeTomlScanner] reads
+     * as *assume SERVER* — and came out `CONTRADICTORY` against a platform declaring
+     * `client_side=REQUIRED`, while its Forge row on the 1.20 line read `CLIENT` off the identical
+     * `fabric.mod.json`. One project, two placeholders, two answers.
+     */
+    @Test
+    fun aConnectorPlaceholderNamesItselfInItsNeoForgeModsTomlToo(@TempDir dir: File) {
+        val placeholder = jarWithContent(
+            dir, "continuity.neoforge.jar",
+            "META-INF/neoforge.mods.toml" to """
+                modLoader = "javafml"
+                [properties]
+                "connector:placeholder" = true
+                [[mods]]
+                modId = "continuity"
+            """.trimIndent(),
+            "fabric.mod.json" to """{"id":"continuity","environment":"client"}"""
+        )
+
+        Assertions.assertTrue(JarSelfDeclaration.isConnectorPlaceholder(placeholder))
+    }
+
     /** Everything else is not one — including a real multi-loader jar, which carries both descriptors too. */
     @Test
     fun anythingWithoutTheMarkerIsNotAConnectorPlaceholder(@TempDir dir: File) {
