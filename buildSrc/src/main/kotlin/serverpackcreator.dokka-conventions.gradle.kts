@@ -5,6 +5,21 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
+// `dokkaSourceSets.includes` below names `module.md` as a FILE, which Dokka opens unconditionally -- so a
+// module applying this plugin without one cannot run any Dokka task at all. Nothing in the normal loop
+// notices: only `-api` has `build { finalizedBy(dokkaGeneratePublicationJavadoc) }`, so `./gradlew build`
+// exercises no other module's Dokka. `serverpackcreator-plugin-grinder` therefore shipped without a
+// module.md until the release pipeline's `Publish Maven` job ran `dokkaJavadocJar` over every project and
+// died on `.../serverpackcreator-plugin-grinder/module.md (No such file or directory)` (Forgejo run 472,
+// tag 9.0.0-alpha.8). Asserting it at configuration time turns that into a failure on the next `./gradlew`
+// anybody runs, in the module that caused it, instead of one that only a release reaches.
+require(projectDir.resolve("module.md").exists()) {
+    "${project.path} applies serverpackcreator.dokka-conventions but has no module.md. Dokka includes " +
+        "${projectDir.resolve("module.md")} in every source set, so every Dokka task in this module " +
+        "would fail. Add the file -- the other modules' module.md files show the expected shape " +
+        "(`# Module <name>` followed by one `# Package <fqn>` section per package)."
+}
+
 
 dokka {
     moduleName = "ServerPackCreator"
