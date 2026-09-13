@@ -47,15 +47,21 @@ object VersionOfFile {
      */
     fun of(file: ModFile): String? {
         val published = file.version?.trim()?.takeIf { it.isNotEmpty() } ?: return file.version
-        for (minecraftVersion in file.minecraftVersions.sortedByDescending { it.length }) {
+        // The exact declared version first, then its line: authors prefix with either, and matching the
+        // longer one first stops `1.20` shearing a string that really began `1.20.1`.
+        val minecraftSpellings = file.minecraftVersions.flatMap {
+            listOf(it, BootCandidateSelector.minecraftLine(it))
+        }.distinct().sortedByDescending { it.length }
+        for (minecraftVersion in minecraftSpellings) {
             for (prefix in listOf("mc$minecraftVersion", minecraftVersion)) {
                 if (!published.startsWith(prefix, ignoreCase = true)) {
                     continue
                 }
-                // Only a *separated* prefix is one: without this, `1.21.11-…` would have its `1.21.1`
-                // sheared off by the 1.21.1 a multi-version file also declares.
-                val remainder = published.drop(prefix.length).trimStart('-', '_', '+', '.', ' ')
-                if (remainder.isNotEmpty() && published[prefix.length] in "-_+. ") {
+                // Only a *separated* prefix is one, and a `.` does not separate — it continues a number.
+                // Accepting one read `1.20.1.3` on a file declaring Minecraft 1.20.1 as version `3`, which
+                // is the refusal-manufacturing direction. Every real case measured here is `-` spelled.
+                val remainder = published.drop(prefix.length).trimStart('-', '_', ' ')
+                if (remainder.isNotEmpty() && published[prefix.length] in "-_ ") {
                     // `1.21.4-NeoForge-5.4.0`: the loader name sits between the two versions and is not part
                     // of either. Dropping leading non-numeric segments is what leaves `5.4.0`.
                     return remainder.dropLoaderSegments().takeIf { it.isNotEmpty() } ?: remainder

@@ -73,6 +73,41 @@ internal class VersionOfFileTest {
         Assertions.assertEquals("mc1.20.1", VersionOfFile.of(file("mc1.20.1", setOf("1.20.1"))))
     }
 
+    /**
+     * **The prefix is routinely the version-LINE, not the exact version the file declares.**
+     * `moonlight-1.20-2.16.35-forge.jar` declares Minecraft `1.20.1` and publishes as
+     * `1.20-2.16.35-forge`, so matching only the declared version left the whole string intact and
+     * moonlight 2.16.35 compared as version **1.20** — below every range its dependants state.
+     *
+     * Measured against the live Modrinth API 2026-09-13: with `[2.16,)` the selector preferred
+     * `moonlight-1.20-2.13.82-forge.jar` over four 2.16.x builds sitting beside it, because none of them
+     * could be read as satisfying anything.
+     */
+    @Test
+    fun stripsAMinecraftLineAsWellAsAnExactVersion() {
+        Assertions.assertEquals(
+            "2.16.35-forge",
+            VersionOfFile.of(file("1.20-2.16.35-forge", setOf("1.20.1")))
+        )
+        Assertions.assertTrue(
+            VersionConstraint.satisfies(
+                VersionOfFile.of(file("1.20-2.16.35-forge", setOf("1.20.1"))), "[2.16,)"
+            )
+        )
+    }
+
+    /**
+     * **A dot does not separate a Minecraft version from a mod version — it continues a number.**
+     * A file declaring Minecraft `1.20.1` whose mod version is `1.20.5` shares a prefix with the line
+     * `1.20`, and stripping there would read that mod as version `5`. Only `-` and `_` separate, which is
+     * how every real case measured here is spelled.
+     */
+    @Test
+    fun aDotContinuesTheNumberRatherThanSeparatingIt() {
+        Assertions.assertEquals("1.20.5", VersionOfFile.of(file("1.20.5", setOf("1.20.1"))))
+        Assertions.assertEquals("1.20.1.3", VersionOfFile.of(file("1.20.1.3", setOf("1.20.1"))))
+    }
+
     /** The whole point: the range now narrows on the mod's version instead of Minecraft's. */
     @Test
     fun theStrippedVersionIsWhatTheRangeSees() {
