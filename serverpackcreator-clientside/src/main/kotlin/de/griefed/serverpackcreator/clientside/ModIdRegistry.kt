@@ -125,7 +125,13 @@ object KnownModIds {
         "refinedstorage" to PlatformRef("refined-storage", "243076"),
         "kotlinforforge" to PlatformRef("kotlin-for-forge", "351264"),
         "rhino" to PlatformRef("rhino", "416294"),
-        "wover" to PlatformRef("worldweaver", "1037172")
+        "wover" to PlatformRef("worldweaver", "1037172"),
+        // `botanytrees` needed `botanypots`, which is `botany-pots` on Modrinth and 404 as the bare id --
+        // a slug the guess cannot reach by spelling. Verified against the live API 2026-09-13, after
+        // `CurseForge/botany-trees` was published INCONCLUSIVE on NeoForge 1.21 with it `[MISSING]`.
+        // CurseForge left to its own guess for the same reason as `tacz` above: the numeric id could not
+        // be verified from here, and the cross-platform fallback asks Modrinth anyway.
+        "botanypots" to PlatformRef("botany-pots", null)
     )
 
     /**
