@@ -62,6 +62,47 @@ now has a top-level `permissions: contents: read`", and the migration was report
 hardening across. It did not — the blocks were inert from the first commit. `.github/workflows` keeps
 its blocks, because GitHub honours them.
 
+**Creating a branch fires `push`, not just `create` — and GitHub's guard against it is a silent no-op
+here.** `services/repository/push.go` takes the `IsNewRef()` branch and calls `notify_service.CreateRef`
+**and then** `notify_service.PushCommits`, so both events are dispatched; worse, it fills the push payload
+with `newCommit.CommitsBeforeLimit(10)`, advertising the branch's last ten commits though not one of them
+is new. Creating `alpha` or `beta` therefore started five workflows — `test`, `qodana`, `docker-test`,
+`docs` and `release-generate` — against a branch that is byte-for-byte `main`. The last of those is the
+one that matters: **semantic-release can mint a tag**, and it was running on a branch nobody had pushed
+work to yet.
+
+`create` *does* exist, contrary to the [Actions reference](https://forgejo.org/docs/latest/user/actions/reference/),
+which omits it: `modules/actions/workflows.go` matches `HookEventCreate` (no activity types, so a bare
+`on: create` works) and `services/actions/notifier.go` dispatches `CreatePayload{ref, sha, ref_type, …}`.
+It is an opt-*in* trigger, so it is no help in opting *out*.
+
+**LANDMINE — `github.event.created` does not exist on Forgejo.** Its `PushPayload`
+(`modules/structs/hook.go`) is `Ref, Before, After, CompareURL, Commits, TotalCommits, HeadCommit, Repo,
+Pusher, Sender` — GitHub's `created`/`deleted`/`forced` are absent. So `if: github.event.created == false`
+evaluates **true on every event**, meaning the job always runs and the guard silently does nothing. It
+does not fail, warn, or skip; it is simply inert, which is the worst of the three.
+
+What works is `Before`, which is `opts.OldCommitID` passed through unmutated — the local `oldCommitID`
+rewriting further down `pushUpdates` feeds only the compare URL. On a new ref it is the all-zero object
+id. The guard, **repeated verbatim in six jobs** across those five workflows (there is no workflow-level
+`if:`, and `qodana`'s `notify` needs its own copy because `always()` runs it even when the job it
+`needs` was skipped):
+
+```yaml
+if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000')
+        && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
+```
+
+`startsWith` rather than `== '0000…'` on purpose: an all-zero string coerces to the number 0, and so does
+an absent field, so the equality form would misfire on every non-push event. The 16-zero prefix also
+covers a SHA-256 repository, whose empty id is 64 zeros.
+
+**Verified by evaluation, not by reading.** Forgejo's own act fork (`code.forgejo.org/forgejo/act`
+v1.37.0, `pkg/exprparser`) was run over all six guards: creation of `alpha`/`beta` → `false`; creation of
+any other branch, every normal push, `workflow_dispatch`, `schedule` and `pull_request` → `true`;
+`release-generate`'s existing `RELEASE:` clause still returns `false` for a release commit. The same
+harness is what showed `github.event.created == false` returning `true` in all nine cases.
+
 **Corollary worth stating: a workflow that merely *parses* is not a workflow that runs.** Both defects
 above survived three audit iterations that validated YAML, checked action pinning, matched globs and
 verified secret names. None of that touches whether the runner can execute a step. The only test that
