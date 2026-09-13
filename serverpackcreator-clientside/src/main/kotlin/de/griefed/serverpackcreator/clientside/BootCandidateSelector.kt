@@ -406,7 +406,7 @@ object BootCandidateSelector {
         // returning null where this used to return a file would turn a bootable candidate into a refusal,
         // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
         // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
-        val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
+        val satisfying = files.filter { VersionConstraint.satisfies(VersionOfFile.of(it), versionConstraint) }
         return preferenceLadder(files, satisfying, minecraftVersion).firstNotNullOfOrNull { (candidates, version) ->
             // Cross-loading is asked about the version the pack BOOTS at, never the one the file carries:
             // NeoForge runs Forge builds on Minecraft 1.20.1 and on no other version, so re-running the
