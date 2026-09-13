@@ -88,6 +88,18 @@ enum class BootDecision(
     CLIENT_ONLY_CLASS(decisive = true, provesClientOnly = true),
 
     /**
+     * A **mandatory** dependency the loader itself refuses as client-only, in its own words: Fabric prints
+     * *"which is disabled for this environment (client/server only)"*. A mod that cannot load without
+     * something the server will never have cannot run on a server, which is what the fallback list is for.
+     *
+     * Decisive, so it may publish — the loader's own refusal is not something a broken harness fabricates.
+     * **Not** [provesClientOnly], because the evidence is one build's declared dependencies: a project's
+     * Fabric jar may depend on Sodium where its NeoForge jar depends on nothing of the sort, and that flag
+     * would clear every other loader of the project on this one's say-so.
+     */
+    CLIENT_ONLY_DEPENDENCY(decisive = true),
+
+    /**
      * The server died reaching for LWJGL, the client's windowing and OpenGL binding, which a dedicated
      * server never ships. Decisive for the same reason as [CLIENT_ONLY_CLASS] and catches what that one
      * cannot: `iris` scored INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` while this signature
