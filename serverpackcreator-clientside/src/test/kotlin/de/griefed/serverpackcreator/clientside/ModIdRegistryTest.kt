@@ -355,6 +355,37 @@ internal class ModIdRegistryTest {
     }
 
     /**
+     * **Two CurseForge projects answer to `sewingkit`, and the one whose slug matches the mod id exactly is
+     * the wrong one.** `310830` is published under the slug `sewingkit` and its newest file is
+     * `SewingKit-1.0.2.jar` for Minecraft **1.14.2** — abandoned. `411896` is `sewing-kit`, publishes
+     * `SewingKit-1.20.1-1.8.1.jar` and `SewingKit-26.1.2-2.8.1.jar`, and its 2.x versions are what
+     * `toolbelt`'s declared `[2.0.0,)` is asking for. Verified against the live API 2026-09-13.
+     *
+     * This is why the registry carries numeric ids rather than letting the slug guess run: the guess would
+     * have picked the dead project by name and staged a Minecraft 1.14 jar.
+     *
+     * **It does not make `tool-belt` bootable on 1.20, and that is not this entry's job.** `411896`'s
+     * newest 1.20.1 build is `1.8.1`, below the `[2.0.0,)` the jar demands, so nothing upstream satisfies
+     * it on that line — a fact the report should state rather than discover by burning a container.
+     */
+    @Test
+    fun theRightSewingKitIsTheOneWhoseSlugDoesNotMatch() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("411896"),
+            KnownModIds.mappingFor("sewingkit", "CurseForge")
+        )
+    }
+
+    /** `betterquesting` is `better-questing` on CurseForge; the bare id matches no project at all. */
+    @Test
+    fun betterQuestingIsCarriedByItsNumericId() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("238856"),
+            KnownModIds.mappingFor("betterquesting", "CurseForge")
+        )
+    }
+
+    /**
      * **A mod id that is the slug minus its hyphens resolves to nothing, and the guess cannot find it.**
      * `botanypots` is what `botanytrees` declares; Modrinth publishes the project as `botany-pots` and
      * answers 404 for the bare id. Verified against the live API 2026-09-13, both directions.
@@ -391,7 +422,13 @@ internal class ModIdRegistryTest {
                 "refinedstorage" to "243076",
                 "kotlinforforge" to "351264",
                 "rhino" to "416294",
-                "wover" to "1037172"
+                "wover" to "1037172",
+                // Added 2026-09-13, each verified against the live CurseForge API by the versions in its
+                // published file names — the ids alone prove nothing, the versions are what identify the
+                // project a dependant is asking for.
+                "botanypots" to "353928",
+                "betterquesting" to "238856",
+                "sewingkit" to "411896"
             ),
             listOf("farmersdelight", "refinedstorage", "kotlinforforge", "rhino", "wover")
                 .associateWith { KnownModIds.refFor(it, "CurseForge") }
