@@ -1350,7 +1350,14 @@ class BootVerifier(
         //
         // Nested next, so a top-level jar of the same id wins: that is the copy staging deliberately
         // chose and the one a demotion would act on. Nested entries can therefore only fill a gap.
-        val provided = loaderProvides(loader, loaderVersion, minecraftVersion)
+        // Seeded with what a Forge-family loader provides before the install is read, because Forge and
+        // NeoForge publish no `provides` block for `LoaderProvidedIds` to find -- so a demand on `forge`
+        // named something absent and was skipped, and `Iceberg-1.20.1-forge-1.1.25.jar` (`forge [47.2,)`)
+        // sailed into a NeoForge 47.1.106 pack that could never satisfy it. The real reading wins on a
+        // collision: it comes from the installed jar, this is derived from the build number alone.
+        val provided =
+            JarSelfDeclaration.platformProvides(loader, loaderVersion, minecraftVersion) +
+                loaderProvides(loader, loaderVersion, minecraftVersion)
         val stagedVersions = provided + nestedVersions(stagedJars) + scanned.flatMap { mod ->
             val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
             // A dependency names an id, and one jar answers to several: its own, plus everything it

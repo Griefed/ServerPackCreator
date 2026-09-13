@@ -88,16 +88,23 @@ object JarSelfDeclaration {
      * What an installed [loader] build declares it **provides**, as id → version, for the loaders that
      * publish no `provides` block of their own — Forge and NeoForge.
      *
-     * Seam only for now: it returns nothing, so this commit changes no behaviour. What it exists for is the
-     * next one, where a staged jar demanding `forge` or `neoforge` can finally be judged instead of skipped
-     * as naming something absent.
+     * **Fabric and Quilt are absent on purpose.** Their loaders publish a real `provides` block whose
+     * contents differ per build — quilt-loader 0.30.1 provides `fabricloader 0.19.3` while 0.31.0-beta.4
+     * provides `0.19.5` — so the answer has to be read off the install, and inventing one here would shadow
+     * the true reading with a guess. Forge and NeoForge publish no such block, which is why nothing was
+     * saying what they provide and a demand on `forge` looked like a demand on something absent.
      *
      * Lives here because [platformIdsFor] already owns the one fact this needs — that NeoForge answers to
      * `forge` on Minecraft 1.20.1 and to `neoforge` everywhere after — and a second copy of that mapping is
      * the duplication this repository has paid for repeatedly.
+     *
+     * A blank [loaderVersion] yields nothing: a map naming an id at a version we do not actually have would
+     * be judged against, and being wrong here demotes a dependency that was fine.
      */
-    fun platformProvides(loader: String, loaderVersion: String, minecraftVersion: String): Map<String, String> =
-        emptyMap()
+    fun platformProvides(loader: String, loaderVersion: String, minecraftVersion: String): Map<String, String> {
+        val version = loaderVersion.trim().takeIf { it.isNotEmpty() } ?: return emptyMap()
+        return platformIdsFor(loader, minecraftVersion).associateWith { version }
+    }
 
     private fun platformIdsFor(loader: String, minecraftVersion: String): Set<String> = when (loader) {
         "Forge" -> setOf("forge")
