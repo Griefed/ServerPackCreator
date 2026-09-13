@@ -327,6 +327,9 @@ object BootLogClassifier {
      * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
      * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
      */
+    /** @see BootDecision.CLIENT_ONLY_DEPENDENCY */
+    private val clientOnlyDependencyMarker = bundledPattern("client-only-dependency")
+
     private val dependencyFailureMarkers = bundledPattern("dependency-failure")
 
     /**
@@ -501,6 +504,13 @@ object BootLogClassifier {
         }
         if (consoleLines.any { fmlInvalidDistMarker.containsMatchIn(it) }) {
             return Classification(BootResult.CRASHED, annotating, BootDecision.FML_INVALID_DIST)
+        }
+        // Above the excuse below, and it has to be: Fabric prints `Incompatible mods found` on the line
+        // before this one, so the dependency-failure rung matches first and the finding is discarded. This
+        // is not our staging failing to supply something -- it is the loader reading the jar and refusing a
+        // dependency it will not load on a server at all.
+        if (consoleLines.any { clientOnlyDependencyMarker.containsMatchIn(it) }) {
+            return Classification(BootResult.CRASHED, annotating, BootDecision.CLIENT_ONLY_DEPENDENCY)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
