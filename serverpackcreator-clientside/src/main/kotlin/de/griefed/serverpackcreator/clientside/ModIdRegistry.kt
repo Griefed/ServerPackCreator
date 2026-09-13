@@ -126,12 +126,24 @@ object KnownModIds {
         "kotlinforforge" to PlatformRef("kotlin-for-forge", "351264"),
         "rhino" to PlatformRef("rhino", "416294"),
         "wover" to PlatformRef("worldweaver", "1037172"),
-        // `botanytrees` needed `botanypots`, which is `botany-pots` on Modrinth and 404 as the bare id --
-        // a slug the guess cannot reach by spelling. Verified against the live API 2026-09-13, after
-        // `CurseForge/botany-trees` was published INCONCLUSIVE on NeoForge 1.21 with it `[MISSING]`.
-        // CurseForge left to its own guess for the same reason as `tacz` above: the numeric id could not
-        // be verified from here, and the cross-platform fallback asks Modrinth anyway.
-        "botanypots" to PlatformRef("botany-pots", null)
+        // Three more ids observed going unresolved on 2026-09-13, each verified against the live
+        // CurseForge API by the VERSIONS in its published file names rather than by its id alone.
+        //
+        // `botanytrees` needed `botanypots`, which is `botany-pots` on both platforms and 404 as the bare
+        // id: `botanypots-neoforge-1.21.1-21.1.44.jar` is what its `[21.1.34,21.2)` names.
+        // `better-questing-standard-expansion` needed `betterquesting`, which is `better-questing` on
+        // CurseForge and absent from Modrinth: `BetterQuesting-Forge-1.20.1-4.0.71.jar` answers its `[4.0,)`.
+        //
+        // **`sewingkit` is why this registry carries numeric ids at all.** TWO projects answer to it, and
+        // the one whose slug matches the mod id exactly is the wrong one: `310830` is published as
+        // `sewingkit` and stopped at `SewingKit-1.0.2.jar` for Minecraft 1.14.2, while `411896` is
+        // `sewing-kit` and its 2.x line -- `SewingKit-26.1.2-2.8.1.jar` -- is what `toolbelt`'s `[2.0.0,)`
+        // means. The slug guess would have picked the dead project by name. Modrinth carries neither.
+        // Note this resolves `sewingkit`; it does not make `tool-belt` bootable on 1.20, where 411896's
+        // newest build is `1.8.1` and nothing upstream satisfies the range.
+        "botanypots" to PlatformRef("botany-pots", "353928"),
+        "betterquesting" to PlatformRef(null, "238856"),
+        "sewingkit" to PlatformRef(null, "411896")
     )
 
     /**
