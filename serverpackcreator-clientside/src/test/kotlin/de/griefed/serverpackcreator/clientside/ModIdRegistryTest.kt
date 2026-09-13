@@ -430,8 +430,12 @@ internal class ModIdRegistryTest {
                 "betterquesting" to "238856",
                 "sewingkit" to "411896"
             ),
-            listOf("farmersdelight", "refinedstorage", "kotlinforforge", "rhino", "wover")
-                .associateWith { KnownModIds.refFor(it, "CurseForge") }
+            // Enumerated by hand because `aliases` is private, so this cannot catch an id added to the
+            // registry and not listed here — it catches a listed id whose ref changes or disappears.
+            listOf(
+                "farmersdelight", "refinedstorage", "kotlinforforge", "rhino", "wover",
+                "botanypots", "betterquesting", "sewingkit"
+            ).associateWith { KnownModIds.refFor(it, "CurseForge") }
         )
         Assertions.assertTrue(
             KnownModIds.mappingFor("obscure_api", "CurseForge") is ModIdMapping.Guess,
