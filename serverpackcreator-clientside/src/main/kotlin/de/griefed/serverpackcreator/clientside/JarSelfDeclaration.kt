@@ -84,6 +84,21 @@ object JarSelfDeclaration {
      * statement, asked rather than restated, because a second copy of "1.20.1" is exactly the duplication
      * this module has already paid for three times.
      */
+    /**
+     * What an installed [loader] build declares it **provides**, as id → version, for the loaders that
+     * publish no `provides` block of their own — Forge and NeoForge.
+     *
+     * Seam only for now: it returns nothing, so this commit changes no behaviour. What it exists for is the
+     * next one, where a staged jar demanding `forge` or `neoforge` can finally be judged instead of skipped
+     * as naming something absent.
+     *
+     * Lives here because [platformIdsFor] already owns the one fact this needs — that NeoForge answers to
+     * `forge` on Minecraft 1.20.1 and to `neoforge` everywhere after — and a second copy of that mapping is
+     * the duplication this repository has paid for repeatedly.
+     */
+    fun platformProvides(loader: String, loaderVersion: String, minecraftVersion: String): Map<String, String> =
+        emptyMap()
+
     private fun platformIdsFor(loader: String, minecraftVersion: String): Set<String> = when (loader) {
         "Forge" -> setOf("forge")
         "NeoForge" ->
