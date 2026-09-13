@@ -355,6 +355,27 @@ internal class ModIdRegistryTest {
     }
 
     /**
+     * **A mod id that is the slug minus its hyphens resolves to nothing, and the guess cannot find it.**
+     * `botanypots` is what `botanytrees` declares; Modrinth publishes the project as `botany-pots` and
+     * answers 404 for the bare id. Verified against the live API 2026-09-13, both directions.
+     *
+     * Measured on the public grinder the same day: `CurseForge/botany-trees` on NeoForge 1.21 was published
+     * INCONCLUSIVE with `Mod ID: 'botanypots' … Actual version: '[MISSING]'`.
+     *
+     * CurseForge is left to its own slug guess, the same call `tacz` and `obscure_api` already make: the
+     * numeric id could not be verified from here, and inventing one sends every lookup to whatever project
+     * happens to hold it. The cross-platform fallback covers a CurseForge boot anyway — an id that maps
+     * nowhere locally is asked of Modrinth, which is where this entry answers.
+     */
+    @Test
+    fun aSlugThatDiffersFromItsModIdOnlyByHyphensIsCarried() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("botany-pots"),
+            KnownModIds.mappingFor("botanypots", "Modrinth")
+        )
+    }
+
+    /**
      * The CurseForge numeric ids, which cannot be guessed at all — that platform addresses a project by a
      * number, so an id that is not the slug resolves to nothing without one.
      *

@@ -70,7 +70,37 @@ object VersionConstraint {
         // component of ten-plus digits -- a date, a CI counter -- is all digits AND reads as zero, dropping
         // the version below almost any bound. That is the decorated-displayName defect one door along, so
         // "a number we can hold" is the question, not "digits".
-        return core.isNotEmpty() && core.split(".").all { component -> component.toIntOrNull() != null }
+        val components = core.split(".")
+        return core.isNotEmpty() && components.withIndex().all { (index, component) ->
+            readableComponent(component, isLeading = index == 0)
+        }
+    }
+
+    /**
+     * Whether one dot-separated [component] is something [numbersOf] can hold.
+     *
+     * A **leading** component must be a plain number: that is the prose guard, and widening it is how
+     * `Balm 26.2.0.7` comes to read as `0.2` and refuse almost every range. Anywhere else a Forge-style
+     * qualifier is legitimate — Create ships `0.5.1.e` and `0.5.1.f`, CobblemonTrainers ships `0.9.4c` —
+     * and treating those as prose made the whole version *accept* every constraint, which is how the newest
+     * build won a comparison it should have lost.
+     *
+     * A qualifier reads as `0` in [numbersOf], so `0.5.1.e` and `0.5.1.f` compare **equal**. That is
+     * deliberate: ordering Maven qualifiers correctly is a different problem, and for a narrowing preference
+     * "both are inside `[0.5.1.e,0.5.2)`" is the answer that matters.
+     */
+    private fun readableComponent(component: String, isLeading: Boolean): Boolean = when {
+        // `1..2` and `1.` split to an EMPTY component, and every test below it answers wrongly for one:
+        // `first()` throws on it, and `all { it.isLetter() }` is vacuously true, which would read `1..2` as
+        // `[1, 0, 2]` and refuse `>=99.0` instead of accepting it. Caught by
+        // `UnreadableStagedVersionTest.theEdgesOfReadabilityAllAccept`, not by inspection.
+        component.isEmpty() -> false
+        component.toIntOrNull() != null -> true
+        isLeading -> false
+        // `4c` — a number with a qualifier glued on. `numbersOf` already reads the digits off the front.
+        component.first().isDigit() -> component.takeWhile { it.isDigit() }.toIntOrNull() != null
+        // A bare qualifier segment, `e` or `f`, which is a version component and not prose.
+        else -> component.all { it.isLetter() }
     }
 
     /**
