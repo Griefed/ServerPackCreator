@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.clientside
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Resolves `modrinth.com` project-links via Modrinth's public REST API (no API-key; a descriptive
@@ -72,6 +73,9 @@ class ModrinthPlatform(
      * [minecraftVersion] is accepted and unused: Modrinth's version endpoint returns a project's **whole**
      * version list in one response, so there is no newest-N window for an older Minecraft to fall outside
      * of — the defect this parameter exists to fix is CurseForge's paging, not the interface's.
+     *
+     * For the same reason the widening overload is left at its default: there is nothing a caller could ask
+     * for that this answer does not already contain.
      */
     override fun resolveDependency(nativeRef: String, minecraftVersion: String?): ProjectFiles? = try {
         val slug = slugOf(nativeRef)
@@ -107,6 +111,64 @@ class ModrinthPlatform(
      * mods at all.
      */
     /**
+     * Project ids already looked up from a `version_id`, so a pin costs one request however many of a
+     * project's versions declare it.
+     *
+     * `resolve` reads a project's **whole** version list -- hundreds of nodes for an actively published
+     * library -- and a pinned dependency is normally pinned by every one of them. Without this the fix for
+     * the dropped pin would itself be a request per version, which is the cost shape this module already
+     * paid for once with CurseForge's paging.
+     */
+    private val projectOfVersion = ConcurrentHashMap<String, String>()
+
+    /**
+     * Pins that were asked about and answered nothing, so the failure costs one request too.
+     *
+     * A second collection rather than a sentinel value in [projectOfVersion], because a map whose values
+     * sometimes mean "no project" is a map every reader has to be warned about. `resolve` reads a project's
+     * whole version list and both dependency lists of every node, so an unmemoised failure is a request per
+     * node per list — precisely the cost the success memo exists to prevent, left open for the case that is
+     * already going badly.
+     */
+    private val unresolvablePins = ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * The project a dependency entry names, or `null` when it names nothing resolvable.
+     *
+     * A Modrinth dependency carries `project_id`, `version_id`, or both. **A pin gives only the version
+     * id** -- the author wanted one exact build -- and reading `project_id` alone dropped the whole entry
+     * silently: never staged, and invisible to `askLinkedProjects`, which reads the same list. One GET of
+     * `/version/{id}` says which project it is.
+     *
+     * Fails toward *dropping*, which is what it already did: a lookup that 404s or times out leaves the
+     * dependency unrecorded rather than recording a ref that names nothing — and the failure is remembered
+     * in [unresolvablePins], so it is asked once like a success. The **build** is deliberately
+     * not honoured — `pickDependencyFile` chooses among a project's files by loader, Minecraft version and
+     * obtainability, and pinning one file would override all three to satisfy a constraint the loader
+     * itself does not enforce.
+     */
+    private fun projectBehind(dependency: JsonNode): String? {
+        dependency.textOrNull("project_id")?.let { return it }
+        val versionId = dependency.textOrNull("version_id") ?: return null
+        projectOfVersion[versionId]?.let { return it }
+        if (versionId in unresolvablePins) {
+            return null
+        }
+        val resolved = runCatching {
+            objectMapper.readTree(httpFetcher.get("$apiBase/version/$versionId", headers)).textOrNull("project_id")
+        }.getOrElse {
+            log.warn("Could not resolve the project behind pinned Modrinth version '$versionId': ${it.message}")
+            null
+        }
+        if (resolved == null) {
+            unresolvablePins.add(versionId)
+            return null
+        }
+        projectOfVersion[versionId] = resolved
+        return resolved
+    }
+
+    /**
      * Dependency types worth resolving a project for. `required` is staged; `optional` is only ever asked
      * what it is, which is how a mod id no table knows gets matched to the project that provides it.
      */
@@ -117,12 +179,12 @@ class ModrinthPlatform(
         val mcVersions = version.path("game_versions").map { it.asText() }.toSortedSet()
         val requiredDeps = version.path("dependencies")
             .filter { it.path("dependency_type").asText() == "required" }
-            .mapNotNull { it.path("project_id").asText(null) }
+            .mapNotNull { projectBehind(it) }
         // Everything the page links that could legitimately be staged: `embedded` is already inside the
         // jar (BundledJars' case) and `incompatible` must never be fetched to be identified.
         val linkedDeps = version.path("dependencies")
             .filter { it.path("dependency_type").asText() in linkableDependencyTypes }
-            .mapNotNull { it.path("project_id").asText(null) }
+            .mapNotNull { projectBehind(it) }
         return modFilesOf(version).map { file ->
             ModFile(
                 fileName = file.path("filename").asText(),
@@ -134,7 +196,10 @@ class ModrinthPlatform(
                 relatedDependencies = linkedDeps,
                 // The version this file was published under, which is what a dependant's declared
                 // constraint has to be matched against. Modrinth states it once per version, not per file.
-                version = version.textOrNull("version_number")
+                version = version.textOrNull("version_number"),
+                // Stated once per version too. `release`, `beta` or `alpha`; anything else reads as a
+                // release, so a renamed field degrades to the old newest-Minecraft-first ordering.
+                channel = ReleaseChannel.fromString(version.textOrNull("version_type"))
             )
         }
     }

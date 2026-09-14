@@ -83,10 +83,10 @@ object ModPlatforms {
 }
 
 /**
- * The accumulated verdict for one `(project, loader)` — one row behind the eventual sortable / CSV
- * table. [suggestedEntry] is the clientside-list name-pattern (the file-name stem), [confidence] the
- * clientside engine's per-loader verdict; together with the project link they are exactly the columns
- * the table exposes.
+ * The accumulated verdict for one `(project, Minecraft version-line)` — one row behind the sortable / CSV
+ * table. [suggestedEntry] is the clientside-list name-pattern (the file-name stem), [verdict] the
+ * clientside engine's conclusion for that line; together with the project link they are exactly the
+ * columns the table exposes.
  *
  * @author Griefed
  */
@@ -97,11 +97,14 @@ data class GrindVerdict(
     val slug: String,
     /** Link to the project, carried through so a reader of the report can check the verdict against the source. */
     val projectUrl: String,
-    /** The modloader this verdict is about. One project yields one verdict per loader, since sideness can differ. */
+    /**
+     * The modloader this line was ground under — the first of `BootCandidateSelector.LOADER_PRIORITY` the
+     * line publishes a build for. Evidence a reader needs, not the row's identity; see [minecraftLine].
+     */
     val loader: String,
     /** The line to add to the clientside fallback-list if accepted, or `null` when nothing is being suggested. */
     val suggestedEntry: String?,
-    /** Human-readable evidence behind [confidence] — the boot outcome and exit detail, as shown in the report. */
+    /** Human-readable evidence behind [verdict] — the boot outcome and exit detail, as shown in the report. */
     val detail: String,
     /** When this verdict was reached, which the re-verify TTL compares against to decide staleness. */
     val verifiedAt: Instant,
@@ -159,12 +162,47 @@ data class GrindVerdict(
      */
     val declared: Declaration? = null,
     /**
-     * The list-entry pattern of the file this verdict sampled, shown beside [suggestedEntry].
+     * The **published file name** of the artifact this verdict sampled, verbatim, shown beside
+     * [suggestedEntry] — `iris-fabric-1.7.5+mc1.21.1.jar`, not a stem of it.
      *
-     * [suggestedEntry] is what gets published and stays broad; this is what a maintainer checks the finding
-     * against on the platform page, and it keeps the loader token a project's rename history erases.
+     * [suggestedEntry] is what gets published and stays broad; this is the artifact a maintainer opens the
+     * platform page to check the finding against, so it has to be the name they will see there.
+     *
+     * It carried a *derived stem* until 2026-09-10, which made it useless for exactly that: over 400 live
+     * rows not one value ended in `.jar` and 270 were byte-identical to [suggestedEntry]. The real name
+     * keeps the loader token a project's rename history erases *and* the version that identifies the build.
      */
-    val filenamePattern: String? = null
+    val fileName: String? = null,
+    /**
+     * The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null` for a row written
+     * before the grind axis moved off the modloader.
+     *
+     * **This is the verdict's identity, and [loader] is not.** A project is ground once per line under
+     * whichever loader that line publishes for, so the same loader routinely holds several of a project's
+     * rows. Nullable so a store written by an older build still deserialises — every row is otherwise
+     * skipped and the whole store comes back empty.
+     */
+    val minecraftLine: String? = null,
+    /**
+     * The exact Minecraft version the pack was staged at, or `null` when unrecorded. Narrower than
+     * [minecraftLine] and shown beside it for the same reason [fileName] is shown beside [suggestedEntry]:
+     * one is the row's identity, the other is what a maintainer reproduces the boot with.
+     */
+    val minecraftVersion: String? = null,
+    /**
+     * The loader whose build proved this mod reaches client-only code, when this verdict **inherited** that
+     * proof rather than producing it — `null` otherwise, including for the proving row itself.
+     *
+     * **This is the row's evidence, and without it the row has none to show.** An inherited proof used to
+     * live only in [detail]'s prose, so [decidedBy] stayed the row's own boot rung — `READY_LINE` for a clean
+     * one — and `GrinderAuditIT`, which re-derives evidence from the kept consoles, read such a row as a
+     * published CONFIRMED resting on nothing. Measured 2026-09-12 against the live store: **86 of 140**
+     * published rows, i.e. the guard built to catch wrong publications failing wholesale on a design working
+     * as intended. An audit that cries wolf gets ignored.
+     */
+    val inheritedProofFrom: String? = null,
+    /** The rule id of the rung that proved it, for the same reason [inheritedProofFrom] exists. */
+    val inheritedProofRule: String? = null
 )
 
 /**

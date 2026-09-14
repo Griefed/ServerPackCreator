@@ -127,7 +127,7 @@ internal class DependencyBacktrackStagingTest {
     }
 
     private fun stagedMods(workDir: File): List<String> =
-        File(workDir, AttemptDirectory.nameFor("Modrinth", "zoomify", "Fabric") + "/modpack/mods")
+        File(workDir, AttemptDirectory.nameFor("Modrinth", "zoomify", "Fabric", BootCandidateSelector.minecraftLine(fabricRelease)) + "/modpack/mods")
             .listFiles()?.map { it.name }?.sorted() ?: emptyList()
 
     /**
@@ -151,6 +151,71 @@ internal class DependencyBacktrackStagingTest {
             listOf("Zoomify-2.13.3.jar", "YetAnotherConfigLib-3.4.2.jar", "fabric-api-0.97.8.jar").sorted(),
             stagedMods(workDir),
             "the 3.6.6 build demands fabric-api >=0.100.0+1.20.6 and must not survive staging"
+        )
+    }
+
+    /**
+     * **A demand on an id the *loader* provides is judged too**, once something can say which version it
+     * provides. `fabricloader` is environment-provided, so staging never downloads it and the judge saw a
+     * requirement naming something absent — which it skips by design.
+     *
+     * Measured on the public grinder 2026-09-11: **twelve** published `DEPENDENCY_FAILURE` rows are
+     * `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)` against the `0.19.3` that quilt-loader
+     * 0.30.1 provides. Every one of them could have staged an older `fabric-language-kotlin` instead.
+     */
+    @Test
+    fun aDependencyDemandingMoreThanTheLoaderProvidesIsDroppedToAnOlderBuild(@TempDir workDir: File) {
+        val verifier = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platform,
+            httpDownloader = downloaderFor(
+                descriptors + mapOf(
+                    // The newest build demands more than the installed loader provides; the older one does not.
+                    "yet_another_config_lib_v3-3.6.6.jar" to
+                        """"id":"yacl","depends":{"fabricloader":">=0.19.5"}""",
+                    "YetAnotherConfigLib-3.4.2.jar" to """"id":"yacl","depends":{"fabricloader":">=0.19.0"}"""
+                )
+            ),
+            loaderVersionPolicy = unbootableLoaderVersion,
+            workDirectory = workDir,
+            // What quilt-loader 0.30.1 really declares, read from the published jar.
+            loaderProvides = { _, _, _ -> mapOf("fabricloader" to "0.19.3") }
+        )
+
+        verifier.prepareBootPack(candidate, "Fabric")
+
+        Assertions.assertEquals(
+            listOf("Zoomify-2.13.3.jar", "YetAnotherConfigLib-3.4.2.jar").sorted(),
+            stagedMods(workDir),
+            "the 3.6.6 build demands a fabricloader this loader does not provide, and must not survive staging"
+        )
+    }
+
+    /**
+     * **Knowing nothing is not knowing zero.** A caller that cannot see an install supplies no pairs, and
+     * the judge then treats the demand as naming something absent exactly as it always has — so a loader
+     * that genuinely satisfies the demand is never demoted over a gap in our own knowledge.
+     */
+    @Test
+    fun aLoaderNothingCanDescribeDemotesNothing(@TempDir workDir: File) {
+        val verifier = BootVerifier(
+            apiWrapper = apiWrapper,
+            platform = platform,
+            httpDownloader = downloaderFor(
+                descriptors + mapOf(
+                    "yet_another_config_lib_v3-3.6.6.jar" to
+                        """"id":"yacl","depends":{"fabricloader":">=0.19.5"}"""
+                )
+            ),
+            loaderVersionPolicy = unbootableLoaderVersion,
+            workDirectory = workDir
+        )
+
+        verifier.prepareBootPack(candidate, "Fabric")
+
+        Assertions.assertTrue(
+            "yet_another_config_lib_v3-3.6.6.jar" in stagedMods(workDir),
+            "with nothing known about the loader the newest build stays, as it did before this existed"
         )
     }
 

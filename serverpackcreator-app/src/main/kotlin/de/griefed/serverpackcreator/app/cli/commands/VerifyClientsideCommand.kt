@@ -85,8 +85,9 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
         val markdown = try {
             run {
                 val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
+                val platforms = supportedPlatforms()
                 val verifier = ClientsideVerifier(
-                    platforms = supportedPlatforms(),
+                    platforms = platforms,
                     metadataScanner = MetadataScanner(apiWrapper.modScanner),
                     jarDownloader = httpDownloader,
                     workDirectory = workDirectory,
@@ -96,7 +97,10 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                             platform = platform,
                             httpDownloader = httpDownloader,
                             loaderVersionPolicy = LoaderVersionResolver(apiWrapper.versionMeta),
-                            workDirectory = File(workDirectory, "boot")
+                            workDirectory = File(workDirectory, "boot"),
+                            // A dependency this platform cannot supply may exist on the other one, and the
+                            // staged file is just a jar. Empty when no CurseForge key is configured.
+                            alternatePlatforms = platforms.filter { it !== platform }
                         )
                     }
                 )

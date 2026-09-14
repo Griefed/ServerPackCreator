@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * File-backed [VerdictStore] that survives restarts: verdicts are loaded from [file] on construction
  * and re-persisted on every [record], so a multi-day fire-and-forget grind resumes where it left off
- * instead of re-booting everything. Keyed by [verdictKey] (platform + slug + loader) like the in-memory
+ * instead of re-booting everything. Keyed by [verdictKey] (platform + project + Minecraft version-line) like the in-memory
  * store — shared so the two key schemes cannot drift — so a re-verified triple replaces rather than
  * duplicates, while the same slug on another platform keeps its own row. Existing stores need no
  * migration: keys are derived from fields every persisted verdict already carries. A corrupt/unreadable
@@ -110,6 +110,9 @@ class JsonVerdictStore(
         // Drop the id-less row for this project first, so an identified verdict replaces it rather than
         // sitting beside it. Without this a project ground before ids existed would hold two rows for good.
         supersededLegacyKey(verdict)?.let { verdicts.remove(it) }
+        // And this project's loader-keyed rows, which the axis change superseded. Per project, as it is
+        // re-ground: a sweep on any other trigger would discard evidence before a replacement exists.
+        supersededLoaderKeys(verdict, verdicts.keys).forEach { verdicts.remove(it) }
         verdicts[verdict.identityKey()] = verdict
         if (flusher == null) persist() else pending.set(true)
     }
@@ -198,7 +201,7 @@ class JsonVerdictStore(
     private fun persist() {
         file.parentFile?.mkdirs()
         val tmp = File(file.parentFile, "${file.name}.tmp")
-        mapper.writerWithDefaultPrettyPrinter().writeValue(tmp, verdicts.values.sortedWith(compareBy({ it.slug }, { it.loader })))
+        mapper.writerWithDefaultPrettyPrinter().writeValue(tmp, verdicts.values.sortedWith(compareBy({ it.slug }, { it.minecraftLine.orEmpty() }, { it.loader })))
         try {
             Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
         } catch (_: AtomicMoveNotSupportedException) {

@@ -156,8 +156,36 @@ internal class PreventionCauseVerdictTest {
         )
         Assertions.assertEquals(
             PreventionCause.HOST,
-            BootVerifier.preventionCauseFor(mapOf("yacl" to UnmetReason.DROPPED_BY_BACKTRACK)),
-            "the backtrack dropped those builds itself; that is our doing"
+            BootVerifier.preventionCauseFor(
+                mapOf("yacl" to UnmetReason.DROPPED_BY_BACKTRACK, "balm" to UnmetReason.DOWNLOAD_FAILED)
+            ),
+            "the retryable half still has to reach the operator, even beside an upstream gap"
+        )
+    }
+
+    /**
+     * **An exhausted backtrack is nobody's failure, not ours.** It was `HOST` until 2026-09-12 on the
+     * reasoning that "staging dropped those builds itself" — which describes the mechanism, where this
+     * property is about blame. Staging only ever drops a build because something upstream *declared* an
+     * incompatibility: a version range one jar states about another, or a Minecraft range a jar states about
+     * itself. No operator can act on either, and running out of backtracks is not this case at all —
+     * `dependencyToDemote` then logs and boots anyway rather than refusing.
+     *
+     * Measured on the public grinder that day: **6 of its 7 `ERROR` rows** were this, telling an operator
+     * their host was broken over `bellsandwhistles` needing a `create-fabric` build whose every candidate
+     * conflicts. `ERROR` means "an operator's problem, never evidence about the mod"; `UNVERIFIABLE` is what
+     * these are.
+     */
+    @Test
+    fun anExhaustedBacktrackIsNobodysFailure() {
+        Assertions.assertEquals(
+            PreventionCause.UPSTREAM_UNAVAILABLE,
+            BootVerifier.preventionCauseFor(mapOf("create-fabric" to UnmetReason.DROPPED_BY_BACKTRACK))
+        )
+        Assertions.assertEquals(
+            Verdict.UNVERIFIABLE,
+            prevented(UnmetReason.DROPPED_BY_BACKTRACK.preventionCause),
+            "and it reaches the bucket that means nobody could have verified this"
         )
     }
 

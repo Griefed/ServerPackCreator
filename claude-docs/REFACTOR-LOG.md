@@ -4010,3 +4010,499 @@ is `fix:` rather than `refactor:`. The first three are argument-only, with every
 Nothing else in the base tree noticed, which is the claim worth having: the behaviour that moved is the
 behaviour that was meant to.
 
+
+## 2026-09-10/11 — the `UNVERIFIABLE` bucket, read the same way the `ERROR` one was
+
+`LOCKED` and `UNVERIFIABLE` had been live for a day, and the new bucket immediately held **42 rows** (out of
+3931 verdicts: `CONFIRMED` 104, `CLEAR` 3597, `INCONCLUSIVE` 157, `ERROR` 8, `LOCKED` 32). Griefed's
+directive was the right one: *these mods do run on a client or a server, other launchers install them fine,
+and the grinder must too.* Every row was attributed to a measured cause, against the live APIs and by opening
+the actual jars — **27 of 42 were ours**, and the remaining 15 are genuine upstream facts (two of which now
+report better).
+
+| Cause | Rows | Fixed |
+|---|---|---|
+| NeoForge on Minecraft ≤1.20.4 ships `META-INF/mods.toml`; the loader gate was version-blind | **13** | yes |
+| Quilt's `unless` clause ignored | **5** (4 fixable) | yes |
+| Platform metadata mis-ticks a loader the jar was never built for | **10** | yes |
+| Mod id ≠ project slug, or the fork is a separate project | **3** | yes |
+| CurseForge patch-neighbour fallback **provably inert** | **2** (+2) | yes |
+| Pre-1.13 Forge descriptor (`mcmod.info`) recognised nowhere | **1** | yes |
+| A **beta** picked over 16 stable releases | **1** | yes |
+| `quilt_base` hard-required with no `unless`; `yacl` has no Forge builds; a dead project | 5 | upstream |
+
+### The eight changes, and what each one is really about
+
+- **One home for "which descriptor evidences loader L on Minecraft V"** (`LoaderDescriptors`, in `-api`).
+  `-api` already had `NEOFORGE_TOML_MINIMUM_MINECRAFT = "1.20.5"` and its own `CLAUDE.md` said outright that
+  NeoForge on 1.20.2–1.20.4 still ships `mods.toml`; `-clientside`'s `JarSelfDeclaration` held a **second,
+  flat, version-blind copy** and refused 13 genuine NeoForge jars on exactly those versions. This is the
+  `MetadataScanner`/`ModListCompiler` landmine again, so the fix **removed** the duplicate rather than adding
+  a third. `ModScanner.scannerFor` now dispatches through the same object, which as a side effect fixed
+  `scannerFor("NeoForge", "26")` throwing — the NeoForge arm compared unguarded where the Forge arm already
+  fell back, and `ModListCompiler` does not wrap the call, so it aborted **generation** in the published
+  module.
+- **Declaring a descriptor is not reading one.** The first cut of the era gate put only `neoforge.mods.toml`
+  in NeoForge's declaring set above 1.20.5 and accepted a `neoforge.mods.toml`-only jar for a *Forge* boot at
+  1.20.1. NeoForge declares both files at every version for that reason.
+- **An existing expectation encoded the bug.** `aForgeJarIsRefusedForANeoForgeBoot` asked at Minecraft
+  1.20.4, where a `mods.toml` genuinely is a NeoForge descriptor. It moved to 1.21.1 with a doc stating what
+  the gate gives up in 1.20.2–1.20.4 and that `runtimeMismatchMarkers` already scores that INCONCLUSIVE —
+  the stop-and-flag signal working as intended, which is why the commit is `fix:`.
+- **Quilt's `unless`.** `{"id": "quilt_resource_loader", "unless": "fabric-resource-loader-v0"}` is what
+  Quilt Loader honours and what `QuiltScanner` discarded. QSL publishes nothing for 1.21.1+ while
+  `fabric-api` 1.21.1 has 36 versions, so four mods that run everywhere refused everywhere.
+- **The release channel was read nowhere.** `grep releaseType\|version_type` hit only `-api`'s Mojang
+  metadata. `hybrid-aquatic` has **16 stable Forge releases** and 10 `[Sinytra]` betas, and
+  newest-Minecraft-first *prefers* a beta systematically: authors publish experimental newer-Minecraft ports
+  as betas while the stable line sits on an older version. A preference, never a filter — `faster-random`
+  publishes an alpha and zero releases for its loader.
+- **The patch-version fallback was inert on CurseForge from the day it shipped.** `resolveDependency` narrows
+  its page with `gameVersion=<exact>`, so every file in hand carries the exact version and the neighbour rung
+  could never match anything the exact rung did not. All six rows it closed were Modrinth. The widened ask is
+  a **second overload** defaulting to the narrow one, so Modrinth — which returns a whole history in one
+  response — needs no change and every implementation stays valid.
+- **The jar wins over the web form** (Griefed's call). A `neoforge.mods.toml`-only jar ticked Forge is now
+  verified under NeoForge. `Prepared.Failed.declaredLoaders` is a **sibling** channel to
+  `declaredMinecraftConstraint`, not a widening of it: the landmine says re-selecting a version cannot answer
+  a loader mismatch, and a refusal offered the wrong retry would re-stage down its whole version list
+  learning nothing. Exactly one retry fires, the loader one first, and it stages into the **requested**
+  loader's directory so the borrowed loader's own verdict keeps its pack and console.
+- **One mod id, two projects, and neither the fork table nor the platform boundary could say so.** `create`
+  publishes `[forge, neoforge]`; the Fabric port is the separate project `create-fabric`, and both declare
+  the id `create`. `KnownModIds.alternatives` is tried **after** the primary, because mapping `create` onto
+  the fork outright would send every Forge boot to a project with no Forge build. And a dependency the
+  candidate's own platform cannot supply is now fetched from the other one — only the *manifest* route can
+  cross, because only it knows the mod id.
+
+### Three things worth carrying beyond this pass
+
+- **A test can pass against unfixed code because one fixture value is a prefix of another.**
+  `CurseForgeDependencyLineTest` matched `contains("gameVersion=$older")`, and `1.20` is a prefix of
+  `1.20.6`: the request for the *newer* version matched the *older* fixture arm and the whole test went green
+  before the fix existed. Parsing the value and comparing it exactly is what gave it teeth. The repo's
+  existing rule — *run the pin and read why it failed* — catches this only if you also ask why it **passed**.
+- **A guard that cannot compile is not a red pin.** Two fixes here needed a new parameter before their guard
+  could even be expressed. Where the seam was separable it landed as its own behaviour-preserving
+  `refactor:` commit first (`KnownModIds.mappingsFor`), and the pin went red against it for the right reason.
+  Where it was not (`alternatePlatforms` on the constructor), the commit says so and quotes the mutation that
+  reproduces the red — an honest boundary beats a fake one.
+- **A refusal state's *name* is about our confidence, not about the world.** The cross-platform fallback's
+  first cut fired only on `Unsatisfied`, and the commonest real case is `Unmapped` — the difference between
+  them is how much *this* platform trusts its own mapping, which says nothing about whether the other site
+  has the mod. Its guard caught that, which is the argument for driving these through real staging rather
+  than asserting on a plan.
+
+**Equivalence checked against `86d3d441b`'s unmodified test tree**, by the recipe in the root `CLAUDE.md`:
+**api 412 pre-existing guards, zero failures; clientside 523, two failures** — both
+`JarSelfDeclarationTest`'s `mods.toml`-only jar against a NeoForge boot at Minecraft 1.20.2/1.20.4, i.e.
+exactly the one deliberate change, and both already restated at 1.21.1 in the HEAD tree. **Three** files
+needed adapting, all reference-only: `JarSelfDeclarationTest` on `declaredLoaders` taking the Minecraft
+version (passed `1.21.1`, where every one of its five base expectations is unchanged), and
+`LearnedIdCollisionTest`/`LearnedModIdsTest` on `mappingsFor`'s `orElse` returning a list. Every assertion
+byte-identical.
+
+**The two facts only a real jar could settle were settled by real jars**, per the root `CLAUDE.md`'s
+"ask a real runtime" rule, and both are one `unzip -l` rather than a test:
+
+```
+architectury-11.1.17-neoforge.jar  (NeoForge, MC 1.20.4)  ->  META-INF/mods.toml
+architectury-13.0.11-neoforge.jar  (NeoForge, MC 1.21.1)  ->  META-INF/neoforge.mods.toml
+Geophilic v3.6.mod.jar        quilt_loader.depends: quilt_resource_loader unless fabric-resource-loader-v0
+Terralith_1.21.x_v2.5.14.jar  quilt_loader.depends: quilt_resource_loader unless fabric-resource-loader-v0
+```
+
+The first pair *is* the era boundary the gate now encodes — a NeoForge build below 1.20.5 carries the file
+the gate used to read as Forge's, and nothing in either archive distinguishes the two loaders there. The
+second pair is the clause `QuiltScanner` discarded, in the shape the scanner reads (an object under
+`quilt_loader.depends`, not a bare string).
+
+**Each new gate was mutation-verified, and each failed exactly its own guards:** dropping the bootability
+check on the re-selected loader; never setting `declaredLoaders`; forcing `alsoVersions` back to an empty
+list; dropping the fork alternatives; never consulting the other platform.
+
+**Two items were deferred with reasons, as B36 and B37** — Sinytra Connector as a boot strategy (the row that
+prompted it was a beta whose project ships 16 stable Forge builds, and the repo has already measured the
+Connector attempt failing with every dependency staged correctly), and search-then-confirm for a mod id no
+registry resolves (three cheaper routes landed first and this pass produced no instance the search would be
+needed for).
+
+## Moved out of the root `CLAUDE.md` on 2026-09-11 — the three "Since then" narratives
+
+> These sat in the always-loaded root file, which the file's own header designates *this* file for
+> ("Per-sprint **narrative** history → `git log` and `claude-docs/REFACTOR-LOG.md`"). Verbatim, so nothing
+> was lost; the lessons that generalise beyond their incident stayed behind as one-liners in the root.
+
+**Since then (2026-09-06): the grinder plugin**, a second pf4j plugin module (`-plugin-grinder`) plus the
+`/verdicts.json` feed it reads. Two things worth carrying forward beyond that module's own docs:
+
+- **`ApiPlugins.getAllExtensionsOfPlugin` ignored its `plugin` argument**, so every tab was added once per
+  *installed plugin* and every generation extension ran that many times. Invisible for as long as this
+  repository shipped exactly one plugin — one times one is one — and visible the first time two were
+  installed together, as a tab strip reading `Grinder | Tetris | Grinder | Tetris`. Fixed, pinned by
+  `ExtensionScopingTest` (which builds its second plugin by cloning the example jar), recorded in
+  `claude-docs/API-BEHAVIOUR-CHANGES.md`. **The general lesson: a defect whose multiplier is the count of
+  something the repo only ever has one of cannot be found by testing what the repo ships.**
+- **CLOSED 2026-09-08 — the plugin-loading recursion** (was: "the example plugin dies with a
+  `StackOverflowError` in `CustomPluginFactory`, pre-existing, GUI unaffected"). Both halves of that
+  description turned out to be understated: it is not confined to CLI, and it is unbounded recursion rather
+  than one failed instantiation. **Plugin loading now happens after the API it reaches into exists** —
+  `ApiPlugins.loadAndStart()` instead of the constructor's `init`, called **last** by `stageThree`, and
+  `ApiWrapper.api()` publishes its singleton **before** running setup. Measured on one startup with the
+  example plugin installed: **53 ApiWrapper constructions, 268 `example-kotlin` log lines, an
+  OutOfMemoryError** — reported by Griefed as the example plugin's output appearing "a gazillion times" —
+  against **0 / 7 / 0** after. Detail and the two rows it owes an embedder:
+  `serverpackcreator-api/CLAUDE.md` and `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  **The lesson worth carrying:** the api suite had the example plugin installed and stayed green for
+  months, because whichever test called `ApiWrapper.api()` first did so before anything copied a jar into
+  `tests/plugins`. The defect needs a populated plugins directory at *first* startup — every real run, and
+  no test. A fixture that is installed *after* the thing it is meant to exercise has already run is not a
+  fixture.
+
+**Since then (2026-09-09): the grinder's `ERROR` bucket, read.** Two things generalise beyond the clientside
+module, whose own `CLAUDE.md` carries the detail and the landmines:
+
+- **A bucket that mixes "somebody must fix this" with "nobody can" is not readable, and stops being read.**
+  `Verdict.ERROR` documented itself as *"an operator's problem, never evidence about the mod"* and held, out
+  of 53 published rows, **17 CurseForge distribution opt-outs and ~18 combinations nothing upstream ever
+  published for**. Neither is anybody's problem, and both were sitting in the one column an operator scans
+  to find work. `LOCKED` and `UNVERIFIABLE` now carry them, and what remains in `ERROR` is actionable by
+  construction. The general form: *a category defined by its consequence ("the grind did not happen") will
+  accumulate everything with that consequence, whatever its cause* — so define it by the cause, and make the
+  type carry it (`PreventionCause`) rather than a sentence a reader has to parse.
+- **A defect whose evidence is a published report can be diagnosed without touching the host.**
+  `chefs-delight`'s refusal printed the bare mod id `farmersdelight`; the platform route labels with the
+  resolved project's *slug* (`farmers-delight`), and the manifest route refuses only on a confident mapping,
+  which the id table does not give that id. Two facts in the code plus one string in the feed located the
+  bug in `LearnedModIds` — no shell on the daemon, no log. Worth doing before asking for access: the report
+  is evidence, and its wording is part of it. That is also the argument for the wording being precise, which
+  is why `unsatisfiedLabel` and `UnmetReason` exist at all.
+
+**Since then (2026-09-10/11): the `UNVERIFIABLE` bucket, read the same way.** 42 rows, 27 of them ours, all
+attributed to a measured cause. The module's own `CLAUDE.md` carries the six fixes; three lessons generalise:
+
+- **A test can pass against unfixed code because one fixture value is a prefix of another.** A guard for the
+  CurseForge version-line matched `contains("gameVersion=$older")`, and `1.20` is a prefix of `1.20.6` — so
+  the request for the *newer* version matched the *older* fixture arm and the whole test went green before
+  the fix existed. This file already says *run the pin and read why it failed*; the missing half is **ask why
+  it passed**, whenever a fixture's values could contain one another. Parsing the value and comparing it
+  exactly is what gave that guard teeth.
+- **A guard that cannot compile is not a red pin, and the honest options are both better than a fake
+  boundary.** Two fixes here needed a new parameter before their guard could be expressed at all. Where the
+  seam was separable it landed first as its own behaviour-preserving `refactor:` commit and the pin went red
+  against it; where it was not, the commit says so and quotes the mutation that reproduces the red. Committing
+  a test that does not compile proves nothing, and neither does quietly merging pin and fix.
+- **Duplicated knowledge drifts in the direction of whichever copy is easier to reach.** `-api` knew that
+  NeoForge below Minecraft 1.20.5 ships `META-INF/mods.toml` — it is in the dispatch constant *and* in that
+  module's `CLAUDE.md` — while `-clientside` held a flat, version-blind second copy and refused 13 genuine
+  NeoForge jars. Third instance of this exact shape after `MetadataScanner`/`ModListCompiler` and the two
+  `Quilt to Fabric` maps. **The fix is always to delete the duplicate, never to correct it**, and the
+  question to ask of any new lookup table is which existing one already answers it.
+
+---
+
+## 2026-09-11 — the grind axis moves from the modloader to the Minecraft version-line
+
+**The report that started it** named two things: *"we only really need to check one instance of a given mod"*,
+with the loader priority NeoForge → Forge → Fabric → Quilt and separate checks per major Minecraft version;
+and a specific row — `CurseForge/aether`, `aether-1.12.2-v1.5.4.1.jar`, Forge — carrying a
+`DEPENDENCY_FAILURE` for `curios-forge` against a build that has no dependencies at all.
+
+**The second half was diagnosed before anything was changed, against the live CurseForge API**, and it was
+not what the row said it was:
+
+- `aether-1.20.1-1.5.2-neoforge.jar` is tagged `['NeoForge', '1.20.1', 'Forge']` — one file, two loaders —
+  and `pickBootableCandidate` orders newest-Minecraft-first inside a release channel, so the **Forge** grind
+  staged *that* jar. Its `META-INF/mods.toml` declares `modId = "curios"`, `mandatory = true`,
+  `versionRange = "[5.3.1+1.20.1,)"`, which is where `curios-forge-<v>+1.20.1.jar` came from and what
+  `DependencyAttribution` blamed.
+- `aether-1.12.2-v1.5.4.1.jar` was re-uploaded in 2025, making it the newest-*uploaded* Forge-tagged file —
+  which is what `loaderFiles.firstOrNull()` returned. Downloaded and opened: its `mcmod.info` declares
+  `"dependencies": []`, and CurseForge lists `curios` against it only as relationType `1`
+  (`EmbeddedLibrary`), which `CurseForgePlatform` correctly ignores.
+
+So the dependency resolution was right about the file it ran, and the row named a different file. **Two
+selections for one row** — one for the jar scan and the report, one for the boot — and the fix is to make
+one. Shipped first, on its own, because it is a defect independent of the axis.
+
+**The axis itself was costed before it was designed.** Over the 200 most-downloaded Modrinth mods,
+2026-09-11: 3.06 boots per project under the loader axis, covering a mean of **1.6** distinct Minecraft
+lines. Uncapped per-line grinding would be 7.38 boots per project (2.41x), which breaks the rule that
+`SPC_GRINDER_REVERIFY_TTL_DAYS` must outlast a sweep; newest-2 plus the anchors `1.21,1.20,1.12` is 3.83
+(1.25x) and is what ships. That table is in `serverpackcreator-grinder/README.md` §5 beside the knobs,
+because the number an operator needs is the one that decides their TTL.
+
+**Three things the design had to buy back**, each of which the loader axis had been providing for free:
+
+1. **Scratch-space isolation.** One loader now wins several of a project's lines, so
+   `<platform>-<slug>-<loader>` had the second target wipe the first's pack mid-run — the `creativecore`
+   failure exactly. `AttemptDirectory` gained the line and `ownerOf` cuts two parts.
+2. **The cross-loader crash disproof.** `iron-chests` published a wrong `HIGH` until a sibling loader's clean
+   boot in the same run threw it out; that sibling is no longer booted unless something asks. Two halves ask:
+   `shouldRecheckAgainstOtherVersions` also arms on a *decisive* crash (one about to publish), and
+   `pickRecheckCandidates` spends its **first** attempt on the crashing era's other loader. That is also a
+   straight improvement to `creativecore`, whose diverse sample reached NeoForge two eras away when the boot
+   that actually contradicted the crash was NeoForge on the crashing version.
+3. **A row identity the store agrees with.** The axis change alone left `verdictKey` built from the loader,
+   so `aether`'s two NeoForge rows collided and one overwrote the other — caught by a pin written
+   deliberately red before the fix.
+
+**What generalises** (the root `CLAUDE.md` carries the short forms):
+
+- **An axis chosen for how the work is *produced* asks one question repeatedly and never asks the others.**
+  A boot is parameterised by a loader, so the grind was keyed on one — and the answer varies by *era*.
+- **A one-hop key migration does not generalise to a many-to-one one.** `supersededLegacyKey` computes the
+  superseded key from fields the new row still carries; three loader rows collapsing into one line row leaves
+  nothing to compute from. Removal by **prefix** is the shape that works, which is why the key carries an
+  `mc:` marker at all.
+- **Evidence keyed by a name outlives neither a rename nor a re-key.** Every boot log written before this
+  carries the old three-part owner and is now reachable from no row; the log budget reclaims it. A console
+  `adoptLegacy` moved records no Minecraft version anywhere, so it is attributable to no line — pinned as
+  such rather than filed under a guessed era.
+
+**A number in a commit message here was wrong.** `fix(clientside): re-check a publishable crash…` states
+"Clientside suite: 610 tests"; the measured figure is **603** (`601` after the axis commit, plus that
+commit's two). It was written from memory instead of from
+`serverpackcreator-clientside/build/test-results/test/*.xml`, which is the exact failure this repository's
+*"cite names, not snapshots"* convention exists to prevent, in the one place the convention says a number may
+appear. Recorded rather than rewritten because the branch is local and the message is otherwise accurate —
+re-derive counts, never quote them from recall.
+
+### Equivalence against `develop`, measured
+
+Per this repository's convention, `develop`'s **unmodified** test tree was run against the branch's
+production code in a detached worktree. A deliberate behaviour change cannot come out green, so the value is
+the enumeration.
+
+**Two signature changes, and nothing else fails to compile**, across 20 files:
+
+- `AttemptDirectory.nameFor` gained `minecraftLine` — 18 files, every one of them building a staging path.
+- `BootLogStore.namesFor` / `pruneExcept` gained `minecraftLine` — 2 files.
+
+Adapted by adding that one argument and **editing no assertion**, `develop`'s guards then ran:
+**clientside 568, 1 failed; grinder 516, 7 failed** (29 gated ITs skipped). All eight are the deliberate
+change, and each is restated on the branch rather than deleted:
+
+| Guard | Why it moved |
+|---|---|
+| `aCrashIsReCheckedOnAnotherLoaderRatherThanTwiceOnItsOwn` | the re-check spends its first attempt on the crashing era's other loader |
+| `adoptingTheLegacyCrashLogsMovesThemOnceAndIsIdempotent` | an adopted console records no Minecraft version and is reachable from no row |
+| `emitsHeaderAndOrdersConfirmationsFirst`, `emptyVerdictsStillEmitTheHeader`, `servesTheHtmlTableAndTheCsvExport`, `everyColumnRendersTheValueItsHeaderNames` | the `Minecraft` / `MinecraftVersion` columns |
+| `sortsTheTableByHowManyLogsEachRowHas`, `onlyARowWithKeptLogsGetsLinks` | a row's logs are addressed by a four-part owner |
+
+**What did *not* fail is the more interesting half.** `GrinderTest.recordsOneVerdictPerLoaderFromTheReport`
+and `VerdictStoreTest.distinctLoadersOfOneProjectCoexist` both pass — because `develop`'s fixtures build
+verdicts with no Minecraft line, which is exactly what a row written by an older build looks like, and those
+still key on the loader. The legacy path is therefore exercised by 1,084 guards that know nothing about it.
+
+**Naming, afterwards.** `LoaderVerdict` became `GrindTargetVerdict` and `ClientsideReport.perLoader` became
+`perTarget`, in a `refactor:` of its own once the behaviour was settled: a collection called `perLoader`
+holding one entry per Minecraft era is the kind of stale name this repository treats as a defect. **Entries
+above this one are deliberately left spelling the old names** — they record what was true when they were
+written, and rewriting a historical log to match today's symbols is how a record stops being one.
+
+**Still outstanding, and it needs a host this session did not have:** the end-to-end run against Docker with
+`CURSEFORGE_API_KEY` — `./gradlew :serverpackcreator-grinder:installDist` (it is *not* rebuilt by `test`)
+then a one-shot grind of `https://www.curseforge.com/minecraft/mc-mods/aether`, expecting a `1.12 / Forge`
+row with no dependency staged, `1.20 / NeoForge`, `1.21 / NeoForge` staging `curios`, and every row's
+`Filename` matching the artifact its `Detail` describes.
+
+---
+
+## 2026-09-12 — the public grinder's 40 `DEPENDENCY_FAILURE` rows, read one by one
+
+Griefed pointed at the live report filtered on `f.decision=DEPENDENCY_FAILURE` and asked for them to be
+solved. Every row was traced to its **kept console** (`/boot-logs`, 40 of 40 had one) and every cause
+verified against the live platform APIs before a line of code moved. 28 were ours.
+
+**The method is the reusable part.** The verdict detail names none of this — `DEPENDENCY_FAILURE` is a
+console rung, so the detail says only `Forge 48.1.0 / Minecraft 1.20.2 → INCONCLUSIVE (exit 0)`. The console
+says which mod demanded what of whom, and `stagedDependencies` says what we actually put in the pack; the
+two together located every one of these without touching the daemon. That is the argument for both fields
+existing, and for the report being precise.
+
+**Counting them was what made the shape visible.** 16 of the 40 are Quilt, 12 of those one cause; 7 are a
+mod id that is not its project's slug; 5 are a jar-in-jar library nobody read. A single row of any of those
+reads like a one-off.
+
+Six fixes landed, each pinned and mutation-verified; the module's own `CLAUDE.md` carries the detail. What
+generalises:
+
+- **A demand can be invisible at several layers at once, and fixing one changes nothing.** The
+  `fabric-language-kotlin` / `fabricloader` case needed the scanner's deliberate exclusion read back, a new
+  seam for what a loader *provides*, and `DependencyBacktrack` to stop skipping it — three edits before one
+  row moved. Worth checking, before claiming a fix, that nothing downstream of it discards the result.
+- **A documented safety argument is a claim about the world, and the world changes.** `pickUntagged` was
+  justified by "untagged CurseForge files are pre-1.13, so untagged *means* Forge". `TerraBlender (Forge)`
+  publishes an untagged jar for Minecraft 26.2 — in 2026. The comment was true when written and had quietly
+  stopped being true, which is the failure mode a measured comment is supposed to prevent and cannot.
+- **Test the tempting fix before building it.** Seven rows are ids that resolve to no slug, and the obvious
+  answer is a name search. Tried against both live APIs first: CurseForge answers `farmersdelight` with
+  "Dirty Bowls Delight" and `rhino` with "TS Modify"; Modrinth answers `kotlinforforge` with nothing. A
+  search would have staged other people's mods into verification packs. Six verified table entries instead —
+  and the *negative* result is the more valuable half, because it is what stops the next reader trying it.
+- **What we asked for is not always what ran, and the report should say so.** All 16 of 16 Quilt boots ran
+  quilt-loader `0.30.1` while their rows reported the `0.31.0-beta.4` staging chose — and the two provide
+  different `fabricloader` versions, which is the whole of the twelve-row failure. This is the same defect
+  class as the aether row that opened the previous entry: **a row naming something it did not use reads as a
+  different bug entirely.**
+
+**Open, and it needs the host.** Why a tuple labelled `0.31.0-beta.4` holds quilt-loader 0.30.1 is not
+answerable from the report: it is either the Quilt installer declining a beta, a stepped-down build the
+marker did not record, or a stale layer. `ls ~/.spc-grinder/cache/*Quilt*/` and the tuple's
+`.spc-install.log` settle it. The newest-build re-check is deliberately left unarmed until then, because
+arming it against an installer that keeps producing 0.30.1 costs a boot per row and fixes nothing.
+
+**Deliberately not fixed**, with reasons, so they are not re-opened: three rows are upstream-unsatisfiable
+(`emotecraft` demands `playeranimator [2.0.3.1+1.21.5,)`; Modrinth publishes exactly one 1.21.5 build,
+`2.0.2+1.21.5`), two are the Sinytra Connector placeholder, and four were never dependency failures at all.
+
+---
+
+## 2026-09-12 (later) — the rest of the grinder's report, and a false positive in the published list
+
+With the dependency failures closed, the whole store was measured rather than sampled: **4475 rows**, of
+which the buckets worth acting on are `INCONCLUSIVE` (177) and `ERROR` (7). Reading them produced one
+finding that matters more than the other three put together.
+
+**The published exclusion list contained false positives, and our own audit could not see them.**
+`propagateClientOnlyProof` carries one build's client-only proof to every target of the project. Measured:
+**22 rows across 12 projects** were published as clientside while booting dedicated servers *themselves* and
+while declared `SERVER` — `agricraft`, `galosphere`, `zombie-awareness`, `immersive-lanterns`,
+`joy-of-painting`. `CurseForge/agricraft` is a crop-breeding mod whose NeoForge build fails registering one
+`@SubscribeEvent` class touching `net/minecraft/client/gui/Gui`, while its Fabric and Forge builds each reach
+the ready line. All three rows went to `/as-properties`.
+
+The inference propagation rests on — *a mod's features do not change with the loader* — is exactly invalid
+when the reaching is one build's defect, and a sibling's clean boot on a mod that claims the server is what
+says so. The gate is deliberately narrow: the claim must be `Declaration.SERVER` (platform **and** jar
+agreeing) rather than `declaresServerSupport`, because the latter accepts `JarScan.SERVER_OR_BOTH` — which
+is also what a scan that read *nothing* returns. The weak reading matches 27 rows, the strong one 22.
+
+**And the audit built to catch this was reporting 86 false alarms.** An inherited proof lived only in the
+detail's prose, so a row's `decidedBy` stayed its own boot rung and `GrinderAuditIT` — which re-derives
+evidence from the kept consoles — read 86 of 140 published rows as resting on none. It also still built the
+pre-axis three-part tuple, so against the current daemon it would have matched no console at all and
+*assume-skipped*: a green run that graded nothing.
+
+Two smaller ones: `com.mojang.blaze3d` was missing from the client-only marker, so `vulkanmod` — a Vulkan
+renderer — was filed INCONCLUSIVE off the bare exit code; and `DROPPED_BY_BACKTRACK` blamed the host for
+what is an upstream gap, which was 6 of the 7 `ERROR` rows.
+
+**What generalises:**
+
+- **A guard that cannot fail is worse than no guard, and it fails silently in two ways**: by matching nothing
+  (the three-part tuple, which *assume-skips* to green) and by matching everything (86 false alarms). Both
+  were invisible without running it against real data. Whenever a naming scheme or a verdict path moves, ask
+  what the audit now matches.
+- **Evidence must be a field.** The propagation was correct and its reasoning was recorded — in prose. Prose
+  is not queryable, so the one mechanism that checks publications could not see it. This module's own rule —
+  *a verdict that cannot name its own evidence cannot be audited* — applies to inherited evidence too.
+- **A predicate correct for one question can be wrong for another.** `declaresServerSupport` arms the crash
+  re-check, where accepting an unread jar scan is the conservative direction; as a gate on *publication* the
+  same leniency opens on most of the catalogue. Re-read what a shared predicate means before reusing it.
+- **"Deliberately ours" can be a mis-blame rather than a decision.** `DROPPED_BY_BACKTRACK` was documented as
+  `HOST` because "staging dropped those builds itself" — true of the mechanism, false of the blame. The
+  recorded residue said closing it needed a second exclusion channel; it needed re-reading the sentence.
+- **Reading 66 consoles produced one rule.** The EXIT_CODE bucket is mostly genuine runtime version
+  mismatches, correctly INCONCLUSIVE — the hypothesis that it hid systematic wrong-Minecraft staging was
+  tested and **disproved**. The single marker it did yield was worth the read, and so is knowing the rest of
+  that bucket is not ours.
+
+
+## 2026-09-12 — one field report, two ways the loader for a line was wrong
+
+Griefed filtered the public grinder on `decidedBy=DEPENDENCY_FAILURE` and said *"continuity has an issue,
+again"*. One row matched. It was the third time `Modrinth/continuity` has been the subject, and this time it
+exposed a class rather than a case: **the loader a line is ground under is chosen from platform metadata,
+and nothing re-opens that choice when the downloaded jar turns out not to be a mod for it.**
+
+### The row, and why the shim never had a chance
+
+`continuity` is a Fabric mod. Its Forge and NeoForge files on Modrinth are **Sinytra Connector placeholders**
+— a `mods.toml` whose only job is to get the file past Forge's mod discovery, wrapped around the real
+`fabric.mod.json`. `LOADER_PRIORITY` is `NeoForge > Forge > Fabric > Quilt`, so under the per-line axis the
+1.20 line went to Forge and the 1.21 line to NeoForge, and **both** landed on a shim. The 26.1 and 26.2
+lines, where continuity publishes no shim, went to Fabric and came out clean — which is the control.
+
+The 1.20 console says what happened, and it is not what the verdict says:
+
+```
+[or.si.co.lo.DependencyResolver/]: Dependency resolution found 0 candidates to load
+[ne.mi.fm.lo.ModSorter/LOADING]: Missing or unsupported mandatory dependencies:
+	Mod ID: 'fabric_api',   Requested by: 'continuity', Expected range: '', Actual version: '0.92.6+1.11.15+1.20.1'
+	Mod ID: 'connectormod', Requested by: 'continuity', Expected range: '', Actual version: '1.0.0-beta.49+1.20.1'
+```
+
+**Both dependencies were staged, both were loaded, and Forge named their versions while refusing them.** The
+stub declares them with no `versionRange`, and Forge reads an absent range as one that matches nothing. So
+`DEPENDENCY_FAILURE` was true of the console and false of the mod: staging had done everything right.
+Meanwhile `continuity-3.0.0+1.20.1.jar` — same mod, same Minecraft version, the release a Fabric user
+installs — was never booted, because the line only gets one boot now.
+
+### The half that was a repeat
+
+A placeholder redirect already existed: since 2026-09-06 `MetadataScanner` scans such a jar as Fabric. It
+read `META-INF/mods.toml` and nothing else, and NeoForge moved its descriptor to
+`META-INF/neoforge.mods.toml` on Minecraft 1.20.5 — so `continuity-3.0.0+1.21.neoforge.jar`, carrying the
+identical `[properties] "connector:placeholder" = true` one path over, scanned `SERVER_OR_BOTH` and published
+`CONTRADICTORY` against a platform declaring `client_side=REQUIRED`. The fix from six days earlier had been
+written against one of the project's two shims.
+
+### The half that was new, and B36 reversed
+
+The scan and the boot were making different decisions about one fact. `declaredLoaders` now discounts a
+stubbed descriptor, so `contradictingLoaders` refuses the Forge/NeoForge boot and names Fabric, and the
+`reselectOnLoaderContradiction` machinery that already exists re-stages the same file there. No new
+machinery, no extra container — the refusal happens before one is spent.
+
+That reverses B36, which recorded Griefed's 2026-09-06 call that a working Connector setup is still worth
+verifying. **The premise changed, not the reasoning**: that call was made when the Forge row was the
+project's only Forge evidence and cost nothing else. Under the per-line axis the shim costs the whole
+Minecraft line. Griefed made the reversal explicitly when the measurement was put in front of them.
+
+### The second row, which arrived mid-session
+
+The sweep was running, and a second `DEPENDENCY_FAILURE` appeared: `Modrinth/iceberg`, NeoForge, 1.20.1.
+`Iceberg-1.20.1-forge-1.1.25.jar` declares `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"`,
+and Modrinth ticks the file `forge, neoforge`, so priority took NeoForge. NeoForge's 1.20.1 fork froze at
+**47.1.106** and registers under the mod id `forge`; the console read *"Mod iceberg requires forge 47.2 or
+above"*. Forge 1.20.1 is at 47.4.23 and satisfies it outright.
+
+The descriptor gate could not see this, and that is the interesting part: `mods.toml` names Forge **and**
+NeoForge on 1.20.1, so the requested loader *was* declared. Carrying a loader's descriptor and being able to
+run under it are different questions, and only the first was being asked. `demandedLoaderVersion` now reads
+the range the jar puts on its platform entry, and `contradictingLoaders` drops any declared loader whose
+newest build cannot reach it.
+
+### What was checked and is *not* ours
+
+45 of 557 rows read `declared=CONTRADICTORY`, almost all NeoForge builds of obviously client-only mods, and
+it looked like the same root. It is not. Read from the live jars: `sodium-neoforge-0.9.2` declares
+`side="BOTH"` on its `neoforge` dependency, `entityculling-neoforge-1.10.5` and `moreculling-neoforge-1.0.10`
+the same, and `MouseTweaks-neoforge-2.31` declares no dependency block at all. The scanner reads them
+correctly; the authors do not maintain `side=` in NeoForge descriptors, because there it barely does
+anything. The platform says `server_side: UNSUPPORTED` and the jar says `BOTH` — a real disagreement between
+two real sources, reported accurately. Worth stating so the bucket is not re-opened as a bug.
+
+**What generalises:**
+
+- **A fix written against one artifact is a fix for one artifact.** The placeholder redirect was correct,
+  tested, documented — and blind to the second of the two shims the very same project publishes, because it
+  hard-coded a descriptor path that `LoaderDescriptors` already owns the versioned answer to. Three instances
+  of "duplicated knowledge drifts toward whichever copy is easier to reach" are now four. When a fix keys on
+  a file name, ask which *other* spellings of that file exist before calling it done.
+- **A prior decision is a decision under its premises, and an axis change is a change of premises.** B36's
+  "verify the Connector setup anyway" was right when the shim cost one of three boots and wrong when it cost
+  one of one. Nothing about Connector changed. Re-read the recorded calls a structural change touches, rather
+  than treating them as settled.
+- **A selection made on metadata needs a way to be re-opened by the artifact.** Both defects are the same
+  shape: the platform's loader tick decided the boot, the downloaded jar disagreed, and only one narrow form
+  of disagreement — *carries a different descriptor* — could reopen it. The machinery to re-select already
+  existed; what was missing was reasons to invoke it.
+- **The console said the dependencies were present.** `Expected range: '', Actual version: '…'` names both
+  halves, and reading it is what separated "our staging is wrong" from "the author declared an unsatisfiable
+  range". A row that says `DEPENDENCY_FAILURE` is a claim about the console, not about the dependency
+  resolution that produced the pack.
+- **A neighbouring bucket that looks like the same bug is worth ten minutes and four downloads.** The 45
+  CONTRADICTORY rows would have been a plausible and wholly wasted pass.

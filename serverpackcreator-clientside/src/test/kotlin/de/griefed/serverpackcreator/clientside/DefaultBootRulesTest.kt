@@ -147,9 +147,37 @@ internal class DefaultBootRulesTest {
             .filter { it.source == RuleSource.CONSOLE && it.verdict == Verdict.CONFIRMED }
 
         Assertions.assertEquals(
-            listOf("client-only-class", "lwjgl-on-a-dedicated-server", "fml-invalid-dist"),
+            // `client-only-dependency` joined on 2026-09-13. It is the same bar as the other three: the
+            // loader read the jar and refused a MANDATORY dependency as one it will not load on a server,
+            // which a broken harness cannot fabricate. Its position matters as much as its presence —
+            // `theClientOnlyDependencyRungOutranksTheExcuseOnTheLineAbove` is what pins that.
+            listOf(
+                "client-only-class", "lwjgl-on-a-dedicated-server", "fml-invalid-dist",
+                "client-only-dependency"
+            ),
             confirming.map { it.id },
             "only unfakeable client-only evidence may confirm — every other group means no fair run"
+        )
+    }
+
+    /**
+     * **Order is precedence, and this rung's whole value is where it sits.** Fabric prints `Incompatible
+     * mods found` immediately before the line naming the client-only dependency, so `dependency-failure`
+     * matches the same console — below this one. Move it and the finding silently becomes an excuse again,
+     * which is exactly the state `voxy` and `cull-less-leaves` were published in.
+     */
+    @Test
+    fun theClientOnlyDependencyRungOutranksTheExcuseOnTheLineAbove() {
+        val console = listOf(
+            "[main/ERROR]: Incompatible mods found!",
+            " - Mod 'Voxy' (voxy) 0.2.16-beta requires version 0.8.4 of sodium, which is disabled for " +
+                "this environment (client/server only)!"
+        )
+
+        Assertions.assertEquals(
+            "client-only-dependency",
+            DefaultBootRules.bundled().firstMatch(console)?.rule?.id,
+            "the finding must outrank the excuse printed above it"
         )
     }
 
@@ -164,5 +192,72 @@ internal class DefaultBootRulesTest {
             ruleSet.rules.map { it.id }.distinct().size, ruleSet.rules.size,
             "duplicate rule ids make precedence ambiguous"
         )
+    }
+
+    /**
+     * **A mixin subsystem exception is a mixin failure, whatever it was reaching for.**
+     * `ClassMetadataNotFoundException` sat in `dependency-failure`, and on the public grinder 2026-09-11 it
+     * caught two rows that are nothing of the kind: `CurseForge/ars-nouveau` reaching
+     * `net.minecraft.core.BlockSourceImpl` (a class its Minecraft no longer has) and
+     * `CurseForge/yungs-better-caves` reaching `com.llamalad7.mixinextras.injector.wrapoperation.Operation`.
+     *
+     * Both stay INCONCLUSIVE either way — the rungs are neighbours — so nothing published changes. What
+     * changes is that the `Decision` column, which is how an operator filters, stops calling a mixin failure
+     * a missing dependency.
+     */
+    @Test
+    fun aMixinMetadataFailureIsDecidedByTheMixinRung() {
+        val decided = BootLogClassifier.classify(
+            listOf(
+                "Caused by: org.spongepowered.asm.mixin.throwables.ClassMetadataNotFoundException: " +
+                    "net.minecraft.core.BlockSourceImpl"
+            ),
+            exitCode = 1,
+            timedOut = false,
+            ConsoleRuleSet.EMPTY
+        )
+
+        Assertions.assertEquals(BootDecision.MIXIN_APPLY_FAILURE, decided.decidedBy)
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, decided.result)
+    }
+
+    /** The MixinTweaker miss stays where it is: a 1.12.2 coremod really is an absent dependency. */
+    @Test
+    fun theMissingMixinTweakerStaysADependencyFailure() {
+        val decided = BootLogClassifier.classify(
+            listOf("java.lang.ClassNotFoundException: org.spongepowered.asm.launch.MixinTweaker"),
+            exitCode = 1,
+            timedOut = false,
+            ConsoleRuleSet.EMPTY
+        )
+
+        Assertions.assertEquals(BootDecision.DEPENDENCY_FAILURE, decided.decidedBy)
+    }
+
+    /**
+     * **`com.mojang.blaze3d` is a client-only class exactly as `net.minecraft.client` is**, and it was not in
+     * the marker. Measured on the public grinder 2026-09-12: `Modrinth/vulkanmod` — a Vulkan *renderer*,
+     * whose metadata reads CONTRADICTORY — crashed with
+     *
+     *     Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem
+     *
+     * and was filed INCONCLUSIVE off the bare exit code, publishing nothing. A lost true positive, and the
+     * one direction this engine cannot afford in bulk: it exists to find exactly this.
+     *
+     * Safe to trust over the exit code for the same reason the neighbouring markers are: a dedicated server
+     * ships no rendering layer, so no environment failure can fabricate it.
+     */
+    @Test
+    fun reachingMojangsRenderingLayerIsClientOnlyEvidence() {
+        listOf(
+            "Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem",
+            "Caused by: java.lang.ClassNotFoundException: com.mojang.blaze3d.systems.RenderSystem"
+        ).forEach { line ->
+            val decided = BootLogClassifier.classify(listOf(line), exitCode = 1, timedOut = false, ConsoleRuleSet.EMPTY)
+
+            Assertions.assertEquals(BootDecision.CLIENT_ONLY_CLASS, decided.decidedBy, line)
+            Assertions.assertEquals(BootResult.CRASHED, decided.result, line)
+            Assertions.assertTrue(decided.decidedBy.provesClientOnly, "and it is evidence about the mod, not the build")
+        }
     }
 }

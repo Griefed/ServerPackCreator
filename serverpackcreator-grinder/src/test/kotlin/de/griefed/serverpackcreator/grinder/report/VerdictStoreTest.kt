@@ -39,7 +39,7 @@ import java.time.Instant
 internal class VerdictStoreTest {
 
     @Test
-    fun reVerifyingSameProjectAndLoaderReplacesTheVerdict() {
+    fun reVerifyingSameProjectAndLineReplacesTheVerdict() {
         val store = InMemoryVerdictStore()
         store.record(grindVerdict("jei", "Forge", verdict = Verdict.INCONCLUSIVE))
         store.record(grindVerdict("jei", "Forge", verdict = Verdict.CONFIRMED))
@@ -48,13 +48,19 @@ internal class VerdictStoreTest {
         Assertions.assertEquals(Verdict.CONFIRMED, store.all().single().verdict)
     }
 
+    /**
+     * **Two loaders of one Minecraft line are one row, and that is the axis change.** A line is ground under
+     * exactly one loader — `BootCandidateSelector.LOADER_PRIORITY` picks it — so two verdicts differing only
+     * by loader describe the same era twice, and the later one is the answer. Distinct *lines* coexisting is
+     * the same rule from the other side and lives in `VerdictLineIdentityTest`.
+     */
     @Test
-    fun distinctLoadersOfOneProjectCoexist() {
+    fun twoLoadersOfOneLineAreOneRow() {
         val store = InMemoryVerdictStore()
-        store.record(grindVerdict("sodium", "Fabric"))
-        store.record(grindVerdict("sodium", "Quilt"))
+        store.record(grindVerdict("sodium", "Fabric", minecraftLine = "1.21"))
+        store.record(grindVerdict("sodium", "Quilt", minecraftLine = "1.21"))
 
-        Assertions.assertEquals(2, store.all().size)
+        Assertions.assertEquals(listOf("Quilt"), store.all().map { it.loader })
         Assertions.assertTrue(store.hasVerdictFor(MODRINTH, "sodium"))
     }
 

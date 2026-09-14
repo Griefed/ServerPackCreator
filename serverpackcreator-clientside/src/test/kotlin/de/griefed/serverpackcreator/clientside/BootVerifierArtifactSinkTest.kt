@@ -34,8 +34,8 @@ import java.time.Duration
 internal class BootVerifierArtifactSinkTest {
 
     private fun preparedPack(dir: File, loaderVersion: String = "47.2.0") = BootVerifier.Prepared.Ready(
-        File(dir, "Modrinth-jei-Forge/serverpack"),
-        File(dir, "Modrinth-jei-Forge/boot.log"),
+        File(dir, "Modrinth-jei-Forge-1.20/serverpack"),
+        File(dir, "Modrinth-jei-Forge-1.20/boot.log"),
         "1.20.1",
         "Forge",
         loaderVersion
@@ -100,15 +100,15 @@ internal class BootVerifierArtifactSinkTest {
     }
 
     /**
-     * The attempt directory's name is the `(platform, slug, loader)` tuple the whole staging layer is keyed
-     * by, and a sink needs it to file what it keeps. Deriving it from the log file's parent is what avoids
+     * The attempt directory's name is the `(platform, slug, loader, Minecraft line)` tuple the whole staging
+     * layer is keyed by, and a sink needs it to file what it keeps. Deriving it from the log file's parent is what avoids
      * threading three more parameters through every attempt — and it stays correct for the other-version
      * re-check, which deliberately stages into the *crashing* loader's directory.
      */
     @Test
     fun theAttemptNameIsTheStagingDirectoryItBootedFrom(@TempDir dir: File) {
         Assertions.assertEquals(
-            AttemptDirectory.nameFor("Modrinth", "jei", "Forge"),
+            AttemptDirectory.nameFor("Modrinth", "jei", "Forge", "1.20"),
             preparedPack(dir).attemptName
         )
     }

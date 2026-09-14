@@ -187,13 +187,22 @@ object GrinderApplication {
         // One-shot: the superseded crash-logs directory holds real evidence for verdicts still being
         // published, under a name that now contradicts what the store keeps.
         crashLogs.adoptLegacy(File(base, "crash-logs"))
+        // Re-file artifacts written before the owner carried the Minecraft line, so the consoles behind
+        // verdicts that are still published stay reachable from their rows instead of being reclaimed by
+        // the budget. Exact, not guessed: the attempt segment beside the owner already records the version.
+        crashLogs.migrateOwnerNames().let { moved ->
+            if (moved > 0) {
+                log.info("Re-filed $moved boot artifact(s) under their Minecraft version-line.")
+            }
+        }
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
             resources = containerResources, containerUser = containerUser, crashLogs = crashLogs,
             consoleRules = consoleRules::current,
             // Shared across every grind and backed by a file, so what one candidate's jars prove about a
             // mod id survives both the next candidate and the next restart.
-            learnedModIds = JsonLearnedModIds(config.learnedIds).ids
+            learnedModIds = JsonLearnedModIds(config.learnedIds).ids,
+            minecraftLines = config.minecraftLines
         )
         // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
         // running, parented by the docker daemon rather than this unit's control group, so nothing else on the

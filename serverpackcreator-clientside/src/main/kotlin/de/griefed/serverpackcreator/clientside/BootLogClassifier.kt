@@ -88,6 +88,18 @@ enum class BootDecision(
     CLIENT_ONLY_CLASS(decisive = true, provesClientOnly = true),
 
     /**
+     * A **mandatory** dependency the loader itself refuses as client-only, in its own words: Fabric prints
+     * *"which is disabled for this environment (client/server only)"*. A mod that cannot load without
+     * something the server will never have cannot run on a server, which is what the fallback list is for.
+     *
+     * Decisive, so it may publish — the loader's own refusal is not something a broken harness fabricates.
+     * **Not** [provesClientOnly], because the evidence is one build's declared dependencies: a project's
+     * Fabric jar may depend on Sodium where its NeoForge jar depends on nothing of the sort, and that flag
+     * would clear every other loader of the project on this one's say-so.
+     */
+    CLIENT_ONLY_DEPENDENCY(decisive = true),
+
+    /**
      * The server died reaching for LWJGL, the client's windowing and OpenGL binding, which a dedicated
      * server never ships. Decisive for the same reason as [CLIENT_ONLY_CLASS] and catches what that one
      * cannot: `iris` scored INCONCLUSIVE on `NoClassDefFoundError: org/lwjgl/Version` while this signature
@@ -151,6 +163,7 @@ data class Classification(
      */
     val decidedBy: BootDecision = BootDecision.EXIT_CODE
 ) {
+    /** Construction for the rule-less case, so a ladder verdict does not have to pass an explicit `null`. */
     companion object {
         /** A verdict the built-in ladder reached with no rule involved. */
         internal fun of(result: BootResult, decidedBy: BootDecision) = Classification(result, null, decidedBy)
@@ -314,6 +327,9 @@ object BootLogClassifier {
      * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
      * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
      */
+    /** @see BootDecision.CLIENT_ONLY_DEPENDENCY */
+    private val clientOnlyDependencyMarker = bundledPattern("client-only-dependency")
+
     private val dependencyFailureMarkers = bundledPattern("dependency-failure")
 
     /**
@@ -488,6 +504,13 @@ object BootLogClassifier {
         }
         if (consoleLines.any { fmlInvalidDistMarker.containsMatchIn(it) }) {
             return Classification(BootResult.CRASHED, annotating, BootDecision.FML_INVALID_DIST)
+        }
+        // Above the excuse below, and it has to be: Fabric prints `Incompatible mods found` on the line
+        // before this one, so the dependency-failure rung matches first and the finding is discarded. This
+        // is not our staging failing to supply something -- it is the loader reading the jar and refusing a
+        // dependency it will not load on a server at all.
+        if (consoleLines.any { clientOnlyDependencyMarker.containsMatchIn(it) }) {
+            return Classification(BootResult.CRASHED, annotating, BootDecision.CLIENT_ONLY_DEPENDENCY)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {

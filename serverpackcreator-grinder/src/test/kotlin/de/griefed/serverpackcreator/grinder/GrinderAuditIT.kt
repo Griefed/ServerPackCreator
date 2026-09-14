@@ -135,7 +135,24 @@ internal class GrinderAuditIT {
         )
     }
 
-    /** The `(platform, slug, loader)` tuples the store publishes as CONFIRMED, read from the CSV export. */
+    /**
+     * The `(platform, slug, loader, Minecraft line)` tuples the store publishes as CONFIRMED **on their own
+     * evidence**, read from the CSV export.
+     *
+     * Two things this has to get right, and it got both wrong before 2026-09-12:
+     *
+     * **The tuple gained the Minecraft line.** A project is ground once per line, so the same loader holds
+     * several of its rows and the staging directory — which is what a kept console is named after — carries
+     * the line. A three-part tuple matches no console at all, and the audit then *assume-skips* with "no
+     * kept console belongs to a published CONFIRMED": a green run that graded nothing.
+     *
+     * **A row that inherited its proof is excluded from the sample, not failed.** Its evidence is a sibling
+     * loader's console, which `ClientsideVerifier.propagateClientOnlyProof` recorded in the `InheritedProof`
+     * column; its *own* console is usually a clean boot, so re-deriving from it reads `READY_LINE` and the
+     * row looks undefensible. Measured against the live store that day: **86 of 140** published rows, i.e.
+     * this audit failing wholesale on a design working as intended. An audit that cries wolf gets ignored.
+     * The proving row is itself in the sample, so the evidence is still graded — once, where it exists.
+     */
     private fun confirmedTuples(): Set<String> {
         val csv = fetch("/export.csv") ?: return emptySet()
         val rows = csv.lines().filter { it.isNotBlank() }
@@ -144,15 +161,23 @@ internal class GrinderAuditIT {
         val verdict = header.indexOf("Verdict")
         val loader = header.indexOf("Loader")
         val platform = header.indexOf("Platform")
-        if (listOf(name, verdict, loader, platform).any { it < 0 }) {
+        val minecraft = header.indexOf("Minecraft")
+        val proof = header.indexOf("InheritedProof")
+        if (listOf(name, verdict, loader, platform, minecraft, proof).any { it < 0 }) {
             println("[audit] the CSV header does not carry the columns this audit needs: $header")
             return emptySet()
         }
-        return rows.drop(1)
-            .map { splitCsv(it) }
-            .filter { it.getOrNull(verdict) == "CONFIRMED" }
+        val published = rows.drop(1).map { splitCsv(it) }.filter { it.getOrNull(verdict) == "CONFIRMED" }
+        val inherited = published.count { !it.getOrNull(proof).isNullOrBlank() }
+        if (inherited > 0) {
+            println("[audit] $inherited published CONFIRMED verdict(s) inherited a sibling's proof; graded there, not here")
+        }
+        return published
+            .filter { it.getOrNull(proof).isNullOrBlank() }
             .mapNotNull { row ->
-                val parts = listOf(row.getOrNull(platform), row.getOrNull(name), row.getOrNull(loader))
+                val parts = listOf(
+                    row.getOrNull(platform), row.getOrNull(name), row.getOrNull(loader), row.getOrNull(minecraft)
+                )
                 if (parts.any { it.isNullOrBlank() }) null else parts.joinToString("-")
             }
             .toSet()

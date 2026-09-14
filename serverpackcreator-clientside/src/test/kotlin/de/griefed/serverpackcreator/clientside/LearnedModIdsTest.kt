@@ -101,7 +101,7 @@ internal class LearnedModIdsTest {
 
         Assertions.assertEquals(
             listOf(ModIdMapping.Alias("yacl")),
-            learned.mappingsFor("yet_another_config_lib_v3", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") }
+            learned.mappingsFor("yet_another_config_lib_v3", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") }
         )
     }
 
@@ -112,12 +112,12 @@ internal class LearnedModIdsTest {
 
         Assertions.assertEquals(
             listOf(ModIdMapping.Alias("fabric-api")),
-            learned.mappingsFor("fabric", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
+            learned.mappingsFor("fabric", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") },
             "the table still answers for the ids it knows"
         )
         Assertions.assertEquals(
             listOf(ModIdMapping.Guess("mysterylib")),
-            learned.mappingsFor("mysterylib", "Modrinth") { KnownModIds.mappingFor(it, "Modrinth") },
+            learned.mappingsFor("mysterylib", "Modrinth") { KnownModIds.mappingsFor(it, "Modrinth") },
             "and an unknown id is still only a guess"
         )
     }

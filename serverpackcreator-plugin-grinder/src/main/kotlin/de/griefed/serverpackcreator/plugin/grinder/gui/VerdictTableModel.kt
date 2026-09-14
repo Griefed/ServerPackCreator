@@ -69,10 +69,13 @@ class VerdictTableModel : AbstractTableModel() {
      */
     fun deselectAll() = publish(selection - rows.mapNotNull { it.exclusionEntry }.toSet())
 
+    /** One row per verdict currently shown; `setRows` is what changes it. */
     override fun getRowCount() = rows.size
 
+    /** Fixed by [COLUMNS], so adding a column there is the only edit a new column needs. */
     override fun getColumnCount() = COLUMNS.size
 
+    /** The header text, read straight from [COLUMNS] for the same reason. */
     override fun getColumnName(column: Int): String = COLUMNS[column]
 
     /**
@@ -90,6 +93,13 @@ class VerdictTableModel : AbstractTableModel() {
     override fun isCellEditable(row: Int, column: Int) =
         column == TICK_COLUMN && rows[row].exclusionEntry != null
 
+    /**
+     * The cell's value: a `Boolean` for the tick column, a `String` for every other.
+     *
+     * Runs per visible cell per repaint, so it reads [GrinderVerdict.exclusionEntry] once rather than
+     * per comparison, and it renders an absent reading as an empty cell — a cell reading "null" looks
+     * like a value the grinder recorded.
+     */
     override fun getValueAt(row: Int, column: Int): Any {
         val verdict = rows[row]
         return when (column) {
@@ -103,9 +113,12 @@ class VerdictTableModel : AbstractTableModel() {
             // recorded none: a table cell reading "null" looks like a value.
             4 -> verdict.declared.orEmpty()
             5 -> verdict.jarScan.orEmpty()
-            6 -> verdict.loader
-            7 -> verdict.platform
-            8 -> verdict.scannedAt
+            // The row's identity, so it leads the pair it forms with the loader. Empty for a row from a
+            // daemon that predates the line axis, for the same reason `declared` is.
+            6 -> verdict.minecraftLine.orEmpty()
+            7 -> verdict.loader
+            8 -> verdict.platform
+            9 -> verdict.scannedAt
             else -> verdict.detail
         }
     }
@@ -128,6 +141,7 @@ class VerdictTableModel : AbstractTableModel() {
         onSelectionChanged?.invoke(updated)
     }
 
+    /** Column indices the panes and their guards address by name, plus the column list itself. */
     companion object {
         /** The checkbox column, addressed by name so the panes and the guards cannot drift from it. */
         const val TICK_COLUMN = 0
@@ -144,7 +158,7 @@ class VerdictTableModel : AbstractTableModel() {
          * 161 of 2057 rows on the live feed are `CONTRADICTORY`.
          */
         private val COLUMNS = listOf(
-            "", "Name", "Entry", "Verdict", "Declared", "JAR sideness", "Loader", "Platform",
+            "", "Name", "Entry", "Verdict", "Declared", "JAR sideness", "Minecraft", "Loader", "Platform",
             "Scanned", "Detail"
         )
     }

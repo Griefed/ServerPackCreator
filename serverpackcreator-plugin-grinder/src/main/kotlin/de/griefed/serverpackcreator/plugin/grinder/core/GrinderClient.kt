@@ -146,9 +146,12 @@ class GrinderClient(
                 projectUrl = row.textOrNull("projectUrl").orEmpty(),
                 platform = row.textOrNull("platform").orEmpty(),
                 loader = row.textOrNull("loader").orEmpty(),
+            // Absent from a daemon older than the line axis, and left absent here rather than defaulted:
+            // an era nobody recorded must not read as an era that was.
+            minecraftLine = row.textOrNull("minecraftLine"),
                 verdict = row.textOrNull("verdict").orEmpty(),
                 suggestedEntry = row.textOrNull("suggestedEntry"),
-                filenamePattern = row.textOrNull("filenamePattern"),
+                fileName = row.textOrNull("fileName"),
                 detail = row.textOrNull("detail").orEmpty(),
                 scannedAt = row.textOrNull("verifiedAt").orEmpty(),
                 // Both stay nullable: a row the grinder recorded no reading for must render as an empty

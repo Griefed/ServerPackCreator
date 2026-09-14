@@ -656,3 +656,184 @@ are now derived from `Verdict.entries`.
 **Suites after the fixes:** clientside **523**, grinder **514** (29 skipped), plugin-grinder **73**, api
 **412** (1 skipped), app **149** (needs a local MongoDB on 27017). All re-derived from `build/test-results`.
 
+
+## 2026-09-11 — test depth & coverage: the UNVERIFIABLE pass (21 commits, `86d3d441b..develop`, iteration 1)
+
+Suites at the time of this analysis: api **413** (1 skipped), clientside **554**, grinder **514** (29 skipped),
+app **149**, plugin-grinder **73**, plugin-example **3** — 0 failures, and `./gradlew build` green including the
+frontend's Vitest suite.
+
+Two facts were measured for this pass rather than reasoned about. **`fabric-api-0.116.17+1.21.1.jar`, read
+from the live artifact:** its top-level descriptor is `id = "fabric-api"`, `provides = ["fabric"]`, and it
+ships 49 nested jars — `fabric-resource-loader-v0` exists **only** as
+`META-INF/jars/fabric-resource-loader-v0-0.116.17.jar`. And **every pin of the range was re-run at its own
+commit** (table in `REFACTOR-AUDIT.md`), which is what turned up the one that does not compile.
+
+### HIGH — none
+
+No new code path can reach a published verdict on evidence it does not have: the two staging fallbacks added
+here (`alternativeFor`, `acrossPlatforms`) can only *add* a staged jar, never promote a rung, and the
+loader re-selection leaves `bootedLoader` different from the verdict's loader, which
+`loaderDisprovingTheCrash` already refuses to accept as a disproof.
+
+### MEDIUM
+
+| # | Where | Finding |
+|---|---|---|
+| A-1 | `BootVerifier.kt:1699` (`1443d9f46`) | **Bug — the `unless` drop arm cannot fire for the case its own comment names.** It tests `providedIds` only; the alternative `fabric-resource-loader-v0` is a **nested** jar of Fabric API and therefore lands in `bundledIds` (measured above). So a pack that already contains Fabric API does not drop the requirement: it goes the expensive way through `alternativeFor`, re-resolves the project and re-downloads a jar already in `mods/`. No wrong verdict (`injected` dedupes by file name, so `MAX_INJECTED_DEPENDENCIES` is safe), but the cheap path is dead and the comment is false. The arm one line above it does consult `bundledIds`. Same finding as `REFACTOR-AUDIT` M-2. |
+| A-2 | `CurseForgePlatform.kt:231`, `ClientsideModels.kt` (`eb277c8c9`) | **The CurseForge half of the release-channel rule is asserted nowhere.** `ReleaseChannel.fromCurseForge` has exactly one call site and no test names a channel on the CurseForge path — the two CF fixtures that mention `releaseType` set it to `1` incidentally and assert nothing about it. Unexercised: `2`→BETA, `3`→ALPHA, and the fail-toward-RELEASE for an absent or unknown `releaseType`. `ReleaseChannelPreferenceTest` drives `ModrinthPlatform` only. CurseForge is the larger catalog *and* the one with no sideness field, i.e. where booting an unrepresentative build costs most. |
+| A-3 | `BootCandidateSelector.kt:74` (`eb277c8c9`) | **"The channel preference never overrides `loaderVersionAvailable`" is unpinned.** Every `pick()` in `ReleaseChannelPreferenceTest` passes `{ true }`. The implementation is right — the availability gate sits *inside* `pickBootableCandidateFrom`, so a release for an unbootable Minecraft falls through to the beta pass — but nothing holds it there: hoisting the channel filter above the gate would pass all five current guards while making a project whose only release targets an unsupported Minecraft unverifiable. |
+| A-4 | `BootVerifier.kt:1399` (`355d322ef`) | **`loaderToVerifyUnder`'s tie-break is unpinned.** It is `internal` and reached only through staging with a *single* declared loader, so neither documented rule is asserted: "prefer a loader the platform also tagged" and "otherwise alphabetical, purely for determinism". A future edit could reverse the preference, or make the choice depend on set iteration order, with the suite green. |
+| A-5 | `QuiltScanner.kt:138` (`1443d9f46`) | **Two of `readUnless`'s three shapes are unexercised.** It handles a bare string, an object carrying `id`, and an array of either; `grep unlessProvided` over both test trees returns nothing and the one integration guard writes `"unless":"<id>"`. Parsing, in the published module, where a wrong branch yields a plausible value rather than an error — the class this repo requires a first-written test for. |
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| A-6 | `ModrinthPlatform.kt:138` (`37e2d2797`) | **Bug — a *failed* pin lookup is not memoised.** `?: return null` precedes the cache write, so a `version_id` that 404s is re-fetched once per version node that pins it, with a WARN each time. `resolve` walks a project's whole version list, so the failure path costs exactly what the memo was added to prevent. `thePinIsLookedUpOnce` pins only the success path. |
+| A-7 | `ModIdRegistry.kt` (`6ee12d4f8`) | **The new fall-through is unpinned on the side it exists for.** A table entry with no ref for a platform now yields that platform's slug `Guess` instead of `None`; only the Modrinth side of `tacz` is asserted. Nothing pins `mappingFor("tacz", "CurseForge") == Guess("tacz")`, which is precisely the behaviour the deliberately-`null` CurseForge ref was chosen to preserve. |
+| A-8 | `LoaderDescriptors.kt` (`3d61e97c6`) | An unreadable Minecraft version is pinned only through `scannerFor`. The gate's own entry point — `descriptorsFor("NeoForge", "")`, which is what `JarSelfDeclaration` actually calls — is unasserted, and it is the one whose answer decides whether a jar is refused. |
+| A-9 | `serverpackcreator-clientside/CLAUDE.md` (`f8239995a`) | **Documentation scope.** The channel rule is stated unscoped, but it applies to `pickBootableCandidate` **only**: `pickDependencyFile` and `pickRecheckCandidates` are channel-blind. Both are defensible on purpose — a dependency merely has to load, and the re-check wants *diversity* — but a reader will assume otherwise and "fix" one of them. |
+| A-10 | module docs (`ab188dff4`, `cf78607ab`) | Stale citations: `filenamePattern` and `theFilenamePatternIsNotWhatGetsPublished` no longer exist, and "`resolveDependency` stays single-page on purpose" is now half true. Detail in `REFACTOR-AUDIT` M-7/M-8. |
+| A-11 | `CurseForgePlatform.filesUrl` | **Informational (security).** The Minecraft version is interpolated into the query string unencoded. Not reachable today — both sources are SPC's own release list — but `ModFile.minecraftVersions` holds author-influenced CurseForge `gameVersions` strings and is one refactor away from that parameter. Nothing in the range logs or embeds a credential; `CurseForgePlatform("test-key", …)` is a test literal. |
+
+### Verified clean — do not re-litigate
+
+- **The neighbour ordering is thoroughly pinned already**, by the pre-existing `DependencyPatchVersionTest`:
+  nearest-first, equidistant→newer, never crosses the Minecraft line, does not widen the loader rule, an
+  unreadable patch component is not a neighbour, and obtainable-vs-locked in both directions. Extracting
+  `patchNeighboursIn` did not weaken any of it, and the *new* caller's cost is asserted end-to-end by
+  `CurseForgeDependencyLineTest.theExactVersionIsAskedForFirst` (exact request sequence).
+- **All three string-replacement fixtures in `ReleaseChannelPreferenceTest` have teeth.** If a replacement
+  silently failed to apply, the expected file changes, so the guard fails rather than asserting nothing —
+  checked case by case, because that construction is exactly how a fixture stops testing anything.
+- **Asking for a version twice is impossible:** `alsoVersions.filter { it != minecraftVersion }.distinct()`
+  on the way out and `distinctBy { it.fileName }` on the way back.
+- **The pin memo is race-free** — `ConcurrentHashMap`, and each candidate gets its own platform instance.
+- **No unused imports** anywhere in the range; `ModScanner.kt` correctly dropped `Comparison` and
+  `SemanticVersionComparator` when the era predicates moved out.
+- **Every new unit carries KDoc**, and there is no new `!!`, no new `var`, and no `TODO`/`FIXME` in any
+  main-source addition across the 21 commits.
+
+### Suggested tests (specific)
+
+1. `QuiltUnlessClauseTest.anUnlessAlternativeAlreadyBundledDropsTheRequirement` — Quilt candidate declaring
+   `quilt_resource_loader unless fabric-resource-loader-v0`, with a staged jar that *bundles*
+   `fabric-resource-loader-v0` under `META-INF/jars/`; assert through a **recording** downloader that nothing
+   is fetched for it (closes A-1, and fails today).
+2. `ReleaseChannelPreferenceTest` (or a CurseForge sibling) — drive the real `CurseForgePlatform` over canned
+   JSON with `releaseType` 1/2/3 and one file with the field absent; assert the `ModFile.channel` of each, and
+   that a `releaseType:1` file on an older Minecraft is picked over a `releaseType:2` file on a newer one
+   (closes A-2).
+3. `…theChannelPreferenceNeverOverridesLoaderAvailability` — the release is tagged for a Minecraft whose
+   `loaderVersionAvailable` answers `false`, the beta for one that answers `true`; assert the beta is picked
+   (closes A-3; fails if the channel filter is ever hoisted above the gate).
+4. `LoaderReselectionTest` — three direct `loaderToVerifyUnder` guards: a platform-tagged declared loader wins
+   over an untagged one; with neither tagged the choice is alphabetical and stable; with none bootable the
+   answer is `null` (closes A-4).
+5. `QuiltScannerTest` in `-api` — one jar per `unless` shape (bare string, `{"id": …}`, array of both, plus a
+   blank id) asserting `ModDependency.unlessProvided` exactly (closes A-5, and is the first assertion of that
+   field anywhere).
+6. `PinnedDependencyRefTest.aFailedPinLookupIsAttemptedOnce` — a fetcher that throws for `/version/{id}` and
+   counts; two versions pinning it must produce **one** attempt (closes A-6, fails today).
+7. `ModIdRegistryTest` — `mappingFor("tacz", "CurseForge")` is `Guess("tacz")`, and `mappingFor("tacz",
+   "Modrinth")` is `Alias("timeless-and-classics-guns")` (closes A-7).
+8. `LoaderDescriptorsTest` (or `ModScannerDispatchTest`) — `descriptorsFor("NeoForge", "")` and
+   `descriptorsFor("NeoForge", "26")` answer the modern set rather than throwing (closes A-8).
+
+### Resolution — iteration 1 (2026-09-11)
+
+Every finding above is closed; the detail and the mutation results are in `REFACTOR-AUDIT.md`'s matching
+resolution section rather than duplicated here. Two of them changed what the code does — the `unless` arm now
+sees a bundled alternative (A-1) and a dead pin is asked once (A-6) — and one changed where a rule lives
+(the retry order, M-4). The other eight were guards for behaviour that was already correct, which is why
+each was **mutation-verified** rather than trusted: A-2 (forcing `fromCurseForge` to RELEASE fails both new
+CurseForge guards), A-3 (hoisting the channel filter above the availability gate fails its guard), A-4
+(dropping the platform-tagged preference fails its guard).
+
+**One process note worth keeping, because it nearly cost a false conclusion.** The first run of the A-2
+mutation reported the *wrong* failing test: a regex edit had left an orphaned `when` body, so that build
+never compiled, and the parser happily read the **previous** run's `test-results` XML. A mutation check that
+cannot compile says nothing, and its output looks exactly like a result. Clear `build/test-results` before a
+mutation run, and treat "no results" as a distinct outcome from "zero red".
+
+## 2026-09-11 — test depth & coverage: iteration 2
+
+Suites entering iteration 2: api **421** (1 skipped), clientside **566**, grinder **514** (29 skipped),
+app **149**, plugin-grinder **73** — 1,723 tests, 0 failures. Equivalence for iteration 1's production code
+against `develop`'s unmodified test tree: **api 413 / 0, clientside 554 / 0, no compile errors.**
+
+### MEDIUM
+
+| # | Where | Finding |
+|---|---|---|
+| B-1 | `FilenamePatternTest` (whole class) | Six guards whose **stated subject no longer exists** — the "narrower entry derived from the sampled file" became the file's verbatim name on 2026-09-10. They still pass because they call `FilenameStemDeriver.deriveStem` directly, so what has rotted is the *why*, not the *what*: single-file `deriveStem` is now load-bearing only for `Prepared.Ready.candidateStem`, i.e. telling the candidate's stack frames from a dependency's when a crash is blamed. A reader looking for the guard on the Filename column lands here and learns the wrong thing about what that column holds. |
+| B-2 | `ClientsideVerifier.kt:168` | The **producer** of that column is unguarded. Every existing assertion about it either injects the value into a fixture or pins the mapping one layer downstream, which is the arrangement `DependencySlugTest` exists to warn about. The regression it cannot see is the exact code that was removed: re-deriving a stem from the sampled file. |
+| B-3 | `LoaderReselectionTest` | Iteration 1's retry-order fix is asserted as **data** (two fields of one refusal) and not as **behaviour** (the version retry firing when the loader retry cannot, and the re-staged attempt clearing the descriptor gate). |
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| B-4 | `serverpackcreator-clientside/CLAUDE.md:1101` | Iteration 1's own doc fix names `LoaderVerdict.fileName`, a property that does not exist — see `REFACTOR-AUDIT` I2-1. |
+
+### Verified clean — do not re-litigate
+
+- **Iteration 1's three production changes are equivalent to `develop` for every pre-existing guard**
+  (413 + 554, zero failures, zero compile errors), so none of them moved a signature or a behaviour the old
+  tree could see. The behaviour each one *did* change is covered by its own new guard.
+- **`unresolvablePins` cannot grow without bound**: it is per platform instance, and a platform instance is
+  built per candidate, so its ceiling is the distinct `version_id`s pinned by one project's version list.
+- **`fromCurseForge`, `loaderToVerifyUnder` and the channel-inside-the-gate ordering are now all
+  mutation-verified** (iteration 1's resolution section lists which mutation kills which guard).
+
+### Suggested tests (specific)
+
+1. Rename `FilenamePatternTest` to what it pins — single-file stem derivation, as used by `candidateStem` —
+   and correct its doc; keep every assertion (closes B-1 without losing coverage).
+2. A `-clientside` guard that `LoaderVerdict.sampleFile` is the sampled `ModFile.fileName` **verbatim**,
+   extension and all, driven through the real `ClientsideVerifier` rather than a constructed verdict
+   (closes B-2; fails if anyone re-derives a stem there).
+3. `LoaderReselectionTest.theVersionRetryFiresWhenTheLoaderRetryCannot` — a `mods.toml`-only jar requested
+   as NeoForge at a version ≥1.20.5 whose own range accepts an older release, with Forge withheld so the
+   loader retry cannot fire; assert two staging attempts, both NeoForge, and that the second clears the
+   descriptor gate because `mods.toml` names NeoForge below 1.20.5 (closes B-3).
+
+### Resolution — iteration 2 (2026-09-11)
+
+All four closed; detail in `REFACTOR-AUDIT.md`'s iteration-2 resolution. The one worth repeating here is
+B-3, because it inverted a finding: the behavioural guard demanded by the analysis went **red against code
+that was already supposed to be fixed**, which is how iteration 1's M-4 was exposed as a false finding. A
+guard that asserts shape can be green and prove nothing; a guard that asserts the consequence can be red and
+prove the *finding* wrong. Both directions are worth having, and only the second one catches a bad diagnosis.
+
+## 2026-09-11 — test depth & coverage: iteration 3
+
+Suites entering iteration 3: api **421**, clientside **568**, grinder **514**, app **149**,
+plugin-grinder **73**.
+
+The third pass deliberately looked where the first two had not: at the **consumers** of the value the range
+changed from a derived stem to a verbatim, author-controlled filename, and at the seam the cross-platform
+fallback is wired through. Both came back clean, and the reasoning is recorded in `REFACTOR-AUDIT.md`'s
+iteration-3 "verified clean" list so a fourth pass does not re-derive it: HTML/CSV/JSON escaping, path
+traversal on `/boot-log`, the `!==` identity the alternate-platform filter depends on, and the exclusion set
+crossing platforms.
+
+### LOW
+
+| # | Where | Finding |
+|---|---|---|
+| C-1 | `VerdictReportRenderer.kt:200` | The Project cell's `href` takes any scheme. Escaping stops markup, not `javascript:`. Not attacker-reachable today (operator-queued URLs and CurseForge's own `websiteUrl`), and the server is loopback by default — but it is one `SPC_GRINDER_HOST` away from being served, so the cheap allowlist is worth having. Needs a guard asserting an untrusted scheme renders as text. |
+| C-2 | `ClientsideVerifier.kt:245` | An unnecessary safe call on a smart-cast non-null receiver — a compiler warning in a file this range touched. |
+
+### Suggested tests (specific)
+
+1. `VerdictReportRendererTest.aProjectUrlWithAnUntrustedSchemeIsNotLinked` — a verdict whose `projectUrl` is
+   `javascript:alert(1)` renders as escaped text with no `<a href`, while an `https://` one still renders as
+   a link (closes C-1).
+
+### Resolution — iteration 3 (2026-09-11)
+
+Both closed, both mutation-verified; detail in `REFACTOR-AUDIT.md`. The pass's real output is its
+"verified clean" list: five consumer-side questions an author-controlled string reaching three renderers
+raises, answered once and written down, so the next pass starts from a shorter list instead of the same one.

@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.loader.LoaderProvidedIds
 import de.griefed.serverpackcreator.grinder.loader.LoaderStepDown
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
@@ -76,7 +77,9 @@ class ContainerCandidateVerifier(
      * re-derived for the next. The daemon hands in a file-backed one ([JsonLearnedModIds]); the default
      * keeps a verifier constructed in a test free of a home directory.
      */
-    private val learnedModIds: LearnedModIds = LearnedModIds()
+    private val learnedModIds: LearnedModIds = LearnedModIds(),
+    /** Which Minecraft version-lines of a project are ground — one verdict each. */
+    private val minecraftLines: MinecraftLinePolicy = MinecraftLinePolicy()
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -98,9 +101,14 @@ class ContainerCandidateVerifier(
             // line would otherwise strand forever, and then check the store against its ceiling.
             crashLogs?.let { store ->
                 val (platform, slug) = reapTarget(candidate, resolved)
-                report.perLoader.map { it.loader }.distinct().forEach { loader ->
-                    store.pruneExcept(platform, slug, loader, keptLogNames.toSet())
-                }
+                // Per target, not per loader: one loader now owns several of a project's rows (one per
+                // Minecraft line), and pruning by loader alone would delete the other lines' consoles.
+                report.perTarget
+                    .mapNotNull { verdict -> verdict.minecraftLine?.let { verdict.loader to it } }
+                    .distinct()
+                    .forEach { (loader, minecraftLine) ->
+                        store.pruneExcept(platform, slug, loader, minecraftLine, keptLogNames.toSet())
+                    }
                 store.enforceBudget()
             }
             return report
@@ -221,9 +229,10 @@ class ContainerCandidateVerifier(
     /** Run the actual verification, leaving the staging cleanup to [verify]. */
     private fun verifyStaged(candidate: GrindCandidate, keptLogNames: MutableList<String>): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
+        val platforms = supportedPlatforms(curseForgeApiKey)
         return run {
             ClientsideVerifier(
-                platforms = supportedPlatforms(curseForgeApiKey),
+                platforms = platforms,
                 metadataScanner = MetadataScanner(apiWrapper.modScanner),
                 jarDownloader = httpDownloader,
                 workDirectory = File(workDirectory, "verify"),
@@ -241,17 +250,26 @@ class ContainerCandidateVerifier(
                             ::knownLoaderVersionsNewestFirst
                         ),
                         workDirectory = File(workDirectory, "boot"),
+                        // What the installed loader answers to, read out of the install layer itself, so a
+                        // staged jar demanding `fabricloader` is judged rather than skipped as naming
+                        // something absent. The Minecraft version is the pack's; a tuple that is not
+                        // installed yet answers nothing, which is the old behaviour.
+                        loaderProvides = LoaderProvidedIds(loaderCache)::of,
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources, containerUser),
                         packPostProcessor = ::overlayLoaderInstall,
                         minecraftAcceptable = imageJava::supports,
                         bootTimeout = bootTimeout,
                         consoleRules = consoleRules,
                         learnedModIds = learnedModIds,
+                        // A dependency this platform cannot supply may exist on the other one, and the
+                        // staged file is just a jar. Empty when no CurseForge key is configured.
+                        alternatePlatforms = platforms.filter { it !== platform },
                         bootArtifactSink = { staged, outcome ->
                             keepAttemptArtifacts(staged, outcome, crashLogs, keptLogNames)
                         }
                     )
-                }
+                },
+                linePolicy = minecraftLines
             ).report(candidate.projectUrl)
         }
     }

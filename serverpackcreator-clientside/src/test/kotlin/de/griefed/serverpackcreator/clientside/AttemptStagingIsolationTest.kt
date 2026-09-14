@@ -94,8 +94,8 @@ internal class AttemptStagingIsolationTest {
 
         Assertions.assertEquals(
             listOf(
-                AttemptDirectory.nameFor("Modrinth", "creativecore", "Fabric"),
-                AttemptDirectory.nameFor("CurseForge", "creativecore", "Fabric")
+                AttemptDirectory.nameFor("Modrinth", "creativecore", "Fabric", "1.20"),
+                AttemptDirectory.nameFor("CurseForge", "creativecore", "Fabric", "1.20")
             ),
             handed.map { it.name },
             "the same slug on two platforms must not share one scratch directory"
@@ -109,8 +109,8 @@ internal class AttemptStagingIsolationTest {
      */
     @Test
     fun anAttemptDirectoryNamesTheCandidateThatOwnsIt() {
-        val modrinth = AttemptDirectory.nameFor("Modrinth", "creativecore", "Fabric")
-        val curseForge = AttemptDirectory.nameFor("CurseForge", "creativecore", "Fabric")
+        val modrinth = AttemptDirectory.nameFor("Modrinth", "creativecore", "Fabric", "1.20")
+        val curseForge = AttemptDirectory.nameFor("CurseForge", "creativecore", "Fabric", "1.20")
 
         Assertions.assertEquals(AttemptDirectory.ownerKey("Modrinth", "creativecore"), AttemptDirectory.ownerOf(modrinth))
         Assertions.assertEquals(AttemptDirectory.ownerKey("CurseForge", "creativecore"), AttemptDirectory.ownerOf(curseForge))
@@ -125,8 +125,8 @@ internal class AttemptStagingIsolationTest {
     @Test
     fun aSlugThatPrefixesAnotherOwnsADifferentDirectory() {
         Assertions.assertNotEquals(
-            AttemptDirectory.ownerOf(AttemptDirectory.nameFor("Modrinth", "creativecore", "Fabric")),
-            AttemptDirectory.ownerOf(AttemptDirectory.nameFor("Modrinth", "creativecore-extras", "Fabric"))
+            AttemptDirectory.ownerOf(AttemptDirectory.nameFor("Modrinth", "creativecore", "Fabric", "1.20")),
+            AttemptDirectory.ownerOf(AttemptDirectory.nameFor("Modrinth", "creativecore-extras", "Fabric", "1.20"))
         )
     }
 }

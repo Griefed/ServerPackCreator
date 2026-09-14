@@ -319,4 +319,127 @@ internal class ModIdRegistryTest {
             KnownModIds.mappingFor("some_other_config_lib_v3", "Modrinth")
         )
     }
+
+    /**
+     * **Six ids observed going unresolved on the public grinder, 2026-09-11**, each a published
+     * `DEPENDENCY_FAILURE` whose named library exists under a slug the id does not spell — so the optimistic
+     * slug guess found nothing, the boot went ahead without the library, and the loader refused the pack.
+     *
+     * Asserted as *aliases* rather than guesses, which is the difference that matters: only an alias may
+     * refuse a boot, and each of these is a project we know the id names. Every Modrinth ref was verified by
+     * downloading that project's own jar and reading the id out of its descriptor; every CurseForge id by
+     * its published file names carrying the id (`kotlinforforge-5.12.0-all.jar`, `refinedstorage-*.jar`).
+     */
+    @Test
+    fun theIdsObservedGoingUnresolvedResolveToTheirProjects() {
+        val expected = mapOf(
+            "obscure_api" to "obscure-api",
+            "farmersdelight" to "farmers-delight",
+            "refinedstorage" to "refined-storage",
+            "kotlinforforge" to "kotlin-for-forge",
+            "rhino" to "rhino",
+            "wover" to "worldweaver"
+        )
+
+        Assertions.assertEquals(
+            expected,
+            expected.keys.associateWith { KnownModIds.refFor(it, "Modrinth") },
+            "a slug guess found none of these, which is what sent six boots out without their library"
+        )
+        expected.keys.forEach { id ->
+            Assertions.assertTrue(
+                KnownModIds.mappingFor(id, "Modrinth") is ModIdMapping.Alias,
+                "'$id' names a project we verified, so failing to stage it is a real gap and may refuse"
+            )
+        }
+    }
+
+    /**
+     * **Two CurseForge projects answer to `sewingkit`, and the one whose slug matches the mod id exactly is
+     * the wrong one.** `310830` is published under the slug `sewingkit` and its newest file is
+     * `SewingKit-1.0.2.jar` for Minecraft **1.14.2** — abandoned. `411896` is `sewing-kit`, publishes
+     * `SewingKit-1.20.1-1.8.1.jar` and `SewingKit-26.1.2-2.8.1.jar`, and its 2.x versions are what
+     * `toolbelt`'s declared `[2.0.0,)` is asking for. Verified against the live API 2026-09-13.
+     *
+     * This is why the registry carries numeric ids rather than letting the slug guess run: the guess would
+     * have picked the dead project by name and staged a Minecraft 1.14 jar.
+     *
+     * **It does not make `tool-belt` bootable on 1.20, and that is not this entry's job.** `411896`'s
+     * newest 1.20.1 build is `1.8.1`, below the `[2.0.0,)` the jar demands, so nothing upstream satisfies
+     * it on that line — a fact the report should state rather than discover by burning a container.
+     */
+    @Test
+    fun theRightSewingKitIsTheOneWhoseSlugDoesNotMatch() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("411896"),
+            KnownModIds.mappingFor("sewingkit", "CurseForge")
+        )
+    }
+
+    /** `betterquesting` is `better-questing` on CurseForge; the bare id matches no project at all. */
+    @Test
+    fun betterQuestingIsCarriedByItsNumericId() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("238856"),
+            KnownModIds.mappingFor("betterquesting", "CurseForge")
+        )
+    }
+
+    /**
+     * **A mod id that is the slug minus its hyphens resolves to nothing, and the guess cannot find it.**
+     * `botanypots` is what `botanytrees` declares; Modrinth publishes the project as `botany-pots` and
+     * answers 404 for the bare id. Verified against the live API 2026-09-13, both directions.
+     *
+     * Measured on the public grinder the same day: `CurseForge/botany-trees` on NeoForge 1.21 was published
+     * INCONCLUSIVE with `Mod ID: 'botanypots' … Actual version: '[MISSING]'`.
+     *
+     * CurseForge is left to its own slug guess, the same call `tacz` and `obscure_api` already make: the
+     * numeric id could not be verified from here, and inventing one sends every lookup to whatever project
+     * happens to hold it. The cross-platform fallback covers a CurseForge boot anyway — an id that maps
+     * nowhere locally is asked of Modrinth, which is where this entry answers.
+     */
+    @Test
+    fun aSlugThatDiffersFromItsModIdOnlyByHyphensIsCarried() {
+        Assertions.assertEquals(
+            ModIdMapping.Alias("botany-pots"),
+            KnownModIds.mappingFor("botanypots", "Modrinth")
+        )
+    }
+
+    /**
+     * The CurseForge numeric ids, which cannot be guessed at all — that platform addresses a project by a
+     * number, so an id that is not the slug resolves to nothing without one.
+     *
+     * `obscure_api` is deliberately absent: CurseForge publishes it as "Obscure API [Forge Edition]", which
+     * implies a sibling edition a single ref would send every Fabric boot to. Same reason `tacz` carries no
+     * numeric id, and the opposite of inventing one.
+     */
+    @Test
+    fun theCurseForgeIdsAreCarriedWhereTheyCouldBeVerified() {
+        Assertions.assertEquals(
+            mapOf(
+                "farmersdelight" to "398521",
+                "refinedstorage" to "243076",
+                "kotlinforforge" to "351264",
+                "rhino" to "416294",
+                "wover" to "1037172",
+                // Added 2026-09-13, each verified against the live CurseForge API by the versions in its
+                // published file names — the ids alone prove nothing, the versions are what identify the
+                // project a dependant is asking for.
+                "botanypots" to "353928",
+                "betterquesting" to "238856",
+                "sewingkit" to "411896"
+            ),
+            // Enumerated by hand because `aliases` is private, so this cannot catch an id added to the
+            // registry and not listed here — it catches a listed id whose ref changes or disappears.
+            listOf(
+                "farmersdelight", "refinedstorage", "kotlinforforge", "rhino", "wover",
+                "botanypots", "betterquesting", "sewingkit"
+            ).associateWith { KnownModIds.refFor(it, "CurseForge") }
+        )
+        Assertions.assertTrue(
+            KnownModIds.mappingFor("obscure_api", "CurseForge") is ModIdMapping.Guess,
+            "an unverified numeric id would stage whatever project happens to hold it, so this stays a guess"
+        )
+    }
 }

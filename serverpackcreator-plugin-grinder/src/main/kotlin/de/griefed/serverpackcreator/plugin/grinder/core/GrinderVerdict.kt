@@ -31,13 +31,19 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  * @param slug The project's short name, as the platform spells it — the Name column.
  * @param projectUrl The project page, so a row can be opened rather than searched for.
  * @param platform Modrinth, CurseForge, or whatever a future daemon crawls.
- * @param loader The modloader this verdict was reached under; one project can hold several.
+ * @param loader The modloader this verdict was reached under — the one the grinder picked for this
+ *               Minecraft line, not the project's only one.
+ * @param minecraftLine The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null`
+ *                      from a daemon that predates the line axis. **This is the row's identity**: a project
+ *                      is ground once per line, so one project holds several rows and the same loader
+ *                      routinely holds more than one of them.
  * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`, `LOCKED`,
  *                `UNVERIFIABLE`), kept as a string rather than an enum so a class added by a newer daemon
  *                still renders — which is what let `LOCKED` and `UNVERIFIABLE` arrive without a plugin
  *                release, since only `CONFIRMED` is compared against by name.
  * @param suggestedEntry The name-pattern the grinder proposes for the clientside-mod list.
- * @param filenamePattern The stricter filename regex, shown for context but not used for exclusion.
+ * @param fileName The published file name of the artifact the grinder sampled, verbatim — shown for
+ *                 context, never used for exclusion. It carried a derived *stem* until 2026-09-10.
  * @param detail Why the grinder decided what it did — the column that makes a verdict auditable.
  * @param scannedAt When it was verified, as the ISO-8601 string the feed carries.
  *
@@ -48,9 +54,10 @@ data class GrinderVerdict(
     val projectUrl: String,
     val platform: String,
     val loader: String,
+    val minecraftLine: String? = null,
     val verdict: String,
     val suggestedEntry: String?,
-    val filenamePattern: String?,
+    val fileName: String?,
     val detail: String,
     val scannedAt: String,
     /**
@@ -79,12 +86,13 @@ data class GrinderVerdict(
      * offers none and therefore cannot be ticked.
      *
      * Only [suggestedEntry] qualifies, matching what the daemon itself publishes through
-     * `FallbackPropertiesRenderer`. [filenamePattern] is deliberately not a fallback: it is a regex over
-     * a *filename*, which the exclusion list only applies under its regex filter, so offering it here
-     * would silently do nothing under SPC's default matching mode.
+     * `FallbackPropertiesRenderer`. [fileName] is deliberately not a fallback: it names **one build** of
+     * one loader, so offering it here would exclude that single artifact and nothing else — a narrower
+     * mistake than the stem it replaced, which at least matched a loader's whole line.
      */
     val exclusionEntry: String? get() = suggestedEntry?.trim()?.ifEmpty { null }
 
+    /** The verdict names this plugin treats specially, as the daemon spells them. */
     companion object {
         /** The verdict name that earns a row a place in the Confirmed pane. */
         const val CONFIRMED = "CONFIRMED"

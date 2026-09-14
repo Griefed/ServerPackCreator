@@ -42,9 +42,10 @@ plus a native view of the daemon's own dashboard.
 ## Landmines & decisions (do not relearn)
 
 - **`suggestedEntry` is the only field that becomes an exclusion entry.** That is what the daemon's own
-  `FallbackPropertiesRenderer` publishes, so the two agree. `filenamePattern` is deliberately **not** a
-  fallback: it is a regex over a *filename*, and SPC's default exclusion filter is not the regex one, so
-  offering it would silently exclude nothing. A row with no `suggestedEntry` is therefore not tickable —
+  `FallbackPropertiesRenderer` publishes, so the two agree. `fileName` — the sampled artifact's own name,
+  called `filenamePattern` until 2026-09-10 — is deliberately **not** a fallback: it names one *file*, and
+  SPC's default exclusion filter matches a prefix rather than a whole name, so offering it would exclude
+  that one build and nothing else. A row with no `suggestedEntry` is therefore not tickable —
   and `VerdictTableModel` makes its checkbox non-editable rather than rendering an unticked box that
   does nothing when clicked.
 - **A blank entry is refused in two places, and both are needed.** An empty string matches *every* mod
@@ -77,7 +78,8 @@ plus a native view of the daemon's own dashboard.
   string renderer and show "true"/"false" instead of a checkbox. The `java.lang.Boolean::class.java`
   spelling picks the right class but raises a compiler warning.
 - **The table shows the conclusion and the two readings behind it** (2026-09-08). Columns are
-  `[tick] Name · Entry · Verdict · Declared · JAR sideness · Loader · Platform · Scanned · Detail`, with
+  `[tick] Name · Entry · Verdict · Declared · JAR sideness · Minecraft · Loader · Platform · Scanned · Detail`,
+  with
   the two evidence columns immediately after `Verdict` because that is the order a reader needs them in.
   They are worth the width: on the live feed, **161 of 2057** rows are `CONTRADICTORY` — the platform's
   declaration and the jar's own descriptor disagreeing about the same mod — and that is exactly the row a
@@ -141,6 +143,15 @@ extension index, the `pluginArtifact` consumable configuration, `plugin.toml` ex
 demo strings). The root build copies the jar into `serverpackcreator-app/tests/plugins` via
 `copyPluginsToApp`.
 
+- **`module.md` is not optional — `serverpackcreator.dokka-conventions` names it as a file and Dokka opens
+  it unconditionally.** It was the one thing the modelling on the example plugin missed, and the gap was
+  invisible for the same reason it was cheap to make: only `-api` has `build { finalizedBy(dokkaGenerate…) }`,
+  so `./gradlew build` runs no Dokka task here and nothing went red. It surfaced in the release pipeline's
+  `Publish Maven` job, which ran `dokkaJavadocJar` with no project path and therefore in *every* project
+  (Forgejo run 472, tag 9.0.0-alpha.8) — a module that is never published stopped the one that is. Both
+  halves are now closed: the convention plugin refuses to apply without the file, and the release job names
+  `:serverpackcreator-api:` explicitly.
+
 - **LANDMINE — this jar must NOT be copied into `serverpackcreator-api/src/test/resources/testresources/plugins`.**
   `ApiPluginsTest` loops over every plugin jar it finds there and asserts each one provides **all six**
   extension types; this plugin provides two. The example plugin is the one that exercises every
@@ -165,3 +176,11 @@ Installing a second plugin exposed `ApiPlugins.getAllExtensionsOfPlugin` ignorin
 so every tab was added once per *installed plugin* and every generation extension ran that many times
 (`Grinder | Tetris | Grinder | Tetris`). Fixed in `-api`, pinned by `ExtensionScopingTest`, recorded in
 `claude-docs/API-BEHAVIOUR-CHANGES.md`. It had been invisible because one plugin times one plugin is one.
+
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+GUI plugin over a grinder's `/verdicts.json` + `/status`; ticked entries reach `packConfig.clientMods` through a `PreGenExtension`, so one selection covers GUI, CLI and web. Verified end-to-end 2026-09-06 against a live `ReportServer`. Full state and landmines: **`serverpackcreator-plugin-grinder/CLAUDE.md`**.

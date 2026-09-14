@@ -106,7 +106,24 @@ class ModDependency @JvmOverloads constructor(
      * it needs and fails as a crash, which can publish a *wrong* verdict, while reading an optional one as
      * required merely refuses a boot and learns nothing.
      */
-    val optional: Boolean = false
+    val optional: Boolean = false,
+    /**
+     * Ids that satisfy this dependency **instead of** [modID] — Quilt's `unless` clause, empty for every
+     * other loader and for a Quilt entry that states none.
+     *
+     * Quilt Loader treats the requirement as met when any of these is present, and that is not a nicety: a
+     * mod written for either library declares *"QSL, unless Fabric API is here"*, and reading only the
+     * primary id makes it look hard. Measured on the live grinder, 2026-09-10 — `geophilic`, `terralith`,
+     * `trek` and `true-ending` all ship
+     * `{"id": "quilt_resource_loader", "unless": "fabric-resource-loader-v0"}`, QSL publishes nothing past
+     * Minecraft 1.21, and all four were refused for a requirement their own descriptor said was optional in
+     * the presence of Fabric API.
+     *
+     * A **list**, because `unless` takes the same shapes `depends` does — a bare id, an object carrying one,
+     * or an array of either. Only the ids are kept: a consumer asking "is this satisfied?" needs to know
+     * *what* would satisfy it, and any range on the alternative is the loader's business, not ours.
+     */
+    val unlessProvided: List<String> = emptyList()
 ) {
     /** One line for a scan log: the id that was depended on, the side asked for, and whether it is optional. */
     override fun toString(): String {

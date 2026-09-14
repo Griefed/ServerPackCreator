@@ -171,6 +171,43 @@ internal class BootVerifierCrashRecheckTest {
         )
     }
 
+    /**
+     * **A crash that is about to be *published* is re-checked whatever the metadata says.** A decisive rung
+     * reaches `CONFIRMED`, which strips the mod from every server pack built against the fallback list, and
+     * that is worth one boot.
+     *
+     * This arm exists because the axis moved. A project used to be ground under every loader it publishes
+     * for, so a wrong crash routinely met a clean boot from a sibling loader *in the same run* and
+     * `ClientsideVerifier.targetDisprovingTheCrash` threw it out for free — that is the `iron-chests` story.
+     * One loader per Minecraft line means nobody boots that sibling unless something asks, and
+     * `pickRecheckCandidates` now spends the first attempt on exactly it.
+     */
+    @Test
+    fun aCrashThatIsAboutToBePublishedIsReCheckedEvenIfTheMetadataAgrees() {
+        Assertions.assertTrue(
+            BootVerifier.shouldRecheckAgainstOtherVersions(
+                outcome(BootResult.CRASHED).copy(decidedBy = BootDecision.OPERATOR_RULE),
+                metadataDeclaresServerSupport = false, limit = 2
+            ),
+            "an operator rule is the one decisive signal nothing else cross-checks"
+        )
+    }
+
+    /**
+     * And a crash that cannot publish is still not worth boots: the bare exit code means only "exited
+     * non-zero, nothing recognised why", which reaches `INCONCLUSIVE` and strips nothing. Asserted beside
+     * the arm above so the new reason is shown to be *decisiveness*, not merely "having a decision".
+     */
+    @Test
+    fun aCrashThatCannotBePublishedIsStillNotReChecked() {
+        Assertions.assertFalse(
+            BootVerifier.shouldRecheckAgainstOtherVersions(
+                outcome(BootResult.CRASHED).copy(decidedBy = BootDecision.EXIT_CODE),
+                metadataDeclaresServerSupport = false, limit = 2
+            )
+        )
+    }
+
     /** Only a crash is decisive, so only a crash can be worth disproving; and a zero budget buys no boots. */
     @Test
     fun neitherANonCrashNorAZeroBudgetTriggersOtherVersionBoots() {
