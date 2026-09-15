@@ -6,7 +6,7 @@
   </q-page>
 </template>
 
-<script>
+<script lang="ts">
 import {defineComponent} from 'vue';
 import HistoryTable from 'components/HistoryTable.vue';
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
+import java.util.Collections
 
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
@@ -42,22 +43,34 @@ internal class ForgeLoader(
     private val minecraftMeta: MinecraftMeta
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    val minecraftVersions: MutableList<String> = ArrayList(100)
-    val forgeVersions: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place — the refresh runs on a background coroutine while callers read.
+     */
+    @Volatile
+    var minecraftVersions: List<String> = emptyList()
+        private set
+    @Volatile
+    var forgeVersions: List<String> = emptyList()
+        private set
 
     /**
      * 1-n Minecraft version to Forge versions.
      * * `key`: Minecraft version.
      * * `value`: List of Forge versions for said Minecraft versions.
      */
-    val versionMeta: HashMap<String, List<String>> = HashMap(200)
+    @Volatile
+    var versionMeta: Map<String, List<String>> = emptyMap()
+        private set
 
     /**
      * 1-1 Forge version to Minecraft version
      * * `key`: Forge version.
      * * `value`: Minecraft version for said Forge version.
      */
-    val forgeToMinecraftMeta: HashMap<String, String> = HashMap(200)
+    @Volatile
+    var forgeToMinecraftMeta: Map<String, String> = emptyMap()
+        private set
 
     /**
      * 1-1 Minecraft + Forge version combination to [ForgeInstance]
@@ -67,7 +80,9 @@ internal class ForgeLoader(
      * * `1.18.2-40.0.44`
      * + `value`: The [ForgeInstance] for said Minecraft and Forge version combination.
      */
-    val instanceMeta: HashMap<String, ForgeInstance> = HashMap(200)
+    @Volatile
+    var instanceMeta: Map<String, ForgeInstance> = emptyMap()
+        private set
 
     /**
      * Update the available Forge loader information.
@@ -76,11 +91,11 @@ internal class ForgeLoader(
      */
     @Throws(IOException::class)
     fun update() {
-        minecraftVersions.clear()
-        forgeVersions.clear()
-        versionMeta.clear()
-        forgeToMinecraftMeta.clear()
-        instanceMeta.clear()
+        val nextMinecraftVersions = ArrayList<String>(100)
+        val nextForgeVersions = ArrayList<String>(100)
+        val nextVersionMeta = HashMap<String, List<String>>(200)
+        val nextForgeToMinecraftMeta = HashMap<String, String>(200)
+        val nextInstanceMeta = HashMap<String, ForgeInstance>(200)
         val forgeManifest: JsonNode = utilities.jsonUtilities.getJson(loaderManifest)
         for (field in forgeManifest.fieldNames()) {
             /*
@@ -97,10 +112,10 @@ internal class ForgeLoader(
             val client = field.replace("_", "-")
             if (minecraftMeta.getClient(client).isPresent) {
                 mcVersion = client
-                minecraftVersions.add(client)
+                nextMinecraftVersions.add(client)
             } else {
                 mcVersion = field
-                minecraftVersions.add(field)
+                nextMinecraftVersions.add(field)
             }
             val forgeVersionsForMCVer: MutableList<String> = ArrayList(100)
 
@@ -109,8 +124,15 @@ internal class ForgeLoader(
                  * substring of length of Minecraft version plus 1, so entries like "1.18.2-40.0.17" get their
                  * Minecraft version portion removed and result in "40.0.17". The +1 removes the "-", too. :)
                  */
-                val forgeVersion = forge.asText().substring(mcVersion.length + 1)
-                forgeVersions.add(forgeVersion)
+                val forgeVersion = forgeVersionFrom(forge.asText(), mcVersion)
+                if (forgeVersion == null) {
+                    // One malformed entry costs one version, not the whole Forge load: `update()` catches only
+                    // MalformedURLException and NoSuchElementException, so an uncaught slice error here would abort
+                    // the parse for every remaining Minecraft version too.
+                    log.warn("Skipping malformed Forge manifest entry '${forge.asText()}' under Minecraft $mcVersion.")
+                    continue
+                }
+                nextForgeVersions.add(forgeVersion)
                 forgeVersionsForMCVer.add(forgeVersion)
                 try {
                     val forgeInstance = ForgeInstance(
@@ -118,8 +140,8 @@ internal class ForgeLoader(
                         forgeVersion,
                         minecraftMeta
                     )
-                    instanceMeta[mcVersion + forge.asText().substring(mcVersion.length)] = forgeInstance
-                    forgeToMinecraftMeta[forgeVersion] = mcVersion
+                    nextInstanceMeta[mcVersion + forge.asText().substring(mcVersion.length)] = forgeInstance
+                    nextForgeToMinecraftMeta[forgeVersion] = mcVersion
                 } catch (ex: MalformedURLException) {
 
                     // Well, in THEORY this should never be thrown, so we don't need to bother
@@ -129,7 +151,36 @@ internal class ForgeLoader(
                     log.debug("Could not create Forge instance for Minecraft $mcVersion and Forge $forgeVersion.", ex)
                 }
             }
-            versionMeta[mcVersion] = forgeVersionsForMCVer.asReversed()
+            nextVersionMeta[mcVersion] = forgeVersionsForMCVer.asReversed()
         }
+        // Published in one assignment each, as unmodifiable views: a `List`-typed field still holds an
+        // ArrayList at runtime, so a caller could otherwise cast and mutate the metadata's own state.
+        minecraftVersions = Collections.unmodifiableList(nextMinecraftVersions)
+        forgeVersions = Collections.unmodifiableList(nextForgeVersions)
+        versionMeta = Collections.unmodifiableMap(nextVersionMeta)
+        forgeToMinecraftMeta = Collections.unmodifiableMap(nextForgeToMinecraftMeta)
+        instanceMeta = Collections.unmodifiableMap(nextInstanceMeta)
     }
+
+    internal companion object {
+        /**
+         * Strip the Minecraft portion off a Forge manifest entry, leaving the Forge version:
+         * `1.18.2-40.0.17` with Minecraft `1.18.2` yields `40.0.17`. The `+ 1` also removes the `-` separator.
+         *
+         * **Load-bearing assumption:** the entry always begins with the manifest's own Minecraft key, and the key is
+         * only ever reconciled by swapping `_` for `-` (Forge writes `1.7.10_pre4` where Mojang writes
+         * `1.7.10-pre4`). That swap is length-preserving, which is the *only* reason cutting by
+         * `minecraftVersion.length` stays correct for those versions — a reconciliation that changed the length would
+         * silently slice the version in the wrong place instead of failing.
+         *
+         * Returns `null` for an entry with nothing after the key, which the caller logs and skips. A length check is
+         * the only guard that fits: `startsWith("$minecraftVersion-")` would reject the legitimate `1.7.10_pre4`
+         * entry, since entries carry the **raw** manifest key while the Minecraft version may be the reconciled form.
+         */
+        internal fun forgeVersionFrom(manifestEntry: String, minecraftVersion: String): String? =
+            manifestEntry
+                .takeIf { it.length > minecraftVersion.length + 1 }
+                ?.substring(minecraftVersion.length + 1)
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,11 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
+import de.griefed.serverpackcreator.app.HomeDirectoryPreference
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
 import java.io.File
 import java.util.*
-import java.util.prefs.Preferences
 
 @Suppress("DuplicatedCode")
 @CommandLine.Command(
@@ -35,7 +35,9 @@ import java.util.prefs.Preferences
                   ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Prints where SPC's home directory resolved to, which is the first thing to check when files turn up somewhere unexpected. */
 class HomeDirCommand : Command {
+    /** Print the resolved home directory. */
     override fun run() {
         changeHomeDirectory()
     }
@@ -56,14 +58,14 @@ class HomeDirCommand : Command {
             }
         } while (!File(path).isDirectory)
 
-        Preferences.userRoot().node("ServerPackCreator").put(
-            "de.griefed.serverpackcreator.home",
-            path
-        )
+        HomeDirectoryPreference.store(path)
 
         println("You MUST restart ServerPackCreator for this change to take full effect.")
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
     }
 }

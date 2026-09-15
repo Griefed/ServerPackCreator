@@ -1,15 +1,15 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
-  title: OpenAPI definition
-  version: v0
-servers:
-- url: http://localhost:8080
-  description: Generated server url
+  title: ServerPackCreator
+  description: REST API of ServerPackCreator's webservice mode. GENERATED from the controllers by
+    springdoc — do not hand-edit. The regeneration command is in serverpackcreator-app/build.gradle.kts,
+    beside the springdoc dependency.
+  version: v2
 paths:
   /api/v2/modpacks/upload:
     post:
       tags:
-      - modpack-controller
+      - mod-pack-controller
       operationId: uploadModPack
       parameters:
       - name: minecraftVersion
@@ -46,32 +46,31 @@ paths:
         content:
           application/json:
             schema:
-              required:
-              - file
               type: object
               properties:
                 file:
                   type: string
                   format: binary
+              required:
+              - file
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ZipResponse'
+                $ref: "#/components/schemas/ZipResponse"
   /api/v2/modpacks/generate:
     post:
       tags:
-      - modpack-controller
+      - mod-pack-controller
       operationId: requestGeneration
       parameters:
       - name: modPackID
         in: query
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       - name: minecraftVersion
         in: query
         required: true
@@ -108,7 +107,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ZipResponse'
+                $ref: "#/components/schemas/ZipResponse"
   /api/v2/versions/quilt:
     get:
       tags:
@@ -128,6 +127,28 @@ paths:
       tags:
       - versions-controller
       operationId: availableNeoForgeVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+  /api/v2/versions/neoforge/{minecraftversion}:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableNeoForgeVersionsForMinecraftVersion
+      parameters:
+      - name: minecraftversion
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -226,7 +247,273 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionMetaResponse'
+                $ref: "#/components/schemas/VersionMetaResponse"
+  /api/v2/stats/packs:
+    get:
+      tags:
+      - stats-controller
+      operationId: amountStats
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AmountStatsData"
+  /api/v2/stats/downloads/serverpackspaginated:
+    get:
+      tags:
+      - stats-controller
+      operationId: serverPackDownloadsPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerDate"
+  /api/v2/stats/downloads/serverpacks:
+    get:
+      tags:
+      - stats-controller
+      operationId: serverPackDownloads
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerDate"
+  /api/v2/stats/downloads/serverpacks/{serverPackID}:
+    get:
+      tags:
+      - stats-controller
+      operationId: allDownloadsForServerPack
+      parameters:
+      - name: serverPackID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServerPackDownload"
+  /api/v2/stats/downloads/serverpacks/historypaginated:
+    get:
+      tags:
+      - stats-controller
+      operationId: serverPackDownloadHistoryPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServerPackDownload"
+  /api/v2/stats/downloads/serverpacks/history:
+    get:
+      tags:
+      - stats-controller
+      operationId: serverPackDownloadHistory
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServerPackDownload"
+  /api/v2/stats/downloads/modpackspaginated:
+    get:
+      tags:
+      - stats-controller
+      operationId: modPackDownloadsPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerDate"
+  /api/v2/stats/downloads/modpacks:
+    get:
+      tags:
+      - stats-controller
+      operationId: modPackDownloads
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerDate"
+  /api/v2/stats/downloads/modpacks/{modPackID}:
+    get:
+      tags:
+      - stats-controller
+      operationId: allDownloadsForModPack
+      parameters:
+      - name: modPackID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModPackDownload"
+  /api/v2/stats/downloads/modpacks/historypaginated:
+    get:
+      tags:
+      - stats-controller
+      operationId: modPackDownloadHistoryPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModPackDownload"
+  /api/v2/stats/downloads/modpacks/history:
+    get:
+      tags:
+      - stats-controller
+      operationId: modPackDownloadHistory
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModPackDownload"
+  /api/v2/stats/disk:
+    get:
+      tags:
+      - stats-controller
+      operationId: diskStats
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DiskStatsData"
+  /api/v2/stats/creation/serverpacks:
+    get:
+      tags:
+      - stats-controller
+      operationId: serverPacksCreationTimes
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerDate"
+  /api/v2/stats/creation/modpacks:
+    get:
+      tags:
+      - stats-controller
+      operationId: modPacksCreationTimes
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerDate"
   /api/v2/settings/current:
     get:
       tags:
@@ -238,7 +525,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Settings'
+                $ref: "#/components/schemas/Settings"
   /api/v2/serverpacks/{id}:
     get:
       tags:
@@ -249,15 +536,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServerPackView'
+                $ref: "#/components/schemas/ServerPack"
   /api/v2/serverpacks/vote/{id}&{vote}:
     get:
       tags:
@@ -268,8 +554,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       - name: vote
         in: path
         required: true
@@ -292,14 +577,12 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       - name: runConfigurationId
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -318,8 +601,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -328,6 +610,35 @@ paths:
               schema:
                 type: string
                 format: binary
+  /api/v2/serverpacks/allpaginated:
+    get:
+      tags:
+      - server-pack-controller
+      operationId: getAllServerPacksPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServerPack"
   /api/v2/serverpacks/all:
     get:
       tags:
@@ -341,7 +652,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ServerPackView'
+                  $ref: "#/components/schemas/ServerPack"
   /api/v2/runconfigs/{id}:
     get:
       tags:
@@ -352,15 +663,14 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RunConfiguration'
+                $ref: "#/components/schemas/RunConfiguration"
   /api/v2/runconfigs/all:
     get:
       tags:
@@ -374,38 +684,36 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RunConfiguration'
+                  $ref: "#/components/schemas/RunConfiguration"
   /api/v2/modpacks/{id}:
     get:
       tags:
-      - modpack-controller
+      - mod-pack-controller
       operationId: getModpack_1
       parameters:
       - name: id
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModPackView'
+                $ref: "#/components/schemas/ModPack"
   /api/v2/modpacks/download/{id}:
     get:
       tags:
-      - modpack-controller
+      - mod-pack-controller
       operationId: downloadModpack
       parameters:
       - name: id
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -414,10 +722,57 @@ paths:
               schema:
                 type: string
                 format: binary
+  /api/v2/modpacks/byserverpack/{id}:
+    get:
+      tags:
+      - mod-pack-controller
+      operationId: getModPackByServerPack
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModPack"
+  /api/v2/modpacks/allpaginated:
+    get:
+      tags:
+      - mod-pack-controller
+      operationId: getAllModPacksPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModPack"
   /api/v2/modpacks/all:
     get:
       tags:
-      - modpack-controller
+      - mod-pack-controller
       operationId: getAllModPacks
       responses:
         "200":
@@ -427,7 +782,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ModPackView'
+                  $ref: "#/components/schemas/ModPack"
   /api/v2/events/status/{status}:
     get:
       tags:
@@ -454,7 +809,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QueueEvent'
+                  $ref: "#/components/schemas/QueueEvent"
   /api/v2/events/serverpack/{id}:
     get:
       tags:
@@ -465,8 +820,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -475,7 +829,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QueueEvent'
+                  $ref: "#/components/schemas/QueueEvent"
   /api/v2/events/modpack/{id}:
     get:
       tags:
@@ -486,8 +840,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -496,7 +849,36 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QueueEvent'
+                  $ref: "#/components/schemas/QueueEvent"
+  /api/v2/events/allpaginated:
+    get:
+      tags:
+      - event-controller
+      operationId: getAllEventsPaginated
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QueueEvent"
   /api/v2/events/all:
     get:
       tags:
@@ -510,13 +892,10 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QueueEvent'
+                  $ref: "#/components/schemas/QueueEvent"
 components:
   schemas:
     ZipResponse:
-      required:
-      - message
-      - success
       type: object
       properties:
         message:
@@ -524,16 +903,21 @@ components:
         success:
           type: boolean
         modPackId:
-          type: integer
-          format: int32
+          type:
+          - string
+          - "null"
         runConfigId:
-          type: integer
-          format: int32
+          type:
+          - string
+          - "null"
         serverPackId:
-          type: integer
-          format: int32
+          type:
+          - string
+          - "null"
         status:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - QUEUED
           - CHECKING
@@ -541,14 +925,10 @@ components:
           - GENERATING
           - GENERATED
           - ERROR
-    VersionMetaResponse:
       required:
-      - fabric
-      - forge
-      - legacyFabric
-      - minecraft
-      - neoForge
-      - quilt
+      - message
+      - success
+    VersionMetaResponse:
       type: object
       properties:
         minecraft:
@@ -574,25 +954,247 @@ components:
             items:
               type: string
         neoForge:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required:
+      - fabric
+      - forge
+      - legacyFabric
+      - minecraft
+      - neoForge
+      - quilt
+    AmountStatsData:
+      type: object
+      properties:
+        modPacks:
+          type: integer
+          format: int32
+        serverPacks:
+          type: integer
+          format: int32
+        runConfigurations:
+          type: integer
+          format: int32
+        minecraftVersions:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        modloaders:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        modloaderVersions:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+      required:
+      - minecraftVersions
+      - modPacks
+      - modloaderVersions
+      - modloaders
+      - runConfigurations
+      - serverPacks
+    AmountPerDate:
+      type: object
+      properties:
+        creations:
+          type: integer
+          format: int32
+        date:
+          type: string
+      required:
+      - creations
+      - date
+    RunConfiguration:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - "null"
+        minecraftVersion:
+          type: string
+        modloader:
+          type: string
+        modloaderVersion:
+          type: string
+        startArgs:
           type: array
           items:
             type: string
-    Settings:
+        clientMods:
+          type: array
+          items:
+            type: string
+        whitelistedMods:
+          type: array
+          items:
+            type: string
       required:
-      - aikarsFlags
-      - clientsideMods
-      - devBuild
-      - directoriesToExclude
-      - directoriesToInclude
-      - exclusionFilter
-      - isAutoExcludingModsEnabled
-      - isMinecraftPreReleasesAvailabilityEnabled
-      - isZipFileExclusionEnabled
-      - language
-      - supportedModloaders
-      - version
-      - whitelistMods
-      - zipArchiveExclusions
+      - clientMods
+      - minecraftVersion
+      - modloader
+      - modloaderVersion
+      - startArgs
+      - whitelistedMods
+    ServerPack:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - "null"
+        modpackId:
+          type: string
+        size:
+          type: integer
+          format: int32
+        downloads:
+          type: integer
+          format: int32
+        confirmedWorking:
+          type: integer
+          format: int32
+        dateCreated:
+          type: string
+          format: date-time
+        fileID:
+          type:
+          - string
+          - "null"
+        fileName:
+          type:
+          - string
+          - "null"
+        sha256:
+          type:
+          - string
+          - "null"
+        runConfiguration:
+          oneOf:
+          - $ref: "#/components/schemas/RunConfiguration"
+          - type: "null"
+      required:
+      - confirmedWorking
+      - dateCreated
+      - downloads
+      - modpackId
+      - size
+    ServerPackDownload:
+      type: object
+      properties:
+        downloadedAt:
+          type: string
+          format: date-time
+        serverPack:
+          $ref: "#/components/schemas/ServerPack"
+      required:
+      - downloadedAt
+      - serverPack
+    ModPack:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - "null"
+        projectID:
+          type: string
+        versionID:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+        name:
+          type: string
+        size:
+          type: integer
+          format: int32
+        downloads:
+          type:
+          - integer
+          - "null"
+          format: int32
+        status:
+          type: string
+          enum:
+          - QUEUED
+          - CHECKING
+          - CHECKED
+          - GENERATING
+          - GENERATED
+          - ERROR
+        source:
+          type: string
+          enum:
+          - ZIP
+          - MODRINTH
+          - CURSEFORGE
+          - DIRECTORY
+        fileID:
+          type:
+          - string
+          - "null"
+        sha256:
+          type:
+          - string
+          - "null"
+        serverPacks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServerPack"
+      required:
+      - dateCreated
+      - name
+      - projectID
+      - serverPacks
+      - size
+      - source
+      - status
+      - versionID
+    ModPackDownload:
+      type: object
+      properties:
+        downloadedAt:
+          type: string
+          format: date-time
+        modPack:
+          $ref: "#/components/schemas/ModPack"
+      required:
+      - downloadedAt
+      - modPack
+    DiskStatsData:
+      type: object
+      properties:
+        identifier:
+          type: string
+        dirName:
+          type: string
+        rootName:
+          type: string
+        totalSpace:
+          type: integer
+          format: int64
+        freeSpace:
+          type: integer
+          format: int64
+        usedBySPC:
+          type: integer
+          format: int64
+      required:
+      - dirName
+      - freeSpace
+      - identifier
+      - rootName
+      - totalSpace
+      - usedBySPC
+    Settings:
       type: object
       properties:
         clientsideMods:
@@ -641,209 +1243,47 @@ components:
           type: string
         language:
           type: string
-    ClientMod:
       required:
-      - id
-      - mod
-      type: object
-      properties:
-        mod:
-          type: string
-        id:
-          type: integer
-          format: int32
-    RunConfiguration:
-      required:
-      - clientMods
-      - id
-      - minecraftVersion
-      - modloader
-      - modloaderVersion
-      - startArgs
-      - whitelistedMods
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        minecraftVersion:
-          type: string
-        modloader:
-          type: string
-        modloaderVersion:
-          type: string
-        startArgs:
-          type: array
-          items:
-            $ref: '#/components/schemas/StartArgument'
-        clientMods:
-          type: array
-          items:
-            $ref: '#/components/schemas/ClientMod'
-        whitelistedMods:
-          type: array
-          items:
-            $ref: '#/components/schemas/WhitelistedMod'
-    ServerPackView:
-      required:
-      - confirmedWorking
-      - dateCreated
-      - downloads
-      - id
-      - runConfiguration
-      - sha256
-      - size
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        size:
-          type: number
-          format: double
-        sha256:
-          type: string
-        downloads:
-          type: integer
-          format: int32
-        runConfiguration:
-          $ref: '#/components/schemas/RunConfiguration'
-        confirmedWorking:
-          type: integer
-          format: int32
-        dateCreated:
-          type: string
-          format: date-time
-    StartArgument:
-      required:
-      - argument
-      - id
-      type: object
-      properties:
-        argument:
-          type: string
-        id:
-          type: integer
-          format: int32
-    WhitelistedMod:
-      required:
-      - id
-      - mod
-      type: object
-      properties:
-        mod:
-          type: string
-        id:
-          type: integer
-          format: int32
-    ModPackView:
-      required:
-      - dateCreated
-      - id
-      - name
-      - projectID
-      - serverPacks
-      - sha256
-      - size
-      - source
-      - status
-      - versionID
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: integer
-          format: int32
-        size:
-          type: number
-          format: double
-        source:
-          type: string
-          enum:
-          - ZIP
-          - MODRINTH
-        status:
-          type: string
-          enum:
-          - QUEUED
-          - CHECKING
-          - CHECKED
-          - GENERATING
-          - GENERATED
-          - ERROR
-        sha256:
-          type: string
-        serverPacks:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServerPack'
-        projectID:
-          type: string
-        versionID:
-          type: string
-        dateCreated:
-          type: string
-          format: date-time
-    ServerPack:
-      required:
-      - confirmedWorking
-      - downloads
-      - id
-      - size
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int32
-        downloads:
-          type: integer
-          format: int32
-        confirmedWorking:
-          type: integer
-          format: int32
-        dateCreated:
-          type: string
-          format: date-time
-        fileID:
-          type: integer
-          format: int64
-        sha256:
-          type: string
-        runConfiguration:
-          $ref: '#/components/schemas/RunConfiguration'
+      - aikarsFlags
+      - clientsideMods
+      - devBuild
+      - directoriesToExclude
+      - directoriesToInclude
+      - exclusionFilter
+      - isAutoExcludingModsEnabled
+      - isMinecraftPreReleasesAvailabilityEnabled
+      - isZipFileExclusionEnabled
+      - language
+      - supportedModloaders
+      - version
+      - whitelistMods
+      - zipArchiveExclusions
     ErrorEntry:
-      required:
-      - error
-      - id
       type: object
       properties:
         error:
           type: string
-        id:
-          type: integer
-          format: int32
-    QueueEvent:
       required:
-      - errors
-      - id
-      - message
+      - error
+    QueueEvent:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type:
+          - string
+          - "null"
         modPackId:
-          type: integer
-          format: int32
+          type:
+          - string
+          - "null"
         serverPackId:
-          type: integer
-          format: int32
+          type:
+          - string
+          - "null"
         status:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - QUEUED
           - CHECKING
@@ -859,4 +1299,8 @@ components:
         errors:
           type: array
           items:
-            $ref: '#/components/schemas/ErrorEntry'
+            $ref: "#/components/schemas/ErrorEntry"
+      required:
+      - errors
+      - message
+      - timestamp

@@ -147,6 +147,11 @@ class ConfigurationCheck : ConfigCheckExtension {
     override val version: String
         get() = "0.0.1-SNAPSHOT"
 
+    /**
+     * The logger every extension in this example writes to. **`AddonsLogger` is the name to use**: ServerPackCreator
+     * configures that appender for plugins specifically, so a plugin logging through it lands in the addons log
+     * rather than being mixed into SPC's own.
+     */
     companion object {
         private val LOG_ADDONS = LogManager.getLogger("AddonsLogger")
     }

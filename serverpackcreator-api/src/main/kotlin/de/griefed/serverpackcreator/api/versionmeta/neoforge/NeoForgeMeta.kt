@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,7 +64,10 @@ class NeoForgeMeta(
         }
     }
 
-    fun getNeoForgeMeta(): HashMap<String, List<String>> {
+    /** Every supported NeoForge build keyed by Minecraft version, merged across the legacy and current manifests. */
+    // Narrowed from `HashMap` to `Map`: the returned map is now an immutable snapshot, and the old
+    // type advertised that a caller could mutate the metadata's own state through it.
+    fun getNeoForgeMeta(): Map<String, List<String>> {
         return neoForgeLoader!!.versionMeta
     }
 

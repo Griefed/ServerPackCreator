@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -118,6 +118,7 @@ class ServerPackController @Autowired constructor(
         )
     }
 
+    /** One page of server packs, newest first. */
     @GetMapping("/allpaginated", produces = ["application/json"])
     @ResponseBody
     fun getAllServerPacksPaginated(
@@ -133,6 +134,7 @@ class ServerPackController @Autowired constructor(
         )
     }
 
+    /** One server pack by id. */
     @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getServerPack(@PathVariable id: String): ResponseEntity<ServerPack> {

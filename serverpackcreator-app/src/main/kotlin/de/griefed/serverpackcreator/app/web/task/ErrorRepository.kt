@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,9 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
+/** Stored error messages. Deduplicated by the message being its own id. */
 @Repository
 interface ErrorRepository : MongoRepository<ErrorEntry, String>{
+    /** The stored entry for a message, so an existing one is reused rather than written again. */
     fun findByError(error: String) : Optional<ErrorEntry>
 }

@@ -90,7 +90,7 @@
         <q-separator vertical />
         <q-card-actions vertical class="justify-around">
           <q-btn size="xl" flat round color="positive" icon="download" :loading="loading"
-                 @click="downloadWithAxios($route.params.id);this.count = false; this.canceled = true;">
+                 @click="downloadWithAxios($route.params.id);count = false; canceled = true;">
             <template v-slot:loading>
               <q-spinner-hourglass/>
             </template>
@@ -113,7 +113,7 @@
             </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-btn v-if="this.count" round color="negative" icon="cancel" @click="this.count = false; this.canceled = true;"/>
+            <q-btn v-if="count" round color="negative" icon="cancel" @click="count = false; canceled = true;"/>
           </q-item-section>
         </q-item>
       </q-card-section>
@@ -121,7 +121,7 @@
   </q-page>
 </template>
 
-<script >
+<script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { modpacks } from 'boot/axios';
 import { date } from 'quasar';
@@ -170,10 +170,9 @@ export default defineComponent({
   methods: {
     current() {
       const route = this.$router.resolve({});
-      console.log(this.$route);
       return new URL(route.href, window.location.origin).href;
     },
-    copyToClipboard(text) {
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,
@@ -194,7 +193,7 @@ export default defineComponent({
         this.downloadWithAxios(this.$route.params.id)
       }
     },
-    downloadWithAxios(id) {
+    downloadWithAxios(id: string | string[] | undefined) {
       this.loading = true
       modpacks.get('download/' + id, {
         responseType: 'arraybuffer'
@@ -220,7 +219,7 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    modpacks.get(this.$route.params.id).then(response => {
+    modpacks.get(String(this.$route.params.id)).then(response => {
       this.dateCreated = response.data.dateCreated;
       this.name = response.data.name.replaceAll(' ', '_');
       this.projectID = response.data.projectID;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,11 +21,8 @@ package de.griefed.serverpackcreator.api.modscanning
 
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
-import java.util.*
 import java.util.jar.JarFile
 
 /**
@@ -34,235 +31,131 @@ import java.util.jar.JarFile
  * @param tomlParser To parse .toml-files.
  * @Griefed
  */
-open class ForgeTomlScanner(private val tomlParser: TomlParser) :
-    Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
+open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScanner() {
     private val mods = "mods"
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
-    private val both = "BOTH"
-    private val type = "type"
-    private val mandatory = "mandatory"
-    private val requiredAsDep = "REQUIRED"
 
+    /** The key a Forge/NeoForge dependency entry states its Maven version range under. */
+    private val versionRange = "versionRange"
+
+    /** Forge's optionality flag in `mods.toml`: `mandatory = true|false`. */
+    private val mandatory = "mandatory"
+
+    /** NeoForge's replacement for [mandatory] in `neoforge.mods.toml`: a `type` string, default `"required"`. */
+    private val dependencyType = "type"
+
+    /**
+     * The `type` values that do **not** oblige the pack to carry the dependency. `"incompatible"` is here
+     * because it means the mod must *not* be present, which is the opposite of something to go and fetch.
+     */
+    private val notRequiredTypes = setOf("optional", "incompatible", "discouraged")
+    private val both = "BOTH"
+
+    /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
     open val modsToml = "META-INF/mods.toml"
 
+    /**
+     * Dependency ids that are the platform itself rather than another mod. A mod declaring these is not depending on
+     * anything the server pack has to keep, so they must not pull a jar into the dependency list.
+     */
     val neoForgeMinecraft: Regex
         get() = "^(neoforge|forge|minecraft)$".toRegex()
-    val bothServer: Regex
-        get() = "^(BOTH|SERVER)$".toRegex()
 
     /**
-     * Scan the `mods.toml`-files in mod JAR-files of a given directory for their sideness.
+     * The `side` value a Forge descriptor uses for client-only, spelled the way the TOML spells it: upper case,
+     * matched exactly. Read together with [neoForgeMinecraft] — it is a `side=CLIENT` on the *platform*
+     * dependency that marks the mod itself clientside, which is the one signal [read] is after.
+     */
+    val client: Regex
+        get() = "^CLIENT$".toRegex()
+
+    /**
+     * Read one mod's `mods.toml` for its sideness.
      *
-     * If `mods` specifies `side=BOTH|SERVER`, it is added.
+     * The side a mod demands of the platform (`Forge`/`NeoForge`/`Minecraft`) is taken as its own:
+     * a mod requiring Minecraft `side=CLIENT` is clientside. Every other dependency is recorded as a
+     * dependency instead. A mod declaring no dependencies at all is treated as server-side, to
+     * prevent false positives.
      *
-     * If `dependencies.modId` for `Forge|Minecraft` specifies `side=BOTH|SERVER `, it is added.
-     *
-     * Any modId of a dependency specifying `side=BOTH|SERVER` is added.
-     *
-     * If no sideness can be found for a given mod, it is added to prevent false positives.
-     * @param jarFiles A list of files in which to check the `mods.toml`-files.
-     * @return Mods not to include in server pack based on mods.toml-configuration.
+     * @param modJar The jar whose `mods.toml` to read.
+     * @return What this mod declared.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): Pair<Collection<File>, Collection<Pair<String,String>>> {
-        val serverMods = TreeSet<File>()
-        val dependencies = ArrayList<Pair<String,String>>()
-        var modConfig: CommentedConfig
-        for (modJar in jarFiles) {
-            try {
-                modConfig = getConfig(modJar)
-
-                // get all [[dependencies.n]] which are minecraft|forge, to determine the sideness of the mod itself
-                dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar.name))
-
-                // get all mods required on the server
-                dependencies.addAll(getModIdsRequiredOnServer(modConfig, modJar.name))
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
-                serverMods.add(modJar)
-            }
-        }
-        for (modJar in jarFiles) {
-            try {
-                modConfig = getConfig(modJar)
-                val idsInMod = getModIdsInJar(modConfig)
-                for (id in idsInMod) {
-                    if (dependencies.map{ it.first }.contains(id)) {
-                        serverMods.add(modJar)
-                    }
-                }
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
-                serverMods.add(modJar)
-            }
-        }
-        val excluded = TreeSet(jarFiles)
-        excluded.removeAll(serverMods)
-        return Pair(excluded,dependencies)
+    override fun read(modJar: File): ScannedMod {
+        val modConfig: CommentedConfig = getConfig(modJar)
+        val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
+        val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
+        return ScannedMod(
+            modJar, modId, sidenessOf(sidenesses), dependencies,
+            minecraftConstraint = readMinecraftConstraint(modConfig, modId),
+            descriptorRead = true
+        )
     }
 
     /**
-     * Get all ids of mods required for running the server.
+     * The `versionRange` of the `minecraft` dependency this descriptor declares, or `null`.
      *
-     * @param modConfig Base-config toml of the mod which contains all information.
-     * @return Set of ids of mods required.
-     * @throws ScanningException if the mod specifies no mods.
+     * Read separately rather than returned from [getSidenessesAndDependencies], because that function
+     * *consumes* the platform entry — the `side` on it is what decides the mod's own sideness — and threading
+     * a third value out of it would tangle two unrelated answers. `minecraft` specifically, not the whole
+     * platform regex: `forge`/`neoforge` state a loader range, which is a different question.
      */
-    @Throws(ScanningException::class)
-    private fun getModIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Pair<String,String>> {
-        val modConfigs = ArrayList<Map<String, Any>>(100)
-        val entries = ArrayList<Pair<String, String>>()
-        if (modConfig.valueMap()[mods] == null) {
-            throw ScanningException("No mods specified.")
-        } else {
-            val mods = modConfig.valueMap()[mods] as ArrayList<*>
-            for (mod in mods) {
-                val config = mod as CommentedConfig
-                val extracted = config.valueMap()
-                modConfigs.add(extracted)
-            }
-        }
-        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
-        var containedForgeOrMinecraft = false
-        for (config in modConfigs) {
-            val modId = config[modId].toString()
-            if (dependencies.containsKey(modId)) {
-                val modDependencies = dependencies[modId]!!
-                for (dependency in modDependencies) {
-                    try {
-                        val dependencyModId = getModId(dependency)
-                        if (dependencyModId.matches(neoForgeMinecraft)) {
-                            containedForgeOrMinecraft = true
-                            try {
-                                val side = getSide(dependency)
-                                if (side.matches(bothServer)) {
-                                    entries.add(Pair(modId, fileName))
-                                }
-                            } catch (_: NullPointerException) {
-                                // no side specified....assuming both|server
-                                entries.add(Pair(modId, fileName))
-                            }
-                        }
-                    } catch (_: NullPointerException) {
-                        // no modId specified in dependency...assuming forge|minecraft and both|server
-                        containedForgeOrMinecraft = true
-                        entries.add(Pair(modId,"$fileName ($modId)"))
-                    }
-                }
-            } else {
-                // contains no self referencing dependency...
-                entries.add(Pair(modId, fileName))
-            }
-            if (!containedForgeOrMinecraft) {
-                entries.add(Pair(modId, fileName))
-            }
-        }
-        return entries
-    }
+    private fun readMinecraftConstraint(modConfig: CommentedConfig, modId: String): String? = runCatching {
+        getMapOfDependencyLists(modConfig)[modId]
+            ?.firstOrNull { getModId(it).equals("minecraft", ignoreCase = true) }
+            ?.let { getVersionRange(it) }
+    }.getOrNull()
 
-    /**
-     * Acquire an id-list of dependencies required by the passed mod to run on a modded
-     * server. Only if all dependencies in this mod specify `CLIENT` for either `forge `
-     * or `minecraft` is a dependency not added to the list of required dependencies. Otherwise,
-     * all modIds mentioned in the dependencies of this mod, which are neither `forge` nor
-     * `minecraft` get added to the list.
-     *
-     * @param modConfig Base-config toml of the mod which contains all information.
-     * @return Set of ids of mods required as dependencies.
-     * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
-     */
-    @Throws(ScanningException::class)
-    private fun getModDependencyIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Pair<String,String>> {
+    private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
-        val idsInMod = getModIdsInJar(modConfig)
-        val entries = ArrayList<Pair<String, String>>()
+        val sidesForModloader = mutableListOf<Sideness>()
+        val modDependencies = mutableListOf<ModDependency>()
         try {
-            var confidentOnClientSide = true
-            for (modId in idsInMod) {
-                if (dependencies.containsKey(modId)) {
-                    val modIdDependencies = dependencies[modId]!!
-                    //check all dependencies in mod
-                    for (dependency in modIdDependencies) {
-                        val dependencyModId = getModId(dependency)
-                        val side = getSide(dependency)
-                        //val required = getRequired(dependency)
-                        if (dependencyModId.matches(neoForgeMinecraft) && side.matches(bothServer)) { // && required.equals(requiredAsDep,true)
-                            confidentOnClientSide = false
-                        }
+            val declaredDependencies = dependencies[modId]
+            if (declaredDependencies != null) {
+                //check all dependencies in mod
+                for (declared in declaredDependencies) {
+                    val dependencyModId = getModId(declared)
+                    val side = getSide(declared)
+                    val dependencySideness = if (side.uppercase().matches(client)) {
+                        Sideness.CLIENT
+                    } else {
+                        Sideness.SERVER
                     }
-                } else {
-                    //no dependencies specified, assume required
-                    confidentOnClientSide = false
-                    break
-                }
-            }
-            //if not a single id said server/both, stop and return list of ids
-            if (confidentOnClientSide) {
-                return entries
-            }
-        } catch (_: NullPointerException) {
-        }
-        for ((key, value) in dependencies) {
-            for (commentedConfig in value) {
-                try {
-                    val dependencyID = getModId(commentedConfig)
-                    // dependency forge|minecraft?
-                    if (!dependencyID.matches(neoForgeMinecraft)) {
-                        try {
-                            // dependency required on the server?
-                            val side = getSide(commentedConfig)
-                            // Mandatory dependency?
-                            val required = getRequired(commentedConfig)
-                            if (side.matches(bothServer) && required.equals(requiredAsDep,true)) {
-                                for (modID in idsInMod) {
-                                    entries.add(Pair(dependencyID,"$fileName ($modID)"))
-                                }
-                            }
-                        } catch (_: NullPointerException) {
-                            // dependency specifies no side
-                            for (modID in idsInMod) {
-                                entries.add(Pair(dependencyID,"$fileName ($modID)"))
-                            }
-                        }
-                    }
-                } catch (_: NullPointerException) {
-                    // dependency specifies no modId, so use parent.
-                    val lowerKey = key.lowercase()
-                    if (!lowerKey.matches(neoForgeMinecraft)) {
-                        for (modID in idsInMod) {
-                            entries.add(Pair(key,"$fileName ($modID)"))
-                        }
-                    }
-                }
-            }
-        }
-        return entries
-    }
 
-    /**
-     * Acquire a set of ids of mods required for running the server.
-     *
-     * @param config Base-config toml of the mod which contains all information.
-     * @return Set of ids of mods required.
-     * @throws ScanningException if the mod specifies no...well...mods.
-     */
-    @Throws(ScanningException::class)
-    private fun getModIdsInJar(config: CommentedConfig): TreeSet<String> {
-        val ids = TreeSet<String>()
-        if (config.valueMap()[mods] == null) {
-            throw ScanningException("No mods specified.")
-        } else {
-            val commentedConfigs = config.valueMap()[mods] as ArrayList<*>
-            for (entry in commentedConfigs) {
-                val commentedConfig = entry as CommentedConfig
-                val modId = getModId(commentedConfig)
-                ids.add(modId)
+                    if (dependencyModId.matches(neoForgeMinecraft)) {
+                        // The platform itself. What side this mod demands of Minecraft/Forge IS its sideness.
+                        sidesForModloader.add(dependencySideness)
+                    } else {
+                        modDependencies.add(
+                            ModDependency(
+                                dependencyModId, dependencySideness, getVersionRange(declared),
+                                optional = isOptional(declared)
+                            )
+                        )
+                    }
+                }
+
+                if (declaredDependencies.none { dependency ->
+                        getModId(dependency).matches(neoForgeMinecraft)
+                    }) {
+                    //No side for either Forge, NeoForge, or Minecraft specified, assume SERVER.
+                    sidesForModloader.add(Sideness.SERVER)
+                }
+
+            } else {
+                //no dependencies specified, assume required
+                sidesForModloader.add(Sideness.SERVER)
             }
+
+        } catch (_: NullPointerException) {
+            // A dependency was missing a modId/side mid-evaluation, so we can't conclude the mod is
+            // confidently client-side. Assume SERVER.
+            sidesForModloader.add(Sideness.SERVER)
         }
-        return ids
+        return Pair(sidesForModloader,modDependencies)
     }
 
     /**
@@ -270,31 +163,34 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      *
      * @param file The file from which to acquire the toml config.
      * @return Config read from the toml in the mod.
-     * @throws IOException if the mods.toml file could not be read/found.
+     * @throws IOException if the mods.toml file could not be read.
+     * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a
+     * jar belonging to another loader, not a failure.
      */
-    @Throws(IOException::class)
+    @Throws(IOException::class, MissingDescriptorException::class)
     private fun getConfig(file: File): CommentedConfig {
-        val jarFile = JarFile(file)
-        val jarEntry = jarFile.getJarEntry(modsToml)
-        val tomlStream: InputStream = jarFile.getInputStream(jarEntry)
-        val config: CommentedConfig = tomlParser.parse(tomlStream)
-        jarFile.close()
-        tomlStream.close()
-        return config
+        JarFile(file).use { jarFile ->
+            val jarEntry = jarFile.getJarEntry(modsToml) ?: throw MissingDescriptorException(modsToml, file)
+            jarFile.getInputStream(jarEntry).use { tomlStream ->
+                return tomlParser.parse(tomlStream)
+            }
+        }
     }
 
     /**
      * Acquire a map of all dependencies specified by a mod.
      *
+     * A descriptor with no `[[dependencies]]` block yields an **empty map** rather than raising: a
+     * mod is allowed to depend on nothing, and treating that as a failure aborted the read and threw
+     * away the mod id it had already parsed.
+     *
      * @param config Base-config toml of the mod which contains all * information.
      * @return Map of dependencies for the passed mod config, String keys are mapped to ArrayLists of
-     * CommentedConfigs.
-     * @throws ScanningException if the mod declares no dependencies.
+     * CommentedConfigs. Empty when the mod declares none.
      */
-    @Throws(ScanningException::class)
     private fun getMapOfDependencyLists(config: CommentedConfig): Map<String, ArrayList<CommentedConfig>> {
         if (config.valueMap()[dependencies] == null) {
-            throw ScanningException("No dependencies specified.")
+            return emptyMap()
         }
         val modDependencies = HashMap<String, ArrayList<CommentedConfig>>(100)
         val configValueMap = config.valueMap()
@@ -330,31 +226,36 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * @param config Mod- or dependency-config which contains the modId.
      * @return `side` from the passed config, in upper-case letters.
      */
+    /**
+     * The `versionRange` a dependency entry states, or `null` when it states none. Kept verbatim: Forge and
+     * NeoForge write Maven ranges (`[15.2,)`), which is a different grammar from Fabric's, and normalising
+     * the two here would lose information the caller needs to tell them apart.
+     */
+    private fun getVersionRange(config: CommentedConfig): String? =
+        config.valueMap()[versionRange]?.toString()?.takeIf { it.isNotBlank() }
+
+    /**
+     * Whether [config] declares a dependency the mod can load without, reading **both** loader spellings:
+     * Forge's `mandatory = false` and NeoForge's `type` being one of [notRequiredTypes]. `NeoForgeTomlScanner`
+     * overrides only the descriptor's file name, and NeoForge on Minecraft 1.20.2-1.20.4 still ships
+     * `mods.toml` with `mandatory`, so one reader has to serve both rather than each scanner knowing its own.
+     *
+     * Says `false` — required — whenever neither field is present or either is unreadable. That is NeoForge's
+     * documented default for an absent `type`, and the safe direction: see [ModDependency.optional].
+     */
+    private fun isOptional(config: CommentedConfig): Boolean {
+        val declaredType = config.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
+        if (declaredType != null) {
+            return declaredType in notRequiredTypes
+        }
+        return config.valueMap()[mandatory]?.toString()?.trim()?.lowercase() == "false"
+    }
+
     private fun getSide(config: CommentedConfig): String {
         return if (config.valueMap()[side] != null) {
             config.valueMap()[side].toString().uppercase()
         } else {
             both
-        }
-    }
-
-    /**
-     * Acquire the side of the passed dependency.
-     *
-     * @param config Mod- or dependency-config which contains the modId.
-     * @return `side` from the passed config, in upper-case letters.
-     */
-    private fun getRequired(config: CommentedConfig): String {
-        return if (config.valueMap()[type] != null) {
-            config.valueMap()[type].toString().uppercase()
-        } else if (config.valueMap()[mandatory] != null) {
-            if (config.valueMap()[mandatory].toString() == "true") {
-                requiredAsDep
-            } else {
-                config.valueMap()[mandatory].toString().uppercase()
-            }
-        } else {
-            requiredAsDep
         }
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,6 +56,7 @@ abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), B
     final override val description: String
     final override val author: String
     final override val version: String
+    /** The plugin's id. Used as the key its configuration is stored under, so it must be stable across releases. */
     val id: String
 
     protected val pluginsLog = logger("PluginsLogger")

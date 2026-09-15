@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  */
 @Suppress("unused", "KDocUnresolvedReference")
 class BooleanUtilities {
+    /** The strings accepted as true or false when reading a boolean property. */
     companion object {
         private val log by lazy { cachedLoggerOf(BooleanUtilities::class.java) }
 
@@ -43,7 +44,6 @@ class BooleanUtilities {
          * or `FALSE`. This prevents any non-boolean values from being written to the new
          * configuration file.
          *
-         * @param scanner Used for reading the users input.
          * @return True or False, depending on user input.
          * @author Griefed
          */
@@ -88,22 +88,23 @@ class BooleanUtilities {
          * @author Griefed
          */
         @Suppress("MemberVisibilityCanBePrivate")
-        fun convert(stringBoolean: String) =
-            if (stringBoolean.matches(one)
-                || stringBoolean.matches(yYeEsS)
-                || stringBoolean.matches(yY)
-                || stringBoolean.equals("true", ignoreCase = true)
-            ) {
-                true
-            } else if (stringBoolean.matches(zero)
-                || stringBoolean.matches(nNoO)
-                || stringBoolean.matches(nN)
-                || stringBoolean.equals("false", ignoreCase = true)
-            ) {
-                false
-            } else {
+        fun convert(stringBoolean: String) = when {
+            stringBoolean.matches(one)
+                    || stringBoolean.matches(yYeEsS)
+                    || stringBoolean.matches(yY)
+                    || stringBoolean.equals("true", ignoreCase = true) -> true
+
+            stringBoolean.matches(zero)
+                    || stringBoolean.matches(nNoO)
+                    || stringBoolean.matches(nN)
+                    || stringBoolean.equals("false", ignoreCase = true) -> false
+
+            else -> {
+                // Deliberately distinct from the recognised-false branch above: the warning marks a
+                // value nothing could be made of, not a value that said "no".
                 log.warn { "Warning. Couldn't parse boolean. Assuming false." }
                 false
             }
+        }
     }
 }

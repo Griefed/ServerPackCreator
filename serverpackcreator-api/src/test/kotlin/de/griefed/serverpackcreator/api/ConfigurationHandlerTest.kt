@@ -11,11 +11,11 @@ import java.nio.file.Paths
 
 internal class ConfigurationHandlerTest {
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).configurationHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).configurationHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
     private val projectDir = apiProperties.homeDirectory.parentFile.parentFile
 
     @Test

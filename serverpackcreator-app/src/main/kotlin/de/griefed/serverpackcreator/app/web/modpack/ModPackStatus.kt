@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,10 @@
  */
 package de.griefed.serverpackcreator.app.web.modpack
 
+/**
+ * How far an uploaded modpack has got. The SPA polls this, and every value except `ERROR` is expected to be
+ * followed by another — so a pack sitting in `GENERATING` means the queue is working, not that it is stuck.
+ */
 enum class ModPackStatus {
     QUEUED, CHECKING, CHECKED, GENERATING, GENERATED, ERROR
 }

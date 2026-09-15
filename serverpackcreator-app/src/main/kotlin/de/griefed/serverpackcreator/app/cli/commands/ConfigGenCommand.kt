@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,17 +34,20 @@ import java.util.*
                   ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Builds a configuration by inspecting a modpack directory, so a user need not write one by hand. */
 class ConfigGenCommand(
     private val apiWrapper: ApiWrapper = ApiWrapper.api()
 ) : Command {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Ask for a modpack directory, then derive and store a configuration from it. */
     override fun run() {
         val modpackDirectory = requestModpackDir()
         generateConfFromModpack(Optional.of(modpackDirectory))
     }
 
+    /** Prompt until the user gives a directory that exists. */
     fun requestModpackDir(): File {
         val scanner = Scanner(System.`in`)
         println("Enter the full path to the modpack-directory.")
@@ -59,10 +62,14 @@ class ConfigGenCommand(
         } while (!File(path).isDirectory)
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
         return File(path)
     }
 
+    /** Derive a configuration from the given modpack and write it out; does nothing when none was given. */
     fun generateConfFromModpack(modpackDirectory: Optional<File>) {
         if (modpackDirectory.isPresent && modpackDirectory.get().isDirectory) {
             val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpackDirectory.get())

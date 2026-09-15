@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,6 @@ import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import kotlin.jvm.optionals.getOrNull
@@ -65,12 +64,11 @@ fun main(args: Array<String>) {
 class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val appInfo = JarInformation(ServerPackCreator::class.java)
+    /** The parsed arguments, which decide everything below — including which home directory the API is built against. */
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
 
     init {
-        val prefs = Optional.ofNullable(
-            Preferences.userRoot().node("ServerPackCreator").get("de.griefed.serverpackcreator.home", null)
-        )
+        val prefs = Optional.ofNullable(HomeDirectoryPreference.stored())
         if (commandlineParser.mode == Mode.GUI && prefs.isEmpty && commandlineParser.homeDir.isEmpty) {
 
             FlatJetBrainsMonoFont.install()
@@ -96,15 +94,16 @@ class ServerPackCreator(private val args: Array<String>) {
                 chooser.dialogTitle = "Pick a home-directory for ServerPackCreator"
                 val result = chooser.showOpenDialog(null)
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    Preferences.userRoot().node("ServerPackCreator").put(
-                        "de.griefed.serverpackcreator.home",
-                        chooser.selectedFile.absolutePath
-                    )
+                    HomeDirectoryPreference.store(chooser.selectedFile.absolutePath)
                 }
             }
         }
     }
 
+    /**
+     * The API this process shares. Built eagerly and *before* the first log statement on purpose: `ApiProperties`
+     * is log4j's own `ConfigurationFactory`, so logging first would construct one against an unresolved home.
+     */
     val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
 
     init {
@@ -114,17 +113,20 @@ class ServerPackCreator(private val args: Array<String>) {
         apiWrapper.apiProperties.isExe()
     }
 
+    /** The release-feed check. Lazy, so a run that never asks about updates makes no network call. */
     @Suppress("MemberVisibilityCanBePrivate")
     @get:Synchronized
     val updateChecker: UpdateChecker by lazy {
         UpdateChecker(apiWrapper.apiProperties)
     }
 
+    /** The picocli shell. Lazy, because only the interactive mode ever builds it. */
     @get:Synchronized
     val interactiveCommandLine: InteractiveCommandLine by lazy {
         InteractiveCommandLine(apiWrapper, updateChecker)
     }
 
+    /** Start the application the arguments selected — GUI, web, CLI, one of the headless verbs, or the updater. */
     fun run(mode: Mode = Mode.GUI) {
         log.info("Running with args: ${args.joinToString(" ")}")
         log.info("Running in mode:   $mode")
@@ -139,7 +141,8 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("OS version:        ${apiWrapper.apiProperties.getOSVersion()}")
 
         when (mode) {
-            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI -> {
+            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI,
+            Mode.SCAN, Mode.CLIENTSIDE_REPORT, Mode.VERIFY_CLIENTSIDE -> {
 
                 apiWrapper.stageOne()
                 migrationManager.migrate()
@@ -174,6 +177,28 @@ class ServerPackCreator(private val args: Array<String>) {
                         interactiveCommandLine.cli(args)
                     }
 
+                    Mode.SCAN -> {
+                        interactiveCommandLine.scanCommand.scan(
+                            commandlineParser.scanDirectory.get(),
+                            commandlineParser.scanLoader ?: "",
+                            commandlineParser.scanMinecraftVersion ?: ""
+                        )
+                    }
+
+                    Mode.CLIENTSIDE_REPORT -> {
+                        interactiveCommandLine.clientsideReportCommand.report(
+                            commandlineParser.clientsideLink.get(),
+                            commandlineParser.clientsideReportOutput?.let { File(it) }
+                        )
+                    }
+
+                    Mode.VERIFY_CLIENTSIDE -> {
+                        interactiveCommandLine.verifyClientsideCommand.verify(
+                            commandlineParser.clientsideVerifyLink.get(),
+                            commandlineParser.clientsideVerifyOutput?.let { File(it) }
+                        )
+                    }
+
                     else -> log.debug("Exiting...")
                 }
 
@@ -192,6 +217,15 @@ class ServerPackCreator(private val args: Array<String>) {
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
+            }
+
+            Mode.CLIENTSIDE_APPLY -> {
+                // Pure source-editing of the fallback-list files; no API staging or network needed.
+                interactiveCommandLine.clientsideApplyCommand.apply(
+                    File(commandlineParser.clientsideApplyReport.get()),
+                    commandlineParser.clientsideApplyGenerationConfig?.let { File(it) },
+                    commandlineParser.clientsideApplyProperties?.let { File(it) }
+                )
             }
 
             Mode.GUI -> {
@@ -224,6 +258,7 @@ class ServerPackCreator(private val args: Array<String>) {
         }
     }
 
+    /** The splash window while the GUI starts, held so it can be closed once the main frame is up. `null` in every non-GUI mode. */
     @get:Synchronized
     var splashScreen: SplashScreen? = null
         get() {
@@ -238,6 +273,7 @@ class ServerPackCreator(private val args: Array<String>) {
             return field!!
         }
 
+    /** Runs the release-to-release migrations for this installation. Lazy, so a mode that touches no settings does not. */
     @get:Synchronized
     val migrationManager: MigrationManager by lazy {
         MigrationManager(
@@ -308,12 +344,30 @@ class ServerPackCreator(private val args: Array<String>) {
                         } else if (check(file, apiWrapper.apiProperties.defaultShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultShellScriptTemplate)
                             log.info("Restored default_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultFishScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultFishScriptTemplate)
+                            log.info("Restored default_template.fish.")
                         } else if (check(file, apiWrapper.apiProperties.defaultBatchScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultBatchScriptTemplate)
                             log.info("Restored default_template.bat.")
                         } else if (check(file, apiWrapper.apiProperties.defaultPowerShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultPowerShellScriptTemplate)
                             log.info("Restored default_template.ps1.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaShellScriptTemplate)
+                            log.info("Restored default_Java_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaFishScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaFishScriptTemplate)
+                            log.info("Restored default_Java_template.fish.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)
+                            log.info("Restored default_Java_template.ps1.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultVariablesTemplate)) {
+                            // Generation reads this template, so a deleted one would otherwise fall back to the copy in
+                            // the jar silently — restoring it keeps what the operator edits and what generation uses the
+                            // same file.
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultVariablesTemplate)
+                            log.info("Restored variables.txt.")
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,13 +64,7 @@ class MinecraftMeta(
         minecraftClientMeta.update()
         minecraftServerMeta.update()
     }
-    /*
-   * #==============================================================================================================#
-   * #..............................................................................................................#
-   * #...................................................STRINGS....................................................#
-   * #..............................................................................................................#
-   * #==============================================================================================================#
-   */
+
     /**
      * Check whether a [MinecraftClient] is available for the specified Minecraft-version.
      *
@@ -173,6 +167,8 @@ class MinecraftMeta(
                 return Optional.ofNullable(minecraftServerMeta.meta[minecraftVersion])
             }
         } catch (ignored: Exception) {
+            // Unknown Minecraft version (the !! above) or absent server metadata -> no server is
+            // available, so fall through to returning an empty Optional.
         }
         return Optional.empty()
     }
@@ -230,6 +226,19 @@ class MinecraftMeta(
             allVersions().map { it.version }.toTypedArray()
         } else {
             clientReleases().map { it.version }.toTypedArray()
+        }
+    }
+
+    /**
+     * The Java-version required to run a server for the given [minecraftVersion], or "?" when no
+     * server or no Java-requirement is known for it.
+     */
+    fun requiredJavaVersion(minecraftVersion: String): Optional<String> {
+        val server = getServer(minecraftVersion)
+        return if (server.isPresent && server.get().javaVersion().isPresent) {
+            Optional.of(server.get().javaVersion().get().toString())
+        } else {
+            Optional.empty()
         }
     }
 }

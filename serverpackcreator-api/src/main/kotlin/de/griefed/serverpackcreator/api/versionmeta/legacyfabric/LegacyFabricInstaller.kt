@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.legacyfabric
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
@@ -29,6 +30,7 @@ import java.net.URI
 import java.net.URL
 import java.util.*
 import javax.xml.parsers.ParserConfigurationException
+import java.util.Collections
 
 /**
  * Information about the LegacyFabric installer and versions.
@@ -42,17 +44,29 @@ class LegacyFabricInstaller(
     private val installerManifest: File,
     private val utilities: Utilities
 ) {
-    val allVersions: MutableList<String> = ArrayList(100)
+    /** Every LegacyFabric *installer* version, newest first. A separate series from the loader versions. */
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var allVersions: List<String> = emptyList()
+        private set
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar" // TODO Move URL to property
+    /** URL template the installer download is built from, with the version substituted in. */
+    val installerUrlTemplate = VersionMetaConfig.LEGACYFABRIC_INSTALLER_TEMPLATE
+    /** Newest installer version the manifest advertises, or `null` before the manifest has been read. */
     var latest: String? = null
         private set
+    /** Newest *stable* installer version, or `null` before the manifest has been read. */
     var release: String? = null
         private set
-    private val latestElement = "latest" // TODO Move tagName to property
-    private val releaseElement = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latestElement = VersionMetaConfig.TAG_LATEST
+    private val releaseElement = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update all lists of available versions with new information gathered from the manifest.
@@ -62,6 +76,7 @@ class LegacyFabricInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
+        val next_allVersions = ArrayList<String>(100)
         val installerManifest: Document = utilities.xmlUtilities.getXml(installerManifest)
         val latestElements = installerManifest.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -74,15 +89,17 @@ class LegacyFabricInstaller(
         val releaseChildren = releaseNode.childNodes
         val releaseItem = releaseChildren.item(0)
         release = releaseItem.nodeValue
-        allVersions.clear()
         val elements = installerManifest.getElementsByTagName(version)
         for (i in 0 until elements.length) {
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            allVersions.add(item.nodeValue)
+            next_allVersions.add(item.nodeValue)
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        allVersions = Collections.unmodifiableList(next_allVersions)
+}
 
     /**
      * The URL to the latest installer for Legacy Fabric.

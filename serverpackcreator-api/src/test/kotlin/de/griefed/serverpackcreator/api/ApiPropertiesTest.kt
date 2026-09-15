@@ -14,9 +14,9 @@ class ApiPropertiesTest internal constructor() {
             /*2*/File("src/test/resources/testresources/properties/filters/end.properties"),
             /*3*/File("src/test/resources/testresources/properties/filters/regex.properties"),
             /*4*/File("src/test/resources/testresources/properties/filters/start.properties"),
-            /*5*/File("src/test/resources/serverpackcreator.properties")
+            /*5*/File("build/resources/test/serverpackcreator.properties")
         )
-        val apiProperties = ApiProperties(File("src/test/resources/serverpackcreator.properties"))
+        val apiProperties = ApiProperties(File("build/resources/test/serverpackcreator.properties"))
         apiProperties.clearPropertyFileList()
 
         apiProperties.loadOverrides(propFiles[0])

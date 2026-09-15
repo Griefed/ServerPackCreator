@@ -242,9 +242,13 @@ class BackgroundPanel(
         g.drawImage(image, 0, 0, d.width, d.height, null)
     }
 
+    /** How a background image is fitted to the panel. Ints rather than an enum because this is a port of a widely-copied Swing helper, and the constants are its published interface. */
     companion object {
+        /** Stretch the image to the panel's size. */
         const val SCALED = 0
+        /** Repeat the image at its natural size. */
         const val TILED = 1
+        /** Draw the image once at its natural size, positioned rather than stretched. */
         const val ACTUAL = 2
     }
 }

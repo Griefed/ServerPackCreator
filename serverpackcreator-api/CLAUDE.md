@@ -1,0 +1,457 @@
+# serverpackcreator-api — module context
+
+> Core library, published to Maven Central. **Public surface is a plugin-compatibility
+> constraint** — see the API compatibility policy in the root `CLAUDE.md`. Domain core: must not
+> depend on Swing, Spring web, or the frontend, and must be unit-testable without a Spring context.
+
+## Layout & composition
+
+- Packages: `config` (validation, `PackConfig`), `serverpack` (generation, `ServerPackHandler`),
+  `modscanning` (clientside-mod detection per loader), `versionmeta` (Minecraft/loader manifests),
+  `plugins` (pf4j plugin API), `settings` (extracted config groups), `utilities`.
+- `ApiWrapper` is the composition root — a thin, lazy, constructor-injected collaborator graph.
+  Leave it thin.
+- Tests: JUnit 5; real fixture modpacks under `tests/` and `src/test/resources/testresources/`.
+  "Tested" = unit tests per class **plus** generation end-to-end. **Offline for versions in the shipped manifest
+  snapshot** (`src/main/resources/de/griefed/resources/manifests`, seeded into the home by `ApiWrapper.setup()`); a
+  newer version costs one `mcserver/<version>.json` fetch. The snapshot **no longer lags its parent manifest** —
+  `minecraft-manifest.json`'s `latest.release` has a matching `mcserver/` file — which was B25, closed by the
+  `updateManifests` retarget.
+  `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
+  before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
+
+- **LANDMINE — dependency optionality has two spellings, and reading only one silently makes every
+  dependency required (fixed 2026-09-04).** Forge's `mods.toml` marks it `mandatory = true|false`;
+  NeoForge's `neoforge.mods.toml` dropped that field entirely for `type`, a string defaulting to
+  `"required"` and also taking `"optional"`, `"incompatible"` and `"discouraged"`. `ForgeTomlScanner.isOptional`
+  reads **both**, and must keep doing so: `NeoForgeTomlScanner` overrides only the descriptor's file name, and
+  NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml` with `mandatory`, so a per-scanner split would
+  miss that overlap. `"incompatible"` counts as not-required on purpose — it means the mod must *not* be
+  present, which is the opposite of something to fetch.
+  **Absent or unreadable means required**, deliberately: reading a required dependency as optional boots a mod
+  without something it needs, which fails as a crash and can publish a *wrong* verdict, whereas reading an
+  optional one as required only refuses a boot and learns nothing. It is also NeoForge's own documented default.
+  Neither word appeared anywhere in this module before, so `ModDependency` had no field to carry the answer and
+  no consumer could respect it — `advancement-plaques` was refused for `prism`, which its toml marks
+  `mandatory=false`.
+
+- **LANDMINE — version metadata is published as immutable snapshots; never hand out a live collection
+  (2026-09-04).** `VersionMeta` refreshes manifests on a **background coroutine** (`refreshScope.launch`,
+  B31's ~392 ms startup win) while callers read. Every `update()` in `versionmeta` used to `clear()` and
+  re-`add()` a plain collection that the accessors returned directly, so a reader got either a
+  `ConcurrentModificationException` or — silently — the empty window between the two.
+  **The silent half is what cost verdicts:** `BootVerifier.bootableCombination()` rebuilds its release set
+  from `serverReleases()` on *every* staging call, so an empty read fails every candidate and the boot is
+  refused with "No bootable file/Minecraft/loader combination for <loader>" — a statement about the engine's
+  own timing wearing the shape of a statement about the mod.
+  All ten classes now build fresh collections and publish each in one assignment to a `@Volatile` field.
+  - **Unmodifiable views, not merely `List`-typed fields.** A `List` field still holds an `ArrayList` at
+    runtime, so a caller can cast and mutate; the first attempt at the fix left the pin red for exactly that.
+  - **`VersionMeta.update()` and `refreshManifests()` share one monitor.** Locking `update()` alone did
+    nothing for the race, because the coroutine calls each meta's `update()` *directly* and never goes
+    through it — a guard that looked applied and was not.
+  - Three published signatures were narrowed (`MutableList`→`List`, `HashMap`→`Map`); see
+    `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+  - Two latent bugs fell out: `MinecraftClientMeta.update()` never cleared `allVersions` (unbounded growth
+    on a long-running process), and `NeoForgeLoader.update()` reversed the *published* map while iterating it.
+
+## Established patterns
+
+- **Settings-group extraction** (used to break up `ApiProperties`): (1) write group tests first
+  against `PropertyStore`; (2) move get/set logic verbatim into the group class, keys as companion
+  constants; (3) `ApiProperties` keeps thin facade properties delegating to the group; (4) run API
+  + app suites. Large data blocks (e.g. fallback mod-lists) are moved by script, not retyped.
+- `ApiProperties` now delegates to `PropertyStore` + 9 `settings.*Config` groups and retains only
+  orchestration, jar/OS info, version/firstRun, preferences, hasteBin and the log4j factory.
+- **`NetworkConfig` (2026-08-17) is the group to reach for when adding an HTTP call.** It owns the
+  connect/read/download-read timeouts, and `WebUtilities.openTimedConnection` / `openTimedStream` are
+  the *only* sanctioned way to open a connection — see the landmine below. It depends on nothing but
+  `PropertyStore`, and nothing inside `ApiProperties` reads it, so the declaration-order landmine
+  above does not apply to it: the sole consumer is `WebUtilities`, per call, long after construction.
+
+## Landmines & verified quirks (durable — do not relearn)
+
+- **Property-group declaration order:** group declarations in `ApiProperties` must come **after**
+  the groups they depend on — Kotlin initializes properties in declaration order. Reordering can
+  NPE at construction.
+- **`ApiProperties` IS log4j's `ConfigurationFactory`** (via `@Plugin`). The log4j-XML machinery
+  stays there; moving it risks breaking log4j plugin-discovery.
+- **Loader regexes have a single source of truth:** `config.SupportedModloaders` (5 exact-match
+  regexes + canonical `names`). Do **not** reintroduce `"^forge$"`-style literals anywhere else.
+- **So does loader→scanner selection: `ModScanner.scannerFor(modloader, minecraftVersion)`.** Every
+  consumer dispatches through it — `ModListCompiler` for a real generation, `-clientside`'s
+  `MetadataScanner` for the metadata signal — so the two cannot disagree about what a jar declared. Do
+  **not** re-add a `when (modloader)` over the concrete scanners; that duplication is what hid the Forge
+  era bug in two places at once (versioning-scheme landmine below). A `null` return means "no scanner
+  knows this loader" and each caller turns it into keep-every-mod. The Quilt arm returns
+  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins on a sideness disagreement, and
+  whichever scan **actually read a descriptor** wins otherwise (see the landmine below; "the Quilt one is
+  kept when both agree" was the old rule, and it discarded a Fabric-only jar's entire declaration).
+- **LANDMINE — the "nothing could be read" fallback is indistinguishable from a real scan by value alone.**
+  `DescriptorScanner` flattens a missing descriptor to `ScannedMod(modJar)`: file name as `modID`, `SERVER`,
+  empty `dependencies`/`provides`, `null` `minecraftConstraint` — every one of which a genuine descriptor
+  could also produce. So anything **merging two scans of the same jar** must read `ScannedMod.descriptorRead`
+  rather than inferring from the values. `QuiltPackScanner` did not, and it cost real data: Quilt runs Fabric
+  mods and most ship no `quilt.mod.json`, so the Quilt scan was the fallback, the Fabric scan was real, the
+  merge only preferred Fabric where the two disagreed about *sideness*, both read `SERVER`, they agreed, and
+  the **empty entry won**. Everything the jar declared was thrown away. Found 2026-08-31 from a live grinder
+  boot — `bookshelf` on Quilt died with `requires any version of fabric-api, which is missing!` because the
+  dependency was never *reported*, so nothing could resolve it — and it reached generation too, where
+  `ModListCompiler`'s rescue would fail to keep Fabric API in a Quilt pack that needed it. Same outcome as the
+  `fabric` exclusion bug, by a different route.
+- **A jar carrying no descriptor is NOT a scan failure — do not log it as one.** Every scanner is handed
+  the whole mods-directory, and a Quilt pack is scanned by **both** the Quilt and Fabric scanner by
+  design, so one of the two finds nothing in every single-format jar. `MissingDescriptorException`
+  (raised by `getJarJson` / `ForgeTomlScanner.getConfig` when the entry is absent) exists purely so
+  `DescriptorScanner` can log that at DEBUG while everything else keeps an ERROR **with** its stack
+  trace. Measured over one api suite run, scan-failure ERROR lines went **159 → 51**; the survivors are
+  37 `ZipException` (corrupt archive) and 14 `ParsingException` (malformed TOML), both real defects in
+  a jar. Do not "simplify" the two catches back into one.
+- **`ForgeTomlScanner` treats an absent `[[dependencies]]` block as *no dependencies*, not an error.**
+  It used to raise `ScanningException`, which aborted `read()` mid-way and replaced the already-parsed
+  modId with the **filename**. The verdict was unaffected (no dependencies ⇒ no clientside signal ⇒
+  SERVER either way), which is why it never broke a pack — but it discarded good data and shouted about
+  an ordinary descriptor. `ScanningException` is gone; nothing threw it afterwards.
+- **Scanner hierarchy:** `ModJarScanner` (public contract) → `DescriptorScanner` (owns the walk-the-jars
+  loop and the **one-`ScannedMod`-per-input-jar** guarantee; `scan` is `final`, subclasses implement
+  `read(File)` — public, because *which* exception it throws is the meaningful part and `scan` flattens
+  both outcomes to a default entry — and may throw) → `JsonDescriptorScanner` → `FabricFamilyScanner` (Fabric + Quilt share id
+  and environment reading, differing only in field *paths*; dependency blocks differ in *shape*, so they
+  stay abstract). `JsonBasedScanner`, the previous JSON helper, was **removed** rather than kept as a
+  deprecated facade — Griefed's call on 2026-08-15, overriding the adopted compatibility policy: scanners
+  are not a pf4j extension point, so a plugin could subclass it but never register the result, making the
+  facade cost with no reachable benefit. A subclass compiled against it will no longer compile; use
+  `JsonDescriptorScanner`.
+- **A constant kept on an extraction facade must *read* its owner, never re-declare the literal.**
+  `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` are getters delegating to
+  `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, pinned by
+  `FacadeConstantDelegationTest` — which asserts **identity**, because a value comparison passes
+  against a re-introduced equal-valued copy, i.e. exactly the state being guarded. Until 2026-08-02
+  both existed twice: Phase 1c/1d moved each constant's sole call site into the new class along with a
+  *private copy*, leaving the public declaration behind. Nothing regressed — the copies agreed — but
+  **the explanation lived on the dead copy while the consulted one had none**, so an edit aimed at the
+  documented constant would have changed nothing at all. Same rule as `SupportedModloaders` above.
+  **Use a getter, not `val x = collaborator.y`:** both facades are declared *before* their
+  collaborator (`ServerPackHandler:92` vs `:98`, `ConfigurationHandler:88` vs `:109`), so an
+  initialiser would read it before it exists — the declaration-order landmine directly above.
+- **LANDMINE — Minecraft has two versioning schemes; never read a component in isolation.** Releases are
+  either `1.x[.y]` or the newer `YY.x[.y]` (`26.1.2`, `26.2`). Any test on the *minor* component alone is
+  therefore wrong: `26.2`'s minor is `2`, which reads as the 1.2 era. Two live instances were found and fixed
+  on 2026-07-31, both in the start-script templates and both silent — a wrong branch produces a pack that dies
+  before loading a mod, not an error:
+  - the Forge launcher era (`SEMANTICS[1] -le 16`) sent every Forge boot on Minecraft 26.x down the legacy
+    `forge.jar` path → `Error: Unable to access jarfile forge.jar`. **24 grinder boot logs, all Forge, never
+    started the server.**
+  - the NeoForge 1.20/1.20.1 installer coordinate (`SEMANTICS[1] -eq 20`) would send a future `26.20` at a
+    1.20-era URL. Latent, fixed anyway.
+
+  Both now require major `1` as well, pinned by `ScriptTemplateContentTest`, which **executes** the extracted
+  shell functions across both schemes.
+
+  **The Kotlin side was NOT clean — this file claimed it was until 2026-08-15, and a third instance was
+  sitting in the generation path the whole time.** `ModListCompiler` chose Forge's scanner with
+  `mcVersions[1].toInt() > 12`, and `MetadataScanner` (in `-clientside`) with the same test, so Minecraft
+  `26.2` read as the 1.2 era and every modern Forge pack was scanned with `ForgeAnnotationScanner` — the
+  1.12-and-older one. No modern jar carries `fml_cache_annotation.json`, so every jar threw, every jar fell
+  back to the never-drop-a-jar `SERVER` default, and **auto-exclusion silently did nothing on Forge 26.x**
+  while logging one ERROR per mod. It fails safe (everything is included), which is why nobody noticed, and
+  the earlier survey looked only at the boot/selection code the grinder work had just touched. Both now
+  compare every component via `SemanticVersionComparator` against the version Forge actually switched at
+  (1.13), the choice lives once in `ModScanner.scannerFor`, and `ModScannerDispatchTest` pins both era
+  boundaries across both schemes.
+
+  Derive from metadata or compare all components; never hand-roll an era heuristic. What *is* clean, and was
+  re-checked: `BootCandidateSelector.minecraftComparator` compares component-wise, `ImageJavaRuntimes` takes
+  required-Java from `MinecraftMeta.requiredJavaVersion` (Mojang's own declaration), and
+  `LoaderVersionResolver` delegates to the manifests.
+- **LANDMINE — `-Djava.security.manager=allow` is fatal from Java 24 on.** JEP 486 removed Security Manager
+  support, so the VM *refuses to start* rather than ignoring the flag. `PackConfig.spcSSJArgsKeyDefaultValue`
+  still defaults `SSJ_FORGE_ARGS` to it, because Forge's ServerStarterJar needs it on older Java — the
+  templates therefore pass it **only below Java 24**. Minecraft 26.x requires Java 25, so before that guard
+  every modern Forge pack died before Forge loaded; NeoForge/Fabric/Quilt never pass the flag, which is why
+  only Forge was affected. Pinned by `ScriptTemplateContentTest`. Do not "simplify" by dropping the default —
+  old packs still need it — and do not pass it unconditionally.
+
+  **`SKIP_JAVA_CHECK=true` still reads the Java version, deliberately.** The resolve call sits *outside*
+  that conditional, so skipping the checks skips comparing and installing — not looking. That is what the
+  setting promises in `variables.txt` ("the compatibility check … as well as the automatic installation"),
+  and it is what the setting's own documented use case needs: a user pointing `JAVA` at a custom path is
+  *told* to set it, so they have a deliberately chosen working Java, and reading it is what keeps them on
+  the ServerStarterJar path for Java 17/21 instead of being pushed onto the self-install path. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped`, which also
+  asserts the install is still skipped. Don't "tidy" the call back inside the conditional.
+
+  **The version-keyed guard only protected users who already had a suitable Java — fixed 2026-08-15.**
+  `JAVA_VERSION` starts as the literal `do_not_manually_edit` and is only filled in by `getJavaVersion`;
+  none of the three `installJava` call-sites re-read it and `install_java.sh` never sets it. So a pack that
+  **installs its own Java** reached `setupForge` with the placeholder, the numeric guard did not match, and
+  the fatal flag was passed anyway — reported from a real 1.20.1/Forge pack run on a hand-set
+  `RECOMMENDED_JAVA_VERSION=25`, dying with *"A command line option has attempted to allow or enable the
+  Security Manager"*. Two changes, both needed: all three templates now call `getJavaVersion` **after** the
+  whole Java-check block, and the guard is **inverted to fail safe** (`not numeric OR >= 24` takes the
+  self-install path) so an unresolvable version can never pick the branch that passes a fatal flag. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateDropsTheSecurityManagerFlagWhenTheJavaVersionIsUnknown`.
+  **Neither the grinder nor `ScriptTemplateMatrixIT` can catch this class of bug** — both pre-bake Java and
+  never take the install path.
+
+  **The flag is load-bearing, not cosmetic — dropping it exposed a second failure.** ServerStarterJar runs the
+  Forge installer **inside its own JVM** and installs a `SecurityManager` (`SecurityAccess.wrapNoForceExit`)
+  purely to swallow the `System.exit(0)` that installer calls on success. On Java 24+ that manager cannot be
+  installed, SSJ catches the `UnsupportedOperationException` **silently**, and the installer's exit terminates
+  the whole process: a fresh Forge pack installs, prints *"The server installed successfully"*, exits **0**, and
+  never launches. Booting the same pack again works, because the install is then present and SSJ only launches.
+  Verified on Minecraft 26.2 / Java 25, in bash *and* fish, while Forge 1.20.1 (Java 17) and NeoForge 26.2
+  (Java 25) both install-and-launch in one go — so it is Forge-on-modern-Java specifically, and **exit code 0
+  means `BootLogClassifier` cannot distinguish it from a clean shutdown.** From Java 24 on the templates
+  therefore never hand SSJ the install: they run the Forge installer themselves and launch from the argfile it
+  produces (`unix_args.txt`, `win_args.txt` on Windows). Below Java 24 the SSJ path is untouched. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateInstallsForgeItselfWhenSSJCannotTrapTheInstallersExit` and by
+  `ScriptTemplateMatrixIT` (Forge 26.2, bash + fish, fresh pack, first invocation).
+  **The grinder cannot catch this class of bug** — it pre-bakes the install and boots offline from cache, so it
+  only ever exercises the launch of an already-installed tuple. Cached tuples stay valid across this change:
+  their `unix_args.txt` is what the new path launches, and `downloadIfNotExist` short-circuits on it offline.
+
+  **Second, independent reason the templates bypass SSJ: Minecraft 1.20.2/1.20.3 Forge, which it cannot launch
+  at all** (`forgeNeedsItsOwnArgfile` in all three templates, added 2026-08-23 after the grinder published a
+  clientside HIGH for a mod whose server never started). Forge's installer writes one of two argfiles and SSJ
+  can only start one:
+
+  | Minecraft | argfile | ServerStarterJar |
+  |---|---|---|
+  | 1.17 – 1.20.1 | `-p <module path>`, cpw `securejarhandler` | works — cpw's `ModuleClassLoader` ends its parent-layer lookup with `.orElse(getPlatformClassLoader())` |
+  | **1.20.2** | `-p <module path> --add-modules ALL-MODULE-PATH`, Forge `securemodules` | **dies** — Forge's fork *throws* `Could not find parent layer for module` instead, because SSJ's synthesised boot layer is one level below the real boot configuration |
+  | 1.20.3 onwards | `-jar forge-<version>-shim.jar` | works — SSJ takes its own "jar mode" and synthesises nothing |
+
+  **LANDMINE — do not widen this to "every Forge from 1.20.2 on" from reading the source.** The throw is still
+  present in `securemodules` 2.2.21 (checked in the jar's own class bytes), so the source says every modern Forge
+  should fail — and it does not, because from 1.20.3 the argfile no longer takes the module-path route. Measured
+  on Temurin under `--network none`: `1.20.1-47.4.0` and `1.21.1-52.1.0` both reach the ready-line *through* SSJ
+  (1.21.1 logging `Launching in jar mode, using jar: forge-1.21.1-52.1.0-shim.jar`), while `1.20.2-48.1.0` dies
+  at `SecureModuleClassLoader.<init>` and reaches `Done (5.183s)! For help` from its own argfile. Over-widening
+  costs every modern pack the hosting-company compatibility SSJ exists for. 1.20.3 *is* included, on HELP.md's
+  word rather than a boot — it ships the shim, but it has two Forge builds in total, so over-including is
+  free and under-including is a dead server. **The module named in the exception varies per run**
+  (`java.base`/`net.minecraftforge.eventbus` in production, `java.management.rmi`/`JarJarMetadata` locally), so
+  anything matching on it must match the message.
+  Pinned by `ScriptTemplateContentTest.theBashTemplateBypassesTheStarterJarOnlyWhereForgeCannotBeLaunchedWithIt`
+  (executes `setupForge` across both versioning schemes, `26.20.2` included — it matches 1.20.2 component for
+  component below the major) and `allTemplatesBypassTheStarterJarForTheAffectedForgeVersionsAndTestTheMajor`.
+  fish and PowerShell were verified by **executing** the extracted function in containers: all three shells agree
+  on all ten versions, and both templates pass their own parser (`fish -n`, PowerShell's `Parser::ParseFile`).
+- **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
+  `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
+  first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI
+  settings panel. A plain `val x = File(serverFilesDirectory, …)` freezes the *old* home at construction. The eight
+  shipped script-template properties did exactly that until 2026-07-31: they feed `defaultStartScriptTemplates()` /
+  `defaultJavaScriptTemplates()`, so generation read templates out of a directory the user had left behind — their
+  edits silently did nothing, with no error anywhere. All eight are now `val … get() = …`, pinned by
+  `PathsConfigTest.defaultTemplatePathsFollowAHomeDirectoryChangedAfterConstruction`, which changes the home
+  underneath a *live* instance (the older test built the config afterwards, so a captured value still looked right).
+  The file's other 31 path properties use an equivalent field-assigning getter; either shape is fine, a bare
+  initialiser is not.
+- **LANDMINE — the first log statement in the process constructs an `ApiProperties`, and a source build's home
+  is the working directory.** `ApiProperties` is annotated `@Plugin(category = Core.CATEGORY_NAME)` and *is* a
+  log4j `ConfigurationFactory`, so log4j instantiates one during its own initialisation: the earliest stack in
+  the reported grinder crash starts at `GrinderApplication.getLog`, before `main` had wired anything. Anything a
+  host wants to decide about SPC's environment — its `Preferences` node, its home — must therefore be set
+  **before its own first log call**, or the instance log4j built has already resolved and *persisted* something
+  else. Compounding it: `apiVersion` is `dev` for every locally built artifact (`gradle.properties` carries
+  `version=dev`), so `devBuild` is true, and a source build's home falls back to the process working directory —
+  which `systemd` sets to `/` unless the unit says `WorkingDirectory=`. Result, reproduced 2026-08-22 by running
+  the installed grinder distribution from `/`: home `/`, `log4j2.xml` unwritable, and death by
+  `FileNotFoundException: /log4j2.xml` — a message naming neither the home nor where it came from. The fallback
+  now requires a writable working directory, `ApiProperties.init` refuses an unusable home with a message naming
+  it, and `setLoggingLevel` no longer throws. Pinned by
+  `PathsConfigTest.theDevEnvironmentFallbackSkipsAnUnwritableWorkingDirectory`,
+  `ApiPropertiesHomeDirectoryTest` and `GrinderSpcEnvironmentTest`.
+- **`PackConfig.modloader` setter silently ignores unrecognized values** — it does *not* fall back to
+  Forge, as this file claimed until 2026-08-14. The setter assigns only on a match (`PackConfig.kt:328-341`),
+  so an unrecognised value leaves the field at whatever it already held, which starts as `""`. A config whose
+  loader never matched therefore reaches generation with an **empty** modloader. That empty string used to
+  reach `ModListCompiler`'s scanner-selection `when`, which had no `else`, and produced a silently empty
+  server pack; the `else` now warns and includes every mod, pinned by
+  `ModListCompilerTest.unrecognisedModloaderStillYieldsEveryMod`. Most-specific loader names must still be
+  matched first (LegacyFabric before Fabric, etc.).
+- **LANDMINE — never default a parameter to a dispatcher that owns a thread.** `newSingleThreadContext`
+  / `newFixedThreadPoolContext` return an `ExecutorCoroutineDispatcher` whose *creator* is responsible
+  for `close()`ing it. A defaulted parameter has no creator to do that, so the thread is stranded for
+  the life of the JVM — one per call. `ListUtilities.parallelMap` shipped exactly that
+  (`context: CoroutineContext = newSingleThreadContext("parallelMap")`) until 2026-08-16: 4 calls left
+  4 live threads named `parallelMap`, and because the context was *single*-threaded the function did
+  not do the one thing its name promises — all 8 elements of the guard ran on one thread id. It now
+  defaults to `Dispatchers.Default`, which is pool-backed and owns nothing. The `@OptIn(DelicateCoroutinesApi)`
+  it carried was the tell: that annotation was there **for** the leaking factory. If you find yourself
+  opting in to `DelicateCoroutinesApi` for a default value, that is the bug, not a formality.
+  Note this had **zero call sites in the repo** and still mattered — `parallelMap` is published API.
+- **A thread-identity assertion must use `Thread.threadId()`, never the thread name.** Gradle enables
+  assertions on test tasks, which flips kotlinx.coroutines' `auto` debug mode on, and that appends
+  ` @coroutine#N` to `Thread.currentThread().name`. A name-collecting set therefore counts *coroutines*
+  and reports N distinct "threads" while everything runs on one. The `parallelMap` parallelism guard was
+  written that way first and **passed green against the single-threaded context** — caught only because
+  the conventions require watching a new guard fail before the fix.
+  **Its sibling, the leak guard, had the mirror-image bug: it counts, and must.** Every thread
+  `newSingleThreadContext("parallelMap")` strands carries the *identical* name, and Kotlin's
+  `List - Set` drops **all** occurrences of a duplicate — so `after - before.toSet()` returns empty
+  whenever the baseline is already non-empty, i.e. the guard silently stops guarding exactly when an
+  earlier test in the same JVM has already leaked one, and JUnit guarantees no ordering between the two.
+  It passed only because the baseline happened to be empty. Compare **counts** for a population of
+  same-named threads; reserve identity comparison for distinguishing *which* thread ran something.
+  Both halves of this pair were found by auditing a guard that was already green — being red once is
+  necessary, not sufficient.
+- **A guard written after its code is unproven until you break the code.** Three on the performance
+  branches passed for the wrong reason, and only mutation found them — inspection never would:
+  - `aFailedProbeIsRetried` stubbed a failure then a success and asserted `true`. With failures cached the
+    second call short-circuits to `return true`, satisfying the assertion **without probing**. Only
+    `verify(exactly = 2)` separates "re-probed" from "wrongly remembered".
+  - `theSinglePassAgreesWithTheDedicatedMethods` compared both sides `.sorted()`, discarding the
+    directories-first order the production code promises in prose. Inverting the partition changed nothing.
+  - `aNullHashReportsNoDuplicate` stubbed `findBySha256(null)` to return empty and asserted empty — so it
+    verified the mock. Removing the short-circuit it existed to guard changed nothing.
+  The method is cheap: change one line of production code, run the class, confirm a failure, revert. Do it
+  for every guard that never had a red state, and prefer asserting **that a collaborator was or was not
+  called** over asserting a return value a wrong implementation could also produce.
+- **LANDMINE — every network call must carry a timeout, and only two ways of applying one exist.**
+  The JDK's default connect- and read-timeout is *infinite*, so `url.openConnection()` or
+  `url.openStream()` written anywhere else is a hang waiting to happen — and before 2026-08-17 that was
+  every call site. Twelve sat on the **blocking** GUI startup path
+  (`ServerPackCreator.kt:228` → `ApiWrapper.stageTwo()` → `versionMeta` → `VersionMeta.init` →
+  `checkManifests()`), so a host that DROPs rather than REJECTs left the splash screen stuck at 20 %
+  with no recovery but killing the process. Same single-source-of-truth rule as `SupportedModloaders`
+  and `ModScanner.scannerFor`, for the same reason: copies drift, and the copy without the timeout is
+  the one that strands a user.
+
+  **The two sanctioned routes, and why there are two:**
+  - `WebUtilities.openTimedConnection` / `openTimedStream` — for anything holding an `ApiProperties`.
+  - `URL.timedConnection(connectTimeout, readTimeout)` — the function *both* routes end in, for callers
+    that cannot reach `WebUtilities`. A settings group inside `ApiProperties` is one: `WebUtilities` is
+    constructed *from* `ApiProperties`, so depending on it from within would close a cycle
+    (`UpdateConfig` reads its own `NetworkConfig` instead). `-app`'s `VersionChecker` is another — it is
+    abstract with a no-argument constructor, so it takes the values as `var`s that `UpdateChecker` sets.
+
+  **Known exceptions, both benign — check before adding a third.** `plugins/ServerPackCreatorPlugin.kt:68`
+  and `utilities/common/ClassUtilities.kt:60` open a **`jar:` URL** to read a resource out of a jar, not a
+  socket, so no timeout applies. An audit on 2026-08-17 caught this landmine claiming *"that was every
+  single call site"* while two genuinely unbounded **network** calls were still live —
+  `UpdateConfig.updateFallback` (reached from `ApiProperties`' own `init`, so it blocked construction of
+  the API itself) and `VersionChecker.getResponse` (the GUI's startup update-check). Both are bounded now.
+  A landmine that overstates its coverage is worse than none: the next reader trusts it and stops looking.
+  If you add a call, grep for `openStream()`/`openConnection()` across `-api` and `-app` rather than
+  assuming this list is still complete.
+
+  Three traps found while fixing it:
+  - **The opener returns `URLConnection` on purpose — do not narrow it.** The timeout setters are on
+    `URLConnection`, and `downloadFile` is published API taking any `URL`; a `file:` URL yields a
+    `FileURLConnection`, so casting throws `ClassCastException`, which is **not** an `IOException` and
+    sails past every caller's `catch`. `MinecraftServerManifestCooldownTest` downloads from a `file:`
+    URL and caught it; `WebUtilitiesTimeoutTest.aNonHttpUrlCanStillBeDownloaded` now pins it directly.
+  - **A `mockk(relaxed = true)` fixture silently defeats a timeout guard.** A relaxed mock answers `0`
+    for an `Int`, and `0` *is* the JDK's "wait forever", so the fixture hands the code under test the very
+    defect the guard exists to catch — and the guard then fails against *correct* code, for a reason that
+    has nothing to do with it. Stub the timeouts explicitly; never rely on the relaxed default.
+    This cost a full red→green cycle before it was understood: the first version of
+    `WebUtilitiesTimeoutTest` was written before `NetworkConfig` existed, so it had nothing real to stub.
+    The ordering on this branch is the fix — the settings group lands first, the guard references its
+    actual properties, and it is red only because nothing routes them yet. **Order a new-API pin that way
+    and the fix turns it green untouched.**
+  - **A hang guard's bound must not equal the timeout it is measuring.** `VersionCheckerTimeoutTest` uses
+    45 s against a 15 s default read-timeout, because a bound *equal* to the timeout races between "gave
+    up as configured" and "waited forever" and decides the outcome by scheduling. It also cannot shorten
+    what it measures — `VersionChecker` has no settable timeout until the code under test provides one,
+    and a guard may not depend on the thing it guards. That is why this one test costs ~15 s.
+- **`ManifestUpdater` owns the manifest refresh, and a check must cost exactly one request.**
+  Extracted from `VersionMeta` (2026-08-17) purely to create a testable seam — `VersionMeta` resolves
+  its twelve URLs from `VersionMetaConfig` constants inside its constructor, so request counts were
+  unreachable from a test. It sends `If-Modified-Since` and returns on `304` without reading or parsing
+  anything. **Do not re-add a reachability pre-check:** it cost a second full request whose body was
+  discarded, and because it `disconnect()`ed without draining, the *real* request then paid a fresh
+  TCP+TLS handshake. Pinned by `ManifestUpdaterTest.aManifestCheckCostsOneRequest` /
+  `anAbsentManifestIsDownloadedInOneRequest`. Also pinned, and easy to break: an unreachable host logs
+  one **WARN** per manifest, not an ERROR with a stack trace — twelve of those on every networkless
+  launch is how a genuine manifest failure gets buried, so connection failure and unparseable-manifest
+  are caught separately (`anUnreachableHostLeavesThePresentManifestIntact`).
+  Measured: startup 24 → 12 requests, 489,038 → 213,885 bytes, ~601 ms → ~392 ms median batch
+  wall-clock. Only 4 of 12 hosts honour `If-Modified-Since`; the remaining bytes and the reason not to
+  chase them with ETags are **B30**, and taking the refresh off the startup path entirely is **B31**.
+- **The clientside-exclusion loop runs mods x list-entries times — keep invariants out of it.**
+  `ModListCompiler` builds one `FilterMatcher` per `compileModList`: the exclusion-filter setting is read
+  once (its getter reaches `java.util.Properties`, a synchronized `Hashtable`, twice per read) and each
+  `REGEX`/`EITHER` entry is compiled once. **The real gain is not speed** — measured at 300 mods x 550
+  default entries the property reads cost ~3 ms and the `Pattern.compile`s ~20 ms, so do not oversell it.
+  It is that a malformed entry used to throw `PatternSyntaxException` out of `compileModList` and abort
+  generation; now it is logged once and skipped, and the rest of the list still applies. Pinned by
+  `ModListCompilerHotLoopTest`.
+- **Reading a modpack archive's central directory is the expensive part of inspecting one — do it once.**
+  Measured 79.9 ms for a 10,000-entry archive, scaling with the entry count. `checkZipArchive` shares one
+  open between its validity check and its base-directory scan (`baseDirectoriesOf` exists so the scan can
+  work from headers already in hand), and `getAllFilesAndDirectoriesInModpackZip` partitions a single
+  header pass. Both were two opens. `ModpackZipInspector` takes a **defaulted** `openZip: (File) -> ZipFile`
+  purely so `ModpackZipInspectorOpenCountTest` can count them — every method returns the same answer
+  whether it opened the archive once or four times, which is how the duplication survived unnoticed.
+  **Fixture landmine:** zip4j's `addFile` with a path-in-zip writes no explicit *directory* entries, so a
+  test archive built that way lists zero directories. Use `addFolder` from a real tree. (This also
+  explains why `checkZipArchive` works on archives without them: it derives `mods/` from a *file* entry's
+  name, not from a directory entry.)
+- **A getter must not hand out the config's own mutable state.** `GenerationConfig.clientsideModsRegex`
+  and `modsWhitelistRegex` used to `clear()` and refill one shared `TreeSet` field per read, so a held
+  result was emptied underneath its caller and — the clear-then-refill not being atomic — a concurrent
+  reader could observe the set part-way through. Both are published via `ApiProperties`, and the GUI reads
+  settings from a `parallelStream`. They now build a fresh set via `regexVariantOf`. Pinned by
+  `GenerationConfigTest.regexVariantListsAreNotSharedBetweenReads`.
+- **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
+  `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
+  build new call-sites on the deprecated one.
+- **`InclusionSpecification`** has a **manual** `equals`/`hashCode` over its four fields (source,
+  destination, inclusion/exclusion filter) — intentionally *not* a `data class`, to keep the public
+  API stable for plugins. Verified safe: no hash-based collections of inclusions exist.
+- **`ReticulatingSplines`** (SimCity-style splash texts) is an intentional just-for-fun API
+  endpoint per Griefed — it **stays** in the API; do not move or deprecate it.
+- **`java.awt.Desktop` convenience methods stay in `-api`** (`WebUtilities.openLinkInBrowser`,
+  `FileUtilities.openFolder`/`openFile`). They are **deliberately** here, not a boundary violation:
+  only `-api` is published to Maven, and a plugin may run under the GUI **or** the web backend, so
+  keeping these in the API lets plugin authors open browsers/files/folders regardless of host. Do
+  **not** invert them behind an app-side adapter — that would remove the capability from plugins.
+  (`java.awt` is core JDK; the inward-dep rule only forbids Swing / Spring-web / frontend.)
+- **LANDMINE — plugin code runs during loading and reaches back into this API, so loading must happen
+  LAST (2026-09-08).** `ApiPlugins.loadAndStart()` exists to make that orderable; it used to be the
+  constructor's `init`, which ran from inside `ApiWrapper.apiPlugins`' lazy initialiser, which `stageThree`
+  touched **first**. Two unbounded recursions came out of that, and closing one without the other just
+  swaps them:
+  - `ApiWrapper.api()` assigned its singleton only when the constructor *returned*, and both `@Synchronized`
+    and the inner `synchronized(this)` are **re-entrant on one thread** — so a plugin calling
+    `ApiWrapper.api()` from its own `init` saw `null` and built a second wrapper, which loaded the plugins
+    again. It now publishes the instance before running `setup()`, and un-publishes if setup throws so a
+    later call still retries from scratch.
+  - `serverPackHandler`'s lazy initialiser needs `apiPlugins`, so a plugin reaching
+    `ApiWrapper.api().serverPackHandler` re-entered the initialiser it was already inside. Kotlin's
+    `SynchronizedLazyImpl` **re-runs the initialiser rather than blocking** on a re-entrant same-thread
+    read — a fact worth knowing anywhere two lazies can reach each other.
+
+  Measured on one startup with the example plugin installed: **53 ApiWrapper constructions, 268
+  `example-kotlin` log lines, OutOfMemoryError**, against 0 / 7 / 0 after. **Do not "fix" this class of
+  thing by editing the example plugin** — calling `ApiWrapper.api()` from a plugin's `init` is what the
+  example documents and what third parties copy, so the API has to survive it.
+
+  **Why the suite was green for months:** tests share a JVM and whichever class called `ApiWrapper.api()`
+  first did so before anything copied a jar into `tests/plugins`; `ExtensionScopingTest` installs one in its
+  own `@BeforeAll` and loads it by hand, long after the singleton is published. `PluginLoadingOrderTest`
+  installs the jar in `@BeforeAll` and *then* triggers `api()` from a field initialiser, which is the real
+  startup order and reproduces it.
+
+- **Plugin test jar:** `serverpackcreator-plugin-example-dev.jar` under the API test-resources is a
+  build artifact regenerated by `copyPluginsApiUnitTests` — **don't commit rebuilds.** `ApiPluginsTest`
+  loads it via pf4j and asserts all six extension points are discovered.
+
+## When extracting/refactoring here
+
+Follow root **Refactor discipline**: characterization tests first, verbatim move, thin deprecated
+facade, suites green. The Phase 1a characterization tests (ConfigurationHandler manifest parsing;
+ServerPackHandler file-gathering/cleanup/icon/properties/placeholders) pin behavior through the
+facades — keep them green.
+
+## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
+
+> It lived in that file's always-loaded *Refactor state* table, where it cost every session in
+> every part of the repo for detail only relevant while working in this module — the same move
+> this module's earlier summary got on 2026-09-05. Verbatim, so nothing was lost in the move.
+
+Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them — and since 2026-08-23 the two shells that cannot be executed everywhere are covered by driving the extracted function in a container instead, which is what proved bash, fish and PowerShell agree on the Forge launch path across both versioning schemes.

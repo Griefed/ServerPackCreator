@@ -1,0 +1,14 @@
+# The base URL of the grinder to read verdicts from, e.g. "http://localhost:8757".
+# Empty means the plugin sits idle: no requests are made and nothing is excluded.
+grinderUrl = ""
+
+# How often the Dashboard tab polls the grinder's /status endpoint, in seconds.
+refreshIntervalSeconds = 5
+
+# The name-patterns you ticked in the Confirmed tab. Every entry here is appended to the
+# clientside-mod exclusion list of every server pack generation — GUI, CLI and web alike.
+selectedConfirmed = []
+
+# The same, for entries ticked in the Other Verdicts tab. USE AT YOUR OWN RISK: these mods were
+# NOT proven clientside-only, and excluding a server mod breaks client-server compatibility.
+selectedOther = []

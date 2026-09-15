@@ -1,0 +1,33 @@
+name: Clientside-mod verification (server-boot)
+
+# Phase 2 goal: the expensive, production-near signal — boot a server per loader with the candidate
+# mod force-included and watch for a crash. Gated behind the `verify-boot` label (or a manual
+# dispatch) so it does not run on every issue edit. The pipeline lives in the reusable
+# clientside-report workflow; this just selects the boot verb and a longer timeout.
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to run the boot-verification for"
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: clientside-boot-${{ github.event.issue.number || github.event.inputs.issue_number }}
+  cancel-in-progress: true
+
+jobs:
+  boot:
+    name: Boot-verify clientside-mod request
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'verify-boot'
+    uses: ./.github/workflows/clientside-report-reusable.yml
+    with:
+      issue_number: ${{ github.event.issue.number || github.event.inputs.issue_number }}
+      boot: true
+    secrets: inherit

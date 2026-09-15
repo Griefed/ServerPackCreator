@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,13 @@
 package de.griefed.serverpackcreator.api.versionmeta.quilt
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import javax.xml.parsers.ParserConfigurationException
+import java.util.Collections
 
 /**
  * Information about releases of the Quilt loader.
@@ -39,14 +41,22 @@ internal class QuiltLoader(
     private val utilities: Utilities
 ) {
 
-    val loaders: MutableList<String> = ArrayList(100)
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var loaders: List<String> = emptyList()
+        private set
     var latest: String? = null
         private set
     var release: String? = null
         private set
-    private val latestElement = "latest" // TODO Move tagName to property
-    private val releaseElement = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latestElement = VersionMetaConfig.TAG_LATEST
+    private val releaseElement = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update the Quilt loader versions by parsing the Fabric loader manifest.
@@ -56,6 +66,7 @@ internal class QuiltLoader(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
+        val next_loaders = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(manifest)
         val latestElements = document.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -67,13 +78,15 @@ internal class QuiltLoader(
         val releaseChildren = releaseNode.childNodes
         val releaseItem = releaseChildren.item(0)
         release = releaseItem.nodeValue
-        loaders.clear()
         val elements = document.getElementsByTagName(version)
         for (i in 0 until elements.length) {
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            loaders.add(item.nodeValue)
+            next_loaders.add(item.nodeValue)
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        loaders = Collections.unmodifiableList(next_loaders)
+}
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,7 +38,7 @@ import javax.xml.parsers.ParserConfigurationException
 class VersionRefreshSchedule @Autowired constructor(private val versionMeta: VersionMeta) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.versions.refresh}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.versions.refresh}")
     private fun refreshVersionLister() {
         try {
             versionMeta.update()

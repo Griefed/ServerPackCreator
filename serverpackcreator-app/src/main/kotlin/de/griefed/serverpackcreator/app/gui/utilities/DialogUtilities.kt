@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,7 @@ import javax.swing.JOptionPane
  * @author Griefed
  */
 class DialogUtilities {
+    /** Dialog construction, as functions rather than methods: nothing here holds state, and every call site is a one-off. */
     companion object {
 
         /**

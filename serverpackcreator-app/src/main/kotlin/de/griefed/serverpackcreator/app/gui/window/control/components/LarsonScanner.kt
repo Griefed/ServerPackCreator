@@ -24,9 +24,6 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.control.components
 
-import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.HIGH
-import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.LOW
-import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.MEDIUM
 import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -802,6 +799,7 @@ class LarsonScanner : JPanel {
      * @author Griefed
      */
     class ScannerConfig {
+        /** Where the two gradient stops sit along each element's radius, 0.0 at the centre to 1.0 at the edge. */
         val fractions = floatArrayOf(0.4f, 1.0f)
 
         /**
@@ -864,7 +862,7 @@ class LarsonScanner : JPanel {
         @set:Throws(IllegalArgumentException::class)
         var qualitySetting = LOW
             set(qualitySetting) {
-                field = if (qualitySetting < 0 || qualitySetting > 2) {
+                field = if (qualitySetting !in 0..2) {
                     throw IllegalArgumentException(
                         "Quality setting must be 0, 1 or 2. Specified $qualitySetting"
                     )
@@ -1171,6 +1169,7 @@ class LarsonScanner : JPanel {
             isDividerActive = useDivider
         }
 
+        /** The three rendering-quality levels a configuration can ask for. */
         companion object {
             /** Set the rendering quality of the Larson Scanner to low settings.  */
             const val LOW = 0
@@ -1368,6 +1367,9 @@ class LarsonScanner : JPanel {
             updateValues()
             val g2d = g as Graphics2D
             val fillHeight = height.roundToInt() + 10
+            // Not g2d.renderingHints = ...: the getter returns RenderingHints but the setter takes a
+            // Map, so Kotlin exposes the property read-only. Qodana's UsePropertyAccessSyntax hint
+            // does not compile here.
             g2d.setRenderingHints(renderingHints)
             g2d.color = this.background
             g2d.fillRect(0, 0, width.roundToInt(), fillHeight)
@@ -2094,7 +2096,7 @@ class LarsonScanner : JPanel {
          */
         @Throws(IllegalArgumentException::class)
         private fun colourWithAlpha(alpha: Short, color: Color): Color {
-            require(!(alpha < 0 || alpha > 255)) { "Alpha must be 0 to 255. Specified $alpha" }
+            require(alpha in 0..255) { "Alpha must be 0 to 255. Specified $alpha" }
             return Color(color.red, color.green, color.blue, alpha.toInt())
         }
 
@@ -2210,8 +2212,11 @@ class LarsonScanner : JPanel {
         }
     }
 
+    /** The scanner's fallback colours, used when the theme supplies none. */
     companion object {
+        /** Black, the scanner's backdrop when the theme names no panel background. */
         val DEFAULT_BACKGROUND_COLOUR = Color(0, 0, 0)
+        /** Red — the Cylon eye this widget is named after. */
         val DEFAULT_EYE_COLOUR = Color(255, 0, 0)
     }
 }

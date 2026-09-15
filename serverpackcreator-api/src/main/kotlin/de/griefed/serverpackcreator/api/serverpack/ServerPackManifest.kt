@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.api.serverpack
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.griefed.serverpackcreator.api.ApiWrapper
 import java.io.File
 
 /**
@@ -35,11 +34,16 @@ import java.io.File
  */
 @Suppress("unused")
 class ServerPackManifest {
+    /** Every file in the generated pack, so a later run can tell what it produced from what a user added. */
     var files: List<String> = ArrayList(10000)
+    /** Minecraft version this pack was generated for. */
     var minecraftVersion: String = ""
+    /** Modloader this pack was generated for, in SPC's canonical spelling. */
     var modloader: String = ""
+    /** Modloader version this pack was generated for. */
     var modloaderVersion: String = ""
-    val serverPackCreatorVersion: String = ApiWrapper.api().apiProperties.apiVersion
+    /** Which SPC build wrote this manifest — `dev` for a source build. Lets a migration recognise old packs. */
+    val serverPackCreatorVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 
     constructor(
         files: List<String>,
@@ -55,6 +59,7 @@ class ServerPackManifest {
 
     constructor()
 
+    /** Serialise this manifest into the given server pack directory as `manifest.json`. */
     fun writeToFile(destination: File, objectMapper: ObjectMapper) {
         val content = objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(this)
         File(destination, "manifest.json").writeText(content)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +21,6 @@
 
 package de.griefed.serverpackcreator.api.utilities.common
 
-import de.griefed.serverpackcreator.api.utilities.common.StringUtilities.Companion.pathSecureText
-
-
 /**
  * Utility-class revolving around Strings.
  *
@@ -31,6 +28,8 @@ import de.griefed.serverpackcreator.api.utilities.common.StringUtilities.Compani
  */
 @Suppress("unused")
 class StringUtilities {
+
+    /** String cleanup and the Mongo URI builder the web backend configures itself from. */
 
     companion object {
         /**
@@ -265,23 +264,23 @@ class StringUtilities {
          */
         fun checkForInvalidPathCharacters(text: String) =
             (!text.contains("<")
-                    || !text.contains(">")
-                    || !text.contains(":")
-                    || !text.contains("\"")
-                    || !text.contains("|")
-                    || !text.contains("?")
-                    || !text.contains("*")
-                    || !text.contains("#")
-                    || !text.contains("%")
-                    || !text.contains("&")
-                    || !text.contains("{")
-                    || !text.contains("}")
-                    || !text.contains("$")
-                    || !text.contains("!")
-                    || !text.contains("@")
-                    || !text.contains("`")
-                    || !text.contains("´")
-                    || !text.contains("="))
+                    && !text.contains(">")
+                    && !text.contains(":")
+                    && !text.contains("\"")
+                    && !text.contains("|")
+                    && !text.contains("?")
+                    && !text.contains("*")
+                    && !text.contains("#")
+                    && !text.contains("%")
+                    && !text.contains("&")
+                    && !text.contains("{")
+                    && !text.contains("}")
+                    && !text.contains("$")
+                    && !text.contains("!")
+                    && !text.contains("@")
+                    && !text.contains("`")
+                    && !text.contains("´")
+                    && !text.contains("="))
 
         /**
          * Replace '$', ':', '/', '?', '#', '[', ']', '@' with percent-encoded characters, according to RFC3986.
@@ -303,6 +302,7 @@ class StringUtilities {
             return encoded.toString()
         }
 
+        /** Assemble the Mongo connection URI the web backend configures itself from. */
         fun createMongoUri(user: String, password: String, host: String, port: Int, database: String) =
             "mongodb://${percentEncode(user)}" +
                     ":${percentEncode(password)}" +

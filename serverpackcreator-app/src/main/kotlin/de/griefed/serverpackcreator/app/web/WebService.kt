@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,29 +29,26 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling
 import java.io.File
 
+/** Starts the Spring Boot application that serves the SPA and the v2 API. */
 @SpringBootApplication
 @EnableConfigurationProperties
 @EntityScan(value = ["de.griefed.serverpackcreator.app"])
 @EnableScheduling
 class WebService(private val api: ApiWrapper) {
 
+    /**
+     * Boot Spring with SPC's own configuration locations appended, returning the context.
+     * 
+     * The location list is the part that matters: `overrides.properties` comes **last**, because later locations win
+     * and that is where a container's database URI arrives from.
+     */
     fun start(args: Array<String>): ConfigurableApplicationContext {
-        val userHome = System.getProperty("user.home")
-        val lastIndex = "--spring.config.location=classpath:/application.properties," +
-                "classpath:/serverpackcreator.properties," +
-                "optional:file:${api.apiProperties.serverPackCreatorPropertiesFile.absolutePath},"+
-                "optional:file:${File(userHome,"serverpackcreator.properties").absolutePath}," +
-                "optional:file:./serverpackcreator.properties," +
-                "optional:file:${api.apiProperties.overridesPropertiesFile.absolutePath}," +
-                "optional:file:${File(userHome,"overrides.properties").absolutePath}," +
-                "optional:file:./overrides.properties"
-        val springArgs = if (args.isEmpty()) {
-            arrayOf(lastIndex)
-        } else {
-            val temp = args.toList().toTypedArray()
-            temp[temp.lastIndex] = lastIndex
-            temp.toList().toTypedArray()
-        }
+        val configLocationArgument = configLocationArgument(
+            api.apiProperties.serverPackCreatorPropertiesFile,
+            api.apiProperties.overridesPropertiesFile,
+            File(System.getProperty("user.home"))
+        )
+        val springArgs = springArguments(args, configLocationArgument)
         log.debug("Running webservice with args:${springArgs.contentToString()}")
         log.debug("Application name: ${getSpringBootApplicationContext(springArgs).applicationName}")
         log.debug("Property sources:")
@@ -69,8 +66,44 @@ class WebService(private val api: ApiWrapper) {
         return getSpringBootApplicationContext()
     }
 
+    /** The argument composition, split out so it can be asserted without booting Spring — which is the only way to test it, since `start` hands the result straight to Boot. */
     companion object {
         private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+        /**
+         * Combines the applications own commandline arguments with the `--spring.config.location`
+         * argument that tells Spring Boot which property-files to read, producing the array handed to
+         * [SpringApplication.run]. Extracted from [start] so the composition can be tested without
+         * booting a Spring context.
+         */
+        fun springArguments(args: Array<String>, configLocationArgument: String): Array<String> =
+            args + configLocationArgument
+
+        /**
+         * The `--spring.config.location` argument: the eight property-file locations Spring reads, in
+         * the order it reads them. **Later locations win**, so the two `overrides.properties` entries
+         * come last on purpose — that is the file the docker image's `init-spc-config` script composes
+         * `SPC_DATABASE_*` into, and therefore where `spring.mongodb.uri` arrives from in a
+         * container deployment.
+         *
+         * Extracted from [start] for the same reason [springArguments] was: `start` hands the result
+         * straight to Spring Boot, so the composition could not otherwise be asserted. A location that
+         * silently goes missing here is a property-file that is never read, which for the database URI
+         * is a hard startup failure and for everything else is a setting that quietly does nothing.
+         *
+         * @param propertiesFile   ServerPackCreator's own properties file, from its home directory.
+         * @param overridesFile    The overrides file from that same home directory.
+         * @param userHome         The user's home directory, which contributes two more locations.
+         */
+        fun configLocationArgument(propertiesFile: File, overridesFile: File, userHome: File): String =
+            "--spring.config.location=classpath:/application.properties," +
+                    "classpath:/serverpackcreator.properties," +
+                    "optional:file:${propertiesFile.absolutePath}," +
+                    "optional:file:${File(userHome, "serverpackcreator.properties").absolutePath}," +
+                    "optional:file:./serverpackcreator.properties," +
+                    "optional:file:${overridesFile.absolutePath}," +
+                    "optional:file:${File(userHome, "overrides.properties").absolutePath}," +
+                    "optional:file:./overrides.properties"
 
         @Volatile
         private var springBootApplicationContext: ConfigurableApplicationContext? = null
@@ -89,7 +122,7 @@ class WebService(private val api: ApiWrapper) {
             if (springBootApplicationContext == null) {
                 synchronized(this) {
                     if (springBootApplicationContext == null) {
-                        log.debug("Running webservice with ars: $args")
+                        log.debug("Running webservice with ars: ${args.joinToString(" ")}")
                         springBootApplicationContext = SpringApplication.run(WebService::class.java, *args)
                     }
                 }
@@ -99,6 +132,7 @@ class WebService(private val api: ApiWrapper) {
     }
 }
 
+/** Entry point when the web application is launched on its own rather than through SPC's mode dispatch. */
 fun main(args: Array<String>) {
     WebService(ApiWrapper.api()).start(args)
 }

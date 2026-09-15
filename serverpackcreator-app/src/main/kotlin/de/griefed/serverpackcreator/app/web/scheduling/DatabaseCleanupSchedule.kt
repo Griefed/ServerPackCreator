@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,12 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+/**
+ * Removes database rows whose file is gone — the opposite direction from `FileCleanupSchedule`.
+ * 
+ * Runs on a cron, disabled in tests: a suite running at the scheduled minute against an unreachable database
+ * should not get to find out what this does.
+ */
 @Suppress("unused")
 @Service
 class DatabaseCleanupSchedule @Autowired constructor(
@@ -43,7 +49,7 @@ class DatabaseCleanupSchedule @Autowired constructor(
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
     private fun cleanDatabase() {
         log.info("Cleaning database...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }

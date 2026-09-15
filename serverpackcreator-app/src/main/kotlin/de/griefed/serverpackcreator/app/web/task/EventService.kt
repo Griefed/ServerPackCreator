@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,12 +26,17 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
+/**
+ * Records and reads the queue's progress events — the stream the SPA polls to show what is happening to an
+ * upload. Append-only: an event is a record of a moment, never updated.
+ */
 @Service
 class EventService @Autowired constructor(
     private val errorRepository: ErrorRepository,
     private val queueEventRepository: QueueEventRepository
 ) {
 
+    /** Record one event against a modpack, and optionally a server pack, with the status and message to show. */
     fun submit(
         modPackId: String?,
         serverPackId: String?,
@@ -48,33 +53,37 @@ class EventService @Autowired constructor(
             for (error in errors) {
                 event.errors.add(ErrorEntry(error))
             }
-            for (i in 0 until event.errors.size) {
-                if (errorRepository.findByError(event.errors[i].error).isPresent) {
-                    event.errors[i] = errorRepository.findByError(event.errors[i].error).get()
-                } else {
-                    event.errors[i] = errorRepository.save(event.errors[i])
-                }
+            for (i in event.errors.indices) {
+                // One lookup, reused: the stored entry when this error is already known, a freshly
+                // saved one otherwise.
+                val stored = errorRepository.findByError(event.errors[i].error)
+                event.errors[i] = stored.orElseGet { errorRepository.save(event.errors[i]) }
             }
         }
         queueEventRepository.save(event)
     }
 
+    /** Every event, newest first. */
     fun loadAll(sort: Sort = Sort.by(Sort.Direction.DESC, "timestamp")): MutableList<QueueEvent> {
         return queueEventRepository.findAll(sort)
     }
 
+    /** One page of events, as a `Page` so the caller learns the total. */
     fun loadAll(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<QueueEvent> {
         return queueEventRepository.findAll(sizedPage.withSort(sort))
     }
 
+    /** Every event for one modpack — the history of a single upload. */
     fun loadAllByModPackId(modPackId: String): MutableList<QueueEvent> {
         return queueEventRepository.findAllByModPackId(modPackId)
     }
 
+    /** Every event for one server pack. */
     fun loadAllByServerPackId(serverPackId: String): MutableList<QueueEvent> {
         return queueEventRepository.findAllByServerPackId(serverPackId)
     }
 
+    /** Every event that reported a given status, for finding what failed. */
     fun loadAllByStatus(status: ModPackStatus): MutableList<QueueEvent> {
         return queueEventRepository.findAllByStatus(status)
     }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,10 +23,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
+import java.util.Collections
 import java.net.URI
 
 /**
@@ -46,21 +48,47 @@ internal class MinecraftClientMeta(
     private val apiProperties: ApiProperties
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    val releases: MutableList<MinecraftClient> = ArrayList(100)
-    val snapshots: MutableList<MinecraftClient> = ArrayList(200)
-    val allVersions: MutableList<MinecraftClient> = ArrayList(300)
-    val meta = HashMap<String, MinecraftClient>(300)
+    /**
+     * Published as **immutable snapshots behind `@Volatile`**, not as collections [update] mutates in place.
+     *
+     * The refresh runs on a background coroutine while callers read; clearing and refilling a shared list
+     * let a reader throw `ConcurrentModificationException` or silently observe the empty window between the
+     * two. Publishing a finished list in one assignment means a reader sees the whole previous state or the
+     * whole next one.
+     */
+    @Volatile
+    var releases: List<MinecraftClient> = emptyList()
+        private set
+
+    @Volatile
+    var snapshots: List<MinecraftClient> = emptyList()
+        private set
+
+    /**
+     * Every version, release and snapshot alike.
+     *
+     * **This one also used to grow without bound**: [update] cleared `releases`, `snapshots` and `meta` but
+     * never `allVersions`, so each refresh appended the whole manifest again. Building a fresh list per
+     * update fixes that as a side effect of fixing the race.
+     */
+    @Volatile
+    var allVersions: List<MinecraftClient> = emptyList()
+        private set
+
+    @Volatile
+    var meta: Map<String, MinecraftClient> = emptyMap()
+        private set
     var latestRelease: MinecraftClient? = null
         private set
     var latestSnapshot: MinecraftClient? = null
         private set
-    private val versions = "versions" // TODO Move tagName to property
-    private val latestType = "latest" // TODO Move tagName to property
-    private val releaseType = "release" // TODO Move tagName to property
-    private val snapshotType = "snapshot" // TODO Move tagName to property
-    private val type = "type" // TODO Move tagName to property
-    private val id = "id" // TODO Move tagName to property
-    private val url = "url" // TODO Move tagName to property
+    private val versions = VersionMetaConfig.TAG_VERSIONS
+    private val latestType = VersionMetaConfig.TAG_LATEST
+    private val releaseType = VersionMetaConfig.TAG_RELEASE
+    private val snapshotType = VersionMetaConfig.TAG_SNAPSHOT
+    private val type = VersionMetaConfig.TAG_TYPE
+    private val id = VersionMetaConfig.TAG_ID
+    private val url = VersionMetaConfig.TAG_URL
 
     /**
      * Update the meta information.
@@ -70,9 +98,10 @@ internal class MinecraftClientMeta(
      */
     @Throws(IOException::class)
     fun update() {
-        releases.clear()
-        snapshots.clear()
-        meta.clear()
+        val nextReleases = ArrayList<MinecraftClient>(100)
+        val nextSnapshots = ArrayList<MinecraftClient>(200)
+        val nextAllVersions = ArrayList<MinecraftClient>(300)
+        val nextMeta = HashMap<String, MinecraftClient>(300)
         val minecraftManifest: JsonNode = utilities.jsonUtilities.getJson(minecraftManifest)
         val versions = minecraftManifest.get(versions)
         for (version in versions) {
@@ -83,26 +112,26 @@ internal class MinecraftClientMeta(
             if (type == releaseType) {
                 try {
                     client = MinecraftClient(id, Type.RELEASE, URI(url).toURL(), forgeMeta, utilities, apiProperties)
-                    releases.add(client)
+                    nextReleases.add(client)
                 } catch (ex: IOException) {
                     log.debug("No server available for MinecraftClient version $id", ex)
                 }
             } else if (type == snapshotType) {
                 try {
                     client = MinecraftClient(id, Type.SNAPSHOT, URI(url).toURL(), forgeMeta, utilities, apiProperties)
-                    snapshots.add(client)
+                    nextSnapshots.add(client)
                 } catch (ex: IOException) {
                     log.debug("No server available for MinecraftClient version $id", ex)
                 }
             }
             if (client != null) {
-                meta[client.version] = client
-                allVersions.add(client)
+                nextMeta[client.version] = client
+                nextAllVersions.add(client)
             }
         }
         val releaseVersion = minecraftManifest.get(latestType).get(releaseType).asText()
-        val releaseUrl = meta[minecraftManifest.get(latestType).get(releaseType).asText()]!!.url
-        val releaseServer = meta[minecraftManifest.get(latestType).get(releaseType).asText()]!!.minecraftServer
+        val releaseUrl = nextMeta[minecraftManifest.get(latestType).get(releaseType).asText()]!!.url
+        val releaseServer = nextMeta[minecraftManifest.get(latestType).get(releaseType).asText()]!!.minecraftServer
         latestRelease = MinecraftClient(
             releaseVersion,
             Type.RELEASE,
@@ -113,8 +142,8 @@ internal class MinecraftClientMeta(
             apiProperties
         )
         val snapshotVersion = minecraftManifest.get(latestType).get(snapshotType).asText()
-        val snapshotUrl = meta[minecraftManifest.get(latestType).get(snapshotType).asText()]!!.url
-        val snapshotServer = meta[minecraftManifest.get(latestType).get(snapshotType).asText()]!!.minecraftServer
+        val snapshotUrl = nextMeta[minecraftManifest.get(latestType).get(snapshotType).asText()]!!.url
+        val snapshotServer = nextMeta[minecraftManifest.get(latestType).get(snapshotType).asText()]!!.minecraftServer
         latestSnapshot = MinecraftClient(
             snapshotVersion,
             Type.SNAPSHOT,
@@ -124,5 +153,11 @@ internal class MinecraftClientMeta(
             utilities,
             apiProperties
         )
+        // Published last, and each in one assignment: a reader sees the whole previous state or the whole
+        // next one, never a list being refilled.
+        releases = Collections.unmodifiableList(nextReleases)
+        snapshots = Collections.unmodifiableList(nextSnapshots)
+        allVersions = Collections.unmodifiableList(nextAllVersions)
+        meta = Collections.unmodifiableMap(nextMeta)
     }
 }

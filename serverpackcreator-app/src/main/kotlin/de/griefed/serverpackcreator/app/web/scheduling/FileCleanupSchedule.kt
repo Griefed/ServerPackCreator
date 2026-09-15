@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,13 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+/**
+ * Deletes stored files no database row refers to any more, reclaiming the disk an aborted upload left behind.
+ * 
+ * **The direction is the danger.** It deletes files whose ids are absent from the database, so it must never run
+ * against a database it cannot read — which is why the schedules are disabled in the test context rather than
+ * left on their crons.
+ */
 @Suppress("unused")
 @Service
 class FileCleanupSchedule @Autowired constructor(
@@ -41,7 +48,7 @@ class FileCleanupSchedule @Autowired constructor(
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
     private fun cleanFiles() {
         log.info("Cleaning files...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }

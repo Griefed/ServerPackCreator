@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,9 @@ import java.util.*
                   ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Changes the configured locale, which every message SPC prints is read from. */
 class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+    /** Prompt for a locale and store it. */
     override fun run() {
         printAvailableLanguages()
         chooseAndSwitchLanguage()
@@ -63,6 +65,9 @@ class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : C
         apiWrapper.apiProperties.changeLocale(Locale(lang))
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
     }
 }

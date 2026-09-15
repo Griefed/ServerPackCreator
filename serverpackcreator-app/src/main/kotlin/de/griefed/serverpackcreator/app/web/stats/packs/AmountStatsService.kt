@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,14 @@ import de.griefed.serverpackcreator.app.web.serverpack.runconfiguration.RunConfi
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+/** The dashboard's plain counts, computed per read from the repositories. */
 @Service
 class AmountStatsService @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
     private val modpackRepository: ModPackRepository,
     private val runConfigurationRepository: RunConfigurationRepository
 ) {
+    /** The counts as of now — computed on every access, since nothing here is cached. */
     val stats: AmountStatsData
         get() {
             val modloaders = hashMapOf<String, Int>()
@@ -59,10 +61,13 @@ class AmountStatsService @Autowired constructor(
                 }
             }
 
+            // count() rather than findAll().size: the sizes used to cost three more full-collection
+            // loads, and each one fans out across four collections because the @DBRef graph
+            // (ServerPack -> RunConfiguration -> start-args/clientside-mods/whitelist) resolves eagerly.
             return AmountStatsData(
-                modpackRepository.findAll().size,
-                serverPackRepository.findAll().size,
-                runConfigurationRepository.findAll().size,
+                modpackRepository.count().toInt(),
+                serverPackRepository.count().toInt(),
+                runConfigurationRepository.count().toInt(),
                 minecraftVersions,
                 modloaders,
                 modloaderVersions

@@ -1,10 +1,11 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import tseslint from 'typescript-eslint'
 import pluginVue from 'eslint-plugin-vue'
 import pluginQuasar from '@quasar/app-vite/eslint'
 import prettierSkipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
-export default [
+export default tseslint.config([
   {
     /**
      * Ignore the following files.
@@ -20,6 +21,9 @@ export default [
   ...pluginQuasar.configs.recommended(),
   js.configs.recommended,
 
+  // TypeScript support (parser + recommended rules) for `.ts` files and `<script lang="ts">`.
+  ...tseslint.configs.recommended,
+
   /**
    * https://eslint.vuejs.org
    *
@@ -33,6 +37,17 @@ export default [
    *   -> Above, plus rules to enforce subjective community defaults to ensure consistency.
    */
   ...pluginVue.configs[ 'flat/essential' ],
+
+  // Parse `<script lang="ts">` blocks in single-file components with the TypeScript parser
+  // (eslint-plugin-vue uses vue-eslint-parser for `.vue`; this delegates the script body to TS).
+  {
+    files: [ '**/*.vue' ],
+    languageOptions: {
+      parserOptions: {
+        parser: tseslint.parser
+      }
+    }
+  },
 
   {
     languageOptions: {
@@ -70,4 +85,4 @@ export default [
   },
 
   prettierSkipFormatting
-]
+])

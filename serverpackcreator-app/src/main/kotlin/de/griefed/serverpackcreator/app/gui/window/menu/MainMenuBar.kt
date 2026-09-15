@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,7 @@ class MainMenuBar(
     migrationManager: MigrationManager,
     themeManager: ThemeManager
 ) {
+    /** The assembled menu bar, which the main frame installs. */
     val menuBar: JMenuBar = JMenuBar()
     private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities, guiProps)
     private val edit = EditMenu(apiWrapper.apiProperties, guiProps,mainFrame,mainFrame.mainPanel.tabbedConfigsTab)

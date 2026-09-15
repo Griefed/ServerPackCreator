@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,11 @@ import javax.xml.parsers.DocumentBuilderFactory
  */
 @Suppress("unused")
 class Utilities {
+    /** Download and link-opening helpers. Deliberately in `-api` so plugins get them too. */
     val webUtilities: WebUtilities
+    /** JSON reading/parsing helpers, injected wherever a manifest has to be understood. */
     val jsonUtilities: JsonUtilities
+    /** XML reading helpers, used for the maven-metadata manifests Forge and Fabric publish. */
     val xmlUtilities: XmlUtilities
 
     /**

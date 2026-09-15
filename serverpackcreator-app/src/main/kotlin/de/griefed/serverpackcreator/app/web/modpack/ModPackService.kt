@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,10 @@ import java.io.IOException
 import java.nio.file.Path
 import java.util.*
 
+/**
+ * Everything done to a modpack between upload and deletion: storing the archive, recognising a duplicate by
+ * hash, deriving the API's `PackConfig` for a generation, and counting downloads.
+ */
 @Service
 class ModPackService @Autowired constructor(
     private val modpackRepository: ModPackRepository,
@@ -78,6 +82,23 @@ class ModPackService @Autowired constructor(
     }
 
     /**
+     * The already-stored modpack whose contents hash to [sha256], if there is one.
+     *
+     * This is how a re-upload is recognised, so it runs on every upload. Extracted from
+     * [saveUploadedFile] to be testable on its own — that method also wants GridFS, a storage system
+     * and the API's ConfigurationHandler, none of which duplicate-detection depends on.
+     */
+    fun existingUploadOf(sha256: String?): Optional<ModPack> =
+        if (sha256 == null) {
+            // A hash-less upload is not a duplicate of anything. Said explicitly because neither the
+            // old in-memory comparison nor a `{sha256: null}` query would answer it that way: both
+            // match stored documents whose own sha256 is unset, and the non-ZIP sources leave it so.
+            Optional.empty()
+        } else {
+            modpackRepository.findFirstBySha256(sha256)
+        }
+
+    /**
      * Store the multipart-file to disk. If a match in SHA256 hashes is found, a [StorageException] is thrown to prevent
      * duplicates and save storage.
      *
@@ -103,14 +124,13 @@ class ModPackService @Autowired constructor(
         modpack.sha256 = savedFile.sha256
         modpack.name = savedFile.originalName
         modpack.size = savedFile.size
-        val availableModpacks = modpackRepository.findAll()
-        for (available in availableModpacks) {
-            if (available.sha256 == modpack.sha256) {
-                throw StorageException(
-                    "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
-                    available.id
-                )
-            }
+        val duplicate = existingUploadOf(modpack.sha256)
+        if (duplicate.isPresent) {
+            val available = duplicate.get()
+            throw StorageException(
+                "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
+                available.id
+            )
         }
         return modpackRepository.save(modpack)
     }
@@ -124,18 +144,22 @@ class ModPackService @Autowired constructor(
         return modpackRepository.save(modpack)
     }
 
+    /** One modpack by id, empty when there is none. */
     fun getModpack(id: String): Optional<ModPack> {
         return modpackRepository.findById(id)
     }
 
+    /** Every modpack, newest first by default. */
     fun getModpacks(sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): List<ModPack> {
         return modpackRepository.findAll(sort)
     }
 
+    /** One page of modpacks, as a `Page` so the caller learns the total. */
     fun getModpacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): Page<ModPack> {
         return modpackRepository.findAll(sizedPage.withSort(sort))
     }
 
+    /** The modpack a server pack was generated from, by the server pack's id. */
     fun getByServerPack(id: String): Optional<ModPack> {
         val serverPack = serverPackRepository.findById(id)
         return if (serverPack.isPresent) {
@@ -145,26 +169,32 @@ class ModPackService @Autowired constructor(
         }
     }
 
+    /** The same lookup when the caller already holds the server pack. */
     fun getByServerPack(serverPack: ServerPack): Optional<ModPack> {
         return modpackRepository.findByServerPacksContains(serverPack)
     }
 
+    /**
+     * Build the API-level `PackConfig` a generation runs with, by combining the stored modpack with a run
+     * configuration. This is the bridge between the web module's entities and `-api`'s own configuration type.
+     */
     fun getPackConfigForModpack(modpack: ModPack, runConfiguration: RunConfiguration): PackConfig {
         val packConfig = PackConfig()
         packConfig.modpackDir = rootLocation.resolve("${modpack.fileID}.zip").normalize().toFile().absolutePath
-        packConfig.setClientMods(runConfiguration.clientMods.map { it.mod }.toMutableList())
-        packConfig.setModsWhitelist(runConfiguration.whitelistedMods.map { it.mod }.toMutableList())
+        packConfig.setClientMods(runConfiguration.clientMods.toMutableList())
+        packConfig.setModsWhitelist(runConfiguration.whitelistedMods.toMutableList())
         if (modpack.status == ModPackStatus.GENERATING) {
             packConfig.inclusions.addAll(configurationHandler.suggestInclusions(packConfig.modpackDir))
         }
         packConfig.minecraftVersion = runConfiguration.minecraftVersion
         packConfig.modloader = runConfiguration.modloader
         packConfig.modloaderVersion = runConfiguration.modloaderVersion
-        packConfig.javaArgs = runConfiguration.startArgs.joinToString(" ") { it.argument }
+        packConfig.javaArgs = runConfiguration.startArgs.joinToString(" ")
         packConfig.isZipCreationDesired = true
         return packConfig
     }
 
+    /** Delete a modpack, its stored archive and the server packs generated from it. */
     fun deleteModpack(id: String) {
         val modpack = modpackRepository.findById(id)
         if (modpack.isPresent) {

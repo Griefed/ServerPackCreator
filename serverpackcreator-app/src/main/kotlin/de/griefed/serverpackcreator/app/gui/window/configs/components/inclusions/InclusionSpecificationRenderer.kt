@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,7 @@ class InclusionSpecificationRenderer : JLabel(), ListCellRenderer<InclusionSpeci
         isOpaque = true
     }
 
+    /** Renders one inclusion as its source path, with the destination and filters appended when it has any. */
     override fun getListCellRendererComponent(
         list: JList<out InclusionSpecification>,
         value: InclusionSpecification,

@@ -1,0 +1,376 @@
+/* Copyright (C) 2026 Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.grinder
+
+import de.griefed.serverpackcreator.grinder.report.VerdictStore
+import de.griefed.serverpackcreator.grinder.source.RequeueStore
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+
+/**
+ * Grinds one candidate: skip it while its verdict is still *fresh*, otherwise run the
+ * [CandidateVerifier] and record one [GrindVerdict] per loader in the [store]. A thrown verification is
+ * logged and dropped (the candidate stays un-verified, to be retried on a later pass) rather than
+ * sinking the worker. "Fresh" = a verdict younger than [reverifyTtl]; anything unseen or older is
+ * (re-)ground, so a continuous grind re-checks projects as mods, loader versions and Minecraft support
+ * evolve, without redoing fresh work every pass.
+ *
+ * @param verifier    The boot pipeline (faked in tests; container-backed in production).
+ * @param store       Where verdicts accumulate.
+ * @param reverifyTtl How long a verdict stays fresh before the project is re-ground.
+ * @param clock       Supplies the verdict timestamp and the freshness "now" (injectable for tests).
+ * @param status      Live activity record for the report server's `/status`, updated around each candidate.
+ *                    Optional so the orchestration stays testable without it.
+ * @param requeue     Where a dependency blamed for a candidate's crash is queued for its own verification.
+ *                    Optional for the same reason. **This is the point of attribution:** the blame itself is
+ *                    a string match and is never allowed to move a verdict, so the suspicion is settled by
+ *                    grinding the dependency and seeing whether it crashes alone.
+ * @author Griefed
+ */
+class Grinder(
+    private val verifier: CandidateVerifier,
+    private val store: VerdictStore,
+    private val reverifyTtl: Duration = Duration.ofDays(30),
+    private val clock: () -> Instant = Instant::now,
+    private val status: GrinderStatus? = null,
+    private val requeue: RequeueStore? = null
+) {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * Queue every dependency a loader's crash was attributed to, so it is verified in its own right.
+     *
+     * Attribution deliberately never changes a verdict — it is a string match over a console — so this is
+     * what turns the suspicion into evidence: grind the dependency alone and see whether it crashes.
+     * Failure here is logged and dropped, because a queueing problem must not cost the verdicts just earned.
+     */
+    private fun queueBlamedDependencies(report: de.griefed.serverpackcreator.clientside.ClientsideReport, candidate: GrindCandidate) {
+        // Not `store`: this class already has one, of a different type, and shadowing it here made the two
+        // reads three lines apart look like the same collaborator.
+        val queue = requeue ?: return
+        val blamed = report.perTarget.mapNotNull { it.blamedDependencyUrl }.distinct()
+        if (blamed.isEmpty()) {
+            return
+        }
+        runCatching {
+            queue.add(
+                blamed.map { url ->
+                    GrindCandidate(url, url.substringAfterLast('/'), 0, ModPlatforms.ofUrl(url))
+                }
+            )
+        }.onSuccess {
+            log.info("Queued $it dependency project(s) blamed for ${candidate.slug}'s crash: ${blamed.joinToString(", ")}")
+        }.onFailure {
+            log.warn("Could not queue the dependencies blamed for ${candidate.slug}'s crash: ${it.message}")
+        }
+    }
+
+    /**
+     * Verify [candidate] (unless a fresh verdict exists), record its per-loader verdicts and report what
+     * happened — the daemon paces itself on how much real work a pass did (see [GrindPacing]).
+     *
+     * [force] skips the freshness check, which is what the immediate re-grind queue
+     * ([de.griefed.serverpackcreator.grinder.source.RequeueStore]) runs on. **It is not a convenience.** A
+     * project is queued precisely because its stored verdict is known to be wrong, and a wrong verdict is
+     * usually a recent one — engine defects get found by reading verdicts that were just produced — so an
+     * unforced drain would turn straight into [GrindOutcome.SKIPPED_FRESH] and quietly do nothing.
+     */
+    fun grind(candidate: GrindCandidate, force: Boolean = false): GrindOutcome {
+        // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
+        val lastVerified = store.newestVerification(candidate.platform, candidate.slug, candidate.projectId)
+        if (!force && lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
+            // Deliberately not INFO: a pass can skip dozens of fresh projects in microseconds, and logging each
+            // would bury the one line that matters — the candidate actually being worked on.
+            log.debug("Skipping ${candidate.platform}/${candidate.slug}: verdict still fresh.")
+            return GrindOutcome.SKIPPED_FRESH
+        }
+        // One readable line per candidate actually being ground, so `tail -f` answers "what is it doing?"
+        // without decoding pack paths. The thread name in the log pattern says which worker.
+        // Say when a grind jumped the queue: it is the difference between "the crawl reached this" and
+        // "somebody decided the stored verdict was wrong", which is the first question asked of a re-grind.
+        val why = if (force) " (re-grind requested)" else ""
+        log.info("Grinding ${candidate.platform}/${candidate.slug}$why — ${candidate.projectUrl}")
+        status?.beginCandidate(candidate)
+        val startedAt = clock()
+        val report = runCatching { verifier.verify(candidate) }
+            .onFailure { log.warn("Verification failed for ${candidate.projectUrl}: ${it.message}") }
+            .getOrNull()
+        if (report == null) {
+            log.warn("Done ${candidate.platform}/${candidate.slug} → FAILED after ${Duration.between(startedAt, clock()).seconds}s")
+            status?.endCandidate(GrindOutcome.FAILED)
+            return GrindOutcome.FAILED
+        }
+        if (report.platform != candidate.platform) {
+            // Recording uses the resolved report's platform, while the skip-check above uses the
+            // candidate's. If a source ever labels a project differently from the platform that resolves
+            // it, the two keys never meet and the project is re-ground every pass — so make it loud.
+            log.warn(
+                "Platform mismatch for ${candidate.projectUrl}: candidate says '${candidate.platform}', " +
+                    "resolved report says '${report.platform}'. It will be re-verified every pass until they agree."
+            )
+        }
+        val now = clock()
+        for (verdict in report.perTarget) {
+            store.record(
+                GrindVerdict(
+                    platform = report.platform,
+                    slug = report.slug,
+                    projectUrl = report.projectUrl,
+                    loader = verdict.loader,
+                    suggestedEntry = verdict.suggestedEntry,
+                    fileName = verdict.sampleFile,
+                    // The redesigned verdict and the claim it either confirms or contradicts. Carried
+                    // alongside `confidence` until stage 5 retires it; `/as-properties` already gates on this.
+                    verdict = verdict.verdict,
+                    declared = verdict.declared,
+                    detail = verdict.note ?: "",
+                    verifiedAt = now,
+                    // Identity comes from the candidate, not the report: the report echoes the slug, which is the
+                    // mutable name this exists to stop depending on.
+                    projectId = candidate.projectId,
+                    // The evidence behind the confidence, carried through so the report can show *why* rather
+                    // than only *what*. The clientside engine has decided all four already.
+                    declaredClientSide = verdict.declaredClientSide,
+                    declaredServerSide = verdict.declaredServerSide,
+                    jarScan = verdict.jarScan,
+                    bootedLoader = verdict.bootedLoader,
+                    firedRule = verdict.firedRule,
+                    decidedBy = verdict.decidedBy?.name,
+                    stagedDependencies = verdict.stagedDependencies,
+                    // The row's identity, and the version behind it. A project is ground once per Minecraft
+                    // line now, so this is what the table sorts and filters by -- and what the store keys on.
+                    minecraftLine = verdict.minecraftLine,
+                    minecraftVersion = verdict.minecraftVersion,
+                    // The evidence behind a row that did not produce its own: a sibling loader's proof.
+                    inheritedProofFrom = verdict.inheritedProofFrom,
+                    inheritedProofRule = verdict.inheritedProofRule
+                )
+            )
+        }
+        queueBlamedDependencies(report, candidate)
+        // Report the boot result alongside the confidence: a verdict reached *without* a boot is a much weaker
+        // claim than one that booted, and only the log can tell them apart afterwards.
+        log.info(
+            "Done ${candidate.platform}/${candidate.slug} → " +
+                report.perTarget
+                    .joinToString(", ") {
+                        "${it.minecraftLine ?: "?"}/${it.loader}=${it.verdict}(boot:${it.bootResult ?: "none"})"
+                    }
+                    .ifEmpty { "no verdicts" } +
+                " after ${Duration.between(startedAt, clock()).seconds}s"
+        )
+        status?.endCandidate(GrindOutcome.VERIFIED)
+        return GrindOutcome.VERIFIED
+    }
+}
+
+/**
+ * What one [Grinder.grind] call did. Distinguishing *skipped because fresh* from *attempted and failed* is
+ * what lets the daemon pace itself: only [VERIFIED] counts as progress, so a pass that found nothing due —
+ * or one where everything failed — waits instead of racing the crawl position onward.
+ *
+ * @author Griefed
+ */
+enum class GrindOutcome {
+    /** The candidate was verified and its per-loader verdicts recorded. */
+    VERIFIED,
+
+    /** Verification was attempted but threw; nothing was recorded and the project stays due. */
+    FAILED,
+
+    /** The project's verdict is still younger than the re-verify TTL, so nothing was done. */
+    SKIPPED_FRESH
+}
+
+/**
+ * Drains a batch of candidates across a fixed pool of worker threads, so multiple servers boot in
+ * parallel (the throughput lever — sequential grinding would never finish a catalog). Candidates are
+ * ordered round-robin across platforms, each platform most-downloaded first (see [interleaveByPlatform]);
+ * each worker pulls the next from a shared queue until it drains.
+ * Parallelism should be sized to the host (≈ RAM / per-boot-memory), since each in-flight grind holds
+ * a booting container.
+ *
+ * @param grinder     Grinds a single candidate.
+ * @param workerCount Number of parallel workers (and therefore concurrent container boots).
+ * @author Griefed
+ */
+class GrindPool(
+    private val grinder: Grinder,
+    private val workerCount: Int
+) {
+    /** Set by [requestStop]; workers finish their current candidate and then stop taking new ones. */
+    private val stopRequested = AtomicBoolean(false)
+
+    /**
+     * The worker threads of the pass currently running, so [awaitStop] can interrupt them.
+     *
+     * Held as a field rather than staying local to [grindAll] because the shutdown hook runs on a different
+     * thread entirely and has no other way to reach them. Empty between passes.
+     */
+    @Volatile
+    private var workers: List<Thread> = emptyList()
+
+    init {
+        require(workerCount >= 1) { "workerCount must be at least 1, was $workerCount" }
+    }
+
+    /**
+     * Ask the workers to stop after their current candidate — the queue is abandoned, nothing is
+     * cancelled mid-grind. Used by the daemon's shutdown hook so a pass ends promptly instead of draining
+     * a whole popularity-ranked batch; the in-flight boot is torn down separately by closing the
+     * container engine.
+     */
+    fun requestStop() {
+        stopRequested.set(true)
+    }
+
+    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
+    internal fun trackedWorkerCount(): Int = workers.size
+
+    /**
+     * Stop for real: signal, **interrupt** every worker, and wait up to [grace] for them to come back. Returns
+     * whether they all did.
+     *
+     * [requestStop] alone cannot end a shutdown, because the flag is only read *between* candidates — a worker
+     * parked in a boot keeps going for up to that boot's budget, which is measured in minutes, while systemd
+     * counts down to the SIGKILL that orphans containers. The interrupt is what wakes a worker out of the boot's
+     * poll loop so it can notice the flag.
+     *
+     * A worker that ignores its interrupt is abandoned rather than waited for: nothing can force a thread to die
+     * in the JVM, so the actual "force kill" is the process exiting, and this method's job is only to stop
+     * holding it open. A `false` return is worth logging — it means the process is about to exit with work still
+     * running.
+     */
+    fun awaitStop(grace: Duration): Boolean {
+        stopRequested.set(true)
+        val running = workers
+        running.forEach { worker -> runCatching { worker.interrupt() } }
+        val deadline = System.currentTimeMillis() + grace.toMillis()
+        for (worker in running) {
+            val remaining = deadline - System.currentTimeMillis()
+            if (remaining <= 0) {
+                break
+            }
+            runCatching { worker.join(remaining) }
+        }
+        return running.none { it.isAlive }
+    }
+
+    /**
+     * Process every candidate in [candidates] — round-robin across platforms, each platform most-downloaded
+     * first ([interleaveByPlatform]) — returning once all are done, or early if [requestStop] is called or the
+     * calling thread is interrupted (the daemon's shutdown path).
+     *
+     * The returned [GrindPass] reports **which candidates were reached** as well as how many were verified.
+     * Reached matters as much as verified: the crawl cursor may only advance past candidates something actually
+     * got to, so an abandoned pass has to be able to say what it never touched (see `CatalogCrawler.commit`).
+     * A candidate counts as reached only once [Grinder.grind] has *returned* for it, so one still being ground
+     * while the JVM tears down is deliberately not reported — it gets handed out again next time.
+     * `verified` stays the pacing measure (see [GrindPacing]); skipped-as-fresh and failed do not count there.
+     *
+     * [force] is carried through to every candidate, which is what makes a drained re-grind queue actually
+     * re-grind: the whole batch is there because its verdicts are known to be wrong, and most of them are too
+     * recent to pass the freshness check.
+     */
+    fun grindAll(candidates: Collection<GrindCandidate>, force: Boolean = false): GrindPass {
+        val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
+        val verified = AtomicInteger(0)
+        val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
+        // Constructed, published, and only then started. Starting inside the `map` left a window in which a
+        // worker was running before `workers` had been assigned -- and a shutdown landing there would have
+        // interrupted nobody and reported a clean stop, because an empty list satisfies "none alive".
+        val running = (1..workerCount).map { worker ->
+            Thread {
+                while (!stopRequested.get()) {
+                    val candidate = queue.poll() ?: break
+                    val outcome = grinder.grind(candidate, force)
+                    reached.add(candidate)
+                    if (outcome == GrindOutcome.VERIFIED) {
+                        verified.incrementAndGet()
+                    }
+                }
+            }.apply { name = "grind-worker-$worker" }
+        }
+        workers = running
+        running.forEach { it.start() }
+        try {
+            running.forEach { it.join() }
+        } catch (_: InterruptedException) {
+            // The daemon's shutdown hook interrupts the thread that is parked here. Abandon the rest of the
+            // batch instead of letting the interrupt escape as an uncaught exception (which killed the
+            // process outright on SIGTERM mid-pass), and hand the flag back so the caller sees the shutdown.
+            // Workers still finish their current candidate; their in-flight containers are torn down
+            // separately by closing the container engine.
+            requestStop()
+            Thread.currentThread().interrupt()
+        } finally {
+            workers = emptyList()
+        }
+        return GrindPass(reached, verified.get())
+    }
+
+    /**
+     * Order a batch **round-robin across platforms**, each platform most-downloaded first — one CurseForge, one
+     * Modrinth, one CurseForge, and so on, with a platform that runs out simply dropping out of the rotation.
+     *
+     * Sorting the whole batch by `popularity` instead starves a platform. Measured live on 2026-07-30:
+     * CurseForge's counts run several times Modrinth's for equivalent mods (`jei` 602 M vs `fabric-api` 218 M),
+     * so every CurseForge candidate outranked every Modrinth one and a two-hour pass produced 108 CurseForge
+     * verdicts and **zero** Modrinth ones — indefinitely, for any interruption shorter than a full pass.
+     *
+     * The counts are not comparable in the first place: CurseForge counts file downloads across every version,
+     * Modrinth counts differently, so ranking them against each other was never meaningful — it just silently
+     * promoted one platform. This keeps the comparison that *is* meaningful (within a platform) and drops the one
+     * that is not. Platform order in the rotation is alphabetical, purely so a pass is reproducible.
+     */
+    private fun interleaveByPlatform(candidates: Collection<GrindCandidate>): List<GrindCandidate> {
+        val perPlatform = candidates
+            .groupBy { it.platform }
+            .toSortedMap()
+            .map { (_, ofPlatform) -> ArrayDeque(ofPlatform.sortedByDescending { it.popularity }) }
+        val ordered = ArrayList<GrindCandidate>(candidates.size)
+        while (ordered.size < candidates.size) {
+            for (platformQueue in perPlatform) {
+                platformQueue.removeFirstOrNull()?.let { ordered.add(it) }
+            }
+        }
+        return ordered
+    }
+}
+
+/**
+ * What one pass of [GrindPool.grindAll] achieved: the candidates it **reached** (ground to any outcome — verified,
+ * skipped as fresh, or attempted and failed) and how many of those were verified. Two different questions, which
+ * is why both are reported: the daemon paces itself on [verified], while the crawl cursor may only advance past
+ * [reached].
+ *
+ * @author Griefed
+ */
+data class GrindPass(
+    /** Every candidate this pass actually reached, used to commit each source's cursor no further than the work done. */
+    val reached: Set<GrindCandidate>,
+    /** How many reached a verdict. Failures are excluded deliberately — pacing on failures races the cursor. */
+    val verified: Int
+)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,14 +36,17 @@ interface DocumentChangeListener : DocumentListener {
      */
     fun update(e: DocumentEvent)
 
+    /** Forwards to [update]. */
     override fun insertUpdate(e: DocumentEvent) {
         update(e)
     }
 
+    /** Forwards to [update]. */
     override fun removeUpdate(e: DocumentEvent) {
         update(e)
     }
 
+    /** Forwards to [update]. */
     override fun changedUpdate(e: DocumentEvent) {
         update(e)
     }

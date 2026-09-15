@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,146 +23,95 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.io.File
-import java.util.*
 
 /**
  * `fabric.mod.json`-based scanning of Fabric-Minecraft mods.
+ *
+ * If `environment` specifies `client`, and the mod is not listed as a dependency of another mod, it
+ * is later excluded from the server pack. Sideness and id reading live in [FabricFamilyScanner],
+ * which Quilt shares; only Fabric's `depends`-block shape is specific to this scanner.
  *
  * @param objectMapper For JSON-parsing.
  * @param utilities    Common utilities used across ServerPackCreator.
  *
  * @author Griefed
  */
-class FabricScanner(
-    private val objectMapper: ObjectMapper,
-    private val utilities: Utilities
-) : JsonBasedScanner(), Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
+class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFamilyScanner(
+    descriptor = "fabric.mod.json",
+    idPath = arrayOf("id"),
+    environmentPath = arrayOf("environment"),
+    objectMapper = objectMapper,
+    utilities = utilities
+) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val jar = "jar"
-    private val fabricModJson = "fabric.mod.json"
-    private val id = "id"
-    private val client = "client"
-    private val environment = "environment"
     private val depends = "depends"
-    private val dependencyExclusions: Regex
-        get() = "(fabric|fabricloader|java|minecraft)".toRegex()
+
+    /** The `provides` block: a flat array of ids. */
+    private val provides = "provides"
+
+    override val scanAnnouncement = "Scanning Fabric mods for sideness..."
 
     /**
-     * Scan the `fabric.mod.json`-files in mod JAR-files of a given directory for their
-     * sideness.
+     * Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list.
      *
-     * If `environment` specifies `client`, and is not listed as a dependency for another mod, it is added and therefore
-     * later on excluded from the server pack.
-     *
-     * @param jarFiles A list of files in which to check the `fabric.mod.json`-files.
-     * @return List of mods not to include in server pack based on fabric.mod.json-content.
-     * @author Griefed
+     * **`fabric` is deliberately NOT here.** It is Fabric API — a mod, and the most-depended-on one in the
+     * ecosystem — while `fabricloader` is the platform. Excluding it meant Fabric API could never be
+     * reported as the dependency it is, nor rescued back into a pack that had disabled it.
      */
-    override fun scan(jarFiles: Collection<File>): Pair<Collection<File>, Collection<Pair<String,String>>> {
-        log.info("Scanning Fabric mods for sideness...")
-        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
-        val clientMods = TreeSet<String>()
+    private val dependencyExclusions: Regex
+        get() = "(fabricloader|java|minecraft)".toRegex()
 
-        /*
-        * Go through all mods in our list and acquire a list of clientside-only mods as well as any
-        * dependencies of the mods.
-        */
-        checkForClientModsAndDeps(jarFiles, clientMods, modDependencies)
+    /**
+     * Fabric declares `depends` as an object keyed by mod id, so the ids are the block's field names.
+     * A descriptor without the block declares no dependencies and yields an empty list.
+     */
+    /**
+     * The `depends.minecraft` range this descriptor states, or `null`. Read separately from
+     * [readDependencies] because `minecraft` is deliberately excluded there as the platform — the value is
+     * still what says which Minecraft the jar was built against.
+     */
+    override fun readMinecraftConstraint(modConfig: JsonNode): String? =
+        constraintOf(modConfig.path(depends).path("minecraft"))
 
-        //Remove any dependency from our list of clientside-only mods, so we do not exclude any dependency.
-        cleanupClientMods(modDependencies, clientMods)
-
-        /*
-        * After removing dependencies from the list of potential clientside mods, we can check whether
-        * any of the remaining clientmods is available in our list of files. The resulting set is the
-        * set of mods we can safely exclude from our server pack.
-        */
-        return Pair(
-            getModsDelta(jarFiles, clientMods),
-            modDependencies.map { entry ->
-                Pair(
-                    entry.first,
-                    "${entry.second.first} (${entry.second.second})"
-                )
-            })
-    }
-
-    override fun checkForClientModsAndDeps(
-        filesInModsDir: Collection<File>,
-        clientMods: TreeSet<String>,
-        //Pair of detected dependency and its dependant (mod-name and mod-ID)
-        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
-    ) {
-        for (mod in filesInModsDir) {
-            if (!mod.name.endsWith(jar)) {
-                continue
-            }
-            var modId: String
-            try {
-                val modJson: JsonNode = getJarJson(mod, fabricModJson, objectMapper)
-                modId = utilities.jsonUtilities.getNestedText(modJson, id)
-
-                // Get this mods' id/name
-                try {
-                    if (utilities.jsonUtilities
-                            .nestedTextEqualsIgnoreCase(modJson, client, environment)
-                    ) {
-                        clientMods.add(modId)
-                        log.debug("Added clientMod: $modId")
-                    }
-                } catch (ignored: NullPointerException) {
+    override fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency> {
+        val modDependencies = mutableListOf<ModDependency>()
+        try {
+            for (dependency in utilities.jsonUtilities.getFieldNames(modConfig, depends)) {
+                log.debug("Checking dependency $dependency for $modId.")
+                if (!dependency.matches(dependencyExclusions)) {
+                    log.debug("Added dependency $dependency for $modId.")
+                    modDependencies.add(
+                        ModDependency(dependency, versionConstraint = constraintOf(modConfig.path(depends).path(dependency)))
+                    )
                 }
-
-                // Get this mods dependencies
-                try {
-                    val dependencies = utilities.jsonUtilities.getFieldNames(modJson, depends)
-                    for (dependency in dependencies) {
-                        log.debug("Checking dependency $dependency for $mod.")
-                        if (!dependency.matches(dependencyExclusions)) {
-                            try {
-                                log.debug("Added dependency $dependency for $modId (${mod.name}).")
-                                modDependencies.add(Pair(dependency, Pair(mod.name, modId)))
-                            } catch (ex: NullPointerException) {
-                                log.debug("No dependencies for $modId (${mod.name}).")
-                            }
-                        }
-                    }
-                } catch (ignored: NullPointerException) {
-                }
-            } catch (ex: NullPointerException) {
-                log.warn("Couldn't scan $mod as it contains no fabric.mod.json.")
-            } catch (ex: Exception) {
-                log.error("Couldn't scan $mod", ex)
             }
-
+        } catch (_: NullPointerException) {
+            // No "depends" block in this fabric.mod.json -> the mod declares no
+            // dependencies, so there is nothing to record.
         }
+        return modDependencies
     }
 
-    override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File> {
-        val modsDelta = TreeSet<File>()
-        for (mod in filesInModsDir) {
-            var modIdToCheck: String
-            var addToDelta = false
-            try {
-                val modJson: JsonNode = getJarJson(mod, fabricModJson, objectMapper)
-
-                // Get the modId
-                modIdToCheck = utilities.jsonUtilities.getNestedText(modJson, id)
-                try {
-                    if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(modJson, client, environment)
-                        && clientMods.contains(modIdToCheck)
-                    ) {
-                        addToDelta = true
-                    }
-                } catch (ignored: NullPointerException) {
-                }
-                if (addToDelta) {
-                    modsDelta.add(mod)
-                }
-            } catch (ignored: Exception) {
-            }
-        }
-        return modsDelta
+    /**
+     * The version constraint a `depends` entry states. Fabric allows either a single string or an array of
+     * alternatives; an array is joined with ` || `, the same disjunction the format itself uses, so the
+     * original meaning survives as text.
+     */
+    private fun constraintOf(value: JsonNode): String? = when {
+        value.isTextual -> value.asText().takeIf { it.isNotBlank() }
+        value.isArray -> value.mapNotNull { it.asText(null) }.filter { it.isNotBlank() }
+            .joinToString(" || ").takeIf { it.isNotBlank() }
+        else -> null
     }
+    /**
+     * Fabric declares `provides` as a flat array of ids the mod also answers to. Fabric API 0.92.11+1.20.1
+     * uses it to answer to the historical `fabric` while calling itself `fabric-api`; the newest builds have
+     * dropped the block, so its absence is normal and yields an empty list.
+     */
+    override fun readProvides(modConfig: JsonNode, modId: String): List<String> =
+        modConfig.path(provides)
+            .takeIf { it.isArray }
+            ?.mapNotNull { entry -> entry.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() } }
+            .orEmpty()
+            .also { aliases -> if (aliases.isNotEmpty()) log.debug("$modId also provides $aliases.") }
 }

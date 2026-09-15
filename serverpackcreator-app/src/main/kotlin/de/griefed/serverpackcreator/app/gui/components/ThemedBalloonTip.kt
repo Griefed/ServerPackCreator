@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,6 +58,7 @@ class ThemedBalloonTip(
         isVisible = false
     }
 
+    /** Re-styles the balloon from the current theme before showing it — the style is captured at construction, so a theme changed since would otherwise still show the old colours. */
     override fun setVisible(visible: Boolean) {
         style = guiProps.balloonStyle
         super.setVisible(visible)

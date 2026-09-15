@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.neoforge
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import java.net.URI
 import java.net.URL
@@ -42,7 +43,7 @@ class OldNeoForgeInstance(
     private val minecraftMeta: MinecraftMeta
 ) : NeoForgeInstance {
     override val installerUrl: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/forge/$minecraftVersion-$neoForgeVersion/forge-$minecraftVersion-$neoForgeVersion-installer.jar").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.oldNeoForgeInstallerUrl(minecraftVersion, neoForgeVersion)).toURL()
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an

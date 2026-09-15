@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.app.gui.components
 import Translations
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ResizeIndicatorScrollPane
 import de.griefed.serverpackcreator.app.gui.window.configs.components.SuggestionProvider
 import kotlinx.coroutines.*
@@ -37,6 +38,7 @@ import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter
 import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Scrollable textarea with an [UndoManager] providing up to ten undos. By default, the vertical scrollbar is
@@ -64,6 +66,10 @@ class ScrollTextArea(
         this.addDocumentListener(documentChangeListener)
     }
 
+    /** Owns the focus/search/replace coroutines this textarea starts, so they are cancelled when
+     * the component is removed ([removeNotify]) rather than leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
+
     private val undoManager = UndoManager()
     private val searchFor = JTextField(100)
     private val replaceWith = JTextField(100)
@@ -87,7 +93,9 @@ class ScrollTextArea(
         Translations.createserverpack_gui_textarea_replace_regex_replace.toString(),
         replaceWith
     )
+    /** The autocomplete popup, attached to the wrapped text area. `null` when [identifier] is blank. */
     val suggestionProvider: SuggestionProvider?
+    /** Names the autocomplete bucket this area's suggestions are stored under. */
     val identifier: String
 
     init {
@@ -106,6 +114,7 @@ class ScrollTextArea(
         }
     }
 
+    /** Forwards to the wrapped text area — the scroll pane holds no text itself. */
     var text: String
         get() {
             return textArea.text
@@ -114,6 +123,7 @@ class ScrollTextArea(
             textArea.text = value
         }
 
+    /** Appends to the wrapped area, for the log panes that stream into it rather than replacing its contents. */
     fun append(text: String) {
         textArea.append(text)
     }
@@ -126,50 +136,48 @@ class ScrollTextArea(
         textArea.document.addDocumentListener(listener)
     }
 
+    /** Records the edit with this area's own undo manager. */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
+    /** Unused; the shortcuts are handled on key-press. */
     override fun keyTyped(e: KeyEvent) {}
 
+    /** Handles undo and redo, and lets everything else through to the area. */
     override fun keyPressed(e: KeyEvent) {
         textArea.highlighter.removeAllHighlights()
-        when {
-            e.keyCode == KeyEvent.VK_Z && e.isControlDown -> {
+        when (e.keyCode) {
+            e.keyCode if e.isControlDown -> {
                 try {
                     undoManager.undo()
                 } catch (cue: CannotUndoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
-
-            e.keyCode == KeyEvent.VK_Y && e.isControlDown -> {
+            e.keyCode if e.isControlDown -> {
                 try {
                     undoManager.redo()
                 } catch (cue: CannotRedoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
-
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && !e.isShiftDown -> searchDialog()
-
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown -> searchRegexDialog()
-
-            e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
-
-            e.keyCode == KeyEvent.VK_R && e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
+            e.keyCode if e.isControlDown && !e.isShiftDown -> searchDialog()
+            e.keyCode if e.isControlDown && e.isShiftDown -> searchRegexDialog()
+            e.keyCode if e.isControlDown && !e.isShiftDown -> searchAndReplace()
+            e.keyCode if e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
         }
     }
 
+    /** Unused; see [keyPressed]. */
     override fun keyReleased(e: KeyEvent) {}
 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun requestFocus(component: JComponent) {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
-            delay(250)
+        componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            delay(250.milliseconds)
             component.requestFocus()
             component.grabFocus()
         }
@@ -178,7 +186,6 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchDialog() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -191,7 +198,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 var i = 0
                 while (i < text.length) {
                     val end = i + searchFor.text.length
@@ -214,7 +221,6 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexDialog() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -227,7 +233,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 val regex = searchFor.text.toRegex()
                 var i = 0
                 while (i < text.length) {
@@ -271,7 +277,6 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexAndReplace() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -284,10 +289,19 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 text = text.regexReplace(searchFor.text.toRegex(), replaceWith.text)
                 textArea.isEnabled = true
             }
         }
+    }
+
+    /**
+     * Cancel this textarea's focus/search/replace coroutines when it is removed from the screen, so
+     * none of them run on a discarded component.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }

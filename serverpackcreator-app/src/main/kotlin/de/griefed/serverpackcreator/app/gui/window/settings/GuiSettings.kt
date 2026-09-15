@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -170,6 +170,7 @@ class GuiSettings(
         panel.add(manualEditReset, "cell 4 $y")
     }
 
+    /** Fills the widgets from the stored GUI settings. */
     override fun loadSettings() {
         fontSizeSetting.value = guiProps.fontSize
         startFocusSetting.isSelected = guiProps.startFocusEnabled
@@ -179,6 +180,7 @@ class GuiSettings(
         manualEditSetting.isSelected = guiProps.allowManualEditing
     }
 
+    /** Writes the widgets into the stored GUI settings. The owning panel re-loads afterwards, so the dirty-check reads the normalised values. */
     override fun saveSettings() {
         guiProps.fontSize = fontSizeSetting.value
         guiProps.startFocusEnabled = startFocusSetting.isSelected
@@ -192,9 +194,10 @@ class GuiSettings(
         guiProps.allowManualEditing = manualEditSetting.isSelected
     }
 
+    /** Problems with the GUI settings as currently entered, as messages to show. Empty means valid. */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
-        if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
+        if (fontSizeSetting.value !in 8..76) {
             fontSizeIcon.error(Translations.settings_gui_font_error.toString())
             errors.add(Translations.settings_gui_font_error.toString())
         } else {
@@ -208,6 +211,7 @@ class GuiSettings(
         return errors.toList()
     }
 
+    /** Whether the GUI widgets differ from what is stored, compared against the normalised getters. */
     override fun hasUnsavedChanges(): Boolean {
         val changes = fontSizeSetting.value != guiProps.fontSize ||
                 startFocusSetting.isSelected != guiProps.startFocusEnabled ||

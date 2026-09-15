@@ -21,7 +21,10 @@ package de.griefed.example.kotlin.gui.tab
 
 import Example
 import java.awt.*
-import java.awt.event.*
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
@@ -142,22 +145,11 @@ object Tetris {
  * @version 1.2
  */
 internal class SquareBoard(
+    /** The board width in squares, i.e. the number of horizontal squares that fit on the board. */
     val boardWidth: Int,
+    /** The board height in squares, i.e. the number of vertical squares that fit on the board. */
     val boardHeight: Int
 ) {
-    /**
-     * Returns the board width (in squares). This method returns, i.e, the number of horizontal
-     * squares that fit on the board.
-     *
-     * @return the board width in squares
-     */
-    /**
-     * Returns the board height (in squares). This method returns, i.e, the number of vertical squares
-     * that fit on the board.
-     *
-     * @return the board height in squares
-     */
-
     /**
      * The graphical sqare board component. This graphical representation is created upon the first
      * call to getComponent().
@@ -176,13 +168,8 @@ internal class SquareBoard(
      */
     private var message: String? = null
     /**
-     * Returns the number of lines removed since the last clear().
-     *
-     * @return the number of lines removed since the last clear call
-     */
-    /**
-     * The number of lines removed. This counter is increased each time a line is removed from the
-     * board.
+     * The number of lines removed since the last [clear]. Increased each time a line is removed
+     * from the board.
      */
     var removedLines = 0
         private set
@@ -202,7 +189,7 @@ internal class SquareBoard(
      * @return true if the square is emtpy, or false otherwise
      */
     fun isSquareEmpty(x: Int, y: Int): Boolean {
-        return if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
+        return if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
             x in 0 until boardWidth && y < 0
         } else {
             matrix[y][x] == null
@@ -217,7 +204,7 @@ internal class SquareBoard(
      * @return true if the whole line is empty, or false otherwise
      */
     fun isLineEmpty(y: Int): Boolean {
-        if (y < 0 || y >= boardHeight) {
+        if (y !in 0 until boardHeight) {
             return false
         }
         for (x in 0 until boardWidth) {
@@ -236,7 +223,7 @@ internal class SquareBoard(
      * @return true if the whole line is full, or false otherwise
      */
     private fun isLineFull(y: Int): Boolean {
-        if (y < 0 || y >= boardHeight) {
+        if (y !in 0 until boardHeight) {
             return true
         }
         for (x in 0 until boardWidth) {
@@ -281,7 +268,7 @@ internal class SquareBoard(
      * @return the square color, or null for none
      */
     fun getSquareColor(x: Int, y: Int): Color? {
-        return if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
+        return if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
             null
         } else {
             matrix[y][x]
@@ -298,7 +285,7 @@ internal class SquareBoard(
      * @param color the new square color, or null for empty
      */
     fun setSquareColor(x: Int, y: Int, color: Color?) {
-        if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
+        if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
             return
         }
         matrix[y][x] = color
@@ -366,7 +353,7 @@ internal class SquareBoard(
      */
     private fun removeLine(y: Int) {
         var yAxis = y
-        if (yAxis < 0 || yAxis >= boardHeight) {
+        if (yAxis !in 0 until boardHeight) {
             return
         }
         while (yAxis > 0) {
@@ -744,6 +731,8 @@ internal class SquareBoard(
  * game is started through user interaction with the graphical game component provided by this
  * class.
  *
+ * @param width  the width of the square board (in positions); defaults to 10
+ * @param height the height of the square board (in positions); defaults to 20
  * @author Per Cederberg, per@percederberg.net
  * @version 1.2
  */
@@ -784,12 +773,7 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
         Figure(Figure.TRIANGLE_FIGURE)
     )
     /**
-     * Gets the current level.
-     *
-     * @return the current level.
-     */
-    /**
-     * The game level. The level will be increased for every 20 lines removed from the square board.
+     * The current game level. Increased for every 20 lines removed from the square board.
      */
     var level = 1
         private set
@@ -838,13 +822,9 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     private var state = 0
 
     /**
-     * Creates a new Tetris game. The square board will be given the specified size.
-     *
-     * @param width  the width of the square board (in positions)
-     * @param height the height of the square board (in positions)
-     */
-    /**
-     * Creates a new Tetris game. The square board will be given the default size of 10x20.
+     * Bring the new game up in its get-ready state: start the game thread, then make the board
+     * component focusable and route its key presses into [handleKeyEvent] so the game is playable
+     * as soon as it is shown.
      */
     init {
         thread = GameThread()

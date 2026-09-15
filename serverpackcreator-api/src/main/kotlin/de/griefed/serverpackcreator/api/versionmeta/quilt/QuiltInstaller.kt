@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.quilt
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
@@ -28,6 +29,7 @@ import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
 import javax.xml.parsers.ParserConfigurationException
+import java.util.Collections
 
 /**
  * Information about the Quilt installer.
@@ -42,9 +44,16 @@ internal class QuiltInstaller(
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate =
-        "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar" // TODO Move URL to property
-    val installers: MutableList<String> = ArrayList(100)
+    val installerUrlTemplate = VersionMetaConfig.QUILT_INSTALLER_TEMPLATE
+    /**
+     * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
+     * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
+     * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
+     * window between the two.
+     */
+    @Volatile
+    var installers: List<String> = emptyList()
+        private set
     val installerUrlMeta = HashMap<String, URL>(100)
     var latestInstaller: String? = null
         private set
@@ -54,9 +63,9 @@ internal class QuiltInstaller(
         private set
     var releaseInstallerUrl: URL? = null
         private set
-    private val latest = "latest" // TODO Move tagName to property
-    private val release = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latest = VersionMetaConfig.TAG_LATEST
+    private val release = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update the Quilt installer versions by parsing the Fabric loader manifest.
@@ -66,6 +75,7 @@ internal class QuiltInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
+        val next_installers = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(manifest)
         val latestElements = document.getElementsByTagName(latest)
         val latestNode = latestElements.item(0)
@@ -81,28 +91,33 @@ internal class QuiltInstaller(
         try {
             latestInstallerUrl = URI(latestUrl).toURL()
         } catch (ignored: MalformedURLException) {
+            // The latest-installer URL couldn't be parsed -> latestInstallerUrl stays unset.
         }
         val releaseUrl = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
         try {
             releaseInstallerUrl = URI(releaseUrl).toURL()
         } catch (ignored: MalformedURLException) {
+            // The release-installer URL couldn't be parsed -> releaseInstallerUrl stays unset.
         }
-        installers.clear()
         val elements = document.getElementsByTagName(version)
         for (i in 0 until elements.length) {
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            installers.add(item.nodeValue)
+            next_installers.add(item.nodeValue)
         }
         installerUrlMeta.clear()
         for (version in installers) {
             try {
                 installerUrlMeta[version] = installerUrl(version)
             } catch (ignored: MalformedURLException) {
+                // A version whose installer URL can't be parsed is omitted from the URL map.
             }
         }
-    }
+            // Published in one assignment each, as unmodifiable views: a `List`-typed field still
+        // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
+        installers = Collections.unmodifiableList(next_installers)
+}
 
     /**
      * Acquire the URL for the given Quilt version.

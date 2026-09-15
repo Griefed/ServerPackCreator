@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import java.io.IOException
 import java.net.URI
 import java.util.*
@@ -32,8 +33,8 @@ import java.util.*
  * @author Griefed
  */
 internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
-    private val urlPrefix = "https://meta.fabricmc.net/v2/versions/loader/" // TODO Move URL to property
-    private val json = "/server/json" // TODO Move URL to property
+    private val urlPrefix = VersionMetaConfig.FABRIC_LOADER_DETAILS_URL_PREFIX
+    private val json = VersionMetaConfig.FABRIC_LOADER_DETAILS_JSON_SUFFIX
 
     /**
      * Get the details for a given Minecraft and Fabric version combination.

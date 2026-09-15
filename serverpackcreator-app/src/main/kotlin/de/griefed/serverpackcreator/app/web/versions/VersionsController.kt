@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -98,7 +98,7 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
      * @author Griefed
      */
     @GetMapping("/forge", produces = ["application/json"])
-    fun availableForgeVersions(): ResponseEntity<HashMap<String, List<String>>> {
+    fun availableForgeVersions(): ResponseEntity<Map<String, List<String>>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(versionMeta.forge.getForgeMeta())
@@ -111,7 +111,7 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
      * @author Griefed
      */
     @GetMapping("/neoforge", produces = ["application/json"])
-    fun availableNeoForgeVersions(): ResponseEntity<HashMap<String,List<String>>> {
+    fun availableNeoForgeVersions(): ResponseEntity<Map<String,List<String>>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(versionMeta.neoForge.getNeoForgeMeta())
@@ -127,7 +127,7 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     fun availableNeoForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
         val versions = versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion)
         return if (versions.isPresent) {
-            return ResponseEntity.ok()
+            ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
                 .body(versions.get())
         } else {

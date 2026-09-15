@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,14 @@
  */
 package de.griefed.serverpackcreator.api.utilities.common
 
+/**
+ * Which relation between two versions a caller is asking about, passed to
+ * [SemanticVersionComparator.compareSemantics]. It exists because "is this version acceptable?" has three
+ * useful answers and no single comparison covers them — an era boundary wants [EQUAL_OR_NEW], an update check
+ * wants [NEW].
+ *
+ * @author Griefed
+ */
 enum class Comparison {
     /**
      * Used to determine whether two given versions are the same.

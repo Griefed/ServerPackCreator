@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,9 +40,11 @@ import javax.xml.parsers.ParserConfigurationException
     ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Generates server packs without the shell, either from one named configuration or from every one in the config directory. */
 class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Invoked with no subcommand: generate from every configuration in the config directory. */
     override fun run() {
         runHeadless()
     }
@@ -54,6 +56,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "You will be asked to enter the path to the desired config after starting this command."
         ]
     )
+    /** Generate from one named configuration file, optionally into a chosen destination. */
     @Suppress("unused")
     fun withSpecificConfig(
         @CommandLine.Option(
@@ -89,6 +92,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "The config-directory is inside ServerPackCreators home-directory."
         ]
     )
+    /** Generate from every configuration file in the configured directory, one after another. */
     fun withAllInConfigDir() {
         val configs = apiWrapper.apiProperties.configsDirectory.listFiles()
         for (config in configs) {
@@ -110,10 +114,14 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
         } while (!File(path).isFile)
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
         return File(path)
     }
 
+    /** The shared body both subcommands end in: check the configuration, then generate if it passes. */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     fun runHeadless(
         config: File = apiWrapper.apiProperties.defaultConfig,

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
+/**
+ * GridFS storage, kept for installations that still hold their files in MongoDB. New files go to the filesystem;
+ * this exists so the old ones can still be read and migrated.
+ */
 class DatabaseStorageService(
     private val gridFsTemplate: GridFsTemplate,
     private val gridFsOperations: GridFsOperations
@@ -52,11 +56,12 @@ class DatabaseStorageService(
         }
     }
 
+    /** Store a file in GridFS, returning its object id. */
     fun store(file: File): ObjectId {
         val originalName = determineFilename(file.name)
         val metaData = BasicDBObject()
-        metaData.put("type", "zip")
-        metaData.put("title", originalName)
+        metaData["type"] = "zip"
+        metaData["title"] = originalName
         val objectId = gridFsTemplate.store(
             FileInputStream(file),
             originalName,
@@ -65,16 +70,14 @@ class DatabaseStorageService(
         return objectId
     }
 
+    /** Read a file back out of GridFS, as the metadata and the resource together. */
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
         val result = gridFsTemplate.findOne(query(id))
-        if (result != null) {
-            return Optional.of(
-                Pair(
-                    result,
-                    gridFsOperations.getResource(result)
-                )
+        return Optional.of(
+            Pair(
+                result,
+                gridFsOperations.getResource(result)
             )
-        }
-        return Optional.empty()
+        )
     }
 }

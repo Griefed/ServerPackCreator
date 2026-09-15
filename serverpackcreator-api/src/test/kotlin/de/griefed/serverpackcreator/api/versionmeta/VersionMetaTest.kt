@@ -11,12 +11,91 @@ import javax.xml.parsers.ParserConfigurationException
 
 class VersionMetaTest {
     private val versionMeta: VersionMeta =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
 
     @Test
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     fun meta() {
         Assertions.assertNotNull(versionMeta.update())
+    }
+
+    /**
+     * Characterization of the hardcoded manifest URLs and the installer-URL templates, pinned
+     * before they are centralized into [VersionMetaConfig] so the extraction is verifiably
+     * string-identical. Installer URLs are derived from a resolved version so the expectation stays
+     * version-agnostic.
+     */
+    @Test
+    fun manifestAndInstallerUrlsAreStable() {
+        Assertions.assertEquals(
+            "https://launchermeta.mojang.com/mc/game/version_manifest.json",
+            versionMeta.minecraftUrlManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json",
+            versionMeta.forgeUrlManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml",
+            versionMeta.oldNeoForgeUrlManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml",
+            versionMeta.newNeoForgeUrlManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml",
+            versionMeta.fabricUrlManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://meta.fabricmc.net/v2/versions/intermediary",
+            versionMeta.fabricUrlIntermediariesManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml",
+            versionMeta.fabricUrlInstallerManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml",
+            versionMeta.quiltUrlManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml",
+            versionMeta.quiltUrlInstallerManifest.toString()
+        )
+        Assertions.assertEquals(
+            "https://meta.legacyfabric.net/v2/versions/game",
+            versionMeta.legacyFabricUrlGame.toString()
+        )
+        Assertions.assertEquals(
+            "https://meta.legacyfabric.net/v2/versions/loader",
+            versionMeta.legacyFabricUrlLoader.toString()
+        )
+        Assertions.assertEquals(
+            "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml",
+            versionMeta.legacyfabricUrlManifest.toString()
+        )
+
+        // Interpolated installer-URL templates, pinned against a known/resolved version.
+        Assertions.assertEquals(
+            "https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.18.2-40.0.45/forge-1.18.2-40.0.45-installer.jar",
+            versionMeta.forge.getForgeInstance("1.18.2", "40.0.45").get().installerUrl.toString()
+        )
+        val fabricInstaller = versionMeta.fabric.installerVersions().first()
+        Assertions.assertEquals(
+            "https://maven.fabricmc.net/net/fabricmc/fabric-installer/$fabricInstaller/fabric-installer-$fabricInstaller.jar",
+            versionMeta.fabric.getInstallerUrl(fabricInstaller).get().toString()
+        )
+        val quiltInstaller = versionMeta.quilt.installerVersions().first()
+        Assertions.assertEquals(
+            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/$quiltInstaller/quilt-installer-$quiltInstaller.jar",
+            versionMeta.quilt.getInstallerUrl(quiltInstaller).get().toString()
+        )
+        val legacyInstaller = versionMeta.legacyFabric.installerVersions().first()
+        Assertions.assertEquals(
+            "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/$legacyInstaller/fabric-installer-$legacyInstaller.jar",
+            versionMeta.legacyFabric.getInstallerUrl(legacyInstaller).get().toString()
+        )
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,24 @@
  */
 package de.griefed.serverpackcreator.app.web.versions
 
+/**
+ * Everything the SPA needs to populate its version pickers, in one response.
+ * 
+ * Note the two shapes: Fabric-family loaders are a flat list because one loader build serves every Minecraft
+ * version, while Forge and NeoForge are keyed *by* Minecraft version because their builds are version-specific.
+ */
 @Suppress("unused")
 class VersionMetaResponse(
+    /** Minecraft versions SPC can generate for, newest first. */
     val minecraft: List<String>,
+    /** Fabric loader versions, which apply across Minecraft versions. */
     val fabric: List<String>,
+    /** LegacyFabric loader versions. */
     val legacyFabric: List<String>,
+    /** Quilt loader versions. */
     val quilt: List<String>,
-    val forge: HashMap<String, List<String>>,
-    val neoForge: HashMap<String,List<String>>
+    /** Minecraft version to the Forge builds available for it. */
+    val forge: Map<String, List<String>>,
+    /** Minecraft version to the NeoForge builds available for it. */
+    val neoForge: Map<String,List<String>>
 )

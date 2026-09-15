@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,9 @@ import picocli.shell.jline3.PicocliCommands.ClearScreen
     ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Re-runs first-time setup: create the home directory layout and lay down the shipped files. */
 class SetupCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+    /** Run the setup. */
     override fun run() {
         forceApiSetup()
     }

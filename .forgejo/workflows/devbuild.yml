@@ -1,0 +1,453 @@
+# The rolling dev build -- effectively the nightly. Ported from .github/workflows/devbuild.yml, which
+# Forgejo had been running as a fallback until .forgejo/workflows existed.
+#
+# The JAR, AppImage and install4j media jobs are unchanged from that file on purpose: they work, and this
+# port is about *where* the release lands, not how the artifacts are made.
+name: Continuous
+
+on:
+  push:
+    branches:
+      - develop
+  schedule:
+    # Nightly as well as on push, so a quiet day still refreshes the build instead of leaving a stale one
+    # on the download page.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (optional, defaults to branch/tag)'
+        required: false
+        type: string
+
+# Required, not tidy-up. The GitHub original had no guard either, but it updated the `continuous` release
+# in place (`allowUpdates`/`replacesArtifacts`), which overlapping runs survive untidily. This port
+# deletes-then-recreates so stale assets cannot linger -- right for one run, wrong for two: concurrent
+# runs can interleave delete and create, and there is a window where the release users are pointed at
+# does not exist. cancel-in-progress because only the newest develop commit is worth publishing.
+concurrency:
+  group: devbuild
+  cancel-in-progress: true
+
+jobs:
+  build-jar:
+    name: Build JAR
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - name: Determine version
+        id: version
+        # Untrusted-ish dispatch input is passed via env (never interpolated into the script) to
+        # avoid shell injection; github.* contexts below are controlled by the runner.
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_VERSION" ]; then
+            VERSION="$INPUT_VERSION"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [ "$REF_NAME" = "main" ]; then
+            VERSION="$(git describe --tags --always)"
+          else
+            VERSION="${REF_NAME}-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Building version: ${VERSION}"
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: |
+          ./gradlew clean build -Pversion=${{ steps.version.outputs.version }} \
+            --info --full-stacktrace --warning-mode all \
+            -x :serverpackcreator-api:test -x :serverpackcreator-app:test
+
+      - name: Upload JARs
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: |
+            serverpackcreator-api/build/libs/*.jar
+            serverpackcreator-app/build/libs/*.jar
+            serverpackcreator-plugin-example/build/libs/*.jar
+          retention-days: 1
+
+  build-appimage-x86_64:
+    name: Build AppImage (x86_64)
+    needs: build-jar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      - name: Cache JDK download
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: jdk-21-x86_64
+          key: jdk-21-x86_64
+
+      - name: Build AppImage for x86_64 (native)
+        run: |
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
+
+      - name: Verify AppImage
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage"
+          if [ ! -f "$APPIMAGE" ]; then
+            echo "❌ Error: AppImage not found: $APPIMAGE"
+            ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
+            exit 1
+          fi
+          echo "✅ AppImage created successfully:"
+          ls -lh "$APPIMAGE"
+
+      - name: Generate checksums
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage"
+          sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
+          echo "Checksum generated:"
+          cat "$APPIMAGE.sha256"
+
+      - name: Upload AppImage artifact
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        with:
+          name: appimage-x86_64
+          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload checksums
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        with:
+          name: appimage-x86_64-checksum
+          path: "*.sha256"
+          retention-days: 1
+
+
+  build-appimage-aarch64:
+    name: Build AppImage (aarch64)
+    needs: build-jar
+    # An amd64 runner, deliberately, for an aarch64 artifact: the AppImage is cross-packaged. Nothing
+    # aarch64 has to *run* here -- the JDK is downloaded and unpacked, the JAR arrives from build-jar,
+    # and appimagetool runs as the host's architecture while ARCH tells it which runtime to embed. That
+    # keeps this job off the `ubuntu-24.04-arm` label, which no registered runner offers ("No matching
+    # online runner with label"), and off QEMU. Supporting that label instead would have meant a
+    # `?platform=linux/arm64` label on the runner plus binfmt handlers on its host.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      - name: Cache JDK download
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: jdk-21-aarch64
+          key: jdk-21-aarch64
+
+      - name: Build AppImage for aarch64 (cross-packaged)
+        run: |
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh --arch aarch64 "${{ needs.build-jar.outputs.version }}"
+
+      - name: Verify AppImage
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage"
+          if [ ! -f "$APPIMAGE" ]; then
+            echo "❌ Error: AppImage not found: $APPIMAGE"
+            ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
+            exit 1
+          fi
+          echo "✅ AppImage created successfully:"
+          ls -lh "$APPIMAGE"
+
+      - name: Generate checksums
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage"
+          sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
+          echo "Checksum generated:"
+          cat "$APPIMAGE.sha256"
+
+      - name: Upload AppImage artifact
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        with:
+          name: appimage-aarch64
+          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload checksums
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        with:
+          name: appimage-aarch64-checksum
+          path: "*.sha256"
+          retention-days: 1
+
+  build-media:
+    name: Build Install4J Media
+    needs: build-jar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
+        with:
+          version: '13.1'
+          license: ${{ secrets.INSTALL4J_LICENSE }}
+
+      - name: Remove install4j script
+        run: rm install4j_linux-x64_*.sh
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      - name: Build Install4J Media
+        run: ./gradlew media --info --full-stacktrace
+
+      - name: Upload Media
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        with:
+          name: install4j-media
+          path: media/*
+          retention-days: 1
+
+  continuous:
+    name: "Continuous Pre-Release"
+    needs: [
+      build-jar,
+      build-appimage-x86_64,
+      build-appimage-aarch64,
+      build-media
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        with:
+          path: artifacts
+
+      - name: Collect files
+        run: |
+          mkdir continuous
+
+          echo "=== Collecting AppImages ==="
+          find artifacts/appimage-x86_64  -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 AppImages"
+          find artifacts/appimage-aarch64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No aarch64 AppImages"
+
+          echo ""
+          echo "=== Collecting Checksums ==="
+          find artifacts -name "*.sha256" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No checksums"
+
+          echo ""
+          echo "=== Collecting JARs ==="
+          find artifacts/gradle-jars -name "*.jar" ! -name "*-plain.jar" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No JARs"
+
+          echo ""
+          echo "=== Collecting Install4J Media ==="
+          cp artifacts/install4j-media/*.dmg continuous/ 2>/dev/null || echo "No DMG files"
+          cp artifacts/install4j-media/*.sh  continuous/ 2>/dev/null || echo "No SH files"
+          cp artifacts/install4j-media/*.exe continuous/ 2>/dev/null || echo "No EXE files"
+
+          echo ""
+          echo "=== Final Contents ==="
+          ls -lh continuous/
+
+      - name: Generate checksum
+        uses: https://github.com/jmgilman/actions-generate-checksum@238073f4c02f2810adb91c96bdd1e276a5ae9ed6 # v1
+        with:
+          patterns: |
+            continuous/*
+
+      - name: Collect checksum
+        run: cp checksum.txt continuous/
+
+      # Moves the rolling `continuous` tag on FORGEJO. It was `richardsimko/update-tag` with
+      # `secrets.GITHUB_TOKEN` -- a GitHub action moving a GitHub tag, which is the wrong forge now, and a
+      # bare reference that would not resolve against DEFAULT_ACTIONS_URL anyway.
+      #
+      # It matters more than it looks: the release below is created against tag `continuous`, and the
+      # source archives are fetched from /archive/continuous.zip. If the tag does not move, every dev build
+      # publishes fresh assets under a stale tag, with source archives of a different commit.
+      - name: Move the continuous tag
+        env:
+          FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FJ_TOKEN }}
+        run: |
+          set -eu
+          auth=$(printf '%s:%s' "$FORGEJO_ACTOR" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
+          git tag -f continuous "${{ github.sha }}"
+          git -c http.extraheader="Authorization: Basic ${auth}" \
+            push --force "https://git.griefed.de/Griefed/ServerPackCreator.git" refs/tags/continuous
+          echo "continuous now points at ${{ github.sha }}"
+
+      - name: Get build timestamp
+        id: build_time
+        run: echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+      # The rolling release now lives on FORGEJO. `ncipollo/release-action` talked to GitHub's API, which
+      # is the wrong direction under the new arrangement. Delete-then-recreate rather than update: that is
+      # the only way to be certain the previous build's assets are gone, which is what `removeArtifacts`
+      # and `replacesArtifacts` were doing before.
+      #
+      # The JSON payload is built by python from environment variables, not by shell interpolation -- the
+      # body contains backticks, emoji and newlines, and quoting that by hand in YAML is a trap.
+      - name: Refresh the Forgejo continuous release
+        id: forgejo_release
+        env:
+          TOKEN: ${{ secrets.FJ_TOKEN }}
+          API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
+          TIMESTAMP: ${{ steps.build_time.outputs.timestamp }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -eu
+          OLD=$(curl -s "$API/releases/tags/continuous" -H "Authorization: token $TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)
+          if [ -n "$OLD" ]; then
+            echo "Deleting previous Forgejo continuous release $OLD (the tag is kept)"
+            curl -sf -X DELETE "$API/releases/$OLD" -H "Authorization: token $TOKEN"
+          fi
+          python3 - > payload.json <<'PY'
+          import json, os
+          body = (
+              "## \U0001F504 Continuous Dev-Build\n\n"
+              f"**Built:** {os.environ['TIMESTAMP']}\n"
+              f"**Commit:** `{os.environ['COMMIT']}`\n\n---\n\n"
+              "This is an automated development build, updated every time changes are pushed to `develop`.\n\n"
+              "\u26A0\uFE0F **Warning:** Do not use unless you have been told to, or are curious about the "
+              "contents of the dev build.\n\n"
+              "\U0001F6AB **Do not link to this release.**\n"
+          )
+          print(json.dumps({"tag_name": "continuous", "target_commitish": "develop",
+                            "name": "continuous", "body": body,
+                            "draft": False, "prerelease": True}))
+          PY
+          ID=$(curl -sf -X POST "$API/releases" -H "Authorization: token $TOKEN" \
+                 -H 'Content-Type: application/json' -d @payload.json \
+               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          echo "release_id=$ID" >> "$GITHUB_OUTPUT"
+          for f in continuous/*; do
+            curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
+              -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
+            echo "Forgejo <- $(basename "$f")"
+          done
+
+      # Asked for explicitly: clear GitHub's stale continuous RELEASE but leave its TAG alone, so the
+      # mirror below recreates it from Forgejo rather than fighting a half-updated entry.
+      - name: Delete the GitHub continuous release, keeping the tag
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          ID=$(curl -s "https://api.github.com/repos/Griefed/ServerPackCreator/releases/tags/continuous" \
+                 -H "Authorization: Bearer $GH_TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)
+          if [ -n "$ID" ]; then
+            curl -sf -X DELETE "https://api.github.com/repos/Griefed/ServerPackCreator/releases/$ID" \
+              -H "Authorization: Bearer $GH_TOKEN"
+            echo "Deleted GitHub release $ID; the 'continuous' tag is untouched"
+          else
+            echo "No GitHub continuous release to delete"
+          fi
+
+      - name: Mirror the continuous release to GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          ID=$(curl -sf -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
+                 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+                 -d '{"tag_name":"continuous","name":"continuous","prerelease":true,"body":"Mirrored from https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/continuous"}' \
+               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          for f in continuous/*; do
+            curl -sf -X POST \
+              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Content-Type: application/octet-stream' \
+              --data-binary "@$f" > /dev/null
+            echo "GitHub <- $(basename "$f")"
+          done
+
+      - name: Get source archives
+        run: |
+          wget -O continuous/source.zip    https://git.griefed.de/Griefed/ServerPackCreator/archive/continuous.zip
+          wget -O continuous/source.tar.gz https://git.griefed.de/Griefed/ServerPackCreator/archive/continuous.tar.gz
+
+      - name: Cleanup continuous on server
+        uses: https://github.com/tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1
+        with:
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          username: ${{ secrets.SPCUPLOAD_USERNAME }}
+          privateKey: ${{ secrets.SPCUPLOAD_KEY }}
+          command: 'rm -rf ~/spc/continuous'
+
+      - name: Upload to server
+        uses: https://github.com/nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
+        with:
+          src: ./continuous
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          remote: "${{ secrets.SPCUPLOAD_TARGET }}"
+          user: ${{ secrets.SPCUPLOAD_USERNAME }}
+          key: ${{ secrets.SPCUPLOAD_KEY }}

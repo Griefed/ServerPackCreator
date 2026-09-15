@@ -1,0 +1,41 @@
+# Test-only image for the script-template matrix integration test (ScriptTemplateMatrixIT).
+#
+# Extends the lean grinder runtime (bash + JDKs) with the extra shells a generated pack also ships
+# start-scripts for: fish (the new .fish templates) and PowerShell (.ps1). Kept a SEPARATE derived
+# image so the production grind image stays bash-only and lean — the grinder itself never uses this.
+#
+# Build (needs spc-grinder-runtime:latest first):
+#   docker build -t spc-grinder-templates:latest -f serverpackcreator-grinder/docker/Dockerfile.templates serverpackcreator-grinder/docker
+
+FROM spc-grinder-runtime:latest
+
+USER root
+
+# fish (the new .fish templates) + PowerShell's runtime deps (libicu / libssl).
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends fish libicu72 libssl3 less; \
+    rm -rf /var/lib/apt/lists/*
+
+# PowerShell (pwsh) for the .ps1 templates. Installed from the GitHub release tarball rather than the
+# Microsoft apt repo, which has no arm64 pwsh for Debian — the tarball ships linux-x64 AND linux-arm64,
+# so this builds on amd64 and Apple-Silicon hosts alike. Note: running .ps1 on Linux pwsh validates the
+# script's logic/Java-path/install flow, not Windows-cmdlet fidelity.
+ARG PWSH_VERSION=7.4.6
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+        amd64) pkg="linux-x64" ;; \
+        arm64) pkg="linux-arm64" ;; \
+        *) echo "unsupported arch: $arch" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL -o /tmp/pwsh.tar.gz \
+        "https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell-${PWSH_VERSION}-${pkg}.tar.gz"; \
+    mkdir -p /opt/microsoft/powershell/7; \
+    tar zxf /tmp/pwsh.tar.gz -C /opt/microsoft/powershell/7; \
+    chmod +x /opt/microsoft/powershell/7/pwsh; \
+    ln -s /opt/microsoft/powershell/7/pwsh /usr/local/bin/pwsh; \
+    rm -f /tmp/pwsh.tar.gz
+
+USER 1000:1000
+WORKDIR /srv/pack
