@@ -5,6 +5,21 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
+// `dokkaSourceSets.includes` below names `module.md` as a FILE, which Dokka opens unconditionally -- so a
+// module applying this plugin without one cannot run any Dokka task at all. Nothing in the normal loop
+// notices: only `-api` has `build { finalizedBy(dokkaGeneratePublicationJavadoc) }`, so `./gradlew build`
+// exercises no other module's Dokka. `serverpackcreator-plugin-grinder` therefore shipped without a
+// module.md until the release pipeline's `Publish Maven` job ran `dokkaJavadocJar` over every project and
+// died on `.../serverpackcreator-plugin-grinder/module.md (No such file or directory)` (Forgejo run 472,
+// tag 9.0.0-alpha.8). Asserting it at configuration time turns that into a failure on the next `./gradlew`
+// anybody runs, in the module that caused it, instead of one that only a release reaches.
+require(projectDir.resolve("module.md").exists()) {
+    "${project.path} applies serverpackcreator.dokka-conventions but has no module.md. Dokka includes " +
+        "${projectDir.resolve("module.md")} in every source set, so every Dokka task in this module " +
+        "would fail. Add the file -- the other modules' module.md files show the expected shape " +
+        "(`# Module <name>` followed by one `# Package <fqn>` section per package)."
+}
+
 
 dokka {
     moduleName = "ServerPackCreator"
@@ -64,6 +79,16 @@ listOf(tasks.dokkaGeneratePublicationJavadoc, tasks.dokkaGeneratePublicationHtml
 tasks.register<Jar>("dokkaJavadocJar") {
     dependsOn(tasks.dokkaGeneratePublicationJavadoc)
     archiveClassifier.set("javadoc")
+    // The two publications both write an `index.html`, so the jar has a name collision whenever BOTH
+    // output directories are populated -- and only then, which is why it has never failed in CI: the
+    // task depends on the Javadoc publication alone, and `build/dokka` is empty in a fresh checkout.
+    // Locally it is not: `:serverpackcreator-api:dokkaGenerateHtml` (which the release's `assets` job
+    // runs, in a different job on a different runner) or any earlier `dokkaGeneratePublicationHtml`
+    // leaves it populated, after which this task dies with "Entry index.html is a duplicate but no
+    // duplicate handling strategy has been set". EXCLUDE rather than INCLUDE: the Javadoc tree is added
+    // first, so its `index.html` wins and the jar keeps the entry point a `-javadoc.jar` is expected to
+    // have, instead of carrying two entries under one name.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
     from(dokka.dokkaPublications.html.flatMap { it.outputDirectory })
 }

@@ -179,4 +179,38 @@ internal class VersionConstraintTest {
         Assertions.assertTrue(VersionConstraint.satisfies(null, ">=1.0.0"))
         Assertions.assertTrue(VersionConstraint.satisfies("", ">=1.0.0"))
     }
+
+    /**
+     * **A Forge-style qualifier component is a version, not prose.** `0.5.1.e` and `0.5.1.f` are how Create
+     * actually publishes, and a component that is not an integer used to make the whole version unreadable —
+     * which *accepts*, by the rule above. Both sides of the comparison then accepted, the constraint
+     * narrowed nothing, and the newest build won.
+     *
+     * Measured on the public grinder 2026-09-13: `createaddition` 1.2.3 declares `create [0.5.1.e,0.5.2)`
+     * and was staged `create-1.20.1-6.0.8.jar` — five major versions above its own upper bound — after which
+     * NeoForge refused the pack and the candidate wore the INCONCLUSIVE.
+     */
+    @Test
+    fun aQualifierComponentIsStillAVersion() {
+        assertSatisfies("0.5.1.f", "[0.5.1.e,0.5.2)")
+        assertSatisfies("0.5.1.e", "[0.5.1.e,0.5.2)")
+        assertViolates("6.0.8", "[0.5.1.e,0.5.2)")
+        // The same shape with the qualifier glued to the number, which is how CobblemonTrainers spells it.
+        assertViolates("0.9.4c", "[1.1.11,)")
+        assertSatisfies("1.1.11", "[1.1.11,)")
+    }
+
+    /**
+     * **The prose guard stays exactly as wide as it was.** A version whose *leading* component is not a
+     * number is a decorated CurseForge `displayName`, not a version — reading it would compare `Balm 26.2`
+     * as `0.2` and refuse almost every range. Only a qualifier in a non-leading position is now readable,
+     * so this direction is unchanged.
+     */
+    @Test
+    fun aLeadingNonNumericComponentIsStillProse() {
+        assertSatisfies("Balm 26.2.0.7", ">=99.0.0")
+        assertSatisfies("Fabric 0.16.9", ">=99.0.0")
+        // `mc1.20.1-6.0.8` is NOT prose — it is a Minecraft version glued to a real one. That belongs to
+        // `VersionOfFile`, which strips it before this ever sees it, not to the prose guard.
+    }
 }

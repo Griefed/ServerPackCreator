@@ -90,6 +90,7 @@ enum class ReleaseChannel {
     /** Earlier than beta, and the last resort — `faster-random` publishes one and no Forge release at all. */
     ALPHA;
 
+    /** Parsing of the platform's own wording into this enum; see [fromString] for the unrecognised case. */
     companion object {
         /**
          * The channel [value] names, defaulting to [RELEASE] for anything unrecognised, absent or `null`.

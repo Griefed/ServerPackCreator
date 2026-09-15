@@ -92,9 +92,10 @@ internal class BootDecisionTest {
     }
 
     /**
-     * **The set is deliberately tiny, and this test is the whole point of the type.** Only two rungs may
-     * publish a clientside entry: the client-only-class marker, which no environment failure can fabricate,
-     * and an operator rule — because a rule reaching CRASHED stated CRASHED deliberately (an undecided rule
+     * **The set is deliberately tiny, and this test is the whole point of the type.** A rung belongs here
+     * only when a broken harness cannot fabricate it: the client-only-class marker, a dedicated server
+     * reaching for LWJGL, FML refusing an invalid dist, the loader refusing a client-only dependency — and
+     * an operator rule, because a rule reaching CRASHED stated CRASHED deliberately (an undecided rule
      * resolves to the ladder or to INCONCLUSIVE, never to CRASHED).
      */
     @Test
@@ -108,6 +109,11 @@ internal class BootDecisionTest {
                 // class: neither can be fabricated by a broken harness, which is the bar for this set.
                 BootDecision.LWJGL_ON_A_DEDICATED_SERVER,
                 BootDecision.FML_INVALID_DIST,
+                // Added 2026-09-13. Fabric refusing a MANDATORY dependency as "disabled for this
+                // environment (client/server only)" is the loader's own words about a jar it read, and a
+                // mod that cannot load without something the server will never have cannot run on a
+                // server. `voxy` and `cull-less-leaves` were both published INCONCLUSIVE on it.
+                BootDecision.CLIENT_ONLY_DEPENDENCY,
                 BootDecision.OPERATOR_RULE
             ),
             BootDecision.entries.filter { it.decisive }.toSet(),

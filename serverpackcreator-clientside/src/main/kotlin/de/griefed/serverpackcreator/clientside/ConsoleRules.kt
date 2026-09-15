@@ -95,6 +95,7 @@ data class ConsoleRuleSet(
      */
     val undecidedVerdict: BootResult? = null
 ) {
+    /** The neutral rule set, for callers that classify without an operator's file. */
     companion object {
         /** No rules and no errors: exactly the behaviour this engine had before rules existed. */
         val EMPTY = ConsoleRuleSet(emptyList(), emptyList(), "none")

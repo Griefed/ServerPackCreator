@@ -49,6 +49,13 @@
     "source": "CONSOLE"
   },
   {
+    "id": "client-only-dependency",
+    "pattern": "which is disabled for this environment \\(client/server only\\)",
+    "verdict": "CONFIRMED",
+    "note": "The loader itself refusing a MANDATORY dependency it will not load on a server. A mod that cannot load without something the server will never have cannot run on a server either. Must sit ABOVE dependency-failure: Fabric prints 'Incompatible mods found' on the line before this one, so the excuse matches first and the finding is discarded -- which is how Modrinth/voxy and Modrinth/cull-less-leaves were published INCONCLUSIVE on 2026-09-13. Fabric's wording is generic ('client/server only'), and it is a server that is booting, so a disabled dependency here is the client-only half.",
+    "source": "CONSOLE"
+  },
+  {
     "id": "dependency-failure",
     "pattern": "(Missing or unsupported mandatory dependencies|Unmet dependency listing|Incompatible mods found|requires .{1,80} or above|requires any version of|requires version .{1,80} of |ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
     "verdict": "INCONCLUSIVE",

@@ -147,9 +147,37 @@ internal class DefaultBootRulesTest {
             .filter { it.source == RuleSource.CONSOLE && it.verdict == Verdict.CONFIRMED }
 
         Assertions.assertEquals(
-            listOf("client-only-class", "lwjgl-on-a-dedicated-server", "fml-invalid-dist"),
+            // `client-only-dependency` joined on 2026-09-13. It is the same bar as the other three: the
+            // loader read the jar and refused a MANDATORY dependency as one it will not load on a server,
+            // which a broken harness cannot fabricate. Its position matters as much as its presence —
+            // `theClientOnlyDependencyRungOutranksTheExcuseOnTheLineAbove` is what pins that.
+            listOf(
+                "client-only-class", "lwjgl-on-a-dedicated-server", "fml-invalid-dist",
+                "client-only-dependency"
+            ),
             confirming.map { it.id },
             "only unfakeable client-only evidence may confirm — every other group means no fair run"
+        )
+    }
+
+    /**
+     * **Order is precedence, and this rung's whole value is where it sits.** Fabric prints `Incompatible
+     * mods found` immediately before the line naming the client-only dependency, so `dependency-failure`
+     * matches the same console — below this one. Move it and the finding silently becomes an excuse again,
+     * which is exactly the state `voxy` and `cull-less-leaves` were published in.
+     */
+    @Test
+    fun theClientOnlyDependencyRungOutranksTheExcuseOnTheLineAbove() {
+        val console = listOf(
+            "[main/ERROR]: Incompatible mods found!",
+            " - Mod 'Voxy' (voxy) 0.2.16-beta requires version 0.8.4 of sodium, which is disabled for " +
+                "this environment (client/server only)!"
+        )
+
+        Assertions.assertEquals(
+            "client-only-dependency",
+            DefaultBootRules.bundled().firstMatch(console)?.rule?.id,
+            "the finding must outrank the excuse printed above it"
         )
     }
 

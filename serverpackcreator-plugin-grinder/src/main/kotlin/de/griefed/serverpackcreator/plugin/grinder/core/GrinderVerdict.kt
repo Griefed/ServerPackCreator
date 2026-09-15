@@ -92,6 +92,7 @@ data class GrinderVerdict(
      */
     val exclusionEntry: String? get() = suggestedEntry?.trim()?.ifEmpty { null }
 
+    /** The verdict names this plugin treats specially, as the daemon spells them. */
     companion object {
         /** The verdict name that earns a row a place in the Confirmed pane. */
         const val CONFIRMED = "CONFIRMED"

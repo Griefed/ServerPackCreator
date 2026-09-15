@@ -29,7 +29,7 @@ import java.time.Duration
  *
  * [literalDefault] is `null` for a knob whose default is *computed* — a path under the home, say — because
  * there is no fixed string for the README to quote. Everything else must appear in the README's table with
- * exactly this value, which [de.griefed.serverpackcreator.grinder.ReadmeConfigurationTest] now checks by
+ * exactly this value, which `ReadmeConfigurationTest` now checks by
  * reading this list rather than by regexing Kotlin.
  *
  * @author Griefed

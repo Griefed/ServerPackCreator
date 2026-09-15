@@ -235,7 +235,13 @@ jobs:
           V="${{ needs.prepare.outputs.version }}"
           COMMON="-Pversion=$V"
           SKIP="-x :serverpackcreator-api:test -x :serverpackcreator-app:test"
-          ./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
+          # `dokkaJavadocJar` WITHOUT a project path runs in all seven projects, so the docs of six
+          # modules that are never published gated the one publish that matters -- and on 9.0.0-alpha.8
+          # that is exactly what happened: `serverpackcreator-plugin-grinder` had no `module.md`, its
+          # Dokka task died, and the Maven publish never ran (run 472). Only `-api` is published, and
+          # its own `signMavenJavaPublication` already `dependsOn(dokkaJavadocJar)`, so the path here is
+          # explicit rather than load-bearing -- but it keeps an unpublished module out of the release.
+          ./gradlew :serverpackcreator-api:dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository    $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitHubPackagesRepository $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitLabRepository        $COMMON $SKIP --info --stacktrace

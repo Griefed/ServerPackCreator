@@ -1350,7 +1350,14 @@ class BootVerifier(
         //
         // Nested next, so a top-level jar of the same id wins: that is the copy staging deliberately
         // chose and the one a demotion would act on. Nested entries can therefore only fill a gap.
-        val provided = loaderProvides(loader, loaderVersion, minecraftVersion)
+        // Seeded with what a Forge-family loader provides before the install is read, because Forge and
+        // NeoForge publish no `provides` block for `LoaderProvidedIds` to find -- so a demand on `forge`
+        // named something absent and was skipped, and `Iceberg-1.20.1-forge-1.1.25.jar` (`forge [47.2,)`)
+        // sailed into a NeoForge 47.1.106 pack that could never satisfy it. The real reading wins on a
+        // collision: it comes from the installed jar, this is derived from the build number alone.
+        val provided =
+            JarSelfDeclaration.platformProvides(loader, loaderVersion, minecraftVersion) +
+                loaderProvides(loader, loaderVersion, minecraftVersion)
         val stagedVersions = provided + nestedVersions(stagedJars) + scanned.flatMap { mod ->
             val version = publishedVersionOf[mod.file.name] ?: return@flatMap emptyList()
             // A dependency names an id, and one jar answers to several: its own, plus everything it
@@ -2210,7 +2217,7 @@ internal sealed interface ManifestDependencyPlan {
  * **The refusal used to name only the mod.** Five distinct failures reached `unsatisfied` and three of them
  * printed the bare slug, so `Required dependency unavailable … balm` meant *"the project publishes nothing
  * usable"*, *"the download died"* and *"we dropped every build ourselves while backtracking"* alike. That is
- * the same standard [BootDecision.decidedBy] enforces on a boot verdict — a verdict that cannot name its own
+ * the same standard [BootVerifier.BootOutcome.decidedBy] enforces on a boot verdict — a verdict that cannot name its own
  * evidence cannot be audited — reaching the one refusal that publishes `ERROR` without ever booting.
  *
  * It travels **beside** the name rather than inside it, because `unsatisfied` is keyed by name so that one
@@ -2278,7 +2285,7 @@ internal enum class UnmetReason {
      * result straight into a string. Neither can reach that value today, so both would have printed the
      * literal `null` only after some later edit, with nothing to warn them. Whether a reason is worth
      * *appending to a refusal* is a rendering decision, and it now lives in the renderer
-     * ([refuseForMissingDependencies]) rather than in a nullable return.
+     * (`refuseForMissingDependencies`) rather than in a nullable return.
      *
      * @param platformName Where to look the project up, which is only worth saying for an opt-out.
      */

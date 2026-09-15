@@ -406,8 +406,9 @@ object BootCandidateSelector {
         // returning null where this used to return a file would turn a bootable candidate into a refusal,
         // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
         // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
-        val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
-        return preferenceLadder(files, satisfying, minecraftVersion).firstNotNullOfOrNull { (candidates, version) ->
+        val ordered = plainBuildsFirst(files)
+        val satisfying = ordered.filter { VersionConstraint.satisfies(VersionOfFile.of(it), versionConstraint) }
+        return preferenceLadder(ordered, satisfying, minecraftVersion).firstNotNullOfOrNull { (candidates, version) ->
             // Cross-loading is asked about the version the pack BOOTS at, never the one the file carries:
             // NeoForge runs Forge builds on Minecraft 1.20.1 and on no other version, so re-running the
             // loader ladder at a neighbour would make a Forge 1.20.1 file a dependency for a NeoForge
@@ -415,6 +416,35 @@ object BootCandidateSelector {
             // against.
             pickFrom(candidates, loader, version, compatibleAt = minecraftVersion)
         }
+    }
+
+    /**
+     * [files] with every **build variant** moved behind the plain build of the same version.
+     *
+     * A variant is a file whose version is another file's version plus a trailing separator and a segment
+     * carrying **no digit** — `0.10.0-dev.23.nomixin` against `0.10.0-dev.23`. That shape is an author
+     * publishing two builds of one version, and the plain one is the default; the variant routinely cannot
+     * boot alone, which `nomixin` literally means (it declares the Mixin tweaker and carries no Mixin).
+     * Modrinth returns newest-by-date first, so without this the variant simply wins.
+     *
+     * **The no-digit rule is what keeps this off build metadata.** `1.6.1+1.21.1` also hangs a segment off
+     * `1.6.1`, and Fabric API publishes that shape by the thousand — demoting it would invert the
+     * catalogue. A stable partition, so every other ordering the platform expressed survives, and a
+     * preference rather than a filter: a variant with no plain build beside it is still picked.
+     */
+    private fun plainBuildsFirst(files: List<ModFile>): List<ModFile> {
+        val versions = files.mapNotNull { it.version }.toSet()
+        val (variants, plain) = files.partition { file -> versions.any { isVariantOf(file.version, it) } }
+        return plain + variants
+    }
+
+    /** Whether [version] is [other] with a digitless segment hung off it — see [plainBuildsFirst]. */
+    private fun isVariantOf(version: String?, other: String): Boolean {
+        if (version == null || version == other || !version.startsWith(other)) {
+            return false
+        }
+        val extra = version.drop(other.length)
+        return extra.first() in ".-_+" && extra.drop(1).none { it.isDigit() } && extra.length > 1
     }
 
     /**

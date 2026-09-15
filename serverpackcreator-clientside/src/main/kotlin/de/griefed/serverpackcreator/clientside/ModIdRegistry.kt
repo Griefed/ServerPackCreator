@@ -28,19 +28,6 @@ data class PlatformRef(
 )
 
 /**
- * Bridges the two vocabularies a dependency is spelled in: a jar manifest names a **mod id** (`fabric`),
- * while a platform wants its own **project ref** — a Modrinth slug (`fabric-api`) or a CurseForge numeric
- * id (`306612`).
- *
- * **Deliberately tiny, and it must stay that way.** The platform-declared dependency path already resolves
- * everything the platform itself knows about; this exists only for the ids that path never sees, because
- * the author declared them in the jar and nowhere else. A large hand-written table of guesses would be
- * un-pinned data that goes stale in silence — exactly the failure class this repository has paid for
- * before. Grow it only for an id that has actually been observed going unresolved.
- *
- * @author Griefed
- */
-/**
  * How a manifest mod id was turned into a platform ref, which is what decides whether failing to honour it
  * may refuse a boot.
  *
@@ -74,6 +61,19 @@ sealed interface ModIdMapping {
     }
 }
 
+/**
+ * Bridges the two vocabularies a dependency is spelled in: a jar manifest names a **mod id** (`fabric`),
+ * while a platform wants its own **project ref** — a Modrinth slug (`fabric-api`) or a CurseForge numeric
+ * id (`306612`).
+ *
+ * **Deliberately tiny, and it must stay that way.** The platform-declared dependency path already resolves
+ * everything the platform itself knows about; this exists only for the ids that path never sees, because
+ * the author declared them in the jar and nowhere else. A large hand-written table of guesses would be
+ * un-pinned data that goes stale in silence — exactly the failure class this repository has paid for
+ * before. Grow it only for an id that has actually been observed going unresolved.
+ *
+ * @author Griefed
+ */
 object KnownModIds {
 
     /** Modrinth's project name, as the platform classes report it. */
@@ -125,7 +125,25 @@ object KnownModIds {
         "refinedstorage" to PlatformRef("refined-storage", "243076"),
         "kotlinforforge" to PlatformRef("kotlin-for-forge", "351264"),
         "rhino" to PlatformRef("rhino", "416294"),
-        "wover" to PlatformRef("worldweaver", "1037172")
+        "wover" to PlatformRef("worldweaver", "1037172"),
+        // Three more ids observed going unresolved on 2026-09-13, each verified against the live
+        // CurseForge API by the VERSIONS in its published file names rather than by its id alone.
+        //
+        // `botanytrees` needed `botanypots`, which is `botany-pots` on both platforms and 404 as the bare
+        // id: `botanypots-neoforge-1.21.1-21.1.44.jar` is what its `[21.1.34,21.2)` names.
+        // `better-questing-standard-expansion` needed `betterquesting`, which is `better-questing` on
+        // CurseForge and absent from Modrinth: `BetterQuesting-Forge-1.20.1-4.0.71.jar` answers its `[4.0,)`.
+        //
+        // **`sewingkit` is why this registry carries numeric ids at all.** TWO projects answer to it, and
+        // the one whose slug matches the mod id exactly is the wrong one: `310830` is published as
+        // `sewingkit` and stopped at `SewingKit-1.0.2.jar` for Minecraft 1.14.2, while `411896` is
+        // `sewing-kit` and its 2.x line -- `SewingKit-26.1.2-2.8.1.jar` -- is what `toolbelt`'s `[2.0.0,)`
+        // means. The slug guess would have picked the dead project by name. Modrinth carries neither.
+        // Note this resolves `sewingkit`; it does not make `tool-belt` bootable on 1.20, where 411896's
+        // newest build is `1.8.1` and nothing upstream satisfies the range.
+        "botanypots" to PlatformRef("botany-pots", "353928"),
+        "betterquesting" to PlatformRef(null, "238856"),
+        "sewingkit" to PlatformRef(null, "411896")
     )
 
     /**
@@ -291,6 +309,14 @@ object KnownModIds {
         else -> null
     }
 
+    /**
+     * What [platform] should be asked for, given the manifest id [modId], and how much that answer is worth.
+     *
+     * Tries the alias table first, then the Fabric-API family shape, and falls back to the id itself as a
+     * slug. The three outcomes are [ModIdMapping.Alias] (known, may refuse a boot), [ModIdMapping.Guess]
+     * (optimistic, never refuses) and [ModIdMapping.None] — which is why the caller does not have to decide
+     * how much to trust what it gets back.
+     */
     fun mappingFor(modId: String, platform: String): ModIdMapping {
         val id = modId.trim().lowercase()
         if (id.isEmpty()) {

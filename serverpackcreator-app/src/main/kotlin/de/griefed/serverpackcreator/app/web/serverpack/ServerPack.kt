@@ -39,7 +39,7 @@ class ServerPack {
     @MongoId(FieldType.STRING)
     var id: String? = null
         private set
-    /** Which [ModPack] this was generated from. */
+    /** Which [ModPack][de.griefed.serverpackcreator.app.web.modpack.ModPack] this was generated from. */
     var modpackId: String = ""
     /** Archive size in bytes. */
     var size: Int = 0

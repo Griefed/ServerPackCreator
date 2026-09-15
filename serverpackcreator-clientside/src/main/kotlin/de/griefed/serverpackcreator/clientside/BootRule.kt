@@ -192,6 +192,7 @@ data class BootRuleSet(
             .filter { it.source == source }
             .firstNotNullOfOrNull { rule -> rule.firstMatch(lines)?.let { BootRuleMatch(rule, it) } }
 
+    /** The two ways a rule set comes into being: the empty one, and the JSON parse. */
     companion object {
         /** Nothing matches; used where a caller deliberately classifies without rules. */
         val EMPTY = BootRuleSet(emptyList(), emptyList(), "none")

@@ -83,6 +83,7 @@ data class MinecraftLinePolicy(
         return newestFirst.filter { it in kept }
     }
 
+    /** The shipped defaults, each measured rather than chosen — every one costs boots per project. */
     companion object {
         /**
          * Two: the current release line and the one before it, which is where packs actually live while a

@@ -53,11 +53,23 @@ class GrinderPreGenExtension : PreGenExtension {
 
     private val pluginsLog = LogManager.getLogger("AddonsLogger")
 
+    /** This extension's name as SPC lists it — one of the two this plugin provides, so it names the
+     *  job rather than the plugin. */
     override val name = "Grinder clientside-mod exclusions"
+
+    /** One line explaining the extension wherever SPC lists it. */
     override val description =
         "Adds the verdicts you ticked in the Grinder tab to this server pack's clientside-mod exclusions."
+
+    /** Who to blame in `plugins.log` when this extension misbehaves. */
     override val author = "Griefed"
+
+    /** This extension's own version, deliberately independent of the jar's — the jar carries the project
+     *  version, this one changes when what [run] does to a pack changes. */
     override val version = "1.0.0"
+
+    /** The key SPC stores this extension's configuration under. **Stable across releases** — changing it
+     *  makes SPC look for a configuration that no longer exists. */
     override val extensionId = "grinder-clientside-exclusions"
 
     /**
