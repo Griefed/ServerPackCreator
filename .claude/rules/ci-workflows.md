@@ -193,9 +193,12 @@ Two things generalise beyond GitLab:
   enough for a public repo, and it takes seconds.
 - **`curl -sf` in CI is how a failure becomes unreadable.** `-f` sets exit 22 and `-s` throws away the body —
   which is the only place these APIs say what is wrong. The failing run said nothing else whatsoever.
-  The `mirror` job now captures the status with `-o file -w '%{http_code}'` and prints the body before
-  exiting; **the `release`, `virustotal` and release-body-update steps still use `curl -sf`** and have the
-  same blindness waiting for them.
+  Every call whose failure is not deliberately tolerated now captures the status with
+  `-o file -w '%{http_code}'` and prints the body before exiting — `mirror` first, and since
+  *fix(ci): stop curl -sf hiding why a release step failed* also the `release` job's create/patch/upload,
+  the VirusTotal release-body update and the Discord post. The two `-sf` calls left in `release-build.yml`
+  are VirusTotal's own submissions, whose failures are tolerated on purpose (`|| true`, then a guard on
+  the empty id) because a scan that does not come back must not fail a release that is already published.
 
 ## A Gradle task without a project path runs in every project
 

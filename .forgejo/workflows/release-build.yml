@@ -176,13 +176,22 @@ jobs:
           if [ -n "$ID" ]; then
             echo "Release for $V already exists ($ID) - reusing it and refreshing its notes"
             python3 -c "import json;print(json.dumps({'body':open('notes.md').read()}))" > patch.json
-            curl -sf -X PATCH "$API/releases/$ID" -H "Authorization: token $TOKEN" \
-              -H 'Content-Type: application/json' -d @patch.json > /dev/null
+            STATUS="$(curl -sS -o patched.json -w '%{http_code}' -X PATCH "$API/releases/$ID" \
+              -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' -d @patch.json)"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::Forgejo returned HTTP $STATUS refreshing the notes of release $ID"
+              cat patched.json
+              exit 1
+            fi
           else
-            ID="$(curl -sf -X POST "$API/releases" \
-                   -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
-                   -d @create.json \
-                 | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+            STATUS="$(curl -sS -o created.json -w '%{http_code}' -X POST "$API/releases" \
+              -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' -d @create.json)"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::Forgejo returned HTTP $STATUS creating release $V"
+              cat created.json
+              exit 1
+            fi
+            ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
           fi
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
           # Names already attached, because Forgejo does NOT enforce uniqueness: CreateReleaseAttachment
@@ -200,8 +209,13 @@ jobs:
               continue
             fi
             echo "Uploading $NAME"
-            curl -sf -X POST "$API/releases/$ID/assets?name=$NAME" \
-              -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
+            STATUS="$(curl -sS -o upload.json -w '%{http_code}' -X POST "$API/releases/$ID/assets?name=$NAME" \
+              -H "Authorization: token $TOKEN" -F "attachment=@$f")"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::Forgejo returned HTTP $STATUS uploading $NAME to release $ID"
+              cat upload.json
+              exit 1
+            fi
           done
 
   maven:
@@ -554,13 +568,24 @@ jobs:
         run: |
           set -eu
           [ -s links.md ] || { echo "Nothing to append"; exit 0; }
-          curl -sf "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
-            | python3 -c "import json,sys;open('body.txt','w').write(json.load(sys.stdin)['body'])"
+          STATUS="$(curl -sS -o release.json -w '%{http_code}' "$API/releases/$RELEASE_ID" \
+            -H "Authorization: token $TOKEN")"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::Forgejo returned HTTP $STATUS reading release $RELEASE_ID"
+            cat release.json
+            exit 1
+          fi
+          python3 -c "import json;open('body.txt','w').write(json.load(open('release.json'))['body'])"
           printf '\n\n## VirusTotal\n\n' >> body.txt
           cat links.md >> body.txt
           python3 -c "import json;print(json.dumps({'body':open('body.txt').read()}))" > patch.json
-          curl -sf -X PATCH "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
-            -H 'Content-Type: application/json' -d @patch.json > /dev/null
+          STATUS="$(curl -sS -o patched.json -w '%{http_code}' -X PATCH "$API/releases/$RELEASE_ID" \
+            -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' -d @patch.json)"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::Forgejo returned HTTP $STATUS appending the VirusTotal section to release $RELEASE_ID"
+            cat patched.json
+            exit 1
+          fi
           echo "Release notes updated"
 
   news:
@@ -647,5 +672,11 @@ jobs:
           print(json.dumps(payload))
           NEWS_PY
           python3 news.py > payload.json
-          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          STATUS="$(curl -sS -o posted.json -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL")"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::The Discord webhook returned HTTP $STATUS"
+            cat posted.json
+            exit 1
+          fi
           echo "Announced $VERSION at $SERVER_URL/$REPOSITORY/releases/tag/$VERSION"
