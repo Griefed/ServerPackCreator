@@ -200,6 +200,58 @@ Two things generalise beyond GitLab:
   are VirusTotal's own submissions, whose failures are tolerated on purpose (`|| true`, then a guard on
   the empty id) because a scan that does not come back must not fail a release that is already published.
 
+## The release notes outgrew two limits nobody declared
+
+**LANDMINE — a release body never travels as a curl argument.** Linux caps a *single* argv entry at
+`MAX_ARG_STRLEN` = `32 * PAGE_SIZE` = **131,072 bytes**, independently of `ARG_MAX`, and `execve`
+returns `E2BIG` past it. `release-build.yml` assembled the whole release JSON — changelog section
+included — into one `-d "{...}"` word in both the `release` and `mirror` jobs, so `9.0.0-beta.1`
+(run `536`, job `Forgejo release`) died with
+
+```
+/var/run/act/workflow/create.sh: line 21: /usr/bin/curl: Argument list too long
+```
+
+and then a python `JSONDecodeError` traceback, which is the *consequence* — curl never ran, so the
+next stage in the pipeline read an empty pipe. **Read past the traceback: the parser is never the
+bug when the line above it says a binary could not be exec'd.**
+
+The jump is structural, not bad luck. A prerelease section covers one increment; a **beta or final**
+section aggregates every prerelease since the last stable tag, because that is what semantic-release
+writes:
+
+```
+9.0.0-alpha.8   changelog section  74,454 B   -d argument ~75,9xx B   released fine
+9.0.0-beta.1    changelog section 200,185 B   -d argument  201,610 B  E2BIG
+```
+
+So `9.0.0` final will be at least as large. Both POST branches now build the payload with python and
+pass `-d @<file>`; the PATCH branch had always done this, which is why only creation ever failed.
+Reproduced both shapes against the real notes in `alpine:3.20` — inlined gives exit 126 `Argument
+list too long`, `-d @file` execs curl and reaches the network with a 201,620-byte payload.
+
+**LANDMINE — GitHub caps a release body at 125,000 characters; Forgejo does not cap it at all.**
+Getting the body out of argv only moves the wall: GitHub answers `422 body is too long (maximum is
+125000 characters)`. Forgejo's `Release.Note` is a `TEXT` column that Forgejo never truncates — only
+`Title`, at 255 (`models/repo/release.go`) — and this instance is not database-limited either, since
+`9.0.0-alpha.8`'s stored body is 75,918 bytes, past MySQL `TEXT`'s 65,535. So the **canonical Forgejo
+release keeps every character and only the mirrored copy is cut**, in `Fetch release notes from
+Forgejo` (the step that exists solely to produce the GitHub-bound copy), on a line boundary so no
+markdown link is severed, with a pointer back to the Forgejo release. Measured on the real
+`9.0.0-beta.1` notes: 200,185 → 124,935 characters.
+
+**Forgejo does not enforce release-asset name uniqueness, so an unguarded re-run silently doubles the
+assets.** `CreateReleaseAttachment` (`routers/api/v1/repo/release_attachment.go`) hands the name
+straight to `UploadAttachment` with no existence check. Re-running `release` — which its own comment
+names as the ordinary repair — therefore did not fail on a duplicate, which would at least be
+visible; it attached a second copy of all twelve and reported success. Both asset loops now skip
+names the release already carries (`GET /releases/{id}/assets`).
+
+**The general rule: a payload assembled from repository content has no size you control.** Ask where
+it lands — argv, a database column, someone else's API — and put it in a file before it gets there.
+Both defects were latent from the first commit of this workflow and invisible for eight releases,
+because the input only crossed the threshold when the release channel changed.
+
 ## A Gradle task without a project path runs in every project
 
 **LANDMINE — the release's `maven` job is the only place in this repo that fans a task out over all
