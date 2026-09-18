@@ -338,6 +338,7 @@ jobs:
       - name: Fetch release notes from Forgejo
         env:
           TOKEN: ${{ secrets.FJ_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -eu
           # -o/-w rather than -f: `curl -sf` prints nothing on an HTTP error, which is how the GitLab step
@@ -351,7 +352,27 @@ jobs:
             cat release.json
             exit 1
           fi
-          python3 -c 'import json;open("notes.md","w").write(json.load(open("release.json"))["body"])'
+          # LANDMINE - GitHub rejects a release body over 125,000 characters with a 422, and Forgejo
+          # has no such cap: its `Release.Note` is a TEXT column it never truncates (only `Title`, at
+          # 255). The instance proves the asymmetry -- 9.0.0-alpha.8's Forgejo body is 75,918 bytes,
+          # already past MySQL TEXT's 65,535, and 9.0.0-beta.1's notes are 200,185. So the canonical
+          # Forgejo release keeps the full notes and only the mirrored copy is cut, on a line boundary
+          # so no markdown link is severed, with a pointer back to the forge that has all of it.
+          python3 - <<'TRUNCATE_PY'
+          import json, os
+
+          # GitHub's documented maximum for a release body.
+          LIMIT = 125000
+          version = os.environ["VERSION"]
+          body = json.load(open("release.json"))["body"]
+          if len(body) > LIMIT:
+              notice = ("\n\n---\n\nThese notes were truncated to fit GitHub's 125,000-character limit "
+                        "for a release body. The complete notes are on Forgejo: "
+                        f"https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/{version}\n")
+              body = body[:LIMIT - len(notice)].rsplit("\n", 1)[0] + notice
+              print(f"Release notes truncated to {len(body)} characters for GitHub")
+          open("notes.md", "w").write(body)
+          TRUNCATE_PY
 
       # LANDMINE - the mirror step's precondition is the mirror, NOT the API call. `target_commitish`
       # below lets GitHub mint a tag it does not have, but only from a commit it DOES have, and a
