@@ -132,17 +132,18 @@ jobs:
       - name: Extract changelog section
         run: |
           V="${{ needs.prepare.outputs.version }}"
-          # The closing bracket is REQUIRED. With `\]?` optional, a request for
-          # `8.1.1` also matched `## [8.1.1-beta.2](...)`; that rule ends in `next`, so the exit rule never
+          # The closing bracket is REQUIRED. With `\]?` optional, a request for `8.1.1` also matched
+          # `## [8.1.1-beta.2](...)`; that rule ends in `next`, so the exit rule never
           # fired and collection ran on through every prerelease section beneath the release. Measured on
           # this repository's CHANGELOG: 8.1.1 gave 5,685 chars against a true section of 2,834, and 8.1.0
           # gave 28,807 against 14,377. Prereleases were unaffected, which is why it would have shipped.
-          # LANDMINE - escaping the dots in the SHELL does not work, and says so in every release log:
-          # awk processes escape sequences in a `-v` assignment, so `9\.0\.0-beta\.1` arrives as
-          # `9.0.0-beta.1` and gawk prints `warning: escape sequence \`\\.' treated as plain \`.''.
-          # The dots were therefore wildcards for as long as the comment above claimed otherwise. Escape
-          # them inside awk instead, as `[.]` rather than `\.` so nothing depends on how gsub treats a
-          # backslash in a replacement string -- POSIX leaves that undefined for anything but `&` and `\\`.
+          # LANDMINE - escaping the dots in the SHELL does not work, and every release log says so with
+          # a gawk warning that the escape sequence was treated as a plain dot. awk processes escape
+          # sequences in a -v assignment, so a shell-escaped 9\.0\.0-beta\.1 arrives inside the program
+          # as 9.0.0-beta.1 and the dots have been wildcards all along, whatever the comment claimed.
+          # Escape them inside awk instead, and as [.] rather than a backslash: POSIX leaves a backslash
+          # in a gsub replacement undefined for anything but & and \\, and gawk bears that out - the
+          # program-text replacement "\\\\." yields two backslashes and the regex then matches nothing.
           awk -v ver="$V" '
             BEGIN { esc = ver; gsub(/\./, "[.]", esc); section = "^#+ +\\[" esc "\\]" }
             $0 ~ section { found=1; next }
