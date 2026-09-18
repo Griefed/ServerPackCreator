@@ -157,7 +157,16 @@ jobs:
           set -eu
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
-          BODY="$(python3 -c 'import json,sys;print(json.dumps(open("notes.md").read()))')"
+          # LANDMINE - the release body NEVER travels as a curl argument. Linux caps a SINGLE argv
+          # entry at MAX_ARG_STRLEN (32 * PAGE_SIZE = 131,072 bytes) independently of ARG_MAX, so
+          # `-d "{...,\"body\":$BODY,...}"` dies at execve with `/usr/bin/curl: Argument list too long`
+          # once the notes get big -- and they do: a beta or final release aggregates every prerelease
+          # section since the last stable one. Measured on 9.0.0-beta.1 (run 536, the failure this
+          # comment exists for): notes.md 200,185 bytes, assembled -d argument 201,610, job dead before
+          # curl ran; 9.0.0-alpha.8 had released fine at 75,918. Reproduced both shapes in alpine:3.20 --
+          # inlined: exit 126 "Argument list too long"; `-d @file`: curl execs and reaches the network.
+          # The PATCH branch below has always written a file; this is the POST branch catching up.
+          RELEASE_VERSION="$V" RELEASE_PRERELEASE="$PRE" python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['RELEASE_VERSION'],'name':os.environ['RELEASE_VERSION'],'body':open('notes.md').read(),'draft':False,'prerelease':os.environ['RELEASE_PRERELEASE']=='true'}))" > create.json
           # Reuse an existing release for this tag instead of failing. Re-running this workflow is the
           # ordinary way to repair a release whose `maven` or `docker` job failed, and with `set -eu` an
           # unconditional POST would die here on the second attempt -- leaving the very jobs that need
@@ -172,7 +181,7 @@ jobs:
           else
             ID="$(curl -sf -X POST "$API/releases" \
                    -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
-                   -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"draft\":false,\"prerelease\":$PRE}" \
+                   -d @create.json \
                  | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
           fi
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
@@ -398,7 +407,11 @@ jobs:
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
           API="https://api.github.com/repos/Griefed/ServerPackCreator"
-          BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
+          export MIRROR_VERSION="$V" MIRROR_PRERELEASE="$PRE" MIRROR_SHA="${{ github.sha }}"
+          # Same landmine as the `release` job's POST, and for the same reason -- this body is a copy of
+          # that one, so the moment it is too big for argv there it is too big here. Build the payload in
+          # a file and hand curl `-d @file`; nothing of the notes goes near the argument list.
+          python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['MIRROR_VERSION'],'target_commitish':os.environ['MIRROR_SHA'],'name':os.environ['MIRROR_VERSION'],'body':open('notes.md').read(),'prerelease':os.environ['MIRROR_PRERELEASE']=='true'}))" > create-payload.json
           # Reuse an existing GitHub release for this tag, exactly as the `release` job does for Forgejo,
           # and for the same reason: re-running this job alone is the documented repair when the mirror
           # was behind, and it is the ONLY safe repair -- a whole-workflow re-run would re-publish Maven
@@ -420,7 +433,7 @@ jobs:
             STATUS="$(curl -sS -o created.json -w '%{http_code}' \
               -X POST "$API/releases" \
               -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-              -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
+              -d @create-payload.json)"
             if [ "$STATUS" -ge 400 ]; then
               echo "::error::GitHub returned HTTP $STATUS creating release $V"
               cat created.json
