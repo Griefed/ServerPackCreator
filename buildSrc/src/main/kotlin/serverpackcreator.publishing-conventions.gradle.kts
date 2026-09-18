@@ -14,9 +14,16 @@ plugins {
     signing
 }
 
+// LANDMINE - `withJavadocJar()` is deliberately absent. It registers Gradle's stock `javadocJar`,
+// which zips the stock `javadoc` task, and this module is pure Kotlin: `javadoc` documents nothing, so
+// that jar is a 261-byte manifest and nothing else. Worse, it collides -- `dokka-conventions` registers
+// `dokkaJavadocJar` with the same `javadoc` classifier, so both wrote
+// `build/libs/<name>-<version>-javadoc.jar` and whichever ran last won. That is why the release ASSET
+// javadoc jar was empty (the `assets` job runs `build`, which ran the stock task and never Dokka's)
+// while Maven Central's was 2.4 MB (the `maven` job runs `:serverpackcreator-api:dokkaJavadocJar`
+// first). The real javadoc is attached by `dokka-conventions`; do not re-add this.
 java {
     withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.named<Jar>("sourcesJar") {
@@ -65,7 +72,16 @@ publishing {
             groupId = project.group.toString()
             artifactId = project.name
             version = project.version.toString()
-            artifact(tasks.named("javadocJar"))
+            // LANDMINE - without `from(components["java"])` this publication has NO main artifact and
+            // NO dependencies. Gradle then writes `<packaging>pom</packaging>` and an empty POM, and the
+            // module is undeployable as a library: anyone declaring
+            // `de.griefed.serverpackcreator:serverpackcreator-api` got a POM and a javadoc jar, no
+            // classes. Verified on Maven Central for 7.3.0, 8.0.0, 8.1.0, 8.1.2, 9.0.0-alpha.6,
+            // 9.0.0-alpha.9 and 9.0.0-beta.1 -- every one of them ships exactly `-javadoc.jar` + `.pom`.
+            // The component carries the main jar, the sources jar (via `withSourcesJar()` above) and the
+            // resolved dependency list; the javadoc jar is added by `dokka-conventions`, which is the
+            // plugin that owns it.
+            from(components["java"])
             pom {
                 name.set("ServerPackCreator")
                 description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
