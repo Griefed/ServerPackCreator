@@ -68,7 +68,8 @@ Prints **JSON** to stdout — one entry per jar with the sideness it declares. N
 ## 3. Report on a project link (metadata only — fast)
 
 The cheap check. Resolves the project, derives the clientside-list name pattern, and prints a **Markdown**
-report with a confidence per modloader.
+report with a verdict per Minecraft version-line — one target per line, each under the first of
+`NeoForge, Forge, Fabric, Quilt, LegacyFabric` that has a bootable build for it. Newest line first.
 
 ```bash
 java -jar serverpackcreator.jar -clientsidereport https://modrinth.com/mod/modmenu
@@ -87,24 +88,33 @@ java -jar serverpackcreator.jar -clientsidereport https://modrinth.com/mod/modme
 ## 4. Verify by booting a server (slow — the decisive check)
 
 Same as above **plus** it downloads the mod and its required dependencies, generates a server pack, and
-boots it once per modloader, watching for a crash.
+boots it once per Minecraft version-line, watching for a crash. Sideness is a property of a *build*, and
+builds differ far more across Minecraft eras than across loaders of one era — so the axis is the line, and
+the loader is whichever one that line can actually boot.
 
 ```bash
 java -jar serverpackcreator.jar -verifyclientside https://modrinth.com/mod/modmenu --output verified.md
 ```
 
-Takes minutes per modloader: it downloads a Minecraft server and the loader on first boot. Expect network
+Takes minutes per target: it downloads a Minecraft server and the loader on first boot. Expect network
 traffic and a few hundred MB of disk.
 
 **How to read the verdict:**
 
-| Result                  | Meaning                                                                                                                                                                         |
-|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CRASHED` → **HIGH**    | Decisive. The server died with the mod in place — it is clientside-only, whatever it declares                                                                                   |
-| `SURVIVED` → **MEDIUM** | The server booted fine. This is *not* proof of server-safety, only absence of a crash                                                                                           |
-| `INCONCLUSIVE`          | Nothing was learned: no bootable loader/Minecraft combination, a download failed, or the boot aborted *before* the mod loaded (e.g. the loader has no build for that Minecraft) |
+| Verdict          | Meaning                                                                                                                                                                                          |
+|------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CONFIRMED`      | Decisive, and the only verdict worth acting on. A rule matched the boot's console, so the confirmation names the rule that produced it                                                             |
+| `CLEAR`          | The server booted and nothing matched — proven server-safe *for that build*. Deliberately not the same bucket as `INCONCLUSIVE`: "we proved it is fine" and "we learned nothing" are different claims |
+| `INCONCLUSIVE`   | The boot **ran** and did something unexpected — non-zero exit, crash, timeout, kill — with nothing confirming why. Its log is the raw material the next rule gets written from                       |
+| `ERROR`          | The check could not be performed and it is *our* end: no runtime image, a failed download, a pack that would not generate. An operator's problem, never evidence about the mod                      |
+| `LOCKED`         | A CurseForge distribution opt-out (`allowModDistribution=false`) stands between the engine and a jar — the mod's own file or a required dependency. No URL, so no scan and no boot; retrying never helps. Verify that project from Modrinth instead |
+| `UNVERIFIABLE`   | Never possible, for a reason outside both this engine and the mod: a required dependency nobody published for that loader and Minecraft, a loader with no build for that line, or a jar carrying only another loader's descriptor |
 
-The asymmetry is deliberate. Only a crash proves anything.
+The asymmetry is deliberate. **Only a crash proves anything** — which is why `CONFIRMED` is the only verdict
+ever published to the fallback list, and why `CLEAR` is a statement about one build rather than about the mod.
+
+`LOCKED` and `UNVERIFIABLE` split out of `ERROR` on 2026-09-09: `ERROR` is the bucket an operator reads to
+find out what to fix, and it had filled up with things nobody can fix.
 
 ---
 

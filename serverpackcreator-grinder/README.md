@@ -35,7 +35,7 @@ docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 
 | | |
 |---|---|
-| Result table | <http://localhost:8757/> — sortable, highest confidence first |
+| Result table | <http://localhost:8757/> — sortable, findings first: `CONFIRMED`, `INCONCLUSIVE`, `ERROR`, `LOCKED`, `UNVERIFIABLE`, `CLEAR` |
 | CSV export | <http://localhost:8757/export.csv> |
 | JSON feed | <http://localhost:8757/verdicts.json> — the same rows, each field keeping its own type |
 | What it is doing right now | `http://localhost:8757/dashboard` in a browser, or `curl -s localhost:8757/status` |
@@ -47,9 +47,10 @@ its own, keeping the same report live at `localhost:8757`:
 ./gradlew :serverpackcreator-grinder:run
 ```
 
-Two things worth knowing before you act on the table. **Only `HIGH` confidence is decisive** — it means the
-server actually crashed with the mod in place; `MEDIUM` only means the server booted, which does not prove
-the mod is server-safe (§6). And **everything the grinder writes lives under `~/.spc-grinder`** —
+Two things worth knowing before you act on the table. **Only `CONFIRMED` is decisive** — it means a rule
+matched the console of a server that actually died with the mod in place, and the row names the rule that
+said so; `CLEAR` only means the server booted, which proves that build fine rather than the mod
+server-safe (§6). And **everything the grinder writes lives under `~/.spc-grinder`** —
 `verdicts.json` (results), `cache/` (loader installs), `work/` (staging), plus SPC's own home directory
 (`logs/`, `server_files/`, `serverpackcreator.properties`). Move the lot with `SPC_GRINDER_HOME`. Nothing else
 on the host is touched, and no mod ever gets network access.
@@ -325,9 +326,11 @@ The instance polls that URL on startup (`UpdateConfig.updateFallback`) and repla
 served ones differ. The mod-whitelist is passed through untouched, so the endpoint is a **drop-in replacement**
 for the GitHub raw URL rather than a partial one that would quietly freeze a client's whitelist.
 
-Only `HIGH` confidence is ever published — a mod that crashed a server. A mod that booted cleanly has proven
-nothing, and a wrong entry silently strips a mod out of every server pack built against the list, so the gate
-is a floor rather than a threshold to tune.
+Only `CONFIRMED` is ever published — a mod whose crash a rule recognised. A mod that booted cleanly has
+proven nothing about any other build, and a wrong entry silently strips a mod out of every server pack built
+against the list, so the gate is a floor rather than a threshold to tune. It is one condition rather than two
+because `CONFIRMED` is now reachable only from a decisive rung: when a bare non-zero exit could also reach the
+top of the old scale, 27 of 43 published `HIGH`s on the live daemon rested on no decisive evidence.
 
 **The base list is only as fresh as this daemon's own SPC instance.** `UpdateConfig` *replaces* a client's
 lists with what it is served, so whatever this grinder holds becomes what every client holds. That is the
@@ -530,7 +533,8 @@ so the sample behind the verdict is a single build.
 **A crash is also weighed against the project's other rows.** What this list publishes is a file-name stem
 matched with `startsWith`, and that stem is loader-agnostic — so if one loader crashed while another booted a
 server under the *same* stem, publishing the crash would strip a build that demonstrably works. Such a verdict
-keeps its boot result but not its confidence, and its detail ends in `booted a server with the same entry`.
+keeps its boot result and its crash excerpt — the server did crash, and that is worth diagnosing — but falls
+back to the verdict its metadata alone supports, and its detail ends in `booted a server with the same entry`.
 A crash whose stem is unique to its row is unaffected: sideness can genuinely differ per loader. And because
 a project is ground once per Minecraft version-line, "another row" is usually another **era** — a clean boot
 on 1.20 disproves a 1.21 crash publishing the same stem, for exactly the same reason a clean NeoForge boot
@@ -672,7 +676,7 @@ Every line carries the worker thread, and each candidate produces a pair:
 
 ```
 [grind-worker-1] Grinding CurseForge/chameleon — https://www.curseforge.com/minecraft/mc-mods/chameleon
-[grind-worker-1] Done CurseForge/chameleon → Forge=LOW, NeoForge=LOW after 47s
+[grind-worker-1] Done CurseForge/chameleon → 1.21/NeoForge=CLEAR(boot:SURVIVED), 1.20/Forge=CONFIRMED(boot:CRASHED) after 47s
 ```
 
 Projects skipped because their verdict is still fresh are logged at DEBUG, not INFO — a pass can skip dozens in
@@ -939,7 +943,7 @@ restart. Run it after touching paging or the cursor:
 GRINDER_LIVE_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*CatalogCrawlLiveIT"
 
 # Audit a LIVE grinder's published verdicts against their own evidence. Fails if any verdict published as
-# HIGH rests on a crash that is not decisive evidence of client-only-ness -- a mixin that would not apply, a
+# CONFIRMED rests on a crash that is not decisive evidence of client-only-ness -- a mixin that would not apply, a
 # dependency solver that gave up, a jar staged for the wrong loader, or a bare non-zero exit nobody
 # recognised. Prints the distribution by decision either way, so a new failure shape shows up as a bucket.
 #

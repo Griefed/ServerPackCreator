@@ -170,7 +170,7 @@ class Grinder(
             )
         }
         queueBlamedDependencies(report, candidate)
-        // Report the boot result alongside the confidence: a verdict reached *without* a boot is a much weaker
+        // Report the boot result alongside the verdict: a verdict reached *without* a boot is a much weaker
         // claim than one that booted, and only the log can tell them apart afterwards.
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
