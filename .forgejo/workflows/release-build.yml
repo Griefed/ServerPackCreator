@@ -185,9 +185,22 @@ jobs:
                  | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
           fi
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
+          # Names already attached, because Forgejo does NOT enforce uniqueness: CreateReleaseAttachment
+          # hands the name straight to UploadAttachment with no existence check (only `Title` is ever
+          # truncated, at 255 characters). So an unguarded re-run does not fail on a duplicate -- it
+          # silently attaches a SECOND copy of all twelve assets, which is worse, and this step's own
+          # comment above invites exactly that re-run as the ordinary repair. The `mirror` job has always
+          # guarded its loop this way; this is the one that publishes the canonical release catching up.
+          curl -sS "$API/releases/$ID/assets" -H "Authorization: token $TOKEN" \
+            | python3 -c "import json,sys;print('\n'.join(a['name'] for a in json.load(sys.stdin)))" > have.txt
           for f in assets/*; do
-            echo "Uploading $(basename "$f")"
-            curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
+            NAME="$(basename "$f")"
+            if grep -qxF "$NAME" have.txt; then
+              echo "Forgejo already has $NAME - skipping"
+              continue
+            fi
+            echo "Uploading $NAME"
+            curl -sf -X POST "$API/releases/$ID/assets?name=$NAME" \
               -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
           done
 
