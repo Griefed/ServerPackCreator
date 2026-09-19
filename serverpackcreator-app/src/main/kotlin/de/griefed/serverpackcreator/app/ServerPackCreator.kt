@@ -156,10 +156,19 @@ class ServerPackCreator(private val args: Array<String>) {
                     }
 
                     Mode.CONFIG -> {
-                        interactiveCommandLine.runHeadlessCommand.runHeadless(
-                            commandlineParser.serverPackConfig.get(),
-                            commandlineParser.serverPackDestination
-                        )
+                        // No path followed -config at all, so there is nothing to name in an error and
+                        // nothing to run. runHeadless reports a path that merely does not exist.
+                        if (commandlineParser.serverPackConfig.isEmpty) {
+                            log.error(
+                                "${Mode.CONFIG.argument()} requires the path to a server pack config, " +
+                                        "e.g. ${Mode.CONFIG.argument()} \"/path/to/serverpackcreator.conf\"."
+                            )
+                        } else {
+                            interactiveCommandLine.runHeadlessCommand.runHeadless(
+                                commandlineParser.serverPackConfig.get(),
+                                commandlineParser.serverPackDestination
+                            )
+                        }
                     }
 
                     Mode.WITHALLINCONFIGDIR -> {
@@ -167,10 +176,19 @@ class ServerPackCreator(private val args: Array<String>) {
                     }
 
                     Mode.FEELINGLUCKY -> {
-                        interactiveCommandLine.cliCommands.feelingLucky(
-                            commandlineParser.modpackDirectory.get().absolutePath,
-                            commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
-                        )
+                        // Same shape as CONFIG above: feelingLucky reports a modpack-directory that does
+                        // not exist, but it cannot report one it was never given.
+                        if (commandlineParser.modpackDirectory.isEmpty) {
+                            log.error(
+                                "${Mode.FEELINGLUCKY.argument()} requires the path to a modpack-directory, " +
+                                        "e.g. ${Mode.FEELINGLUCKY.argument()} \"/path/to/modpack\"."
+                            )
+                        } else {
+                            interactiveCommandLine.cliCommands.feelingLucky(
+                                commandlineParser.modpackDirectory.get().absolutePath,
+                                commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
+                            )
+                        }
                     }
 
                     Mode.CLI -> {
