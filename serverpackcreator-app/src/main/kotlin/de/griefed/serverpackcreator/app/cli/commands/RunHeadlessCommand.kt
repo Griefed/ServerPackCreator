@@ -96,25 +96,36 @@ class RunHeadlessCommand(
             "The config-directory is inside ServerPackCreators home-directory."
         ]
     )
-    /** Generate from every configuration file in the configured directory, one after another. */
-    fun withAllInConfigDir() {
+    /**
+     * Generate from every configuration file in the configured directory, one after another, and report
+     * whether every one of them produced a server pack.
+     */
+    fun withAllInConfigDir(): Boolean {
         val configs = apiWrapper.apiProperties.configsDirectory.listFiles()
+        var allGenerated = true
         for (config in configs) {
-            runHeadless(config)
+            allGenerated = runHeadless(config) && allGenerated
         }
+        return allGenerated
     }
 
     private fun requestConfigFile(): File =
         prompt.readExistingFile("Enter the full path to the server pack config.")
 
-    /** The shared body both subcommands end in: check the configuration, then generate if it passes. */
+    /**
+     * The shared body both subcommands end in: check the configuration, then generate if it passes.
+     *
+     * Returns whether a server pack was actually produced, so a headless run can be turned into an exit
+     * code. Every path that prints a problem returns `false`.
+     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     fun runHeadless(
         config: File = apiWrapper.apiProperties.defaultConfig,
         destination: Optional<File> = Optional.empty()
-    ) {
+    ): Boolean {
         if (!config.isFile) {
             log.warn("${config.absolutePath} not found...")
+            return false
         } else {
             val packConfig = PackConfig()
             packConfig.customDestination = destination
@@ -124,6 +135,7 @@ class RunHeadlessCommand(
                 for (error in check.encounteredErrors) {
                     println(error)
                 }
+                return false
             } else {
                 val generation = apiWrapper.serverPackHandler.run(packConfig)
                 if (!generation.success) {
@@ -131,8 +143,10 @@ class RunHeadlessCommand(
                     for (error in generation.errors) {
                         println(error)
                     }
+                    return false
                 } else {
                     println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                    return true
                 }
             }
         }

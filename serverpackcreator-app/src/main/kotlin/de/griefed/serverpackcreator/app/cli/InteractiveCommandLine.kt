@@ -120,6 +120,8 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
         /**
          * The one-shot convenience path: derive a configuration from a modpack directory, check it, and generate if it
          * passes — the whole flow a new user is walked through, without the questions.
+         *
+         * Returns whether a server pack was produced, so a headless run can be turned into an exit code.
          */
         fun feelingLucky(
             @CommandLine.Option(
@@ -139,7 +141,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                 ],
                 required = false
             ) destination: String?
-        ) {
+        ): Boolean {
             if (modpackDir != null && File(modpackDir).isDirectory) {
                 val modpack = File(modpackDir)
                 val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
@@ -151,6 +153,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                     for (error in check.encounteredErrors) {
                         println(error)
                     }
+                    return false
                 } else {
                     val generation = apiWrapper.serverPackHandler.run(packConfig)
                     if (!generation.success) {
@@ -158,12 +161,15 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                         for (error in generation.errors) {
                             println(error)
                         }
+                        return false
                     } else {
                         println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                        return true
                     }
                 }
             } else {
                 log.error("Modpack-directory $modpackDir doesn't exist.")
+                return false
             }
         }
     }
