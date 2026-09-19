@@ -155,6 +155,25 @@ store rather than by running it:
 
 ## Cross-cutting landmines (do not let these load lazily)
 
+- **LANDMINE — the report's thread pool is small, so anything slow in a handler takes the whole site down,
+  not just that page.** The JDK `HttpServer` hands every request to `SPC_GRINDER_HTTP_THREADS` threads
+  (default 4, hardcoded 2 until 2026-09-19). A pool with nothing free stops answering *everything* — the
+  socket still accepts, nothing replies, and the proxy 502s — so a wedged report is **indistinguishable from
+  a dead host** from outside. Measured against the public instance on 2026-09-19: `/`, `/status`, `/dashboard`
+  and a nonexistent path all 502'd at **131.3 s** while port 80 answered a redirect in 0.18 s. `/status` does
+  no store work, which is what proved it was thread starvation rather than a slow page.
+- **Every request used to re-derive the whole store, and pagination did not help.** Selecting sorts all
+  verdicts and gathers every filter column across all of them; the page size bounds only what is *rendered*.
+  Measured: at 38,258 verdicts (roughly the deployed store) **251 ms to select, 3 ms to render the 250 rows**
+  — 98% discarded. `VerdictSnapshot` holds both derivations lazily and `VerdictSnapshotCache` rebuilds them
+  only when `VerdictStore.version` moves, taking a cached request to **5.4 ms** (329 ms uncached in the same
+  run, 60x). **`version` is a counter, not a row count**, because `record()` replaces by identity — a
+  re-ground project changes the report while leaving the size identical.
+  - `select(list, …)` delegates to `select(snapshot, …)`, so `/`, `/export.csv` and `/verdicts.json` still
+    share one implementation. **That also means a guard comparing the two overloads asserts nothing** — the
+    first version of `VerdictSnapshotTest` did exactly that and stayed green with filtering disabled outright.
+    Assert outcomes, not agreement between two names for the same code.
+
 These bite regardless of which subsystem you are in, so they stay in this always-loaded-for-the-module file even
 though their detail lives deeper:
 
