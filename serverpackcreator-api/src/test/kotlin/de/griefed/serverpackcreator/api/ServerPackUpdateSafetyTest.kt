@@ -157,6 +157,7 @@ internal class ServerPackUpdateSafetyTest {
         asIfAServerHadRun(destination)
         val zipping = packConfig(modpackDir, destination)
         zipping.isZipCreationDesired = true
+        zipping.isServerPropertiesInclusionDesired = true
         serverPackHandler.run(zipping)
 
         val archive = File(destination.absolutePath + "_server_pack.zip")
@@ -169,6 +170,11 @@ internal class ServerPackUpdateSafetyTest {
         )
         Assertions.assertTrue(entries.none { it == "ops.json" }, "Nor their ops-list")
         Assertions.assertTrue(entries.any { it == "mods/alpha.jar" }, "The pack itself must still be archived")
+        // Protected does not mean absent: these two are part of every server pack, and a downloaded
+        // archive without them is one whose start scripts have nothing to read.
+        Assertions.assertTrue(entries.any { it == "variables.txt" }, "variables.txt must be archived, got $entries")
+        Assertions.assertTrue(entries.any { it == "server.properties" }, "and so must server.properties")
+        Assertions.assertTrue(entries.any { it.startsWith("start.") }, "and the start scripts")
     }
 
     /**

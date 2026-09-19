@@ -325,6 +325,23 @@ class ServerPackHandler(
         )
         serverPackManifest.writeToFile(serverPack, utilities.jsonUtilities.objectMapper)
 
+        val producedPaths = relativeFiles.mapTo(HashSet()) { it.lowercase() }
+
+        /**
+         * Whether the given file must stay out of an archive meant to be handed to other people:
+         * protected, and not something this run produced.
+         *
+         * Protection alone is the wrong test, because `server.properties` and `variables.txt` are
+         * both protected *and* part of every server pack — excluding them ships an archive whose
+         * start scripts have nothing to read. What must never be archived is what the operator's own
+         * server wrote, and the manifest is exactly the line between the two.
+         */
+        val isOperatorData = { candidate: File ->
+            isUpdate && updater.relativize(serverPack, candidate)?.let { relative ->
+                updater.protects(relative) && !producedPaths.contains(relative.lowercase())
+            } == true
+        }
+
         apiPlugins.runPreZipExtensions(packConfig, serverPack.absolutePath)
         runPreServerPackZipListeners(packConfig, serverPack.absoluteFile.toPath())
         runGenericEventListeners()
@@ -343,7 +360,7 @@ class ServerPackHandler(
                 serverPack.absolutePath,
                 packConfig.modloader,
                 packConfig.modloaderVersion,
-                isProtected
+                isOperatorData
             )
         } else {
             log.info("Not creating zip archive of serverpack.")
