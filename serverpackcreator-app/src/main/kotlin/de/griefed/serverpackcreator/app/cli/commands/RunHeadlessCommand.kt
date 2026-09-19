@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
 import picocli.CommandLine
@@ -41,7 +42,10 @@ import javax.xml.parsers.ParserConfigurationException
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
 /** Generates server packs without the shell, either from one named configuration or from every one in the config directory. */
-class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+class RunHeadlessCommand(
+    private val apiWrapper: ApiWrapper = ApiWrapper.api(),
+    private val prompt: ConsolePrompt = ConsolePrompt()
+) : Command {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /** Invoked with no subcommand: generate from the default config, `<home>/serverpackcreator.conf`. */
@@ -100,23 +104,8 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
         }
     }
 
-    private fun requestConfigFile(): File {
-        // LANDMINE - do not close this Scanner. Scanner.close() closes its source, System.in cannot
-        // be reopened, and JLine's POSIX terminal holds that same descriptor as its pty slave, so the
-        // shell that called this prompt dies on its next readLine with ioctl(TIOCGWINSZ) = -1.
-        val scanner = Scanner(System.`in`)
-        println("Enter the full path to the new ServerPackCreator home-directory.")
-
-        var path: String
-        do {
-            print("Path: ")
-            path = scanner.nextLine()
-            if (!File(path).isFile) {
-                println("File '$path' does not exist.")
-            }
-        } while (!File(path).isFile)
-        return File(path)
-    }
+    private fun requestConfigFile(): File =
+        prompt.readExistingFile("Enter the full path to the server pack config.")
 
     /** The shared body both subcommands end in: check the configuration, then generate if it passes. */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
