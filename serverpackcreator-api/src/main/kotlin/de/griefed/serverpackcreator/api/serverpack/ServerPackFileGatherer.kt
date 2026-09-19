@@ -56,8 +56,12 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * @param minecraftVersion  The Minecraft version the modpack uses.
      * @param destination       The destination where the files should be copied to.
      * @param modloader         The modloader used for mod sideness detection.
+     * @param isProtected       Answers, for a destination-file, whether it must be left exactly as
+     * it is. Used by an update to keep a world or a hand-edited file a running server owns, and
+     * defaults to protecting nothing.
      * @author Griefed
      */
+    @JvmOverloads
     fun copyFiles(
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
@@ -66,7 +70,8 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
         minecraftVersion: String,
         destination: String,
         modloader: String,
-        overwrite: Boolean
+        overwrite: Boolean,
+        isProtected: (File) -> Boolean = { false }
     ) : List<File> {
         val exclusions = mutableListOf<Regex>()
         var acquired: List<ServerPackFile>
@@ -112,6 +117,12 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
         }
         log.info("Copying files to the server pack. This may take a while...")
         for (file in serverPackFiles) {
+            if (isProtected(file.destinationFile)) {
+                log.info("Keeping ${file.destinationFile}; it is protected from being overwritten.")
+                // Still part of the pack, so it stays in the manifest and a later update knows it is ours.
+                copiedFiles.add(file.destinationFile)
+                continue
+            }
             try {
                 copiedFiles.add(file.copy(overwrite))
             } catch (ex: IOException) {

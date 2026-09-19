@@ -114,6 +114,11 @@ class GenerationConfig(private val store: PropertyStore) {
         const val UPDATE_SERVER_PACK_KEY = "de.griefed.serverpackcreator.serverpack.update"
 
         /**
+         * Property-key holding the paths an update must never delete, overwrite or archive.
+         */
+        const val UPDATE_PROTECTED_KEY = "de.griefed.serverpackcreator.serverpack.update.protected"
+
+        /**
          * Property-key holding Aikar's flags for the generated start-scripts.
          */
         const val AIKARS_FLAGS_KEY = "de.griefed.serverpackcreator.configuration.aikar"
@@ -845,6 +850,32 @@ class GenerationConfig(private val store: PropertyStore) {
     val fallbackUpdateServerPack = false
 
     /**
+     * Shipped default for what an update must leave alone: everything a running Minecraft server
+     * writes into the directory it was started from, plus the two files an operator tunes by hand.
+     * A server pack is routinely run in place, so its directory stops being ServerPackCreator's the
+     * moment somebody starts a server out of it — regenerating over it must not cost them a world,
+     * their ban-list or their memory settings. Entries are matched against paths relative to the
+     * server pack, a directory covering everything beneath it.
+     */
+    val fallbackUpdateProtectedPaths = TreeSet(
+        listOf(
+            "banned-ips.json",
+            "banned-players.json",
+            "crash-reports",
+            "eula.txt",
+            "logs",
+            "ops.json",
+            "server.properties",
+            "usercache.json",
+            "variables.txt",
+            "whitelist.json",
+            "world",
+            "world_nether",
+            "world_the_end"
+        )
+    )
+
+    /**
      * String-list of clientside-only mods to exclude from server packs.
      */
     var clientsideMods = fallbackMods
@@ -1154,6 +1185,30 @@ class GenerationConfig(private val store: PropertyStore) {
             store.setBool(UPDATE_SERVER_PACK_KEY, value)
             field = value
             log.info("Server pack updating set to: $field")
+        }
+
+    /**
+     * Paths an update must never delete, overwrite or put into the ZIP-archive, matched against
+     * paths relative to the server pack, where a directory covers everything beneath it.
+     *
+     * Deliberately the union of [fallbackUpdateProtectedPaths] and whatever is configured, in both
+     * accessors: protection is **additive**, so a user can widen it and cannot — by editing a
+     * properties-file, by a half-written value, or by a settings-panel that saves a shorter list —
+     * end up with their own world unprotected. Somebody who genuinely wants a protected file
+     * regenerated has two ways to say so that leave no room for accident: turn updating off, or
+     * delete the file and let the next run write it fresh.
+     *
+     * Builds a new set on every read rather than handing out a field, for the reason
+     * `clientsideModsRegex` next door does: a caller holding the config's own collection watches it
+     * be emptied underneath them the next time anything reads the property.
+     */
+    var updateProtectedPaths: TreeSet<String>
+        get() = TreeSet(fallbackUpdateProtectedPaths).apply {
+            addAll(store.getList(UPDATE_PROTECTED_KEY, "").filter { it.isNotBlank() })
+        }
+        set(value) {
+            store.setList(UPDATE_PROTECTED_KEY, value.filter { it.isNotBlank() }, ",")
+            log.info("Paths protected from server pack updates set to: ${updateProtectedPaths}")
         }
 
     /**

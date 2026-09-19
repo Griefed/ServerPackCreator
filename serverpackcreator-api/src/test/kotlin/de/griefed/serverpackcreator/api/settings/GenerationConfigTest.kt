@@ -142,6 +142,32 @@ internal class GenerationConfigTest {
     }
 
     /**
+     * Pins the paths an update must leave alone: they default to what a running Minecraft server
+     * writes into the directory it was started from, and a user's own entries merge with — rather
+     * than replace — that default, so protection can only ever be widened.
+     */
+    @Test
+    fun protectedUpdatePathsDefaultToAServersOwnFilesAndCanOnlyBeWidened() {
+        val store = PropertyStore()
+        val generationConfig = GenerationConfig(store)
+
+        Assertions.assertTrue(generationConfig.updateProtectedPaths.contains("world"), "A world is protected")
+        Assertions.assertTrue(generationConfig.updateProtectedPaths.contains("ops.json"), "so is the ops-list")
+        Assertions.assertTrue(
+            generationConfig.updateProtectedPaths.contains("server.properties"),
+            "and so are the two files an operator tunes by hand"
+        )
+        Assertions.assertTrue(generationConfig.updateProtectedPaths.contains("variables.txt"))
+
+        generationConfig.updateProtectedPaths = TreeSet(listOf("plugins"))
+        Assertions.assertTrue(generationConfig.updateProtectedPaths.contains("plugins"), "A user entry is kept")
+        Assertions.assertTrue(
+            generationConfig.updateProtectedPaths.contains("world"),
+            "and the shipped defaults merge back in, so a world can not be un-protected by accident"
+        )
+    }
+
+    /**
      * Pins that Aikar's flags fall back to the well-known default and can be overridden.
      */
     @Test

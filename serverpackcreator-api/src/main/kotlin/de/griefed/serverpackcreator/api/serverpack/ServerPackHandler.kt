@@ -108,6 +108,11 @@ class ServerPackHandler(
     val provisioner = ServerPackProvisioner(apiProperties, versionMeta, utilities)
 
     /**
+     * Keeper of everything a running server owns when a pack is regenerated over itself.
+     */
+    val updater = ServerPackUpdater(apiProperties, utilities.jsonUtilities.objectMapper)
+
+    /**
      * Content of the variables.txt-file written to every server pack.
      */
     val variables: String get() = provisioner.variables
@@ -204,16 +209,19 @@ class ServerPackHandler(
         } else {
             File(getServerPackDestination(packConfig))
         }
-        val existingManifest = File(serverPack.absolutePath, "manifest.json")
-        val oldManifest: ServerPackManifest
-        var oldFile: File
         val generationStopWatch = SimpleStopWatch().start()
 
         /*
-        * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
-        * If the server pack exists and overwrite is disabled, no new server pack will be generated.
+        * An update takes precedence over overwriting: overwriting empties the destination, which
+        * would take the world, ban-list and settings of whoever is running a server out of this
+        * pack -- and the manifest the update needs to tell their files from ours along with them.
         */
-        if (apiProperties.isServerPacksOverwriteEnabled) {
+        val isUpdate = updater.isUpdateRun(serverPack)
+        if (isUpdate) {
+            log.info("Updating the existing server pack at ${serverPack.absolutePath}.")
+            log.info("Nothing outside the previous manifest, and nothing protected, will be touched.")
+            deleteExistingServerPackZip(serverPack.absolutePath)
+        } else if (apiProperties.isServerPacksOverwriteEnabled) {
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(true, serverPack.absolutePath)
         } else {
@@ -228,16 +236,14 @@ class ServerPackHandler(
             // surface later when files are written into it during generation.
         }
 
-        if (apiProperties.isUpdatingServerPacksEnabled && existingManifest.isFile) {
-            oldManifest = utilities.jsonUtilities.objectMapper.readValue(existingManifest, ServerPackManifest::class.java)
-            for (entry in oldManifest.files) {
-                oldFile = File(serverPack.absolutePath, entry)
-                //I know, .isFile is only true if it's really just a file...checking for !dir is still safer.
-                if (oldFile.isFile && !oldFile.isDirectory) {
-                    log.debug("Deleting old file: ${oldFile.absolutePath}")
-                    oldFile.deleteQuietly()
-                }
-            }
+        /** Whether the run-file of the given name must be left exactly as this run found it. */
+        val preserve = { relative: String -> updater.preserves(serverPack, relative) }
+
+        /** Whether the given file in the pack-to-be must be left exactly as this run found it. */
+        val isProtected = { candidate: File ->
+            isUpdate && updater.relativize(serverPack, candidate)?.let { relative ->
+                updater.protects(relative) && candidate.exists()
+            } == true
         }
 
         apiPlugins.runPreGenExtensions(packConfig, serverPack.absolutePath)
@@ -254,27 +260,63 @@ class ServerPackHandler(
                 packConfig.minecraftVersion,
                 serverPack.absolutePath,
                 packConfig.modloader,
-                !(!apiProperties.isServerPacksOverwriteEnabled && !apiProperties.isUpdatingServerPacksEnabled)
+                !(!apiProperties.isServerPacksOverwriteEnabled && !apiProperties.isUpdatingServerPacksEnabled),
+                isProtected
             )
         )
 
+        // Everything provisioned beside the modpack-files, recorded so the manifest describes the
+        // whole pack rather than only the part copied out of the modpack.
+        val provisioned = mutableListOf<String>()
+
         // If true, copy the server-icon.png from server_files to the server pack.
         if (packConfig.isServerIconInclusionDesired) {
-            copyIcon(serverPack.absolutePath, packConfig.serverIconPath)
+            val icon = apiProperties.defaultServerIcon.name
+            if (updater.preserves(serverPack, icon)) {
+                log.info("Keeping the existing $icon; it is protected from being overwritten.")
+            } else {
+                copyIcon(serverPack.absolutePath, packConfig.serverIconPath)
+            }
+            provisioned.add(icon)
         } else {
             log.info("Not including servericon.")
         }
 
         // If true, copy the server.properties from server_files to the server pack.
         if (packConfig.isServerPropertiesInclusionDesired) {
-            copyProperties(serverPack.absolutePath, packConfig.serverPropertiesPath)
+            val properties = apiProperties.defaultServerProperties.name
+            if (updater.preserves(serverPack, properties)) {
+                log.info("Keeping the existing $properties; it is protected from being overwritten.")
+            } else {
+                copyProperties(serverPack.absolutePath, packConfig.serverPropertiesPath)
+            }
+            provisioned.add(properties)
         } else {
             log.info("Not including server.properties.")
         }
-        relativeFiles.addAll(files
-            .map { file -> file.absolutePath }
-            .map { entry -> entry.replace(serverPack.absolutePath,"")}
-            .map { entry -> entry.substring(1) })
+        relativeFiles.addAll(
+            LinkedHashSet<String>().apply {
+                files.mapNotNullTo(this) { file -> updater.relativize(serverPack, file) }
+                addAll(provisioned)
+                addAll(provisioner.serverRunFileNames)
+            }
+        )
+
+        /*
+        * Pruning comes AFTER the copy on purpose: what the previous run produced is only safe to
+        * remove once this run has produced its replacement, so a generation that fails part-way
+        * leaves a pack somebody can still start a server from. A copy that yielded nothing at all is
+        * a broken run rather than an empty modpack -- the run-files are provisioned either way, so
+        * only [files] can tell the two apart -- and pruning against it would empty the pack.
+        */
+        if (isUpdate) {
+            if (files.isEmpty()) {
+                log.warn("Not a single file was copied from the modpack. Refusing to prune the existing server pack.")
+            } else {
+                updater.prune(serverPack, relativeFiles.toSet())
+            }
+        }
+
         serverPackManifest = ServerPackManifest(
             relativeFiles,
             packConfig.minecraftVersion,
@@ -295,12 +337,13 @@ class ServerPackHandler(
             * is present. This is because a ZIP-archive, if one is created, is supposed to be uploaded
             * to platforms like CurseForge. We must not have scripts with custom Java paths there.
             */
-            createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, false)
+            createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, false, preserve)
             serverPackZip = zipBuilder(
                 packConfig.minecraftVersion,
                 serverPack.absolutePath,
                 packConfig.modloader,
-                packConfig.modloaderVersion
+                packConfig.modloaderVersion,
+                isProtected
             )
         } else {
             log.info("Not creating zip archive of serverpack.")
@@ -311,7 +354,7 @@ class ServerPackHandler(
         * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
         * placeholder setting, if the user has set one
         */
-        createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, true)
+        createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, true, preserve)
 
         // Inform user about location of newly generated server pack.
         log.info("Server pack available at: ${serverPack.absolutePath}")
@@ -348,7 +391,6 @@ class ServerPackHandler(
     fun cleanupEnvironment(deleteZip: Boolean, destination: String) {
         log.info("Found old server pack at $destination. Cleaning up...")
         deleteExistingServerPack(destination)
-        File(destination).deleteQuietly()
         if (deleteZip) {
             deleteExistingServerPackZip(destination)
         }
@@ -366,6 +408,7 @@ class ServerPackHandler(
      * Recursively copy all specified directories and files, excluding clientside-only mods, to
      * the server pack.
      */
+    @JvmOverloads
     fun copyFiles(
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
@@ -374,9 +417,10 @@ class ServerPackHandler(
         minecraftVersion: String,
         destination: String,
         modloader: String,
-        overwrite: Boolean
+        overwrite: Boolean,
+        isProtected: (File) -> Boolean = { false }
     ): List<File> = fileGatherer.copyFiles(
-        modpackDir, inclusions, clientMods, whitelist, minecraftVersion, destination, modloader, overwrite
+        modpackDir, inclusions, clientMods, whitelist, minecraftVersion, destination, modloader, overwrite, isProtected
     )
     /**
      * Gather the server pack-files for a single inclusion-specification.
@@ -412,17 +456,25 @@ class ServerPackHandler(
     /**
      * Create start-scripts, variables.txt and HOW-TO-RUN.md for the generated server pack.
      */
-    fun createServerRunFiles(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) =
-        provisioner.createServerRunFiles(scriptSettings, destination, isLocal)
+    @JvmOverloads
+    fun createServerRunFiles(
+        scriptSettings: HashMap<String, String>,
+        destination: String,
+        isLocal: Boolean,
+        preserve: (String) -> Boolean = { false }
+    ) = provisioner.createServerRunFiles(scriptSettings, destination, isLocal, preserve)
     /**
      * Create the ZIP-archive of the server pack, honoring the configured ZIP-exclusions.
      */
+    @JvmOverloads
     fun zipBuilder(
         minecraftVersion: String,
         destination: String,
         modloader: String,
-        modloaderVersion: String
-    ): Optional<File> = provisioner.zipBuilder(minecraftVersion, destination, modloader, modloaderVersion)
+        modloaderVersion: String,
+        isExcluded: (File) -> Boolean = { false }
+    ): Optional<File> =
+        provisioner.zipBuilder(minecraftVersion, destination, modloader, modloaderVersion, isExcluded)
     /**
      * Delete configured leftover-files before a modloader-server installation.
      */
