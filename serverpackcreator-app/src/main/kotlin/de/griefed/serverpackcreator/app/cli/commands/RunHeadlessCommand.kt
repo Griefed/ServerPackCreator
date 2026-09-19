@@ -101,7 +101,18 @@ class RunHeadlessCommand(
      * whether every one of them produced a server pack.
      */
     fun withAllInConfigDir(): Boolean {
-        val configs = apiWrapper.apiProperties.configsDirectory.listFiles()
+        val configsDirectory = apiWrapper.apiProperties.configsDirectory
+        // listFiles() is null for anything that is not a readable directory, and the loop used to
+        // iterate that straight into a NullPointerException.
+        val configs = configsDirectory.listFiles()
+        if (configs == null) {
+            log.error("Cannot read the configs-directory ${configsDirectory.absolutePath}.")
+            return false
+        }
+        if (configs.isEmpty()) {
+            log.warn("No configurations in ${configsDirectory.absolutePath}, nothing to generate.")
+            return true
+        }
         var allGenerated = true
         for (config in configs) {
             allGenerated = runHeadless(config) && allGenerated
