@@ -123,6 +123,18 @@ class ScrollTextArea(
             textArea.text = value
         }
 
+    /**
+     * Enables or disables the wrapped text area along with the scroll pane.
+     *
+     * Swing does not cascade this: disabling a `JScrollPane` leaves its view fully editable and
+     * fully bright, so a caller greying out a setting would have greyed out nothing. Forwarding it
+     * is what makes `isEnabled = false` mean what every other settings widget means by it.
+     */
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+        textArea.isEnabled = enabled
+    }
+
     /** Appends to the wrapped area, for the log panes that stream into it rather than replacing its contents. */
     fun append(text: String) {
         textArea.append(text)
