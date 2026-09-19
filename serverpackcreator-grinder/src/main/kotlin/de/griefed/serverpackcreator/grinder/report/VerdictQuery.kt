@@ -388,14 +388,43 @@ internal object VerdictSelection {
         verdicts: List<GrindVerdict>,
         query: VerdictQuery,
         logCount: (GrindVerdict) -> Int = { 0 }
+    ): VerdictPage = select(VerdictSnapshot(verdicts), query, logCount)
+
+    /**
+     * Apply [query] to [snapshot], reusing the derivations the snapshot already holds.
+     *
+     * The list-taking overload delegates here, so `/`, `/export.csv` and `/verdicts.json` still run the one
+     * implementation and cannot disagree about ordering or paging. What the snapshot adds is that a caller
+     * holding one across requests — the report server — stops re-deriving what has not changed.
+     */
+    fun select(
+        snapshot: VerdictSnapshot,
+        query: VerdictQuery,
+        logCount: (GrindVerdict) -> Int = { 0 }
     ): VerdictPage {
-        val matched = verdicts.filter { verdict -> matchesFilters(verdict, query) && matchesSearch(verdict, query) }
-        val ordered = order(matched, query, logCount)
+        val verdicts = snapshot.verdicts
+        // Nothing to narrow means the snapshot's own list *is* the match, which also makes its cached default
+        // order usable below. Skipping the pass is not merely an optimisation: it is what makes the two
+        // shareable at all.
+        val selectsEverything = query.filters.isEmpty() && query.search == null
+        val matched = if (selectsEverything) {
+            verdicts
+        } else {
+            verdicts.filter { verdict -> matchesFilters(verdict, query) && matchesSearch(verdict, query) }
+        }
+        val ordered = if (selectsEverything && query.sort == null) {
+            snapshot.defaultOrder
+        } else {
+            order(matched, query, logCount)
+        }
 
         val size = query.size ?: matched.size.coerceAtLeast(1)
         val pages = if (matched.isEmpty()) 1 else ((matched.size + size - 1) / size)
         val page = query.page.coerceIn(1, pages)
-        val rows = ordered.drop((page - 1) * size).take(size)
+        // subList, not drop/take: drop() copies everything past the offset, so page one of a 38k-row store
+        // allocated a 38k-element list to hand back 250 of them -- on every request.
+        val from = ((page - 1) * size).coerceAtMost(ordered.size)
+        val rows = ordered.subList(from, (from + size).coerceAtMost(ordered.size)).toList()
 
         return VerdictPage(
             rows = rows,
@@ -404,11 +433,27 @@ internal object VerdictSelection {
             page = page,
             pages = pages,
             query = query.copy(page = page),
-            choices = VerdictField.entries.filter { it.filter == FilterKind.CHOICE }.associateWith { field ->
-                verdicts.map { field.text(it) }.filter { it.isNotBlank() }.distinct().sorted()
-            }
+            choices = snapshot.choices
         )
     }
+
+    /**
+     * The order the report shows when no sort was asked for — highest confidence, then slug, then newest
+     * Minecraft era, then loader.
+     *
+     * Exposed so [VerdictSnapshot] can hold the result: it depends only on the verdicts, never on the query,
+     * which is exactly why it is worth caching.
+     */
+    fun inDefaultOrder(verdicts: List<GrindVerdict>): List<GrindVerdict> = verdicts.sortedWith(
+        compareBy<GrindVerdict> { VerdictField.VERDICT.sortKey(it) }
+            .thenBy { it.slug }
+            // Newest era first inside a project, which is both the order the grind produces and the one
+            // a reader wants: the line a pack is most likely being built on leads. The loader stays the
+            // last tie-break, because a legacy row carries no line and two of them would otherwise be
+            // ordered arbitrarily.
+            .thenByDescending { VerdictField.MINECRAFT.sortKey(it) }
+            .thenBy { it.loader }
+    )
 
     /** OR within a column, AND across columns — the shape a reader expects from a filter bar. */
     private fun matchesFilters(verdict: GrindVerdict, query: VerdictQuery): Boolean =
@@ -438,16 +483,7 @@ internal object VerdictSelection {
     ): List<GrindVerdict> = when (val sort = query.sort) {
         // The default order IS the verdict sort, expressed through the same key, so the two can never
         // disagree about what "the findings first" means.
-        null -> matched.sortedWith(
-            compareBy<GrindVerdict> { VerdictField.VERDICT.sortKey(it) }
-                .thenBy { it.slug }
-                // Newest era first inside a project, which is both the order the grind produces and the one
-                // a reader wants: the line a pack is most likely being built on leads. The loader stays the
-                // last tie-break, because a legacy row carries no line and two of them would otherwise be
-                // ordered arbitrarily.
-                .thenByDescending { VerdictField.MINECRAFT.sortKey(it) }
-                .thenBy { it.loader }
-        )
+        null -> inDefaultOrder(matched)
 
         // Only the COUNT is reversed, and the slug/loader tie-break is appended afterwards so it runs the
         // same way in both directions. Reversing the whole comparator, as the field sorts do, would reshuffle

@@ -37,6 +37,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * File-backed [VerdictStore] that survives restarts: verdicts are loaded from [file] on construction
@@ -82,6 +83,9 @@ class JsonVerdictStore(
 
     private val verdicts = ConcurrentHashMap<String, GrindVerdict>()
 
+    /** Bumped on every record, so the report can tell a cached derivation is stale. See [VerdictStore.version]. */
+    private val revision = AtomicLong()
+
     /** Whether [verdicts] holds anything not yet on disk. Only ever set when coalescing. */
     private val pending = AtomicBoolean(false)
 
@@ -114,6 +118,7 @@ class JsonVerdictStore(
         // re-ground: a sweep on any other trigger would discard evidence before a replacement exists.
         supersededLoaderKeys(verdict, verdicts.keys).forEach { verdicts.remove(it) }
         verdicts[verdict.identityKey()] = verdict
+        revision.incrementAndGet()
         if (flusher == null) persist() else pending.set(true)
     }
 
@@ -148,6 +153,9 @@ class JsonVerdictStore(
     }
 
     override fun all(): List<GrindVerdict> = verdicts.values.toList()
+
+    override val version: Long
+        get() = revision.get()
 
 
     /**

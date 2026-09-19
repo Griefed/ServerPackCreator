@@ -21,12 +21,10 @@ package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
 import de.griefed.serverpackcreator.app.HomeDirectoryPreference
+import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
-import java.io.File
-import java.util.*
 
-@Suppress("DuplicatedCode")
 @CommandLine.Command(
     name = "homeDir", mixinStandardHelpOptions = true,
     description = [
@@ -36,36 +34,23 @@ import java.util.*
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
 /** Prints where SPC's home directory resolved to, which is the first thing to check when files turn up somewhere unexpected. */
-class HomeDirCommand : Command {
+class HomeDirCommand(private val prompt: ConsolePrompt = ConsolePrompt()) : Command {
     /** Print the resolved home directory. */
     override fun run() {
         changeHomeDirectory()
     }
 
     private fun changeHomeDirectory() {
-        val scanner = Scanner(System.`in`)
-        println("Enter the full path to the new ServerPackCreator home-directory.")
-        if (SystemUtilities.IS_WINDOWS) {
-            println("Don't forget to escape any \\ in your paths, so 'C:\\Some\\Path' becomes 'C:\\\\Some\\\\Path'.")
+        val question = buildString {
+            append("Enter the full path to the new ServerPackCreator home-directory.")
+            if (SystemUtilities.IS_WINDOWS) {
+                append(System.lineSeparator())
+                append("Don't forget to escape any \\ in your paths, so 'C:\\Some\\Path' becomes 'C:\\\\Some\\\\Path'.")
+            }
         }
 
-        var path: String
-        do {
-            print("Path: ")
-            path = scanner.nextLine()
-            if (!File(path).isDirectory) {
-                println("Directory '$path' does not exist.")
-            }
-        } while (!File(path).isDirectory)
-
-        HomeDirectoryPreference.store(path)
+        HomeDirectoryPreference.store(prompt.readExistingDirectory(question).path)
 
         println("You MUST restart ServerPackCreator for this change to take full effect.")
-        try {
-            scanner.close()
-        } catch (_: Exception) {
-            // The scanner wraps System.in; a failure while closing it is harmless and must not
-            // abort the command.
-        }
     }
 }

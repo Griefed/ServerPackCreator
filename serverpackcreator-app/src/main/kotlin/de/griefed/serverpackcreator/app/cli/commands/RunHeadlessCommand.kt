@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
 import picocli.CommandLine
@@ -41,10 +42,13 @@ import javax.xml.parsers.ParserConfigurationException
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
 /** Generates server packs without the shell, either from one named configuration or from every one in the config directory. */
-class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+class RunHeadlessCommand(
+    private val apiWrapper: ApiWrapper = ApiWrapper.api(),
+    private val prompt: ConsolePrompt = ConsolePrompt()
+) : Command {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    /** Invoked with no subcommand: generate from every configuration in the config directory. */
+    /** Invoked with no subcommand: generate from the default config, `<home>/serverpackcreator.conf`. */
     override fun run() {
         runHeadless()
     }
@@ -92,43 +96,47 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "The config-directory is inside ServerPackCreators home-directory."
         ]
     )
-    /** Generate from every configuration file in the configured directory, one after another. */
-    fun withAllInConfigDir() {
-        val configs = apiWrapper.apiProperties.configsDirectory.listFiles()
+    /**
+     * Generate from every configuration file in the configured directory, one after another, and report
+     * whether every one of them produced a server pack.
+     */
+    fun withAllInConfigDir(): Boolean {
+        val configsDirectory = apiWrapper.apiProperties.configsDirectory
+        // listFiles() is null for anything that is not a readable directory, and the loop used to
+        // iterate that straight into a NullPointerException.
+        val configs = configsDirectory.listFiles()
+        if (configs == null) {
+            log.error("Cannot read the configs-directory ${configsDirectory.absolutePath}.")
+            return false
+        }
+        if (configs.isEmpty()) {
+            log.warn("No configurations in ${configsDirectory.absolutePath}, nothing to generate.")
+            return true
+        }
+        var allGenerated = true
         for (config in configs) {
-            runHeadless(config)
+            allGenerated = runHeadless(config) && allGenerated
         }
+        return allGenerated
     }
 
-    private fun requestConfigFile(): File {
-        val scanner = Scanner(System.`in`)
-        println("Enter the full path to the new ServerPackCreator home-directory.")
+    private fun requestConfigFile(): File =
+        prompt.readExistingFile("Enter the full path to the server pack config.")
 
-        var path: String
-        do {
-            print("Path: ")
-            path = scanner.nextLine()
-            if (!File(path).isFile) {
-                println("File '$path' does not exist.")
-            }
-        } while (!File(path).isFile)
-        try {
-            scanner.close()
-        } catch (_: Exception) {
-            // The scanner wraps System.in; a failure while closing it is harmless and must not
-            // abort the command.
-        }
-        return File(path)
-    }
-
-    /** The shared body both subcommands end in: check the configuration, then generate if it passes. */
+    /**
+     * The shared body both subcommands end in: check the configuration, then generate if it passes.
+     *
+     * Returns whether a server pack was actually produced, so a headless run can be turned into an exit
+     * code. Every path that prints a problem returns `false`.
+     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     fun runHeadless(
         config: File = apiWrapper.apiProperties.defaultConfig,
         destination: Optional<File> = Optional.empty()
-    ) {
+    ): Boolean {
         if (!config.isFile) {
             log.warn("${config.absolutePath} not found...")
+            return false
         } else {
             val packConfig = PackConfig()
             packConfig.customDestination = destination
@@ -138,6 +146,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 for (error in check.encounteredErrors) {
                     println(error)
                 }
+                return false
             } else {
                 val generation = apiWrapper.serverPackHandler.run(packConfig)
                 if (!generation.success) {
@@ -145,8 +154,10 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                     for (error in generation.errors) {
                         println(error)
                     }
+                    return false
                 } else {
                     println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                    return true
                 }
             }
         }

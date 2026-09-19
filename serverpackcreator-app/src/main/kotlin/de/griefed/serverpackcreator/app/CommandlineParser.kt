@@ -104,10 +104,12 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
         * Check whether the user wants to set the home-directory
         */
         if (argsList.any { entry -> entry.contains(Mode.HOME.argument()) }) {
-            val setupPos = argsList.indexOf(Mode.HOME.argument()) + 1
-            val setupArg = argsList[setupPos]
-            val setupFile = File(setupArg).absoluteFile
-            if (argsList.size > 1 && setupFile.isDirectory) {
+            val setupFile = pathAfter(argsList, Mode.HOME.argument())?.absoluteFile
+            if (setupFile == null) {
+                log.error("${Mode.HOME.argument()} requires the path to an existing directory.")
+            } else if (!setupFile.isDirectory) {
+                log.error("Home-directory ${setupFile.absolutePath} does not exist. Keeping the configured one.")
+            } else {
                 homeDir = Optional.of(setupFile)
             }
             if (homeDir.isPresent) {
@@ -200,12 +202,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
-                val modpackPos = argsList.indexOf(Mode.CGEN.argument()) + 1
-                val modpackArg = argsList[modpackPos]
-                val modpackDir = File(modpackArg)
-                if (argsList.size > 1 && modpackDir.isDirectory) {
-                    modpackDirectory = Optional.of(modpackDir)
-                }
+                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.CGEN.argument()))
                 mode = Mode.CGEN
                 return@run
             }
@@ -214,20 +211,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a specific server pack config from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CONFIG.argument()) }) {
-                val confPos = argsList.indexOf(Mode.CONFIG.argument()) + 1
-                val confArg = argsList[confPos]
-                val confFile = File(confArg)
-                if (argsList.size > 1 && confFile.isFile) {
-                    serverPackConfig = Optional.of(confFile)
-                }
-
-                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
-                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
-                    val destArg = argsList[destPos]
-                    val destFile = File(destArg)
-                    serverPackDestination = Optional.of(destFile)
-                }
-
+                serverPackConfig = Optional.ofNullable(pathAfter(argsList, Mode.CONFIG.argument()))
+                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION.argument()))
                 mode = Mode.CONFIG
                 return@run
             }
@@ -236,20 +221,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a specific server pack config from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.FEELINGLUCKY.argument()) }) {
-                val modpackPos = argsList.indexOf(Mode.FEELINGLUCKY.argument()) + 1
-                val modpackArg = argsList[modpackPos]
-                val modpackDir = File(modpackArg)
-                if (argsList.size > 1 && modpackDir.isDirectory) {
-                    modpackDirectory = Optional.of(modpackDir)
-                }
-
-                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
-                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
-                    val destArg = argsList[destPos]
-                    val destFile = File(destArg)
-                    serverPackDestination = Optional.of(destFile)
-                }
-
+                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.FEELINGLUCKY.argument()))
+                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION.argument()))
                 mode = Mode.FEELINGLUCKY
                 return@run
             }
@@ -282,11 +255,12 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to set up and prepare the environment for subsequent runs.
             */
             if (argsList.any { entry -> entry.contains(Mode.SETUP.argument()) }) {
-                val setupPos = argsList.indexOf(Mode.SETUP.argument()) + 1
-                val setupArg = argsList[setupPos]
-                val setupFile = File(setupArg)
-                if (argsList.size > 1 && setupFile.isFile) {
-                    propertiesFile = setupFile
+                pathAfter(argsList, Mode.SETUP.argument())?.let { given ->
+                    if (given.isFile) {
+                        propertiesFile = given
+                    } else {
+                        log.error("Properties-file ${given.absolutePath} does not exist. Using ${propertiesFile.absolutePath}.")
+                    }
                 }
                 mode = Mode.SETUP
                 return@run
@@ -303,6 +277,25 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
                 return@run
             }
         }
+    }
+
+    /**
+     * Read the path following [flag] in [args] as a [File], or `null` when [flag] is absent or is the
+     * last word on the commandline.
+     *
+     * Records the path as given, without asking whether it exists: a run that knows *which* path it
+     * was handed can say so, whereas discarding it leaves the caller with nothing to name. Guarding
+     * the index is what stops a trailing `-config` aborting the application with an
+     * IndexOutOfBoundsException before it has printed anything actionable.
+     *
+     * @author Griefed
+     */
+    private fun pathAfter(args: List<String>, flag: String): File? {
+        val valueIndex = args.indexOf(flag) + 1
+        if (valueIndex == 0 || valueIndex >= args.size) {
+            return null
+        }
+        return File(args[valueIndex])
     }
 
     /**

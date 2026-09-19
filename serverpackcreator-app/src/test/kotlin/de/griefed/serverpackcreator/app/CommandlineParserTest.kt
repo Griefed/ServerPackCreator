@@ -46,11 +46,16 @@ internal class CommandlineParserTest {
     }
 
     /**
-     * Pins that -config selects CONFIG mode and captures an existing config-file, while a
-     * non-existent config-file leaves serverPackConfig empty.
+     * Pins that -config selects CONFIG mode and captures the config-file it was given, whether or not
+     * that file exists.
+     *
+     * The non-existent case used to be dropped on the floor here, which left the CONFIG dispatch in
+     * [ServerPackCreator.run] calling `get()` on an empty Optional — a bare NoSuchElementException
+     * instead of a message naming the path the user mistyped. Parsing records what was typed;
+     * deciding whether it is usable belongs to the command that runs it.
      */
     @Test
-    fun configModeCapturesExistingConfigFile(@TempDir tempDir: File) {
+    fun configModeCapturesTheConfigFileItWasGiven(@TempDir tempDir: File) {
         val configFile = File(tempDir, "server pack.conf")
         configFile.writeText("modpackDir = \"x\"")
         val parser = parse("-config", configFile.absolutePath)
@@ -58,9 +63,53 @@ internal class CommandlineParserTest {
         Assertions.assertTrue(parser.serverPackConfig.isPresent)
         Assertions.assertEquals(configFile, parser.serverPackConfig.get())
 
-        val missing = parse("-config", File(tempDir, "missing.conf").absolutePath)
+        val missingFile = File(tempDir, "missing.conf")
+        val missing = parse("-config", missingFile.absolutePath)
         Assertions.assertEquals(Mode.CONFIG, missing.mode)
-        Assertions.assertTrue(missing.serverPackConfig.isEmpty)
+        Assertions.assertTrue(
+            missing.serverPackConfig.isPresent,
+            "the path must survive parsing, so the run can name the file it could not find"
+        )
+        Assertions.assertEquals(missingFile, missing.serverPackConfig.get())
+    }
+
+    /**
+     * Pins that a path-taking argument given as the very last word on the commandline is reported as
+     * a missing value rather than read past the end of the argument list.
+     *
+     * Every one of these used to index `argsList[indexOf(flag) + 1]` unguarded, so `-config` with no
+     * path aborted the whole application with an IndexOutOfBoundsException before it had printed
+     * anything a user could act on.
+     */
+    @Test
+    fun pathArgumentsWithoutAValueAreReportedNotThrown() {
+        Assertions.assertDoesNotThrow({ parse("-config") }, "-config with no path must not throw")
+        Assertions.assertDoesNotThrow({ parse("-cgen") }, "-cgen with no path must not throw")
+        Assertions.assertDoesNotThrow({ parse("-feelinglucky") }, "-feelinglucky with no path must not throw")
+        Assertions.assertDoesNotThrow({ parse("--setup") }, "--setup with no path must not throw")
+        Assertions.assertDoesNotThrow({ parse("-config", "pack.conf", "--destination") }, "--destination with no path must not throw")
+
+        Assertions.assertEquals(Mode.CONFIG, parse("-config").mode)
+        Assertions.assertTrue(parse("-config").serverPackConfig.isEmpty, "no path given means nothing to run")
+        Assertions.assertTrue(parse("-cgen").modpackDirectory.isEmpty)
+        Assertions.assertTrue(parse("-feelinglucky").modpackDirectory.isEmpty)
+        Assertions.assertTrue(parse("-config", "pack.conf", "--destination").serverPackDestination.isEmpty)
+    }
+
+    /**
+     * Pins the same missing-value handling for --home, which is parsed ahead of the mode-dispatch and
+     * therefore threw before any mode had even been chosen. The stored preference is saved and
+     * restored so the developer machine's real setting is left untouched.
+     */
+    @Test
+    fun homeArgumentWithoutAValueIsReportedNotThrown() {
+        val previous = HomeDirectoryPreference.stored()
+        try {
+            Assertions.assertDoesNotThrow({ parse("--home") }, "--home with no path must not throw")
+            Assertions.assertTrue(parse("--home").homeDir.isEmpty)
+        } finally {
+            previous?.let { HomeDirectoryPreference.store(it) }
+        }
     }
 
     /**
