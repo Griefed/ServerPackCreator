@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
@@ -36,7 +37,8 @@ import java.util.*
 )
 /** Builds a configuration by inspecting a modpack directory, so a user need not write one by hand. */
 class ConfigGenCommand(
-    private val apiWrapper: ApiWrapper = ApiWrapper.api()
+    private val apiWrapper: ApiWrapper = ApiWrapper.api(),
+    private val prompt: ConsolePrompt = ConsolePrompt()
 ) : Command {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -48,23 +50,8 @@ class ConfigGenCommand(
     }
 
     /** Prompt until the user gives a directory that exists. */
-    fun requestModpackDir(): File {
-        // LANDMINE - do not close this Scanner. Scanner.close() closes its source, System.in cannot
-        // be reopened, and JLine's POSIX terminal holds that same descriptor as its pty slave, so the
-        // shell that called this prompt dies on its next readLine with ioctl(TIOCGWINSZ) = -1.
-        val scanner = Scanner(System.`in`)
-        println("Enter the full path to the modpack-directory.")
-
-        var path: String
-        do {
-            print("Path: ")
-            path = scanner.nextLine()
-            if (!File(path).isDirectory) {
-                println("File '$path' does not exist.")
-            }
-        } while (!File(path).isDirectory)
-        return File(path)
-    }
+    fun requestModpackDir(): File =
+        prompt.readExistingDirectory("Enter the full path to the modpack-directory.")
 
     /** Derive a configuration from the given modpack and write it out; does nothing when none was given. */
     fun generateConfFromModpack(modpackDirectory: Optional<File>) {
