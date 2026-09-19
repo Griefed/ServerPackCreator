@@ -223,6 +223,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` | `2048`                       | Ceiling for that store; oldest attempts are dropped first once it is passed  |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
+| `SPC_GRINDER_HTTP_THREADS`      | `4`                            | Threads the report answers on. A request that blocks costs one — see *Report responsiveness* |
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
 | `SPC_GRINDER_CPUS`              | `2`                            | Cores **per container**. `0` = uncapped — see *Capping CPU*                  |
@@ -282,6 +283,32 @@ go stale faster than the crawl advances and the tail is never reached.
 **A project always gets at least its newest line**, whatever the knobs say. A candidate that records no
 verdict at all is indistinguishable from one the engine failed on: nothing is stored, so the freshness check
 keeps answering "never seen" and the project is re-selected every sweep for ever.
+
+### Report responsiveness
+
+The report is served by the JDK's built-in HTTP server on a small fixed thread pool
+(`SPC_GRINDER_HTTP_THREADS`, default `4`). Every request is handed to that pool, so **a request that blocks
+costs a whole thread**, and a pool with nothing free stops answering *everything* — including `/status` and
+`/dashboard`, which do no work at all. From outside, that is indistinguishable from a dead host: the socket
+still accepts the connection, nothing ever replies, and the reverse proxy eventually returns a 502.
+
+That was reachable, because the report used to re-derive the whole store on every request. Selecting rows
+sorts every verdict and gathers every filter column across all of them, which does **not** shrink with
+pagination — the page size only bounds what is rendered. Measured against synthetic stores:
+
+| verdicts | selecting | rendering the 250-row page |
+|---------:|----------:|---------------------------:|
+| 10,000   | 63 ms     | 8 ms                       |
+| 38,258   | 251 ms    | 3 ms                       |
+| 100,000  | 434 ms    | 1 ms                       |
+
+At the middle row — roughly a real deployed store — 98% of the work was thrown away. Those derivations are
+now computed once per *change* to the store rather than once per request, so a report whose grinder is idle
+costs effectively nothing to serve however large the store is.
+
+If the report is still slow, it is worth checking in this order: whether the grind workers are saturating the
+host (they are uncapped on the host side; only the containers are bounded), and whether the boot-log
+directory has grown enough that listing it per request is the remaining cost.
 
 ### Exposing the report
 
