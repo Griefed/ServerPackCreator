@@ -101,12 +101,13 @@ internal class InteractivePromptStdinTest {
     }
 
     /**
-     * `lang`'s prompt. The answer has to be a language a shipped `Translations` locale declares, or
-     * the command loops until the fed input runs out; `en` is the one this project is written in.
+     * `lang`'s prompt. The answer has to be a locale the shipped `Translations` offers, or the command
+     * loops until the fed input runs out; `en_GB` is the one this project is written in. It used to be
+     * `en` here, because the command listed `en_GB` and accepted only `en`.
      */
     @Test
     fun langPromptLeavesSystemInOpen() {
-        val closed = stdinClosedBy("en\n") {
+        val closed = stdinClosedBy("en_GB\n") {
             LanguageCommand(mockk(relaxed = true)).run()
         }
         Assertions.assertFalse(closed, "lang's prompt must not close System.in")

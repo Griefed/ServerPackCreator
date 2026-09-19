@@ -20,11 +20,10 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import Translations
-import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
-import java.util.*
 
 @CommandLine.Command(
     name = "lang", mixinStandardHelpOptions = true,
@@ -36,35 +35,24 @@ import java.util.*
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
 /** Changes the configured locale, which every message SPC prints is read from. */
-class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+class LanguageCommand(
+    private val apiWrapper: ApiWrapper = ApiWrapper.api(),
+    private val prompt: ConsolePrompt = ConsolePrompt()
+) : Command {
     /** Prompt for a locale and store it. */
     override fun run() {
-        printAvailableLanguages()
         chooseAndSwitchLanguage()
     }
 
-    private fun printAvailableLanguages() {
-        for (locale in Translations.locales) {
-            println(locale)
-        }
-    }
-
+    /**
+     * Offer every shipped locale under the name it is displayed by, and store whichever is chosen.
+     *
+     * The map is keyed by the locale's own string form, so the value offered and the value matched
+     * are one and the same -- which is what stops the command listing locales it will not accept.
+     */
     private fun chooseAndSwitchLanguage() {
-        // LANDMINE - do not close this Scanner. Scanner.close() closes its source, System.in cannot
-        // be reopened, and JLine's POSIX terminal holds that same descriptor as its pty slave, so the
-        // shell that called this prompt dies on its next readLine with ioctl(TIOCGWINSZ) = -1.
-        val scanner = Scanner(System.`in`)
-        println("Choose one of the available languages above.")
-
-        var userLocale: String
-        do {
-            print("Language: ")
-            userLocale = scanner.next()
-            if (!Translations.locales.map { entry -> entry.language }.contains(userLocale)) {
-                println("Unsupported locale $userLocale.")
-            }
-        } while (!Translations.locales.map { entry -> entry.language }.contains(userLocale))
-        val lang = scanner.nextLine()
-        apiWrapper.apiProperties.changeLocale(Locale(lang))
+        val available = Translations.locales.associateBy { locale -> locale.toString() }
+        val chosen = prompt.readChoice("Choose one of the available languages above.", "Language: ", available)
+        apiWrapper.apiProperties.changeLocale(chosen)
     }
 }
