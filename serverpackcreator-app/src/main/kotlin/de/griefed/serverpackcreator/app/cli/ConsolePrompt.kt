@@ -56,22 +56,32 @@ class ConsolePrompt(
      * that what is rejected and what is said about it stay in one place.
      */
     fun readUntil(question: String, prompt: String, rejection: (String) -> String?): String {
-        TODO("ConsolePrompt.readUntil")
+        say(question)
+        while (true) {
+            output.append(prompt)
+            val answer = scanner.nextLine()
+            val complaint = rejection(answer) ?: return answer
+            say(complaint)
+        }
     }
 
     /**
      * Ask [question] until the answer names a directory that exists, and return it.
      */
-    fun readExistingDirectory(question: String): File {
-        TODO("ConsolePrompt.readExistingDirectory")
-    }
+    fun readExistingDirectory(question: String): File = File(
+        readUntil(question, PATH_PROMPT) { answer ->
+            if (File(answer).isDirectory) null else "Directory '$answer' does not exist."
+        }
+    )
 
     /**
      * Ask [question] until the answer names a file that exists, and return it.
      */
-    fun readExistingFile(question: String): File {
-        TODO("ConsolePrompt.readExistingFile")
-    }
+    fun readExistingFile(question: String): File = File(
+        readUntil(question, PATH_PROMPT) { answer ->
+            if (File(answer).isFile) null else "File '$answer' does not exist."
+        }
+    )
 
     /**
      * List [choices] by the form they are displayed under, ask [question], and return the value behind
@@ -81,6 +91,22 @@ class ConsolePrompt(
      * accept" unrepresentable rather than merely fixed.
      */
     fun <T> readChoice(question: String, prompt: String, choices: Map<String, T>): T {
-        TODO("ConsolePrompt.readChoice")
+        for (displayed in choices.keys) {
+            say(displayed)
+        }
+        val chosen = readUntil(question, prompt) { answer ->
+            if (choices.containsKey(answer)) null else "Unsupported choice $answer."
+        }
+        return choices.getValue(chosen)
+    }
+
+    /** Write [line] followed by a line separator, which is every message except the inline prompt. */
+    private fun say(line: String) {
+        output.append(line).append(System.lineSeparator())
+    }
+
+    companion object {
+        /** What a prompt asking for a path puts in front of the cursor. */
+        const val PATH_PROMPT = "Path: "
     }
 }
