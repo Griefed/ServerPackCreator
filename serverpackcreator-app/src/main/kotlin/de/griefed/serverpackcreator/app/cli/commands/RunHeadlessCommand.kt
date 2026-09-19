@@ -44,7 +44,7 @@ import javax.xml.parsers.ParserConfigurationException
 class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    /** Invoked with no subcommand: generate from every configuration in the config directory. */
+    /** Invoked with no subcommand: generate from the default config, `<home>/serverpackcreator.conf`. */
     override fun run() {
         runHeadless()
     }
