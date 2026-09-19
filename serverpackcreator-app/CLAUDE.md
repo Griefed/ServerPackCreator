@@ -258,6 +258,33 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 
 ## Landmines & verified quirks (durable)
 
+- **LANDMINE — never construct a `Scanner` over `System.in`; prompt through `cli/ConsolePrompt`.**
+  `Scanner.close()` closes its source, `System.in` cannot be reopened, and JLine's POSIX terminal holds
+  that *same* descriptor as its pty slave — `OsXNativePty.current()` and `LinuxNativePty.current()` both
+  pass fd 0 / `FileDescriptor.in`, and `getSize()` calls `ioctl(slave, TIOCGWINSZ)`. So a prompt that
+  closed its Scanner killed the shell that called it: the next `readLine` raised
+  `Error calling ioctl(TIOCGWINSZ): return code is -1` inside a `java.io.IOError`, which is an **Error**,
+  so the shell's per-line `catch (e: Exception)` missed it and the outer `catch (t: Throwable)` ended the
+  session. All four prompting commands did this; reported against 8.1.2, still present until 2026-09-19.
+  `ConsolePromptTest.noCommandReachesSystemInOnItsOwn` greps the main source for `Scanner(System.` and
+  expects nothing — teeth verified by planting one in `HomeDirCommand`.
+- **The four prompt loops were copies, and the copies had drifted into three separate defects** — which is
+  why they are now one `ConsolePrompt`. `run withSpecificConfig` asked for "the new ServerPackCreator
+  home-directory" while validating `isFile` and returning a config; `cgen` complained "File '<path>' does
+  not exist." about a *directory*; and `lang` printed `en_GB`/`pt_BR`/`zn_GB` while matching
+  `locale.language` (`en`/`pt`/`zn`), so it refused every value it offered — and then passed
+  `scanner.nextLine()` (the empty remainder after the accepted token) to `changeLocale`, storing
+  `Locale("")`. Two of the files carried `@Suppress("DuplicatedCode")`, so the annotation was sitting on
+  the copy holding the worst bug. **`readChoice` takes one map**: its keys are both what is listed and what
+  is matched, so "offers a choice it will not accept" is now unrepresentable rather than merely fixed.
+- **A path argument names itself when it is wrong.** `CommandlineParser.pathAfter` records the path as
+  given and returns `null` only when the flag is absent or is the last word; it does **not** decide whether
+  the path is usable. That belongs to whoever runs the thing, which is the only place that can name it.
+  Before this, `-config <typo>` discarded the path and `ServerPackCreator.run` called `get()` on the empty
+  Optional (`NoSuchElementException`), and `-config` with no path at all indexed past the end of the
+  argument list. Note the headless verbs still signal nothing through their **exit code** — a failed check,
+  a failed generation and a bad path all exit `0`.
+
 - **LANDMINE — FlatLaf's `SystemFileChooser` has no per-file `accept` callback; do not write a
   `FileFilter` subclass expecting one.** `SystemFileChooser.FileFilter` declares **only**
   `getDescription()` (verified with `javap` against flatlaf 3.7.1), because the chooser drives a
