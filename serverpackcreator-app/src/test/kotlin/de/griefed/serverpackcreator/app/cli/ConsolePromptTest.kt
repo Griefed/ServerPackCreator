@@ -124,4 +124,29 @@ internal class ConsolePromptTest {
 
         Assertions.assertFalse(recording.closed, "closing this stream closes System.in, which ends the shell")
     }
+
+    /**
+     * No command may reach `System.in` on its own, because the rule that keeps the shell alive — never
+     * close the Scanner — lives in exactly one place and cannot be enforced in the others.
+     *
+     * A source check rather than a behavioural one, deliberately: the regression to catch is a *new*
+     * command written with its own `Scanner(System.in)`, and a test can only execute commands that
+     * already exist. Matching `Scanner(System.` rather than `Scanner` avoids the several unrelated
+     * `ModScanner`/`LarsonScanner` identifiers in this module. `ConsolePrompt` takes its stream as a
+     * parameter, so it does not match either.
+     */
+    @Test
+    fun noCommandReachesSystemInOnItsOwn() {
+        val offenders = File("src/main/kotlin").walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .filter { it.readText().contains("Scanner(System.") }
+            .map { it.name }
+            .toSortedSet()
+
+        Assertions.assertEquals(
+            emptySet<String>(),
+            offenders,
+            "read from the console through ConsolePrompt; a Scanner of your own will close System.in and end the shell"
+        )
+    }
 }
