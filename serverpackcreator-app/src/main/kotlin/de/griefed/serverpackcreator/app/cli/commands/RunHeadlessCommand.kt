@@ -101,6 +101,9 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
     }
 
     private fun requestConfigFile(): File {
+        // LANDMINE - do not close this Scanner. Scanner.close() closes its source, System.in cannot
+        // be reopened, and JLine's POSIX terminal holds that same descriptor as its pty slave, so the
+        // shell that called this prompt dies on its next readLine with ioctl(TIOCGWINSZ) = -1.
         val scanner = Scanner(System.`in`)
         println("Enter the full path to the new ServerPackCreator home-directory.")
 
@@ -112,12 +115,6 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 println("File '$path' does not exist.")
             }
         } while (!File(path).isFile)
-        try {
-            scanner.close()
-        } catch (_: Exception) {
-            // The scanner wraps System.in; a failure while closing it is harmless and must not
-            // abort the command.
-        }
         return File(path)
     }
 

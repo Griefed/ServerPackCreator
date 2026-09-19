@@ -50,6 +50,9 @@ class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : C
     }
 
     private fun chooseAndSwitchLanguage() {
+        // LANDMINE - do not close this Scanner. Scanner.close() closes its source, System.in cannot
+        // be reopened, and JLine's POSIX terminal holds that same descriptor as its pty slave, so the
+        // shell that called this prompt dies on its next readLine with ioctl(TIOCGWINSZ) = -1.
         val scanner = Scanner(System.`in`)
         println("Choose one of the available languages above.")
 
@@ -63,11 +66,5 @@ class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : C
         } while (!Translations.locales.map { entry -> entry.language }.contains(userLocale))
         val lang = scanner.nextLine()
         apiWrapper.apiProperties.changeLocale(Locale(lang))
-        try {
-            scanner.close()
-        } catch (_: Exception) {
-            // The scanner wraps System.in; a failure while closing it is harmless and must not
-            // abort the command.
-        }
     }
 }
