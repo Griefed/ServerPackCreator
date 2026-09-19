@@ -878,14 +878,14 @@ class GenerationConfig(private val store: PropertyStore) {
     /**
      * String-list of clientside-only mods to exclude from server packs.
      */
-    var clientsideMods = fallbackMods
+    var clientsideMods = TreeSet(fallbackMods)
         private set
 
     /**
      * String-list of mods to include if present, regardless whether a match was found through
      * [clientsideMods].
      */
-    var modsWhitelist = fallbackModsWhitelist
+    var modsWhitelist = TreeSet(fallbackModsWhitelist)
         private set
 
     /**
@@ -965,7 +965,7 @@ class GenerationConfig(private val store: PropertyStore) {
     /**
      * Directories to include in a server pack; store-entries merge with the fallback-defaults.
      */
-    var directoriesToInclude = fallbackDirectoriesInclusion
+    var directoriesToInclude = TreeSet(fallbackDirectoriesInclusion)
         get() {
             val entries =
                 store.getList(DIRECTORIES_MUST_INCLUDE_KEY, fallbackDirectoriesInclusion.joinToString(","))
@@ -983,7 +983,7 @@ class GenerationConfig(private val store: PropertyStore) {
      * Directories to exclude from a server pack; directories present in [directoriesToInclude]
      * always win and are removed from this set.
      */
-    var directoriesToExclude = fallbackDirectoriesExclusion
+    var directoriesToExclude = TreeSet(fallbackDirectoriesExclusion)
         get() {
             val prop =
                 store.getList(DIRECTORIES_SHOULD_EXCLUDE_KEY, fallbackDirectoriesExclusion.joinToString(","))
@@ -1007,7 +1007,7 @@ class GenerationConfig(private val store: PropertyStore) {
      * Files to delete after a modloader-server installation; store-entries merge with the
      * fallback-defaults.
      */
-    var postInstallCleanupFiles = fallbackPostInstallCleanupFiles
+    var postInstallCleanupFiles = TreeSet(fallbackPostInstallCleanupFiles)
         get() {
             val entries = store.getList(POST_INSTALL_CLEANUP_KEY, fallbackPostInstallCleanupFiles.joinToString(","))
             field.addAll(entries)
@@ -1024,7 +1024,7 @@ class GenerationConfig(private val store: PropertyStore) {
      * Files to delete before a modloader-server installation; store-entries merge with the
      * fallback-defaults.
      */
-    var preInstallCleanupFiles = fallbackPreInstallCleanupFiles
+    var preInstallCleanupFiles = TreeSet(fallbackPreInstallCleanupFiles)
         get() {
             val entries = store.getList(PRE_INSTALL_CLEANUP_KEY, fallbackPreInstallCleanupFiles.joinToString(","))
             field.addAll(entries)
@@ -1042,7 +1042,7 @@ class GenerationConfig(private val store: PropertyStore) {
      * fallback-defaults. The placeholders MINECRAFT_VERSION, MODLOADER and MODLOADER_VERSION are
      * replaced during generation.
      */
-    var zipArchiveExclusions = fallbackZipExclusions
+    var zipArchiveExclusions = TreeSet(fallbackZipExclusions)
         get() {
             val entries = store.getList(ZIP_EXCLUSIONS_KEY, fallbackZipExclusions.joinToString(","))
             field.addAll(entries)
