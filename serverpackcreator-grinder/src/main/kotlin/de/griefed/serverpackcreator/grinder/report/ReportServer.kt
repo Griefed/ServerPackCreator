@@ -75,9 +75,20 @@ class ReportServer(
     private val fallbackLists: (() -> FallbackLists)? = null,
     private val crashLogs: BootLogStore? = null,
     private val consoleRules: (() -> ConsoleRuleSet)? = null,
-    private val requeue: RequeueStore? = null
+    private val requeue: RequeueStore? = null,
+    private val httpThreads: Int = DEFAULT_HTTP_THREADS
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * The store's derivations, rebuilt only when a verdict is recorded.
+     *
+     * Every endpoint that selects reads through this. Before it, each request re-sorted the whole store and
+     * re-gathered every filter column across it — 251 ms at the deployed row count, against 3 ms to render
+     * the 250 rows that were actually sent. With only a handful of request threads, that is what let the
+     * report stop answering altogether rather than merely answer slowly.
+     */
+    private val snapshots = VerdictSnapshotCache(store)
 
     /**
      * The tab icon, read off the classpath once and held: it is a few kilobytes and every page load asks for
@@ -131,7 +142,7 @@ class ReportServer(
             // the slug-then-loader tie-break rather than costing a directory listing for a column nobody is
             // exporting. Every other sort behaves identically to the table's.
             val selection = VerdictSelection.select(
-                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+                snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
             exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
             respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
@@ -145,7 +156,7 @@ class ReportServer(
         // still travels, so a client that does ask for a page knows where in the set it landed.
         server.createContext("/verdicts.json") { exchange ->
             val selection = VerdictSelection.select(
-                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+                snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
             respond(exchange, "application/json; charset=utf-8", verdictsJson(selection))
         }
@@ -196,7 +207,7 @@ class ReportServer(
                 "text/html; charset=utf-8",
                 VerdictReportRenderer.toHtml(
                     VerdictSelection.select(
-                        store.all(),
+                        snapshots.current(),
                         VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE),
                         // The same snapshot the renderer reads from, so the count a row is SORTED by and the
                         // links it then shows cannot disagree -- and still one listing per request.
@@ -207,9 +218,9 @@ class ReportServer(
                 }
             )
         }
-        pool = Executors.newFixedThreadPool(2).also { server.executor = it }
+        pool = Executors.newFixedThreadPool(httpThreads.coerceAtLeast(1)).also { server.executor = it }
         server.start()
-        log.info("Grinder report available at http://${server.address.hostString}:$port/")
+        log.info("Grinder report available at http://${server.address.hostString}:$port/ ($httpThreads request threads)")
         return this
     }
 
@@ -388,9 +399,19 @@ class ReportServer(
     /** Where the bundled tab icon lives. Private: which resource backs the icon routes is nobody else's business. */
     companion object {
         /**
+         * Request threads the report serves with.
+         *
+         * Four rather than the two it was: the JDK's HTTP server hands every request to this pool, so a
+         * request that blocks takes a whole thread with it and the server simply stops answering — including
+         * the endpoints that cost nothing, which is what a wedged instance looks like from outside.
+         */
+        const val DEFAULT_HTTP_THREADS = 4
+
+        /**
          * Classpath location of the tab icon, resolved relative to this class's package so it travels with the
          * jar. It is ServerPackCreator's own configuration glyph (`img/config.png`), the same mark the app uses.
          */
         private const val FAVICON_RESOURCE = "favicon.png"
     }
+
 }

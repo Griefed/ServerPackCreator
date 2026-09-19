@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.BootResult
 import de.griefed.serverpackcreator.clientside.MinecraftLinePolicy
+import de.griefed.serverpackcreator.grinder.report.ReportServer
 import java.io.File
 import java.time.Duration
 
@@ -87,6 +88,12 @@ internal data class GrinderConfiguration(
     val port: Int,
     /** Report server bind address. Loopback by default — the report is unauthenticated. */
     val host: String,
+    /**
+     * Threads the report server answers requests on. Every request is handed to this pool, so one that
+     * blocks costs a whole thread and a pool that runs out stops answering entirely — including the cheap
+     * endpoints, which is what makes a wedged report look like a dead host.
+     */
+    val httpThreads: Int,
     /** Concurrent grinds; each holds a booting container, so this is really a memory decision. */
     val workers: Int,
     /** Candidates taken from the crawl per pass. */
@@ -149,6 +156,7 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_RULE_FALLBACK", "grinder"),
             Knob("SPC_GRINDER_PORT", "8757"),
             Knob("SPC_GRINDER_HOST", "127.0.0.1"),
+            Knob("SPC_GRINDER_HTTP_THREADS", "4"),
             Knob("SPC_GRINDER_WORKERS", "2"),
             Knob("SPC_GRINDER_BATCH", "25"),
             Knob("SPC_GRINDER_CPUS", "2"),
@@ -225,6 +233,9 @@ internal data class GrinderConfiguration(
                 },
                 port = intIn("SPC_GRINDER_PORT", 8757, allowed = 0..65535),
                 host = text("SPC_GRINDER_HOST", "127.0.0.1"),
+                // One line on purpose: everyVariableReadIsDeclaredAsAKnob matches `reader("NAME"` and a
+                // wrapped call is invisible to it, which is how a knob stops being documentation-checked.
+                httpThreads = intIn("SPC_GRINDER_HTTP_THREADS", ReportServer.DEFAULT_HTTP_THREADS, allowed = 1..Int.MAX_VALUE),
                 workers = intIn("SPC_GRINDER_WORKERS", 2, allowed = 1..Int.MAX_VALUE),
                 batch = intIn("SPC_GRINDER_BATCH", 25, allowed = 1..Int.MAX_VALUE),
                 containerCpus = capAtLeastZero("SPC_GRINDER_CPUS", 2.0),
