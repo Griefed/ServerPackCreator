@@ -421,7 +421,10 @@ internal object VerdictSelection {
         val size = query.size ?: matched.size.coerceAtLeast(1)
         val pages = if (matched.isEmpty()) 1 else ((matched.size + size - 1) / size)
         val page = query.page.coerceIn(1, pages)
-        val rows = ordered.drop((page - 1) * size).take(size)
+        // subList, not drop/take: drop() copies everything past the offset, so page one of a 38k-row store
+        // allocated a 38k-element list to hand back 250 of them -- on every request.
+        val from = ((page - 1) * size).coerceAtMost(ordered.size)
+        val rows = ordered.subList(from, (from + size).coerceAtMost(ordered.size)).toList()
 
         return VerdictPage(
             rows = rows,
