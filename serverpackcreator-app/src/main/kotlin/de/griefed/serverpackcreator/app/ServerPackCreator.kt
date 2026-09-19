@@ -41,6 +41,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.*
+import kotlin.system.exitProcess
 import java.util.concurrent.Executors
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
@@ -53,8 +54,27 @@ import kotlin.jvm.optionals.getOrNull
  */
 fun main(args: Array<String>) {
     val app = ServerPackCreator(args)
-    app.run(app.commandlineParser.mode)
+    val exitCode = app.run(app.commandlineParser.mode)
+
+    // LANDMINE - never exit unconditionally here, and never exitProcess(0).
+    //
+    // GUI and WEB return from run() the moment they have handed off: the GUI to the Swing event
+    // dispatch thread, the webservice to the embedded server. Both keep the JVM alive on their own
+    // non-daemon threads, and an exitProcess(0) on this line would kill the window or the server the
+    // instant it finished starting.
+    //
+    // So only a failure exits explicitly. A successful run falls off the end of main and lets the JVM
+    // end when nothing is left running, exactly as every mode did before exit codes existed.
+    if (exitCode != EXIT_SUCCESS) {
+        exitProcess(exitCode)
+    }
 }
+
+/** A run that did what it was asked. Also what every long-lived mode reports, since it never fails here. */
+const val EXIT_SUCCESS = 0
+
+/** A one-shot run that did not produce what it was asked for: bad arguments, a failed check, a failed generation. */
+const val EXIT_FAILURE = 1
 
 /**
  * Create and manage instances required to run ServerPackCreator and provide access to various aspects, such as the
@@ -126,8 +146,14 @@ class ServerPackCreator(private val args: Array<String>) {
         InteractiveCommandLine(apiWrapper, updateChecker)
     }
 
-    /** Start the application the arguments selected — GUI, web, CLI, one of the headless verbs, or the updater. */
-    fun run(mode: Mode = Mode.GUI) {
+    /**
+     * Start the application the arguments selected — GUI, web, CLI, one of the headless verbs, or the
+     * updater — and report [EXIT_SUCCESS] or [EXIT_FAILURE].
+     *
+     * A long-lived mode (GUI, WEB, CLI) always reports success: it has not failed, it has started, and
+     * [main] deliberately does not exit on success so that it can keep running.
+     */
+    fun run(mode: Mode = Mode.GUI): Int {
         log.info("Running with args: ${args.joinToString(" ")}")
         log.info("Running in mode:   $mode")
         log.info("App information:")
@@ -140,7 +166,7 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("OS name:           ${apiWrapper.apiProperties.getOSName()}")
         log.info("OS version:        ${apiWrapper.apiProperties.getOSVersion()}")
 
-        when (mode) {
+        return when (mode) {
             Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI,
             Mode.SCAN, Mode.CLIENTSIDE_REPORT, Mode.VERIFY_CLIENTSIDE -> {
 
@@ -153,6 +179,7 @@ class ServerPackCreator(private val args: Array<String>) {
                     Mode.WEB -> {
                         stageFour()
                         WebService(apiWrapper).start(args)
+                        EXIT_SUCCESS
                     }
 
                     Mode.CONFIG -> {
@@ -163,16 +190,19 @@ class ServerPackCreator(private val args: Array<String>) {
                                 "${Mode.CONFIG.argument()} requires the path to a server pack config, " +
                                         "e.g. ${Mode.CONFIG.argument()} \"/path/to/serverpackcreator.conf\"."
                             )
+                            EXIT_FAILURE
                         } else {
-                            interactiveCommandLine.runHeadlessCommand.runHeadless(
-                                commandlineParser.serverPackConfig.get(),
-                                commandlineParser.serverPackDestination
+                            exitCodeOf(
+                                interactiveCommandLine.runHeadlessCommand.runHeadless(
+                                    commandlineParser.serverPackConfig.get(),
+                                    commandlineParser.serverPackDestination
+                                )
                             )
                         }
                     }
 
                     Mode.WITHALLINCONFIGDIR -> {
-                        interactiveCommandLine.runHeadlessCommand.withAllInConfigDir()
+                        exitCodeOf(interactiveCommandLine.runHeadlessCommand.withAllInConfigDir())
                     }
 
                     Mode.FEELINGLUCKY -> {
@@ -183,67 +213,101 @@ class ServerPackCreator(private val args: Array<String>) {
                                 "${Mode.FEELINGLUCKY.argument()} requires the path to a modpack-directory, " +
                                         "e.g. ${Mode.FEELINGLUCKY.argument()} \"/path/to/modpack\"."
                             )
+                            EXIT_FAILURE
                         } else {
-                            interactiveCommandLine.cliCommands.feelingLucky(
-                                commandlineParser.modpackDirectory.get().absolutePath,
-                                commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
+                            exitCodeOf(
+                                interactiveCommandLine.cliCommands.feelingLucky(
+                                    commandlineParser.modpackDirectory.get().absolutePath,
+                                    commandlineParser.serverPackDestination.getOrNull()?.absolutePath,
+                                )
                             )
                         }
                     }
 
                     Mode.CLI -> {
                         interactiveCommandLine.cli(args)
+                        EXIT_SUCCESS
                     }
 
                     Mode.SCAN -> {
-                        interactiveCommandLine.scanCommand.scan(
-                            commandlineParser.scanDirectory.get(),
-                            commandlineParser.scanLoader ?: "",
-                            commandlineParser.scanMinecraftVersion ?: ""
-                        )
+                        if (commandlineParser.scanDirectory.isEmpty) {
+                            log.error(
+                                "${Mode.SCAN.argument()} requires an existing directory of mods, " +
+                                        "e.g. ${Mode.SCAN.argument()} \"/path/to/mods\" --loader Forge --minecraft 1.20.1."
+                            )
+                            EXIT_FAILURE
+                        } else {
+                            interactiveCommandLine.scanCommand.scan(
+                                commandlineParser.scanDirectory.get(),
+                                commandlineParser.scanLoader ?: "",
+                                commandlineParser.scanMinecraftVersion ?: ""
+                            )
+                            EXIT_SUCCESS
+                        }
                     }
 
                     Mode.CLIENTSIDE_REPORT -> {
-                        interactiveCommandLine.clientsideReportCommand.report(
-                            commandlineParser.clientsideLink.get(),
-                            commandlineParser.clientsideReportOutput?.let { File(it) }
-                        )
+                        if (commandlineParser.clientsideLink.isEmpty) {
+                            log.error("${Mode.CLIENTSIDE_REPORT.argument()} requires a CurseForge or Modrinth project-link.")
+                            EXIT_FAILURE
+                        } else {
+                            interactiveCommandLine.clientsideReportCommand.report(
+                                commandlineParser.clientsideLink.get(),
+                                commandlineParser.clientsideReportOutput?.let { File(it) }
+                            )
+                            EXIT_SUCCESS
+                        }
                     }
 
                     Mode.VERIFY_CLIENTSIDE -> {
-                        interactiveCommandLine.verifyClientsideCommand.verify(
-                            commandlineParser.clientsideVerifyLink.get(),
-                            commandlineParser.clientsideVerifyOutput?.let { File(it) }
-                        )
+                        if (commandlineParser.clientsideVerifyLink.isEmpty) {
+                            log.error("${Mode.VERIFY_CLIENTSIDE.argument()} requires a CurseForge or Modrinth project-link.")
+                            EXIT_FAILURE
+                        } else {
+                            interactiveCommandLine.verifyClientsideCommand.verify(
+                                commandlineParser.clientsideVerifyLink.get(),
+                                commandlineParser.clientsideVerifyOutput?.let { File(it) }
+                            )
+                            EXIT_SUCCESS
+                        }
                     }
 
-                    else -> log.debug("Exiting...")
                 }
 
             }
 
             Mode.HELP -> {
                 interactiveCommandLine.helpCommand.run()
+                EXIT_SUCCESS
             }
 
             Mode.UPDATE -> {
                 interactiveCommandLine.updateCommand.run()
+                EXIT_SUCCESS
             }
 
             Mode.CGEN -> {
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
-                interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
+                exitCodeOf(
+                    interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
+                )
             }
 
             Mode.CLIENTSIDE_APPLY -> {
                 // Pure source-editing of the fallback-list files; no API staging or network needed.
-                interactiveCommandLine.clientsideApplyCommand.apply(
-                    File(commandlineParser.clientsideApplyReport.get()),
-                    commandlineParser.clientsideApplyGenerationConfig?.let { File(it) },
-                    commandlineParser.clientsideApplyProperties?.let { File(it) }
-                )
+                if (commandlineParser.clientsideApplyReport.isEmpty) {
+                    log.error("${Mode.CLIENTSIDE_APPLY.argument()} requires the path to a clientside-report JSON.")
+                    EXIT_FAILURE
+                } else {
+                    interactiveCommandLine.clientsideApplyCommand.apply(
+                        File(commandlineParser.clientsideApplyReport.get()),
+                        commandlineParser.clientsideApplyGenerationConfig?.let { File(it) },
+                        commandlineParser.clientsideApplyProperties?.let { File(it) }
+                    )
+                    EXIT_SUCCESS
+                }
             }
 
             Mode.GUI -> {
@@ -263,18 +327,30 @@ class ServerPackCreator(private val args: Array<String>) {
                     splashScreen!!,
                     migrationManager
                 )
+                EXIT_SUCCESS
             }
 
             Mode.SETUP -> {
                 interactiveCommandLine.setupCommand.run()
                 log.info("Setup completed.")
                 log.debug("Exiting...")
+                EXIT_SUCCESS
             }
 
-            Mode.EXIT -> log.debug("Exiting...")
-            else -> log.debug("Exiting...")
+            Mode.EXIT -> {
+                log.debug("Exiting...")
+                EXIT_SUCCESS
+            }
+
+            else -> {
+                log.debug("Exiting...")
+                EXIT_SUCCESS
+            }
         }
     }
+
+    /** Turn a verb's "did it work" into the code the process exits with. */
+    private fun exitCodeOf(succeeded: Boolean) = if (succeeded) EXIT_SUCCESS else EXIT_FAILURE
 
     /** The splash window while the GUI starts, held so it can be closed once the main frame is up. `null` in every non-GUI mode. */
     @get:Synchronized
