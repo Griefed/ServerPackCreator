@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.api.serverpack
 import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -207,6 +208,89 @@ internal class ServerPackUpdaterTest {
             File(serverPack, "config/gone/nested").exists(),
             "including the nested one, which is why they are removed deepest first"
         )
+    }
+
+    /**
+     * A pack generated on Windows carries a manifest whose entries are `mods\alpha.jar`. Updating it
+     * on Linux must still resolve them, or nothing the previous run produced can ever be pruned and
+     * the pack silently stops converging on its modpack.
+     */
+    @Test
+    fun aManifestWrittenOnTheOtherPlatformStillPrunes(@TempDir tempDir: File) {
+        val serverPack = File(tempDir, "pack")
+        manifest(serverPack, "mods\\alpha.jar", "mods\\dropped.jar", "config\\gone", "config\\gone\\some.cfg")
+        val kept = write(serverPack, "mods/alpha.jar", "alpha")
+        val dropped = write(serverPack, "mods/dropped.jar", "dropped")
+        write(serverPack, "config/gone/some.cfg", "stale")
+
+        // What this run produced, spelled the way this platform spells it.
+        updater.prune(serverPack, setOf("mods/alpha.jar"))
+
+        Assertions.assertTrue(kept.isFile, "A backslash entry this run produced again must be recognised and kept")
+        Assertions.assertFalse(dropped.exists(), "and one it did not must be pruned")
+        Assertions.assertFalse(File(serverPack, "config/gone").exists(), "including the directory it emptied")
+    }
+
+    /**
+     * An entry that is not relative to the pack must not reach outside it. `File(pack, "/etc/x")`
+     * resolves to `pack/etc/x` on Unix rather than to `/etc/x`, so this is about the pack staying the
+     * only thing a prune can touch — whatever a manifest claims.
+     */
+    @Test
+    fun anAbsolutePathInAnOldManifestCannotReachOutsideThePack(@TempDir tempDir: File) {
+        val serverPack = File(tempDir, "pack")
+        val outsider = write(tempDir, "not-ours/precious.txt", "belongs to somebody else")
+        manifest(serverPack, outsider.absolutePath, "mods/dropped.jar")
+        val dropped = write(serverPack, "mods/dropped.jar", "dropped")
+
+        updater.prune(serverPack, setOf("mods/alpha.jar"))
+
+        Assertions.assertTrue(outsider.isFile, "A prune must never delete anything outside the server pack")
+        Assertions.assertFalse(dropped.exists(), "while still pruning what is inside it")
+    }
+
+    /**
+     * Protection is by path segment, not by string prefix. `world` must not protect `worlds/` or
+     * `world_backup/`, or a modpack with a directory named after the save would become unprunable.
+     */
+    @Test
+    fun protectionStopsAtTheSegmentBoundaryWhenPruning(@TempDir tempDir: File) {
+        val serverPack = File(tempDir, "pack")
+        manifest(serverPack, "world/level.dat", "worlds/old.dat", "world_backup/old.dat", "worldly.jar")
+        val protectedWorld = write(serverPack, "world/level.dat", "the operator's")
+        val plural = write(serverPack, "worlds/old.dat", "not the world")
+        val backup = write(serverPack, "world_backup/old.dat", "not the world either")
+        val jar = write(serverPack, "worldly.jar", "a mod")
+
+        updater.prune(serverPack, setOf("mods/alpha.jar"))
+
+        Assertions.assertTrue(protectedWorld.isFile, "world/ is protected")
+        Assertions.assertFalse(plural.exists(), "worlds/ is not")
+        Assertions.assertFalse(backup.exists(), "nor is world_backup/")
+        Assertions.assertFalse(jar.exists(), "nor is a file whose name merely starts the same way")
+    }
+
+    /**
+     * A manifest that cannot be *read* is the same answer as one that cannot be parsed: no manifest,
+     * and therefore no prune. Deleting on the strength of a file we failed to open is the one outcome
+     * that is never acceptable.
+     */
+    @Test
+    fun anUnreadableManifestPrunesNothingEither(@TempDir tempDir: File) {
+        val serverPack = File(tempDir, "pack")
+        manifest(serverPack, "mods/dropped.jar")
+        val existing = write(serverPack, "mods/dropped.jar", "dropped")
+        val manifestFile = ServerPackManifest.inside(serverPack)
+
+        Assumptions.assumeTrue(manifestFile.setReadable(false), "This filesystem must honour setReadable(false)")
+        Assumptions.assumeFalse(manifestFile.canRead(), "and the process must not be able to read it anyway (not root)")
+        try {
+            Assertions.assertNull(updater.readManifest(serverPack), "An unreadable manifest reads as none")
+            updater.prune(serverPack, setOf("mods/alpha.jar"))
+            Assertions.assertTrue(existing.isFile, "and therefore nothing is pruned")
+        } finally {
+            manifestFile.setReadable(true)
+        }
     }
 
     /** Pruning against nothing would empty the pack, so it refuses. */

@@ -407,6 +407,51 @@ internal class ServerPackUpdateSafetyTest {
     }
 
     /**
+     * Every other guard here redirects the pack with [PackConfig.customDestination], so the path a
+     * normal GUI or CLI run actually takes -- the destination derived from the server-packs directory
+     * and the pack name -- is never exercised with updating on. It is the same code, but the
+     * destination is computed rather than handed over, and an update that resolved a different
+     * directory than the previous run would silently generate a second pack instead of updating the
+     * first.
+     */
+    @Test
+    fun aDerivedDestinationIsUpdatedInPlaceJustLikeAGivenOne(@TempDir tempDir: File) {
+        val modpackDir = modpack(tempDir)
+        val serverPacks = File(tempDir, "server-packs")
+        serverPacks.mkdirs()
+        val originalServerPacks = apiProperties.serverPacksDirectory
+        try {
+            apiProperties.serverPacksDirectory = serverPacks
+
+            val packConfig = packConfig(modpackDir, File(tempDir, "unused"))
+            packConfig.customDestination = Optional.empty()
+            packConfig.name = "Derived Pack"
+            val destination = File(serverPackHandler.getServerPackDestination(packConfig))
+
+            apiProperties.isServerPacksOverwriteEnabled = false
+            apiProperties.isUpdatingServerPacksEnabled = true
+            serverPackHandler.run(packConfig)
+            Assertions.assertTrue(File(destination, "mods/alpha.jar").isFile, "First run must produce the pack")
+
+            val level = write(destination, "world/level.dat", "a world worth keeping")
+            File(modpackDir, "mods/alpha.jar").delete()
+            write(modpackDir, "mods/beta.jar", "beta")
+            serverPackHandler.run(packConfig)
+
+            Assertions.assertEquals("a world worth keeping", level.readText(), "The world must survive")
+            Assertions.assertFalse(File(destination, "mods/alpha.jar").exists(), "The dropped mod must be pruned")
+            Assertions.assertTrue(File(destination, "mods/beta.jar").isFile, "and the new one copied")
+            Assertions.assertEquals(
+                1,
+                serverPacks.listFiles()?.count { it.isDirectory } ?: 0,
+                "The second run must update the first pack, not generate a second one beside it"
+            )
+        } finally {
+            apiProperties.serverPacksDirectory = originalServerPacks
+        }
+    }
+
+    /**
      * A run that copied nothing is a broken run, not an empty modpack. Pruning against its result
      * would delete the entire pack and leave a server that cannot start, so a run that produced no
      * files must prune nothing at all.
