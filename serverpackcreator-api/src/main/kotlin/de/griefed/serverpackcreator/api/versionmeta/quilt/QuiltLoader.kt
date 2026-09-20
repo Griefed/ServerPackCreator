@@ -66,7 +66,7 @@ internal class QuiltLoader(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
-        val next_loaders = ArrayList<String>(100)
+        val nextLoaders = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(manifest)
         val latestElements = document.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -83,10 +83,10 @@ internal class QuiltLoader(
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            next_loaders.add(item.nodeValue)
+            nextLoaders.add(item.nodeValue)
         }
             // Published in one assignment each, as unmodifiable views: a `List`-typed field still
         // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
-        loaders = Collections.unmodifiableList(next_loaders)
+        loaders = Collections.unmodifiableList(nextLoaders)
 }
 }

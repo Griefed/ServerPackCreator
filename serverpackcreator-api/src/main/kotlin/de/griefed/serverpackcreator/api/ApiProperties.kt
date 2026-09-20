@@ -320,9 +320,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     fun getOSVersion() = jarInformation.osVersion
 
-    /**
-     * The version of the ServerPackCreator API.
-     */
     /** This build's version from the jar manifest, or `dev` when running from a source build. */
     val apiVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 

@@ -255,5 +255,5 @@ internal object VerdictReportRenderer {
 
     /** Percent-encode a value bound for a query string, before it is HTML-escaped for the attribute. */
     private fun urlEncode(value: String): String =
-        java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8)
+        URLEncoder.encode(value, StandardCharsets.UTF_8)
 }

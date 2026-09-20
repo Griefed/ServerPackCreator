@@ -67,11 +67,6 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
         get() = "(quilt_loader|java|minecraft)".toRegex()
 
     /**
-     * Quilt declares `quilt_loader.depends` as an array whose entries are either an object carrying
-     * an `id`, or the bare id as a string — both forms occur in the wild, so both are read. A
-     * descriptor without the block declares no dependencies and yields an empty list.
-     */
-    /**
      * The `quilt_loader.depends` entry for `minecraft`, in either declaration form, or `null`. Excluded from
      * [readDependencies] as the platform, but it is still the jar's own statement of what it targets.
      */
@@ -86,6 +81,11 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
                 ?.path("versions")?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
         }.getOrNull()
 
+    /**
+     * Quilt declares `quilt_loader.depends` as an array whose entries are either an object carrying
+     * an `id`, or the bare id as a string — both forms occur in the wild, so both are read. A
+     * descriptor without the block declares no dependencies and yields an empty list.
+     */
     override fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency> {
         val modDependencies = mutableListOf<ModDependency>()
         try {

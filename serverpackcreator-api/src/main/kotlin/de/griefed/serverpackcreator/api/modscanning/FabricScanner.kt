@@ -62,10 +62,6 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
         get() = "(fabricloader|java|minecraft)".toRegex()
 
     /**
-     * Fabric declares `depends` as an object keyed by mod id, so the ids are the block's field names.
-     * A descriptor without the block declares no dependencies and yields an empty list.
-     */
-    /**
      * The `depends.minecraft` range this descriptor states, or `null`. Read separately from
      * [readDependencies] because `minecraft` is deliberately excluded there as the platform — the value is
      * still what says which Minecraft the jar was built against.
@@ -73,6 +69,10 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
     override fun readMinecraftConstraint(modConfig: JsonNode): String? =
         constraintOf(modConfig.path(depends).path("minecraft"))
 
+    /**
+     * Fabric declares `depends` as an object keyed by mod id, so the ids are the block's field names.
+     * A descriptor without the block declares no dependencies and yields an empty list.
+     */
     override fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency> {
         val modDependencies = mutableListOf<ModDependency>()
         try {
