@@ -87,6 +87,14 @@ jobs:
       # (`-v /workspace`); without it nothing propagates to the sibling.
       # The /data-mount form was the one proven by a local run against this repo; this workspace-path
       # form has NOT been run locally, so the first CI run is its proof.
+      # WHAT THIS SCAN CANNOT SEE, and it is a lot: there is no Gradle run before it, so i18n4k's
+      # generated `Translations` object does not exist during analysis. Run 817 carried 35 sanity failures
+      # (30 x "Unresolved reference Translations", 5 x "Unresolved reference Example") plus 6 unresolved
+      # kaptGeneratedClasses roots. 85 source files reference Translations, 79 of them in -app, and a file
+      # with an unresolved core symbol is analysed with its inspections degraded -- so a low finding count
+      # for -app is not evidence that -app is clean. B39 in claude-docs/BACKLOG.md holds the fix and the
+      # measurement it has to be justified by; do not read this job's output as a clean bill for -app
+      # until that lands.
       - name: Run Qodana
         run: |
           mkdir -p qodana/cache qodana/results qodana/report

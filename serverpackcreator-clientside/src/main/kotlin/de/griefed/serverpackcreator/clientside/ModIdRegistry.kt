@@ -293,7 +293,9 @@ object KnownModIds {
      * how much to trust what it gets back.
      *
      * The slug guess is offered on **both** platforms: Modrinth addresses projects by slug directly, and
-     * CurseForge's search endpoint resolves one to the numeric id its other routes need. CurseForge got no
+     * CurseForge's search endpoint resolves one to the numeric id its other routes need. It is worth making
+     * because it costs one lookup that may simply miss, which is far cheaper than never resolving the
+     * dependency at all — and an id that maps nowhere is *reported*, never fabricated. CurseForge got no
      * guess at all until 2026-09-06, because a guess that mapped and then failed to stage used to refuse the
      * boot — so guessing risked converting working boots into refusals. The refusal split now keys on this
      * type instead, and a [ModIdMapping.Guess] never refuses, which is what makes the guess safe to offer.
