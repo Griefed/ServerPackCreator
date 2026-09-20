@@ -92,3 +92,17 @@ tasks.register<Jar>("dokkaJavadocJar") {
     from(tasks.dokkaGeneratePublicationJavadoc.flatMap { it.outputDirectory })
     from(dokka.dokkaPublications.html.flatMap { it.outputDirectory })
 }
+
+// The javadoc jar a publication ships is Dokka's, not Gradle's stock one -- see the landmine in
+// `publishing-conventions`, which no longer calls `withJavadocJar()` precisely so the two cannot
+// collide on the `javadoc` classifier. The wiring lives HERE rather than there because this is the
+// plugin that owns `dokkaJavadocJar`: `publishing-conventions` is applied first, so a
+// `tasks.named("dokkaJavadocJar")` over there would resolve a task that does not exist yet.
+// `withType(...).configureEach` is lazy, so the order the two plugins are applied in does not matter.
+plugins.withId("maven-publish") {
+    extensions.configure<PublishingExtension> {
+        publications.withType<MavenPublication>().configureEach {
+            artifact(tasks.named("dokkaJavadocJar"))
+        }
+    }
+}
