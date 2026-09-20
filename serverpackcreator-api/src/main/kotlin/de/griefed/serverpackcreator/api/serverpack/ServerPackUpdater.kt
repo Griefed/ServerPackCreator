@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.util.Locale
 
 /**
  * Everything that makes regenerating a server pack *over an existing one* safe: whether this run is
@@ -122,11 +123,19 @@ class ServerPackUpdater(
             return
         }
         val previous = readManifest(serverPack) ?: return
-        val keep = produced.mapTo(HashSet()) { normalize(it).lowercase() }
+        /*
+        * Case-folded deliberately, and with Locale.ROOT so a Turkish default locale cannot fold an
+        * `I` to a dotless `ı` and change the answer. Folding costs an occasional stale file on a
+        * case-sensitive filesystem, where `Mods/Alpha.jar` and `mods/alpha.jar` really are two
+        * files; NOT folding would be far worse on a case-insensitive one, where they are one file
+        * and an unfolded comparison would delete what the copy has just written. Under-pruning is
+        * the safe direction, so fold.
+        */
+        val keep = produced.mapTo(HashSet()) { normalize(it).lowercase(Locale.ROOT) }
         val emptiedDirectories = mutableListOf<String>()
         for (entry in previous.files) {
             val relative = normalize(entry)
-            if (relative.isEmpty() || keep.contains(relative.lowercase()) || protects(relative)) {
+            if (relative.isEmpty() || keep.contains(relative.lowercase(Locale.ROOT)) || protects(relative)) {
                 continue
             }
             val stale = File(serverPack, relative)

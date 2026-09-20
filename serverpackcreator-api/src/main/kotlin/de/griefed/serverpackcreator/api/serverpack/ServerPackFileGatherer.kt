@@ -89,8 +89,32 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
             log.warn("You will not receive any support for a server pack generated this way.")
             log.warn("Do not open an issue on GitHub if this configuration errors or results in a broken server pack.")
             log.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!")
+            /*
+            * Walked rather than copyRecursively'd, for two reasons the early return used to cost:
+            * a protected path must still be left alone -- "no exceptions" cannot mean the operator's
+            * world -- and the copy has to report what it produced, or the manifest describes only the
+            * files provisioned beside the modpack and an update has nothing to prune against.
+            */
+            val modpack = File(modpackDir)
             try {
-                File(modpackDir).copyRecursively(File(destination), true)
+                for (source in modpack.walkTopDown()) {
+                    val relative = source.toRelativeString(modpack)
+                    if (relative.isEmpty()) {
+                        continue
+                    }
+                    val target = File(destination, relative)
+                    if (isProtected(target)) {
+                        log.info("Keeping $target; it is protected from being overwritten.")
+                        copiedFiles.add(target)
+                        continue
+                    }
+                    if (source.isDirectory) {
+                        target.mkdirs()
+                    } else {
+                        source.copyTo(target, true)
+                    }
+                    copiedFiles.add(target)
+                }
             } catch (ex: IOException) {
                 log.error("An error occurred copying the modpack to the server pack in lazy mode.", ex)
             }

@@ -236,8 +236,23 @@ class ServerPackHandler(
             // surface later when files are written into it during generation.
         }
 
-        /** Whether the run-file of the given name must be left exactly as this run found it. */
-        val preserve = { relative: String -> updater.preserves(serverPack, relative) }
+        /*
+        * Which of the files this run provisions were ALREADY in the pack when it started. Decided
+        * once, here, before anything is written -- not per call. isUpdateRun asks whether
+        * manifest.json exists, and this run writes one; the zipped-variant start-scripts step then
+        * creates a variables.txt that the local-variant step must still overwrite. Re-deciding later
+        * would let this run's own output count as the operator's, and a first generation would ship
+        * the archive's variables.txt, whose SPC_JAVA_SPC is the literal "java" rather than the path
+        * the user configured.
+        */
+        val preserved: Set<String> = (
+                provisioner.serverRunFileNames +
+                        apiProperties.defaultServerIcon.name +
+                        apiProperties.defaultServerProperties.name
+                ).filterTo(HashSet()) { updater.preserves(serverPack, it) }
+
+        /** Whether the provisioned file of the given name must be left exactly as this run found it. */
+        val preserve = { relative: String -> preserved.contains(relative) }
 
         /** Whether the given file in the pack-to-be must be left exactly as this run found it. */
         val isProtected = { candidate: File ->
@@ -272,7 +287,7 @@ class ServerPackHandler(
         // If true, copy the server-icon.png from server_files to the server pack.
         if (packConfig.isServerIconInclusionDesired) {
             val icon = apiProperties.defaultServerIcon.name
-            if (updater.preserves(serverPack, icon)) {
+            if (preserve(icon)) {
                 log.info("Keeping the existing $icon; it is protected from being overwritten.")
             } else {
                 copyIcon(serverPack.absolutePath, packConfig.serverIconPath)
@@ -285,7 +300,7 @@ class ServerPackHandler(
         // If true, copy the server.properties from server_files to the server pack.
         if (packConfig.isServerPropertiesInclusionDesired) {
             val properties = apiProperties.defaultServerProperties.name
-            if (updater.preserves(serverPack, properties)) {
+            if (preserve(properties)) {
                 log.info("Keeping the existing $properties; it is protected from being overwritten.")
             } else {
                 copyProperties(serverPack.absolutePath, packConfig.serverPropertiesPath)
@@ -325,7 +340,9 @@ class ServerPackHandler(
         )
         serverPackManifest.writeToFile(serverPack, utilities.jsonUtilities.objectMapper)
 
-        val producedPaths = relativeFiles.mapTo(HashSet()) { it.lowercase() }
+        // Locale.ROOT, for the reason ServerPackUpdater.prune spells out: a Turkish default locale
+        // folds `I` to a dotless `ı` and would change which paths match.
+        val producedPaths = relativeFiles.mapTo(HashSet()) { it.lowercase(Locale.ROOT) }
 
         /**
          * Whether the given file must stay out of an archive meant to be handed to other people:
@@ -338,7 +355,7 @@ class ServerPackHandler(
          */
         val isOperatorData = { candidate: File ->
             isUpdate && updater.relativize(serverPack, candidate)?.let { relative ->
-                updater.protects(relative) && !producedPaths.contains(relative.lowercase())
+                updater.protects(relative) && !producedPaths.contains(relative.lowercase(Locale.ROOT))
             } == true
         }
 
