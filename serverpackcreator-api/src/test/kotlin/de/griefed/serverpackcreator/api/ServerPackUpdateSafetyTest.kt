@@ -329,6 +329,30 @@ internal class ServerPackUpdateSafetyTest {
     }
 
     /**
+     * The local `variables.txt` carries the operator's configured Java path; the archived one
+     * deliberately does not. A *first* generation must still produce the local one even with
+     * updating enabled -- there is no previous pack to preserve anything from, and the file the
+     * zipped-variant step wrote moments earlier is this run's own output, not the operator's.
+     */
+    @Test
+    fun aFirstGenerationWritesTheLocalVariablesEvenWhenUpdatingIsEnabled(@TempDir tempDir: File) {
+        val modpackDir = modpack(tempDir)
+        val destination = File(tempDir, "pack")
+        val packConfig = packConfig(modpackDir, destination)
+        packConfig.isZipCreationDesired = true
+        packConfig.scriptSettings["SPC_JAVA_SPC"] = "/opt/a-very-distinctive-jdk/bin/java"
+
+        apiProperties.isServerPacksOverwriteEnabled = true
+        apiProperties.isUpdatingServerPacksEnabled = true
+        serverPackHandler.run(packConfig)
+
+        Assertions.assertTrue(
+            File(destination, "variables.txt").readText().contains("a-very-distinctive-jdk"),
+            "A first generation must write the local variables.txt, whatever the update-toggle says"
+        )
+    }
+
+    /**
      * A run that copied nothing is a broken run, not an empty modpack. Pruning against its result
      * would delete the entire pack and leave a server that cannot start, so a run that produced no
      * files must prune nothing at all.
