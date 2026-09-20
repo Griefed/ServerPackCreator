@@ -96,7 +96,7 @@ internal class FabricInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
-        val next_installers = ArrayList<String>(100)
+        val nextInstallers = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(installerManifest)
         val latestElements = document.getElementsByTagName(latest)
         val latestNode = latestElements.item(0)
@@ -127,7 +127,7 @@ internal class FabricInstaller(
             val versionNode = elements.item(i)
             val versionChildren = versionNode.childNodes
             val versionItem = versionChildren.item(0)
-            next_installers.add(versionItem.nodeValue)
+            nextInstallers.add(versionItem.nodeValue)
         }
         installerUrlMeta.clear()
         for (version in installers) {
@@ -139,7 +139,7 @@ internal class FabricInstaller(
         }
             // Published in one assignment each, as unmodifiable views: a `List`-typed field still
         // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
-        installers = Collections.unmodifiableList(next_installers)
+        installers = Collections.unmodifiableList(nextInstallers)
 }
 
     /**
