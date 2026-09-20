@@ -6365,3 +6365,138 @@ duplicated `deleteQuietly` in `cleanupEnvironment`) and the feature; landing `Se
 before its guard; and doing the same for `ScrollTextArea`. That is a rewrite of 14 commits including 3
 merges, each of which must be re-verified green individually. Not undertaken without an explicit
 instruction — flagged for Griefed.
+
+## 2026-09-20 — audit of the Qodana-817 remediation (`52074ebc5..develop`, 4 commits + merge)
+
+Scope: the four commits that act on Qodana run 817 plus their merge. Read-only; no source modified
+by this audit.
+
+| # | Commit | Subject |
+|---|---|---|
+| 1 | `60ab1f5cf` | docs: reattach four KDoc blocks that had come loose from their declarations |
+| 2 | `5d5435ebd` | refactor(grinder): drop what the configuration extraction left behind |
+| 3 | `2b4228b14` | refactor(api): give the versionmeta snapshot locals speaking names |
+| 4 | `dae6834e0` | docs: reattach or retire fourteen more KDoc blocks that had come loose |
+| 5 | `eb0387d03` | merge: the docs the code lost, and the leftovers of two extractions |
+
+### Method — what was actually run, so a reader can re-run it
+
+1. **Code-skeleton diff.** Every KDoc block and blank line stripped from all 26 touched files at
+   `52074ebc5` and at the merge, then diffed. **55 changed lines, every one of them in commits 2 and
+   3** — the two `docs:` commits changed zero code lines, and no declaration moved relative to another.
+2. **KDoc multiset diff.** Per file, the multiset of doc-block texts compared across the range.
+   **18 of 26 files byte-identical** (pure moves); the 8 that differ are the intended edits, each
+   named in its commit message.
+3. **Base-tree equivalence run**, the check the root `CLAUDE.md` prescribes: a detached worktree at
+   the branch head with `serverpackcreator-{api,clientside,grinder}/src/test` checked out from
+   `develop`, then `:test` on all three. **1,664 pre-existing guards, 0 failures, 0 compile errors,
+   and not one file needed adapting** — the strongest form of that result, since a compile error
+   would itself have been a signature change.
+4. **No Qodana re-scan.** Docker Desktop's VM is capped at 2 GB / 2 CPUs on this machine and the
+   linter is OOM-killed (exit 137) during the Gradle import; raising it needs a Docker restart that
+   would drop a running pihole, and Griefed chose to skip it. So *"the 21 findings are gone"* rests
+   on the structural scan and the compile, not on a second SARIF. Re-confirm on the next CI run.
+
+### HIGH
+
+None, and the evidence is method 1 and 3 above rather than an assurance: no behaviour change hides
+inside either `refactor:`-labelled commit, because the only code lines they contain are eight local
+renames, one unreachable function, one unused import, three unused test fields and one
+fully-qualified name replaced by the import that was already there. No module boundary is touched —
+no import was added anywhere in the range. The plugin-API contract is untouched: nothing exported
+by `-api` changed name, signature or arity; `FabricInstaller.installers`, `ApiProperties.apiVersion`
+and `VersionMeta.refreshManifests` were reached for their **doc comments** only.
+
+### MEDIUM
+
+**M1 — `dae6834e0` fixes eighteen instances of a defect and leaves no guard behind, so instance
+nineteen arrives silently.** The defect is a KDoc block whose next non-blank line opens another KDoc
+block: nothing can attach to the first, dokka drops it, and the declaration reads as undocumented.
+Qodana sees a block only when it happens to contain a `[link]` that no longer resolves — it reported
+**4 of the 18**, i.e. 22%. The detector that found the other 14 is an ad-hoc script that exists
+nowhere but this session's transcript. The repository's own rule is that where a consequence is
+reachable from a normal suite, pin the consequence; this one is a pure source scan, cheaper than
+`ScriptTemplateContentTest`, which already reads shipped files from disk and executes them. Rule
+broken: *a bug found while refactoring gets surfaced and fixed* — it was fixed, but the fix is
+unprotected, and the history says this exact defect accrued 18 times unnoticed.
+
+**M2 — 28 of the 49 Qodana findings were triaged and then deferred with no durable record.** Twelve
+were judged won't-fix for stated reasons (2 × `UnusedSymbol` on `@Component` beans QDJVM Community
+cannot see, 4 × `UnstableApiUsage` on Gradle's `@Incubating` `dependencyResolutionManagement`, 1 ×
+`ConvertLongToDuration` on the published `VersionMeta.awaitManifestRefresh`, 5 × `RedundantIf` on
+commented early-return guards) and 16 were style noise. Every one of those reasons lives in chat and
+in no file, so the next reader of the next report re-derives them from scratch — and two of them are
+judgement calls a future session could get wrong, the `ConvertLongToDuration` one especially, since
+taking it would break source compatibility for embedders. `claude-docs/BACKLOG.md` exists precisely to
+hold "looked at, judged, postponed, here is why". Rule broken: *do not silently defer.*
+
+**M3 — the scan itself is known to under-report and that finding was left outside the repository
+too.** `.forgejo/workflows/qodana.yml` runs `qodana scan` against a raw checkout with no Gradle
+codegen, so i18n4k's generated `Translations` object does not exist: run 817 carries **35 sanity
+failures** (30 × `Unresolved reference Translations`, 5 × `Unresolved reference Example`) plus 6
+unresolved `kaptGeneratedClasses` roots, and **85 source files reference `Translations`, 79 of them in
+`-app`**. A file with an unresolved core symbol is analysed with inspections degraded, so "3 findings
+in `-app`" is not evidence that `-app` is clean. Related and equally unrecorded: no baseline is
+configured, so all 49 findings are reported "new" on every single run.
+
+**M4 — `5d5435ebd` bundles two unrelated causes under a subject that names one.** "drop what the
+configuration extraction left behind" is true of `GrinderApplication`'s `env()` and `BootResult`
+import and of `SystemdUnitConfigurationTest`'s three regexes. It is **not** true of
+`VerdictReportRenderer.kt:257-258`, where two symbols were imported and then written out fully
+qualified — a different mistake, of a different age, in a different file, that happens to have been
+reported by the same tool run. Rule broken: *one concern per commit; stay within the commit's stated
+scope.* Minor in consequence (13 deleted lines, one substitution, all behaviour-preserving) but it is
+the shape that makes a later `git log -S` hunt fail.
+
+### LOW
+
+**L1 — `60ab1f5cf` deleted an argument that survives nowhere.** The stale copy removed from
+`ModIdRegistry` carried two claims the merged doc at `ModIdRegistry.kt:295` does not restate: that a
+slug guess *"costs one lookup that may simply miss, which is far cheaper than never resolving the
+dependency"* — the cost/benefit case for guessing at all — and that *"an id that maps nowhere is
+reported, never fabricated."* The commit message justified the deletion on the ground that the block's
+central claim ("CurseForge gets no guess at all") had been false since 2026-09-06, which it had; the
+error was treating the whole block as superseded because its headline was. Confirmed by grep: neither
+argument appears anywhere in `-clientside` now.
+
+**L2 — `60ab1f5cf` edits doc text inside a commit whose stated job is moving it.** `getSide`'s
+reattached block at `ForgeTomlScanner.kt:254` had its `@param` corrected (it described the modId) and
+gained the `BOTH` fallback the old text omitted. Both corrections are right and the message discloses
+them, but a reader diffing this commit for "moves only" finds one block that is not a move.
+
+**L3 — the per-module test counts in the root `CLAUDE.md` are stale in three rows, and the current
+numbers were in hand.** The table says api 450, clientside 643, grinder 532; this range measured 459,
+668 and 537. The file itself says the column is a snapshot to be re-derived, so this is not a broken
+rule — but leaving a number wrong when the right one is on screen is the "cite names, not snapshots"
+failure in its cheap direction.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **The two `docs:` commits contain no code.** Method 1: zero non-comment lines changed in either.
+- **No test assertion, argument or expected value changed anywhere in the range.** The only test-file
+  code change is the deletion of three unreferenced `private val` regexes
+  (`SystemdUnitConfigurationTest`); method 3 proves the rest by running `develop`'s own tests.
+- **The eight renames are locals.** `next_installers` → `nextInstallers` and friends never cross a
+  declaration boundary; `installers`, `loaders`, `releases`, `snapshots` and `allVersions` keep their
+  names, their `@Volatile`, and their `private set`.
+- **Declaration order is unchanged in `BootLogClassifier`**, where git renders the doc move as
+  `clientOnlyDependencyMarker` moving up. The `val` initialisation order inside the object is
+  identical before and after — checked in method 1, which is order-sensitive.
+- **Every reattachment was matched to its declaration by evidence, not by reading.** Where the prose
+  did not name its target, `git log -L` produced the commit that separated them: `2226261f8` inserted
+  `clientOnlyDependencyMarker` between `dependencyFailureMarkers` and its doc; `fc7baf3f5` inserted a
+  test between `stillRefusesAFileTaggedForAnotherLoader` and its doc; `a27b63299` added
+  `refreshManifests`'s `@Synchronized` rationale above the existing doc instead of into it.
+- **No characterization tests were owed.** Nothing in the range alters behaviour, so there is nothing
+  to pin; the standing rule about committing a red guard first does not apply to a range with no
+  green to reach.
+
+### Recommendation
+
+M1 first: it is the only finding that will cost something later, and the fix is one source-scanning
+test in the module that already owns source-scanning tests. M2 and M3 are one `BACKLOG.md` entry each
+(next ID **B38**) plus, for M3, a line in the CI workflow's comment block so the next person to read
+that job knows what it cannot see. M4 is unfixable in place — the commit is merged into `develop`, and
+force-pushing a shared branch to relabel a 13-line cleanup is the wrong trade; this entry is the
+remedy, exactly as `358675fbf` was handled on 2026-09-01. L1 is a two-sentence restoration. L2 needs
+nothing. L3 is three numbers.
