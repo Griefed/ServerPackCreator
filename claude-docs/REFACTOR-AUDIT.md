@@ -6500,3 +6500,21 @@ that job knows what it cannot see. M4 is unfixable in place — the commit is me
 force-pushing a shared branch to relabel a 13-line cleanup is the wrong trade; this entry is the
 remedy, exactly as `358675fbf` was handled on 2026-09-01. L1 is a two-sentence restoration. L2 needs
 nothing. L3 is three numbers.
+
+### Resolution — closed the same day (2026-09-20)
+
+| Finding | Closed by | Evidence |
+|---|---|---|
+| M1 | `541080722` (red), `a6ec92056` (green) | `KDocAttachmentTest` scans all 755 `.kt`/`.kts` files outside `build/`. It landed **red on two instances the ad-hoc script had missed** — `LegacyFabricInstaller.kt:47` and `GrindLoopTest.kt:185`, both single-line blocks the script skipped — and passes now. A size assertion (`> 100` files) sits above the orphan assertion so a scan that reaches nothing cannot pass by vacuity. |
+| M2 | `47a160358` | `BACKLOG.md` **B38**, with the twelve won't-fix verdicts as a table naming rule, count, location and reason. The entry states that the table is the interim record and the fix is `qodana.yaml` plus a baseline, verifiable only against a real run. |
+| M3 | `47a160358` | `BACKLOG.md` **B39**, plus an eight-line comment above the scan step in `.forgejo/workflows/qodana.yml` — a reader of that job will not open the backlog. YAML re-parsed after the edit; both jobs and all six steps still resolve. |
+| M4 | Not fixed — recorded | `5d5435ebd` is merged into `develop`. Force-pushing a shared branch to relabel a 13-line behaviour-preserving cleanup is the wrong trade, the same call made for `358675fbf` on 2026-09-01. |
+| L1 | `9c762727c` | The two arguments restored into `ModIdRegistry.mappingFor`'s doc, each **checked against the code first**: `mappingFor` returns `Guess` for both platforms and `None` otherwise, and `BootVerifier`'s planner turns an unreachable mapping into `ManifestDependencyPlan.Unmapped(modID)` — the id by name, no ref invented. Restoring a claim on trust is what produced L1 in the first place. |
+| L2 | No action | The edit was disclosed in the commit that made it. |
+| L3 | `a3a149bf1` | All seven modules re-measured rather than incremented: api 460, app 168, clientside 668, grinder 537, plugin-example 3, plugin-grinder 75, web-frontend 32 (Vitest, 14 files). **1,943 tests, zero failures.** Three rows were wrong; four were already right. |
+
+The lesson from M1 is in the root `CLAUDE.md` lesson list: *a tool that detects a defect through a side
+effect can only see the share of it that has that side effect.* Qodana saw 4 of 18 because it reports a
+loose doc block only when the block happens to carry a `[link]` that no longer resolves; the script
+written to find the rest missed 2 more because it only considered multi-line blocks; the test written to
+replace the script caught those on its first run. Each layer's blind spot was invisible from inside it.
