@@ -50,6 +50,14 @@ class ServerPackProvisioner(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    companion object {
+        /** Name of the file holding the values the start-scripts read their settings from. */
+        const val VARIABLES_NAME = "variables.txt"
+
+        /** Name of the operator-facing instructions written beside the start-scripts. */
+        const val HOW_TO_RUN_NAME = "HOW-TO-RUN.md"
+    }
+
     /**
      * The `variables.txt` content for a generated server pack, still carrying its `SPC_..._SPC` placeholders.
      *
@@ -227,13 +235,25 @@ class ServerPackProvisioner(
      * server pack about to be zipped.
      * @author Griefed
      */
-    fun createServerRunFiles(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
+    @JvmOverloads
+    fun createServerRunFiles(
+        scriptSettings: HashMap<String, String>,
+        destination: String,
+        isLocal: Boolean,
+        preserve: (String) -> Boolean = { false }
+    ) {
         var script: File
         var content: String
+        var name: String
         val scripts = mutableListOf<File>()
         for ((key, value) in apiProperties.startScriptTemplates) {
+            name = startScriptName(key)
+            if (preserve(name)) {
+                log.info("Keeping the existing $name; it is protected from being overwritten.")
+                continue
+            }
             try {
-                script = File(destination, "start.$key")
+                script = File(destination, name)
                 content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
                 if (script.exists()) {
                     script.setWritable(true)
@@ -246,8 +266,13 @@ class ServerPackProvisioner(
         }
 
         for ((key, value) in apiProperties.javaScriptTemplates) {
+            name = javaScriptName(key)
+            if (preserve(name)) {
+                log.info("Keeping the existing $name; it is protected from being overwritten.")
+                continue
+            }
             try {
-                script = File(destination, "install_java.$key")
+                script = File(destination, name)
                 content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
                 if (script.exists()) {
                     script.setWritable(true)
@@ -264,8 +289,10 @@ class ServerPackProvisioner(
             scriptFile.setWritable(false)
         }
 
-        try {
-            val destinationVariables = File(destination, "variables.txt")
+        if (preserve(VARIABLES_NAME)) {
+            log.info("Keeping the existing $VARIABLES_NAME; it is protected from being overwritten.")
+        } else try {
+            val destinationVariables = File(destination, VARIABLES_NAME)
             var variablesContent = variables
             variablesContent = replacePlaceholders(isLocal, variablesContent, scriptSettings)
             for ((key, value) in scriptSettings) {
@@ -279,11 +306,13 @@ class ServerPackProvisioner(
             destinationVariables.setWritable(true)
             destinationVariables.setExecutable(false)
         } catch (ex: Exception) {
-            log.error("File not accessible: ${File(destination, "variables.txt")}.", ex)
+            log.error("File not accessible: ${File(destination, VARIABLES_NAME)}.", ex)
         }
 
-        try {
-            val howToStartTheScriptReadme = File(destination, "HOW-TO-RUN.md")
+        if (preserve(HOW_TO_RUN_NAME)) {
+            log.info("Keeping the existing $HOW_TO_RUN_NAME; it is protected from being overwritten.")
+        } else try {
+            val howToStartTheScriptReadme = File(destination, HOW_TO_RUN_NAME)
             if (howToStartTheScriptReadme.exists()) {
                 howToStartTheScriptReadme.setWritable(true)
             }
@@ -292,9 +321,25 @@ class ServerPackProvisioner(
             howToStartTheScriptReadme.setReadable(true)
             howToStartTheScriptReadme.setWritable(false)
         } catch (ex: Exception) {
-            log.error("File not accessible: ${File(destination, "HOW-TO-RUN.md")}.", ex)
+            log.error("File not accessible: ${File(destination, HOW_TO_RUN_NAME)}.", ex)
         }
     }
+
+    /**
+     * Every file [createServerRunFiles] writes, by name, relative to the server pack. Read by the
+     * manifest so its record of the pack covers the run-files too, and derived from the very
+     * template-maps the creation iterates, so the two cannot end up listing different things.
+     */
+    val serverRunFileNames: List<String>
+        get() = apiProperties.startScriptTemplates.keys.map { startScriptName(it) } +
+                apiProperties.javaScriptTemplates.keys.map { javaScriptName(it) } +
+                listOf(VARIABLES_NAME, HOW_TO_RUN_NAME)
+
+    /** The start-script for the template registered under [key], e.g. `sh` becomes `start.sh`. */
+    private fun startScriptName(key: String) = "start.$key"
+
+    /** The Java-installer script for the template registered under [key], e.g. `install_java.sh`. */
+    private fun javaScriptName(key: String) = "install_java.$key"
 
 
     /**
@@ -308,13 +353,19 @@ class ServerPackProvisioner(
      * @param destination               The destination where the ZIP-archive should be created in.
      * @param modloader                 The modloader the modpack and server pack use.
      * @param modloaderVersion          The modloader version the modpack and server pack use.
+     * @param isExcluded                Answers, for a file in the server pack, whether it must stay
+     * out of the archive regardless of the configured exclusions. Used by an update to keep a
+     * running server's world and player-data out of something meant to be shared; defaults to
+     * excluding nothing.
      * @author Griefed
      */
+    @JvmOverloads
     fun zipBuilder(
         minecraftVersion: String,
         destination: String,
         modloader: String,
-        modloaderVersion: String
+        modloaderVersion: String,
+        isExcluded: (File) -> Boolean = { false }
     ) : Optional<File> {
         log.info("Creating zip archive of serverpack...")
         val zipParameters = ZipParameters()
@@ -330,10 +381,13 @@ class ServerPackProvisioner(
                     )
                 )
             }
-            val excludeFileFilter = ExcludeFileFilter { o: File -> filesToExclude.contains(o) }
-            zipParameters.excludeFileFilter = excludeFileFilter
         } else {
             log.info("File exclusion from ZIP-archives deactivated.")
+        }
+        // Always installed: the configured exclusions are a preference, but [isExcluded] keeps files
+        // a running server owns out of an archive meant to be handed to other people.
+        zipParameters.excludeFileFilter = ExcludeFileFilter { candidate: File ->
+            filesToExclude.contains(candidate) || isExcluded(candidate)
         }
         val comment = ("Server pack made with ServerPackCreator ${apiProperties.apiVersion} by Griefed.")
         zipParameters.isIncludeRootFolder = false
