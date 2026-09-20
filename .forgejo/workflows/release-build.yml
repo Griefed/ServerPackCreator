@@ -85,6 +85,34 @@ jobs:
             -x :serverpackcreator-api:test -x :serverpackcreator-app:test
           ./gradlew -Pversion="${{ needs.prepare.outputs.version }}" :serverpackcreator-api:dokkaGenerateHtml --info
 
+      # Built here rather than in jobs of their own: the app jar they package is already in this
+      # workspace, so separate jobs would mean uploading and re-downloading ~80 MB to gain nothing.
+      # devbuild.yml splits them only because its jar arrives as an artifact regardless.
+      #
+      # BOTH are produced on this amd64 runner. The aarch64 one is cross-packaged -- nothing aarch64 has
+      # to execute, because the JDK is merely unpacked and appimagetool runs as the host's architecture
+      # while ARCH tells it which runtime to embed. That is the same reason devbuild.yml's aarch64 job
+      # does not need an arm runner label, which no registered runner offers.
+      #
+      # Two sequential runs in one workspace are safe: the script `rm -rf`s its AppDir before each build
+      # and keeps per-architecture JDK directories (`jdk-21-x86_64`, `jdk-21-aarch64`), so the second
+      # cannot inherit the first's runtime. Run before `Collect files`, which renames the app jar.
+      - name: Build AppImages
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh "$V"
+          misc/build-appimage.sh --arch aarch64 "$V"
+          # Anchored on the product name: appimagetool-<arch>.AppImage is downloaded into this same
+          # directory, so a bare *.AppImage would count it. Two, no more and no fewer, or stop.
+          COUNT="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | wc -l)"
+          if [ "$COUNT" -ne 2 ]; then
+            echo "::error::Expected 2 AppImages, found $COUNT"
+            ls -la *.AppImage 2>/dev/null || echo "none at all"
+            exit 1
+          fi
+          ls -lh ServerPackCreator-*.AppImage
+
       - name: Collect files
         run: |
           V="${{ needs.prepare.outputs.version }}"
@@ -95,6 +123,10 @@ jobs:
           cp serverpackcreator-app/build/libs/*.jar            "release/$V/"
           cp serverpackcreator-plugin-example/build/libs/*.jar "release/$V/"
           cp media/*                                          "release/$V/"
+          # The AppImages carry `_experimental` in their names -- `misc/build-appimage.sh` decides that,
+          # and nothing here repeats it. They land in the release directory before checksum.txt is
+          # generated below, so they are covered by it like every other asset.
+          cp ServerPackCreator-*.AppImage                     "release/$V/"
           rm -f "release/$V/output.txt" "release/$V/"*plain.jar
           # Dokka HTML replaces what GitLab Pages used to host: it ships as a release asset now.
           if [ -d serverpackcreator-api/build/dokka ]; then

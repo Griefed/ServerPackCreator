@@ -119,20 +119,26 @@ jobs:
           chmod +x misc/build-appimage.sh
           misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
 
+      # Resolved by glob, never spelled out: `misc/build-appimage.sh` owns the filename (it appends
+      # `_experimental`), and a copy here is a copy that goes stale the next time it changes. The glob is
+      # anchored on `ServerPackCreator-` rather than `*.AppImage` because the script downloads
+      # `appimagetool-<arch>.AppImage` into this same directory and a bare glob would match it.
       - name: Verify AppImage
+        id: appimage
         run: |
-          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage"
-          if [ ! -f "$APPIMAGE" ]; then
-            echo "❌ Error: AppImage not found: $APPIMAGE"
+          APPIMAGE="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | head -n 1)"
+          if [ -z "$APPIMAGE" ]; then
+            echo "❌ Error: no ServerPackCreator AppImage was produced"
             ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
             exit 1
           fi
           echo "✅ AppImage created successfully:"
           ls -lh "$APPIMAGE"
+          echo "name=$APPIMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Generate checksums
         run: |
-          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage"
+          APPIMAGE="${{ steps.appimage.outputs.name }}"
           sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
           echo "Checksum generated:"
           cat "$APPIMAGE.sha256"
@@ -141,7 +147,7 @@ jobs:
         uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-x86_64
-          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage
+          path: ServerPackCreator-*.AppImage
           if-no-files-found: error
           retention-days: 1
 
@@ -187,20 +193,26 @@ jobs:
           chmod +x misc/build-appimage.sh
           misc/build-appimage.sh --arch aarch64 "${{ needs.build-jar.outputs.version }}"
 
+      # Resolved by glob, never spelled out: `misc/build-appimage.sh` owns the filename (it appends
+      # `_experimental`), and a copy here is a copy that goes stale the next time it changes. The glob is
+      # anchored on `ServerPackCreator-` rather than `*.AppImage` because the script downloads
+      # `appimagetool-<arch>.AppImage` into this same directory and a bare glob would match it.
       - name: Verify AppImage
+        id: appimage
         run: |
-          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage"
-          if [ ! -f "$APPIMAGE" ]; then
-            echo "❌ Error: AppImage not found: $APPIMAGE"
+          APPIMAGE="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | head -n 1)"
+          if [ -z "$APPIMAGE" ]; then
+            echo "❌ Error: no ServerPackCreator AppImage was produced"
             ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
             exit 1
           fi
           echo "✅ AppImage created successfully:"
           ls -lh "$APPIMAGE"
+          echo "name=$APPIMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Generate checksums
         run: |
-          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage"
+          APPIMAGE="${{ steps.appimage.outputs.name }}"
           sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
           echo "Checksum generated:"
           cat "$APPIMAGE.sha256"
@@ -209,7 +221,7 @@ jobs:
         uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-aarch64
-          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage
+          path: ServerPackCreator-*.AppImage
           if-no-files-found: error
           retention-days: 1
 
