@@ -105,6 +105,15 @@ jobs:
           misc/build-appimage.sh --arch aarch64 "$V"
           # Anchored on the product name: appimagetool-<arch>.AppImage is downloaded into this same
           # directory, so a bare *.AppImage would count it. Two, no more and no fewer, or stop.
+          #
+          # Measured 2026-09-20, both invocations in one debian:bookworm-slim workspace (on an aarch64
+          # host, which mirrors this amd64 runner -- native first, then the other architecture):
+          #   produced   ServerPackCreator-9.9.9-test-aarch64_experimental.AppImage  -> ELF 64-bit, ARM aarch64
+          #              ServerPackCreator-9.9.9-test-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
+          #              appimagetool-aarch64.AppImage
+          #   ServerPackCreator-* glob matches 2; a bare *.AppImage glob matches 3.
+          #   JDK directories after both runs: jdk-21-aarch64, jdk-21-x86_64 -- per architecture, so the
+          #   second run cannot inherit the first one's runtime.
           COUNT="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | wc -l)"
           if [ "$COUNT" -ne 2 ]; then
             echo "::error::Expected 2 AppImages, found $COUNT"

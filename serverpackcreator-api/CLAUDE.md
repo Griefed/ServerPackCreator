@@ -280,6 +280,12 @@
     `isUpdateRun && protects && exists`. Drop the `exists` and a first generation can no longer ship a
     `server.properties`, a `variables.txt` or a modpack's world at all.
 
+  **A guard that asserts something is *excluded* must assert in the same breath what is still
+  *included*.** The archive guard was written red against the world and `ops.json` being absent, and
+  against `mods/alpha.jar` being present — so it stayed green when the first attempt at the exclusion
+  also dropped `server.properties` and `variables.txt`, which no assertion mentioned. Half a pin is how
+  a fix for one defect ships another. It now names the three files that must survive the exclusion.
+
   **And the ZIP exclusion is keyed on the manifest, not on the protected list** — a mistake made and fixed
   inside this same work. Protected does *not* mean absent: `server.properties` and `variables.txt` are both
   protected and part of every server pack, so excluding every protected path shipped an archive whose start
