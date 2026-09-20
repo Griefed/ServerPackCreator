@@ -44,8 +44,9 @@ class LegacyFabricInstaller(
     private val installerManifest: File,
     private val utilities: Utilities
 ) {
-    /** Every LegacyFabric *installer* version, newest first. A separate series from the loader versions. */
     /**
+     * Every LegacyFabric *installer* version, newest first. A separate series from the loader versions.
+     *
      * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
      * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
      * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
