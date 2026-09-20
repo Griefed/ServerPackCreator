@@ -1027,3 +1027,35 @@ its own measurement.
 - **`preserved` is computed before `runPreGenExtensions`**, so a file a plugin writes during pre-gen is
   not mistaken for the operator's. That matches the previous behaviour, where no plugin-written file
   could be preserved either.
+
+#### Third pass, same day — M4 fully closed
+
+`develop` at `2f3795465`. Full build green: **1,910 tests, 0 failures, 30 skipped** (the 30 are
+pre-existing skips in `grinder` and `api`).
+
+All six remaining suggested tests are written (`2f3795465`). Every one **passes against today's
+code** — they guard no present defect — so each was proved by mutation instead, and each failed
+exactly the guard written for it:
+
+| suggested test (M4 item) | mutation applied to production code | guards that failed |
+|---|---|---|
+| 2 — cross-platform manifest | `normalize()` stops converting `\\` to `/` | `aManifestWrittenOnTheOtherPlatformStillPrunes`, `protectionIgnoresSeparatorStyleAndCase` |
+| 4 — absolute path in an old manifest | `prune` resolves entries as `File(relative)` | `anAbsolutePathInAnOldManifestCannotReachOutsideThePack` + 4 others |
+| 5 — derived destination | *(integration guard, no single-line mutation)* | — |
+| 6 — segment boundary | `startsWith("$protected/")` relaxed to `startsWith(protected)` | `protectionStopsAtTheSegmentBoundaryWhenPruning`, `protectionCoversAnEntryAndItsContents` |
+| 7 — zip preference off | filter installed only when `isZipFileExclusionEnabled` | `theCallersExclusionAppliesEvenWithTheZipExclusionPreferenceOff` |
+| 8 — unreadable manifest | `readManifest` stops catching | `anUnreadableManifestPrunesNothingEither`, `anUnreadableManifestPrunesNothing` |
+
+Item 8 is guarded by `Assumptions` on both `setReadable(false)` succeeding and the file genuinely
+being unreadable afterwards, so a filesystem that ignores the call — or a run as root — skips rather
+than passes for the wrong reason. It ran, not skipped, on this machine.
+
+Item 5 has no single-line mutation because what it pins is a *path through* `run()` rather than a
+predicate: it drops `customDestination`, lets `getServerPackDestination` compute the directory from
+the server-packs directory and the pack name, and asserts the second run updates that pack rather
+than generating a second one beside it — which is what every other update guard, all using
+`customDestination`, could not have caught.
+
+**No findings remain open from the 2026-09-20 analysis.** H1, M1, M3 fixed; M2 retracted; M4 closed;
+L1 stands as documented-not-exploitable; L2 stands retracted by measurement.
+
