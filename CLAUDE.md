@@ -40,6 +40,18 @@ constraints.
   every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
   the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
   you touch a workflow. Secrets, scopes and which job dies without which → `claude-docs/CI-SECRETS.md`.
+- **The seven root-level documents are the source of truth, and both of their copies are GENERATED and
+  gitignored.** `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `HELP.md`, `LICENSE`,
+  `README.md` and `SECURITY.md` live at the repository root. Two `Copy` tasks in
+  `serverpackcreator-api/build.gradle.kts` mirror them — `shipRootDocuments` into
+  `serverpackcreator-api/src/main/resources/` (shipped in the jar; `ApiWrapper.setup()` writes them into
+  the user's home) and `shipWritersideDocuments` into `serverpackcreator-help/Writerside/topics/` — and
+  the CI step *Stage documents and images* in `.forgejo/workflows/docs.yml` copies the same set again
+  before the help site is built. **Editing either copy is silently undone by the next build**, and both
+  are in `.gitignore`, so `git status` will not tell you. Edit the root file. `LICENSE` is the one with a
+  wrinkle: it has no extension, and Writerside needs it as `LICENSE.md` to render it as a topic. (Written
+  after a doc change in this session was made against `Writerside/topics/HELP.md` and had to be replayed
+  onto the root — the staged copy happened to be present and looked like the file to edit.)
 - **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
   is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
   in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
