@@ -837,3 +837,193 @@ crossing platforms.
 Both closed, both mutation-verified; detail in `REFACTOR-AUDIT.md`. The pass's real output is its
 "verified clean" list: five consumer-side questions an author-controlled string reaching three renderers
 raises, answered once and written down, so the next pass starts from a shorter list instead of the same one.
+
+---
+
+## 2026-09-20 — test depth and defect analysis of `develop` after the server-pack-update merge
+
+Scope: `develop` at `710c2f78c`, with attention on the update mechanism merged today
+(`ServerPackUpdater`, `ServerPackHandler.run`, `ServerPackProvisioner`, `ServerPackFileGatherer`).
+Read-only; the two probes written to verify findings were deleted and the tree is clean.
+
+### HIGH
+
+**H1 — a first generation with updating enabled never writes the *local* `variables.txt`, so the
+user's configured Java path is missing from the pack they are about to run.**
+`serverpackcreator-api/.../ServerPackHandler.kt:325` writes `manifest.json`, and
+`ServerPackUpdater.isUpdateRun` (`ServerPackUpdater.kt:57`) decides an update by asking whether that
+file exists. Both `createServerRunFiles` calls happen **after** the write (`:359` zipped variant,
+`:375` local variant), so `isUpdateRun` flips from `false` to `true` *in the middle of the run*. On a
+first generation the sequence is:
+
+1. `:359` writes the zipped `variables.txt` — `preserve` is false, because the file does not exist yet.
+2. `:375` should overwrite it with the local variant, which is the only one carrying the user's
+   `SPC_JAVA_SPC` path — but `variables.txt` now exists, is protected, and `isUpdateRun` is now true,
+   so `preserve` returns **true** and the local variant is never written.
+
+The pack keeps the archive's copy, where `SPC_JAVA_SPC` was replaced with the literal `"java"`
+(`ServerPackProvisioner.kt:500-503`).
+
+*Verified, not inferred.* A probe generated the same config twice into `@TempDir`s, differing only in
+the toggle, with `SPC_JAVA_SPC = /opt/my-very-distinctive-jdk/bin/java`:
+
+| run | `variables.txt` contains the configured Java path |
+|---|---|
+| updating **enabled**, first generation, zip desired | **false** |
+| updating disabled (control) | **true** |
+
+Reachable in the default configuration of the feature that just shipped: overwrite defaults on,
+zip-creation defaults on, and the user ticks "Update Server Packs". On a genuine *update* the
+behaviour is correct and wanted — the operator's file must survive — so the fix has to distinguish
+"existed before this run began" from "this run just wrote it". Snapshotting `isUpdateRun` (and the
+set of protected files that already existed) **once, before any file is written**, does that; the
+`preserve` lambda then closes over the snapshot instead of re-deriving it. That also removes the
+surprise that a value read twice in one run can disagree with itself.
+
+No guard covers this: `anUpdateKeepsTheOperatorsVariables` exercises the *second* run only, and no
+test asserts anything about `variables.txt` on a first generation.
+
+### MEDIUM
+
+**M1 — `lazy_mode` bypasses update protection entirely, and silently degrades the update.**
+`ServerPackFileGatherer.kt:86-98` returns before the copy loop, so the `isProtected` predicate is
+never consulted: the whole modpack is written with `copyRecursively(..., overwrite = true)`. Two
+consequences, one pre-existing and one new:
+- Anything in the modpack that collides with a protected path (a shipped `world`, a `server.properties`)
+  overwrites the operator's copy, which is exactly what the feature promises not to do.
+- The branch returns an **empty** `copiedFiles`, so on an update `files.isEmpty()` is true and the
+  prune is skipped (fail-safe, but it means a lazy-mode pack never converges), and the manifest records
+  only the provisioned run-files rather than the pack. The emptiness predates this work; its new
+  significance does not.
+
+`lazy_mode` is referenced by `ServerPackFileGathererTest` and `ValidatorsTest`, but by **no** test in
+combination with updating.
+
+**M2 — the prune's keep-set is compared case-insensitively, which is wrong on a case-sensitive
+filesystem.** `ServerPackUpdater.kt:125,129` builds `keep` from `produced` lowercased and tests
+`keep.contains(relative.lowercase())`. On Linux `Mods/Alpha.jar` and `mods/alpha.jar` are two files;
+folding them together means an old manifest entry is treated as "still produced" and is never pruned,
+so a stale file survives indefinitely. The failure is safe (it under-prunes rather than deleting
+something live), which is why nothing catches it. Note the case-insensitivity of `protects()` is a
+*deliberate* and defensible choice — protection should be liberal — so only the keep-set comparison is
+in question.
+
+**M3 — four `lowercase()` calls with no locale.** `ServerPackUpdater.kt:125,129` and
+`ServerPackHandler.kt:328,341`. Kotlin's no-arg `lowercase()` uses the **default locale**, so under
+`tr`/`az` an `I` folds to `ı`. Both sides of each comparison fold identically, so a match still
+matches; the residual risk is two distinct paths colliding (again under-pruning). `Locale.ROOT` is the
+correct argument for anything comparing identifiers or paths, and the only other case-folding in the
+API (`SystemUtilities.kt:41`) does pass a locale explicitly.
+
+**M4 — test depth: the update mechanism has 25 guards and none of them exercise these.**
+Concretely missing, in the order I would add them:
+1. **First generation + updating enabled writes the local `variables.txt`** — the H1 regression guard.
+2. **A manifest written on the other platform.** `protects()` is unit-tested against backslashes, but
+   `prune()` is never given a manifest whose entries are `mods\alpha.jar`; that is the path a pack
+   generated on Windows and updated on Linux actually takes.
+3. **`lazy_mode` + updating** — assert what happens to a protected path, and to the manifest.
+4. **An absolute path in an old manifest** — `File(serverPack, "/abs/path")` resolves *under* the pack
+   on Unix; assert nothing outside the pack is deleted.
+5. **Update + `customDestination`** — every update guard uses `customDestination`, so the derived
+   `getServerPackDestination` path is never exercised with updating on.
+6. **A protected *file* whose name prefixes a real directory** (`world` the file vs `world/` the tree)
+   and the converse — `protects` is prefix-based and the boundary is untested in `prune`.
+7. **`zipBuilder` with `isZipFileExclusionEnabled = false`** — the filter is now installed
+   unconditionally (a behaviour change recorded in `API-BEHAVIOUR-CHANGES.md`), and no test covers the
+   disabled branch. `GenerationConfigTest` only round-trips the flag through the store.
+8. **`readManifest` on an unreadable (not merely unparseable) file** — the permission path.
+
+### LOW
+
+**L1 — `${{ }}` interpolated into `run:` shell in `devbuild.yml:141,215`.** The value is a filename
+this workflow's own previous step produced from `ls`, so it is machine-generated rather than
+attacker-supplied, and the pattern predates these commits (`release-build.yml:31` interpolates
+`github.ref_name` the same way, from `832eb4684`). Reading it through `env:` rather than expression
+interpolation is the hardened form. Flagged for completeness, not as an exploitable finding.
+
+**L2 — `ServerPackUpdater.protects` is called once per file on an update.** Looks like the
+hot-loop-invariant problem `ModListCompiler` already paid for; it is not. See the measurement below.
+
+### Verified clean — do not re-litigate
+
+- **Hoisting the protected-paths list out of the per-file loop buys nothing.** Measured on this machine,
+  20,000 paths: `protects()` **12.0 ms**, of which the `updateProtectedPaths` getter (which builds a
+  fresh `TreeSet` and reads `java.util.Properties`) is **2.5 ms**; the same matching with the list
+  hoisted once is **12.7 ms**, i.e. indistinguishable. The cost is the 13-entry scan per path, not the
+  getter, and 12 ms across a whole update is not worth a cache. This is the B30 lesson again — measure
+  before optimising, and record the negative result so nobody re-opens it.
+- **No unused imports** in any of the five changed `api/serverpack` files.
+- **No new compiler warnings** in the touched files (both modules, `--rerun-tasks`).
+- **No dead code in `run()`** — `isProtected` ×4, `isOperatorData` ×2, `preserve` ×5, `producedPaths` ×2.
+- **Module boundary intact** — `ServerPackUpdater` imports only Jackson, `ApiProperties`, one file
+  utility and log4j; no Swing, Spring-web or frontend type anywhere in `api/serverpack`.
+- **No secrets, no injection surface in the Kotlin changes.** Nothing in the new code interpolates into
+  a shell, builds SQL, or touches credentials.
+- **Error handling is present on every new I/O path** — `readManifest` catches and reports, returning
+  `null` so a manifest that cannot be understood prunes nothing; `relativize` catches
+  `IllegalArgumentException` and returns `null` rather than recording a `../` path;
+  `directory.list()?.isEmpty() == true` treats an unreadable directory as not-empty and leaves it.
+- **Documentation** — every member of `ServerPackUpdater` bar its logger carries a doc comment, matching
+  its siblings.
+
+### Recommendation
+
+H1 is a user-visible regression in the feature that just shipped and should be fixed before this reaches
+a release, with the guard written red first. M1–M3 are correctness gaps that under-deliver rather than
+destroy, and can follow. M4's list is the test debt that let H1 through: every existing guard exercises
+the *second* run, and none asserts what a *first* run produces while updating is enabled.
+
+#### Second pass, same day — findings closed, and one of them retracted
+
+`develop` at `5bc4e2743`. Full build green, **1,904 tests, 0 failures** across six modules.
+
+**H1 closed** (`5bc4e2743`, red-pinned first in `b57efd7e2`). `ServerPackHandler.run` now snapshots
+which provisioned files were already present *before it writes anything*, and the icon,
+`server.properties` and run-file decisions all read that one snapshot. The mid-run flip of
+`isUpdateRun` can no longer make this run's own output look like the operator's.
+
+**M1 closed** (`5bc4e2743`, red-pinned first). Lazy mode walks the modpack, skips a protected path
+that already exists, and records what it copied.
+
+**M3 closed** (`5bc4e2743`). Four comparisons now pass `Locale.ROOT`.
+
+**M2 RETRACTED — the recommendation was wrong, and implementing it would have destroyed data.**
+The report said case-insensitive comparison of the prune's keep-set is "wrong on a case-sensitive
+filesystem". The reasoning was one-sided. On a **case-insensitive** filesystem — Windows, and macOS
+by default — `Mods/Alpha.jar` and `mods/alpha.jar` are *one file*, and the prune runs **after** the
+copy. An unfolded comparison there would fail to match the entry the copy had just written, conclude
+it was stale, and **delete the file this very run produced**. Folding costs an occasional stale file
+on Linux; not folding costs a freshly generated file on Windows. Under-pruning is the safe direction,
+so the existing behaviour stands and is now commented with that reasoning rather than changed.
+
+Recorded because the error is instructive: the finding named a real asymmetry and then proposed the
+fix that resolves it in the destructive direction. A recommendation that changes what gets **deleted**
+has to be argued on both filesystems before it is written down, not just the one that prompted it.
+
+**M4 partially closed.** Items 1 and 3 of the suggested-tests list are now guards
+(`aFirstGenerationWritesTheLocalVariablesEvenWhenUpdatingIsEnabled`,
+`lazyModeStillRespectsProtectionOnAnUpdate`, `lazyModeRecordsWhatItCopied`). Items 2, 4, 5, 6, 7 and 8
+remain open test debt; none of them guards a defect that is currently known to exist, which is why they
+were not written speculatively.
+
+**L1 stands** as recorded (not exploitable, pattern predates the commits). **L2 stands retracted** by
+its own measurement.
+
+### New in this pass — verified clean
+
+- **The H1 defect class does not recur.** Every other `updater.*` call in `run()` was re-checked for a
+  value that can change mid-run: `isUpdate` is captured once at `:219`; `relativize` and `protects` are
+  pure; `prune` runs once. The one remaining per-call derivation is `isProtected`'s `candidate.exists()`
+  at `:260`, and it is safe by construction — the copy checks a destination *before* writing it, and no
+  `ServerPackFile` writes another's destination. Directory entries are created before their children are
+  checked, but on a first generation `isUpdate` is false so nothing is protected, and on an update the
+  children exist already. Same reasoning holds for the new lazy-mode walk, which descends into a skipped
+  protected directory and checks each child individually.
+- **Lazy mode writing into a destination nested inside the modpack** is a pre-existing hazard, not one
+  this change introduces: `walkTopDown()` and `copyRecursively` are both depth-first walks of a tree
+  being written into, so the risk is unchanged. It is unreachable with the default destination
+  (`<home>/server-packs`, outside the modpack) and needs a `customDestination` pointing inside the
+  modpack to trigger.
+- **`preserved` is computed before `runPreGenExtensions`**, so a file a plugin writes during pre-gen is
+  not mistaken for the operator's. That matches the previous behaviour, where no plugin-written file
+  could be preserved either.
