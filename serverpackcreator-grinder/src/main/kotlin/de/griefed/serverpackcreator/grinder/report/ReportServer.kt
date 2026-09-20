@@ -313,15 +313,6 @@ class ReportServer(
     }
 
     /**
-     * The live activity document: what the daemon is doing *now*, as opposed to what it has found. Answers the
-     * operator question the verdict table cannot — which pass, which candidate each worker holds and for how
-     * long, where the crawl stands per platform, and how big the install cache has grown.
-     *
-     * Serialized with Jackson rather than hand-built, so a mod slug containing quotes or braces cannot break the
-     * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
-     * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
-     */
-    /**
      * One page of the verdict feed: the rows themselves plus where in the set they sit. `total` is the
      * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
      * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
@@ -338,6 +329,15 @@ class ReportServer(
             .getOrElse { "{\"error\":\"verdicts unavailable\"}" }
     }
 
+    /**
+     * The live activity document: what the daemon is doing *now*, as opposed to what it has found. Answers the
+     * operator question the verdict table cannot — which pass, which candidate each worker holds and for how
+     * long, where the crawl stands per platform, and how big the install cache has grown.
+     *
+     * Serialized with Jackson rather than hand-built, so a mod slug containing quotes or braces cannot break the
+     * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
+     * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
+     */
     private fun statusJson(): String {
         val document = linkedMapOf<String, Any?>(
             "verdicts" to store.all().size,

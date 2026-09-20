@@ -105,14 +105,6 @@ internal class GrinderSpcEnvironmentTest {
     }
 
     /**
-     * Both claims must precede every `log` use in `main`, since the first one builds an `ApiProperties`.
-     *
-     * The window is `main`'s own body, closing brace included in the arithmetic. Scanning to end-of-file instead
-     * would let both `indexOf` calls match text that is not `main` — the `pinSpcHomeDirectory` *declaration* below
-     * it, or a helper's log call — and the guard would then compare positions of things it is not asserting about
-     * and pass whatever `main` does. [mainBody] asserts its own boundedness, so that cannot rot silently.
-     */
-    /**
      * **The queue-and-exit path must run before the claims *and* must not log.**
      *
      * `--requeue` is run by an operator against a service that is already up, so it must not claim the
@@ -147,6 +139,14 @@ internal class GrinderSpcEnvironmentTest {
         )
     }
 
+    /**
+     * Both claims must precede every `log` use in `main`, since the first one builds an `ApiProperties`.
+     *
+     * The window is `main`'s own body, closing brace included in the arithmetic. Scanning to end-of-file instead
+     * would let both `indexOf` calls match text that is not `main` — the `pinSpcHomeDirectory` *declaration* below
+     * it, or a helper's log call — and the guard would then compare positions of things it is not asserting about
+     * and pass whatever `main` does. [mainBody] asserts its own boundedness, so that cannot rot silently.
+     */
     @Test
     fun theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement() {
         val body = grinderMainBody()

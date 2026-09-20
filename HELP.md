@@ -929,6 +929,7 @@ de.griefed.serverpackcreator.serverpack.script.template.sh=
 de.griefed.serverpackcreator.serverpack.java.template.ps1=
 de.griefed.serverpackcreator.serverpack.java.template.sh=
 de.griefed.serverpackcreator.serverpack.update=false
+de.griefed.serverpackcreator.serverpack.update.protected=banned-ips.json,banned-players.json,crash-reports,eula.txt,logs,ops.json,server.properties,usercache.json,variables.txt,whitelist.json,world,world_nether,world_the_end
 # Webservice-specific props
 server.error.include-message=ALWAYS
 server.error.include-stacktrace=ALWAYS
@@ -976,7 +977,7 @@ spring.transaction.default-timeout=3600
 | de.griefed.serverpackcreator.serverpack.autodiscovery.enabled        | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically and exclude them if they are clientside-only. Set this to `false` to disable it.           |
 | de.griefed.serverpackcreator.serverpack.autodiscovery.filter         | Filter method by which to exclude user-specified clientside-only mods. `START`, `END`, `REGEX`, `CONTAIN`, `EITHER`                                                                    |
 | de.griefed.serverpackcreator.serverpack.cleanup.enabled              | `true` or `false`. Whether to cleanup files after generating a server pack.                                                                                                            |
-| de.griefed.serverpackcreator.serverpack.overwrite.enabled            | `true` or `false`. Whether an already existing server pack should be overwritten.                                                                                                      |
+| de.griefed.serverpackcreator.serverpack.overwrite.enabled            | `true` or `false`. Whether an already existing server pack should be emptied before generating. Ignored when `serverpack.update` is enabled and the destination holds a previous server pack. |
 | de.griefed.serverpackcreator.serverpack.zip.exclude                  | Files to exclude from the server pack ZIP-archive. You may use `MINECRAFT_VERSION` as a placeholder for the Minecraft version of your modpack/server pack if a files name contains it. | 
 | de.griefed.serverpackcreator.serverpack.zip.exclude.enabled          | `true` or `false`. Whether exclusion of files from a server packs ZIP-archive is enabled.                                                                                              | 
 | de.griefed.serverpackcreator.spring.schedules.database.cleanup       | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                           |
@@ -988,7 +989,8 @@ spring.transaction.default-timeout=3600
 | de.griefed.serverpackcreator.serverpack.script.template.sh           | Path to the default Shell-template used for start-script generation.                                                                                                                   |
 | de.griefed.serverpackcreator.serverpack.java.template.ps1            | Path to the default PowerShell-template used for Java-installation-script generation.                                                                                                  |
 | de.griefed.serverpackcreator.serverpack.java.template.sh             | Path to the default Shell-template used for Java-installation-script generation.                                                                                                       |
-| de.griefed.serverpackcreator.serverpack.update                       | `true` or `false`. Whether ServerPackCreator should attempt to update a server pack which was previously generated through ServerPackCreator. Requires overwrites to be disabled.      |
+| de.griefed.serverpackcreator.serverpack.update                       | `true` or `false`. Whether ServerPackCreator should update a server pack it previously generated, instead of replacing it. Takes precedence over `serverpack.overwrite.enabled`.        |
+| de.griefed.serverpackcreator.serverpack.update.protected              | Comma-separated paths, relative to the server pack, which an update must never delete or overwrite, and which are never put into the ZIP-archive. A directory covers everything inside it. Your entries are added to the defaults; they never replace them. |
 
 If at any point you wish to override one of these properties (apart from the ones which get dynamically updated), you may
 place an `overrides.properties` in your ServerPackCreator home-directory. Any property in that file will override any
@@ -1077,29 +1079,79 @@ That being said: You can delete a server pack by removing the corresponding file
 
 ## Keeping Data
 
-You can disable the cleanup of an already generated server pack in order to keep data between generations.
-This is useful if you ran the server pack and generated world or similar. Scripts, icon and properties will always be updated
+Running a server straight out of a generated server pack is normal, and it means that directory stops
+being ServerPackCreator's: it fills up with a world, an `ops.json`, a `server.properties` you tuned.
+Generating again over the top of it must not cost you any of that. Two settings decide what happens,
+and **Update Server Packs** is the one you want.
 
-Keep in mind, though, that any ZIP-archived generated this way may contain data which is not allowed on platforms such as Modrinth or CurseForge.
+### Updating Server Packs
 
-You may also run the risk of having duplicate mods if the mods in your modpack change or are updated between generations.
-If overwrites, and thus cleanups, are disabled, and you run into this
-
-### Updating Server Packs (Experimental, v6.0.0 and up)
-
-An experimental feature allows you to update your server pack without losing data. If you've run your server pack locally, played around a bit
-and have a world you would like to keep, losing this data due to re-generating your server pack would suck. (MAKE BACKUPS!)
-
-In order to try out updating your server packs, *deactivate* `Server Pack Overrides` and *activate* `Update Server Packs`:
+Enable `Update Server Packs`. Nothing else needs changing -- it takes precedence over
+`Overwrite Server Pack`, so you can leave that at its default.
 
 ![updating_server_packs](img/updating_server_packs.png)
 
-If you are using ServerPackCreator from the commandline, change the following properties to:
+From the commandline:
 
 ```properties
-de.griefed.serverpackcreator.serverpack.overwrite.enabled=false
 de.griefed.serverpackcreator.serverpack.update=true
 ```
+
+An update is only possible where a previous run left its `manifest.json` behind, which is the record of
+what ServerPackCreator produced. With that record in hand it:
+
+- **removes** files the previous run produced which your modpack no longer contains, so a mod you
+  dropped does not linger and a renamed mod jar does not end up in the pack twice,
+- **refreshes** everything the modpack still contains,
+- **leaves alone** everything the manifest never mentioned -- your world, your `ops.json`, your
+  ban-lists, anything you added yourself,
+- and **never touches a protected path**, even one it did produce.
+
+Pruning happens *after* the new files are copied, so a generation that fails part-way leaves a server
+pack you can still start a server from rather than a gutted one. A run that copies nothing at all is
+treated as a broken run and prunes nothing.
+
+#### Protected paths
+
+`de.griefed.serverpackcreator.serverpack.update.protected` lists what an update must never delete or
+overwrite, relative to the server pack. A directory covers everything inside it. The defaults are what
+a Minecraft server writes into the directory it is started from, plus the two files you are most
+likely to have edited by hand:
+
+`world`, `world_nether`, `world_the_end`, `ops.json`, `whitelist.json`, `banned-players.json`,
+`banned-ips.json`, `usercache.json`, `eula.txt`, `logs`, `crash-reports`, `server.properties`,
+`variables.txt`
+
+Your own entries are **added** to that list, never substituted for it, so you can widen the protection
+but cannot accidentally leave your own world unprotected. If you do want a protected file regenerated,
+either disable `Update Server Packs` for that run, or simply delete the file and let the next run write
+it fresh.
+
+Protection applies to a file that is **already there**. A first generation still ships a
+`server.properties`, a `variables.txt` or a world included from your modpack; it is only updates over
+the top of them that leave them be.
+
+#### What ends up in the ZIP-archive
+
+The archive of an updated server pack leaves out anything protected that ServerPackCreator did not
+produce -- your world, your ban-lists, your `ops.json` -- so an archive you upload to Modrinth or
+CurseForge does not carry your server's data with it. `server.properties`, `variables.txt` and the
+start scripts *are* archived, because a server pack without them is not a server pack; note that means
+an archive built from an updated pack carries **your** copies of those two files, so check them before
+sharing it.
+
+### Keeping data without updating
+
+You can instead disable `Overwrite Server Pack` and leave `Update Server Packs` off. Nothing is then
+deleted or overwritten at all, except scripts, icon and properties.
+
+Be aware of what that costs: because nothing is ever refreshed or removed, a mod that changed version
+between generations lands in the pack **beside** its older copy, and a server with two versions of the
+same mod will not start. It also means any ZIP-archive generated this way may contain data which is not
+allowed on platforms such as Modrinth or CurseForge. `Update Server Packs` exists precisely to keep your
+data *and* converge on your modpack; prefer it.
+
+**Make backups regardless.** No amount of care here replaces a copy of a world you would be sad to lose.
 
 ## Multiple Java Installations
 
@@ -1107,7 +1159,11 @@ If you manage multiple modpacks and they require different Java versions to run,
 feature to use store paths to your Java installations. Changing the Miencraft version for your server pack will then update
 the path to the Java installation in the Advanced-Section to reflect the required Java install.
 
-Note: This path will not be present in the `variables.txt` in the ZIP-archive of your server pack. If you disabled `Server Pack Overwrites`, then the updated Java path may end up in the `variables.txt` inside the ZIP-archive. Use with caution!
+Note: This path will not be present in the `variables.txt` in the ZIP-archive of your server pack, because the
+archived copy is written without it on purpose. Two settings break that, and both for the same reason -- the
+`variables.txt` that gets archived is then the one already sitting in the server pack rather than a freshly
+written one: `Server Pack Overwrites` disabled, and `Update Server Packs` enabled, which protects `variables.txt`
+from being rewritten at all. In either case check the archive before sharing it.
 
 1. Add the paths to your Java executables with their corresponding Java version:
 

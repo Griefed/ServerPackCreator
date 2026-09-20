@@ -76,15 +76,6 @@ object JarSelfDeclaration {
     private const val TOML_VERSION_RANGE = "versionRange"
 
     /**
-     * The mod id each loader answers to in a `mods.toml` dependency entry.
-     *
-     * NeoForge is two answers, not one: on the single Minecraft version it and Forge share builds it *is*
-     * Forge — `forge-1.20.1-47.1.106-universal.jar` registers as `forge 47.1.106` — and everywhere after the
-     * package rename it registers as `neoforge`. The era boundary is [LoaderCompatibility]'s single
-     * statement, asked rather than restated, because a second copy of "1.20.1" is exactly the duplication
-     * this module has already paid for three times.
-     */
-    /**
      * What an installed [loader] build declares it **provides**, as id → version, for the loaders that
      * publish no `provides` block of their own — Forge and NeoForge.
      *
@@ -106,6 +97,15 @@ object JarSelfDeclaration {
         return platformIdsFor(loader, minecraftVersion).associateWith { version }
     }
 
+    /**
+     * The mod id each loader answers to in a `mods.toml` dependency entry.
+     *
+     * NeoForge is two answers, not one: on the single Minecraft version it and Forge share builds it *is*
+     * Forge — `forge-1.20.1-47.1.106-universal.jar` registers as `forge 47.1.106` — and everywhere after the
+     * package rename it registers as `neoforge`. The era boundary is [LoaderCompatibility]'s single
+     * statement, asked rather than restated, because a second copy of "1.20.1" is exactly the duplication
+     * this module has already paid for three times.
+     */
     private fun platformIdsFor(loader: String, minecraftVersion: String): Set<String> = when (loader) {
         "Forge" -> setOf("forge")
         "NeoForge" ->

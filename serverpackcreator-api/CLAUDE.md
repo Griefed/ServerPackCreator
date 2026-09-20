@@ -264,6 +264,40 @@
   it, and `setLoggingLevel` no longer throws. Pinned by
   `PathsConfigTest.theDevEnvironmentFallbackSkipsAnUnwritableWorkingDirectory`,
   `ApiPropertiesHomeDirectoryTest` and `GrinderSpcEnvironmentTest`.
+- **LANDMINE — a server pack directory is a *running server's* directory, and `ServerPackUpdater` is what
+  keeps it that way.** Generating over an existing pack is the normal case — people run the server straight
+  out of it — so the directory holds a world, an `ops.json` and a hand-tuned `server.properties` that SPC
+  never wrote. Three rules, all of which were broken until 2026-09-20:
+  - **Updating beats overwriting.** `isServerPacksOverwriteEnabled` defaults to **true** and its cleanup
+    empties the destination, so it ran *before* `manifest.json` could be read and the update became a silent
+    no-op that also deleted the world. The GUI hid this by greying out the update checkbox whenever overwrite
+    was ticked; every other entry point (embedder, hand-edited properties, CLI, web) reached it.
+  - **Prune after the copy, never before.** Deleting the previous run's output first means a generation that
+    throws leaves an unstartable server. A copy that produced *zero* files is a broken run, not an empty
+    modpack, and must prune nothing — note the run-files are provisioned either way, so only `files` can tell
+    the two apart, which is why the guard lives at the call site *and* inside `prune`.
+  - **Protection guards what exists; it does not forbid creating it.** `preserves()` is
+    `isUpdateRun && protects && exists`. Drop the `exists` and a first generation can no longer ship a
+    `server.properties`, a `variables.txt` or a modpack's world at all.
+
+  **A guard that asserts something is *excluded* must assert in the same breath what is still
+  *included*.** The archive guard was written red against the world and `ops.json` being absent, and
+  against `mods/alpha.jar` being present — so it stayed green when the first attempt at the exclusion
+  also dropped `server.properties` and `variables.txt`, which no assertion mentioned. Half a pin is how
+  a fix for one defect ships another. It now names the three files that must survive the exclusion.
+
+  **And the ZIP exclusion is keyed on the manifest, not on the protected list** — a mistake made and fixed
+  inside this same work. Protected does *not* mean absent: `server.properties` and `variables.txt` are both
+  protected and part of every server pack, so excluding every protected path shipped an archive whose start
+  scripts had nothing to read. The line that is actually wanted is "what did the operator's server write",
+  which is exactly what the manifest does not list.
+
+  The manifest is load-bearing for all of it, so it must describe the **whole** pack: the icon,
+  `server.properties`, the scripts, `variables.txt` and `HOW-TO-RUN.md` are listed too, by names read from
+  `ServerPackProvisioner.serverRunFileNames` rather than spelled a second time. Entries are `/`-separated via
+  `Path.relativize`; the old `absolutePath.replace(packPath, "").substring(1)` replaced *every* occurrence of
+  the pack path and threw on a file copied to the pack root.
+
 - **`PackConfig.modloader` setter silently ignores unrecognized values** — it does *not* fall back to
   Forge, as this file claimed until 2026-08-14. The setter assigns only on a match (`PackConfig.kt:328-341`),
   so an unrecognised value leaves the field at whatever it already held, which starts as `""`. A config whose

@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
-import de.griefed.serverpackcreator.clientside.BootResult
 import de.griefed.serverpackcreator.clientside.ConsoleRuleFile
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
@@ -437,9 +436,6 @@ object GrinderApplication {
      * the worst case (grace + this) stays far inside the unit's stop timeout.
      */
     private val WORKER_STOP_FLOOR: Duration = Duration.ofSeconds(1)
-
-    /** Read [key] from the environment, falling back to [default] when unset or blank. */
-    private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
     /**
      * Handle `--requeue …` and `--requeue-before …`, print what was queued, and return without grinding.

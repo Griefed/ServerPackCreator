@@ -40,6 +40,18 @@ constraints.
   every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
   the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
   you touch a workflow. Secrets, scopes and which job dies without which → `claude-docs/CI-SECRETS.md`.
+- **The seven root-level documents are the source of truth, and both of their copies are GENERATED and
+  gitignored.** `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `HELP.md`, `LICENSE`,
+  `README.md` and `SECURITY.md` live at the repository root. Two `Copy` tasks in
+  `serverpackcreator-api/build.gradle.kts` mirror them — `shipRootDocuments` into
+  `serverpackcreator-api/src/main/resources/` (shipped in the jar; `ApiWrapper.setup()` writes them into
+  the user's home) and `shipWritersideDocuments` into `serverpackcreator-help/Writerside/topics/` — and
+  the CI step *Stage documents and images* in `.forgejo/workflows/docs.yml` copies the same set again
+  before the help site is built. **Editing either copy is silently undone by the next build**, and both
+  are in `.gitignore`, so `git status` will not tell you. Edit the root file. `LICENSE` is the one with a
+  wrinkle: it has no extension, and Writerside needs it as `LICENSE.md` to render it as a topic. (Written
+  after a doc change in this session was made against `Writerside/topics/HELP.md` and had to be replayed
+  onto the root — the staged copy happened to be present and looked like the file to edit.)
 - **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
   is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
   in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
@@ -311,14 +323,14 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-12).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-09-20).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 421 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| api            | 450 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
 | clientside     | 643           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
-| app            | 149           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| app            | 168           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | web-frontend   | 32 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
@@ -384,6 +396,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   recorded that a Connector boot is worth attempting anyway — right when the shim cost one of three boots,
   wrong once the per-line axis made it cost one of one. Nothing about Connector changed. Re-read the recorded
   calls a structural change touches instead of treating them as settled.
+- **A setting whose destructive sibling is on by default is a setting that never runs.** "Update Server Packs"
+  read its own manifest *after* the overwrite-cleanup had deleted it, and overwrite defaults to on — so the
+  feature was a no-op in the configuration every user starts from, and took the world it existed to protect.
+  The GUI hid it by greying the checkbox out, which is why it survived as "experimental" rather than being
+  reported as broken: **a guard rail in one adapter is not a fix, it is a reason the bug stays unreported.**
+  Ask of any pair of settings which one wins, and answer it where the behaviour lives.
+- **"Protected" and "absent" are different, and conflating them breaks the artifact.** The same protected-paths
+  predicate that must keep `server.properties` and `variables.txt` from being overwritten was also used to keep
+  files out of the ZIP — which shipped an archive without them, whose start scripts had nothing to read. One
+  list, two questions; the second needed the manifest ("did we produce this?"), not the first.
 - **A selection made on metadata needs a way for the artifact to re-open it.** A platform's loader tick
   decided the boot, the downloaded jar disagreed, and only one narrow form of disagreement — *carries a
   different descriptor* — could reopen the choice. The re-selection machinery already existed; what was

@@ -6193,3 +6193,175 @@ untrusted scheme not becoming a link) are each carried by their own new guard an
 
 Full build green with the frontend's Vitest suite included: **api 421, clientside 568, grinder 516, app 149,
 plugin-grinder 73, plugin-example 3 — 1,730 tests, 0 failures.**
+
+---
+
+## 2026-09-20 — audit of the 2026-09-19/20 commits, merged into develop
+
+Scope: `1e4e78150..develop` — the nine-commit server-pack-update series, the two recovered-work
+commits, and the three merge commits. Read-only; no source modified.
+
+| # | Commit | Subject |
+|---|---|---|
+| 1 | `65071b62b` | test(api): pin what regenerating over an existing server pack does today |
+| 2 | `960e18649` | test(api): red pins for what an update must guarantee |
+| 3 | `ee629ebff` | feat(api): make updating an existing server pack safe for a running server |
+| 4 | `942382da6` | test(api): red pin for a list-setting overwriting its own default |
+| 5 | `011af4f76` | fix(api): stop a list-setting from overwriting its own shipped default |
+| 6 | `006e46aa4` | feat(app): take Update Server Packs out of its experimental state |
+| 7 | `6ac06c3ff` | fix(api): keep server.properties and variables.txt in an updated pack's archive |
+| 8 | `2dafb3293` | docs: describe updating a server pack as a feature you can rely on |
+| 9 | `6414f9131` | docs: record that the root-level documents have two generated copies |
+| 10 | `74a73b31c` | feat(build): name the AppImage _experimental, and stop spelling that name twice |
+| 11 | `9de625cc4` | docs(readme): document generating a server pack from the commandline |
+| 12–14 | `8e916fd08`, `3271e4948`, `56469ad30` | the three merges |
+
+### HIGH
+
+None. No behaviour change is hidden inside a `refactor:`-labelled commit — there is no `refactor:`
+commit in this range at all. No module boundary is broken (`ServerPackUpdater` imports only Jackson,
+`ApiProperties`, a file utility and log4j; no Swing, Spring-web or frontend type reaches
+`api/serverpack`). The plugin-API contract is preserved: every widened signature
+(`copyFiles`, `createServerRunFiles`, `zipBuilder`, on both `ServerPackHandler` and its
+collaborators) takes a **trailing defaulted** parameter and carries `@JvmOverloads`, so the previous
+JVM descriptors survive for pre-compiled pf4j plugins, and each default reproduces the old behaviour
+exactly. All five behaviour changes on exported calls are recorded in
+`claude-docs/API-BEHAVIOUR-CHANGES.md`.
+
+### MEDIUM
+
+**M1 — `ee629ebff` bundles three concerns into one commit.** Alongside the update feature it carries:
+- a **pure refactor**: `ServerPackManifest` gains `FILE_NAME` / `inside(File)` and the two literal
+  `"manifest.json"` spellings are read through it; `ServerPackProvisioner` gains
+  `startScriptName` / `javaScriptName` / `VARIABLES_NAME` / `HOW_TO_RUN_NAME` so the run-file naming
+  exists once.
+- an **unrelated bug fix**: `ServerPackHandler.cleanupEnvironment` deleted the destination twice
+  (`deleteExistingServerPack(destination)` followed by an identical `File(destination).deleteQuietly()`);
+  the duplicate line is removed here.
+
+Rule broken: *one concern per commit; never mix a refactor with a feature or bugfix.* Both extractions
+are genuinely enabling changes for the feature (the manifest name is needed by `ServerPackUpdater`, the
+run-file names by the manifest), which is the same carve-out the root `CLAUDE.md` grants for reshaping a
+constructor to document it — but the `cleanupEnvironment` fix is not, and belonged in its own commit
+with its own message. 9 files, 691 insertions, is a large single step for a convention that asks for
+incremental ones.
+
+**M2 — `ee629ebff` has no pin boundary: `ServerPackUpdater.kt` and `ServerPackUpdaterTest.kt` are both
+added by it.** `git checkout ee629ebff^` cannot compile the guard, let alone watch it go red. This is
+the recurrence of the finding already recorded against the eight commits of 2026-07-31. Mitigations
+actually present, which distinguish it from that instance: the commit message names three mutations
+(dropping `ignoreCase`, sorting shallowest-first, dropping the protection check) and states that each
+failed exactly one guard; those mutations were run. The *behavioural* red pins for the same work do have
+a boundary — `960e18649` adds `ServerPackUpdateSafetyTest` alone, 349 lines, nine guards, all red — so
+what is missing is the unit-level boundary, not the evidence.
+
+**M3 — `006e46aa4` bundles a shared-component bug fix into a GUI feature commit, with no pin boundary.**
+`ScrollTextArea.setEnabled` did not forward to the `JTextArea` it wraps, so disabling one of these
+widgets disabled nothing; the override, its guard (`ScrollTextAreaEnabledTest`, 56 lines) and the
+feature all land together. Same shape as M2, same mitigation (the message records the mutation, and it
+was run). `ScrollTextArea` had **no test at all** before this commit, so a shared GUI component was
+modified without prior characterization — acceptable here only because the change is a purely additive
+override of behaviour that did not previously exist, leaving nothing to preserve.
+
+**M4 — `74a73b31c` is build logic and its message carries no measurement.** The root `CLAUDE.md` is
+explicit: *"for a change to `buildSrc`, a `build.gradle.kts` or task wiring, the standard is: measure the
+behaviour before and after, and record both numbers in the commit message."* The message records
+internal consistency (`APP_NAME`, the appimagetool filename, per-architecture JDK directories, the
+`rm -rf` of the AppDir), `bash -n` and a YAML parse — none of which is a behaviour measurement. The
+measurement **does exist**: the 2026-09-18 session ran `misc/build-appimage.sh` twice inside a
+`debian:bookworm-slim` container and printed the produced filenames, the count matched by the
+`ServerPackCreator-*` glob, the count a bare `*.AppImage` glob would wrongly match, and the embedded
+architecture of each. It was simply not carried into the commit message when the recovered file was
+committed on 2026-09-20. This is the "cite names, not snapshots" failure in its other direction — the
+evidence was in hand and left outside the artifact that will outlive the session.
+
+**M5 — `6ac06c3ff` fixes a defect introduced two commits earlier, in the same series.** The archive
+exclusion in `ee629ebff` was keyed on the protected-paths predicate, which excluded `server.properties`
+and `variables.txt` from the ZIP of an updated pack — files every server pack needs. The guard that
+should have caught it (`theArchiveOfAnUpdateLeavesOutWhatTheServerWrote`, added red in `960e18649`)
+asserted only that the world and `ops.json` were **absent** and that `mods/alpha.jar` was present; it
+never asserted that what *should* ship still shipped. Rule: a red pin that only checks the negative
+half of a change cannot catch the positive half being broken. The fix commit adds the three missing
+assertions and was watched failing on the first of them.
+
+### LOW
+
+**L1 — `74a73b31c` and `9de625cc4` are recovered work committed two days after it was written,** with
+author dates of 2026-09-20 rather than 2026-09-18/19. Both messages say so explicitly and name the
+recovery route, so the history is honest, but `git log --since` on a date range will not find them where
+they belong.
+
+**L2 — the merge commits are `--no-ff` for two single-commit branches.** `8e916fd08` and `3271e4948`
+each wrap one commit, so the merge message and the commit message largely restate each other. Harmless,
+and it does keep the branch boundary visible.
+
+### Verified clean — do not re-litigate
+
+- **No existing test assertion was changed or removed anywhere in this range.** Every test delta is a
+  pure addition: `ee629ebff` +266 lines across two files, `006e46aa4` +56, `6ac06c3ff` +6. Checked with
+  `git show <c> -- '*/src/test/*' | grep '^-'` filtered to assertion lines — empty for all four code
+  commits. The "if a test must change for a refactor, stop and flag it" signal never fired.
+- **No new Kotlin-idiom violations.** `ServerPackUpdater.kt`: zero `!!`, zero `var`. The single `!!` and
+  two `var`s in `ServerPackHandler.kt` are pre-existing (`packConfig.name!!` at :184, from
+  `6e8577999`/`195c900d6`); no line added by these commits introduces either. Confirmed by grepping the
+  `+` side of both `ServerPackHandler` diffs.
+- **No new compiler warnings** in any touched file (`--rerun-tasks` on both modules' `compileKotlin`,
+  filtered to the seven changed classes: none).
+- **No dead code left in `run()`.** All four lambdas/vals introduced are consumed: `isProtected` ×4,
+  `isOperatorData` ×2, `preserve` ×5, `producedPaths` ×2.
+- **Characterization existed before the units were changed.** `ServerPackHandlerCharacterizationTest`,
+  `ServerPackFileGathererTest` and `ServerPackProvisionerTest` all predate this range, and `65071b62b`
+  adds `run()`-level characterization (6 guards, green) before any behaviour is touched. The
+  red-pin-then-fix ordering is correct and committed for `960e18649`→`ee629ebff` and
+  `942382da6`→`011af4f76`.
+- **Every declared member of `ServerPackUpdater` carries a doc comment** bar the `log` property, which
+  matches every sibling in the package.
+- **`develop` is green after all three merges**: 1,901 tests, 0 failures, 0 errors across six modules
+  (`./gradlew build`, 2026-09-20).
+
+### Recommendation
+
+M4 and M5 are worth acting on; M1–M3 are recorded rather than fixed, because the commits are merged into
+`develop` and splitting them now would mean rewriting shared history — the same call `358675fbf` forced
+in the root `CLAUDE.md`, and for the same reason. Concretely:
+
+1. **M4** — add the 2026-09-18 container measurement to the record. It cannot go into `74a73b31c`'s
+   message any more, so it belongs in a follow-up note (this file, or a line in the workflow beside the
+   glob) stating what was measured and what it produced.
+2. **M5** — generalise the lesson: a guard asserting that something is *excluded* should assert in the
+   same breath what is still *included*. Worth a line in the api module's `CLAUDE.md`.
+3. **M1–M3** — no action on the commits. The pattern to change is forward-looking: land an enabling
+   extraction as its own `refactor:` commit before the feature that needs it, and land a new class's seam
+   before its guard so the guard has a red state to be checked out at.
+
+#### Follow-up, same day — M4 and M5 closed
+
+**M4 closed by measurement, not by a note.** The 2026-09-18 container run was re-executed on
+2026-09-20 rather than quoted from a transcript, and its numbers now sit in
+`.forgejo/workflows/release-build.yml` beside the assertion they justify. Both invocations in one
+`debian:bookworm-slim` workspace, on an aarch64 host (which mirrors the amd64 CI runner — native
+first, then the other architecture):
+
+| | |
+|---|---|
+| produced | `ServerPackCreator-9.9.9-test-aarch64_experimental.AppImage` → ELF 64-bit, ARM aarch64 |
+| | `ServerPackCreator-9.9.9-test-x86_64_experimental.AppImage` → ELF 64-bit, x86-64 |
+| | `appimagetool-aarch64.AppImage` |
+| `ServerPackCreator-*` glob | **2** — what `release-build.yml` asserts |
+| bare `*.AppImage` glob | **3** — would wrongly count the tool, which is why the glob is anchored |
+| JDK directories after both runs | `jdk-21-aarch64`, `jdk-21-x86_64` — per architecture, so the second run cannot inherit the first's runtime |
+
+That measures every claim the two workflows' comments make: the `_experimental` suffix, the anchored
+glob, cross-packaging producing a genuine foreign-architecture binary, and the per-architecture JDK
+directories.
+
+**M5 closed** — the lesson is now a landmine in `serverpackcreator-api/CLAUDE.md`: a guard asserting
+that something is excluded must assert in the same breath what is still included.
+
+**M1, M2, M3 remain open by choice.** All three are properties of commit *structure*, and `develop` is
+14 commits ahead of `origin/develop` — unpushed, so they are still rewritable. Fixing them means
+splitting `ee629ebff` into a `refactor:` (the `FILE_NAME` / run-file-name extractions), a `fix:` (the
+duplicated `deleteQuietly` in `cleanupEnvironment`) and the feature; landing `ServerPackUpdater`'s seam
+before its guard; and doing the same for `ScrollTextArea`. That is a rewrite of 14 commits including 3
+merges, each of which must be re-verified green individually. Not undertaken without an explicit
+instruction — flagged for Griefed.

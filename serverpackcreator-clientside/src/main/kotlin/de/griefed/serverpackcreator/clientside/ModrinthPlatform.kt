@@ -106,11 +106,6 @@ class ModrinthPlatform(
     }.getOrNull() ?: nativeRef
 
     /**
-     * Map a single Modrinth version-node onto our [ModFile]s. A version's `loaders`/`game_versions`
-     * and required `dependencies` apply to every file it lists, but only its [modFilesOf] entries are
-     * mods at all.
-     */
-    /**
      * Project ids already looked up from a `version_id`, so a pin costs one request however many of a
      * project's versions declare it.
      *
@@ -174,6 +169,11 @@ class ModrinthPlatform(
      */
     private val linkableDependencyTypes = setOf("required", "optional")
 
+    /**
+     * Map a single Modrinth version-node onto our [ModFile]s. A version's `loaders`/`game_versions`
+     * and required `dependencies` apply to every file it lists, but only its [modFilesOf] entries are
+     * mods at all.
+     */
     private fun filesOf(version: JsonNode, projectUrl: String): List<ModFile> {
         val loaders = LoaderNames.canonicalLoaders(version.path("loaders").map { it.asText() })
         val mcVersions = version.path("game_versions").map { it.asText() }.toSortedSet()

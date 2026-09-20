@@ -4506,3 +4506,47 @@ two real sources, reported accurately. Worth stating so the bucket is not re-ope
   resolution that produced the pack.
 - **A neighbouring bucket that looks like the same bug is worth ten minutes and four downloads.** The 45
   CONTRADICTORY rows would have been a plausible and wholly wasted pass.
+
+## 2026-09-19/20 — updating an existing server pack stops being experimental
+
+Griefed asked for the update-mechanism at `ServerPackHandler.kt:231` to be analysed, tested and taken
+out of its experimental state, framed by the thing that actually happens to users: people run a server
+straight out of a generated pack, and regenerating it costs them the world they made.
+
+**What it did.** Two independent booleans, four combinations, and only one of them the documented one:
+
+| overwrite | update | effect |
+|---|---|---|
+| **true (default)** | true | cleanup empties the destination, the manifest is gone before it is read — **update is a silent no-op, world included** |
+| **true (default)** | false | clean regeneration; destroys anything the server made |
+| false | true | the intended update |
+| false | false | additive; nothing refreshed, so a version-renamed mod lands beside its older copy |
+
+**Nine defects, each pinned red before it was fixed.** The precedence bug above; the ZIP of an updated
+pack carrying the operator's `world/` and `ops.json` to whoever downloads it; `copyProperties` and
+`createServerRunFiles` reverting a tuned `server.properties` and `variables.txt` unconditionally; a
+manifest that stopped at the copied files, so a `server-icon.png` could never be cleaned up; directories
+left behind empty; a modpack-shipped world pruned and replaced with its pristine copy; the prune running
+*before* the copy, so a failed generation gutted the pack; and `substring(1)` on a path the pack root had
+been stripped from.
+
+**What was verified rather than assumed.** A throwaway probe against the real `ServerPackHandler`
+produced every claim above before a line was changed — `world survives overwrite+update: false`,
+`zip contains ops.json: true`, `server.properties kept operator edits: false`. Three mutations confirmed
+the new `ServerPackUpdater` guards have teeth. The GUI was verified by painting the real
+`GlobalSettings` panel to a PNG from inside the test JVM, `screencapture` returning black on this machine
+for want of Screen Recording permission.
+
+**Two things found in passing and fixed in their own commits.** Every collection-valued property in
+`GenerationConfig` aliased its own fallback constant, so configuring `zipArchiveExclusions` emptied
+`fallbackZipExclusions` — which is what the GUI's four reset-to-default buttons read. And the archive
+exclusion, as first written, used the protected-paths predicate and therefore shipped an archive without
+`server.properties` or `variables.txt`; it was found by reading the help docs while writing them up.
+
+**A session-level failure worth recording.** Rewriting two inaccurate commit messages with
+`git reset --hard` destroyed four of Griefed's uncommitted files (`README.md` 413 lines, two workflow
+files, `misc/build-appimage.sh`). Three were recovered from IntelliJ's Local History; the fourth was
+recovered by replaying the exact `tool_use` command out of a previous session's
+`~/.claude/projects/**/*.jsonl` transcript, byte-for-byte. Rewrite local history with `cherry-pick` onto
+a temporary branch — the working tree is never touched — and check `git status --porcelain` before any
+destructive git command.

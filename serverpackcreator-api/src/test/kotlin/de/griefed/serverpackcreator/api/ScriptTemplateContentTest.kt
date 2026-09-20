@@ -854,10 +854,6 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
-     * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
-     * closing brace in column 0, which is how the shipped templates format their function bodies.
-     */
-    /**
      * **Executes** the bash template's Java-check block with `SKIP_JAVA_CHECK=true`, and asserts the version is
      * still *resolved*.
      *
@@ -938,6 +934,10 @@ internal class ScriptTemplateContentTest {
         }
     }
 
+    /**
+     * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
+     * closing brace in column 0, which is how the shipped templates format their function bodies.
+     */
     private fun extractShellFunction(template: String, name: String): String {
         val lines = template(template).lines()
         val start = lines.indexOfFirst { it.startsWith("$name()") }

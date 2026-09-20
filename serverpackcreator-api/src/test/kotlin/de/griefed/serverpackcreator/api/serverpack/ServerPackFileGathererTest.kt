@@ -290,8 +290,18 @@ internal class ServerPackFileGathererTest {
             emptyList(), emptyList(), "1.20.1", destination.absolutePath, "Forge", true
         )
 
-        Assertions.assertTrue(copied.isEmpty(), "Lazy mode returns no per-file accounting")
         Assertions.assertTrue(File(destination, "options.txt").exists(), "Whole modpack must be copied in lazy mode")
         Assertions.assertTrue(File(destination, "config/include-me.txt").exists())
+        // Lazy mode used to return an empty list -- "no per-file accounting". It now reports what it
+        // copied, because that list becomes the manifest, and a manifest that omits the pack leaves an
+        // update with nothing to prune against.
+        Assertions.assertTrue(
+            copied.any { it.absolutePath == File(destination, "options.txt").absolutePath },
+            "Lazy mode must report the files it copied, got ${copied.map { it.name }}"
+        )
+        Assertions.assertTrue(
+            copied.any { it.absolutePath == File(destination, "config/include-me.txt").absolutePath },
+            "including nested ones"
+        )
     }
 }

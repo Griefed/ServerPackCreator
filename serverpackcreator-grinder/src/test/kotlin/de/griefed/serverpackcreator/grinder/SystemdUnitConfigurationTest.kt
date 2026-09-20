@@ -43,15 +43,6 @@ internal class SystemdUnitConfigurationTest {
      */
     private val launcherRead = setOf("JAVA_HOME", "JAVA_OPTS", "SERVERPACKCREATOR_GRINDER_OPTS")
 
-    /** Only the literal-default `env(...)` calls: those are the ones whose exact default the unit can quote. */
-    private val envWithLiteralDefault = Regex("""env\("(SPC_GRINDER_[A-Z_]+)",\s*"([^"]*)"\)""")
-
-    /** Every name handed to `env(...)`, whatever its default looks like. */
-    private val envAnyName = Regex("""env\("(SPC_GRINDER_[A-Z_]+)"""")
-
-    /** `System.getenv("NAME")` — the optional ones, with no default to state. */
-    private val envWithoutDefault = Regex("""getenv\("([A-Z_]+)"\)""")
-
     /** Both the active `Environment=` lines and the commented-out ones — the unit documents by commenting. */
     private val declared = Regex("""^\s*#?\s*Environment=([A-Z_]+)=(.*)$""", RegexOption.MULTILINE)
 

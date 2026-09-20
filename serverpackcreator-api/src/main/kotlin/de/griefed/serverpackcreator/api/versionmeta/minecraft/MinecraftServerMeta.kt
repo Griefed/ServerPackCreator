@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.minecraft
 
+import java.util.Collections
+
 /**
  * Meta containing information about Minecraft servers.
  *
@@ -26,8 +28,6 @@ package de.griefed.serverpackcreator.api.versionmeta.minecraft
  *
  * @author Griefed
  */
-import java.util.Collections
-
 internal class MinecraftServerMeta(private val minecraftClientMeta: MinecraftClientMeta) {
 
     /**

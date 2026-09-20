@@ -318,6 +318,9 @@ object BootLogClassifier {
      */
     private val loaderBootstrapFailureMarkers = bundledPattern("loader-bootstrap-failure")
 
+    /** @see BootDecision.CLIENT_ONLY_DEPENDENCY */
+    private val clientOnlyDependencyMarker = bundledPattern("client-only-dependency")
+
     /**
      * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
      * code ran, so its failure says nothing about client-vs-server.
@@ -327,9 +330,6 @@ object BootLogClassifier {
      * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
      * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
      */
-    /** @see BootDecision.CLIENT_ONLY_DEPENDENCY */
-    private val clientOnlyDependencyMarker = bundledPattern("client-only-dependency")
-
     private val dependencyFailureMarkers = bundledPattern("dependency-failure")
 
     /**

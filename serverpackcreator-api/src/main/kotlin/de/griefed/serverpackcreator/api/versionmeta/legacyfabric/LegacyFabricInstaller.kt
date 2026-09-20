@@ -76,7 +76,7 @@ class LegacyFabricInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
-        val next_allVersions = ArrayList<String>(100)
+        val nextAllVersions = ArrayList<String>(100)
         val installerManifest: Document = utilities.xmlUtilities.getXml(installerManifest)
         val latestElements = installerManifest.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -94,11 +94,11 @@ class LegacyFabricInstaller(
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            next_allVersions.add(item.nodeValue)
+            nextAllVersions.add(item.nodeValue)
         }
             // Published in one assignment each, as unmodifiable views: a `List`-typed field still
         // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
-        allVersions = Collections.unmodifiableList(next_allVersions)
+        allVersions = Collections.unmodifiableList(nextAllVersions)
 }
 
     /**

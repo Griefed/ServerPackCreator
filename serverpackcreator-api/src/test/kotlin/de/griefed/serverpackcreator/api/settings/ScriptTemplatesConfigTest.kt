@@ -29,9 +29,6 @@ internal class ScriptTemplatesConfigTest {
         return ScriptTemplatesConfig(store, paths)
     }
 
-    /**
-     * Wipes the scratch Preferences-node so each test starts without a stored home-directory.
-     */
     /** Saved so the build's scratch-home `-D` can be put back after each test. */
     private var homeDirectoryProperty: String? = null
 
@@ -45,6 +42,9 @@ internal class ScriptTemplatesConfigTest {
         System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
     }
 
+    /**
+     * Wipes the scratch Preferences-node so each test starts without a stored home-directory.
+     */
     @AfterEach
     fun clearScratchPreferences() {
         scratchPreferences.clear()
