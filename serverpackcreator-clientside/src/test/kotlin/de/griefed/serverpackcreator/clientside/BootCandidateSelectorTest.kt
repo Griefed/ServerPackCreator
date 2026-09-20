@@ -785,10 +785,6 @@ internal class BootCandidateSelectorTest {
     }
 
     /**
-     * And a file tagged for a *different* loader is still refused — untagged means "the author told us
-     * nothing", which is not the same as "the author told us this is Fabric".
-     */
-    /**
      * **An untagged file is evidence of Forge only where CurseForge had no modloader facet.** The safety
      * argument for the untagged fallback is that such files are pre-1.13, so only Forge is reachable anyway
      * — and that is empirically false. Measured against the live API on 2026-09-11, `TerraBlender (Forge)`
@@ -822,6 +818,10 @@ internal class BootCandidateSelectorTest {
         )
     }
 
+    /**
+     * And a file tagged for a *different* loader is still refused — untagged means "the author told us
+     * nothing", which is not the same as "the author told us this is Fabric".
+     */
     @Test
     fun stillRefusesAFileTaggedForAnotherLoader() {
         val fabricOnly = listOf(file("something-fabric.jar", setOf("Fabric"), setOf("1.20.1")))

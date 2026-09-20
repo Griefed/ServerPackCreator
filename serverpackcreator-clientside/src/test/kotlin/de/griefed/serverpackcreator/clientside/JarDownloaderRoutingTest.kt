@@ -24,10 +24,6 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 /**
- * Pins that a file is routed to the browser-downloader only when distribution-locked (no
- * `downloadUrl`), and to the HTTP-downloader otherwise — without launching a real browser.
- */
-/**
  * Pins that there is exactly **one** download route, and that a distribution-locked file is reported rather
  * than worked around.
  *
