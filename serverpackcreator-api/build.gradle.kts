@@ -137,8 +137,12 @@ tasks.test {
     inputs.file(rootProject.file(".gitignore")).withPropertyName("rootGitignore")
 }
 
+// `dokkaJavadocJar`, not `dokkaGeneratePublicationJavadoc`: generating the HTML into `build/dokka`
+// leaves it there, and the release's `assets` job takes its javadoc asset from `build/libs`. Finalising
+// on the generator alone is how that asset came to be the stock empty jar -- `build` produced Dokka's
+// output and then never packaged it. `-app` has always finalised on the jar; this matches it.
 tasks.build {
-    finalizedBy(tasks.dokkaGeneratePublicationJavadoc)
+    finalizedBy(tasks.dokkaJavadocJar)
 }
 
 tasks.generatePomFileForMavenJavaPublication {
