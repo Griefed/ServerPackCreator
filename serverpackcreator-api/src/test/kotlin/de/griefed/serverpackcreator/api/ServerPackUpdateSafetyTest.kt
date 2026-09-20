@@ -353,6 +353,60 @@ internal class ServerPackUpdateSafetyTest {
     }
 
     /**
+     * Lazy mode copies the whole modpack with no exceptions, which is exactly why an update must
+     * still keep its hands off a protected path: the modpack ships a world, the operator has been
+     * playing it, and "no exceptions" must not mean "including the save you cannot get back".
+     */
+    @Test
+    fun lazyModeStillRespectsProtectionOnAnUpdate(@TempDir tempDir: File) {
+        val modpackDir = modpack(tempDir)
+        write(modpackDir, "world/level.dat", "the pristine world")
+        val destination = File(tempDir, "pack")
+
+        val lazily = packConfig(modpackDir, destination)
+        lazily.inclusions.clear()
+        lazily.inclusions.add(InclusionSpecification("lazy_mode"))
+
+        apiProperties.isServerPacksOverwriteEnabled = false
+        apiProperties.isUpdatingServerPacksEnabled = true
+        serverPackHandler.run(lazily)
+        Assertions.assertTrue(File(destination, "world/level.dat").isFile, "The first run must ship the world")
+
+        write(destination, "world/level.dat", "a hundred hours later")
+        serverPackHandler.run(lazily)
+
+        Assertions.assertEquals(
+            "a hundred hours later",
+            File(destination, "world/level.dat").readText(),
+            "Lazy mode must not overwrite a protected path on an update"
+        )
+    }
+
+    /**
+     * Lazy mode must also report what it copied, so the manifest is a record of the pack rather
+     * than of the handful of files provisioned beside it -- otherwise an update of a lazily
+     * generated pack has nothing to prune against and the pack never converges on its modpack.
+     */
+    @Test
+    fun lazyModeRecordsWhatItCopied(@TempDir tempDir: File) {
+        val modpackDir = modpack(tempDir)
+        val destination = File(tempDir, "pack")
+        val lazily = packConfig(modpackDir, destination)
+        lazily.inclusions.clear()
+        lazily.inclusions.add(InclusionSpecification("lazy_mode"))
+
+        apiProperties.isServerPacksOverwriteEnabled = true
+        apiProperties.isUpdatingServerPacksEnabled = false
+        serverPackHandler.run(lazily)
+
+        val listed = manifestOf(destination).files.map { it.replace('\\', '/') }
+        Assertions.assertTrue(
+            listed.contains("mods/alpha.jar"),
+            "A lazily copied file belongs in the manifest, got $listed"
+        )
+    }
+
+    /**
      * A run that copied nothing is a broken run, not an empty modpack. Pruning against its result
      * would delete the entire pack and leave a server that cannot start, so a run that produced no
      * files must prune nothing at all.
