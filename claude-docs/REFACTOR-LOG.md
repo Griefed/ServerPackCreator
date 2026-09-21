@@ -4661,3 +4661,59 @@ interface.
   closed the investigation for two days.
 - **Ask what a guard rail is currently load-bearing for before removing it.** The firewall was simultaneously
   the bug and the only access control.
+
+## 2026-09-21 (later) — the Qodana report reaches zero, without a baseline (`claude-qodana-b40-zero`)
+
+The run that closed B38 and B39 reported **16 problems and 0 sanity failures** against revision
+`ec9969602` — both numbers exactly as predicted, and both gates B40 was waiting on. B40 then did not
+survive contact with its own evidence.
+
+**Why the baseline was the wrong mechanism.** Measured on that run's SARIF: the file is **3.9 MB, of
+which 2.78 MB is JetBrains' inspection catalog and 22 KB the actual findings** — 99.4% vendor metadata,
+committed to the repository to suppress sixteen style notes and re-churned on every re-baseline. A
+hand-trimmed SARIF might have worked, since the results do carry `partialFingerprints`, but it could not
+be verified locally (Docker Desktop still capped at 1.9 GiB, linter OOM-killed at exit 137) — and an
+unverifiable config change is precisely the trap B38 was written to avoid. Proposing a fix and then being
+unable to check it is how the first version of this work would have gone wrong.
+
+**The better end state was already reachable.** B40's *goal* was "a run reports what is new rather than
+everything". Reaching **zero** achieves that more completely: anything reported afterwards is new by
+definition, with no file to maintain and no vendor catalog in git.
+
+So each of the sixteen was read at its call site, and the split was not the one a count would suggest:
+
+- **Five were genuine improvements and were fixed** — two redundant `TreeSet<File>` type arguments, two
+  redundant `${…}` brace pairs, and a `when` that reads better with a subject. Behaviour-preserving, no
+  assertion touched anywhere.
+- **Eleven were refused**, each scoped to the file it was decided for.
+
+**The most instructive refusal is `UsePropertyAccessSyntax` on `LarsonScanner`: the code already carried a
+comment saying the suggestion does not compile.** `g2d.renderingHints` is read-only in Kotlin because the
+getter returns `RenderingHints` while the setter takes a `Map`. Somebody had tried, discovered it, written
+it down — and the tool went on reporting it anyway, because a linter cannot read the comment explaining
+why it is wrong. That is the whole argument for encoding a verdict where the tool will look.
+
+The others refuse on grounds this repository already has receipts for: two `ConvertCallChainIntoSequence`
+are unmeasured optimisation over tens of elements (**B30** is the receipt — a real 121,492-byte saving
+that bought ~0 ms); `ConvertToStringTemplate` would leave a dedup key spelled differently from its sibling
+`verdictKey`, the duplicated-knowledge drift seen four times; two `DestructuringDeclaration` would bind a
+domain object's fields *positionally*, so re-ordering the data class would silently rebind rather than fail
+to compile; `UnnecessaryVariable` would delete `annotating`, read eleven times and meaning what `fired` no
+longer does.
+
+Verified the way B38 was, because a `name`/`paths` pair that matches nothing fails silently: all **19**
+inspection-scoped paths exist, and replaying every `(ruleId, uri)` against the run's own SARIF accounts for
+all sixteen findings — **11 excluded, 5 fixed, 0 unaccounted**. Suites re-run across every touched module:
+api 460 (1 skip), clientside 671, grinder 544 (29 skip), app 168, plugin-grinder 75, zero failures, no new
+warnings.
+
+**Lessons.**
+
+- **A backlog item names a goal and guesses a mechanism; only the goal is binding.** B40 said "add a
+  baseline". The evidence said the baseline cost 3.9 MB to buy something a day's reading achieved better.
+  Re-read a deferred item's *reason* before executing its *instruction*.
+- **"Sixteen style notes" is not one decision sixteen times.** Five were right, eleven were wrong, and the
+  only way to know which was to open each file. A blanket fix would have broken a build; a blanket
+  suppression would have hidden five real improvements.
+- **A tool cannot read the comment explaining why it is wrong.** If a refusal only lives in the code, the
+  tool keeps reporting it and every reader re-litigates it. Put the verdict where the tool looks.
