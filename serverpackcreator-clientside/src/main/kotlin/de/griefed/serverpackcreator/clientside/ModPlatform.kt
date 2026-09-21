@@ -132,19 +132,44 @@ fun interface HttpFetcher {
  * CDNs answer file-requests with a 302) and fails on non-2xx responses so callers can surface a
  * meaningful error instead of parsing an error-page as JSON.
  *
+ * **Instances share one client by default** — see [SHARED]. Pass your own to opt out.
+ *
  * @author Griefed
  */
 class JdkHttpFetcher(
     /**
-     * The client requests go out on. `internal` rather than `private` purely so a guard in this module can
-     * assert *which* client a default-constructed fetcher got — the thing worth pinning here is that
-     * instances share one, and identity is the only honest way to observe that.
+     * The client requests go out on, [SHARED] unless a caller supplies its own. `internal` rather than
+     * `private` purely so a guard in this module can assert *which* client a default-constructed fetcher
+     * got — the thing worth pinning is that instances share one, and identity is the only honest way to
+     * observe that.
      */
-    internal val client: HttpClient = HttpClient.newBuilder()
-        .followRedirects(HttpClient.Redirect.NORMAL)
-        .connectTimeout(Duration.ofSeconds(30))
-        .build()
+    internal val client: HttpClient = SHARED
 ) : HttpFetcher {
+
+    companion object {
+        /**
+         * The one client every default-constructed fetcher uses, so a connection to Modrinth or CurseForge
+         * is opened once and reused rather than re-handshaked per caller.
+         *
+         * **This is the JDK's own guidance, not a micro-optimisation.** `HttpClient` is documented immutable
+         * and thread-safe, and the alternative is named as the anti-pattern: *"Creating a new client for each
+         * operation, though possible, will usually prevent reusing such connections."* Each instance carries
+         * its own connection pool **and its own `SelectorManager` thread**, which lives until the client is
+         * collected — so a client per operation leaks threads as well as handshakes.
+         *
+         * It was an operation: `ContainerCandidateVerifier.verifyStaged` calls `supportedPlatforms()` per
+         * candidate, and each call built two platforms, each default-constructing a fetcher. Measured on the
+         * live daemon on 2026-09-21: **384 clients created in 2.9 hours, 28 still alive**.
+         *
+         * Deliberately never closed. It is process-wide and has no lifecycle shorter than the JVM's; closing
+         * it would only race whatever is mid-request, and there is exactly one of it to leak.
+         */
+        internal val SHARED: HttpClient = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(30))
+            .build()
+    }
+
     override fun get(url: String, headers: Map<String, String>): String {
         val builder = HttpRequest.newBuilder(URI.create(url)).GET().timeout(Duration.ofSeconds(60))
         for ((key, value) in headers) {
