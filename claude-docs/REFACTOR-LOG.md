@@ -4550,3 +4550,46 @@ recovered by replaying the exact `tool_use` command out of a previous session's
 `~/.claude/projects/**/*.jsonl` transcript, byte-for-byte. Rewrite local history with `cherry-pick` onto
 a temporary branch — the working tree is never touched — and check `git status --porcelain` before any
 destructive git command.
+
+## 2026-09-21 — the Qodana scan starts reading what it reports on (`claude-qodana-b38-b39`)
+
+Run 832 (revision `d97a6e188`) reported **28 problems**, and they decomposed exactly as the run-817
+triage had predicted the residue would: the **12** standing won't-fix verdicts at precisely their
+triaged counts, plus **16** style notes. Nothing new, and the 817 remediation confirmed as landed.
+
+The number that mattered was the other one. Run 832 carried the **same 35 sanity failures** as run
+817 — 30 × `Unresolved reference Translations`, 5 × `Unresolved reference Example`, split `-app` 24 /
+`-api` 6 / `-plugin-example` 5 — because the scan still ran against a raw checkout with no Gradle
+invocation, so i18n4k's generated objects did not exist during analysis. 85 source files reference one
+of them, 79 of those in `-app`.
+
+**Why that is worse than an ordinary gap in coverage.** A file whose core symbol will not resolve is
+analysed with its inspections *degraded*, so the defect **lowers** the problem count. A broken scan and
+a clean repository produce the same reassuring number, and the report reads as good news either way.
+That is why the count step now prints the sanity-failure count beside the problem count, and why an
+absent `sanity.json` is reported as *unknown* rather than as zero — "the scanner wrote no sanity report"
+and "the scanner resolved everything" are opposite states that must never read alike.
+
+B39 closed with a codegen step before the scan: `generateI18n4kFiles` resolves in `-api` and
+`-plugin-example`, `kaptKotlin` in both plugin modules — exactly the three modules the failures came
+from. Measured on a clean checkout, per the build-logic rule: **23.0 s** with `--rerun-tasks
+--no-build-cache`, **16.4 s** with the build cache warm, against a scan that takes minutes. Deliberately
+not `build`: the scan needs the generated *sources*, not the artifacts.
+
+B38 closed by half. The twelve verdicts are now in `qodana.yaml`, each scoped to the exact files it was
+decided for rather than to a whole rule, so a new occurrence anywhere else still reports. They were
+verified before committing, because **a `name:`/`paths:` pair that matches nothing fails silently and
+looks identical to one that works**: all nine paths exist, and replaying the nine `(ruleId, uri)` pairs
+against run 832's own SARIF covered exactly 12 of 28 and left exactly the 16 style notes.
+
+The baseline did **not** land, and became B40. Two reasons, the first of which generalises: **a
+suppression that hides everything destroys the evidence that a narrower suppression works.** B38's
+acceptance test is the count going 28 → 16 exactly; a baseline in the same run zeroes it either way.
+The second is ordering — a baseline built from run 832 would encode the finding set of a scan that
+could not read a fifth of the repository, which is precisely what the same branch just fixed.
+
+**Lesson worth keeping:** *ask what a clean report depends on before believing it.* This is the same
+shape as the Qodana `KDocUnresolvedReference` finding recorded in the root `CLAUDE.md` — there, a
+detector could only see the share of a defect that had a visible side effect; here, a detector reports
+fewer problems precisely where it understands least. In both cases the count is a function of the
+tool's reach, and reach has to be measured separately from findings.

@@ -19,3 +19,50 @@ exclude:
       - .qodana
       - qodana-cache
       - .qodana-cache
+
+  # ---------------------------------------------------------------------------------------------
+  # Standing "not a finding HERE" verdicts (B38).
+  #
+  # Every entry below is scoped to the exact files it was decided for, never to a whole rule: an
+  # over-broad exclusion silences a rule everywhere and is worse than the noise it removes. A new
+  # occurrence of any of these rules in any other file still reports, which is the point.
+  #
+  # These twelve were triaged from run 817 and re-reported unchanged by run 832 (revision d97a6e188).
+  # The confirmation that this block works is the problem count dropping by exactly 12 -- from 28 to
+  # 16 -- on the next run, NOT merely the total going down. Anything else means a name or a path here
+  # is wrong and is silently matching nothing.
+  # ---------------------------------------------------------------------------------------------
+
+  # False positive, 2. `MongoIndexStore` and `MongoMigrationStore` are @Component beans injected by
+  # their interface, and QDJVM *Community* ships no Spring plugin, so it cannot see the wiring at all.
+  # They are genuinely used: `WebServiceContextTest` asserts both resolve from the application context.
+  - name: UnusedSymbol
+    paths:
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/web/index/IndexStore.kt
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/web/migration/MigrationStore.kt
+
+  # Won't fix, 4. `dependencyResolutionManagement { repositoriesMode = FAIL_ON_PROJECT_REPOS }` is
+  # Gradle @Incubating and has no stable alternative. The setting is deliberate -- it is what stops a
+  # module declaring its own repositories -- so the only way to clear this is to give that up.
+  - name: UnstableApiUsage
+    paths:
+      - settings.gradle.kts
+
+  # MUST NOT FIX, 1. `VersionMeta.awaitManifestRefresh(timeoutMillis: Long)` is exported from
+  # serverpackcreator-api, which is published to Maven Central. Changing the parameter type breaks
+  # source compatibility for every embedder for a cosmetic gain, against the API compatibility policy
+  # in the root CLAUDE.md. Revisit only at a major version, if at all.
+  - name: ConvertLongToDuration
+    paths:
+      - serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/versionmeta/VersionMeta.kt
+
+  # Won't fix, 5. Each is an early-return guard carrying a comment that explains the case it guards.
+  # Collapsing them to `return !cond && expr` makes five explained predicates harder to read and
+  # strands the comment above a form it no longer describes.
+  - name: RedundantIf
+    paths:
+      - serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/serverpack/ServerPackUpdater.kt
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/gui/window/configs/ConfigEditor.kt
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/BootVerifier.kt
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/VersionConstraint.kt
+      - serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/report/BootLogStore.kt
