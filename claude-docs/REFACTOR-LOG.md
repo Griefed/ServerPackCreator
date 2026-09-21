@@ -4624,10 +4624,24 @@ happened to be about code we own was the one adopted.
   was 330 MiB of 1.1 GiB; no `BLOCKED` thread, no deadlock. The server was idle, not swamped.
 
 **The actual cause.** nginx runs in a container and dialled the Docker bridge gateway, `172.19.0.1:9090`. The
-grinder binds `0.0.0.0`, so that socket *was* listening — but the host firewall dropped the SYN. The proxy
-log said so all along: `connect() failed (110: Operation timed out)`. Errno 110 is a **dropped** packet;
-errno 111 would have been a wrong bind. And the 131 s that looked like an application hang is nothing of the
-sort — it is Linux's default `tcp_syn_retries=6`, six retransmissions with exponential backoff, ~127 s.
+grinder binds `0.0.0.0`, so that socket *was* listening — but the host discarded the SYN. The proxy log said
+so all along: `connect() failed (110: Operation timed out)`. Errno 110 is a **dropped** packet; errno 111
+would have been a wrong bind. And the 131 s that looked like an application hang is nothing of the sort — it
+is Linux's default `tcp_syn_retries=6`, six retransmissions with exponential backoff, ~127 s.
+
+**Confirmed later the same day, and the confirmation is its own lesson.** The firewall was dismissed twice
+before it was proven, because there was no rule about port 9090 — `Chain INPUT (policy DROP 1072 packets)`
+was doing it. `ufw status` therefore showed nothing relevant, "ufw is not the issue" read as a checked fact,
+and two further hypotheses were chased first: conntrack (569 entries of 262,144, never close to full) and a
+renumbered Docker network (the gateway was correct, `172.19.0.1`, and the host owned it). **"No rule for
+this" and "not filtering this" are opposite statements, and only the chain policy separates them.**
+
+What settled it was three requests chosen so each traverses a different chain: host→bridge `200 in 0.077 s`,
+proxy→bridge `timeout`, proxy→peer `200 in 0.003 s`. Container-to-container goes through `FORWARD` and was
+always fine, which is precisely why nothing else on a host running thirty-odd containers had noticed — the
+grinder is the only *host* service behind a *containerised* proxy, so it was the only thing on the `INPUT`
+path at all. A closed port from the proxy also timed out rather than being refused, proving the drop was
+blanket rather than aimed at the report.
 
 **A trap found on the way out.** Port 9090 was unreachable from the public internet too — the same firewall.
 With `SPC_GRINDER_HOST=0.0.0.0` and no authentication on the report, that rule was the only thing keeping the

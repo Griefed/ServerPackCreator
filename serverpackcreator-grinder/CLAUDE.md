@@ -172,11 +172,28 @@ store rather than by running it:
     lazily and never retires core threads, so **no `pool-*` thread in `jcmd <pid> Thread.print` means no
     request has ever reached a handler**. The real dump also showed `HTTP-Dispatcher` parked in `EPoll.wait`
     with 477 ms of CPU over 2.9 h, and heap at 330 MiB of 1.1 GiB. Nothing was wedged; nothing arrived.
-  - **The actual cause was the host firewall**, dropping the nginx container's packets to the bridge gateway
-    (`172.19.0.1:9090`). `110: Operation timed out` in the proxy log, and ~131 s is just Linux's
-    `tcp_syn_retries=6` budget. **Read the proxy's errno first: 111/refused is a wrong bind, 110/timed out is
-    a firewall.** Full triage in the grinder README, *Report responsiveness* → *When the proxy cannot reach a
-    healthy report*.
+  - **The actual cause, confirmed 2026-09-21: `Chain INPUT (policy DROP …)`.** The host discarded the nginx
+    container's packets to the bridge gateway (`172.19.0.1:9090`); `110: Operation timed out` in the proxy
+    log, and ~131 s is just Linux's `tcp_syn_retries=6` budget. **Read the proxy's errno first: 111/refused
+    is a wrong bind, 110/timed out is a filter.**
+    - **THE POLICY WAS THE WHOLE RULE, which is why three separate investigations missed it.** ufw was
+      active, no rule mentioned 9090, and the chain policy did the dropping — so `ufw status` showed nothing
+      relevant and the firewall was twice dismissed out of hand, sending the search to conntrack (569 of
+      262,144, nowhere near full) and to a renumbered Docker network (the gateway was correct). **"No rule
+      for this" and "not filtering this" are opposite statements**, and only the chain *policy* separates
+      them. Never conclude a firewall is innocent from `ufw status`; read `iptables -L INPUT -n -v`, line one.
+    - **The bisect that localised it in three requests**, because each traverses a different chain:
+      host→bridge `200 in 0.077 s`, proxy→bridge `timeout`, proxy→peer `200 in 0.003 s`. Container-to-peer
+      goes through `FORWARD` and was always fine — which is exactly why **nothing else on that host noticed**.
+      The grinder is the only host service behind a containerised proxy, so it was the only thing on the
+      `INPUT` path at all. A closed port from the proxy also timed out rather than being refused, proving the
+      drop was blanket rather than aimed at 9090.
+    - **The fix is scoped by subnet, never by port alone.** `ufw allow from 172.19.0.0/16 to 172.19.0.1 port
+      9090 proto tcp`. A bare `ufw allow 9090` ends the outage and publishes an unauthenticated verdict table
+      and full CSV export to the internet in the same command, because `SPC_GRINDER_HOST=0.0.0.0` means the
+      report already listens on the public interface and that DROP policy is the only thing in front of it.
+    Full triage in the grinder README, *Report responsiveness* → *When the proxy cannot reach a healthy
+    report*.
   - **The generalisation, which is the point of keeping this:** *a symptom shared by two layers is evidence
     for neither.* Both wrong calls here were plausible, internally consistent, and made without the one cheap
     test that separates the layers. Before attributing an outage to the code you own, prove the request
