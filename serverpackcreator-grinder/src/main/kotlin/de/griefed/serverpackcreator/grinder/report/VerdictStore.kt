@@ -40,6 +40,17 @@ interface VerdictStore {
     fun all(): List<GrindVerdict>
 
     /**
+     * How many verdicts are held, **without materialising them**.
+     *
+     * Defaulted to [all]'s size so an implementation that has no cheaper answer needs no ceremony, and
+     * overridden by both real stores, which are map-backed and can answer in O(1). The default is the reason
+     * this exists: `/status` asked `all().size`, allocating a list of every verdict to look at one integer,
+     * on the endpoint the dashboard polls on a timer.
+     */
+    val count: Int
+        get() = all().size
+
+    /**
      * Bumped on every [record], so a reader can tell whether something it derived from [all] is still current.
      *
      * A count of rows cannot answer that — recording replaces by identity, so a re-grind leaves the size
@@ -195,4 +206,8 @@ class InMemoryVerdictStore : VerdictStore {
     }
 
     override fun all(): List<GrindVerdict> = verdicts.values.toList()
+
+    /** Straight off the map, so counting never copies. */
+    override val count: Int
+        get() = verdicts.size
 }

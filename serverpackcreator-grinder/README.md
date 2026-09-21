@@ -235,6 +235,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
 | `SPC_GRINDER_STORE_FLUSH_SECONDS` | `30`                         | Seconds between verdict-store writes. `0` writes through on every verdict    |
+| `SPC_GRINDER_REPORT_CACHE_SECONDS` | `5`                         | Seconds the report may reuse a whole-store derivation. `0` = strictly live   |
 | `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
 | `SPC_GRINDER_CACHE_TTL_DAYS`    | `7`                            | Delete cached loader installs unused this long (~150 MB each). `0` = never   |
 | `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |

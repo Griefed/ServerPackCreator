@@ -66,7 +66,7 @@ internal class VerdictSnapshotCache(
      *
      * [Duration.ZERO] disables coalescing entirely: every change rebuilds, and the report is strictly live.
      */
-    maxAge: Duration = Duration.ZERO,
+    maxAge: Duration = DEFAULT_MAX_AGE,
     /** Nanosecond source for the window, injected so tests need no sleeping. */
     private val clock: () -> Long = System::nanoTime
 ) {
@@ -104,5 +104,23 @@ internal class VerdictSnapshotCache(
         val rebuilt = VerdictSnapshot(store.all())
         held.set(Held(version, clock(), rebuilt))
         return rebuilt
+    }
+
+    companion object {
+        /**
+         * How long a derivation is reused after the store has moved on, unless an operator says otherwise
+         * via `SPC_GRINDER_REPORT_CACHE_SECONDS`.
+         *
+         * Five seconds because the thing being bounded fires thousands of times an hour: `record()` moves
+         * the version on **every** verdict, so without a window several grind workers guarantee a new
+         * version between almost any two requests and the cache degrades to nothing precisely when the
+         * daemon is busiest. The cost it bounds grows with the store — selection was measured at 251 ms for
+         * 38,258 verdicts against 3 ms to render the 250 rows actually sent.
+         *
+         * The trade is that the report may lag by up to one window. That is the same bargain
+         * `SPC_GRINDER_STORE_FLUSH_SECONDS` already makes for writes, and five seconds is far below the time
+         * a reader takes to notice a row is missing.
+         */
+        val DEFAULT_MAX_AGE: Duration = Duration.ofSeconds(5)
     }
 }

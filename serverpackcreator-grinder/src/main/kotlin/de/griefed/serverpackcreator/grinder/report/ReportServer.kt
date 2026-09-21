@@ -38,6 +38,7 @@ import java.net.InetSocketAddress
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -63,6 +64,9 @@ import java.util.concurrent.Executors
  *                  simply offers no links, so the report stays constructible without a log store.
  * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
  *                re-verification is visible rather than inferred from the logs.
+ * @param reportCacheMaxAge How long a whole-store derivation may be reused after the store has moved on, so
+ *        a busy grind cannot force it to be redone per request. [java.time.Duration.ZERO] serves a strictly
+ *        live report and pays the full cost every time something is recorded.
  * @author Griefed
  */
 class ReportServer(
@@ -76,19 +80,25 @@ class ReportServer(
     private val crashLogs: BootLogStore? = null,
     private val consoleRules: (() -> ConsoleRuleSet)? = null,
     private val requeue: RequeueStore? = null,
-    private val httpThreads: Int = DEFAULT_HTTP_THREADS
+    private val httpThreads: Int = DEFAULT_HTTP_THREADS,
+    reportCacheMaxAge: Duration = VerdictSnapshotCache.DEFAULT_MAX_AGE
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
-     * The store's derivations, rebuilt only when a verdict is recorded.
+     * The store's derivations, rebuilt when a verdict is recorded **and** the coalescing window has passed.
      *
-     * Every endpoint that selects reads through this. Before it, each request re-sorted the whole store and
-     * re-gathered every filter column across it — 251 ms at the deployed row count, against 3 ms to render
-     * the 250 rows that were actually sent. With only a handful of request threads, that is what let the
-     * report stop answering altogether rather than merely answer slowly.
+     * Every endpoint that reads rows goes through this — including `/as-properties`, which used to call
+     * `store.all()` directly and was therefore the one endpoint the caching never covered, despite being the
+     * one polled unattended by every SPC instance in the wild.
+     *
+     * Before the cache, each request re-sorted the whole store and re-gathered every filter column across it
+     * — 251 ms at 38,258 verdicts, against 3 ms to render the 250 rows actually sent. The window is what
+     * makes that hold *during a grind*: `record()` moves the version on every verdict, so without one
+     * several workers guarantee a new version between almost any two requests and the cache degrades to
+     * nothing exactly when the daemon is busiest.
      */
-    private val snapshots = VerdictSnapshotCache(store)
+    private val snapshots = VerdictSnapshotCache(store, maxAge = reportCacheMaxAge)
 
     /**
      * The tab icon, read off the classpath once and held: it is a few kilobytes and every page load asks for
@@ -232,7 +242,10 @@ class ReportServer(
     private fun fallbackProperties(): String {
         val lists = fallbackLists?.let { source -> runCatching { source() }.getOrNull() }
             ?: FallbackLists(emptyList(), emptyList())
-        return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, store.all())
+        // Through the snapshot, not store.all(): this was the one endpoint the cache never covered, and it is
+        // the one polled unattended by every SPC instance in the wild -- so it was a whole-store copy per
+        // poll, by the endpoint least able to afford one. The rows are the same rows the table serves.
+        return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, snapshots.current().verdicts)
     }
 
     /**
@@ -340,7 +353,9 @@ class ReportServer(
      */
     private fun statusJson(): String {
         val document = linkedMapOf<String, Any?>(
-            "verdicts" to store.all().size,
+            // `count`, never `all().size` -- the latter allocates a list of every verdict to read one integer,
+            // and this document is what the dashboard polls on a timer.
+            "verdicts" to store.count,
             // How much work is waiting in the jump-the-crawl lane. Read live: an operator queueing a re-grind
             // wants to see it land, and a backlog that never shrinks is the symptom of a stalled pass.
             "requeued" to requeue?.pending(),

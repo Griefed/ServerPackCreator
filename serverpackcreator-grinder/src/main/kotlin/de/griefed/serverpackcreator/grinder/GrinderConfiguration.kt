@@ -121,6 +121,12 @@ internal data class GrinderConfiguration(
      * re-derived by [reverifyTtl]; an orderly stop flushes.
      */
     val storeFlush: Duration,
+    /**
+     * How long the report may reuse a whole-store derivation after the store has moved on. `0` serves a
+     * strictly live report and pays the full copy, sort and filter-column gather every time a verdict is
+     * recorded — which, with several workers, is very nearly every request.
+     */
+    val reportCacheMaxAge: Duration,
     /** CurseForge API key, or `null` — without it CurseForge cannot be resolved at all. */
     val curseForgeApiKey: String?,
     /**
@@ -168,6 +174,7 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_INTERVAL", "21600"),
             Knob("SPC_GRINDER_SCAN_DELAY", "15"),
             Knob("SPC_GRINDER_STORE_FLUSH_SECONDS", "30"),
+            Knob("SPC_GRINDER_REPORT_CACHE_SECONDS", "5"),
             Knob("SPC_GRINDER_MINECRAFT_LINES_NEWEST", "2"),
             Knob("SPC_GRINDER_MINECRAFT_LINE_ANCHORS", "1.21,1.20,1.12")
         )
@@ -249,6 +256,9 @@ internal data class GrinderConfiguration(
                 storeFlush = Duration.ofSeconds(
                     number("SPC_GRINDER_STORE_FLUSH_SECONDS", "30").toLongOrNull() ?: 30
                 ),
+                // One line on purpose, like httpThreads above: everyVariableReadIsDeclaredAsAKnob matches
+                // `reader("NAME"` and a wrapped call is invisible to it.
+                reportCacheMaxAge = Duration.ofSeconds(longAtLeast("SPC_GRINDER_REPORT_CACHE_SECONDS", 5L, minimum = 0L)),
                 curseForgeApiKey = optional("CURSEFORGE_API_KEY"),
                 minecraftLines = MinecraftLinePolicy(
                     // Floored at one by the policy itself, not here: a configuration selecting *no* line

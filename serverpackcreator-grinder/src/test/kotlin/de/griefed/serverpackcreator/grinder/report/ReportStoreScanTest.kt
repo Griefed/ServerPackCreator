@@ -60,6 +60,11 @@ internal class ReportStoreScanTest {
             return delegate.all()
         }
 
+        // MUST delegate rather than inherit. VerdictStore.count DEFAULTS to `all().size`, so a double that
+        // leaves it alone counts a scan for every count -- which would make this class report the very defect
+        // it exists to detect, whatever the production code does.
+        override val count: Int get() = delegate.count
+
         override val version: Long get() = delegate.version
     }
 
