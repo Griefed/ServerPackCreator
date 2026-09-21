@@ -305,8 +305,22 @@ pagination — the page size only bounds what is rendered. Measured against synt
 | 100,000  | 434 ms    | 1 ms                       |
 
 At the middle row — roughly a real deployed store — 98% of the work was thrown away. Those derivations are
-now computed once per *change* to the store rather than once per request, so a report whose grinder is idle
+computed once per *change* to the store rather than once per request, so a report whose grinder is **idle**
 costs effectively nothing to serve however large the store is.
+
+**"Idle" was doing a lot of work in that sentence, and a busy grinder is the normal case.** Recording a
+verdict moves the store version, which is what invalidates the derivation — so with several workers
+recording continuously there is a new version between almost any two requests, and the cache degraded to
+nearly nothing precisely when the daemon was busiest. `SPC_GRINDER_REPORT_CACHE_SECONDS` (default `5`) bounds
+that: a derivation is reused for up to that long after the store has moved on, so the whole-store cost is
+paid at most once per window however fast verdicts land. The report may lag by up to one window in exchange
+— the same bargain `SPC_GRINDER_STORE_FLUSH_SECONDS` makes for writes. Set it to `0` for a strictly live
+report, and raise it if the store is large and the page still feels slow.
+
+Two endpoints used to sit outside all of this and no longer do. `/status` read the count by copying every
+verdict to look at one integer, and it is what the dashboard polls on a timer. `/as-properties` called the
+store directly — the one endpoint the caching never covered, and the one **polled unattended by every SPC
+instance in the wild**. Both now go through the same snapshot as the table.
 
 If the report is still slow, it is worth checking in this order: whether the grind workers are saturating the
 host (they are uncapped on the host side; only the containers are bounded), and whether the boot-log
