@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.grinder.GrindVerdict
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -57,27 +58,51 @@ internal class VerdictSnapshot(
  *
  * @author Griefed
  */
-internal class VerdictSnapshotCache(private val store: VerdictStore) {
+internal class VerdictSnapshotCache(
+    private val store: VerdictStore,
+    /**
+     * How long a snapshot may go on being served after the store has moved on — the bound on how often a
+     * busy grind can force the whole-store derivation to be redone.
+     *
+     * [Duration.ZERO] disables coalescing entirely: every change rebuilds, and the report is strictly live.
+     */
+    maxAge: Duration = Duration.ZERO,
+    /** Nanosecond source for the window, injected so tests need no sleeping. */
+    private val clock: () -> Long = System::nanoTime
+) {
 
-    private val held = AtomicReference<Pair<Long, VerdictSnapshot>?>(null)
+    /** The window in nanos, floored at zero so a negative configuration cannot mean "cache for ever". */
+    private val maxAgeNanos: Long = maxAge.toNanos().coerceAtLeast(0L)
+
+    private val held = AtomicReference<Held?>(null)
+
+    /** One cached derivation, with the store version and the instant it was built from. */
+    private class Held(val version: Long, val builtAt: Long, val snapshot: VerdictSnapshot)
 
     /**
-     * The snapshot for the store as it stands, reusing the held one while [VerdictStore.version] is unchanged.
+     * The snapshot to serve, reusing the held one while [VerdictStore.version] is unchanged **or** while the
+     * held one is still inside [maxAgeNanos].
      *
      * The version is read *before* the rows, so a record landing between the two is cached under the older
-     * version and rebuilt on the next call — wasteful once, never stale. Two threads racing to build simply
-     * both build; the result is the same either way, which is cheaper than holding a lock across the
-     * derivation.
+     * version and rebuilt on the next call — wasteful once, never stale beyond the window. Two threads
+     * racing to build simply both build; the result is the same either way, which is cheaper than holding a
+     * lock across the derivation.
+     *
+     * An unchanged store is reused **regardless of age**: the window bounds staleness, it does not schedule
+     * pointless work on an idle daemon.
      */
     fun current(): VerdictSnapshot {
         val version = store.version
-        held.get()?.let { (heldVersion, snapshot) ->
-            if (heldVersion == version) {
-                return snapshot
+        held.get()?.let { holder ->
+            if (holder.version == version) {
+                return holder.snapshot
+            }
+            if (maxAgeNanos > 0L && clock() - holder.builtAt < maxAgeNanos) {
+                return holder.snapshot
             }
         }
         val rebuilt = VerdictSnapshot(store.all())
-        held.set(version to rebuilt)
+        held.set(Held(version, clock(), rebuilt))
         return rebuilt
     }
 }
