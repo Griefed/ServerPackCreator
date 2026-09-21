@@ -370,26 +370,66 @@ because the delay is so long. The ~127 s is not the report and not the proxy: it
 `tcp_syn_retries=6`, six SYN retransmissions with exponential backoff before `connect()` gives up. A number
 close to it in a proxy log means *the packets are being discarded*, full stop.
 
-**Why a correct bind is not enough.** A proxy running in a container reaches the host over the bridge
-gateway, and that traffic arrives on the host's `INPUT` chain — where Docker's own rules do not apply and a
-default-deny firewall drops it. `ufw` denies by `DROP` rather than `REJECT`, which is precisely why the
-symptom is a 127 s timeout rather than an instant refusal. Allow the bridge, scoped to it:
+**Why a correct bind is not enough, and how this actually presented.** A proxy running in a container
+reaches the host over the bridge gateway, and that traffic arrives on the host's **`INPUT` chain** — where
+Docker's own rules do not apply. Container-to-*container* traffic goes through `FORWARD` and is unaffected,
+which is why every other service on the same bridge kept working and only the report broke: the grinder is
+the unusual case, a **host** service behind a **containerised** proxy.
 
-```bash
-ip -o addr show | grep '172\.19\.0\.1'        # find the br-… interface carrying the gateway
-sudo ufw allow in on br-XXXXXXXX to 172.19.0.1 port 9090 proto tcp \
-  comment 'grinder report, proxy container only'
+The confirmed cause on the public instance, 2026-09-21:
+
+```
+Chain INPUT (policy DROP 1072 packets, 387K bytes)
 ```
 
-> **Never `ufw allow 9090`.** The report has no authentication, so an unscoped rule publishes the verdict
-> table and the full CSV export to the internet — especially with `SPC_GRINDER_HOST=0.0.0.0`, where the
-> firewall is the *only* thing keeping it private. Scope every rule to the bridge interface.
+**The policy was the whole rule.** ufw was active, no rule permitted the bridge, and the default policy
+discarded it — so `ufw status` listed nothing about port 9090 and nothing looked wrong. That is the trap:
+*"the firewall has no rule for this"* and *"the firewall is not filtering this"* are opposite statements, and
+only the chain policy tells them apart. `DROP` rather than `REJECT` is what turns it into a 127 s timeout
+instead of an instant refusal.
 
-Verify from where it actually matters, which is inside the proxy container, not from the host:
+**Localise it with three requests before touching any rule.** They differ only in which chain they traverse,
+so the pattern names the layer outright:
 
 ```bash
-docker exec <proxy-container> curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' \
-  http://172.19.0.1:9090/status
+curl -m 5 -o /dev/null -w 'host->bridge %{http_code} %{time_total}\n' http://172.19.0.1:9090/status
+docker exec <proxy> curl -m 5 -o /dev/null -w 'proxy->bridge %{http_code} %{time_total}\n' http://172.19.0.1:9090/status
+docker exec <proxy> curl -m 5 -o /dev/null -w 'proxy->peer   %{http_code} %{time_total}\n' http://<some-container-ip>:<port>/
+```
+
+| host→bridge | proxy→bridge | proxy→peer | Verdict |
+|---|---|---|---|
+| 200 | timeout | 200 | `INPUT` is dropping container→host. **This is the case below.** |
+| timeout | timeout | 200 | Not the firewall — the report is not listening on that address. Check `SPC_GRINDER_HOST`. |
+| 200 | 200 | 200 | The path is fine; the problem is the proxy's own configuration. |
+
+Measured on the public instance: **200 in 0.077 s / timeout / 200 in 0.003 s** — the first row. A closed port
+from the proxy (`http://172.19.0.1:1/`) also timed out rather than being refused, which is what proves the
+drop is blanket rather than aimed at 9090.
+
+Allow the bridge, scoped to source **and** destination:
+
+```bash
+sudo ufw allow from 172.19.0.0/16 to 172.19.0.1 port 9090 proto tcp \
+  comment 'grinder report: bridge only'
+```
+
+Scoped by subnet rather than by `in on br-…`, because the bridge interface name is a Docker-generated id
+that changes when the network is recreated, while the subnet is the thing the proxy is actually configured
+against.
+
+> **Never `sudo ufw allow 9090`.** The report has no authentication, so an unscoped rule publishes the
+> verdict table and the full CSV export to the internet — and with `SPC_GRINDER_HOST=0.0.0.0` the report is
+> already listening on the public interface, which means the `INPUT` policy is the *only* thing keeping it
+> private. Verified on the public instance: port 9090 times out from the internet, and the rule above keeps
+> it that way.
+
+Verify all three, and do not skip the last one:
+
+```bash
+docker exec <proxy> curl -m 5 -o /dev/null -w 'proxy  %{http_code} %{time_total}\n' http://172.19.0.1:9090/status
+curl -m 20 -o /dev/null -w 'public %{http_code} %{time_total}\n' https://<your-report-host>/dashboard
+curl -m 20 -o /dev/null -w 'direct %{http_code}\n' http://<your-public-ip>:9090/status   # MUST still time out
 ```
 
 ### Exposing the report
@@ -426,10 +466,16 @@ reach it. Container-to-gateway traffic is not covered by Docker's own rules, so 
 discards it — and `ufw` does that by `DROP` rather than `REJECT`, so the proxy waits out Linux's full
 `tcp_syn_retries` budget (~127 s) and reports `110: Operation timed out` rather than a refusal. **That is the
 case this section had no answer for:** it looks like a hung daemon and reads as "the report is broken", while
-the report is idle and healthy. Allow the bridge scoped to its interface, never the port globally — the
-report is unauthenticated, so with `SPC_GRINDER_HOST=0.0.0.0` the firewall is the *only* thing keeping it off
-the public internet. *Report responsiveness* → *When the proxy cannot reach a healthy report* has the
-commands and the one-line test that tells the two causes apart.
+the report is idle and healthy.
+
+**It does not need a rule that mentions your port — a chain policy of `DROP` is enough**, which is what makes
+it invisible: `ufw status` lists nothing about the report, nothing looks misconfigured, and the packets go
+nowhere anyway. This is what actually took the public instance down. Allow the bridge scoped to its subnet,
+never the port globally — the report is unauthenticated, so with `SPC_GRINDER_HOST=0.0.0.0` that policy is
+the *only* thing keeping it off the public internet, and opening the port undoes the outage and the
+protection in one command. *Report responsiveness* → *When the proxy cannot reach a healthy report* has the
+rule, the three-request bisect that localises the drop, and the errno table that tells a firewall from a
+wrong bind.
 
 ### Publishing the fallback list (`/as-properties`)
 

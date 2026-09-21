@@ -419,8 +419,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   budget. One line on the host (`curl 127.0.0.1:<port>/dashboard` → **200 in 0.368 s**) separated the layers,
   and the thread dump proved it by an **absence** — `newFixedThreadPool` creates workers lazily and never
   retires them, so no `pool-*` thread means no request ever reached a handler. Prove the request reaches your
-  code before attributing an outage to it, and note the second trap: the firewall was both the bug and the
-  only access control on an unauthenticated report, so the obvious `ufw allow <port>` would have published it.
+  code before attributing an outage to it.
+  - **Why the firewall was dismissed twice before it was confirmed, which is the transferable part:** there
+    was no rule about that port. `Chain INPUT (policy DROP …)` was doing it, so `ufw status` showed nothing
+    relevant and "ufw is not the issue" looked like a checked fact. **"No rule for this" and "not filtering
+    this" are opposite statements**, and only the chain *policy* separates them — so two more hypotheses
+    (conntrack at 569 of 262,144; a renumbered Docker network whose gateway turned out correct) were chased
+    first. When a negative rules a layer out, ask what was actually read to rule it out.
+  - **The second trap:** that same policy was the only access control on an unauthenticated report bound to
+    `0.0.0.0`, so the obvious `ufw allow <port>` would have ended the outage and published the verdict table
+    and full CSV export in one command. Ask what a guard rail is load-bearing for before removing it.
 - **A tool that detects a defect through a side effect can only see the share of it that has that side
   effect.** Qodana's `KDocUnresolvedReference` reports a doc block that has come loose from its declaration
   *only* when the stranded block happens to contain a `[link]` that no longer resolves — so it named **4 of
