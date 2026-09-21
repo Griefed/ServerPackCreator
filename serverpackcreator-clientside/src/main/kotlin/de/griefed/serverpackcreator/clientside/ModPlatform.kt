@@ -135,7 +135,12 @@ fun interface HttpFetcher {
  * @author Griefed
  */
 class JdkHttpFetcher(
-    private val client: HttpClient = HttpClient.newBuilder()
+    /**
+     * The client requests go out on. `internal` rather than `private` purely so a guard in this module can
+     * assert *which* client a default-constructed fetcher got — the thing worth pinning here is that
+     * instances share one, and identity is the only honest way to observe that.
+     */
+    internal val client: HttpClient = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)
         .connectTimeout(Duration.ofSeconds(30))
         .build()
