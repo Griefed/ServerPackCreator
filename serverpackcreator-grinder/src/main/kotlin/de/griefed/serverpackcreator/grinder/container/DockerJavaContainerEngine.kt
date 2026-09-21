@@ -188,7 +188,7 @@ class DockerJavaContainerEngine(
             if (!awaitWithin(pending, shutdownGrace)) {
                 log.warn(
                     "Some containers did not stop within ${shutdownGrace.seconds}s; abandoning them so shutdown can " +
-                        "finish. They carry the ${OWNER_LABEL} label and are reaped on the next start."
+                        "finish. They carry the $OWNER_LABEL label and are reaped on the next start."
                 )
             }
         } finally {
