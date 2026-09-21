@@ -159,6 +159,14 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # re-derived by REVERIFY_TTL_DAYS. `0` restores the old write-through behaviour.
 #Environment=SPC_GRINDER_STORE_FLUSH_SECONDS=30
 
+# How long the report may reuse a whole-store derivation after a verdict has been recorded, in seconds.
+# Selecting rows sorts every verdict and gathers every filter column across all of them, and `record()`
+# invalidates that on EVERY verdict -- so without a window several workers guarantee a fresh derivation
+# between almost any two requests, and the report pays it in full exactly while the daemon is busiest.
+# The report can therefore lag by at most this long, which is the same bargain STORE_FLUSH_SECONDS makes
+# for writes. `0` restores a strictly live report; raise it if the store is large and the page is slow.
+#Environment=SPC_GRINDER_REPORT_CACHE_SECONDS=5
+
 # Which Minecraft version-lines each project is ground on -- one verdict per line, under a single modloader
 # (NeoForge, then Forge, Fabric, Quilt, LegacyFabric, whichever that line publishes for). This is the biggest
 # lever on what a sweep costs, because it multiplies the boots per project.

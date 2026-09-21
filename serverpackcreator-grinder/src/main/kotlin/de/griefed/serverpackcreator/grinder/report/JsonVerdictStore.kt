@@ -154,6 +154,10 @@ class JsonVerdictStore(
 
     override fun all(): List<GrindVerdict> = verdicts.values.toList()
 
+    /** Straight off the map, so counting never copies — see [VerdictStore.count]. */
+    override val count: Int
+        get() = verdicts.size
+
     override val version: Long
         get() = revision.get()
 

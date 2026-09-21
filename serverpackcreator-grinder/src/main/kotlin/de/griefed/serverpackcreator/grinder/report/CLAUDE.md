@@ -22,6 +22,26 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
   - `VerdictField.DECISION` exposes it as a filterable `CHOICE` column, so `?f.decision=EXIT_CODE` lists the
     whole undefensible population. `GrinderAuditIT` grades it in bulk; details in the module `CLAUDE.md`.
 
+- **LANDMINE — three report paths used to walk the whole store, and only one of them looked like it did.**
+  Selection was the obvious one and was cached; the other two were not, and both are polled on a timer.
+  - **`/status` read `store.all().size`** — a full list copy of every verdict to look at one integer, on the
+    document the dashboard polls. `VerdictStore.count` exists for this and is overridden by both real stores
+    to read the backing map. **Its default is `all().size`**, which is the trap: a store double that inherits
+    the default still copies, so `ReportStoreScanTest.CountingStore` has to delegate `count` explicitly or it
+    reports the defect whatever production does. That cost one red run to notice.
+  - **`/as-properties` called `store.all()` directly** — the one endpoint `VerdictSnapshotCache` never
+    covered, and the one **polled unattended by every SPC instance in the wild**. It reads through the
+    snapshot now. When adding an endpoint, ask which of the two it is: reading rows means the snapshot,
+    never the store.
+  - **The cache stopped working exactly when the daemon was busiest.** `record()` moves
+    `VerdictStore.version` on **every** verdict, and the cache rebuilt on any move — so several workers
+    recording continuously put a new version between almost any two requests. `SPC_GRINDER_REPORT_CACHE_SECONDS`
+    (default 5) bounds the rebuild rate; the report lags by at most that. `0` is the old behaviour and stays
+    pinned, because it is what `theSnapshotIsRebuiltWhenAVerdictIsRecorded` asserts.
+  - **These are pinned by a COUNT OF SCANS, never a duration.** A timing assertion is flaky on CI and says
+    nothing about why something got slow; "this endpoint copied every verdict" is the defect itself and is
+    exactly reproducible.
+
 - **`VerdictField` is the single declaration of a column** — header, CSV header, URL token, filter kind and
   cell text in one enum, consumed by the HTML headers, the HTML cells, the CSV header and the CSV rows.
   Those four were hand-synced and *had* drifted (CSV seven fields against the table's eight). Adding a

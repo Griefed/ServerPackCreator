@@ -5,6 +5,7 @@ import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.time.Duration
 
 /**
  * Pins the derivation the report caches: that it is reused while the store is unchanged, rebuilt once it
@@ -108,13 +109,19 @@ internal class VerdictSnapshotTest {
     /**
      * And rebuilds once something has. Recording *replaces* by identity here, so the row count is unchanged
      * — which is exactly why the cache keys on a version counter rather than on a size.
+     *
+     * Pinned with the coalescing window **off** (`Duration.ZERO`), because that is the behaviour this test
+     * has always been about: that a changed store invalidates the derivation. Every assertion below is
+     * unchanged. What a *default* cache does with a window on is
+     * `VerdictSnapshotCoalescingTest.theDefaultWindowCoalescesRatherThanRebuildingPerVerdict`, and the two
+     * together are what stop the window being confused with a cache that never notices a change.
      */
     @Test
     fun theSnapshotIsRebuiltWhenAVerdictIsRecorded() {
         val store = InMemoryVerdictStore()
         val original = grindVerdict(slug = "jei", loader = "Forge", verdict = Verdict.CLEAR)
         store.record(original)
-        val cache = VerdictSnapshotCache(store)
+        val cache = VerdictSnapshotCache(store, maxAge = Duration.ZERO)
         val before = cache.current()
 
         store.record(grindVerdict(slug = "jei", loader = "Forge", verdict = Verdict.CONFIRMED))
