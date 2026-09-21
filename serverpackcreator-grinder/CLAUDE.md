@@ -155,13 +155,32 @@ store rather than by running it:
 
 ## Cross-cutting landmines (do not let these load lazily)
 
-- **LANDMINE — the report's thread pool is small, so anything slow in a handler takes the whole site down,
-  not just that page.** The JDK `HttpServer` hands every request to `SPC_GRINDER_HTTP_THREADS` threads
-  (default 4, hardcoded 2 until 2026-09-19). A pool with nothing free stops answering *everything* — the
-  socket still accepts, nothing replies, and the proxy 502s — so a wedged report is **indistinguishable from
-  a dead host** from outside. Measured against the public instance on 2026-09-19: `/`, `/status`, `/dashboard`
-  and a nonexistent path all 502'd at **131.3 s** while port 80 answered a redirect in 0.18 s. `/status` does
-  no store work, which is what proved it was thread starvation rather than a slow page.
+- **LANDMINE — "every endpoint 502s" does NOT mean the report is wedged, and this cost two wrong diagnoses.**
+  The JDK `HttpServer` hands every request to `SPC_GRINDER_HTTP_THREADS` threads (default 4, hardcoded 2
+  until 2026-09-19), so a pool with nothing free *would* stop answering everything. **No outage has ever
+  been traced to that.** The 2026-09-19 measurement — `/`, `/status`, `/dashboard` and a nonexistent path all
+  502'ing at **131.3 s** while port 80 answered in 0.18 s — was read as thread starvation because `/status`
+  does no store work, and the cache plus a bigger pool were shipped against it. The report kept 502'ing.
+  Re-measured on 2026-09-21: **130.2 / 131.1 / 131.0 s**, unchanged.
+  - **The flaw in the reasoning:** a cheap endpoint failing rules out *a slow page*. It does not distinguish
+    "no thread is free" from "the request never arrived", and those look identical from outside.
+  - **What actually settles it, in one line, on the host:**
+    `curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' http://127.0.0.1:$SPC_GRINDER_PORT/dashboard`
+    — it answered **200 in 0.368 s** while the public URL 502'd. `/dashboard` is a compile-time constant
+    (`StatusDashboardRenderer.toHtml(): String = PAGE`), so a 200 there exonerates the whole daemon.
+  - **A thread dump settles it beyond doubt, by an absence.** `Executors.newFixedThreadPool` creates workers
+    lazily and never retires core threads, so **no `pool-*` thread in `jcmd <pid> Thread.print` means no
+    request has ever reached a handler**. The real dump also showed `HTTP-Dispatcher` parked in `EPoll.wait`
+    with 477 ms of CPU over 2.9 h, and heap at 330 MiB of 1.1 GiB. Nothing was wedged; nothing arrived.
+  - **The actual cause was the host firewall**, dropping the nginx container's packets to the bridge gateway
+    (`172.19.0.1:9090`). `110: Operation timed out` in the proxy log, and ~131 s is just Linux's
+    `tcp_syn_retries=6` budget. **Read the proxy's errno first: 111/refused is a wrong bind, 110/timed out is
+    a firewall.** Full triage in the grinder README, *Report responsiveness* → *When the proxy cannot reach a
+    healthy report*.
+  - **The generalisation, which is the point of keeping this:** *a symptom shared by two layers is evidence
+    for neither.* Both wrong calls here were plausible, internally consistent, and made without the one cheap
+    test that separates the layers. Before attributing an outage to the code you own, prove the request
+    reaches it.
 - **Every request used to re-derive the whole store, and pagination did not help.** Selecting sorts all
   verdicts and gathers every filter column across all of them; the page size bounds only what is *rendered*.
   Measured: at 38,258 verdicts (roughly the deployed store) **251 ms to select, 3 ms to render the 250 rows**

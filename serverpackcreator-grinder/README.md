@@ -287,13 +287,35 @@ keeps answering "never seen" and the project is re-selected every sweep for ever
 
 ### Report responsiveness
 
+> **Start here: prove the request reaches the report at all.** Run this **on the grinder host**, where the
+> report binds:
+>
+> ```bash
+> curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' http://127.0.0.1:${SPC_GRINDER_PORT:-8757}/dashboard
+> ```
+>
+> `/dashboard` is a compile-time constant that touches neither the store nor the disk, so a `200` here means
+> the report is healthy whatever the public URL is doing — and everything below this box is then the wrong
+> place to look. Go to *Exposing the report*: the problem is between the proxy and the port.
+>
+> This is not hypothetical. On 2026-09-21 the public instance returned 502 for every path, the report
+> answered `200` in **0.368 s** over loopback, and the cause was a host firewall dropping the proxy's
+> packets. See *When the proxy cannot reach a healthy report*.
+
 The report is served by the JDK's built-in HTTP server on a small fixed thread pool
 (`SPC_GRINDER_HTTP_THREADS`, default `4`). Every request is handed to that pool, so **a request that blocks
-costs a whole thread**, and a pool with nothing free stops answering *everything* — including `/status` and
-`/dashboard`, which do no work at all. From outside, that is indistinguishable from a dead host: the socket
-still accepts the connection, nothing ever replies, and the reverse proxy eventually returns a 502.
+costs a whole thread**, and a pool with nothing free would stop answering *everything* — including `/status`
+and `/dashboard`, which do no work at all.
 
-That was reachable, because the report used to re-derive the whole store on every request. Selecting rows
+**No outage has ever been traced to that**, and it is worth knowing why the distinction is easy to get
+wrong: pool exhaustion and an unreachable port look identical from outside — every path hangs, then 502.
+They are trivial to tell apart from *inside*, with the one-line check above. A thread dump settles it beyond
+doubt: `Executors.newFixedThreadPool` creates its workers lazily and never retires them, so **no
+`pool-*` thread in `jcmd <pid> Thread.print` means no request has ever reached a handler**, and
+`HTTP-Dispatcher` parked in `EPoll.wait` means the server is idle rather than swamped.
+
+The derivation cost below was real and the caching is worth having, but it was never an outage — it made the
+report *slower*, not unreachable. Selecting rows
 sorts every verdict and gathers every filter column across all of them, which does **not** shrink with
 pagination — the page size only bounds what is rendered. Measured against synthetic stores:
 
@@ -307,9 +329,53 @@ At the middle row — roughly a real deployed store — 98% of the work was thro
 now computed once per *change* to the store rather than once per request, so a report whose grinder is idle
 costs effectively nothing to serve however large the store is.
 
-If the report is still slow, it is worth checking in this order: whether the grind workers are saturating the
-host (they are uncapped on the host side; only the containers are bounded), and whether the boot-log
-directory has grown enough that listing it per request is the remaining cost.
+If the report is genuinely slow — answering, but late — check in this order: whether the grind workers are
+saturating the host (they are uncapped on the host side; only the containers are bounded), and whether the
+boot-log directory has grown enough that listing it per request is the remaining cost.
+
+#### When the proxy cannot reach a healthy report
+
+If loopback answers and the public URL does not, **read the proxy's error log before changing anything
+here** — it names the upstream address it tried and why the attempt failed, which is the whole diagnosis:
+
+```
+connect() failed (110: Operation timed out) while connecting to upstream,
+  upstream: "http://172.19.0.1:9090/", host: "grinder.serverpackcreator.de"
+```
+
+The errno is what distinguishes the two causes, and they need opposite fixes:
+
+| Proxy log says | TCP behaviour | Cause | Fix |
+|---|---|---|---|
+| `111: Connection refused` | instant RST | Nothing listens on that address — the report is bound to loopback while the proxy dials the bridge gateway | Change the **bind**: `SPC_GRINDER_HOST` |
+| `110: Operation timed out` | SYN dropped, ~127 s | Something *is* listening, but a **host firewall** is dropping the packet | Change the **firewall** |
+
+The timeout case is the one nothing else here warns about, and it is easy to misread as a hung daemon
+because the delay is so long. The ~127 s is not the report and not the proxy: it is Linux's default
+`tcp_syn_retries=6`, six SYN retransmissions with exponential backoff before `connect()` gives up. A number
+close to it in a proxy log means *the packets are being discarded*, full stop.
+
+**Why a correct bind is not enough.** A proxy running in a container reaches the host over the bridge
+gateway, and that traffic arrives on the host's `INPUT` chain — where Docker's own rules do not apply and a
+default-deny firewall drops it. `ufw` denies by `DROP` rather than `REJECT`, which is precisely why the
+symptom is a 127 s timeout rather than an instant refusal. Allow the bridge, scoped to it:
+
+```bash
+ip -o addr show | grep '172\.19\.0\.1'        # find the br-… interface carrying the gateway
+sudo ufw allow in on br-XXXXXXXX to 172.19.0.1 port 9090 proto tcp \
+  comment 'grinder report, proxy container only'
+```
+
+> **Never `ufw allow 9090`.** The report has no authentication, so an unscoped rule publishes the verdict
+> table and the full CSV export to the internet — especially with `SPC_GRINDER_HOST=0.0.0.0`, where the
+> firewall is the *only* thing keeping it private. Scope every rule to the bridge interface.
+
+Verify from where it actually matters, which is inside the proxy container, not from the host:
+
+```bash
+docker exec <proxy-container> curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' \
+  http://172.19.0.1:9090/status
+```
 
 ### Exposing the report
 
@@ -324,7 +390,8 @@ ssh -L 8757:127.0.0.1:8757 grinder-box     # then browse http://127.0.0.1:8757/
 **A reverse proxy needs a different bind, not a different proxy config.** A proxy in a container reaches the host
 over the Docker bridge gateway (`172.19.0.1` and friends), never over `127.0.0.1` — that address inside the
 container is the container itself. A loopback-bound report refuses that connection at the TCP layer, so the proxy
-reports a 502 while the report answers perfectly well over the tunnel above. Point it at the gateway:
+reports a 502 (`111: Connection refused`, instantly) while the report answers perfectly well over the tunnel
+above. Point it at the gateway:
 
 ```ini
 Environment=SPC_GRINDER_HOST=172.19.0.1
@@ -337,6 +404,17 @@ startup. If the bridge is ever recreated on a different subnet the bind fails lo
 silently falling back — verified against the JDK's `HttpServer`: an address this host does not own gives
 `BindException: Can't assign requested address`, and a name that does not resolve gives `SocketException:
 Unresolved address`. Pinning the subnet on a user-defined network avoids the situation entirely.
+
+**The bind is half of it — the host firewall is the other half, and it fails differently.** A correct bind
+only means a socket is listening on that address; the packet still has to survive the host's `INPUT` chain to
+reach it. Container-to-gateway traffic is not covered by Docker's own rules, so a default-deny firewall
+discards it — and `ufw` does that by `DROP` rather than `REJECT`, so the proxy waits out Linux's full
+`tcp_syn_retries` budget (~127 s) and reports `110: Operation timed out` rather than a refusal. **That is the
+case this section had no answer for:** it looks like a hung daemon and reads as "the report is broken", while
+the report is idle and healthy. Allow the bridge scoped to its interface, never the port globally — the
+report is unauthenticated, so with `SPC_GRINDER_HOST=0.0.0.0` the firewall is the *only* thing keeping it off
+the public internet. *Report responsiveness* → *When the proxy cannot reach a healthy report* has the
+commands and the one-line test that tells the two causes apart.
 
 ### Publishing the fallback list (`/as-properties`)
 

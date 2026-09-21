@@ -411,6 +411,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   different descriptor* — could reopen the choice. The re-selection machinery already existed; what was
   missing was reasons to invoke it. Carrying a loader's descriptor and being able to run under it are
   different questions.
+- **A symptom shared by two layers is evidence for neither, and the layer you own is the tempting answer.**
+  The grinder's report 502'd on every path at 131.3 s, including endpoints that do no work — read as
+  thread-pool starvation, which fit. A cache and a bigger pool shipped against it; the 502s continued
+  unchanged at 130.2–131.1 s. The requests had never arrived: a containerised nginx was dialling the Docker
+  bridge gateway and the host firewall was dropping the SYN, and ~131 s is simply Linux's `tcp_syn_retries`
+  budget. One line on the host (`curl 127.0.0.1:<port>/dashboard` → **200 in 0.368 s**) separated the layers,
+  and the thread dump proved it by an **absence** — `newFixedThreadPool` creates workers lazily and never
+  retires them, so no `pool-*` thread means no request ever reached a handler. Prove the request reaches your
+  code before attributing an outage to it, and note the second trap: the firewall was both the bug and the
+  only access control on an unauthenticated report, so the obvious `ufw allow <port>` would have published it.
 - **A tool that detects a defect through a side effect can only see the share of it that has that side
   effect.** Qodana's `KDocUnresolvedReference` reports a doc block that has come loose from its declaration
   *only* when the stranded block happens to contain a `[link]` that no longer resolves — so it named **4 of
