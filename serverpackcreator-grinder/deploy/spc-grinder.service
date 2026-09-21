@@ -96,13 +96,28 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # anything that can reach the port gets the verdict table and the full CSV export. Raise it only to
 # put a reverse proxy in front, and prefer the Docker bridge gateway over 0.0.0.0, which publishes it
 # on every interface the host has. See README §5, "Exposing the report".
+#
+# THE BIND IS ONLY HALF OF IT. A correct address means a socket is listening there; the packet still has
+# to survive the host's INPUT chain. Container-to-gateway traffic is not covered by Docker's own rules, so
+# a default-deny firewall discards it -- and ufw DROPs rather than REJECTs, so the proxy burns Linux's
+# whole tcp_syn_retries budget (~127 s) and logs `110: Operation timed out`. Read the errno, it names the
+# fix: 111/refused is the wrong BIND, 110/timed out is the FIREWALL. Allow the bridge by interface:
+#   sudo ufw allow in on br-XXXXXXXX to 172.19.0.1 port 9090 proto tcp
+# NEVER a bare `ufw allow <port>` -- the report is unauthenticated, and with 0.0.0.0 below the firewall is
+# the only thing keeping the verdict table and CSV export off the public internet.
 #Environment=SPC_GRINDER_PORT=8757
 #Environment=SPC_GRINDER_HOST=127.0.0.1
 
 # Threads the report server answers requests on. Every request is handed to this pool, so one that blocks
-# costs a whole thread, and a pool that runs out stops answering entirely -- including the endpoints that
-# cost nothing, which is what makes a wedged report look like a dead host from outside. Raise it if the
-# report is served to more than a couple of readers. See README §5, "Report responsiveness".
+# costs a whole thread, and a pool that ran out would stop answering entirely. Raise it if the report is
+# served to more than a couple of readers. See README §5, "Report responsiveness".
+#
+# DO NOT REACH FOR THIS WHEN THE REPORT STOPS ANSWERING. No outage has ever been traced to the pool, and
+# an unreachable port looks identical from outside -- every path hangs, then 502. Prove which one it is
+# first, ON THE HOST, where a healthy report is a 200 in well under a second:
+#   curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' http://127.0.0.1:${SPC_GRINDER_PORT}/dashboard
+# A 200 there means the report is fine and the problem is between the proxy and the port -- almost always
+# the host firewall dropping container-to-bridge-gateway traffic. See SPC_GRINDER_HOST below.
 #Environment=SPC_GRINDER_HTTP_THREADS=4
 
 # The uid:gid every boot and install container runs as. Defaults to the owner of SPC_GRINDER_WORK, which

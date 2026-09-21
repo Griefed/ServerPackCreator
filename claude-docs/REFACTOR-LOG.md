@@ -4550,3 +4550,57 @@ recovered by replaying the exact `tool_use` command out of a previous session's
 `~/.claude/projects/**/*.jsonl` transcript, byte-for-byte. Rewrite local history with `cherry-pick` onto
 a temporary branch — the working tree is never touched — and check `git status --porcelain` before any
 destructive git command.
+
+## 2026-09-21 — the grinder report was never wedged (`claude-grinder-outage-docs`)
+
+The public report had been returning 502 for every path since at least **18 September**. It was diagnosed
+twice, wrongly, and the second diagnosis shipped code.
+
+**What the evidence looked like.** On 2026-09-19: `/`, `/status`, `/dashboard` and a nonexistent path all
+502'd at **131.3 s**, while port 80 answered a redirect in 0.18 s. `/status` does no store work, so the
+conclusion drawn was thread starvation — the report's pool had nothing free, and a pool with nothing free
+stops answering even the endpoints that cost nothing. `148ccb385` shipped `VerdictSnapshotCache` and raised
+`SPC_GRINDER_HTTP_THREADS` from 2 to 4 against that reading.
+
+The report kept 502'ing. Re-measured on 2026-09-21 against the live instance: **130.18 / 131.07 / 131.05 s**,
+all 502. Unchanged, to within noise, by a fix aimed squarely at it. Clearing the store to make a fresh
+instance changed nothing either.
+
+**Why the reasoning was wrong, which is the part worth keeping.** "A cheap endpoint also fails" rules out *a
+slow page*. It does **not** distinguish "no thread is free" from "the request never arrived" — those are
+different layers with an identical external signature. Both readings fit every observation, and the one that
+happened to be about code we own was the one adopted.
+
+**What settled it.** Two artifacts, neither expensive:
+
+- `curl http://127.0.0.1:9090/dashboard` **on the host**: `200` in **0.368 s**, 10,816 bytes. `/dashboard` is
+  a compile-time constant, so a 200 there exonerates the entire daemon in one line.
+- `jcmd <pid> Thread.print`, where the finding was an **absence**. `Executors.newFixedThreadPool` creates its
+  workers lazily and never retires core threads, so **zero `pool-*` threads means zero requests have ever
+  reached a handler** — in 2.9 hours of uptime. `HTTP-Dispatcher` sat in `EPoll.wait` on 477 ms of CPU; heap
+  was 330 MiB of 1.1 GiB; no `BLOCKED` thread, no deadlock. The server was idle, not swamped.
+
+**The actual cause.** nginx runs in a container and dialled the Docker bridge gateway, `172.19.0.1:9090`. The
+grinder binds `0.0.0.0`, so that socket *was* listening — but the host firewall dropped the SYN. The proxy
+log said so all along: `connect() failed (110: Operation timed out)`. Errno 110 is a **dropped** packet;
+errno 111 would have been a wrong bind. And the 131 s that looked like an application hang is nothing of the
+sort — it is Linux's default `tcp_syn_retries=6`, six retransmissions with exponential backoff, ~127 s.
+
+**A trap found on the way out.** Port 9090 was unreachable from the public internet too — the same firewall.
+With `SPC_GRINDER_HOST=0.0.0.0` and no authentication on the report, that rule was the only thing keeping the
+verdict table and the full CSV export private. The obvious fix, `ufw allow 9090`, would have ended the outage
+and published the report to the internet in the same command. Every rule has to be scoped to the bridge
+interface.
+
+**Lessons.**
+
+- **A symptom shared by two layers is evidence for neither.** Prove the request reaches the code before
+  attributing an outage to it. The test cost one line and would have saved two diagnoses and a shipped fix.
+- **An absence can be the decisive evidence, if you know what creates the thing that is missing.** Lazily
+  created, never-retired pool threads make "no such thread" mean "no such request", which no amount of
+  looking at stack traces would have told us.
+- **A performance win is not an outage fix, and shipping it as one hides the outage.** The 251 ms derivation
+  cost was real and the cache is worth keeping. It was never why the site was down, and calling it the cause
+  closed the investigation for two days.
+- **Ask what a guard rail is currently load-bearing for before removing it.** The firewall was simultaneously
+  the bug and the only access control.
