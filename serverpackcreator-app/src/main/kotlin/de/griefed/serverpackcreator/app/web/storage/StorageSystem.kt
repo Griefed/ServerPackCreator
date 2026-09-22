@@ -24,6 +24,7 @@ import org.springframework.data.mongodb.gridfs.GridFsOperations
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.io.IOException
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.*
@@ -60,9 +61,44 @@ class StorageSystem(
 
     /** Store an uploaded file, returning what was written — empty when the store failed. */
     fun store(file: MultipartFile): Optional<SavedFile> {
-        val destination = File(fsStorageService.rootLocation.toFile(), System.currentTimeMillis().toString() + "-orig-" + (file.originalFilename ?: file.name))
-        file.transferTo(destination)
-        return store(destination)
+        val uploadName = landingName(file)
+        val root = fsStorageService.rootLocation.toAbsolutePath().normalize()
+        val destination = root.resolve("${System.currentTimeMillis()}-orig-$uploadName").normalize()
+        if (destination.parent != root) {
+            // Belt and braces. landingName already reduces the client's string to a base name, so this
+            // cannot trigger today; it is here because the thing it guards is an arbitrary path built
+            // from a request, and the same check already sits on the internal path in FileSystemStorageService.
+            log.error("Refusing to store an upload outside $root.")
+            return Optional.empty()
+        }
+        return try {
+            file.transferTo(destination.toFile())
+            store(destination.toFile())
+        } catch (failure: IOException) {
+            // ModPackController catches StorageException only, so anything else escaping here is an
+            // unhandled 500 -- and the shipped application.properties sets include-stacktrace=ALWAYS.
+            log.error("Could not store the uploaded file $uploadName.", failure)
+            Optional.empty()
+        } catch (failure: IllegalStateException) {
+            // The other half of MultipartFile.transferTo's contract: the part has already been moved.
+            log.error("The upload $uploadName was no longer available to store.", failure)
+            Optional.empty()
+        }
+    }
+
+    /**
+     * The name an upload is landed under: the base name of what the client sent, never a path.
+     *
+     * `MultipartFile.getOriginalFilename()` is whatever the caller put in `Content-Disposition`, and
+     * Spring hands it over verbatim — separators included. Before this, the only thing keeping a
+     * `../../../` out of the resulting path was that `"-orig-"` concatenates without a separator, so
+     * the first component became a directory name that happens not to exist. That is an accident of
+     * string concatenation, not a check, and it stops holding the moment the prefix changes.
+     */
+    private fun landingName(file: MultipartFile): String {
+        val candidate = file.originalFilename ?: file.name
+        val baseName = candidate.replace('\\', '/').substringAfterLast('/').trim()
+        return baseName.ifBlank { file.name.ifBlank { "upload" } }
     }
 
     /** Store a file already on disk, for a generated archive rather than an upload. */

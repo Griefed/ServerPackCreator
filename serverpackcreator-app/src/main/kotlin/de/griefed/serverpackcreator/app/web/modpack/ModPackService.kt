@@ -109,7 +109,9 @@ class ModPackService @Autowired constructor(
         val modpack = ModPack()
         modpack.status = ModPackStatus.QUEUED
         modpack.source = ModpackSource.ZIP
-        val savedFile = storage.store(file).get()
+        val savedFile = storage.store(file).orElseThrow {
+            StorageException("The modpack you uploaded could not be stored. Please try again.")
+        }
         val check = configurationHandler.checkZipArchive(savedFile.file.toString())
         if (!check.allChecksPassed) {
             throw StorageException(
