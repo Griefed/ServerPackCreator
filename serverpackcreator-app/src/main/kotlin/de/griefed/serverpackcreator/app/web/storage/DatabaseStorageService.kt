@@ -80,12 +80,9 @@ class DatabaseStorageService(
 
     /** Read a file back out of GridFS, as the metadata and the resource together. */
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
-        val result = gridFsTemplate.findOne(query(id))
-        return Optional.of(
-            Pair(
-                result,
-                gridFsOperations.getResource(result)
-            )
-        )
+        // findOne returns null for a miss. Wrapping that in Optional.of made an absent file an NPE
+        // rather than an empty result -- a 500 on the download route where a 404 was intended.
+        val result = gridFsTemplate.findOne(query(id)) ?: return Optional.empty()
+        return Optional.of(Pair(result, gridFsOperations.getResource(result)))
     }
 }

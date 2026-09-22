@@ -135,9 +135,15 @@ class StorageSystem(
         }
     }
 
-    /** Delete one stored file. */
+    /**
+     * Delete one stored file — from the filesystem *and* from GridFS.
+     *
+     * Every file is written to both, so reclaiming only one of them left the database growing without
+     * bound, including for uploads that were rejected before a ModPack row ever existed.
+     */
     fun delete(id: String) {
         fsStorageService.delete(id)
+        dbStorageService.delete(id)
     }
 
     /** Delete everything stored. For the cleanup schedule, not for a request. */
