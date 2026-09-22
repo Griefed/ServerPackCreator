@@ -26,7 +26,7 @@ import de.griefed.serverpackcreator.app.web.task.TaskDetail
 import de.griefed.serverpackcreator.app.web.task.TaskExecutionServiceImpl
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
@@ -69,7 +69,8 @@ class ModPackController @Autowired constructor(
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/zip"))
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
-            .body(ByteArrayResource(modpackArchive.get().readBytes()))
+            .contentLength(modpackArchive.get().length())
+            .body(FileSystemResource(modpackArchive.get()))
     }
 
     /**
@@ -88,8 +89,10 @@ class ModPackController @Autowired constructor(
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
         var zipResponse: ZipResponse
+        // Deliberately NOT file.bytes.isEmpty(): size == 0L already answers that, and getBytes()
+        // materialises the whole upload as a ByteArray -- with max-file-size at 5000MB that is an
+        // OutOfMemoryError on every large upload, since a Java array cannot exceed about 2 GB.
         if (file.size == 0L ||
-            file.bytes.isEmpty() ||
             minecraftVersion.isEmpty() ||
             modloader.isEmpty() ||
             modloaderVersion.isEmpty()
