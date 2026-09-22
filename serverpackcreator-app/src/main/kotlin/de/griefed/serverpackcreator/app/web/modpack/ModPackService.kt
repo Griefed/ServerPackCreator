@@ -165,6 +165,16 @@ class ModPackService @Autowired constructor(
         return modpackRepository.save(modpack)
     }
 
+    /**
+     * Delete a stored file by its storage id — both copies of it.
+     *
+     * Exists for `FileCleanupSchedule`, which sweeps orphaned files off the filesystem and would
+     * otherwise leave their GridFS twins behind: every stored file is written to both.
+     */
+    fun deleteStoredFile(fileID: String) {
+        storage.delete(fileID)
+    }
+
     /** One modpack by id, empty when there is none. */
     fun getModpack(id: String): Optional<ModPack> {
         return modpackRepository.findById(id)

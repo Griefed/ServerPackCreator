@@ -22,10 +22,14 @@ package de.griefed.serverpackcreator.app.web.scheduling
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.app.web.modpack.ModPack
 import de.griefed.serverpackcreator.app.web.modpack.ModPackRepository
+import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackRepository
+import de.griefed.serverpackcreator.app.web.serverpack.ServerPackService
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -45,6 +49,8 @@ class FileCleanupScheduleTest {
 
     private val modpackRepository: ModPackRepository = mockk()
     private val serverPackRepository: ServerPackRepository = mockk()
+    private val modpackService: ModPackService = mockk()
+    private val serverPackService: ServerPackService = mockk()
 
     private lateinit var modpackRoot: Path
     private lateinit var serverPackRoot: Path
@@ -58,7 +64,11 @@ class FileCleanupScheduleTest {
         every { apiProperties.serverPacksDirectory } returns serverPackRoot.toFile()
         every { modpackRepository.findAll() } returns modpacks
         every { serverPackRepository.findAll() } returns serverPacks
-        return FileCleanupSchedule(modpackRepository, serverPackRepository, apiProperties)
+        justRun { modpackService.deleteStoredFile(any()) }
+        justRun { serverPackService.deleteStoredFile(any()) }
+        return FileCleanupSchedule(
+            modpackRepository, serverPackRepository, modpackService, serverPackService, apiProperties
+        )
     }
 
     /** Runs the private, `@Scheduled` sweep. */
@@ -132,5 +142,32 @@ class FileCleanupScheduleTest {
         sweep(schedule)
 
         Assertions.assertTrue(serverPackRoot.resolve("keptPack.zip").toFile().exists())
+    }
+
+    @Test
+    fun anOrphanedArchiveIsDeletedThroughStorageSoItsGridFsTwinGoesWithIt() {
+        // Every stored file exists on disk and in GridFS. Unlinking the file reclaims one of the two,
+        // so an orphan swept here would leave its database copy behind forever.
+        val schedule = schedule(modpacks = listOf(modPack("keepThisOne")), serverPacks = emptyList())
+        modpackRoot.resolve("keepThisOne.zip").toFile().writeText("kept")
+        modpackRoot.resolve("651f3c0e9a1b2c3d4e5f6071.zip").toFile().writeText("orphan")
+
+        sweep(schedule)
+
+        verify(exactly = 1) { modpackService.deleteStoredFile("651f3c0e9a1b2c3d4e5f6071") }
+    }
+
+    @Test
+    fun aModpackRowWithoutAFileIdDoesNotAbortTheSweep() {
+        // The server-pack branch filtered nulls before dereferencing; the modpack branch above it did
+        // not, so one row with a null fileID took the whole nightly pass down with an NPE.
+        val schedule = schedule(modpacks = listOf(modPack(null), modPack("keepThisOne")), serverPacks = emptyList())
+        modpackRoot.resolve("keepThisOne.zip").toFile().writeText("kept")
+        modpackRoot.resolve("orphaned.zip").toFile().writeText("orphan")
+
+        sweep(schedule)
+
+        Assertions.assertTrue(modpackRoot.resolve("keepThisOne.zip").toFile().exists())
+        Assertions.assertFalse(modpackRoot.resolve("orphaned.zip").toFile().exists())
     }
 }
