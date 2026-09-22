@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.app.web.modpack.ModPack
 import de.griefed.serverpackcreator.app.web.modpack.ModPackRepository
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
+import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackRepository
 import io.mockk.every
 import io.mockk.justRun
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import java.util.Optional
 import kotlin.io.path.createDirectories
 
 /**
@@ -54,15 +56,15 @@ class DatabaseCleanupScheduleTest {
 
     private lateinit var modpackRoot: Path
 
-    /** Builds the schedule over fresh directories, with the modpack repository answering [modpacks]. */
-    private fun schedule(modpacks: List<ModPack>): DatabaseCleanupSchedule {
+    /** Builds the schedule over fresh directories, with the repositories answering [modpacks]/[serverPacks]. */
+    private fun schedule(modpacks: List<ModPack>, serverPacks: List<ServerPack> = emptyList()): DatabaseCleanupSchedule {
         modpackRoot = tempDir.resolve("modpacks").also { it.createDirectories() }
         val apiProperties: ApiProperties = mockk()
         every { apiProperties.modpacksDirectory } returns modpackRoot.toFile()
         every { apiProperties.serverPacksDirectory } returns
                 tempDir.resolve("server-packs").also { it.createDirectories() }.toFile()
         every { modpackRepository.findAll() } returns modpacks
-        every { serverPackRepository.findAll() } returns emptyList()
+        every { serverPackRepository.findAll() } returns serverPacks
         justRun { modpackService.deleteModpack(any()) }
         return DatabaseCleanupSchedule(modpackRepository, modpackService, serverPackRepository, apiProperties)
     }
@@ -121,5 +123,31 @@ class DatabaseCleanupScheduleTest {
 
         verify(exactly = 0) { modpackService.deleteModpack(any()) }
         Assertions.assertTrue(modpackRoot.resolve("fileId.zip").toFile().exists())
+    }
+
+    @Test
+    fun aModpackRowWithoutAFileIdDoesNotAbortTheSweep() {
+        // modpack.fileID!! took the whole nightly pass down before anything was examined.
+        val schedule = schedule(listOf(ModPack().apply { assignEntityId(this, "noFile") }, modPack("packId", "fileId")))
+        modpackRoot.resolve("fileId.zip").toFile().writeText("still here")
+
+        sweep(schedule)
+
+        verify(exactly = 1) { modpackService.deleteModpack("noFile") }
+        verify(exactly = 0) { modpackService.deleteModpack("packId") }
+    }
+
+    @Test
+    fun aServerPackRowWithoutAFileIdDoesNotAbortTheSweep() {
+        // A server pack has no fileID until its generation finishes, so serverpack.fileID!! turns any
+        // pack still in flight at midnight into an exception that ends the pass.
+        val inFlight = ServerPack(0, null, null, "pack", null, "packId")
+            .apply { assignEntityId(this, "inFlight") }
+        val schedule = schedule(listOf(modPack("packId", "fileId")), listOf(inFlight))
+        modpackRoot.resolve("fileId.zip").toFile().writeText("still here")
+        every { modpackService.getByServerPack(any<ServerPack>()) } returns Optional.empty()
+        every { serverPackRepository.delete(any()) } returns Unit
+
+        Assertions.assertDoesNotThrow { sweep(schedule) }
     }
 }

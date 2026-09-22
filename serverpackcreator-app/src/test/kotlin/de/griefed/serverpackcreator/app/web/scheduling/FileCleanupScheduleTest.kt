@@ -170,4 +170,26 @@ class FileCleanupScheduleTest {
         Assertions.assertTrue(modpackRoot.resolve("keepThisOne.zip").toFile().exists())
         Assertions.assertFalse(modpackRoot.resolve("orphaned.zip").toFile().exists())
     }
+
+    @Test
+    fun aRepositoryThatReturnsNoRowsAtAllDoesNotWipeTheDirectory() {
+        // The sweep deletes what no row refers to, so "no rows" means "every file is an orphan". That is
+        // correct for a genuinely empty installation and catastrophic for one pointed at the wrong
+        // database -- and this project has already shipped a build that silently used Mongo's default
+        // `test` database. A destructive nightly job should not be the thing that discovers it.
+        //
+        // Asserted on the delete calls, not on the files: deleteStoredFile is mocked here, so "the file
+        // is still there" would pass even if the sweep had asked for it to be deleted.
+        val schedule = schedule(modpacks = emptyList(), serverPacks = emptyList())
+        modpackRoot.resolve("651f3c0e9a1b2c3d4e5f6071.zip").toFile().writeText("a real modpack")
+        modpackRoot.resolve("1700000000000-orig-pack.zip").toFile().writeText("a landing copy")
+        serverPackRoot.resolve("651f3c0e9a1b2c3d4e5f6072.zip").toFile().writeText("a real server pack")
+
+        sweep(schedule)
+
+        verify(exactly = 0) { modpackService.deleteStoredFile(any()) }
+        verify(exactly = 0) { serverPackService.deleteStoredFile(any()) }
+        Assertions.assertTrue(modpackRoot.resolve("1700000000000-orig-pack.zip").toFile().exists())
+        Assertions.assertTrue(serverPackRoot.resolve("651f3c0e9a1b2c3d4e5f6072.zip").toFile().exists())
+    }
 }
