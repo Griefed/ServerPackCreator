@@ -85,16 +85,18 @@ class StorageSystemTest {
     }
 
     @Test
-    fun deletingRemovesTheArchiveFromDiskButLeavesTheGridFsCopy() {
+    fun deletingRemovesBothCopiesOfTheFile() {
+        // Every stored file exists twice -- on disk and in GridFS -- so a delete that reclaims one of
+        // them leaves the database growing without bound, including for uploads that were rejected.
         val root = storageRoot()
         val storage = storageSystem(root)
+        every { gridFsTemplate.delete(any()) } returns Unit
         storage.store(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8)))
 
         storage.delete(objectId.toString())
 
         Assertions.assertFalse(root.resolve("$objectId.zip").toFile().exists())
-        // No GridFS delete exists to call: DatabaseStorageService has store and load only.
-        verify(exactly = 0) { gridFsOperations.delete(any()) }
+        verify(exactly = 1) { gridFsTemplate.delete(any()) }
     }
 
     @Test
