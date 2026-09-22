@@ -70,6 +70,14 @@ class DatabaseStorageService(
         return objectId
     }
 
+    /**
+     * Remove a file from GridFS. A file that is not there is not an error — `GridFsTemplate.delete`
+     * iterates the matches and deletes each, so an empty match is a no-op.
+     */
+    fun delete(id: String) {
+        gridFsTemplate.delete(query(id))
+    }
+
     /** Read a file back out of GridFS, as the metadata and the resource together. */
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
         val result = gridFsTemplate.findOne(query(id))
