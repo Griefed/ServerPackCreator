@@ -1,3 +1,108 @@
+## [9.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-beta.1...9.0.0-beta.2) (2026-09-22)
+
+### :scissors: Refactor
+
+* apply the five Qodana style notes that were actually improvements ([5194af2](https://git.griefed.de/Griefed/ServerPackCreator/commit/5194af2194ba3ea42d38eb2b0c2a534ca31e2901))
+* **api:** give the versionmeta snapshot locals speaking names ([2b4228b](https://git.griefed.de/Griefed/ServerPackCreator/commit/2b4228b14d79c4d318bdf3fcaf2149f87e41cfd9))
+* **app:** fold the four-site stdin test into ConsolePromptTest ([351a264](https://git.griefed.de/Griefed/ServerPackCreator/commit/351a2647188f422bc76540578586bcf7c56c8148))
+* **app:** read the home directory through ConsolePrompt ([7d09c22](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d09c22c20fb56510e3b9aee7fe3e6a174e83071))
+* **app:** return whether a headless verb did what it was asked ([4fcb499](https://git.griefed.de/Griefed/ServerPackCreator/commit/4fcb4990dbcdf9e818c88a163cab72348db44b1c))
+* **clientside:** let a guard see which client a fetcher got ([69c1584](https://git.griefed.de/Griefed/ServerPackCreator/commit/69c15849068c0f2bc0f9969054cacb93d2973513))
+* **grinder:** drop what the configuration extraction left behind ([5d5435e](https://git.griefed.de/Griefed/ServerPackCreator/commit/5d5435ebdabe9dc29a3abadff9de2e159d823efa))
+* **grinder:** give the snapshot cache a window it does not yet use ([05fed81](https://git.griefed.de/Griefed/ServerPackCreator/commit/05fed817d75b01a61343f670a5a011cbe8c5a08d))
+
+### ⏩ Performance
+
+* **grinder:** derive the report's selection once per store change ([d0c0e5a](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0c0e5abd33b1f3c8b9d2213dcee34467fe654bf))
+* **grinder:** page with subList instead of copying the tail ([b533afc](https://git.griefed.de/Griefed/ServerPackCreator/commit/b533afcc719809bba7a9a374721e321b43b60093))
+* **grinder:** stop the report walking the whole store per request ([8bfa261](https://git.griefed.de/Griefed/ServerPackCreator/commit/8bfa2612c1bcdeb6ed2b64d48359ea1c0b2b49ef))
+
+### 📔 Docs
+
+* audit the Qodana-817 remediation ([2f7c47e](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f7c47e4ac55c521e608a7d43ef2036e594962f0))
+* close B39 and half of B38, and open B40 for the baseline ([c7a2e37](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7a2e37e2d7b68f99b0bc34f4849f309c439a755))
+* close B40, and record why it landed by other means ([2f1ef98](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f1ef98cfaa3d6139434c3b73acf42bb02f6f36f))
+* close the analysis findings, and retract one of them ([ecc6234](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecc623450def3176ead6f9d1cb3da589c676273a))
+* close the Qodana-817 audit findings ([bc39f0b](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc39f0b20da6afd956d98327ecb22f0e9a5bd051))
+* close two audit findings on the 2026-09-19/20 commits ([710c2f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/710c2f78c78189eeebaf2687f1c9e170bba2c9b8))
+* correct three test counts, and record what the KDoc defect teaches ([a3a149b](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3a149bf17c4b224e479ab139480cc666f63eb87))
+* describe updating a server pack as a feature you can rely on ([2dafb32](https://git.griefed.de/Griefed/ServerPackCreator/commit/2dafb3293f72629cc985120a9d97bbecdadf50ef))
+* keep the hand-written 9.0.0-beta.1 release notes in the repo ([a88c08a](https://git.griefed.de/Griefed/ServerPackCreator/commit/a88c08aa0dafec39b262c13804f8b39a43d795b0))
+* reattach four KDoc blocks that had come loose from their declarations ([60ab1f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/60ab1f5cfb5b9ba918d107ddc9114e592588f01d))
+* reattach or retire fourteen more KDoc blocks that had come loose ([dae6834](https://git.griefed.de/Griefed/ServerPackCreator/commit/dae6834e0922a6291c17a325b3ae391e62f60d68))
+* reattach the two orphaned blocks the new guard found ([a6ec920](https://git.griefed.de/Griefed/ServerPackCreator/commit/a6ec9205690717d8827aa837998de864382250f0))
+* record M4 closed, with the mutation that proves each new guard ([52074eb](https://git.griefed.de/Griefed/ServerPackCreator/commit/52074ebc526a575652d41ae2d57274b338d7069a))
+* record that the root-level documents have two generated copies ([6414f91](https://git.griefed.de/Griefed/ServerPackCreator/commit/6414f9131aabaa3c1cb5abd9261574f36afea988))
+* record the Qodana verdicts and the scan's blind spot as B38 and B39 ([47a1603](https://git.griefed.de/Griefed/ServerPackCreator/commit/47a1603586dc3b315959745b966e426c6bcc0d5b))
+* the READMEs speak the six verdicts, not the deleted confidence scale ([57434cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/57434cbd3c58539bc8ccd24075b0b00ec0ff6fce))
+* **app:** record the ConsolePrompt landmine and why it exists ([f689fa4](https://git.griefed.de/Griefed/ServerPackCreator/commit/f689fa4bcba394bf20d0c3ed8b354330cfce763e))
+* **app:** record the exit-code contract and its landmine ([82f28d5](https://git.griefed.de/Griefed/ServerPackCreator/commit/82f28d54f61163a9938ce532bb266448166634bc))
+* **app:** say what `run` with no subcommand actually does ([8a6fa73](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a6fa73ddef172648e498ebdeeeb424fe99a1554))
+* **ci:** make the awk escaping comment readable ([762ec50](https://git.griefed.de/Griefed/ServerPackCreator/commit/762ec50a0334cb411d10c46edc8939b18e4b9cf4))
+* **ci:** record the two undeclared limits the release notes outgrew ([37f4e43](https://git.griefed.de/Griefed/ServerPackCreator/commit/37f4e43890369aa0d5e45405f2da27cdf7e4a66f))
+* **clientside:** landmine the per-instance HttpClient, and correct the count ([34fff82](https://git.griefed.de/Griefed/ServerPackCreator/commit/34fff8293ce1957d3f980591ab2d8f5a5b0f88b3))
+* **clientside:** restore the two arguments a deleted doc copy took with it ([9c76272](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c762727cbdc57cc24a6356fb90c1dbd1e97c9b3))
+* **grinder:** name the firewall rule that was never there ([d4fecb0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4fecb08e1b3d09c706ad3f24e21ee563daa8750))
+* **grinder:** record what the report cached and what it quietly did not ([c80ba52](https://git.griefed.de/Griefed/ServerPackCreator/commit/c80ba52d59acdf46ad947733c2bec136594b7a4f))
+* **grinder:** record why the report stopped answering ([eadf345](https://git.griefed.de/Griefed/ServerPackCreator/commit/eadf345fe60f7dc1ecc617924d48073ff493ea56))
+* **grinder:** the report was never wedged, and the docs said it was ([1239418](https://git.griefed.de/Griefed/ServerPackCreator/commit/123941812675d79f5d7c9543fa34f4808018c214))
+* **readme:** document generating a server pack from the commandline ([9de625c](https://git.griefed.de/Griefed/ServerPackCreator/commit/9de625cc409c3f3a0c7767273796053c6f344e9a))
+
+### 📦 Other
+
+* **qodana:** encode the twelve standing won't-fix verdicts ([8784620](https://git.griefed.de/Griefed/ServerPackCreator/commit/8784620ced9bb1b4a0412be965ebf4f346ab2ebe))
+* **qodana:** refuse the eleven style notes that were wrong or worse ([6b91956](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b91956e486eb6aea13c89bb19aaf12682bed023))
+
+### 🦊 CI/CD
+
+* **qodana:** generate the sources the scan cannot see ([2d2a2d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d2a2d6985a2f238fc8ed9d0566a2ce90e56e60b))
+
+### 🧪 Tests
+
+* **api:** close the update mechanism's remaining test debt ([2f37954](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f37954650a17959656f90df5ce0e4984739bac5))
+* **api:** pin that no KDoc block comes loose from its declaration ([5410807](https://git.griefed.de/Griefed/ServerPackCreator/commit/541080722877dfdf83815f6635904d1f1972907e))
+* **api:** pin what regenerating over an existing server pack does today ([65071b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/65071b62b9d5126409128add5868c4f4429151a6))
+* **api:** red pin for a first generation losing the local variables.txt ([b57efd7](https://git.griefed.de/Griefed/ServerPackCreator/commit/b57efd7e2a0cb42a120a74912de67c8ae67eafac))
+* **api:** red pin for a list-setting overwriting its own default ([942382d](https://git.griefed.de/Griefed/ServerPackCreator/commit/942382da60ddc7d238747accd069ad464bf20c64))
+* **api:** red pins for lazy mode ignoring protection and reporting nothing ([f5ef805](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5ef805c277221c72571315d504dcc92b50e6298))
+* **api:** red pins for what an update must guarantee ([960e186](https://git.griefed.de/Griefed/ServerPackCreator/commit/960e1864943d775fed8b87a7da46f520680cf1b1))
+* **app:** pin ConsolePrompt (RED) ([3d024a3](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d024a3ac9a6e30bfe1f4e0fa487761ebcd2204f))
+* **app:** pin that a path argument is reported, never thrown (RED) ([4a44b38](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a44b383f84a85d7aac06ee5d5c9b24648aa27fc))
+* **app:** pin that an interactive prompt leaves System.in open (RED) ([f2c0d3a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2c0d3a66103da39f849bf22b4f43f22e9c16fa0))
+* **app:** pin that lang accepts the locale it displayed (RED) ([2f38d92](https://git.griefed.de/Griefed/ServerPackCreator/commit/2f38d926218deb6996d459ff4f5cce6aa8cdd238))
+* **app:** pin the headless outcomes (one RED) ([f4df200](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4df200a2bc3f10ec96b04c7a04a7517f91daa01))
+* **clientside:** red pin for a new HttpClient per fetcher ([c7906d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7906d68e60c30c303cf876da3bcfd36ec4bd2b7))
+* **grinder:** red pins for the three ways the report scales with the store ([bfae849](https://git.griefed.de/Griefed/ServerPackCreator/commit/bfae8499b46f5bf93217ddeee015964c31a680ee))
+
+### 🚀 Features
+
+* **api:** make updating an existing server pack safe for a running server ([ee629eb](https://git.griefed.de/Griefed/ServerPackCreator/commit/ee629ebffbd130fcf35800d7ad12f33ab21dd0ec))
+* **app:** implement ConsolePrompt ([80df991](https://git.griefed.de/Griefed/ServerPackCreator/commit/80df991d272be2d5e428cb524ce8ebb714e04d4c))
+* **app:** take Update Server Packs out of its experimental state ([006e46a](https://git.griefed.de/Griefed/ServerPackCreator/commit/006e46aa4eb4d5225157818738affdc0edda61a4))
+* **build:** name the AppImage _experimental, and stop spelling that name twice ([74a73b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/74a73b31c3ad283ac8049c39fd18b04e16290ea1))
+* **grinder:** serve the report through the cache, on a configurable pool ([148ccb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/148ccb3851077c894ab0c2fd682d763d79aaca33))
+
+### 🛠 Fixes
+
+* **api:** decide preservation once, and stop lazy mode ignoring it ([5bc4e27](https://git.griefed.de/Griefed/ServerPackCreator/commit/5bc4e2743c23d55b36e6460ac05bc792bc099c0e))
+* **api:** keep server.properties and variables.txt in an updated pack's archive ([6ac06c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/6ac06c3fffceb15c550f79e50ecff330a84adf59))
+* **api:** stop a list-setting from overwriting its own shipped default ([011af4f](https://git.griefed.de/Griefed/ServerPackCreator/commit/011af4f762e6fa34d6a08ad416cff10665c658fb))
+* **app:** ask for a config file, not a home directory ([b2cd0ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/b2cd0abe231db2e010cabf74b3c9f82f07330147))
+* **app:** exit non-zero when a one-shot run failed ([caa24ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/caa24ed9b92407161abdd333ba5403ec9153348a))
+* **app:** offer the locales lang actually accepts ([0b58755](https://git.griefed.de/Griefed/ServerPackCreator/commit/0b5875524b1443b3f44e921d9cbf306999703493))
+* **app:** report a bad path to a headless verb instead of throwing ([c539cfd](https://git.griefed.de/Griefed/ServerPackCreator/commit/c539cfd386844b28198a7473166d002923270a74))
+* **app:** report a configs-directory that cannot be read ([43e649e](https://git.griefed.de/Griefed/ServerPackCreator/commit/43e649e8f87b1de9a051ec561dce2126d9d3c247))
+* **app:** say "directory" when cgen rejects a non-directory ([b6dd98b](https://git.griefed.de/Griefed/ServerPackCreator/commit/b6dd98bff7e4ebde77821484e712643f9de05579))
+* **app:** stop the interactive prompts closing System.in ([b4c8e41](https://git.griefed.de/Griefed/ServerPackCreator/commit/b4c8e41338d985b0f605493d29986ec02d04f59a))
+* **build:** package the api javadoc jar during build, not just generate it ([4e58c66](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e58c6654953b7f0e65af11676c7a881f9d03424))
+* **build:** publish the library, not just its javadoc ([5229508](https://git.griefed.de/Griefed/ServerPackCreator/commit/522950845f68985a17bc767e8cec88935850b702))
+* **ci:** cap the mirrored GitHub release body at 125,000 characters ([e4f1c53](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4f1c53a61088ae82b058b5c44e2bb9e9237a6e2))
+* **ci:** escape the changelog version where awk cannot undo it ([7b5b3a3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b5b3a3c574092f288e4cccc03113f54e3ce5019))
+* **ci:** skip assets the Forgejo release already carries ([02dd499](https://git.griefed.de/Griefed/ServerPackCreator/commit/02dd4996684e9dfa9cf1b904f4927af63b0f6afb))
+* **ci:** stop curl -sf hiding why a release step failed ([f889895](https://git.griefed.de/Griefed/ServerPackCreator/commit/f889895fc7ec9e4ef80e7674c8424f856b1b20de))
+* **ci:** the release body travels in a file, never in curl's argv ([ae3102c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae3102c00e7002d8e378faad18d39adcedfe151a))
+* **clientside:** share one HttpClient instead of one per fetcher ([5f78389](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f7838997e646d9a00e8d9fc3e652070a6ec3499))
+
 ## [9.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.2...9.0.0-beta.1) (2026-09-15)
 
 ### ⚠ BREAKING CHANGES
