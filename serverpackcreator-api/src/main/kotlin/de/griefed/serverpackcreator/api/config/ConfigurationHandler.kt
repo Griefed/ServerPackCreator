@@ -284,7 +284,6 @@ class ConfigurationHandler(
         }
 
         val modpack = File(packConfig.modpackDir)
-        scanModpackForInfections(packConfig, configCheck, scan)
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))
@@ -324,6 +323,10 @@ class ConfigurationHandler(
             configCheck.modpackErrors.add(Translations.configuration_log_error_checkmodpackdir.toString())
             log.error("Modpack directory not specified. Please specify an existing directory. Specified: ${packConfig.modpackDir}")
         }
+
+        // After the branch, not before it: for a ZIP source isZip has now extracted the archive and
+        // repointed modpackDir at the directory, which is the only thing Nekodetector can walk.
+        scanModpackForInfections(packConfig, configCheck, scan)
 
         if (checkModloader(packConfig.modloader, configCheck).modloaderChecksPassed) {
             log.debug("modLoader settings check passed.")
