@@ -246,7 +246,24 @@ class ConfigurationHandler(
      * @return `false` if all checks are passed.
      * @author Griefed
      */
-    fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck {
+    fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck =
+        checkConfiguration(packConfig, configCheck, quietCheck) { SecurityScans.scanUsingNekodetector(it) }
+
+    /**
+     * The body of [checkConfiguration], with the malware scan injectable.
+     *
+     * `internal` and not part of the published surface: it exists so a test can observe *what* gets
+     * scanned, which is not otherwise visible — the scanner reports findings, never its target, and a
+     * scan of the wrong path is indistinguishable from a clean one.
+     *
+     * @param scan The scan to run over the modpack; defaults to the real Nekodetector.
+     */
+    internal fun checkConfiguration(
+        packConfig: PackConfig,
+        configCheck: ConfigCheck,
+        quietCheck: Boolean,
+        scan: (Path) -> List<String>
+    ): ConfigCheck {
         // The single choke point every validating caller passes through -- CLI, interactive shell, web and
         // embedders alike -- which is why the wait lives here rather than at four call sites.
         //
@@ -267,11 +284,7 @@ class ConfigurationHandler(
         }
 
         val modpack = File(packConfig.modpackDir)
-        log.info("Performing security scans")
-        log.info("Performing Nekodetector scan")
-        if (modpack.isDirectory) {
-            configCheck.otherErrors.addAll(nekodetectorFindings(modpack.toPath()))
-        }
+        scanModpackForInfections(packConfig, configCheck, scan)
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))
@@ -555,6 +568,33 @@ class ConfigurationHandler(
         file = File(packName, "server.properties")
         if (file.exists()) {
             packConfig.serverPropertiesPath = file.absolutePath
+        }
+        return configCheck
+    }
+
+    /**
+     * Run the malware scan over the modpack and fold its findings into [configCheck].
+     *
+     * Reads the modpack directory from [packConfig] at call time rather than from a value captured
+     * earlier: for a ZIP source `modpackDir` names the archive until [isZip] has extracted it and
+     * repointed the field, and a scan of a `.zip` is silently a scan of nothing.
+     *
+     * @param packConfig  The configuration whose modpack is scanned.
+     * @param configCheck Collection the findings are added to.
+     * @param scan        The scan to run; defaults to the real Nekodetector.
+     */
+    internal fun scanModpackForInfections(
+        packConfig: PackConfig,
+        configCheck: ConfigCheck,
+        scan: (Path) -> List<String> = { SecurityScans.scanUsingNekodetector(it) }
+    ): ConfigCheck {
+        val modpack = File(packConfig.modpackDir)
+        log.info("Performing security scans")
+        log.info("Performing Nekodetector scan")
+        if (modpack.isDirectory) {
+            configCheck.otherErrors.addAll(nekodetectorFindings(modpack.toPath(), scan))
+        } else {
+            log.warn("Nekodetector scan skipped: ${packConfig.modpackDir} is not a directory.")
         }
         return configCheck
     }
