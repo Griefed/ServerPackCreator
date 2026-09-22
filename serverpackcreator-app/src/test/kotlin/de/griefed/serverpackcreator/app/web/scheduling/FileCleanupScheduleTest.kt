@@ -99,8 +99,9 @@ class FileCleanupScheduleTest {
     }
 
     @Test
-    fun theLandingCopyOfAnUploadIsSweptBecauseItsNameCarriesNoId() {
-        // StorageSystem leaves "<millis>-orig-<name>" behind on every upload; this is what reclaims it.
+    fun aLandingCopyLeftBehindByACrashIsSweptBecauseItsNameCarriesNoId() {
+        // saveUploadedFile now deletes its own "<millis>-orig-<name>" copy in a finally block, so this
+        // is no longer the routine path -- it is the backstop for a crash between landing and cleanup.
         val schedule = schedule(modpacks = listOf(modPack("keepThisOne")), serverPacks = emptyList())
         modpackRoot.resolve("keepThisOne.zip").toFile().writeText("kept")
         modpackRoot.resolve("1700000000000-orig-All The Mods 9.zip").toFile().writeText("landing copy")

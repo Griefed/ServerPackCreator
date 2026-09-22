@@ -59,8 +59,15 @@ class StorageSystem(
         gridFsOperations
     )
 
-    /** Store an uploaded file, returning what was written — empty when the store failed. */
-    fun store(file: MultipartFile): Optional<SavedFile> {
+    /**
+     * Land an upload in the storage root **without** committing it, so it can be validated and hashed
+     * before anything durable is written.
+     *
+     * The caller owns the returned file and must delete it. Committing is [store]; nothing here reaches
+     * GridFS or the archive's final name, which is the point — a rejected upload used to cost all three
+     * writes, and the GridFS one could never be reclaimed because the sweep works back from ModPack rows.
+     */
+    fun land(file: MultipartFile): Optional<File> {
         val uploadName = landingName(file)
         val root = fsStorageService.rootLocation.toAbsolutePath().normalize()
         val destination = root.resolve("${System.currentTimeMillis()}-orig-$uploadName").normalize()
@@ -73,7 +80,7 @@ class StorageSystem(
         }
         return try {
             file.transferTo(destination.toFile())
-            store(destination.toFile())
+            Optional.of(destination.toFile())
         } catch (failure: IOException) {
             // ModPackController catches StorageException only, so anything else escaping here is an
             // unhandled 500 -- and the shipped application.properties sets include-stacktrace=ALWAYS.
@@ -100,6 +107,9 @@ class StorageSystem(
         val baseName = candidate.replace('\\', '/').substringAfterLast('/').trim()
         return baseName.ifBlank { file.name.ifBlank { "upload" } }
     }
+
+    /** The SHA-256 of a file, for a caller that needs it before deciding whether to keep the file. */
+    fun sha256Of(file: File): String = fsStorageService.sha256Of(file)
 
     /** Store a file already on disk, for a generated archive rather than an upload. */
     fun store(file: File): Optional<SavedFile> {

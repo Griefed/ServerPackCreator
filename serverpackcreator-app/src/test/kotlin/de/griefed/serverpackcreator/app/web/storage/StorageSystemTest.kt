@@ -60,26 +60,42 @@ class StorageSystemTest {
     }
 
     @Test
-    fun storingAnUploadKeepsBothTheTemporaryCopyAndTheFinalArchive() {
+    fun landingAnUploadWritesOnlyTheLandingCopy() {
+        // Landing is deliberately not committing: nothing durable exists until store() is called, so a
+        // caller can validate the archive first and walk away without having written to GridFS.
         val root = storageRoot()
         val upload = MockMultipartFile("file", "All The Mods 9.zip", "application/zip", ByteArray(64) { 3 })
 
-        val saved = storageSystem(root).store(upload).get()
+        val landed = storageSystem(root).land(upload).get()
 
-        val names = root.listDirectoryEntries().map { it.fileName.toString() }.sorted()
-        // Two files for one upload: the "<millis>-orig-<name>" landing copy is never removed, and is
-        // reclaimed only by FileCleanupSchedule at 00:30.
-        Assertions.assertEquals(2, names.size)
-        Assertions.assertEquals("651f3c0e9a1b2c3d4e5f6071.zip", names.first { !it.contains("-orig-") })
-        Assertions.assertTrue(names.any { it.endsWith("-orig-All The Mods 9.zip") })
+        val names = root.listDirectoryEntries().map { it.fileName.toString() }
+        Assertions.assertEquals(1, names.size)
+        Assertions.assertTrue(landed.name.endsWith("-orig-All The Mods 9.zip"), landed.name)
+        verify(exactly = 0) { gridFsTemplate.store(any<InputStream>(), any<String>(), any<Any>()) }
+    }
+
+    @Test
+    fun committingALandedUploadNamesTheArchiveAfterTheMintedIdAndKeepsTheDisplayName() {
+        val root = storageRoot()
+        val storage = storageSystem(root)
+        val landed = storage.land(
+            MockMultipartFile("file", "All The Mods 9.zip", "application/zip", ByteArray(64) { 3 })
+        ).get()
+
+        val saved = storage.store(landed).get()
+
+        Assertions.assertEquals("651f3c0e9a1b2c3d4e5f6071.zip", saved.file.fileName.toString())
         Assertions.assertEquals("All The Mods 9.zip", saved.originalName)
     }
 
     @Test
-    fun storingWritesAFullCopyIntoGridFsAsWellAsToDisk() {
+    fun committingWritesAFullCopyIntoGridFsAsWellAsToDisk() {
         // The object id GridFS mints is what names the file on disk, so the database write is not
-        // optional today: every stored byte exists twice.
-        storageSystem(storageRoot()).store(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8)))
+        // optional: every committed byte exists twice, which is why delete has to reclaim both.
+        val storage = storageSystem(storageRoot())
+        val landed = storage.land(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8))).get()
+
+        storage.store(landed)
 
         verify(exactly = 1) { gridFsTemplate.store(any<InputStream>(), any<String>(), any<Any>()) }
     }
@@ -91,7 +107,7 @@ class StorageSystemTest {
         val root = storageRoot()
         val storage = storageSystem(root)
         every { gridFsTemplate.delete(any()) } returns Unit
-        storage.store(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8)))
+        storage.store(storage.land(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8))).get())
 
         storage.delete(objectId.toString())
 
@@ -103,7 +119,7 @@ class StorageSystemTest {
     fun loadReturnsTheArchiveWhenItIsOnDisk() {
         val root = storageRoot()
         val storage = storageSystem(root)
-        storage.store(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8)))
+        storage.store(storage.land(MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(8))).get())
 
         Assertions.assertTrue(storage.load(objectId.toString()).isPresent)
     }
@@ -117,12 +133,12 @@ class StorageSystemTest {
         val root = storageRoot()
         val upload = MockMultipartFile("file", "../../../escaped.zip", "application/zip", ByteArray(16) { 5 })
 
-        val saved = storageSystem(root).store(upload)
+        val landed = storageSystem(root).land(upload)
 
-        Assertions.assertTrue(saved.isPresent, "a hostile filename must not fail the upload outright")
+        Assertions.assertTrue(landed.isPresent, "a hostile filename must not fail the upload outright")
         Assertions.assertTrue(
-            saved.get().file.toAbsolutePath().normalize().startsWith(root.toAbsolutePath().normalize()),
-            "stored outside the root: ${saved.get().file}"
+            landed.get().toPath().toAbsolutePath().normalize().startsWith(root.toAbsolutePath().normalize()),
+            "stored outside the root: ${landed.get()}"
         )
         Assertions.assertFalse(
             tempDir.resolve("escaped.zip").toFile().exists(),
@@ -132,10 +148,12 @@ class StorageSystemTest {
 
     @Test
     fun anUploadWhoseFilenameCarriesPathSegmentsKeepsOnlyItsBaseNameForDisplay() {
-        val saved = storageSystem(storageRoot())
-            .store(MockMultipartFile("file", "../../../escaped.zip", "application/zip", ByteArray(16)))
+        val storage = storageSystem(storageRoot())
+        val landed = storage.land(
+            MockMultipartFile("file", "../../../escaped.zip", "application/zip", ByteArray(16))
+        ).get()
 
-        Assertions.assertEquals("escaped.zip", saved.get().originalName)
+        Assertions.assertEquals("escaped.zip", storage.store(landed).get().originalName)
     }
 
     @Test
@@ -145,6 +163,6 @@ class StorageSystemTest {
         val root = storageRoot()
         val upload = MockMultipartFile("file", "sub/dir/pack.zip", "application/zip", ByteArray(16))
 
-        Assertions.assertDoesNotThrow { storageSystem(root).store(upload) }
+        Assertions.assertDoesNotThrow { storageSystem(root).land(upload) }
     }
 }
