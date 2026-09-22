@@ -38,6 +38,7 @@ import java.net.InetSocketAddress
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -63,6 +64,9 @@ import java.util.concurrent.Executors
  *                  simply offers no links, so the report stays constructible without a log store.
  * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
  *                re-verification is visible rather than inferred from the logs.
+ * @param reportCacheMaxAge How long a whole-store derivation may be reused after the store has moved on, so
+ *        a busy grind cannot force it to be redone per request. [java.time.Duration.ZERO] serves a strictly
+ *        live report and pays the full cost every time something is recorded.
  * @author Griefed
  */
 class ReportServer(
@@ -75,9 +79,26 @@ class ReportServer(
     private val fallbackLists: (() -> FallbackLists)? = null,
     private val crashLogs: BootLogStore? = null,
     private val consoleRules: (() -> ConsoleRuleSet)? = null,
-    private val requeue: RequeueStore? = null
+    private val requeue: RequeueStore? = null,
+    private val httpThreads: Int = DEFAULT_HTTP_THREADS,
+    reportCacheMaxAge: Duration = VerdictSnapshotCache.DEFAULT_MAX_AGE
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * The store's derivations, rebuilt when a verdict is recorded **and** the coalescing window has passed.
+     *
+     * Every endpoint that reads rows goes through this — including `/as-properties`, which used to call
+     * `store.all()` directly and was therefore the one endpoint the caching never covered, despite being the
+     * one polled unattended by every SPC instance in the wild.
+     *
+     * Before the cache, each request re-sorted the whole store and re-gathered every filter column across it
+     * — 251 ms at 38,258 verdicts, against 3 ms to render the 250 rows actually sent. The window is what
+     * makes that hold *during a grind*: `record()` moves the version on every verdict, so without one
+     * several workers guarantee a new version between almost any two requests and the cache degrades to
+     * nothing exactly when the daemon is busiest.
+     */
+    private val snapshots = VerdictSnapshotCache(store, maxAge = reportCacheMaxAge)
 
     /**
      * The tab icon, read off the classpath once and held: it is a few kilobytes and every page load asks for
@@ -131,7 +152,7 @@ class ReportServer(
             // the slug-then-loader tie-break rather than costing a directory listing for a column nobody is
             // exporting. Every other sort behaves identically to the table's.
             val selection = VerdictSelection.select(
-                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+                snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
             exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
             respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
@@ -145,7 +166,7 @@ class ReportServer(
         // still travels, so a client that does ask for a page knows where in the set it landed.
         server.createContext("/verdicts.json") { exchange ->
             val selection = VerdictSelection.select(
-                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+                snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
             respond(exchange, "application/json; charset=utf-8", verdictsJson(selection))
         }
@@ -196,7 +217,7 @@ class ReportServer(
                 "text/html; charset=utf-8",
                 VerdictReportRenderer.toHtml(
                     VerdictSelection.select(
-                        store.all(),
+                        snapshots.current(),
                         VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE),
                         // The same snapshot the renderer reads from, so the count a row is SORTED by and the
                         // links it then shows cannot disagree -- and still one listing per request.
@@ -207,9 +228,9 @@ class ReportServer(
                 }
             )
         }
-        pool = Executors.newFixedThreadPool(2).also { server.executor = it }
+        pool = Executors.newFixedThreadPool(httpThreads.coerceAtLeast(1)).also { server.executor = it }
         server.start()
-        log.info("Grinder report available at http://${server.address.hostString}:$port/")
+        log.info("Grinder report available at http://${server.address.hostString}:$port/ ($httpThreads request threads)")
         return this
     }
 
@@ -221,7 +242,10 @@ class ReportServer(
     private fun fallbackProperties(): String {
         val lists = fallbackLists?.let { source -> runCatching { source() }.getOrNull() }
             ?: FallbackLists(emptyList(), emptyList())
-        return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, store.all())
+        // Through the snapshot, not store.all(): this was the one endpoint the cache never covered, and it is
+        // the one polled unattended by every SPC instance in the wild -- so it was a whole-store copy per
+        // poll, by the endpoint least able to afford one. The rows are the same rows the table serves.
+        return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, snapshots.current().verdicts)
     }
 
     /**
@@ -302,15 +326,6 @@ class ReportServer(
     }
 
     /**
-     * The live activity document: what the daemon is doing *now*, as opposed to what it has found. Answers the
-     * operator question the verdict table cannot — which pass, which candidate each worker holds and for how
-     * long, where the crawl stands per platform, and how big the install cache has grown.
-     *
-     * Serialized with Jackson rather than hand-built, so a mod slug containing quotes or braces cannot break the
-     * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
-     * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
-     */
-    /**
      * One page of the verdict feed: the rows themselves plus where in the set they sit. `total` is the
      * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
      * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
@@ -327,9 +342,20 @@ class ReportServer(
             .getOrElse { "{\"error\":\"verdicts unavailable\"}" }
     }
 
+    /**
+     * The live activity document: what the daemon is doing *now*, as opposed to what it has found. Answers the
+     * operator question the verdict table cannot — which pass, which candidate each worker holds and for how
+     * long, where the crawl stands per platform, and how big the install cache has grown.
+     *
+     * Serialized with Jackson rather than hand-built, so a mod slug containing quotes or braces cannot break the
+     * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
+     * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
+     */
     private fun statusJson(): String {
         val document = linkedMapOf<String, Any?>(
-            "verdicts" to store.all().size,
+            // `count`, never `all().size` -- the latter allocates a list of every verdict to read one integer,
+            // and this document is what the dashboard polls on a timer.
+            "verdicts" to store.count,
             // How much work is waiting in the jump-the-crawl lane. Read live: an operator queueing a re-grind
             // wants to see it land, and a backlog that never shrinks is the symptom of a stalled pass.
             "requeued" to requeue?.pending(),
@@ -388,9 +414,19 @@ class ReportServer(
     /** Where the bundled tab icon lives. Private: which resource backs the icon routes is nobody else's business. */
     companion object {
         /**
+         * Request threads the report serves with.
+         *
+         * Four rather than the two it was: the JDK's HTTP server hands every request to this pool, so a
+         * request that blocks takes a whole thread with it and the server simply stops answering — including
+         * the endpoints that cost nothing, which is what a wedged instance looks like from outside.
+         */
+        const val DEFAULT_HTTP_THREADS = 4
+
+        /**
          * Classpath location of the tab icon, resolved relative to this class's package so it travels with the
          * jar. It is ServerPackCreator's own configuration glyph (`img/config.png`), the same mark the app uses.
          */
         private const val FAVICON_RESOURCE = "favicon.png"
     }
+
 }

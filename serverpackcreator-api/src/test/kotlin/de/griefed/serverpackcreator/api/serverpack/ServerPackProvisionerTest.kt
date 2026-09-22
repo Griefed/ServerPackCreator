@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.awt.image.BufferedImage
 import java.io.File
+import java.util.zip.ZipFile
 import java.net.MalformedURLException
 import java.net.URI
 import java.util.*
@@ -296,5 +297,48 @@ internal class ServerPackProvisionerTest {
 
         Assertions.assertFalse(File(destination, "fabric-server-launcher.jar").exists())
         Assertions.assertFalse(File(destination, "SERVER_PACK_INFO.txt").exists())
+    }
+
+    /**
+     * The ZIP-exclusion *preference* and the caller-supplied exclusion are two different things, and
+     * only one of them is optional.
+     *
+     * `zipBuilder` used to install its `ExcludeFileFilter` only when
+     * `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled` was set; it now installs one
+     * unconditionally, because an update has to keep a running server's world and player-data out of
+     * an archive meant to be handed to other people whatever that preference says. With the
+     * preference off, the configured list must still be ignored -- that is what the preference means.
+     */
+    @Test
+    fun theCallersExclusionAppliesEvenWithTheZipExclusionPreferenceOff(@TempDir tempDir: File) {
+        val originalEnabled = apiProperties.isZipFileExclusionEnabled
+        try {
+            apiProperties.isZipFileExclusionEnabled = false
+            apiProperties.zipArchiveExclusions = TreeSet(listOf("server.jar"))
+            val destination = File(tempDir, "pack").also { it.mkdirs() }
+            File(destination, "server.jar").writeText("the configured exclusion")
+            File(destination, "ops.json").writeText("the caller's exclusion")
+            File(destination, "mods").mkdirs()
+            File(destination, "mods/alpha.jar").writeText("a mod")
+
+            provisioner.zipBuilder("1.20.1", destination.absolutePath, "Forge", "47.4.0") { candidate ->
+                candidate.name == "ops.json"
+            }
+
+            val entries = ZipFile(File(destination.absolutePath + "_server_pack.zip")).use { zip ->
+                zip.entries().toList().map { it.name }
+            }
+            Assertions.assertTrue(
+                entries.any { it == "server.jar" },
+                "With the preference off the configured exclusions must be ignored, got $entries"
+            )
+            Assertions.assertTrue(
+                entries.none { it == "ops.json" },
+                "but the caller's exclusion still applies, got $entries"
+            )
+            Assertions.assertTrue(entries.any { it == "mods/alpha.jar" }, "and everything else is archived")
+        } finally {
+            apiProperties.isZipFileExclusionEnabled = originalEnabled
+        }
     }
 }

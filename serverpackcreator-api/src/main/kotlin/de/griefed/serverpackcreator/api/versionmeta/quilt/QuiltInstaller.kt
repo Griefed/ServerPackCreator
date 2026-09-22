@@ -75,7 +75,7 @@ internal class QuiltInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
-        val next_installers = ArrayList<String>(100)
+        val nextInstallers = ArrayList<String>(100)
         val document: Document = utilities.xmlUtilities.getXml(manifest)
         val latestElements = document.getElementsByTagName(latest)
         val latestNode = latestElements.item(0)
@@ -104,7 +104,7 @@ internal class QuiltInstaller(
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            next_installers.add(item.nodeValue)
+            nextInstallers.add(item.nodeValue)
         }
         installerUrlMeta.clear()
         for (version in installers) {
@@ -116,7 +116,7 @@ internal class QuiltInstaller(
         }
             // Published in one assignment each, as unmodifiable views: a `List`-typed field still
         // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
-        installers = Collections.unmodifiableList(next_installers)
+        installers = Collections.unmodifiableList(nextInstallers)
 }
 
     /**

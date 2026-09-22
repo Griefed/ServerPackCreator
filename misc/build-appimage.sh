@@ -405,7 +405,13 @@ if [ "$CROSS_PACKAGING" = true ]; then
 else
     echo -e "${YELLOW}Building AppImage natively for ${BUILD_ARCH}...${NC}"
 fi
-OUTPUT_APPIMAGE="${APP_NAME}-${APP_VERSION}-${BUILD_ARCH}.AppImage"
+# `_experimental` is part of the name on purpose, and this is the ONE place that decides it: the
+# AppImage is far newer than the install4j installers, ships a JDK the project does not otherwise
+# distribute, and the aarch64 one is cross-packaged rather than built on the architecture it targets.
+# A user picking a download should be able to see that from the filename alone. Nothing else hardcodes
+# the name -- the workflows glob `ServerPackCreator-*.AppImage` precisely so this stays a single
+# decision (a bare `*.AppImage` would also match the `appimagetool-*.AppImage` downloaded beside it).
+OUTPUT_APPIMAGE="${APP_NAME}-${APP_VERSION}-${BUILD_ARCH}_experimental.AppImage"
 rm -f "$OUTPUT_APPIMAGE"
 
 ARCH=${BUILD_ARCH} "$APPIMAGETOOL" "$APP_DIR" "$OUTPUT_APPIMAGE"

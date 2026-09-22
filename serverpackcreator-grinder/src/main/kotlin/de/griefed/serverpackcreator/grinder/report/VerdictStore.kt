@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.report
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Where verdicts accumulate during a grind. A production implementation persists so a multi-day,
@@ -37,6 +38,27 @@ interface VerdictStore {
 
     /** Every recorded verdict, in no guaranteed order (the table/CSV layer sorts). */
     fun all(): List<GrindVerdict>
+
+    /**
+     * How many verdicts are held, **without materialising them**.
+     *
+     * Defaulted to [all]'s size so an implementation that has no cheaper answer needs no ceremony, and
+     * overridden by both real stores, which are map-backed and can answer in O(1). The default is the reason
+     * this exists: `/status` asked `all().size`, allocating a list of every verdict to look at one integer,
+     * on the endpoint the dashboard polls on a timer.
+     */
+    val count: Int
+        get() = all().size
+
+    /**
+     * Bumped on every [record], so a reader can tell whether something it derived from [all] is still current.
+     *
+     * A count of rows cannot answer that — recording replaces by identity, so a re-grind leaves the size
+     * unchanged while changing what the report must show. The report derives a sorted order and a set of
+     * filter choices across the whole store on every request, which is far too expensive to repeat while
+     * nothing has changed.
+     */
+    val version: Long
 
     /**
      * Persist anything buffered, if this store buffers at all.
@@ -167,6 +189,10 @@ internal fun supersededLoaderKeys(verdict: GrindVerdict, keys: Collection<String
  */
 class InMemoryVerdictStore : VerdictStore {
     private val verdicts = ConcurrentHashMap<String, GrindVerdict>()
+    private val revision = AtomicLong()
+
+    override val version: Long
+        get() = revision.get()
 
     override fun record(verdict: GrindVerdict) {
         // Drop the id-less row for this project first, so an identified verdict replaces it rather than
@@ -176,7 +202,12 @@ class InMemoryVerdictStore : VerdictStore {
         // re-ground: a sweep on any other trigger would discard evidence before a replacement exists.
         supersededLoaderKeys(verdict, verdicts.keys).forEach { verdicts.remove(it) }
         verdicts[verdict.identityKey()] = verdict
+        revision.incrementAndGet()
     }
 
     override fun all(): List<GrindVerdict> = verdicts.values.toList()
+
+    /** Straight off the map, so counting never copies. */
+    override val count: Int
+        get() = verdicts.size
 }

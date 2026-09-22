@@ -10,10 +10,11 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B38**, with the reason it waited and enough context to pick
+Add the next item under a dated section, starting at **B41**, with the reason it waited and enough context to pick
 it up cold. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
-see `REFACTOR-LOG.md`.
+see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
+2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
 
 ## 2026-09-11 — from the UNVERIFIABLE pass
 

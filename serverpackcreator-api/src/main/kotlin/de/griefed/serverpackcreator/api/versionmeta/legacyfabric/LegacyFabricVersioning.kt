@@ -74,23 +74,23 @@ internal abstract class LegacyFabricVersioning(
      */
     @Throws(IOException::class)
     fun update() {
-        val next_releases = ArrayList<String>(100)
-        val next_snapshots = ArrayList<String>(100)
-        val next_allVersions = ArrayList<String>(200)
+        val nextReleases = ArrayList<String>(100)
+        val nextSnapshots = ArrayList<String>(100)
+        val nextAllVersions = ArrayList<String>(200)
         for (node in utilities.jsonUtilities.getJson(manifest)) {
             val version: String = node.get(VersionMetaConfig.TAG_VERSION).asText()
             val stable = node.get(VersionMetaConfig.TAG_STABLE).asBoolean()
-            next_allVersions.add(version)
+            nextAllVersions.add(version)
             if (stable) {
-                next_releases.add(version)
+                nextReleases.add(version)
             } else {
-                next_snapshots.add(version)
+                nextSnapshots.add(version)
             }
         }
             // Published in one assignment each, as unmodifiable views: a `List`-typed field still
         // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
-        releases = Collections.unmodifiableList(next_releases)
-        snapshots = Collections.unmodifiableList(next_snapshots)
-        allVersions = Collections.unmodifiableList(next_allVersions)
+        releases = Collections.unmodifiableList(nextReleases)
+        snapshots = Collections.unmodifiableList(nextSnapshots)
+        allVersions = Collections.unmodifiableList(nextAllVersions)
 }
 }

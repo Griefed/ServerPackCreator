@@ -45,6 +45,41 @@ jobs:
         with:
           fetch-depth: 0
 
+      # B39. The scan used to run against a raw checkout, so i18n4k's generated `Translations` and
+      # `Example` objects did not exist during analysis and 85 source files referenced a symbol the
+      # scanner could not resolve. A file with an unresolved core symbol is analysed with its
+      # inspections DEGRADED, so the low finding count for -app was not evidence that -app was clean.
+      # Run 832 (revision d97a6e188) carried 35 sanity failures on exactly that: 30 x "Unresolved
+      # reference Translations" and 5 x "Unresolved reference Example", split -app 24 / -api 6 /
+      # -plugin-example 5.
+      #
+      # These three steps are what close that. Measured on a clean checkout: the generation costs
+      # 23.0 s with every task re-executed and no build cache, 16.4 s with one -- against a scan that
+      # takes minutes, which is why the extra dependency resolution is worth it.
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      # `generateI18n4kFiles` resolves in -api and -plugin-example, `kaptKotlin` in both plugin
+      # modules -- exactly the three modules the sanity failures came from. kaptKotlin drags in
+      # :serverpackcreator-api:compileKotlin, which is a feature rather than a cost: it means -app is
+      # analysed against a compiled -api rather than against sources alone.
+      #
+      # NOT `build`: the scan needs the generated SOURCES to exist, not the artifacts, and a full build
+      # here would cost the frontend, the license report and the test suites for nothing.
+      - name: Generate the sources the scan cannot see
+        run: |
+          chmod +x gradlew
+          ./gradlew generateI18n4kFiles kaptKotlin
+
       - name: Cache Qodana
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -87,6 +122,13 @@ jobs:
       # (`-v /workspace`); without it nothing propagates to the sibling.
       # The /data-mount form was the one proven by a local run against this repo; this workspace-path
       # form has NOT been run locally, so the first CI run is its proof.
+      # THE GENERATED SOURCES MUST ALREADY EXIST when this runs -- that is the codegen step above, which
+      # closed B39. Do not delete it and do not move it below this step. Without it i18n4k's `Translations`
+      # and `Example` objects are absent, 85 source files (79 of them in -app) reference an unresolved
+      # symbol, and every one of those files is analysed with its inspections DEGRADED. The failure is
+      # silent in the worst possible direction: it LOWERS the finding count, so a broken scan reads as a
+      # clean report. The regression signal is therefore the sanity-failure count in results/sanity.json,
+      # not the problem count -- 35 on run 817 and still 35 on run 832, both before this step existed.
       - name: Run Qodana
         run: |
           mkdir -p qodana/cache qodana/results qodana/report
@@ -110,15 +152,31 @@ jobs:
           # it is already readable in the root case.
           chown -R "$(id -u):$(id -g)" qodana 2>/dev/null || true
 
-      - name: Report problem count
+      # Both numbers, deliberately. The problem count alone cannot tell a clean scan from a broken one:
+      # an unresolved symbol degrades a file's inspections and so *lowers* the problem count, which is
+      # why B39's regression signal is the sanity-failure count beside it rather than the total. A run
+      # whose sanity count has climbed off zero is reporting on code it could not fully read, and its
+      # problem count must not be read as a clean bill -- see the landmine on the scan step above.
+      - name: Report problem and sanity counts
         run: |
           SARIF="qodana/results/qodana.sarif.json"
+          SANITY="qodana/report/results/sanity.json"
           if [ -f "$SARIF" ]; then
             COUNT=$(python3 -c "import json;d=json.load(open('$SARIF'));print(sum(len(r.get('results',[])) for r in d.get('runs',[])))")
             echo "Qodana problems: $COUNT"
             echo "**Qodana problems: $COUNT**" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No SARIF produced"
+          fi
+          # Absent sanity.json is reported as such rather than as zero: "the scanner wrote no sanity
+          # report" and "the scanner resolved everything" are opposite states and must not read alike.
+          if [ -f "$SANITY" ]; then
+            SANITY_COUNT=$(python3 -c "import json;print(len(json.load(open('$SANITY')).get('listProblem',[])))")
+            echo "Qodana sanity failures: $SANITY_COUNT (expected 0; 35 before B39 landed)"
+            echo "**Qodana sanity failures: $SANITY_COUNT** (expected 0; 35 before B39 landed)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No sanity.json produced - cannot confirm the scan resolved its symbols"
+            echo "**Qodana sanity failures: unknown** (no sanity.json)" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload report

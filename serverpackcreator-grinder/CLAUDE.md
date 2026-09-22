@@ -155,6 +155,61 @@ store rather than by running it:
 
 ## Cross-cutting landmines (do not let these load lazily)
 
+- **LANDMINE — "every endpoint 502s" does NOT mean the report is wedged, and this cost two wrong diagnoses.**
+  The JDK `HttpServer` hands every request to `SPC_GRINDER_HTTP_THREADS` threads (default 4, hardcoded 2
+  until 2026-09-19), so a pool with nothing free *would* stop answering everything. **No outage has ever
+  been traced to that.** The 2026-09-19 measurement — `/`, `/status`, `/dashboard` and a nonexistent path all
+  502'ing at **131.3 s** while port 80 answered in 0.18 s — was read as thread starvation because `/status`
+  does no store work, and the cache plus a bigger pool were shipped against it. The report kept 502'ing.
+  Re-measured on 2026-09-21: **130.2 / 131.1 / 131.0 s**, unchanged.
+  - **The flaw in the reasoning:** a cheap endpoint failing rules out *a slow page*. It does not distinguish
+    "no thread is free" from "the request never arrived", and those look identical from outside.
+  - **What actually settles it, in one line, on the host:**
+    `curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' http://127.0.0.1:$SPC_GRINDER_PORT/dashboard`
+    — it answered **200 in 0.368 s** while the public URL 502'd. `/dashboard` is a compile-time constant
+    (`StatusDashboardRenderer.toHtml(): String = PAGE`), so a 200 there exonerates the whole daemon.
+  - **A thread dump settles it beyond doubt, by an absence.** `Executors.newFixedThreadPool` creates workers
+    lazily and never retires core threads, so **no `pool-*` thread in `jcmd <pid> Thread.print` means no
+    request has ever reached a handler**. The real dump also showed `HTTP-Dispatcher` parked in `EPoll.wait`
+    with 477 ms of CPU over 2.9 h, and heap at 330 MiB of 1.1 GiB. Nothing was wedged; nothing arrived.
+  - **The actual cause, confirmed 2026-09-21: `Chain INPUT (policy DROP …)`.** The host discarded the nginx
+    container's packets to the bridge gateway (`172.19.0.1:9090`); `110: Operation timed out` in the proxy
+    log, and ~131 s is just Linux's `tcp_syn_retries=6` budget. **Read the proxy's errno first: 111/refused
+    is a wrong bind, 110/timed out is a filter.**
+    - **THE POLICY WAS THE WHOLE RULE, which is why three separate investigations missed it.** ufw was
+      active, no rule mentioned 9090, and the chain policy did the dropping — so `ufw status` showed nothing
+      relevant and the firewall was twice dismissed out of hand, sending the search to conntrack (569 of
+      262,144, nowhere near full) and to a renumbered Docker network (the gateway was correct). **"No rule
+      for this" and "not filtering this" are opposite statements**, and only the chain *policy* separates
+      them. Never conclude a firewall is innocent from `ufw status`; read `iptables -L INPUT -n -v`, line one.
+    - **The bisect that localised it in three requests**, because each traverses a different chain:
+      host→bridge `200 in 0.077 s`, proxy→bridge `timeout`, proxy→peer `200 in 0.003 s`. Container-to-peer
+      goes through `FORWARD` and was always fine — which is exactly why **nothing else on that host noticed**.
+      The grinder is the only host service behind a containerised proxy, so it was the only thing on the
+      `INPUT` path at all. A closed port from the proxy also timed out rather than being refused, proving the
+      drop was blanket rather than aimed at 9090.
+    - **The fix is scoped by subnet, never by port alone.** `ufw allow from 172.19.0.0/16 to 172.19.0.1 port
+      9090 proto tcp`. A bare `ufw allow 9090` ends the outage and publishes an unauthenticated verdict table
+      and full CSV export to the internet in the same command, because `SPC_GRINDER_HOST=0.0.0.0` means the
+      report already listens on the public interface and that DROP policy is the only thing in front of it.
+    Full triage in the grinder README, *Report responsiveness* → *When the proxy cannot reach a healthy
+    report*.
+  - **The generalisation, which is the point of keeping this:** *a symptom shared by two layers is evidence
+    for neither.* Both wrong calls here were plausible, internally consistent, and made without the one cheap
+    test that separates the layers. Before attributing an outage to the code you own, prove the request
+    reaches it.
+- **Every request used to re-derive the whole store, and pagination did not help.** Selecting sorts all
+  verdicts and gathers every filter column across all of them; the page size bounds only what is *rendered*.
+  Measured: at 38,258 verdicts (roughly the deployed store) **251 ms to select, 3 ms to render the 250 rows**
+  — 98% discarded. `VerdictSnapshot` holds both derivations lazily and `VerdictSnapshotCache` rebuilds them
+  only when `VerdictStore.version` moves, taking a cached request to **5.4 ms** (329 ms uncached in the same
+  run, 60x). **`version` is a counter, not a row count**, because `record()` replaces by identity — a
+  re-ground project changes the report while leaving the size identical.
+  - `select(list, …)` delegates to `select(snapshot, …)`, so `/`, `/export.csv` and `/verdicts.json` still
+    share one implementation. **That also means a guard comparing the two overloads asserts nothing** — the
+    first version of `VerdictSnapshotTest` did exactly that and stayed green with filtering disabled outright.
+    Assert outcomes, not agreement between two names for the same code.
+
 These bite regardless of which subsystem you are in, so they stay in this always-loaded-for-the-module file even
 though their detail lives deeper:
 

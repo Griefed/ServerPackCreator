@@ -44,8 +44,9 @@ class LegacyFabricInstaller(
     private val installerManifest: File,
     private val utilities: Utilities
 ) {
-    /** Every LegacyFabric *installer* version, newest first. A separate series from the loader versions. */
     /**
+     * Every LegacyFabric *installer* version, newest first. A separate series from the loader versions.
+     *
      * Published as an **immutable snapshot behind `@Volatile`**, not as a collection [update] mutates in
      * place. The refresh runs on a background coroutine while callers read; clearing and refilling a
      * shared list let a reader throw `ConcurrentModificationException` or silently observe the empty
@@ -76,7 +77,7 @@ class LegacyFabricInstaller(
     @Suppress("DuplicatedCode")
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
-        val next_allVersions = ArrayList<String>(100)
+        val nextAllVersions = ArrayList<String>(100)
         val installerManifest: Document = utilities.xmlUtilities.getXml(installerManifest)
         val latestElements = installerManifest.getElementsByTagName(latestElement)
         val latestNode = latestElements.item(0)
@@ -94,11 +95,11 @@ class LegacyFabricInstaller(
             val node = elements.item(i)
             val children = node.childNodes
             val item = children.item(0)
-            next_allVersions.add(item.nodeValue)
+            nextAllVersions.add(item.nodeValue)
         }
             // Published in one assignment each, as unmodifiable views: a `List`-typed field still
         // holds an ArrayList at runtime, so a caller could otherwise cast and mutate our state.
-        allVersions = Collections.unmodifiableList(next_allVersions)
+        allVersions = Collections.unmodifiableList(nextAllVersions)
 }
 
     /**

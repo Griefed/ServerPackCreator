@@ -27,14 +27,21 @@ import picocli.shell.jline3.PicocliCommands.ClearScreen
 import java.io.File
 
 /**
- * Like [ClientsideReportCommand] but adds the **server-boot** signal: for each loader it generates a
- * server pack with the candidate mod force-included and boots it, so a mod that crashes a server is
- * flagged with HIGH confidence even when its metadata claims it is server-safe. Distribution-locked
- * CurseForge files are fetched via an embedded headless browser.
+ * Like [ClientsideReportCommand] but adds the **server-boot** signal: for each target it generates a
+ * server pack with the candidate mod force-included and boots it, so a mod whose crash a rule recognises
+ * is `CONFIRMED` even when its metadata claims it is server-safe.
+ *
+ * A target is one Minecraft version-line, under the first loader that line has a bootable build for --
+ * `BootCandidateSelector.pickGrindTargets`, not one boot per loader: sideness is a property of a build,
+ * and builds differ far more across Minecraft eras than across loaders of one era.
+ *
+ * A distribution-locked CurseForge file (`allowModDistribution=false`) is **not** fetched -- the headless
+ * browser route that used to do so was removed in 9.0.0, having stopped working against CurseForge's bot
+ * challenge. Such a project reports `LOCKED` and is verified from Modrinth instead.
  *
  * The CurseForge API-key is read from the `CURSEFORGE_API_KEY` environment-variable (CurseForge
  * links only). Heavier and slower than `clientsidereport` — it installs and boots a server per
- * loader.
+ * target.
  *
  * @param apiWrapper Provides generation, version-meta, scanner and download utilities.
  * @author Griefed

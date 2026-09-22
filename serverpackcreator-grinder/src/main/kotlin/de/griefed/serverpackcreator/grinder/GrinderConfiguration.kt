@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.BootResult
 import de.griefed.serverpackcreator.clientside.MinecraftLinePolicy
+import de.griefed.serverpackcreator.grinder.report.ReportServer
 import java.io.File
 import java.time.Duration
 
@@ -87,6 +88,12 @@ internal data class GrinderConfiguration(
     val port: Int,
     /** Report server bind address. Loopback by default — the report is unauthenticated. */
     val host: String,
+    /**
+     * Threads the report server answers requests on. Every request is handed to this pool, so one that
+     * blocks costs a whole thread and a pool that runs out stops answering entirely — including the cheap
+     * endpoints, which is what makes a wedged report look like a dead host.
+     */
+    val httpThreads: Int,
     /** Concurrent grinds; each holds a booting container, so this is really a memory decision. */
     val workers: Int,
     /** Candidates taken from the crawl per pass. */
@@ -114,6 +121,12 @@ internal data class GrinderConfiguration(
      * re-derived by [reverifyTtl]; an orderly stop flushes.
      */
     val storeFlush: Duration,
+    /**
+     * How long the report may reuse a whole-store derivation after the store has moved on. `0` serves a
+     * strictly live report and pays the full copy, sort and filter-column gather every time a verdict is
+     * recorded — which, with several workers, is very nearly every request.
+     */
+    val reportCacheMaxAge: Duration,
     /** CurseForge API key, or `null` — without it CurseForge cannot be resolved at all. */
     val curseForgeApiKey: String?,
     /**
@@ -149,6 +162,7 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_RULE_FALLBACK", "grinder"),
             Knob("SPC_GRINDER_PORT", "8757"),
             Knob("SPC_GRINDER_HOST", "127.0.0.1"),
+            Knob("SPC_GRINDER_HTTP_THREADS", "4"),
             Knob("SPC_GRINDER_WORKERS", "2"),
             Knob("SPC_GRINDER_BATCH", "25"),
             Knob("SPC_GRINDER_CPUS", "2"),
@@ -160,6 +174,7 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_INTERVAL", "21600"),
             Knob("SPC_GRINDER_SCAN_DELAY", "15"),
             Knob("SPC_GRINDER_STORE_FLUSH_SECONDS", "30"),
+            Knob("SPC_GRINDER_REPORT_CACHE_SECONDS", "5"),
             Knob("SPC_GRINDER_MINECRAFT_LINES_NEWEST", "2"),
             Knob("SPC_GRINDER_MINECRAFT_LINE_ANCHORS", "1.21,1.20,1.12")
         )
@@ -225,6 +240,9 @@ internal data class GrinderConfiguration(
                 },
                 port = intIn("SPC_GRINDER_PORT", 8757, allowed = 0..65535),
                 host = text("SPC_GRINDER_HOST", "127.0.0.1"),
+                // One line on purpose: everyVariableReadIsDeclaredAsAKnob matches `reader("NAME"` and a
+                // wrapped call is invisible to it, which is how a knob stops being documentation-checked.
+                httpThreads = intIn("SPC_GRINDER_HTTP_THREADS", ReportServer.DEFAULT_HTTP_THREADS, allowed = 1..Int.MAX_VALUE),
                 workers = intIn("SPC_GRINDER_WORKERS", 2, allowed = 1..Int.MAX_VALUE),
                 batch = intIn("SPC_GRINDER_BATCH", 25, allowed = 1..Int.MAX_VALUE),
                 containerCpus = capAtLeastZero("SPC_GRINDER_CPUS", 2.0),
@@ -238,6 +256,9 @@ internal data class GrinderConfiguration(
                 storeFlush = Duration.ofSeconds(
                     number("SPC_GRINDER_STORE_FLUSH_SECONDS", "30").toLongOrNull() ?: 30
                 ),
+                // One line on purpose, like httpThreads above: everyVariableReadIsDeclaredAsAKnob matches
+                // `reader("NAME"` and a wrapped call is invisible to it.
+                reportCacheMaxAge = Duration.ofSeconds(longAtLeast("SPC_GRINDER_REPORT_CACHE_SECONDS", 5L, minimum = 0L)),
                 curseForgeApiKey = optional("CURSEFORGE_API_KEY"),
                 minecraftLines = MinecraftLinePolicy(
                     // Floored at one by the policy itself, not here: a configuration selecting *no* line

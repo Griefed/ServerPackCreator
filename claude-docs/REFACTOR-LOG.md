@@ -4506,3 +4506,214 @@ two real sources, reported accurately. Worth stating so the bucket is not re-ope
   resolution that produced the pack.
 - **A neighbouring bucket that looks like the same bug is worth ten minutes and four downloads.** The 45
   CONTRADICTORY rows would have been a plausible and wholly wasted pass.
+
+## 2026-09-19/20 — updating an existing server pack stops being experimental
+
+Griefed asked for the update-mechanism at `ServerPackHandler.kt:231` to be analysed, tested and taken
+out of its experimental state, framed by the thing that actually happens to users: people run a server
+straight out of a generated pack, and regenerating it costs them the world they made.
+
+**What it did.** Two independent booleans, four combinations, and only one of them the documented one:
+
+| overwrite | update | effect |
+|---|---|---|
+| **true (default)** | true | cleanup empties the destination, the manifest is gone before it is read — **update is a silent no-op, world included** |
+| **true (default)** | false | clean regeneration; destroys anything the server made |
+| false | true | the intended update |
+| false | false | additive; nothing refreshed, so a version-renamed mod lands beside its older copy |
+
+**Nine defects, each pinned red before it was fixed.** The precedence bug above; the ZIP of an updated
+pack carrying the operator's `world/` and `ops.json` to whoever downloads it; `copyProperties` and
+`createServerRunFiles` reverting a tuned `server.properties` and `variables.txt` unconditionally; a
+manifest that stopped at the copied files, so a `server-icon.png` could never be cleaned up; directories
+left behind empty; a modpack-shipped world pruned and replaced with its pristine copy; the prune running
+*before* the copy, so a failed generation gutted the pack; and `substring(1)` on a path the pack root had
+been stripped from.
+
+**What was verified rather than assumed.** A throwaway probe against the real `ServerPackHandler`
+produced every claim above before a line was changed — `world survives overwrite+update: false`,
+`zip contains ops.json: true`, `server.properties kept operator edits: false`. Three mutations confirmed
+the new `ServerPackUpdater` guards have teeth. The GUI was verified by painting the real
+`GlobalSettings` panel to a PNG from inside the test JVM, `screencapture` returning black on this machine
+for want of Screen Recording permission.
+
+**Two things found in passing and fixed in their own commits.** Every collection-valued property in
+`GenerationConfig` aliased its own fallback constant, so configuring `zipArchiveExclusions` emptied
+`fallbackZipExclusions` — which is what the GUI's four reset-to-default buttons read. And the archive
+exclusion, as first written, used the protected-paths predicate and therefore shipped an archive without
+`server.properties` or `variables.txt`; it was found by reading the help docs while writing them up.
+
+**A session-level failure worth recording.** Rewriting two inaccurate commit messages with
+`git reset --hard` destroyed four of Griefed's uncommitted files (`README.md` 413 lines, two workflow
+files, `misc/build-appimage.sh`). Three were recovered from IntelliJ's Local History; the fourth was
+recovered by replaying the exact `tool_use` command out of a previous session's
+`~/.claude/projects/**/*.jsonl` transcript, byte-for-byte. Rewrite local history with `cherry-pick` onto
+a temporary branch — the working tree is never touched — and check `git status --porcelain` before any
+destructive git command.
+
+## 2026-09-21 — the Qodana scan starts reading what it reports on (`claude-qodana-b38-b39`)
+
+Run 832 (revision `d97a6e188`) reported **28 problems**, and they decomposed exactly as the run-817
+triage had predicted the residue would: the **12** standing won't-fix verdicts at precisely their
+triaged counts, plus **16** style notes. Nothing new, and the 817 remediation confirmed as landed.
+
+The number that mattered was the other one. Run 832 carried the **same 35 sanity failures** as run
+817 — 30 × `Unresolved reference Translations`, 5 × `Unresolved reference Example`, split `-app` 24 /
+`-api` 6 / `-plugin-example` 5 — because the scan still ran against a raw checkout with no Gradle
+invocation, so i18n4k's generated objects did not exist during analysis. 85 source files reference one
+of them, 79 of those in `-app`.
+
+**Why that is worse than an ordinary gap in coverage.** A file whose core symbol will not resolve is
+analysed with its inspections *degraded*, so the defect **lowers** the problem count. A broken scan and
+a clean repository produce the same reassuring number, and the report reads as good news either way.
+That is why the count step now prints the sanity-failure count beside the problem count, and why an
+absent `sanity.json` is reported as *unknown* rather than as zero — "the scanner wrote no sanity report"
+and "the scanner resolved everything" are opposite states that must never read alike.
+
+B39 closed with a codegen step before the scan: `generateI18n4kFiles` resolves in `-api` and
+`-plugin-example`, `kaptKotlin` in both plugin modules — exactly the three modules the failures came
+from. Measured on a clean checkout, per the build-logic rule: **23.0 s** with `--rerun-tasks
+--no-build-cache`, **16.4 s** with the build cache warm, against a scan that takes minutes. Deliberately
+not `build`: the scan needs the generated *sources*, not the artifacts.
+
+B38 closed by half. The twelve verdicts are now in `qodana.yaml`, each scoped to the exact files it was
+decided for rather than to a whole rule, so a new occurrence anywhere else still reports. They were
+verified before committing, because **a `name:`/`paths:` pair that matches nothing fails silently and
+looks identical to one that works**: all nine paths exist, and replaying the nine `(ruleId, uri)` pairs
+against run 832's own SARIF covered exactly 12 of 28 and left exactly the 16 style notes.
+
+The baseline did **not** land, and became B40. Two reasons, the first of which generalises: **a
+suppression that hides everything destroys the evidence that a narrower suppression works.** B38's
+acceptance test is the count going 28 → 16 exactly; a baseline in the same run zeroes it either way.
+The second is ordering — a baseline built from run 832 would encode the finding set of a scan that
+could not read a fifth of the repository, which is precisely what the same branch just fixed.
+
+**Lesson worth keeping:** *ask what a clean report depends on before believing it.* This is the same
+shape as the Qodana `KDocUnresolvedReference` finding recorded in the root `CLAUDE.md` — there, a
+detector could only see the share of a defect that had a visible side effect; here, a detector reports
+fewer problems precisely where it understands least. In both cases the count is a function of the
+tool's reach, and reach has to be measured separately from findings.
+
+## 2026-09-21 — the grinder report was never wedged (`claude-grinder-outage-docs`)
+
+The public report had been returning 502 for every path since at least **18 September**. It was diagnosed
+twice, wrongly, and the second diagnosis shipped code.
+
+**What the evidence looked like.** On 2026-09-19: `/`, `/status`, `/dashboard` and a nonexistent path all
+502'd at **131.3 s**, while port 80 answered a redirect in 0.18 s. `/status` does no store work, so the
+conclusion drawn was thread starvation — the report's pool had nothing free, and a pool with nothing free
+stops answering even the endpoints that cost nothing. `148ccb385` shipped `VerdictSnapshotCache` and raised
+`SPC_GRINDER_HTTP_THREADS` from 2 to 4 against that reading.
+
+The report kept 502'ing. Re-measured on 2026-09-21 against the live instance: **130.18 / 131.07 / 131.05 s**,
+all 502. Unchanged, to within noise, by a fix aimed squarely at it. Clearing the store to make a fresh
+instance changed nothing either.
+
+**Why the reasoning was wrong, which is the part worth keeping.** "A cheap endpoint also fails" rules out *a
+slow page*. It does **not** distinguish "no thread is free" from "the request never arrived" — those are
+different layers with an identical external signature. Both readings fit every observation, and the one that
+happened to be about code we own was the one adopted.
+
+**What settled it.** Two artifacts, neither expensive:
+
+- `curl http://127.0.0.1:9090/dashboard` **on the host**: `200` in **0.368 s**, 10,816 bytes. `/dashboard` is
+  a compile-time constant, so a 200 there exonerates the entire daemon in one line.
+- `jcmd <pid> Thread.print`, where the finding was an **absence**. `Executors.newFixedThreadPool` creates its
+  workers lazily and never retires core threads, so **zero `pool-*` threads means zero requests have ever
+  reached a handler** — in 2.9 hours of uptime. `HTTP-Dispatcher` sat in `EPoll.wait` on 477 ms of CPU; heap
+  was 330 MiB of 1.1 GiB; no `BLOCKED` thread, no deadlock. The server was idle, not swamped.
+
+**The actual cause.** nginx runs in a container and dialled the Docker bridge gateway, `172.19.0.1:9090`. The
+grinder binds `0.0.0.0`, so that socket *was* listening — but the host discarded the SYN. The proxy log said
+so all along: `connect() failed (110: Operation timed out)`. Errno 110 is a **dropped** packet; errno 111
+would have been a wrong bind. And the 131 s that looked like an application hang is nothing of the sort — it
+is Linux's default `tcp_syn_retries=6`, six retransmissions with exponential backoff, ~127 s.
+
+**Confirmed later the same day, and the confirmation is its own lesson.** The firewall was dismissed twice
+before it was proven, because there was no rule about port 9090 — `Chain INPUT (policy DROP 1072 packets)`
+was doing it. `ufw status` therefore showed nothing relevant, "ufw is not the issue" read as a checked fact,
+and two further hypotheses were chased first: conntrack (569 entries of 262,144, never close to full) and a
+renumbered Docker network (the gateway was correct, `172.19.0.1`, and the host owned it). **"No rule for
+this" and "not filtering this" are opposite statements, and only the chain policy separates them.**
+
+What settled it was three requests chosen so each traverses a different chain: host→bridge `200 in 0.077 s`,
+proxy→bridge `timeout`, proxy→peer `200 in 0.003 s`. Container-to-container goes through `FORWARD` and was
+always fine, which is precisely why nothing else on a host running thirty-odd containers had noticed — the
+grinder is the only *host* service behind a *containerised* proxy, so it was the only thing on the `INPUT`
+path at all. A closed port from the proxy also timed out rather than being refused, proving the drop was
+blanket rather than aimed at the report.
+
+**A trap found on the way out.** Port 9090 was unreachable from the public internet too — the same firewall.
+With `SPC_GRINDER_HOST=0.0.0.0` and no authentication on the report, that rule was the only thing keeping the
+verdict table and the full CSV export private. The obvious fix, `ufw allow 9090`, would have ended the outage
+and published the report to the internet in the same command. Every rule has to be scoped to the bridge
+interface.
+
+**Lessons.**
+
+- **A symptom shared by two layers is evidence for neither.** Prove the request reaches the code before
+  attributing an outage to it. The test cost one line and would have saved two diagnoses and a shipped fix.
+- **An absence can be the decisive evidence, if you know what creates the thing that is missing.** Lazily
+  created, never-retired pool threads make "no such thread" mean "no such request", which no amount of
+  looking at stack traces would have told us.
+- **A performance win is not an outage fix, and shipping it as one hides the outage.** The 251 ms derivation
+  cost was real and the cache is worth keeping. It was never why the site was down, and calling it the cause
+  closed the investigation for two days.
+- **Ask what a guard rail is currently load-bearing for before removing it.** The firewall was simultaneously
+  the bug and the only access control.
+
+## 2026-09-21 (later) — the Qodana report reaches zero, without a baseline (`claude-qodana-b40-zero`)
+
+The run that closed B38 and B39 reported **16 problems and 0 sanity failures** against revision
+`ec9969602` — both numbers exactly as predicted, and both gates B40 was waiting on. B40 then did not
+survive contact with its own evidence.
+
+**Why the baseline was the wrong mechanism.** Measured on that run's SARIF: the file is **3.9 MB, of
+which 2.78 MB is JetBrains' inspection catalog and 22 KB the actual findings** — 99.4% vendor metadata,
+committed to the repository to suppress sixteen style notes and re-churned on every re-baseline. A
+hand-trimmed SARIF might have worked, since the results do carry `partialFingerprints`, but it could not
+be verified locally (Docker Desktop still capped at 1.9 GiB, linter OOM-killed at exit 137) — and an
+unverifiable config change is precisely the trap B38 was written to avoid. Proposing a fix and then being
+unable to check it is how the first version of this work would have gone wrong.
+
+**The better end state was already reachable.** B40's *goal* was "a run reports what is new rather than
+everything". Reaching **zero** achieves that more completely: anything reported afterwards is new by
+definition, with no file to maintain and no vendor catalog in git.
+
+So each of the sixteen was read at its call site, and the split was not the one a count would suggest:
+
+- **Five were genuine improvements and were fixed** — two redundant `TreeSet<File>` type arguments, two
+  redundant `${…}` brace pairs, and a `when` that reads better with a subject. Behaviour-preserving, no
+  assertion touched anywhere.
+- **Eleven were refused**, each scoped to the file it was decided for.
+
+**The most instructive refusal is `UsePropertyAccessSyntax` on `LarsonScanner`: the code already carried a
+comment saying the suggestion does not compile.** `g2d.renderingHints` is read-only in Kotlin because the
+getter returns `RenderingHints` while the setter takes a `Map`. Somebody had tried, discovered it, written
+it down — and the tool went on reporting it anyway, because a linter cannot read the comment explaining
+why it is wrong. That is the whole argument for encoding a verdict where the tool will look.
+
+The others refuse on grounds this repository already has receipts for: two `ConvertCallChainIntoSequence`
+are unmeasured optimisation over tens of elements (**B30** is the receipt — a real 121,492-byte saving
+that bought ~0 ms); `ConvertToStringTemplate` would leave a dedup key spelled differently from its sibling
+`verdictKey`, the duplicated-knowledge drift seen four times; two `DestructuringDeclaration` would bind a
+domain object's fields *positionally*, so re-ordering the data class would silently rebind rather than fail
+to compile; `UnnecessaryVariable` would delete `annotating`, read eleven times and meaning what `fired` no
+longer does.
+
+Verified the way B38 was, because a `name`/`paths` pair that matches nothing fails silently: all **19**
+inspection-scoped paths exist, and replaying every `(ruleId, uri)` against the run's own SARIF accounts for
+all sixteen findings — **11 excluded, 5 fixed, 0 unaccounted**. Suites re-run across every touched module:
+api 460 (1 skip), clientside 671, grinder 544 (29 skip), app 168, plugin-grinder 75, zero failures, no new
+warnings.
+
+**Lessons.**
+
+- **A backlog item names a goal and guesses a mechanism; only the goal is binding.** B40 said "add a
+  baseline". The evidence said the baseline cost 3.9 MB to buy something a day's reading achieved better.
+  Re-read a deferred item's *reason* before executing its *instruction*.
+- **"Sixteen style notes" is not one decision sixteen times.** Five were right, eleven were wrong, and the
+  only way to know which was to open each file. A blanket fix would have broken a build; a blanket
+  suppression would have hidden five real improvements.
+- **A tool cannot read the comment explaining why it is wrong.** If a refusal only lives in the code, the
+  tool keeps reporting it and every reader re-litigates it. Put the verdict where the tool looks.

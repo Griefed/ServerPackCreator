@@ -221,12 +221,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     private fun getModId(config: CommentedConfig) = config.valueMap()[modId].toString().lowercase()
 
     /**
-     * Acquire the side of the passed dependency.
-     *
-     * @param config Mod- or dependency-config which contains the modId.
-     * @return `side` from the passed config, in upper-case letters.
-     */
-    /**
      * The `versionRange` a dependency entry states, or `null` when it states none. Kept verbatim: Forge and
      * NeoForge write Maven ranges (`[15.2,)`), which is a different grammar from Fabric's, and normalising
      * the two here would lose information the caller needs to tell them apart.
@@ -251,6 +245,12 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
         return config.valueMap()[mandatory]?.toString()?.trim()?.lowercase() == "false"
     }
 
+    /**
+     * Acquire the side of the passed dependency.
+     *
+     * @param config Mod- or dependency-config which may state a `side`.
+     * @return `side` from the passed config, in upper-case letters, or `BOTH` when it states none.
+     */
     private fun getSide(config: CommentedConfig): String {
         return if (config.valueMap()[side] != null) {
             config.valueMap()[side].toString().uppercase()

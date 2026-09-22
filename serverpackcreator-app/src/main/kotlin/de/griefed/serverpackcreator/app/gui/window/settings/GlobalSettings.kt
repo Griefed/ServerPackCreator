@@ -168,6 +168,12 @@ class GlobalSettings(
     private val updateServerPackRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { updateServerPackSetting.isSelected = apiProperties.isUpdatingServerPacksEnabled }
     private val updateServerPackReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { updateServerPackSetting.isSelected = apiProperties.fallbackUpdateServerPack }
 
+    private val updateProtectedIcon = StatusIcon(guiProps, Translations.settings_global_updateprotected_tooltip.toString())
+    private val updateProtectedLabel = ElementLabel(Translations.settings_global_updateprotected_label.toString())
+    private val updateProtectedSetting = ScrollTextArea(apiProperties.updateProtectedPaths.joinToString(", "),Translations.settings_global_updateprotected_label.toString(), changeListener, guiProps)
+    private val updateProtectedRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { updateProtectedSetting.text = apiProperties.updateProtectedPaths.joinToString(", ") }
+    private val updateProtectedReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { updateProtectedSetting.text = apiProperties.fallbackUpdateProtectedPaths.joinToString(",") }
+
     private val javaVariableIcon = StatusIcon(guiProps, Translations.settings_global_scriptjava_tooltip.toString())
     private val javaVariableLabel = ElementLabel(Translations.settings_global_scriptjava_label.toString())
     private val javaVariableSetting = ActionCheckBox(actionListener)
@@ -221,10 +227,11 @@ class GlobalSettings(
     private val javaPathsSetting = JavaPaths(guiProps, tableModelListener)
     private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
 
+    /** Keeps the protected-paths editor relevant to whether updating is on at all. */
     private val ensureUpdateOverwriteSetting = ActionListener { changeUpdateSettingState() }
 
     init {
-        overwriteSetting.addActionListener(ensureUpdateOverwriteSetting)
+        updateServerPackSetting.addActionListener(ensureUpdateOverwriteSetting)
         loadSettings()
         val zipY: Int
         val inclusionsY: Int
@@ -234,6 +241,7 @@ class GlobalSettings(
         val preInstallY: Int
         val postInstallY: Int
         val javaPathsY: Int
+        val updateProtectedY: Int
         var y = 0
 
         panel.add(homeIcon, "cell 0 0")
@@ -365,6 +373,14 @@ class GlobalSettings(
         panel.add(updateServerPackReset, "cell 4 $y")
 
         y++
+        updateProtectedY = y
+        panel.add(updateProtectedIcon, "cell 0 $y")
+        panel.add(updateProtectedLabel, "cell 1 $y")
+        panel.add(updateProtectedSetting, "cell 2 $y, grow, w 10:500:,h 150!")
+        panel.add(updateProtectedRevert, "cell 3 $y")
+        panel.add(updateProtectedReset, "cell 4 $y")
+
+        y++
         panel.add(javaVariableIcon, "cell 0 $y")
         panel.add(javaVariableLabel, "cell 1 $y")
         panel.add(javaVariableSetting, "cell 2 $y, grow")
@@ -414,6 +430,7 @@ class GlobalSettings(
         componentResizer.registerComponent(preInstallFilesSetting,"cell 2 $preInstallY, grow, w 10:500:,h %s!")
         componentResizer.registerComponent(postInstallFilesSetting,"cell 2 $postInstallY, grow, w 10:500:,h %s!")
         componentResizer.registerComponent(javaPathsSetting.scrollPanel,"cell 2 $javaPathsY, grow, w 10:500:,h %s!")
+        componentResizer.registerComponent(updateProtectedSetting,"cell 2 $updateProtectedY, grow, w 10:500:,h %s!")
     }
 
     /** Fills the widgets from the stored global settings. */
@@ -430,6 +447,7 @@ class GlobalSettings(
         logLevelSetting.selectedItem = apiProperties.logLevel
         overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
         updateServerPackSetting.isSelected = apiProperties.isUpdatingServerPacksEnabled
+        updateProtectedSetting.text = apiProperties.updateProtectedPaths.joinToString(", ")
         javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
         prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled
         zipExclusionsSetting.isSelected = apiProperties.isZipFileExclusionEnabled
@@ -475,6 +493,7 @@ class GlobalSettings(
         apiProperties.logLevel = logLevelSetting.selectedItem.toString()
         apiProperties.isServerPacksOverwriteEnabled = overwriteSetting.isSelected
         apiProperties.isUpdatingServerPacksEnabled = updateServerPackSetting.isSelected
+        apiProperties.updateProtectedPaths = TreeSet(updateProtectedSetting.text.split(",").map { it.trim() }.filter { it.isNotBlank() })
         apiProperties.isJavaScriptAutoupdateEnabled = javaVariableSetting.isSelected
         apiProperties.isCheckingForPreReleasesEnabled = prereleaseSetting.isSelected
         apiProperties.isZipFileExclusionEnabled = zipExclusionsSetting.isSelected
@@ -602,6 +621,7 @@ class GlobalSettings(
         logLevelSetting.selectedItem.toString().uppercase() != apiProperties.logLevel.uppercase() ||
         overwriteSetting.isSelected != apiProperties.isServerPacksOverwriteEnabled ||
         updateServerPackSetting.isSelected != apiProperties.isUpdatingServerPacksEnabled ||
+        updateProtectedSetting.text != apiProperties.updateProtectedPaths.joinToString(", ") ||
         javaVariableSetting.isSelected != apiProperties.isJavaScriptAutoupdateEnabled ||
         prereleaseSetting.isSelected != apiProperties.isCheckingForPreReleasesEnabled ||
         zipExclusionsSetting.isSelected != apiProperties.isZipFileExclusionEnabled ||
@@ -621,12 +641,17 @@ class GlobalSettings(
         return changes
     }
 
+    /**
+     * Greys out the protected-paths editor when updating is off, because nothing consults it then.
+     *
+     * It used to do the opposite and far more: it disabled and un-ticked "Update Server Packs"
+     * whenever "Overwrite Server Pack" was on. That was the only thing keeping the two settings from
+     * producing a silently destructive combination -- the overwrite emptied the directory before the
+     * update could read the manifest it needs -- and since overwriting is on by default it also left
+     * updating greyed out on a fresh install. ServerPackHandler now settles the precedence itself, so
+     * the combination is well-defined and there is nothing left to forbid.
+     */
     private fun changeUpdateSettingState() {
-        if (overwriteSetting.isSelected) {
-            updateServerPackSetting.isEnabled = false
-            updateServerPackSetting.isSelected = false
-        } else {
-            updateServerPackSetting.isEnabled = true
-        }
+        updateProtectedSetting.isEnabled = updateServerPackSetting.isSelected
     }
 }

@@ -85,6 +85,43 @@ jobs:
             -x :serverpackcreator-api:test -x :serverpackcreator-app:test
           ./gradlew -Pversion="${{ needs.prepare.outputs.version }}" :serverpackcreator-api:dokkaGenerateHtml --info
 
+      # Built here rather than in jobs of their own: the app jar they package is already in this
+      # workspace, so separate jobs would mean uploading and re-downloading ~80 MB to gain nothing.
+      # devbuild.yml splits them only because its jar arrives as an artifact regardless.
+      #
+      # BOTH are produced on this amd64 runner. The aarch64 one is cross-packaged -- nothing aarch64 has
+      # to execute, because the JDK is merely unpacked and appimagetool runs as the host's architecture
+      # while ARCH tells it which runtime to embed. That is the same reason devbuild.yml's aarch64 job
+      # does not need an arm runner label, which no registered runner offers.
+      #
+      # Two sequential runs in one workspace are safe: the script `rm -rf`s its AppDir before each build
+      # and keeps per-architecture JDK directories (`jdk-21-x86_64`, `jdk-21-aarch64`), so the second
+      # cannot inherit the first's runtime. Run before `Collect files`, which renames the app jar.
+      - name: Build AppImages
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh "$V"
+          misc/build-appimage.sh --arch aarch64 "$V"
+          # Anchored on the product name: appimagetool-<arch>.AppImage is downloaded into this same
+          # directory, so a bare *.AppImage would count it. Two, no more and no fewer, or stop.
+          #
+          # Measured 2026-09-20, both invocations in one debian:bookworm-slim workspace (on an aarch64
+          # host, which mirrors this amd64 runner -- native first, then the other architecture):
+          #   produced   ServerPackCreator-9.9.9-test-aarch64_experimental.AppImage  -> ELF 64-bit, ARM aarch64
+          #              ServerPackCreator-9.9.9-test-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
+          #              appimagetool-aarch64.AppImage
+          #   ServerPackCreator-* glob matches 2; a bare *.AppImage glob matches 3.
+          #   JDK directories after both runs: jdk-21-aarch64, jdk-21-x86_64 -- per architecture, so the
+          #   second run cannot inherit the first one's runtime.
+          COUNT="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | wc -l)"
+          if [ "$COUNT" -ne 2 ]; then
+            echo "::error::Expected 2 AppImages, found $COUNT"
+            ls -la *.AppImage 2>/dev/null || echo "none at all"
+            exit 1
+          fi
+          ls -lh ServerPackCreator-*.AppImage
+
       - name: Collect files
         run: |
           V="${{ needs.prepare.outputs.version }}"
@@ -95,6 +132,10 @@ jobs:
           cp serverpackcreator-app/build/libs/*.jar            "release/$V/"
           cp serverpackcreator-plugin-example/build/libs/*.jar "release/$V/"
           cp media/*                                          "release/$V/"
+          # The AppImages carry `_experimental` in their names -- `misc/build-appimage.sh` decides that,
+          # and nothing here repeats it. They land in the release directory before checksum.txt is
+          # generated below, so they are covered by it like every other asset.
+          cp ServerPackCreator-*.AppImage                     "release/$V/"
           rm -f "release/$V/output.txt" "release/$V/"*plain.jar
           # Dokka HTML replaces what GitLab Pages used to host: it ships as a release asset now.
           if [ -d serverpackcreator-api/build/dokka ]; then
@@ -132,14 +173,21 @@ jobs:
       - name: Extract changelog section
         run: |
           V="${{ needs.prepare.outputs.version }}"
-          # The closing bracket is REQUIRED and the dots are escaped. With `\]?` optional, a request for
-          # `8.1.1` also matched `## [8.1.1-beta.2](...)`; that rule ends in `next`, so the exit rule never
+          # The closing bracket is REQUIRED. With `\]?` optional, a request for `8.1.1` also matched
+          # `## [8.1.1-beta.2](...)`; that rule ends in `next`, so the exit rule never
           # fired and collection ran on through every prerelease section beneath the release. Measured on
           # this repository's CHANGELOG: 8.1.1 gave 5,685 chars against a true section of 2,834, and 8.1.0
           # gave 28,807 against 14,377. Prereleases were unaffected, which is why it would have shipped.
-          VER_RE="$(printf '%s' "$V" | sed 's/\./\\./g')"
-          awk -v ver="$VER_RE" '
-            $0 ~ "^#+ +\\[" ver "\\]" { found=1; next }
+          # LANDMINE - escaping the dots in the SHELL does not work, and every release log says so with
+          # a gawk warning that the escape sequence was treated as a plain dot. awk processes escape
+          # sequences in a -v assignment, so a shell-escaped 9\.0\.0-beta\.1 arrives inside the program
+          # as 9.0.0-beta.1 and the dots have been wildcards all along, whatever the comment claimed.
+          # Escape them inside awk instead, and as [.] rather than a backslash: POSIX leaves a backslash
+          # in a gsub replacement undefined for anything but & and \\, and gawk bears that out - the
+          # program-text replacement "\\\\." yields two backslashes and the regex then matches nothing.
+          awk -v ver="$V" '
+            BEGIN { esc = ver; gsub(/\./, "[.]", esc); section = "^#+ +\\[" esc "\\]" }
+            $0 ~ section { found=1; next }
             found && /^#+ +\[[0-9]+\.[0-9]+\.[0-9]+/ { exit }
             found { print }
           ' CHANGELOG.md > notes.md
@@ -157,7 +205,16 @@ jobs:
           set -eu
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
-          BODY="$(python3 -c 'import json,sys;print(json.dumps(open("notes.md").read()))')"
+          # LANDMINE - the release body NEVER travels as a curl argument. Linux caps a SINGLE argv
+          # entry at MAX_ARG_STRLEN (32 * PAGE_SIZE = 131,072 bytes) independently of ARG_MAX, so
+          # `-d "{...,\"body\":$BODY,...}"` dies at execve with `/usr/bin/curl: Argument list too long`
+          # once the notes get big -- and they do: a beta or final release aggregates every prerelease
+          # section since the last stable one. Measured on 9.0.0-beta.1 (run 536, the failure this
+          # comment exists for): notes.md 200,185 bytes, assembled -d argument 201,610, job dead before
+          # curl ran; 9.0.0-alpha.8 had released fine at 75,918. Reproduced both shapes in alpine:3.20 --
+          # inlined: exit 126 "Argument list too long"; `-d @file`: curl execs and reaches the network.
+          # The PATCH branch below has always written a file; this is the POST branch catching up.
+          RELEASE_VERSION="$V" RELEASE_PRERELEASE="$PRE" python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['RELEASE_VERSION'],'name':os.environ['RELEASE_VERSION'],'body':open('notes.md').read(),'draft':False,'prerelease':os.environ['RELEASE_PRERELEASE']=='true'}))" > create.json
           # Reuse an existing release for this tag instead of failing. Re-running this workflow is the
           # ordinary way to repair a release whose `maven` or `docker` job failed, and with `set -eu` an
           # unconditional POST would die here on the second attempt -- leaving the very jobs that need
@@ -167,19 +224,46 @@ jobs:
           if [ -n "$ID" ]; then
             echo "Release for $V already exists ($ID) - reusing it and refreshing its notes"
             python3 -c "import json;print(json.dumps({'body':open('notes.md').read()}))" > patch.json
-            curl -sf -X PATCH "$API/releases/$ID" -H "Authorization: token $TOKEN" \
-              -H 'Content-Type: application/json' -d @patch.json > /dev/null
+            STATUS="$(curl -sS -o patched.json -w '%{http_code}' -X PATCH "$API/releases/$ID" \
+              -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' -d @patch.json)"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::Forgejo returned HTTP $STATUS refreshing the notes of release $ID"
+              cat patched.json
+              exit 1
+            fi
           else
-            ID="$(curl -sf -X POST "$API/releases" \
-                   -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
-                   -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"draft\":false,\"prerelease\":$PRE}" \
-                 | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+            STATUS="$(curl -sS -o created.json -w '%{http_code}' -X POST "$API/releases" \
+              -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' -d @create.json)"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::Forgejo returned HTTP $STATUS creating release $V"
+              cat created.json
+              exit 1
+            fi
+            ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
           fi
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
+          # Names already attached, because Forgejo does NOT enforce uniqueness: CreateReleaseAttachment
+          # hands the name straight to UploadAttachment with no existence check (only `Title` is ever
+          # truncated, at 255 characters). So an unguarded re-run does not fail on a duplicate -- it
+          # silently attaches a SECOND copy of all twelve assets, which is worse, and this step's own
+          # comment above invites exactly that re-run as the ordinary repair. The `mirror` job has always
+          # guarded its loop this way; this is the one that publishes the canonical release catching up.
+          curl -sS "$API/releases/$ID/assets" -H "Authorization: token $TOKEN" \
+            | python3 -c "import json,sys;print('\n'.join(a['name'] for a in json.load(sys.stdin)))" > have.txt
           for f in assets/*; do
-            echo "Uploading $(basename "$f")"
-            curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
-              -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
+            NAME="$(basename "$f")"
+            if grep -qxF "$NAME" have.txt; then
+              echo "Forgejo already has $NAME - skipping"
+              continue
+            fi
+            echo "Uploading $NAME"
+            STATUS="$(curl -sS -o upload.json -w '%{http_code}' -X POST "$API/releases/$ID/assets?name=$NAME" \
+              -H "Authorization: token $TOKEN" -F "attachment=@$f")"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::Forgejo returned HTTP $STATUS uploading $NAME to release $ID"
+              cat upload.json
+              exit 1
+            fi
           done
 
   maven:
@@ -329,6 +413,7 @@ jobs:
       - name: Fetch release notes from Forgejo
         env:
           TOKEN: ${{ secrets.FJ_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -eu
           # -o/-w rather than -f: `curl -sf` prints nothing on an HTTP error, which is how the GitLab step
@@ -342,7 +427,27 @@ jobs:
             cat release.json
             exit 1
           fi
-          python3 -c 'import json;open("notes.md","w").write(json.load(open("release.json"))["body"])'
+          # LANDMINE - GitHub rejects a release body over 125,000 characters with a 422, and Forgejo
+          # has no such cap: its `Release.Note` is a TEXT column it never truncates (only `Title`, at
+          # 255). The instance proves the asymmetry -- 9.0.0-alpha.8's Forgejo body is 75,918 bytes,
+          # already past MySQL TEXT's 65,535, and 9.0.0-beta.1's notes are 200,185. So the canonical
+          # Forgejo release keeps the full notes and only the mirrored copy is cut, on a line boundary
+          # so no markdown link is severed, with a pointer back to the forge that has all of it.
+          python3 - <<'TRUNCATE_PY'
+          import json, os
+
+          # GitHub's documented maximum for a release body.
+          LIMIT = 125000
+          version = os.environ["VERSION"]
+          body = json.load(open("release.json"))["body"]
+          if len(body) > LIMIT:
+              notice = ("\n\n---\n\nThese notes were truncated to fit GitHub's 125,000-character limit "
+                        "for a release body. The complete notes are on Forgejo: "
+                        f"https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/{version}\n")
+              body = body[:LIMIT - len(notice)].rsplit("\n", 1)[0] + notice
+              print(f"Release notes truncated to {len(body)} characters for GitHub")
+          open("notes.md", "w").write(body)
+          TRUNCATE_PY
 
       # LANDMINE - the mirror step's precondition is the mirror, NOT the API call. `target_commitish`
       # below lets GitHub mint a tag it does not have, but only from a commit it DOES have, and a
@@ -398,7 +503,11 @@ jobs:
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
           API="https://api.github.com/repos/Griefed/ServerPackCreator"
-          BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
+          export MIRROR_VERSION="$V" MIRROR_PRERELEASE="$PRE" MIRROR_SHA="${{ github.sha }}"
+          # Same landmine as the `release` job's POST, and for the same reason -- this body is a copy of
+          # that one, so the moment it is too big for argv there it is too big here. Build the payload in
+          # a file and hand curl `-d @file`; nothing of the notes goes near the argument list.
+          python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['MIRROR_VERSION'],'target_commitish':os.environ['MIRROR_SHA'],'name':os.environ['MIRROR_VERSION'],'body':open('notes.md').read(),'prerelease':os.environ['MIRROR_PRERELEASE']=='true'}))" > create-payload.json
           # Reuse an existing GitHub release for this tag, exactly as the `release` job does for Forgejo,
           # and for the same reason: re-running this job alone is the documented repair when the mirror
           # was behind, and it is the ONLY safe repair -- a whole-workflow re-run would re-publish Maven
@@ -420,7 +529,7 @@ jobs:
             STATUS="$(curl -sS -o created.json -w '%{http_code}' \
               -X POST "$API/releases" \
               -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-              -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
+              -d @create-payload.json)"
             if [ "$STATUS" -ge 400 ]; then
               echo "::error::GitHub returned HTTP $STATUS creating release $V"
               cat created.json
@@ -507,13 +616,24 @@ jobs:
         run: |
           set -eu
           [ -s links.md ] || { echo "Nothing to append"; exit 0; }
-          curl -sf "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
-            | python3 -c "import json,sys;open('body.txt','w').write(json.load(sys.stdin)['body'])"
+          STATUS="$(curl -sS -o release.json -w '%{http_code}' "$API/releases/$RELEASE_ID" \
+            -H "Authorization: token $TOKEN")"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::Forgejo returned HTTP $STATUS reading release $RELEASE_ID"
+            cat release.json
+            exit 1
+          fi
+          python3 -c "import json;open('body.txt','w').write(json.load(open('release.json'))['body'])"
           printf '\n\n## VirusTotal\n\n' >> body.txt
           cat links.md >> body.txt
           python3 -c "import json;print(json.dumps({'body':open('body.txt').read()}))" > patch.json
-          curl -sf -X PATCH "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
-            -H 'Content-Type: application/json' -d @patch.json > /dev/null
+          STATUS="$(curl -sS -o patched.json -w '%{http_code}' -X PATCH "$API/releases/$RELEASE_ID" \
+            -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' -d @patch.json)"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::Forgejo returned HTTP $STATUS appending the VirusTotal section to release $RELEASE_ID"
+            cat patched.json
+            exit 1
+          fi
           echo "Release notes updated"
 
   news:
@@ -600,5 +720,11 @@ jobs:
           print(json.dumps(payload))
           NEWS_PY
           python3 news.py > payload.json
-          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          STATUS="$(curl -sS -o posted.json -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL")"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::The Discord webhook returned HTTP $STATUS"
+            cat posted.json
+            exit 1
+          fi
           echo "Announced $VERSION at $SERVER_URL/$REPOSITORY/releases/tag/$VERSION"

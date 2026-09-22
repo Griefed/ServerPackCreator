@@ -40,6 +40,18 @@ constraints.
   every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
   the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
   you touch a workflow. Secrets, scopes and which job dies without which → `claude-docs/CI-SECRETS.md`.
+- **The seven root-level documents are the source of truth, and both of their copies are GENERATED and
+  gitignored.** `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `HELP.md`, `LICENSE`,
+  `README.md` and `SECURITY.md` live at the repository root. Two `Copy` tasks in
+  `serverpackcreator-api/build.gradle.kts` mirror them — `shipRootDocuments` into
+  `serverpackcreator-api/src/main/resources/` (shipped in the jar; `ApiWrapper.setup()` writes them into
+  the user's home) and `shipWritersideDocuments` into `serverpackcreator-help/Writerside/topics/` — and
+  the CI step *Stage documents and images* in `.forgejo/workflows/docs.yml` copies the same set again
+  before the help site is built. **Editing either copy is silently undone by the next build**, and both
+  are in `.gitignore`, so `git status` will not tell you. Edit the root file. `LICENSE` is the one with a
+  wrinkle: it has no extension, and Writerside needs it as `LICENSE.md` to render it as a topic. (Written
+  after a doc change in this session was made against `Writerside/topics/HELP.md` and had to be replayed
+  onto the root — the staged copy happened to be present and looked like the file to edit.)
 - **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
   is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
   in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
@@ -311,18 +323,18 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-12).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-09-20).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 421 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 643           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
-| app            | 149           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| api            | 460 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| app            | 168           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | web-frontend   | 32 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 532 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 544 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -384,8 +396,45 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   recorded that a Connector boot is worth attempting anyway — right when the shim cost one of three boots,
   wrong once the per-line axis made it cost one of one. Nothing about Connector changed. Re-read the recorded
   calls a structural change touches instead of treating them as settled.
+- **A setting whose destructive sibling is on by default is a setting that never runs.** "Update Server Packs"
+  read its own manifest *after* the overwrite-cleanup had deleted it, and overwrite defaults to on — so the
+  feature was a no-op in the configuration every user starts from, and took the world it existed to protect.
+  The GUI hid it by greying the checkbox out, which is why it survived as "experimental" rather than being
+  reported as broken: **a guard rail in one adapter is not a fix, it is a reason the bug stays unreported.**
+  Ask of any pair of settings which one wins, and answer it where the behaviour lives.
+- **"Protected" and "absent" are different, and conflating them breaks the artifact.** The same protected-paths
+  predicate that must keep `server.properties` and `variables.txt` from being overwritten was also used to keep
+  files out of the ZIP — which shipped an archive without them, whose start scripts had nothing to read. One
+  list, two questions; the second needed the manifest ("did we produce this?"), not the first.
 - **A selection made on metadata needs a way for the artifact to re-open it.** A platform's loader tick
   decided the boot, the downloaded jar disagreed, and only one narrow form of disagreement — *carries a
   different descriptor* — could reopen the choice. The re-selection machinery already existed; what was
   missing was reasons to invoke it. Carrying a loader's descriptor and being able to run under it are
   different questions.
+- **A symptom shared by two layers is evidence for neither, and the layer you own is the tempting answer.**
+  The grinder's report 502'd on every path at 131.3 s, including endpoints that do no work — read as
+  thread-pool starvation, which fit. A cache and a bigger pool shipped against it; the 502s continued
+  unchanged at 130.2–131.1 s. The requests had never arrived: a containerised nginx was dialling the Docker
+  bridge gateway and the host firewall was dropping the SYN, and ~131 s is simply Linux's `tcp_syn_retries`
+  budget. One line on the host (`curl 127.0.0.1:<port>/dashboard` → **200 in 0.368 s**) separated the layers,
+  and the thread dump proved it by an **absence** — `newFixedThreadPool` creates workers lazily and never
+  retires them, so no `pool-*` thread means no request ever reached a handler. Prove the request reaches your
+  code before attributing an outage to it.
+  - **Why the firewall was dismissed twice before it was confirmed, which is the transferable part:** there
+    was no rule about that port. `Chain INPUT (policy DROP …)` was doing it, so `ufw status` showed nothing
+    relevant and "ufw is not the issue" looked like a checked fact. **"No rule for this" and "not filtering
+    this" are opposite statements**, and only the chain *policy* separates them — so two more hypotheses
+    (conntrack at 569 of 262,144; a renumbered Docker network whose gateway turned out correct) were chased
+    first. When a negative rules a layer out, ask what was actually read to rule it out.
+  - **The second trap:** that same policy was the only access control on an unauthenticated report bound to
+    `0.0.0.0`, so the obvious `ufw allow <port>` would have ended the outage and published the verdict table
+    and full CSV export in one command. Ask what a guard rail is load-bearing for before removing it.
+- **A tool that detects a defect through a side effect can only see the share of it that has that side
+  effect.** Qodana's `KDocUnresolvedReference` reports a doc block that has come loose from its declaration
+  *only* when the stranded block happens to contain a `[link]` that no longer resolves — so it named **4 of
+  the 18** instances in the repository on 2026-09-20 (22%), and the block holding the entire case for
+  `ClientsideVerifier.propagateClientOnlyProof` was not among them. A structural scan for the defect itself
+  — a doc block whose next non-blank line opens another doc block — found the rest, and found two more
+  again when written as `KDocAttachmentTest` rather than as a throwaway script, because the script had
+  silently skipped single-line blocks. Ask what a finding's *detection* depends on before treating its
+  count as the size of the problem, and pin the defect by its own shape.

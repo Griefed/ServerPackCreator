@@ -19,3 +19,122 @@ exclude:
       - .qodana
       - qodana-cache
       - .qodana-cache
+
+  # ---------------------------------------------------------------------------------------------
+  # Standing "not a finding HERE" verdicts (B38).
+  #
+  # Every entry below is scoped to the exact files it was decided for, never to a whole rule: an
+  # over-broad exclusion silences a rule everywhere and is worse than the noise it removes. A new
+  # occurrence of any of these rules in any other file still reports, which is the point.
+  #
+  # These twelve were triaged from run 817 and re-reported unchanged by run 832 (revision d97a6e188).
+  # The confirmation that this block works is the problem count dropping by exactly 12 -- from 28 to
+  # 16 -- on the next run, NOT merely the total going down. Anything else means a name or a path here
+  # is wrong and is silently matching nothing.
+  # ---------------------------------------------------------------------------------------------
+
+  # False positive, 2. `MongoIndexStore` and `MongoMigrationStore` are @Component beans injected by
+  # their interface, and QDJVM *Community* ships no Spring plugin, so it cannot see the wiring at all.
+  # They are genuinely used: `WebServiceContextTest` asserts both resolve from the application context.
+  - name: UnusedSymbol
+    paths:
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/web/index/IndexStore.kt
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/web/migration/MigrationStore.kt
+
+  # Won't fix, 4. `dependencyResolutionManagement { repositoriesMode = FAIL_ON_PROJECT_REPOS }` is
+  # Gradle @Incubating and has no stable alternative. The setting is deliberate -- it is what stops a
+  # module declaring its own repositories -- so the only way to clear this is to give that up.
+  - name: UnstableApiUsage
+    paths:
+      - settings.gradle.kts
+
+  # MUST NOT FIX, 1. `VersionMeta.awaitManifestRefresh(timeoutMillis: Long)` is exported from
+  # serverpackcreator-api, which is published to Maven Central. Changing the parameter type breaks
+  # source compatibility for every embedder for a cosmetic gain, against the API compatibility policy
+  # in the root CLAUDE.md. Revisit only at a major version, if at all.
+  - name: ConvertLongToDuration
+    paths:
+      - serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/versionmeta/VersionMeta.kt
+
+  # ---------------------------------------------------------------------------------------------
+  # Style notes refused on inspection (B40, 2026-09-21). Every one of the sixteen the scan reported
+  # was read at its call site; five were genuinely better applied and are FIXED in the code, and
+  # these eleven are cases where the suggestion is wrong, unverifiable, or worse than what is there.
+  # The report now reads zero, which is what makes a future finding legible as new without a baseline.
+  # ---------------------------------------------------------------------------------------------
+
+  # False positive, 1. The code already carries a comment saying so: `g2d.renderingHints` is
+  # read-only in Kotlin because the getter returns RenderingHints while the setter takes a Map, so
+  # the suggested property-access form DOES NOT COMPILE. Someone tried before.
+  - name: UsePropertyAccessSyntax
+    paths:
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/gui/window/control/components/LarsonScanner.kt
+
+  # Won't fix, 2. Both explicit type arguments pin a type inference would narrow:
+  # `buildList<CandidateSource>` states the element type is the INTERFACE, so dropping the CurseForge
+  # branch cannot silently re-type the list; `linkedMapOf<String, Any?>` states that the status
+  # document holds arbitrary JSON values, so adding a null-valued field later cannot stop compiling.
+  # The two in ModListCompiler carried no such meaning and were fixed instead.
+  - name: RemoveExplicitTypeArguments
+    paths:
+      - serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt
+      - serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/report/ReportServer.kt
+
+  # Won't fix, 1. `LAMBDA_SUFFIX` is an escaping-heavy regex deliberately written once because two
+  # copies had already drifted and left a migration undiscovered. Re-spelling its interpolation for a
+  # cosmetic gain is the silent-failure class the root CLAUDE.md warns about: a wrong escape produces
+  # a plausible pattern, not an error.
+  - name: RedundantInterpolationPrefix
+    paths:
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/updater/MigrationManager.kt
+
+  # Won't fix, 1. `annotating` is not a duplicate of `fired` — it is read eleven times below and says
+  # something `fired` no longer does: the rule has stopped DECIDING the verdict and now only annotates
+  # whatever the ladder settles on. That is the speaking-name convention working, not a redundancy.
+  - name: UnnecessaryVariable
+    paths:
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/BootLogClassifier.kt
+
+  # Won't fix, 1. `"mc:" + line` builds a dedup KEY, and its sibling `verdictKey` in the same file
+  # spells the marker the same way. Converting one copy to a template leaves the two spelled
+  # differently, which is precisely the duplicated-knowledge drift this repo has been bitten by four
+  # times. If this is ever changed, change both or neither.
+  - name: ConvertToStringTemplate
+    paths:
+      - serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/report/VerdictStore.kt
+
+  # Won't fix, 2. Converting to `Sequence` is a PERFORMANCE change, and these chains run over one
+  # project's files and versions — tens of elements, where Sequence's per-element overhead makes it a
+  # pessimisation. Unmeasured optimisation is the rule this repo has a receipt for: B30 was a real
+  # 121,492-byte saving that bought ~0 ms. Measure first or leave it.
+  - name: ConvertCallChainIntoSequence
+    paths:
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/BootCandidateSelector.kt
+
+  # Won't fix, 2. Both loops walk a multi-field domain object and read its fields BY NAME. Destructuring
+  # binds them positionally instead, so re-ordering the data class's parameters would silently rebind
+  # every name here rather than failing to compile — the opposite of what the per-parameter ordering
+  # rule in the root CLAUDE.md exists to protect.
+  - name: DestructuringDeclaration
+    paths:
+      - serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/Grinder.kt
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/ClientsideReportRenderer.kt
+
+  # Won't fix, 1. `forge` is one of three metas declared here and assigned in `init` in a deliberate
+  # order (forge, then neoForge, then fabric). Joining just this one moves its construction out of
+  # that ordered block and leaves three sibling declarations spelled two different ways — in -api's
+  # central type, which is published to Maven Central.
+  - name: JoinDeclarationAndAssignment
+    paths:
+      - serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/versionmeta/VersionMeta.kt
+
+  # Won't fix, 5. Each is an early-return guard carrying a comment that explains the case it guards.
+  # Collapsing them to `return !cond && expr` makes five explained predicates harder to read and
+  # strands the comment above a form it no longer describes.
+  - name: RedundantIf
+    paths:
+      - serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/serverpack/ServerPackUpdater.kt
+      - serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/gui/window/configs/ConfigEditor.kt
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/BootVerifier.kt
+      - serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/VersionConstraint.kt
+      - serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/report/BootLogStore.kt

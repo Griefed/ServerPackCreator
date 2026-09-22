@@ -320,9 +320,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     fun getOSVersion() = jarInformation.osVersion
 
-    /**
-     * The version of the ServerPackCreator API.
-     */
     /** This build's version from the jar manifest, or `dev` when running from a source build. */
     val apiVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 
@@ -587,6 +584,23 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         set(value) {
             generationConfig.isUpdatingServerPacksEnabled = value
         }
+
+    /**
+     * Paths an update must never delete, overwrite or put into the ZIP-archive, relative to the
+     * server pack. A directory covers everything beneath it. See
+     * [de.griefed.serverpackcreator.api.settings.GenerationConfig.updateProtectedPaths].
+     */
+    var updateProtectedPaths: TreeSet<String>
+        get() = generationConfig.updateProtectedPaths
+        set(value) {
+            generationConfig.updateProtectedPaths = value
+        }
+
+    /**
+     * Shipped default for [updateProtectedPaths].
+     */
+    val fallbackUpdateProtectedPaths: TreeSet<String>
+        get() = generationConfig.fallbackUpdateProtectedPaths
 
     /**
      * Whether to automatically update the SPC_JAVA_SPC-placeholder in the script variables
@@ -1308,6 +1322,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         log.info("Cleanup of already existing server packs set to:  $isServerPackCleanupEnabled")
         log.info("Auto-discovery of clientside-only mods set to:    $isAutoExcludingModsEnabled")
         log.info("Overwriting of already existing server packs set to:        $isServerPacksOverwriteEnabled")
+        log.info("Updating of already existing server packs set to:           $isUpdatingServerPacksEnabled")
+        log.info("Paths protected from server pack updates set to:            $updateProtectedPaths")
         log.info("Minecraft pre-releases and snapshots available set to:      $isMinecraftPreReleasesAvailabilityEnabled")
         log.info("Files which must be excluded from ZIP-archives set to:      $zipArchiveExclusions")
         log.info("User specified clientside-only mod exclusion filter set to: $exclusionFilter")

@@ -6193,3 +6193,328 @@ untrusted scheme not becoming a link) are each carried by their own new guard an
 
 Full build green with the frontend's Vitest suite included: **api 421, clientside 568, grinder 516, app 149,
 plugin-grinder 73, plugin-example 3 — 1,730 tests, 0 failures.**
+
+---
+
+## 2026-09-20 — audit of the 2026-09-19/20 commits, merged into develop
+
+Scope: `1e4e78150..develop` — the nine-commit server-pack-update series, the two recovered-work
+commits, and the three merge commits. Read-only; no source modified.
+
+| # | Commit | Subject |
+|---|---|---|
+| 1 | `65071b62b` | test(api): pin what regenerating over an existing server pack does today |
+| 2 | `960e18649` | test(api): red pins for what an update must guarantee |
+| 3 | `ee629ebff` | feat(api): make updating an existing server pack safe for a running server |
+| 4 | `942382da6` | test(api): red pin for a list-setting overwriting its own default |
+| 5 | `011af4f76` | fix(api): stop a list-setting from overwriting its own shipped default |
+| 6 | `006e46aa4` | feat(app): take Update Server Packs out of its experimental state |
+| 7 | `6ac06c3ff` | fix(api): keep server.properties and variables.txt in an updated pack's archive |
+| 8 | `2dafb3293` | docs: describe updating a server pack as a feature you can rely on |
+| 9 | `6414f9131` | docs: record that the root-level documents have two generated copies |
+| 10 | `74a73b31c` | feat(build): name the AppImage _experimental, and stop spelling that name twice |
+| 11 | `9de625cc4` | docs(readme): document generating a server pack from the commandline |
+| 12–14 | `8e916fd08`, `3271e4948`, `56469ad30` | the three merges |
+
+### HIGH
+
+None. No behaviour change is hidden inside a `refactor:`-labelled commit — there is no `refactor:`
+commit in this range at all. No module boundary is broken (`ServerPackUpdater` imports only Jackson,
+`ApiProperties`, a file utility and log4j; no Swing, Spring-web or frontend type reaches
+`api/serverpack`). The plugin-API contract is preserved: every widened signature
+(`copyFiles`, `createServerRunFiles`, `zipBuilder`, on both `ServerPackHandler` and its
+collaborators) takes a **trailing defaulted** parameter and carries `@JvmOverloads`, so the previous
+JVM descriptors survive for pre-compiled pf4j plugins, and each default reproduces the old behaviour
+exactly. All five behaviour changes on exported calls are recorded in
+`claude-docs/API-BEHAVIOUR-CHANGES.md`.
+
+### MEDIUM
+
+**M1 — `ee629ebff` bundles three concerns into one commit.** Alongside the update feature it carries:
+- a **pure refactor**: `ServerPackManifest` gains `FILE_NAME` / `inside(File)` and the two literal
+  `"manifest.json"` spellings are read through it; `ServerPackProvisioner` gains
+  `startScriptName` / `javaScriptName` / `VARIABLES_NAME` / `HOW_TO_RUN_NAME` so the run-file naming
+  exists once.
+- an **unrelated bug fix**: `ServerPackHandler.cleanupEnvironment` deleted the destination twice
+  (`deleteExistingServerPack(destination)` followed by an identical `File(destination).deleteQuietly()`);
+  the duplicate line is removed here.
+
+Rule broken: *one concern per commit; never mix a refactor with a feature or bugfix.* Both extractions
+are genuinely enabling changes for the feature (the manifest name is needed by `ServerPackUpdater`, the
+run-file names by the manifest), which is the same carve-out the root `CLAUDE.md` grants for reshaping a
+constructor to document it — but the `cleanupEnvironment` fix is not, and belonged in its own commit
+with its own message. 9 files, 691 insertions, is a large single step for a convention that asks for
+incremental ones.
+
+**M2 — `ee629ebff` has no pin boundary: `ServerPackUpdater.kt` and `ServerPackUpdaterTest.kt` are both
+added by it.** `git checkout ee629ebff^` cannot compile the guard, let alone watch it go red. This is
+the recurrence of the finding already recorded against the eight commits of 2026-07-31. Mitigations
+actually present, which distinguish it from that instance: the commit message names three mutations
+(dropping `ignoreCase`, sorting shallowest-first, dropping the protection check) and states that each
+failed exactly one guard; those mutations were run. The *behavioural* red pins for the same work do have
+a boundary — `960e18649` adds `ServerPackUpdateSafetyTest` alone, 349 lines, nine guards, all red — so
+what is missing is the unit-level boundary, not the evidence.
+
+**M3 — `006e46aa4` bundles a shared-component bug fix into a GUI feature commit, with no pin boundary.**
+`ScrollTextArea.setEnabled` did not forward to the `JTextArea` it wraps, so disabling one of these
+widgets disabled nothing; the override, its guard (`ScrollTextAreaEnabledTest`, 56 lines) and the
+feature all land together. Same shape as M2, same mitigation (the message records the mutation, and it
+was run). `ScrollTextArea` had **no test at all** before this commit, so a shared GUI component was
+modified without prior characterization — acceptable here only because the change is a purely additive
+override of behaviour that did not previously exist, leaving nothing to preserve.
+
+**M4 — `74a73b31c` is build logic and its message carries no measurement.** The root `CLAUDE.md` is
+explicit: *"for a change to `buildSrc`, a `build.gradle.kts` or task wiring, the standard is: measure the
+behaviour before and after, and record both numbers in the commit message."* The message records
+internal consistency (`APP_NAME`, the appimagetool filename, per-architecture JDK directories, the
+`rm -rf` of the AppDir), `bash -n` and a YAML parse — none of which is a behaviour measurement. The
+measurement **does exist**: the 2026-09-18 session ran `misc/build-appimage.sh` twice inside a
+`debian:bookworm-slim` container and printed the produced filenames, the count matched by the
+`ServerPackCreator-*` glob, the count a bare `*.AppImage` glob would wrongly match, and the embedded
+architecture of each. It was simply not carried into the commit message when the recovered file was
+committed on 2026-09-20. This is the "cite names, not snapshots" failure in its other direction — the
+evidence was in hand and left outside the artifact that will outlive the session.
+
+**M5 — `6ac06c3ff` fixes a defect introduced two commits earlier, in the same series.** The archive
+exclusion in `ee629ebff` was keyed on the protected-paths predicate, which excluded `server.properties`
+and `variables.txt` from the ZIP of an updated pack — files every server pack needs. The guard that
+should have caught it (`theArchiveOfAnUpdateLeavesOutWhatTheServerWrote`, added red in `960e18649`)
+asserted only that the world and `ops.json` were **absent** and that `mods/alpha.jar` was present; it
+never asserted that what *should* ship still shipped. Rule: a red pin that only checks the negative
+half of a change cannot catch the positive half being broken. The fix commit adds the three missing
+assertions and was watched failing on the first of them.
+
+### LOW
+
+**L1 — `74a73b31c` and `9de625cc4` are recovered work committed two days after it was written,** with
+author dates of 2026-09-20 rather than 2026-09-18/19. Both messages say so explicitly and name the
+recovery route, so the history is honest, but `git log --since` on a date range will not find them where
+they belong.
+
+**L2 — the merge commits are `--no-ff` for two single-commit branches.** `8e916fd08` and `3271e4948`
+each wrap one commit, so the merge message and the commit message largely restate each other. Harmless,
+and it does keep the branch boundary visible.
+
+### Verified clean — do not re-litigate
+
+- **No existing test assertion was changed or removed anywhere in this range.** Every test delta is a
+  pure addition: `ee629ebff` +266 lines across two files, `006e46aa4` +56, `6ac06c3ff` +6. Checked with
+  `git show <c> -- '*/src/test/*' | grep '^-'` filtered to assertion lines — empty for all four code
+  commits. The "if a test must change for a refactor, stop and flag it" signal never fired.
+- **No new Kotlin-idiom violations.** `ServerPackUpdater.kt`: zero `!!`, zero `var`. The single `!!` and
+  two `var`s in `ServerPackHandler.kt` are pre-existing (`packConfig.name!!` at :184, from
+  `6e8577999`/`195c900d6`); no line added by these commits introduces either. Confirmed by grepping the
+  `+` side of both `ServerPackHandler` diffs.
+- **No new compiler warnings** in any touched file (`--rerun-tasks` on both modules' `compileKotlin`,
+  filtered to the seven changed classes: none).
+- **No dead code left in `run()`.** All four lambdas/vals introduced are consumed: `isProtected` ×4,
+  `isOperatorData` ×2, `preserve` ×5, `producedPaths` ×2.
+- **Characterization existed before the units were changed.** `ServerPackHandlerCharacterizationTest`,
+  `ServerPackFileGathererTest` and `ServerPackProvisionerTest` all predate this range, and `65071b62b`
+  adds `run()`-level characterization (6 guards, green) before any behaviour is touched. The
+  red-pin-then-fix ordering is correct and committed for `960e18649`→`ee629ebff` and
+  `942382da6`→`011af4f76`.
+- **Every declared member of `ServerPackUpdater` carries a doc comment** bar the `log` property, which
+  matches every sibling in the package.
+- **`develop` is green after all three merges**: 1,901 tests, 0 failures, 0 errors across six modules
+  (`./gradlew build`, 2026-09-20).
+
+### Recommendation
+
+M4 and M5 are worth acting on; M1–M3 are recorded rather than fixed, because the commits are merged into
+`develop` and splitting them now would mean rewriting shared history — the same call `358675fbf` forced
+in the root `CLAUDE.md`, and for the same reason. Concretely:
+
+1. **M4** — add the 2026-09-18 container measurement to the record. It cannot go into `74a73b31c`'s
+   message any more, so it belongs in a follow-up note (this file, or a line in the workflow beside the
+   glob) stating what was measured and what it produced.
+2. **M5** — generalise the lesson: a guard asserting that something is *excluded* should assert in the
+   same breath what is still *included*. Worth a line in the api module's `CLAUDE.md`.
+3. **M1–M3** — no action on the commits. The pattern to change is forward-looking: land an enabling
+   extraction as its own `refactor:` commit before the feature that needs it, and land a new class's seam
+   before its guard so the guard has a red state to be checked out at.
+
+#### Follow-up, same day — M4 and M5 closed
+
+**M4 closed by measurement, not by a note.** The 2026-09-18 container run was re-executed on
+2026-09-20 rather than quoted from a transcript, and its numbers now sit in
+`.forgejo/workflows/release-build.yml` beside the assertion they justify. Both invocations in one
+`debian:bookworm-slim` workspace, on an aarch64 host (which mirrors the amd64 CI runner — native
+first, then the other architecture):
+
+| | |
+|---|---|
+| produced | `ServerPackCreator-9.9.9-test-aarch64_experimental.AppImage` → ELF 64-bit, ARM aarch64 |
+| | `ServerPackCreator-9.9.9-test-x86_64_experimental.AppImage` → ELF 64-bit, x86-64 |
+| | `appimagetool-aarch64.AppImage` |
+| `ServerPackCreator-*` glob | **2** — what `release-build.yml` asserts |
+| bare `*.AppImage` glob | **3** — would wrongly count the tool, which is why the glob is anchored |
+| JDK directories after both runs | `jdk-21-aarch64`, `jdk-21-x86_64` — per architecture, so the second run cannot inherit the first's runtime |
+
+That measures every claim the two workflows' comments make: the `_experimental` suffix, the anchored
+glob, cross-packaging producing a genuine foreign-architecture binary, and the per-architecture JDK
+directories.
+
+**M5 closed** — the lesson is now a landmine in `serverpackcreator-api/CLAUDE.md`: a guard asserting
+that something is excluded must assert in the same breath what is still included.
+
+**M1, M2, M3 remain open by choice.** All three are properties of commit *structure*, and `develop` is
+14 commits ahead of `origin/develop` — unpushed, so they are still rewritable. Fixing them means
+splitting `ee629ebff` into a `refactor:` (the `FILE_NAME` / run-file-name extractions), a `fix:` (the
+duplicated `deleteQuietly` in `cleanupEnvironment`) and the feature; landing `ServerPackUpdater`'s seam
+before its guard; and doing the same for `ScrollTextArea`. That is a rewrite of 14 commits including 3
+merges, each of which must be re-verified green individually. Not undertaken without an explicit
+instruction — flagged for Griefed.
+
+## 2026-09-20 — audit of the Qodana-817 remediation (`52074ebc5..develop`, 4 commits + merge)
+
+Scope: the four commits that act on Qodana run 817 plus their merge. Read-only; no source modified
+by this audit.
+
+| # | Commit | Subject |
+|---|---|---|
+| 1 | `60ab1f5cf` | docs: reattach four KDoc blocks that had come loose from their declarations |
+| 2 | `5d5435ebd` | refactor(grinder): drop what the configuration extraction left behind |
+| 3 | `2b4228b14` | refactor(api): give the versionmeta snapshot locals speaking names |
+| 4 | `dae6834e0` | docs: reattach or retire fourteen more KDoc blocks that had come loose |
+| 5 | `eb0387d03` | merge: the docs the code lost, and the leftovers of two extractions |
+
+### Method — what was actually run, so a reader can re-run it
+
+1. **Code-skeleton diff.** Every KDoc block and blank line stripped from all 26 touched files at
+   `52074ebc5` and at the merge, then diffed. **55 changed lines, every one of them in commits 2 and
+   3** — the two `docs:` commits changed zero code lines, and no declaration moved relative to another.
+2. **KDoc multiset diff.** Per file, the multiset of doc-block texts compared across the range.
+   **18 of 26 files byte-identical** (pure moves); the 8 that differ are the intended edits, each
+   named in its commit message.
+3. **Base-tree equivalence run**, the check the root `CLAUDE.md` prescribes: a detached worktree at
+   the branch head with `serverpackcreator-{api,clientside,grinder}/src/test` checked out from
+   `develop`, then `:test` on all three. **1,664 pre-existing guards, 0 failures, 0 compile errors,
+   and not one file needed adapting** — the strongest form of that result, since a compile error
+   would itself have been a signature change.
+4. **No Qodana re-scan.** Docker Desktop's VM is capped at 2 GB / 2 CPUs on this machine and the
+   linter is OOM-killed (exit 137) during the Gradle import; raising it needs a Docker restart that
+   would drop a running pihole, and Griefed chose to skip it. So *"the 21 findings are gone"* rests
+   on the structural scan and the compile, not on a second SARIF. Re-confirm on the next CI run.
+
+### HIGH
+
+None, and the evidence is method 1 and 3 above rather than an assurance: no behaviour change hides
+inside either `refactor:`-labelled commit, because the only code lines they contain are eight local
+renames, one unreachable function, one unused import, three unused test fields and one
+fully-qualified name replaced by the import that was already there. No module boundary is touched —
+no import was added anywhere in the range. The plugin-API contract is untouched: nothing exported
+by `-api` changed name, signature or arity; `FabricInstaller.installers`, `ApiProperties.apiVersion`
+and `VersionMeta.refreshManifests` were reached for their **doc comments** only.
+
+### MEDIUM
+
+**M1 — `dae6834e0` fixes eighteen instances of a defect and leaves no guard behind, so instance
+nineteen arrives silently.** The defect is a KDoc block whose next non-blank line opens another KDoc
+block: nothing can attach to the first, dokka drops it, and the declaration reads as undocumented.
+Qodana sees a block only when it happens to contain a `[link]` that no longer resolves — it reported
+**4 of the 18**, i.e. 22%. The detector that found the other 14 is an ad-hoc script that exists
+nowhere but this session's transcript. The repository's own rule is that where a consequence is
+reachable from a normal suite, pin the consequence; this one is a pure source scan, cheaper than
+`ScriptTemplateContentTest`, which already reads shipped files from disk and executes them. Rule
+broken: *a bug found while refactoring gets surfaced and fixed* — it was fixed, but the fix is
+unprotected, and the history says this exact defect accrued 18 times unnoticed.
+
+**M2 — 28 of the 49 Qodana findings were triaged and then deferred with no durable record.** Twelve
+were judged won't-fix for stated reasons (2 × `UnusedSymbol` on `@Component` beans QDJVM Community
+cannot see, 4 × `UnstableApiUsage` on Gradle's `@Incubating` `dependencyResolutionManagement`, 1 ×
+`ConvertLongToDuration` on the published `VersionMeta.awaitManifestRefresh`, 5 × `RedundantIf` on
+commented early-return guards) and 16 were style noise. Every one of those reasons lives in chat and
+in no file, so the next reader of the next report re-derives them from scratch — and two of them are
+judgement calls a future session could get wrong, the `ConvertLongToDuration` one especially, since
+taking it would break source compatibility for embedders. `claude-docs/BACKLOG.md` exists precisely to
+hold "looked at, judged, postponed, here is why". Rule broken: *do not silently defer.*
+
+**M3 — the scan itself is known to under-report and that finding was left outside the repository
+too.** `.forgejo/workflows/qodana.yml` runs `qodana scan` against a raw checkout with no Gradle
+codegen, so i18n4k's generated `Translations` object does not exist: run 817 carries **35 sanity
+failures** (30 × `Unresolved reference Translations`, 5 × `Unresolved reference Example`) plus 6
+unresolved `kaptGeneratedClasses` roots, and **85 source files reference `Translations`, 79 of them in
+`-app`**. A file with an unresolved core symbol is analysed with inspections degraded, so "3 findings
+in `-app`" is not evidence that `-app` is clean. Related and equally unrecorded: no baseline is
+configured, so all 49 findings are reported "new" on every single run.
+
+**M4 — `5d5435ebd` bundles two unrelated causes under a subject that names one.** "drop what the
+configuration extraction left behind" is true of `GrinderApplication`'s `env()` and `BootResult`
+import and of `SystemdUnitConfigurationTest`'s three regexes. It is **not** true of
+`VerdictReportRenderer.kt:257-258`, where two symbols were imported and then written out fully
+qualified — a different mistake, of a different age, in a different file, that happens to have been
+reported by the same tool run. Rule broken: *one concern per commit; stay within the commit's stated
+scope.* Minor in consequence (13 deleted lines, one substitution, all behaviour-preserving) but it is
+the shape that makes a later `git log -S` hunt fail.
+
+### LOW
+
+**L1 — `60ab1f5cf` deleted an argument that survives nowhere.** The stale copy removed from
+`ModIdRegistry` carried two claims the merged doc at `ModIdRegistry.kt:295` does not restate: that a
+slug guess *"costs one lookup that may simply miss, which is far cheaper than never resolving the
+dependency"* — the cost/benefit case for guessing at all — and that *"an id that maps nowhere is
+reported, never fabricated."* The commit message justified the deletion on the ground that the block's
+central claim ("CurseForge gets no guess at all") had been false since 2026-09-06, which it had; the
+error was treating the whole block as superseded because its headline was. Confirmed by grep: neither
+argument appears anywhere in `-clientside` now.
+
+**L2 — `60ab1f5cf` edits doc text inside a commit whose stated job is moving it.** `getSide`'s
+reattached block at `ForgeTomlScanner.kt:254` had its `@param` corrected (it described the modId) and
+gained the `BOTH` fallback the old text omitted. Both corrections are right and the message discloses
+them, but a reader diffing this commit for "moves only" finds one block that is not a move.
+
+**L3 — the per-module test counts in the root `CLAUDE.md` are stale in three rows, and the current
+numbers were in hand.** The table says api 450, clientside 643, grinder 532; this range measured 459,
+668 and 537. The file itself says the column is a snapshot to be re-derived, so this is not a broken
+rule — but leaving a number wrong when the right one is on screen is the "cite names, not snapshots"
+failure in its cheap direction.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **The two `docs:` commits contain no code.** Method 1: zero non-comment lines changed in either.
+- **No test assertion, argument or expected value changed anywhere in the range.** The only test-file
+  code change is the deletion of three unreferenced `private val` regexes
+  (`SystemdUnitConfigurationTest`); method 3 proves the rest by running `develop`'s own tests.
+- **The eight renames are locals.** `next_installers` → `nextInstallers` and friends never cross a
+  declaration boundary; `installers`, `loaders`, `releases`, `snapshots` and `allVersions` keep their
+  names, their `@Volatile`, and their `private set`.
+- **Declaration order is unchanged in `BootLogClassifier`**, where git renders the doc move as
+  `clientOnlyDependencyMarker` moving up. The `val` initialisation order inside the object is
+  identical before and after — checked in method 1, which is order-sensitive.
+- **Every reattachment was matched to its declaration by evidence, not by reading.** Where the prose
+  did not name its target, `git log -L` produced the commit that separated them: `2226261f8` inserted
+  `clientOnlyDependencyMarker` between `dependencyFailureMarkers` and its doc; `fc7baf3f5` inserted a
+  test between `stillRefusesAFileTaggedForAnotherLoader` and its doc; `a27b63299` added
+  `refreshManifests`'s `@Synchronized` rationale above the existing doc instead of into it.
+- **No characterization tests were owed.** Nothing in the range alters behaviour, so there is nothing
+  to pin; the standing rule about committing a red guard first does not apply to a range with no
+  green to reach.
+
+### Recommendation
+
+M1 first: it is the only finding that will cost something later, and the fix is one source-scanning
+test in the module that already owns source-scanning tests. M2 and M3 are one `BACKLOG.md` entry each
+(next ID **B38**) plus, for M3, a line in the CI workflow's comment block so the next person to read
+that job knows what it cannot see. M4 is unfixable in place — the commit is merged into `develop`, and
+force-pushing a shared branch to relabel a 13-line cleanup is the wrong trade; this entry is the
+remedy, exactly as `358675fbf` was handled on 2026-09-01. L1 is a two-sentence restoration. L2 needs
+nothing. L3 is three numbers.
+
+### Resolution — closed the same day (2026-09-20)
+
+| Finding | Closed by | Evidence |
+|---|---|---|
+| M1 | `541080722` (red), `a6ec92056` (green) | `KDocAttachmentTest` scans all 755 `.kt`/`.kts` files outside `build/`. It landed **red on two instances the ad-hoc script had missed** — `LegacyFabricInstaller.kt:47` and `GrindLoopTest.kt:185`, both single-line blocks the script skipped — and passes now. A size assertion (`> 100` files) sits above the orphan assertion so a scan that reaches nothing cannot pass by vacuity. |
+| M2 | `47a160358` | `BACKLOG.md` **B38**, with the twelve won't-fix verdicts as a table naming rule, count, location and reason. The entry states that the table is the interim record and the fix is `qodana.yaml` plus a baseline, verifiable only against a real run. |
+| M3 | `47a160358` | `BACKLOG.md` **B39**, plus an eight-line comment above the scan step in `.forgejo/workflows/qodana.yml` — a reader of that job will not open the backlog. YAML re-parsed after the edit; both jobs and all six steps still resolve. |
+| M4 | Not fixed — recorded | `5d5435ebd` is merged into `develop`. Force-pushing a shared branch to relabel a 13-line behaviour-preserving cleanup is the wrong trade, the same call made for `358675fbf` on 2026-09-01. |
+| L1 | `9c762727c` | The two arguments restored into `ModIdRegistry.mappingFor`'s doc, each **checked against the code first**: `mappingFor` returns `Guess` for both platforms and `None` otherwise, and `BootVerifier`'s planner turns an unreachable mapping into `ManifestDependencyPlan.Unmapped(modID)` — the id by name, no ref invented. Restoring a claim on trust is what produced L1 in the first place. |
+| L2 | No action | The edit was disclosed in the commit that made it. |
+| L3 | `a3a149bf1` | All seven modules re-measured rather than incremented: api 460, app 168, clientside 668, grinder 537, plugin-example 3, plugin-grinder 75, web-frontend 32 (Vitest, 14 files). **1,943 tests, zero failures.** Three rows were wrong; four were already right. |
+
+The lesson from M1 is in the root `CLAUDE.md` lesson list: *a tool that detects a defect through a side
+effect can only see the share of it that has that side effect.* Qodana saw 4 of 18 because it reports a
+loose doc block only when the block happens to carry a `[link]` that no longer resolves; the script
+written to find the rest missed 2 more because it only considered multi-line blocks; the test written to
+replace the script caught those on its first run. Each layer's blind spot was invisible from inside it.

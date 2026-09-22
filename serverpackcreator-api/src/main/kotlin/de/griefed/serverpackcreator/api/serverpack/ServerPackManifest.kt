@@ -59,10 +59,21 @@ class ServerPackManifest {
 
     constructor()
 
-    /** Serialise this manifest into the given server pack directory as `manifest.json`. */
+    /** Serialise this manifest into the given server pack directory as [FILE_NAME]. */
     fun writeToFile(destination: File, objectMapper: ObjectMapper) {
         val content = objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(this)
-        File(destination, "manifest.json").writeText(content)
+        inside(destination).writeText(content)
+    }
+
+    companion object {
+        /**
+         * The name a server pack's manifest is written under. Read through by everything that looks
+         * for one, so the name cannot end up spelled two ways.
+         */
+        const val FILE_NAME = "manifest.json"
+
+        /** The manifest-file of the server pack in [serverPack], whether or not it exists yet. */
+        fun inside(serverPack: File): File = File(serverPack, FILE_NAME)
     }
 
 }

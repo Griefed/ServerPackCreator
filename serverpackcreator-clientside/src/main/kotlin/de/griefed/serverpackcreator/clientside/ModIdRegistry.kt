@@ -255,34 +255,9 @@ object KnownModIds {
      */
     private val yaclModulePattern = Regex("""^yet_another_config_lib_v\d+$""")
 
-    /**
-     * The ref [platform] can resolve [modId] by, or `null` when there is none.
-     *
-     * **The two platforms are treated asymmetrically on purpose.** An unknown id is handed to Modrinth
-     * as-is, because Modrinth resolves a project by slug *or* id and most mod ids are their own slug — a
-     * guess costs one lookup that may simply miss, which is far cheaper than never resolving the
-     * dependency. CurseForge gets no guess at all: it addresses projects by numeric id, so a mod id is
-     * never a valid ref, and searching for one would spend the API key's quota on a match nothing could
-     * verify. An id that maps nowhere is *reported*, never fabricated.
-     */
     /** The ref [mappingFor] arrived at, for callers that only need the string — deduping, mostly. */
     fun refFor(modId: String, platform: String): String? = mappingFor(modId, platform).ref
 
-    /**
-     * How [modId] maps onto [platform], and how much that mapping can be trusted.
-     *
-     * An alias — the table, or a Fabric API / QSL module shape — is a project we know the id names. Anything
-     * else is guessed to be the project's slug, which **both** platforms accept: Modrinth addresses projects
-     * by slug directly, and CurseForge's search endpoint resolves one to the numeric id its other routes
-     * need.
-     *
-     * CurseForge got no guess at all until 2026-09-06, because a guess that mapped and then failed to stage
-     * used to refuse the boot — so guessing risked converting working boots into refusals. The refusal split
-     * now keys on this type instead, and a [ModIdMapping.Guess] never refuses, which is what makes the guess
-     * safe to offer. Before that, every manifest-declared dependency of a CurseForge candidate was
-     * unresolvable unless it was one of the four aliases: `modtweaker` never staged `mtlib`, a project
-     * CurseForge publishes under exactly that slug.
-     */
     /**
      * Everything worth trying for [modId] on [platform], best first.
      *
@@ -316,6 +291,17 @@ object KnownModIds {
      * slug. The three outcomes are [ModIdMapping.Alias] (known, may refuse a boot), [ModIdMapping.Guess]
      * (optimistic, never refuses) and [ModIdMapping.None] — which is why the caller does not have to decide
      * how much to trust what it gets back.
+     *
+     * The slug guess is offered on **both** platforms: Modrinth addresses projects by slug directly, and
+     * CurseForge's search endpoint resolves one to the numeric id its other routes need. It is worth making
+     * because it costs one lookup that may simply miss, which is far cheaper than never resolving the
+     * dependency at all — and an id that maps nowhere is *reported*, never fabricated. CurseForge got no
+     * guess at all until 2026-09-06, because a guess that mapped and then failed to stage used to refuse the
+     * boot — so guessing risked converting working boots into refusals. The refusal split now keys on this
+     * type instead, and a [ModIdMapping.Guess] never refuses, which is what makes the guess safe to offer.
+     * Before that, every manifest-declared dependency of a CurseForge candidate was unresolvable unless it
+     * was one of the four aliases: `modtweaker` never staged `mtlib`, a project CurseForge publishes under
+     * exactly that slug.
      */
     fun mappingFor(modId: String, platform: String): ModIdMapping {
         val id = modId.trim().lowercase()

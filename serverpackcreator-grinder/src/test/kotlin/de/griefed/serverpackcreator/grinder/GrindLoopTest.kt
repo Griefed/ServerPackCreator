@@ -182,7 +182,6 @@ internal class GrindLoopTest {
         )
     }
 
-    /** Passes are counted and reported, which is what the daemon's final log line states. */
     /**
      * The loop runs until told to stop and reports how many passes it completed — the number the daemon's
      * final log line states. Two here: the first grinds the catalog slice, the second finds nothing due and
