@@ -71,7 +71,19 @@ class FileCleanupSchedule @Autowired constructor(
      * of the two. Anything else — a landing copy left by a crash — is simply removed.
      */
     private fun sweep(root: Path, knownFileIDs: List<String>, what: String, deleteStored: (String) -> Unit) {
-        for (file in root.listDirectoryEntries().map { it.toFile() }) {
+        val present = root.listDirectoryEntries()
+        if (knownFileIDs.isEmpty() && present.isNotEmpty()) {
+            // "No rows" makes every file an orphan, which is right for an empty installation and
+            // catastrophic for one reading the wrong database -- a state this project has shipped once,
+            // when Boot 4 retired spring.data.mongodb.uri and Mongo's default `test` database was used.
+            // Reclaiming disk can wait for a human; deleting everything cannot be undone.
+            log.error(
+                "Refusing to sweep ${present.size} file(s) from $root: the database reports no $what at " +
+                        "all. Delete them by hand if that is genuinely correct."
+            )
+            return
+        }
+        for (file in present.map { it.toFile() }) {
             if (knownFileIDs.any { fileId -> file.name.contains(fileId, ignoreCase = true) }) {
                 continue
             }
