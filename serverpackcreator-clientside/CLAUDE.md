@@ -153,6 +153,27 @@ positive strips a working mod out of every pack built against the list.
 
 ## Engine details & landmines (durable)
 
+- **LANDMINE — `JdkHttpFetcher`'s default client is `SHARED`, one per process. Do not "fix" that back
+  into a per-instance build.** It read as harmless (`HttpClient.newBuilder()…build()` as a default
+  parameter) and was not: every `JdkHttpFetcher()` minted its own client, each with its own connection
+  pool **and its own `SelectorManager` thread** that lives until the client is collected. The JDK names
+  that shape as the anti-pattern in as many words — *"Creating a new client for each operation, though
+  possible, will usually prevent reusing such connections."*
+  - **The multiplier is per candidate, not per process.**
+    `ContainerCandidateVerifier.verifyStaged` calls `supportedPlatforms()` for every candidate, and that
+    function *constructs* a `ModrinthPlatform` and a `CurseForgePlatform` each time rather than returning
+    held ones. Two fresh clients per candidate. Measured on the live daemon 2026-09-21:
+    **384 clients in 2.9 hours, 28 still alive.**
+  - **Sharing is safe for a checkable reason, not by assumption:** the CurseForge key is an `x-api-key`
+    **request header** passed through `HttpFetcher.get(url, headers)`, never client state, so two
+    platforms on one client cannot leak one's credential into the other's calls. `HttpClient` is
+    documented immutable and thread-safe.
+  - `JdkHttpFetcherClientSharingTest` pins it by **identity** — 25 fetchers must yield 1 distinct client —
+    and separately pins that a caller-supplied client still wins, which is what every test faking the
+    transport depends on.
+  - **`supportedPlatforms()` is still a factory that builds on every call.** Only the *client* is shared
+    now; the platform objects are not. Anything that calls it in a loop is still allocating, so if a hot
+    path ever needs more than the client shared, hold the platforms too.
 - **`MetadataScanner` no longer mirrors `ModListCompiler` — since 2026-08-15 both dispatch through
   `ModScanner.scannerFor(modloader, minecraftVersion)` in `-api`.** It *is* shared code now; do not
   re-add a local `when (loader)` over the concrete scanners. The old "kept in sync deliberately" note

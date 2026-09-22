@@ -1208,7 +1208,7 @@ class GenerationConfig(private val store: PropertyStore) {
         }
         set(value) {
             store.setList(UPDATE_PROTECTED_KEY, value.filter { it.isNotBlank() }, ",")
-            log.info("Paths protected from server pack updates set to: ${updateProtectedPaths}")
+            log.info("Paths protected from server pack updates set to: $updateProtectedPaths")
         }
 
     /**

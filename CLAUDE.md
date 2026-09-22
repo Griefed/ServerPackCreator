@@ -329,12 +329,12 @@ evidence consulted occasionally, not context every session needs.
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
 | api            | 460 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 668           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 168           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | web-frontend   | 32 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 537 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 544 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -411,6 +411,24 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   different descriptor* — could reopen the choice. The re-selection machinery already existed; what was
   missing was reasons to invoke it. Carrying a loader's descriptor and being able to run under it are
   different questions.
+- **A symptom shared by two layers is evidence for neither, and the layer you own is the tempting answer.**
+  The grinder's report 502'd on every path at 131.3 s, including endpoints that do no work — read as
+  thread-pool starvation, which fit. A cache and a bigger pool shipped against it; the 502s continued
+  unchanged at 130.2–131.1 s. The requests had never arrived: a containerised nginx was dialling the Docker
+  bridge gateway and the host firewall was dropping the SYN, and ~131 s is simply Linux's `tcp_syn_retries`
+  budget. One line on the host (`curl 127.0.0.1:<port>/dashboard` → **200 in 0.368 s**) separated the layers,
+  and the thread dump proved it by an **absence** — `newFixedThreadPool` creates workers lazily and never
+  retires them, so no `pool-*` thread means no request ever reached a handler. Prove the request reaches your
+  code before attributing an outage to it.
+  - **Why the firewall was dismissed twice before it was confirmed, which is the transferable part:** there
+    was no rule about that port. `Chain INPUT (policy DROP …)` was doing it, so `ufw status` showed nothing
+    relevant and "ufw is not the issue" looked like a checked fact. **"No rule for this" and "not filtering
+    this" are opposite statements**, and only the chain *policy* separates them — so two more hypotheses
+    (conntrack at 569 of 262,144; a renumbered Docker network whose gateway turned out correct) were chased
+    first. When a negative rules a layer out, ask what was actually read to rule it out.
+  - **The second trap:** that same policy was the only access control on an unauthenticated report bound to
+    `0.0.0.0`, so the obvious `ufw allow <port>` would have ended the outage and published the verdict table
+    and full CSV export in one command. Ask what a guard rail is load-bearing for before removing it.
 - **A tool that detects a defect through a side effect can only see the share of it that has that side
   effect.** Qodana's `KDocUnresolvedReference` reports a doc block that has come loose from its declaration
   *only* when the stranded block happens to contain a `[link]` that no longer resolves — so it named **4 of

@@ -292,7 +292,8 @@ object GrinderApplication {
             crashLogs = crashLogs,
             consoleRules = consoleRules::current,
             requeue = requeue,
-            httpThreads = config.httpThreads
+            httpThreads = config.httpThreads,
+            reportCacheMaxAge = config.reportCacheMaxAge
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")

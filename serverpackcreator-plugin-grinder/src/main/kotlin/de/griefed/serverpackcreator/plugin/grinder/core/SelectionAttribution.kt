@@ -73,14 +73,14 @@ object SelectionAttribution {
         val confirmed = LinkedHashSet<String>()
         val other = LinkedHashSet<String>()
         for (entry in selected) {
-            when {
+            when (entry) {
                 // Shown wins over stored: this is how a re-ground verdict changes lists.
-                entry in shownInConfirmed -> confirmed += entry
-                entry in shownInOther -> other += entry
+                in shownInConfirmed -> confirmed += entry
+                in shownInOther -> other += entry
                 // Not shown anywhere — the grinder no longer reports it, or has not been reached this
                 // session. Keep what was saved rather than inventing an attribution.
-                entry in storedConfirmed -> confirmed += entry
-                entry in storedOther -> other += entry
+                in storedConfirmed -> confirmed += entry
+                in storedOther -> other += entry
                 // Never seen and never saved. Nothing supports calling it proven.
                 else -> other += entry
             }

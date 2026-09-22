@@ -235,6 +235,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
 | `SPC_GRINDER_STORE_FLUSH_SECONDS` | `30`                         | Seconds between verdict-store writes. `0` writes through on every verdict    |
+| `SPC_GRINDER_REPORT_CACHE_SECONDS` | `5`                         | Seconds the report may reuse a whole-store derivation. `0` = strictly live   |
 | `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
 | `SPC_GRINDER_CACHE_TTL_DAYS`    | `7`                            | Delete cached loader installs unused this long (~150 MB each). `0` = never   |
 | `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
@@ -287,13 +288,35 @@ keeps answering "never seen" and the project is re-selected every sweep for ever
 
 ### Report responsiveness
 
+> **Start here: prove the request reaches the report at all.** Run this **on the grinder host**, where the
+> report binds:
+>
+> ```bash
+> curl -m 5 -o /dev/null -w '%{http_code} %{time_total}\n' http://127.0.0.1:${SPC_GRINDER_PORT:-8757}/dashboard
+> ```
+>
+> `/dashboard` is a compile-time constant that touches neither the store nor the disk, so a `200` here means
+> the report is healthy whatever the public URL is doing — and everything below this box is then the wrong
+> place to look. Go to *Exposing the report*: the problem is between the proxy and the port.
+>
+> This is not hypothetical. On 2026-09-21 the public instance returned 502 for every path, the report
+> answered `200` in **0.368 s** over loopback, and the cause was a host firewall dropping the proxy's
+> packets. See *When the proxy cannot reach a healthy report*.
+
 The report is served by the JDK's built-in HTTP server on a small fixed thread pool
 (`SPC_GRINDER_HTTP_THREADS`, default `4`). Every request is handed to that pool, so **a request that blocks
-costs a whole thread**, and a pool with nothing free stops answering *everything* — including `/status` and
-`/dashboard`, which do no work at all. From outside, that is indistinguishable from a dead host: the socket
-still accepts the connection, nothing ever replies, and the reverse proxy eventually returns a 502.
+costs a whole thread**, and a pool with nothing free would stop answering *everything* — including `/status`
+and `/dashboard`, which do no work at all.
 
-That was reachable, because the report used to re-derive the whole store on every request. Selecting rows
+**No outage has ever been traced to that**, and it is worth knowing why the distinction is easy to get
+wrong: pool exhaustion and an unreachable port look identical from outside — every path hangs, then 502.
+They are trivial to tell apart from *inside*, with the one-line check above. A thread dump settles it beyond
+doubt: `Executors.newFixedThreadPool` creates its workers lazily and never retires them, so **no
+`pool-*` thread in `jcmd <pid> Thread.print` means no request has ever reached a handler**, and
+`HTTP-Dispatcher` parked in `EPoll.wait` means the server is idle rather than swamped.
+
+The derivation cost below was real and the caching is worth having, but it was never an outage — it made the
+report *slower*, not unreachable. Selecting rows
 sorts every verdict and gathers every filter column across all of them, which does **not** shrink with
 pagination — the page size only bounds what is rendered. Measured against synthetic stores:
 
@@ -304,12 +327,110 @@ pagination — the page size only bounds what is rendered. Measured against synt
 | 100,000  | 434 ms    | 1 ms                       |
 
 At the middle row — roughly a real deployed store — 98% of the work was thrown away. Those derivations are
-now computed once per *change* to the store rather than once per request, so a report whose grinder is idle
+computed once per *change* to the store rather than once per request, so a report whose grinder is **idle**
 costs effectively nothing to serve however large the store is.
 
-If the report is still slow, it is worth checking in this order: whether the grind workers are saturating the
-host (they are uncapped on the host side; only the containers are bounded), and whether the boot-log
-directory has grown enough that listing it per request is the remaining cost.
+**"Idle" was doing a lot of work in that sentence, and a busy grinder is the normal case.** Recording a
+verdict moves the store version, which is what invalidates the derivation — so with several workers
+recording continuously there is a new version between almost any two requests, and the cache degraded to
+nearly nothing precisely when the daemon was busiest. `SPC_GRINDER_REPORT_CACHE_SECONDS` (default `5`) bounds
+that: a derivation is reused for up to that long after the store has moved on, so the whole-store cost is
+paid at most once per window however fast verdicts land. The report may lag by up to one window in exchange
+— the same bargain `SPC_GRINDER_STORE_FLUSH_SECONDS` makes for writes. Set it to `0` for a strictly live
+report, and raise it if the store is large and the page still feels slow.
+
+Two endpoints used to sit outside all of this and no longer do. `/status` read the count by copying every
+verdict to look at one integer, and it is what the dashboard polls on a timer. `/as-properties` called the
+store directly — the one endpoint the caching never covered, and the one **polled unattended by every SPC
+instance in the wild**. Both now go through the same snapshot as the table.
+
+If the report is genuinely slow — answering, but late — check in this order: whether the grind workers are
+saturating the host (they are uncapped on the host side; only the containers are bounded), and whether the
+boot-log directory has grown enough that listing it per request is the remaining cost.
+
+#### When the proxy cannot reach a healthy report
+
+If loopback answers and the public URL does not, **read the proxy's error log before changing anything
+here** — it names the upstream address it tried and why the attempt failed, which is the whole diagnosis:
+
+```
+connect() failed (110: Operation timed out) while connecting to upstream,
+  upstream: "http://172.19.0.1:9090/", host: "grinder.serverpackcreator.de"
+```
+
+The errno is what distinguishes the two causes, and they need opposite fixes:
+
+| Proxy log says | TCP behaviour | Cause | Fix |
+|---|---|---|---|
+| `111: Connection refused` | instant RST | Nothing listens on that address — the report is bound to loopback while the proxy dials the bridge gateway | Change the **bind**: `SPC_GRINDER_HOST` |
+| `110: Operation timed out` | SYN dropped, ~127 s | Something *is* listening, but a **host firewall** is dropping the packet | Change the **firewall** |
+
+The timeout case is the one nothing else here warns about, and it is easy to misread as a hung daemon
+because the delay is so long. The ~127 s is not the report and not the proxy: it is Linux's default
+`tcp_syn_retries=6`, six SYN retransmissions with exponential backoff before `connect()` gives up. A number
+close to it in a proxy log means *the packets are being discarded*, full stop.
+
+**Why a correct bind is not enough, and how this actually presented.** A proxy running in a container
+reaches the host over the bridge gateway, and that traffic arrives on the host's **`INPUT` chain** — where
+Docker's own rules do not apply. Container-to-*container* traffic goes through `FORWARD` and is unaffected,
+which is why every other service on the same bridge kept working and only the report broke: the grinder is
+the unusual case, a **host** service behind a **containerised** proxy.
+
+The confirmed cause on the public instance, 2026-09-21:
+
+```
+Chain INPUT (policy DROP 1072 packets, 387K bytes)
+```
+
+**The policy was the whole rule.** ufw was active, no rule permitted the bridge, and the default policy
+discarded it — so `ufw status` listed nothing about port 9090 and nothing looked wrong. That is the trap:
+*"the firewall has no rule for this"* and *"the firewall is not filtering this"* are opposite statements, and
+only the chain policy tells them apart. `DROP` rather than `REJECT` is what turns it into a 127 s timeout
+instead of an instant refusal.
+
+**Localise it with three requests before touching any rule.** They differ only in which chain they traverse,
+so the pattern names the layer outright:
+
+```bash
+curl -m 5 -o /dev/null -w 'host->bridge %{http_code} %{time_total}\n' http://172.19.0.1:9090/status
+docker exec <proxy> curl -m 5 -o /dev/null -w 'proxy->bridge %{http_code} %{time_total}\n' http://172.19.0.1:9090/status
+docker exec <proxy> curl -m 5 -o /dev/null -w 'proxy->peer   %{http_code} %{time_total}\n' http://<some-container-ip>:<port>/
+```
+
+| host→bridge | proxy→bridge | proxy→peer | Verdict |
+|---|---|---|---|
+| 200 | timeout | 200 | `INPUT` is dropping container→host. **This is the case below.** |
+| timeout | timeout | 200 | Not the firewall — the report is not listening on that address. Check `SPC_GRINDER_HOST`. |
+| 200 | 200 | 200 | The path is fine; the problem is the proxy's own configuration. |
+
+Measured on the public instance: **200 in 0.077 s / timeout / 200 in 0.003 s** — the first row. A closed port
+from the proxy (`http://172.19.0.1:1/`) also timed out rather than being refused, which is what proves the
+drop is blanket rather than aimed at 9090.
+
+Allow the bridge, scoped to source **and** destination:
+
+```bash
+sudo ufw allow from 172.19.0.0/16 to 172.19.0.1 port 9090 proto tcp \
+  comment 'grinder report: bridge only'
+```
+
+Scoped by subnet rather than by `in on br-…`, because the bridge interface name is a Docker-generated id
+that changes when the network is recreated, while the subnet is the thing the proxy is actually configured
+against.
+
+> **Never `sudo ufw allow 9090`.** The report has no authentication, so an unscoped rule publishes the
+> verdict table and the full CSV export to the internet — and with `SPC_GRINDER_HOST=0.0.0.0` the report is
+> already listening on the public interface, which means the `INPUT` policy is the *only* thing keeping it
+> private. Verified on the public instance: port 9090 times out from the internet, and the rule above keeps
+> it that way.
+
+Verify all three, and do not skip the last one:
+
+```bash
+docker exec <proxy> curl -m 5 -o /dev/null -w 'proxy  %{http_code} %{time_total}\n' http://172.19.0.1:9090/status
+curl -m 20 -o /dev/null -w 'public %{http_code} %{time_total}\n' https://<your-report-host>/dashboard
+curl -m 20 -o /dev/null -w 'direct %{http_code}\n' http://<your-public-ip>:9090/status   # MUST still time out
+```
 
 ### Exposing the report
 
@@ -324,7 +445,8 @@ ssh -L 8757:127.0.0.1:8757 grinder-box     # then browse http://127.0.0.1:8757/
 **A reverse proxy needs a different bind, not a different proxy config.** A proxy in a container reaches the host
 over the Docker bridge gateway (`172.19.0.1` and friends), never over `127.0.0.1` — that address inside the
 container is the container itself. A loopback-bound report refuses that connection at the TCP layer, so the proxy
-reports a 502 while the report answers perfectly well over the tunnel above. Point it at the gateway:
+reports a 502 (`111: Connection refused`, instantly) while the report answers perfectly well over the tunnel
+above. Point it at the gateway:
 
 ```ini
 Environment=SPC_GRINDER_HOST=172.19.0.1
@@ -337,6 +459,23 @@ startup. If the bridge is ever recreated on a different subnet the bind fails lo
 silently falling back — verified against the JDK's `HttpServer`: an address this host does not own gives
 `BindException: Can't assign requested address`, and a name that does not resolve gives `SocketException:
 Unresolved address`. Pinning the subnet on a user-defined network avoids the situation entirely.
+
+**The bind is half of it — the host firewall is the other half, and it fails differently.** A correct bind
+only means a socket is listening on that address; the packet still has to survive the host's `INPUT` chain to
+reach it. Container-to-gateway traffic is not covered by Docker's own rules, so a default-deny firewall
+discards it — and `ufw` does that by `DROP` rather than `REJECT`, so the proxy waits out Linux's full
+`tcp_syn_retries` budget (~127 s) and reports `110: Operation timed out` rather than a refusal. **That is the
+case this section had no answer for:** it looks like a hung daemon and reads as "the report is broken", while
+the report is idle and healthy.
+
+**It does not need a rule that mentions your port — a chain policy of `DROP` is enough**, which is what makes
+it invisible: `ufw status` lists nothing about the report, nothing looks misconfigured, and the packets go
+nowhere anyway. This is what actually took the public instance down. Allow the bridge scoped to its subnet,
+never the port globally — the report is unauthenticated, so with `SPC_GRINDER_HOST=0.0.0.0` that policy is
+the *only* thing keeping it off the public internet, and opening the port undoes the outage and the
+protection in one command. *Report responsiveness* → *When the proxy cannot reach a healthy report* has the
+rule, the three-request bisect that localises the drop, and the errno table that tells a firewall from a
+wrong bind.
 
 ### Publishing the fallback list (`/as-properties`)
 

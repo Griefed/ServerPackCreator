@@ -264,8 +264,8 @@ class ModListCompiler(
         ListUtilities.printListToLogChunked(disabledMods.map { it.file.name }, 5, "    ", true)
 
         return Pair(
-            TreeSet<File>(serverMods.map { it.file }).toList(),
-            TreeSet<File>(disabledMods.map { it.file }).toList()
+            TreeSet(serverMods.map { it.file }).toList(),
+            TreeSet(disabledMods.map { it.file }).toList()
         )
     }
 
