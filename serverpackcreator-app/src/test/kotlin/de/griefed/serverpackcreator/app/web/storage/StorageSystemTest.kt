@@ -106,4 +106,43 @@ class StorageSystemTest {
         Assertions.assertTrue(storage.load(objectId.toString()).isPresent)
     }
 
+    @Test
+    fun anUploadWhoseFilenameCarriesPathSegmentsStaysInsideTheStorageRoot() {
+        // getOriginalFilename() is whatever the client put in Content-Disposition; Spring passes it
+        // through verbatim, separators included. Nothing here checks it -- the only reason a traversal
+        // does not land outside the root today is that "<millis>-orig-" concatenates without a
+        // separator, so the first path component is a directory name that does not exist.
+        val root = storageRoot()
+        val upload = MockMultipartFile("file", "../../../escaped.zip", "application/zip", ByteArray(16) { 5 })
+
+        val saved = storageSystem(root).store(upload)
+
+        Assertions.assertTrue(saved.isPresent, "a hostile filename must not fail the upload outright")
+        Assertions.assertTrue(
+            saved.get().file.toAbsolutePath().normalize().startsWith(root.toAbsolutePath().normalize()),
+            "stored outside the root: ${saved.get().file}"
+        )
+        Assertions.assertFalse(
+            tempDir.resolve("escaped.zip").toFile().exists(),
+            "a file escaped the storage root"
+        )
+    }
+
+    @Test
+    fun anUploadWhoseFilenameCarriesPathSegmentsKeepsOnlyItsBaseNameForDisplay() {
+        val saved = storageSystem(storageRoot())
+            .store(MockMultipartFile("file", "../../../escaped.zip", "application/zip", ByteArray(16)))
+
+        Assertions.assertEquals("escaped.zip", saved.get().originalName)
+    }
+
+    @Test
+    fun anUploadThatCannotBeWrittenIsReportedAsAnEmptyResultRatherThanThrowing() {
+        // ModPackController catches StorageException only, so anything else escaping store() is an
+        // unhandled 500 -- and application.properties ships include-stacktrace=ALWAYS.
+        val root = storageRoot()
+        val upload = MockMultipartFile("file", "sub/dir/pack.zip", "application/zip", ByteArray(16))
+
+        Assertions.assertDoesNotThrow { storageSystem(root).store(upload) }
+    }
 }
