@@ -152,14 +152,38 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   2m37s → 39s), with all 214 tests still green — including the guards that assert host, credentials and
   database still reach the driver, which a query parameter does not disturb. Pinned by
   `TestDatabaseTimeoutTest`, which reads the *processed* file under `build/resources/test`.
-- **A shorter timeout makes the driver give up fast; it does not make the connection error go away.** These
-  two tests still log one, deliberately — they verify bean wiring, not persistence, and the driver
-  connecting lazily is what lets them. Wanting the log clean is a reason to run a real database
-  (`de.flapdoodle.embed.mongo.spring4x` runs one in-process, no Docker), not a reason to raise this back.
-  **H2 is not an option and never was:** the driver speaks the MongoDB wire protocol and `ConnectionString`
-  accepts only `mongodb://`/`mongodb+srv://`, which is exactly why the JPA-era
-  `spring.data.mongodb.uri=jdbc:h2:mem:testdb` line recorded above was a hard startup failure rather than a
-  working fallback.
+- **H2 is not an option and never was.** The driver speaks the MongoDB wire protocol and
+  `ConnectionString` accepts only `mongodb://`/`mongodb+srv://` — which is exactly why the JPA-era
+  `spring.data.mongodb.uri=jdbc:h2:mem:testdb` line recorded above was a hard startup failure rather than
+  a working fallback. There is no adapter and Spring Data MongoDB has no relational backend.
+
+## A real MongoDB runs in the test JVM (2026-09-23)
+
+- **`de.flapdoodle.embed.mongo.spring4x` starts a real `mongod` in-process — no Docker.** Docker's own
+  MongoDB images refuse to start on Linux kernels 6.19+
+  ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)), which is what made a containerised
+  database unusable and left the end-to-end verification outstanding. The `spring4x` artifact is the
+  Spring Boot 4 line; `spring3x` against Boot 4 is flapdoodle issue #77 and fails on the changed Mongo
+  autoconfiguration.
+- **LANDMINE — the dependency is not inert. `EmbeddedMongoAutoConfiguration` activates for EVERY Spring
+  context on the test classpath** and throws *"Set the de.flapdoodle.mongodb.embedded.version property"*
+  when it is absent. Adding it broke four tests in two classes immediately. Every `@SpringBootTest`
+  therefore opts **in** (`de.flapdoodle.mongodb.embedded.version=8.0.5`) or **out**
+  (`spring.autoconfigure.exclude=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration`).
+- **Two classes must stay opted out, and it is not a preference.** `DatabaseUriPropertyTest` asserts that
+  the *configured* URI reaches the driver, and an embedded server overrides it — measured, mongod bound
+  port 56242 while the configured URI still read 27017 and the write went to 56242, so embedding it would
+  quietly defeat the guard that exists because Boot 4 once redirected the production database.
+  `DeclaredIndexStartupTest` is named `theContextStartsWithoutADatabase`.
+- **`WebPersistenceIT` is where questions about the database itself belong** — an index that exists, a
+  migration that rewrites a document, an upload round-tripping GridFS *and* the filesystem, a row written
+  before a schema change that still reads back. Everything else in this module pins persistence against
+  Spring Data's own machinery (`MongoMappingContext`, `QueryMapper`, `PartTree`), which is the right
+  substitute for "does this declaration mean what I think" and no substitute for "does the database do it".
+- **`EmbeddedMongoAvailable` skips rather than fails where `mongod` cannot start**, because CI runs on
+  `ubuntu-latest` and the kernel is not ours to pin. Verified by mutation: forcing the probe to throw
+  reports 11 skipped and a green build. **A skipped guard proves nothing** — a CI run that skips these has
+  no database coverage at all, and the skip message is the only thing that will say so.
 
 ## The web module's mod-lists are embedded, not referenced (2026-08-17)
 
