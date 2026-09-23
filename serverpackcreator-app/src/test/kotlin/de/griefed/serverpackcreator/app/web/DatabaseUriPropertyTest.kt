@@ -60,7 +60,7 @@ internal class DatabaseUriPropertyTest {
 
     companion object {
         /** Deliberately not `localhost`: Boot's fallback *is* `localhost`, so only a different host proves binding. */
-        private const val CONFIGURED_URI = "mongodb://spcuser:spcpass@127.0.0.1:27017/spc-guard-db"
+        private const val CONFIGURED_URI = "mongodb://spcuser:spcpass@127.0.0.1:27017/spc-guard-db?serverSelectionTimeoutMS=250"
 
         /**
          * Registers the URI under whatever key [WebserviceConfig] actually writes. Done dynamically rather

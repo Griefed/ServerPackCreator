@@ -139,11 +139,27 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   and discard the test copy — `DeclaredIndexStartupTest` does) *and* assert the behaviour in a booted
   context. A guard that reads a shipped file is not a test that runs with it.
 - Cost to know about: with no database reachable, each context boot pays a driver server-selection timeout
-  per operation — the migration runner's read and now the index creation. Keep new `@SpringBootTest`
+  per operation — the migration runner's read and the index creation. Keep new `@SpringBootTest`
   properties **identical** to `WebServiceContextTest`'s so Spring's context cache reuses one boot; a
   divergent set costs a whole extra one (measured 2m41s vs 1m41s for `:serverpackcreator-app:test`).
-  Shortening `serverSelectionTimeoutMS` in `src/test/resources` does not work — the effective URI comes from
-  the generated test home.
+- **The test URI carries `?serverSelectionTimeoutMS=250`, and removing it costs two minutes.** This entry
+  previously claimed shortening it "does not work — the effective URI comes from the generated test home".
+  **Measured 2026-09-23, that is wrong:** the URI these tests bind is
+  `src/test/resources/serverpackcreator.properties` via `application.properties`' own `spring.config.import`
+  (and, for `DatabaseUriPropertyTest`, its `@DynamicPropertySource`), and `processTestResources` only
+  rewrites two unrelated lines. Bounding it took `WebServiceContextTest` **60.37s → 0.92s**,
+  `DatabaseUriPropertyTest` **62.22s → 5.71s**, and the module suite **147.6s → 29.1s** (the Gradle task
+  2m37s → 39s), with all 214 tests still green — including the guards that assert host, credentials and
+  database still reach the driver, which a query parameter does not disturb. Pinned by
+  `TestDatabaseTimeoutTest`, which reads the *processed* file under `build/resources/test`.
+- **A shorter timeout makes the driver give up fast; it does not make the connection error go away.** These
+  two tests still log one, deliberately — they verify bean wiring, not persistence, and the driver
+  connecting lazily is what lets them. Wanting the log clean is a reason to run a real database
+  (`de.flapdoodle.embed.mongo.spring4x` runs one in-process, no Docker), not a reason to raise this back.
+  **H2 is not an option and never was:** the driver speaks the MongoDB wire protocol and `ConnectionString`
+  accepts only `mongodb://`/`mongodb+srv://`, which is exactly why the JPA-era
+  `spring.data.mongodb.uri=jdbc:h2:mem:testdb` line recorded above was a hard startup failure rather than a
+  working fallback.
 
 ## The web module's mod-lists are embedded, not referenced (2026-08-17)
 
