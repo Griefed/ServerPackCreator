@@ -76,7 +76,10 @@ class FileUtilities {
          * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
          * @author Griefed
          */
-        @Throws(IOException::class)
+        // Deliberately NOT @Throws(IOException::class). Kotlin propagates the exception either way; the
+        // annotation's only effect is to put `throws IOException` in the Java-facing signature, which
+        // makes every existing Java caller of this published method stop compiling. Source compatibility
+        // within a major version is the policy, and the fix does not need the annotation to work.
         fun unzipArchive(zipFile: String, destinationDirectory: String) {
             log.info("Extracting ZIP-file: $zipFile")
             // Deliberately not caught. A failure here leaves the destination empty or half-written, and
