@@ -53,7 +53,13 @@ class ServerPack {
     var fileID: String? = null
     /** The name the archive is served under, which need not match [fileID]. */
     var fileName: String? = null
-    /** SHA256 of the archive. Indexed, because it is what the de-duplication looks up. */
+    /**
+     * SHA256 of the archive.
+     *
+     * **Not** indexed, and nothing looks a server pack up by it — the de-duplication this doc used to
+     * claim exists only for modpacks, on `ModPack.sha256`, which does carry `@Indexed`. Kept because it
+     * is served to clients that want to verify a download.
+     */
     var sha256: String? = null
 
     /** The configuration this pack was generated with — what makes two packs from one modpack different. */

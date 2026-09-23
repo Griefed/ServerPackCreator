@@ -35,9 +35,11 @@ interface ModPackRepository : MongoRepository<ModPack, String> {
      * The first stored modpack whose contents hash to [sha256], if any.
      *
      * Backs the upload duplicate-check, which previously loaded the whole collection and compared in
-     * memory. `ModPack.sha256` carries `@Indexed` and `application.properties` enables index creation, so
-     * this is a single indexed lookup rather than a scan that also drags in the eager `@DBRef` graph
-     * behind every document.
+     * memory. `ModPack.sha256` carries `@Indexed` and `DeclaredIndexCreator` creates the index on
+     * `ApplicationReadyEvent`, so this is a single indexed lookup rather than a scan that also drags in
+     * the eager `@DBRef` graph behind every document. Note it is emphatically *not*
+     * `application.properties` that creates it: `spring.data.mongodb.auto-index-creation` is commented
+     * out there on purpose, because it makes a reachable MongoDB a condition of starting up at all.
      *
      * **`First` is load-bearing, not decoration.** Without it a derived query returning [Optional] raises
      * `IncorrectResultSizeDataAccessException` as soon as two documents share a hash — which the scan this

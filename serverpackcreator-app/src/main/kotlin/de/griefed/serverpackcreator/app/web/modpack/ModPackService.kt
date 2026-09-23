@@ -225,7 +225,13 @@ class ModPackService @Autowired constructor(
         return packConfig
     }
 
-    /** Delete a modpack, its stored archive and the server packs generated from it. */
+    /**
+     * Delete a modpack and its stored archive — both copies of it, filesystem and GridFS.
+     *
+     * Not the server packs generated from it, despite what this said before. Their rows and archives
+     * survive and stay downloadable; only the `@DBRef` list linking them to this modpack goes, so
+     * `getByServerPack` stops resolving for them.
+     */
     fun deleteModpack(id: String) {
         val modpack = modpackRepository.findById(id)
         if (modpack.isPresent) {
