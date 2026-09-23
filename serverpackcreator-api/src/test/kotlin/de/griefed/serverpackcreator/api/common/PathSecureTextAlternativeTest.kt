@@ -53,4 +53,18 @@ internal class PathSecureTextAlternativeTest {
         // Its own KDoc is explicit that, unlike pathSecureText, this does NOT strip / or \.
         Assertions.assertEquals("ab/c\\d", StringUtilities.pathSecureTextAlternative("a<b>/c\\d"))
     }
+
+    @Test
+    fun pathSecureTextCarriesTheSameDefectAndTheSameFix() {
+        // The identical loop existed in both methods. This one *is* reachable -- PackConfig runs
+        // serverPackSuffix through it when a configuration is loaded -- so the bug was live there.
+        Assertions.assertEquals("My Pack v1.2", StringUtilities.pathSecureText("My Pack v1.2."))
+        Assertions.assertEquals("My Pack v1", StringUtilities.pathSecureText("My Pack v1 "))
+    }
+
+    @Test
+    fun pathSecureTextStillStripsSeparators() {
+        // The difference between the two methods, and the thing a shared fix must not erase.
+        Assertions.assertEquals("abcd", StringUtilities.pathSecureText("a/b\\c<d"))
+    }
 }
