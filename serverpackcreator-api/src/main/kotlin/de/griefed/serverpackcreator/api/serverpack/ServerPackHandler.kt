@@ -199,7 +199,19 @@ class ServerPackHandler(
      * @return `true` if the server pack was successfully generated.
      * @author Griefed
      */
-    fun run(packConfig: PackConfig): ServerPackGeneration {
+    fun run(packConfig: PackConfig): ServerPackGeneration =
+        run(packConfig) { SecurityScans.scanUsingNekodetector(it) }
+
+    /**
+     * The body of [run], with the security scan injectable.
+     *
+     * `internal` and not published surface. It exists because what the scan reports, and what the
+     * generation does with it, is otherwise unobservable: a scan over a clean fixture returns nothing,
+     * so a test cannot tell a finding that was routed correctly from one that was never produced.
+     *
+     * @param scan The scan to run over the finished server pack; defaults to the real Nekodetector.
+     */
+    internal fun run(packConfig: PackConfig, scan: (Path) -> List<String>): ServerPackGeneration {
         val files : ArrayList<File> = ArrayList(10000)
         val relativeFiles : ArrayList<String> = ArrayList(10000)
         @Suppress("JoinDeclarationAndAssignment") val serverPackManifest: ServerPackManifest
@@ -402,7 +414,7 @@ class ServerPackHandler(
         log.info("Performing security scans")
         val findings = mutableListOf<String>()
         log.info("Performing Nekodetector scan")
-        findings.addAll(SecurityScans.scanUsingNekodetector(serverPack.toPath()))
+        findings.addAll(scan(serverPack.toPath()))
 
         return ServerPackGeneration(
             serverPack,
