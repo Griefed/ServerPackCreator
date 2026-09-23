@@ -4795,3 +4795,44 @@ that the plan called for **could not be performed**: MongoDB refuses to start un
 machine (`Linux kernel versions 6.19 and newer`, SERVER-121912), for `mongo:8.0` and `mongo:latest`
 alike. The id round-trip it would have confirmed is instead pinned against Spring Data's own query
 mapper — a good substitute for "does the query shape map", not for "does Mongo answer".
+
+### Follow-up, same day — the suite gets a real database, and stops waiting for one
+
+Asked whether the tests could run against H2 instead of MongoDB, and whether the connection errors
+could stop. **H2 cannot work**: the driver speaks the MongoDB wire protocol and `ConnectionString`
+accepts only `mongodb://`/`mongodb+srv://`, which is why the JPA-era
+`spring.data.mongodb.uri=jdbc:h2:mem:testdb` this repo already records was a hard startup failure rather
+than a fallback. But both goals behind the question were reachable, and the first was worth far more
+than it looked.
+
+**The connection errors were the suite's dominant cost, not noise.** The two `@SpringBootTest` classes
+each fire two `ApplicationReadyEvent` listeners that touch Mongo, and at the driver's default 30 s
+server-selection timeout that is 60 s per context: **122.6 s of a 147.6 s suite** spent waiting for a
+server nobody expected. Bounding it with `?serverSelectionTimeoutMS=250` took `WebServiceContextTest`
+60.37 s → 0.92 s and `DatabaseUriPropertyTest` 62.22 s → 5.71 s. **This module's `CLAUDE.md` said that
+fix "does not work — the effective URI comes from the generated test home", and measurement says
+otherwise**; the entry is corrected, and `TestDatabaseTimeoutTest` now pins the value so removing it
+cannot silently restore two minutes.
+
+**Then a real database, in-process.** `de.flapdoodle.embed.mongo.spring4x` runs an actual `mongod` in
+the test JVM, which closed the end-to-end verification Docker had blocked. `WebPersistenceIT` proves,
+against a real server rather than against Spring Data's machinery, that the `sha256` index is created,
+that an upload round-trips GridFS *and* the filesystem, that `delete` reclaims **both** copies, that a
+refused duplicate writes **no** GridFS document, and that the migration converts a legacy document while
+leaving a migrated one alone. Final: app 147.6 s → **28.2 s**, 220 tests.
+
+**Three things worth carrying forward.**
+
+- **A dependency can change every test that does not use it.** flapdoodle's autoconfiguration activates
+  for *every* Spring context on the test classpath and throws without a version property — adding it
+  broke four tests in two classes on contact. Each `@SpringBootTest` now opts in or out explicitly.
+- **Embedding a server destroys any test whose subject is the connection.** `DatabaseUriPropertyTest`
+  asserts the *configured* URI reaches the driver; measured, mongod bound port 56242 while the configured
+  URI still read 27017 and the write went to 56242. `DeclaredIndexStartupTest` is named
+  `theContextStartsWithoutADatabase`. Both must stay opted out — converting them wholesale, as first
+  intended, would have quietly voided two guards.
+- **The real database answered a question the pass had created and could not otherwise settle.** Giving
+  `ModPackDownload` its own id left old rows with the timestamp as `_id` and *no* `downloadedAt` field.
+  Whether those still materialise is not answerable by reasoning about Kotlin nullability; seeded into a
+  real mongod, they do. That is also what made it safe to delete the two now-redundant filters rather
+  than widen the field to nullable.
