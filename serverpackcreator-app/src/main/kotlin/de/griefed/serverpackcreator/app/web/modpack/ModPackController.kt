@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -68,7 +69,13 @@ class ModPackController @Autowired constructor(
         modpackService.updateDownloadStats(modpack.get())
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/zip"))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
+            // Built rather than interpolated: the name is the upload's own filename, kept verbatim, so a
+            // quote in it closes the value early and a semicolon appends a parameter. ContentDisposition
+            // encodes per RFC 6266.
+            .header(
+                HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.attachment().filename(modpack.get().name).build().toString()
+            )
             .contentLength(modpackArchive.get().length())
             .body(FileSystemResource(modpackArchive.get()))
     }

@@ -122,9 +122,15 @@ class ArchiveStreamingTest {
 
         val disposition = controller.downloadModpack("known").headers.getFirst(HttpHeaders.CONTENT_DISPOSITION)!!
 
+        // Asserted on the RAW header, not on a parse. Spring's own ContentDisposition.parse is lenient
+        // and recovers the same filename from the escaped and the unescaped form alike -- measured -- so
+        // a round-trip assertion here passes against the very injection it is meant to catch. What
+        // actually differs is the bytes on the wire: a correctly quoted value escapes its quotes, so
+        // after removing the escaped pairs exactly two quote characters remain, the opening and closing.
+        val unescaped = disposition.replace("\\\"", "").count { it == '"' }
         Assertions.assertEquals(
-            1, disposition.split("filename").size - 1,
-            "the name injected a second filename parameter: $disposition"
+            2, unescaped,
+            "the value carries unescaped quotes, so a reader sees more than one filename: $disposition"
         )
     }
 
