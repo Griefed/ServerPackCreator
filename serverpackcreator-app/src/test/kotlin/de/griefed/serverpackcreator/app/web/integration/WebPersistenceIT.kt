@@ -19,7 +19,9 @@
  */
 package de.griefed.serverpackcreator.app.web.integration
 
+import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.app.web.WebService
+import de.griefed.serverpackcreator.app.web.scheduling.FileCleanupSchedule
 import de.griefed.serverpackcreator.app.web.migration.RunConfigurationListMigrationRunner
 import de.griefed.serverpackcreator.app.web.modpack.ModPackDownload
 import de.griefed.serverpackcreator.app.web.modpack.ModPackDownloadRepository
@@ -34,6 +36,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.mock.web.MockMultipartFile
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.Date
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -73,6 +76,15 @@ internal class WebPersistenceIT {
 
     @Autowired
     private lateinit var migrationRunner: RunConfigurationListMigrationRunner
+
+    @Autowired
+    private lateinit var fileCleanupSchedule: FileCleanupSchedule
+
+    @Autowired
+    private lateinit var apiProperties: ApiProperties
+
+    /** Where uploads land, read from the same settings the services use. */
+    private val modpacksDirectory: File get() = apiProperties.modpacksDirectory
 
     /** A minimal but valid modpack archive — `mods/` and `config/` at the root is what passes validation. */
     private fun modpackBytes(marker: String): ByteArray {
@@ -193,5 +205,64 @@ internal class WebPersistenceIT {
 
         Assertions.assertEquals(1, rows.size, "the legacy row did not come back")
         Assertions.assertInstanceOf(ModPackDownload::class.java, rows.single())
+    }
+
+    @Test
+    fun theFileSweepReclaimsAnOrphanedArchiveFromBothTiers() {
+        // The two sweeps are the only destructive code in the module and were covered by mocked
+        // repositories alone. This runs the real one against real data.
+        val kept = modPackService.saveUploadedFile(
+            MockMultipartFile("file", "Kept.zip", "application/zip", modpackBytes("keptAlongside"))
+        )
+        val orphan = modPackService.saveUploadedFile(
+            MockMultipartFile("file", "Orphan.zip", "application/zip", modpackBytes("orphan"))
+        )
+        val orphanFileID = orphan.fileID!!
+        // Drop the row but not the files -- the state the file sweep exists for. A SECOND pack has to
+        // survive: deleting the only row leaves the repository empty, and the sweep then refuses to act
+        // at all. That interaction is invisible to the mocked schedule tests, and this guard found it.
+        mongoTemplate.getCollection("modPack").deleteMany(Document("_id", orphan.id))
+        Assertions.assertEquals(2L, mongoTemplate.getCollection("fs.files").countDocuments())
+
+        sweepFiles()
+
+        Assertions.assertEquals(
+            1L, mongoTemplate.getCollection("fs.files").countDocuments(),
+            "the sweep unlinked the orphaned archive but left its GridFS twin"
+        )
+        Assertions.assertFalse(File(modpacksDirectory, "$orphanFileID.zip").exists())
+        Assertions.assertTrue(
+            File(modpacksDirectory, "${kept.fileID}.zip").exists(),
+            "the sweep took a pack that still had a row"
+        )
+        modPackService.deleteModpack(kept.id!!)
+    }
+
+    @Test
+    fun theFileSweepRefusesToActWhenTheDatabaseReportsNothingAtAll() {
+        // "No rows" makes every file an orphan, which is right for an empty install and unrecoverable
+        // for one reading the wrong database -- a state this project has shipped once.
+        val kept = modPackService.saveUploadedFile(
+            MockMultipartFile("file", "Kept.zip", "application/zip", modpackBytes("kept"))
+        )
+        val fileID = kept.fileID!!
+        mongoTemplate.getCollection("modPack").deleteMany(Document())
+        mongoTemplate.getCollection("serverPack").deleteMany(Document())
+
+        sweepFiles()
+
+        Assertions.assertTrue(
+            File(modpacksDirectory, "$fileID.zip").exists(),
+            "an empty repository wiped the storage directory"
+        )
+        Assertions.assertEquals(1L, mongoTemplate.getCollection("fs.files").countDocuments())
+        modPackService.deleteStoredFile(fileID)
+    }
+
+    /** Runs the private, `@Scheduled` file sweep, the way Spring does. */
+    private fun sweepFiles() {
+        FileCleanupSchedule::class.java.getDeclaredMethod("cleanFiles")
+            .apply { isAccessible = true }
+            .invoke(fileCleanupSchedule)
     }
 }

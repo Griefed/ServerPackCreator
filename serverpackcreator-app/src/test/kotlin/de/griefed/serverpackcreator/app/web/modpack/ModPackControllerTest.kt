@@ -9,6 +9,7 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -227,5 +228,21 @@ internal class ModPackControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/modpacks/byserverpack/serverpack1"))
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("modpack1"))
+    }
+
+    /**
+     * Pins that the upload endpoint refuses a non-multipart body with 415 rather than accepting it.
+     *
+     * `consumes = MULTIPART_FORM_DATA_VALUE` was added so springdoc would stop documenting this route as
+     * taking `application/json`; making Spring enforce the type is the other half of that change and was
+     * shipped without a guard.
+     */
+    @Test
+    fun uploadingSomethingThatIsNotMultipartIsRefused() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/modpacks/upload")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"file":"not a multipart body"}""")
+        ).andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType)
     }
 }
