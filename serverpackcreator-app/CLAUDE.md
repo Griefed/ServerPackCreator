@@ -149,7 +149,7 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   (and, for `DatabaseUriPropertyTest`, its `@DynamicPropertySource`), and `processTestResources` only
   rewrites two unrelated lines. Bounding it took `WebServiceContextTest` **60.37s → 0.92s**,
   `DatabaseUriPropertyTest` **62.22s → 5.71s**, and the module suite **147.6s → 29.1s** (the Gradle task
-  2m37s → 39s), with all 214 tests still green — including the guards that assert host, credentials and
+  2m37s → 39s), with all 214 tests green at the time (226 now) — including the guards that assert host, credentials and
   database still reach the driver, which a query parameter does not disturb. Pinned by
   `TestDatabaseTimeoutTest`, which reads the *processed* file under `build/resources/test`.
 - **H2 is not an option and never was.** The driver speaks the MongoDB wire protocol and
