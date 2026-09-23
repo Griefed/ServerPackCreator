@@ -6518,3 +6518,141 @@ effect can only see the share of it that has that side effect.* Qodana saw 4 of 
 loose doc block only when the block happens to carry a `[link]` that no longer resolves; the script
 written to find the rest missed 2 more because it only considered multi-line blocks; the test written to
 replace the script caught those on its first run. Each layer's blind spot was invisible from inside it.
+
+## 2026-09-23 — audit of the modpack upload/check/storage pass (`4be89ab67..develop`, 44 commits + merge `ea274155f`)
+
+Covers the 2026-09-22 pass over the web service's upload → check → storage path and the 2026-09-23
+follow-up that gave the suite a real database. Read-only; no source touched by this audit.
+
+### Method — what was actually run
+
+- `git log --format="%h %s" 4be89ab67..HEAD --no-merges` — 44 commits, 17 `fix`, 13 `test`, 2 `refactor`,
+  6 `docs`, plus the frontend/doc ones.
+- Each `fix` matched against the commit immediately preceding it, to check the red-pin-first rule
+  mechanically rather than by reading messages.
+- `git show --name-only` per `test`/`docs` commit, grepped for `src/main/kotlin`, to find production
+  code riding in a non-production commit.
+- `git diff 4be89ab67..HEAD -- '*/src/main/kotlin/*'` grepped for added `!!`, `var`, `GlobalScope`,
+  `runBlocking`.
+- Rows added to `API-BEHAVIOUR-CHANGES.md` (5) compared against the `-api` files changed (8).
+- **`javap` on the built class** for the one signature claim, rather than reasoning about Kotlin
+  annotations.
+
+### HIGH
+
+**H-A. `645b181a9` — `FileUtilities.unzipArchive` is source-INCOMPATIBLE for Java callers, and its
+behaviour-change row says the opposite.**
+`FileUtilities.kt:79` adds `@Throws(IOException::class)`. Measured with `javap` against the built
+`FileUtilities$Companion.class`:
+
+```
+public final void unzipArchive(java.lang.String, java.lang.String) throws java.io.IOException;
+```
+
+A Java caller that previously compiled now fails with *unreported exception IOException*. The root
+`CLAUDE.md` policy is "source-compatible within a major version" for everything `-api` exports, and
+this is 9.x. Worse, the row written for it in `API-BEHAVIOUR-CHANGES.md` asserts *"this is the one
+place a compile is unaffected but a runtime path changes"* — true for Kotlin, false for Java, and the
+row is the artefact a future reader will trust. Kotlin callers are genuinely unaffected (no checked
+exceptions), so the blast radius is Java embedders only.
+**Remedy:** correct the row, and decide explicitly whether the `@Throws` stays (the fix works without
+it — Kotlin propagates regardless; the annotation only changes the Java-facing signature).
+
+**H-B. `22ddd51f2` — `StringUtilities.pathSecureText` changes what a generated server pack's DIRECTORY
+is called, on published API, with no behaviour-change row at all.**
+The commit fixed a real defect (the trailing-`.`/` ` trim used `replace`, which removes *every*
+occurrence — `"My Pack v1 "` became `"MyPackv1"`). But `pathSecureText` is not an inert helper:
+`ServerPackHandler.kt:189` runs the server pack's name through it, so the fix changes the **directory
+name** for any pack whose name ends in a dot or space. `"Pack.v1."` produced `Packv1` before and
+`Pack.v1` now.
+
+That is not merely cosmetic. `ServerPackUpdater` decides "update vs first run" from a manifest found
+*inside* that directory, and that decision governs what is preserved — a world, an `ops.json`, a
+hand-tuned `server.properties`. An operator regenerating such a pack after this change gets a **new**
+directory instead of an update of the old one, and the preserve logic never sees the existing pack.
+Also reachable from `PackConfig.kt:479` (`serverPackSuffix`) and three GUI call sites.
+No row exists in `API-BEHAVIOUR-CHANGES.md` for it, which the policy requires for exactly this case:
+"a change that keeps every signature but alters what an exported call *returns*".
+**Remedy:** add the row, naming the directory-rename consequence and the `ServerPackUpdater`
+interaction. This is the finding most likely to surprise a user; the fix itself is correct and should
+stay.
+
+### MEDIUM
+
+**M-A. Four of seventeen `fix` commits have no guard at all.** Checked mechanically against the
+preceding commit:
+
+| Commit | Subject | Guard |
+|---|---|---|
+| `5aa02a79d` | sweep orphaned files through storage, and stop asserting fileID | guards in the same commit; teeth by mutation, quoted in the message |
+| `8a9e337f3` | declare the upload endpoint as multipart, and regenerate the spec | **none** |
+| `8e1096158` | stop the regeneration path reporting ids that do not exist | **none** |
+| `f5755f7d9` | stop handing server paths and stack traces to anonymous callers | **none** |
+
+`8e1096158` is the worst of the four: it fixes three *frontend* defects (two field-name mismatches that
+silently cleared the user's pickers, and `error.data` vs `error.response.data`, which threw a
+`TypeError` from inside a catch block) in a module that **has** a Vitest harness and an existing
+`SubmitModPackForm.test.ts`. There was no reason not to pin them. `f5755f7d9`'s message-content change
+and `8a9e337f3`'s `consumes` (a wrong content type should now be refused with 415) are both trivially
+testable too.
+
+**M-B. `e94e32d5a` is labelled `test(app):` and changes production code.** It removes two
+`.filter { it.downloadedAt != null }` calls from `DownloadStatsService.kt`. Behaviour-preserving (the
+compiler had flagged them as always-true), so the harm is the label rather than the change — but
+"one concern per commit" and "keep add-tests and refactor separate" are both broken, and a reader
+bisecting production behaviour will skip a commit that contains some.
+
+**M-C. Three commits carry two or three concerns, and the subject line says so with "and".**
+`2a13cd2e3` is validate-before-store **plus** the streaming digest **plus** a per-call `MessageDigest`
+(three separate findings from the analysis: H2, H3, M1). `5aa02a79d` is the GridFS sweep **plus** the
+`fileID` null-safety. `f05d28cc6` is the download-row id **plus** two `Sort` fixes. Each message is
+honest about the bundling, and each bundle is internally coherent, but the convention asks for
+separate commits and these could have been split without extra work.
+
+**M-D. `ModpackZipInspector`'s error-message content changed with no behaviour row.** `f5755f7d9`
+changed two `modpackErrors` entries from the absolute archive path to the file name. Those strings are
+returned to API callers and are part of what an embedder may assert on. Lower stakes than H-B, but the
+same class: exported output changed, nothing recorded.
+
+**M-E. The `size` row in `API-BEHAVIOUR-CHANGES.md` documents `-app` classes in an `-api` document.**
+`SavedFile`, `ModPack` and `ServerPack` live in `serverpackcreator-app`, which is unpublished. The
+file's own header scopes it to "what an exported `serverpackcreator-api` call *does*". The change is
+real and worth recording — it is a published *REST* shape — but it is filed where a reader looking for
+Maven-consumer impact will mistake it for one.
+
+### LOW
+
+**L-A. `WebPersistenceIT` runs inside the ordinary `test` task.** The `IT` suffix implies a separate
+source set; there is none, so every `:serverpackcreator-app:test` pays mongod startup. Measured at
+~4.9 s for the class and the suite still fell 147.6 s → 28.2 s, so this is a naming/expectation issue,
+not a cost one.
+
+**L-B. `8b108fb16` (`refactor:`) adds a `log.warn` branch.** Behaviour-preserving by the project's own
+standard (no assertion moves), and the message discloses it. Recorded only so the next auditor does not
+re-flag it.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **No new `!!` anywhere in main sources.** The single `!!` in the diff is inside a comment explaining
+  why one was removed. Added `var`s are Spring Data entity properties (which must be `var` for the
+  mapper) and one loop counter in the streaming digest.
+- **No `GlobalScope` / `runBlocking` introduced.**
+- **Module boundaries intact.** `-api` gained no dependency; flapdoodle is `testImplementation` on
+  `-app` only. Nothing points outward.
+- **Both `refactor:` commits are genuinely behaviour-preserving and touch no tests.** `8b108fb16`
+  (scan seam) and `9cd029730` (an unused `delete`) each touch exactly one production file. Landing the
+  seam first is what let the two guards after them be committed red rather than bundled.
+- **Characterization landed before the rework.** `187ecad40` pinned `web/storage` and `web/scheduling`
+  — which had no test source at all — before anything in them was changed.
+- **Thirteen of seventeen fixes have their guard committed red in the immediately preceding commit,
+  with the failure message quoted in the fix's own message.** Spot-checked: the quoted text matches
+  what the suite actually printed.
+- **Existing assertions that changed all did so inside `fix:` commits**, never a `refactor:` — which is
+  the stop-and-flag signal, and it did not fire.
+
+### Recommendation
+
+H-A and H-B are both one-paragraph documentation corrections plus, for H-A, one explicit decision about
+the annotation; neither requires reworking code that is otherwise correct. M-A is the one worth actual
+work: three frontend defects went in unguarded in a module that has a harness. M-B, M-C, M-D and M-E are
+record-keeping. Nothing here argues for reverting any fix.
