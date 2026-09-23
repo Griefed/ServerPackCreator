@@ -85,14 +85,15 @@ class FileSystemStorageServiceTest {
     }
 
     @Test
-    fun storeReportsSizeInTruncatedMebibytesNotBytes() {
-        // Documented as "size in bytes" on SavedFile, ModPack and ServerPack; it is not. Pinned as-is
-        // so the correction is visible as a deliberate change rather than an accident.
+    fun storeReportsSizeInBytesAsItsNameAndDocsSay() {
+        // It used to divide by 1048576 and truncate to an Int, so everything under a mebibyte reported
+        // 0 -- and both SPA tables hide the download button when size is 0, which made small packs
+        // undownloadable. Bytes also need a Long: the shipped 5000MB upload limit overflows an Int.
         val underOneMebibyte = service().store(sourceFile("small.zip", bytes = 1_048_575), "small").get()
         val overTwoMebibytes = service().store(sourceFile("big.zip", bytes = 2_200_000), "big").get()
 
-        Assertions.assertEquals(0, underOneMebibyte.size)
-        Assertions.assertEquals(2, overTwoMebibytes.size)
+        Assertions.assertEquals(1_048_575L, underOneMebibyte.size)
+        Assertions.assertEquals(2_200_000L, overTwoMebibytes.size)
     }
 
     @Test
