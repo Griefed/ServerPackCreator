@@ -66,6 +66,10 @@ svgSalamander = "1.1.4"
 miglayout = "11.4.3"
 balloontip = "1.2.4.1"
 tipoftheday = "0.6.0"
+# https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring — runs a REAL mongod in-process for
+# tests, no Docker. The `spring4x` artifact is the Spring Boot 4 line; `spring3x` against Boot 4 is what
+# flapdoodle issue #77 was, and it fails on the changed Mongo autoconfiguration.
+flapdoodleEmbedMongo = "4.33.0"
 springBoot = "4.1.0"
 # https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
 # spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
@@ -129,6 +133,7 @@ springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 springBootDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
 springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+flapdoodleEmbedMongoSpring4x = { module = "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x", version.ref = "flapdoodleEmbedMongo" }
 # developmentOnly in -app: it exists to regenerate serverpackcreator-help/Writerside/api-docs.yaml
 # from the live controllers, and must not ship swagger-ui in the production jar.
 springdocOpenapiStarterWebmvcUi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
