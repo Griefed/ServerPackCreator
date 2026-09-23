@@ -234,6 +234,12 @@ class StringUtilities {
                     && !text.contains("="))
 
         /**
+         * **Returns `true` when the text is CLEAN.** The name reads like a predicate for "has invalid
+         * characters" and means the opposite, so a caller wanting "this is bad" needs `!`. Kept as-is
+         * because it is published API and renaming it inside a major version would break embedders;
+         * `InclusionsValidator` is the in-repo caller and correctly negates it. `StringUtilitiesTest`
+         * pins both directions, so an inversion cannot land quietly.
+         *
          * Check the passed string whether it contains characters invalid in a path-declaration:
          *  * **&#60;**
          *  * **&#62;**
