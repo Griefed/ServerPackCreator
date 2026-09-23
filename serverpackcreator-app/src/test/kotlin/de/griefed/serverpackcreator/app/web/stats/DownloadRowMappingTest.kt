@@ -24,6 +24,13 @@ import de.griefed.serverpackcreator.app.web.modpack.ModPackDownloadRepository
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackDownload
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackDownloadRepository
 import de.griefed.serverpackcreator.app.web.stats.downloads.DownloadStatsService
+import de.griefed.serverpackcreator.app.web.task.ErrorRepository
+import de.griefed.serverpackcreator.app.web.task.EventService
+import de.griefed.serverpackcreator.app.web.task.QueueEvent
+import de.griefed.serverpackcreator.app.web.task.QueueEventRepository
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -79,6 +86,24 @@ class DownloadRowMappingTest {
         Assertions.assertTrue(
             persistent.containsAll(sortedOn),
             "sorted on $sortedOn, but ModPackDownload only has $persistent -- MongoDB does not reject this, it just does not order"
+        )
+    }
+
+    @Test
+    fun thePaginatedEventSortNamesAFieldTheDocumentActuallyHas() {
+        // Same defect, different service: the unpaginated overload sorts on "timestamp" correctly while
+        // the paginated one defaults to "dateCreated", which QueueEvent does not have.
+        val queueEventRepository: QueueEventRepository = mockk()
+        val requested = slot<Pageable>()
+        every { queueEventRepository.findAll(capture(requested)) } returns PageImpl(emptyList<QueueEvent>())
+
+        EventService(mockk<ErrorRepository>(), queueEventRepository).loadAll(PageRequest.of(0, 10))
+
+        val sortedOn = requested.captured.sort.map { it.property }.toList()
+        val persistent = entity(QueueEvent::class.java).map { it.name }.toSet()
+        Assertions.assertTrue(
+            persistent.containsAll(sortedOn),
+            "sorted on $sortedOn, but QueueEvent only has $persistent"
         )
     }
 }
