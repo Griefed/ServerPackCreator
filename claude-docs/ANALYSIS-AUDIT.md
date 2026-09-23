@@ -1059,3 +1059,127 @@ than generating a second one beside it — which is what every other update guar
 **No findings remain open from the 2026-09-20 analysis.** H1, M1, M3 fixed; M2 retracted; M4 closed;
 L1 stands as documented-not-exploitable; L2 stands retracted by measurement.
 
+
+## 2026-09-23 — test depth and residual defects in the upload/check/storage pass (`4be89ab67..develop`)
+
+Companion to the same-day section in `REFACTOR-AUDIT.md`, which covers convention compliance. This one
+covers what the new suites actually assert, and what is still wrong in the changed code. Read-only.
+
+### Method
+
+- Every `.kt` touched in the range checked for unused imports by extracting each non-wildcard import's
+  simple name and grepping the import-stripped body. **Result: none.** (Three apparent hits —
+  `import Translations` in `ConfigurationHandler`, `ModpackManifestParser`, `ModpackZipInspector` — are
+  the checker mis-splitting a dotless import, not real.)
+- Each new guard read for whether its fixture still reproduces the condition it names, rather than for
+  whether it passes.
+- Changed response paths read for unescaped client-controlled data.
+
+### HIGH
+
+**A-1. `StorageSystemTest.anUploadThatCannotBeWrittenIsReportedAsAnEmptyResultRatherThanThrowing`
+asserts nothing — the fix it guards stopped its own fixture from reproducing the condition.**
+`StorageSystemTest.kt`, the third C1 guard. It uploads `"sub/dir/pack.zip"` and asserts
+`assertDoesNotThrow { land(upload) }`. That was a real guard when written: the unsanitised name made
+`transferTo` fail with `NoSuchFileException`, and it was measured red. But the fix (`57b172c77`) reduces
+the name to its base name, so `"sub/dir/pack.zip"` now becomes `"pack.zip"` and the write simply
+**succeeds**. The assertion passes because nothing went wrong, not because a failure was contained. Its
+comment still claims it covers the unhandled-500 path.
+
+This is the failure mode the root `CLAUDE.md` calls out by name — *ask why a guard **passed**, not only
+why it failed* — and it is the second instance in this pass (the empty-repository sweep guard was caught
+during development for the same reason; this one was not).
+**Remedy:** make the write genuinely fail independently of the name — e.g. point `rootLocation` at a
+path that is a regular file, the same technique `ModpackExtractionFailureTest` already uses — and drop
+the now-false comment. The `IOException`/`IllegalStateException` catches in `StorageSystem.land` are
+currently covered by no executing assertion at all.
+
+**A-2. `ModPackController.kt:71` interpolates the client-supplied filename into a quoted
+`Content-Disposition` header with no escaping.**
+
+```kotlin
+.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
+```
+
+`ModPack.name` is `SavedFile.originalName`, which is the upload's own filename — attacker-controlled,
+and now *deliberately* preserved verbatim by `landingName` (only path separators are stripped). A name
+containing `"` closes the quoted string early; one containing `";` can append a second parameter. The
+endpoint has no authentication and `@CrossOrigin("*")`. Tomcat rejects CR/LF, so this is header-parameter
+injection rather than response splitting, but it is unvalidated data in a response header on a public
+route. `ServerPackController.kt:69` has the same shape, though its value is a generated name rather than
+a user's.
+**Notable because this line was edited in this pass** — `8bbd000ac` changed the body on the very next
+line and left the header alone. Remedy: `ContentDisposition.attachment().filename(name, UTF_8).build()`,
+which encodes per RFC 6266.
+
+### MEDIUM
+
+**A-3. The embedded mongod version is spelled three ways, one of them dead.**
+`EmbeddedMongoAvailable.kt:64` declares `const val MONGOD_VERSION = "8.0.5"` and **never uses it**; the
+probe at `:71` starts `Version.Main.V8_0` (whatever 8.0.x flapdoodle's `Main` currently points at), while
+`WebServiceContextTest.kt:76` and `WebPersistenceIT.kt:60` each hard-code the string `8.0.5` in their
+annotations. So the thing that decides *whether to skip* and the thing that decides *what to run* are
+different values, and a dead constant sits between them looking like it ties them together. Precisely the
+repo's own recorded lesson — *duplicated knowledge drifts toward whichever copy is easier to reach* — and
+the failure it enables is the worst kind: the probe succeeds, the tests then try to download a version
+the probe never validated, and the failure is attributed to the test rather than the version.
+**Remedy:** one constant, consumed by both — the annotations can reference a `const val` since they need
+a compile-time constant, so `"de.flapdoodle.mongodb.embedded.version=" + MONGOD_VERSION` works, and the
+probe should resolve from the same string rather than `Version.Main`.
+
+**A-4. Four coverage gaps, each one an assertion that could exist and does not.**
+
+| Gap | Why it matters |
+|---|---|
+| Neither cron is ever run against a real database | `WebPersistenceIT` covers index, migration, round-trip and legacy rows, but the two sweeps — the only *destructive* code in the module — are still covered only by mocked repositories. The empty-repository refusal and the GridFS reclaim are asserted against doubles, never against data. |
+| No test that a wrong content type is now refused | `8a9e337f3` added `consumes = MULTIPART_FORM_DATA_VALUE`, which makes Spring answer 415 instead of accepting. One `MockMvc` case would pin it. |
+| No frontend test for the three SPA fixes | `SubmitModPackForm.test.ts` exists and the harness is set up; the `modPackId`/`modPackID` mismatch and the `error.data` → `error.response.data` fix went in unguarded. |
+| `ArchiveStreamingTest` asserts the body's *type*, not its content | It proves `FileSystemResource` rather than `ByteArrayResource`, which is the point, but never checks that the bytes served match the archive or that `contentLength` is right. A streaming change that served the wrong file would pass. |
+
+**A-5. A stale comment inside A-1's test.** It says *"application.properties ships
+include-stacktrace=ALWAYS"*. `f5755f7d9` changed that to `NEVER` later in the same pass. The comment is
+the justification for the guard, so it is wrong twice over.
+
+**A-6. `FileCleanupSchedule.sweep` deletes an orphan twice when it has both an archive and an extracted
+directory.** The loop iterates directory entries, and `<id>.zip` and `<id>/` both match
+`storageIdPattern` after `removeSuffix(".zip")`. The first `deleteStored(id)` removes both plus the
+GridFS document; the second repeats the whole call, costing a redundant Mongo round-trip per orphan.
+Harmless — `delete` is idempotent — but it means the sweep's cost is per *entry* rather than per *pack*.
+
+### LOW
+
+**A-7. `TaskExecutionServiceImpl.reportFailure` persists whatever state the failed task had reached.**
+`processTask` mutates `taskDetail.modpack` as it goes, so a task that throws midway is saved with its
+partial mutations plus `status = ERROR`. Correct enough — the row is being marked failed — but the
+saved `projectID`/`versionID`/`source` may be half-applied.
+
+**A-8. The concurrent-upload race is documented but unpinned.** Two simultaneous uploads of one file
+both land, both hash, both find no duplicate, and both store — two rows with one hash.
+`findFirstBySha256`'s `First` exists precisely to tolerate that, and its KDoc says so, but nothing
+asserts the tolerated outcome.
+
+### Not findings / positives (verified — do not re-litigate)
+
+- **No unused imports** in any of the 40+ `.kt` files changed or added in the range.
+- **The `land`/`store` split is genuinely two-phase**: `ModPackUploadStorageTest` asserts on the storage
+  root's *contents*, not on mock interactions, so it would catch a commit that reintroduced the write.
+- **`WebPersistenceIT` tests outcomes against a real server**, including the two claims this pass most
+  needed to prove rather than argue: `delete` reclaims both storage tiers, and a refused duplicate
+  writes no GridFS document.
+- **`DatabaseStorageServiceTest.springDataConvertsAnIdStringToAnObjectIdSoTheLookupMatches` asks Spring
+  Data's own `QueryMapper`** rather than asserting a belief about it — the right shape for a claim about
+  a framework, and the reason the "the GridFS query is broken" reading was caught before it was fixed.
+- **Both `TestDatabaseTimeoutTest` and the two `DownloadRowMappingTest` guards were mutation-verified**,
+  with the mutation quoted in the commit message.
+- **No secrets, no injection in the changed query paths.** The only Mongo queries built from input are
+  `findFirstBySha256` (a derived query, parameterised) and the GridFS `_id` criteria.
+
+### Suggested tests, in the order they would pay
+
+1. Replace A-1's fixture so `land` actually fails (root as a regular file) — restores a guard that
+   currently protects nothing.
+2. A `MockMvc` case for 415 on a non-multipart upload.
+3. `WebPersistenceIT`: run both crons against seeded rows — one orphaned file, one orphaned row, one
+   empty repository — which is the only destructive path still unproven against real data.
+4. A frontend case pinning that a failed upload leaves the pickers untouched and does not throw.
+5. Assert served bytes and `contentLength` in `ArchiveStreamingTest`.
