@@ -134,7 +134,11 @@ class ModPackController @Autowired constructor(
             zipResponse = ZipResponse(
                 message = ex.message!!,
                 success = false,
-                modPackId = ex.id.toString(),
+                // ex.id, not ex.id.toString(): the validation-failure path uses the single-argument
+                // constructor, so id is null, and toString() turns that into the *string* "null" --
+                // which passes the SPA's `!== null` check and sends the user off to regenerate a
+                // modpack whose id is literally "null".
+                modPackId = ex.id,
                 runConfigId = runConfig.id,
                 serverPackId = null,
                 status = ModPackStatus.ERROR
