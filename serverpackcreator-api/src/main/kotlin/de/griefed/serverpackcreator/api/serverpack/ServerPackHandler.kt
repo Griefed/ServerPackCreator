@@ -409,7 +409,8 @@ class ServerPackHandler(
             findings,
             serverPackZip,
             packConfig,
-            files
+            files,
+            findings
         )
     }
 

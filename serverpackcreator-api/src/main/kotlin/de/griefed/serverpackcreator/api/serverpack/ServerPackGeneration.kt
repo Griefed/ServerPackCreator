@@ -55,10 +55,25 @@ class ServerPackGeneration(
      * A list of all files in the server pack. These are absolute files, mind you. If you need relative-files, iterate
      * through this list and remove the path to the server pack from each entry to receive a list of relative paths.
      */
-    val files: List<File>
+    val files: List<File>,
+
+    /**
+     * What the security scans reported about the finished server pack — currently Nekodetector's
+     * fractureiser findings.
+     *
+     * Deliberately **separate from [errors]**, because the two answer different questions: this one is
+     * "what is in the pack", `errors` is "did building it work". Conflating them made a pack containing
+     * an infected mod indistinguishable from one whose files never got copied. Defaulted so existing
+     * callers constructing a generation keep compiling.
+     */
+    val scanFindings: List<String> = emptyList()
 ) {
     /**
-     * Whether the generation was successful.
+     * Whether the generation itself worked — i.e. whether [errors] is empty.
+     *
+     * Says nothing about what the pack *contains*: a pack that built correctly and holds an infected mod
+     * is a successful generation with a non-empty [scanFindings], and a caller that cares about the
+     * latter has to ask for it.
      */
     val success: Boolean
         get() {
