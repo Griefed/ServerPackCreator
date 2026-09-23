@@ -76,13 +76,14 @@ class FileUtilities {
          * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
          * @author Griefed
          */
+        @Throws(IOException::class)
         fun unzipArchive(zipFile: String, destinationDirectory: String) {
             log.info("Extracting ZIP-file: $zipFile")
-            try {
-                ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
-            } catch (ex: IOException) {
-                log.error("Error: There was an error extracting the archive $zipFile", ex)
-            }
+            // Deliberately not caught. A failure here leaves the destination empty or half-written, and
+            // swallowing it let the caller carry on as though the modpack had been extracted. zip4j
+            // reports a rejected zip-slip entry as a ZipException, which is an IOException, so the old
+            // catch silently absorbed a hostile archive along with a truncated one.
+            ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
         }
 
         /**
