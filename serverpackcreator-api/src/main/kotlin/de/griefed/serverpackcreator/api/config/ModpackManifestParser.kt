@@ -69,6 +69,7 @@ class ModpackManifestParser(
         return listOf(
             File(destination, "minecraftinstance.json"),
             File(destination, "manifest.json"),
+            File(destination, "modrinth.index.json"),
             File(destination, "instance.json"),
             File(parent, "instance.json"),
             File(parent, "mmc-pack.json"),
@@ -92,10 +93,11 @@ class ModpackManifestParser(
         val candidates = manifestCandidates(destination)
         val curseMinecraftInstance = candidates[0]
         val curseManifest = candidates[1]
-        val atLauncherInstance = candidates[2]
-        val gdLauncherInstance = candidates[3]
-        val mmcPrismPack = candidates[4]
-        val mmcPrismInstance = candidates[5]
+        val modrinthIndex = candidates[2]
+        val atLauncherInstance = candidates[3]
+        val gdLauncherInstance = candidates[4]
+        val mmcPrismPack = candidates[5]
+        val mmcPrismInstance = candidates[6]
         when {
             curseMinecraftInstance.exists() -> {
                 // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
@@ -122,6 +124,17 @@ class ModpackManifestParser(
                 } catch (ex: IOException) {
                     log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
                     configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifest.toString())
+                }
+            }
+
+            modrinthIndex.exists() -> {
+                // Check modrinth.index.json, carried by a .mrpack and kept by launchers that install one.
+                try {
+                    updateConfigModelFromModrinthManifest(packConfig, modrinthIndex)
+                    packName = updatePackName(packConfig, "name")
+                } catch (ex: IOException) {
+                    log.error("Error parsing modrinth.index.json from ZIP-file.", ex)
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_modrinth.toString())
                 }
             }
 
