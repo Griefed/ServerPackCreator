@@ -77,7 +77,11 @@ class ModPackController @Autowired constructor(
      * Accept an uploaded archive. A hash-identical upload is recognised and answered with the existing modpack
      * rather than stored twice — the response says which case it was.
      */
-    @PostMapping("/upload", produces = ["application/json"])
+    @PostMapping(
+        "/upload",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     @ResponseBody
     fun uploadModPack(
         @RequestParam("file") file: MultipartFile,
