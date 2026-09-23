@@ -54,7 +54,7 @@ class DownloadStatsService @Autowired constructor(
     /** Modpack downloads aggregated per day, whole series, newest day first. */
     fun modPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
-        for (download in modPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
+        for (download in modPackDownloadRepository.findAll(sort)) {
             dates.add(download.downloadedAt)
         }
         return count(dates)
@@ -63,7 +63,7 @@ class DownloadStatsService @Autowired constructor(
     /** One page of [modPackDownloads]. */
     fun modPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
-        for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
+        for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort))) {
             dates.add(download.downloadedAt)
         }
         return count(dates)
