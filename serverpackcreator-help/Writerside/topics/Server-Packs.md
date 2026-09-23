@@ -10,7 +10,7 @@
         <sample>
         {
             "id": 1,
-            "size": 353.0,
+            "size": 370147328,
             "runConfiguration": {
                 "id": 1,
                 "minecraftVersion": "1.16.5",
@@ -74,7 +74,7 @@
         [
             {
                 "id": 1,
-                "size": 353.0,
+                "size": 370147328,
                 "runConfiguration": {
                     "id": 1,
                     "minecraftVersion": "1.16.5",

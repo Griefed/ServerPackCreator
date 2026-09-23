@@ -65,7 +65,7 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <span v-if="col.name === 'download'">
             <q-btn :to="'/download/modpack/' + props.row.id" color="info" dense icon="download" round size="sm"
-                   @click="props.row.downloads++" v-if="props.row.size > 0" >
+                   @click="props.row.downloads++">
               <q-tooltip>
                 Download modpack
               </q-tooltip>
@@ -88,6 +88,7 @@
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks} from 'boot/axios';
+import {formatBytes} from 'src/utils/format';
 import {date, type QTableColumn} from 'quasar';
 import ServerPacksTable from 'components/ServerPacksTable.vue';
 
@@ -104,7 +105,7 @@ const columns: QTableColumn[] = [
   {name: 'versionID', label: 'Version ID', field: 'versionID', sortable: true, align: 'left'},
   {name: 'source', label: 'Source', field: 'source', sortable: false, align: 'left'},
   {name: 'status', label: 'Status', field: 'status', sortable: false, align: 'left'},
-  {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
+  {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left', format: (val) => formatBytes(val)},
   {
     name: 'serverPacks',
     label: 'Server Packs',
@@ -132,6 +133,7 @@ export default defineComponent({
     const showSimulatedReturnData = ref(false);
     const filter = ref('');
     return {
+      formatBytes,
       visible,
       showSimulatedReturnData,
       filter,

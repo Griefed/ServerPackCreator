@@ -31,6 +31,6 @@ class SavedFile(
     val file: Path,
     /** The name it was uploaded as, kept for display and for serving it back. */
     val originalName: String,
-    /** Size in bytes. */
-    val size: Int
+    /** Size in bytes. A `Long`, because the shipped 5000MB upload limit does not fit in an `Int`. */
+    val size: Long
 )

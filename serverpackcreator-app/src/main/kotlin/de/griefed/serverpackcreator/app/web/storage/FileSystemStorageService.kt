@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.app.web.storage
 
 import com.mongodb.client.gridfs.model.GridFSFile
-import de.griefed.serverpackcreator.api.utilities.common.size
 import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.bouncycastle.util.encoders.Hex
@@ -82,7 +81,7 @@ class FileSystemStorageService(
                     sha256 = sha256,
                     file = destinationFilePath,
                     originalName = originalName,
-                    size = destinationFilePath.toFile().size().div(1048576.0).toInt()
+                    size = destinationFilePath.toFile().length()
                 )
             )
         } catch (e: IOException) {
@@ -110,7 +109,7 @@ class FileSystemStorageService(
                     sha256,
                     destinationFilePath,
                     file.filename,
-                    destinationFilePath.toFile().size().div(1048576.0).toInt()
+                    destinationFilePath.toFile().length()
                 )
             )
         } catch (e: IOException) {

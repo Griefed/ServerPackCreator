@@ -42,7 +42,7 @@ class ServerPack {
     /** Which [ModPack][de.griefed.serverpackcreator.app.web.modpack.ModPack] this was generated from. */
     var modpackId: String = ""
     /** Archive size in bytes. */
-    var size: Int = 0
+    var size: Long = 0
     /** How often this server pack has been downloaded. */
     var downloads: Int = 0
     /** How many users have voted that this pack actually runs — a counter, not a flag. */
@@ -61,7 +61,7 @@ class ServerPack {
     var runConfiguration: RunConfiguration? = null
 
     constructor(
-        size: Int,
+        size: Long,
         runConfiguration: RunConfiguration?,
         fileID: String?,
         fileName: String?,
@@ -79,7 +79,7 @@ class ServerPack {
     @PersistenceCreator
     private constructor(
         id: String,
-        size: Int,
+        size: Long,
         downloads: Int,
         confirmedWorking: Int,
         dateCreated: Date,

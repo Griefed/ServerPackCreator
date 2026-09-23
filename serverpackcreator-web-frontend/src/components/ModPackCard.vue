@@ -65,7 +65,7 @@
         </q-item-section>
         <q-item-section>
           <q-item-label>Size</q-item-label>
-          <q-item-label caption>{{ size }} MB</q-item-label>
+          <q-item-label caption>{{ formatBytes(size) }}</q-item-label>
         </q-item-section>
       </q-item>
 
@@ -115,6 +115,7 @@
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks} from 'boot/axios';
+import {formatBytes} from 'src/utils/format';
 import {date} from 'quasar';
 
 export default defineComponent({
@@ -134,6 +135,7 @@ export default defineComponent({
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);
     return {
+      formatBytes,
       visible,
       showSimulatedReturnData,
       showTextLoading() {
