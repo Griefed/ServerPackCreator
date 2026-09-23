@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.app.web.storage
 
 import com.mongodb.client.gridfs.model.GridFSFile
-import de.griefed.serverpackcreator.api.utilities.common.size
 import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.bouncycastle.util.encoders.Hex
@@ -75,14 +74,14 @@ class FileSystemStorageService(
             }
             FileUtils.copyFile(file, destinationFilePath.toFile())
             log.debug("Stored file to $destinationFilePath.")
-            val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFilePath.toFile().readBytes())))
+            val sha256 = sha256Of(destinationFilePath.toFile())
             return Optional.of(
                 SavedFile(
                     id = objectId,
                     sha256 = sha256,
                     file = destinationFilePath,
                     originalName = originalName,
-                    size = destinationFilePath.toFile().size().div(1048576.0).toInt()
+                    size = destinationFilePath.toFile().length()
                 )
             )
         } catch (e: IOException) {
@@ -103,20 +102,45 @@ class FileSystemStorageService(
             }
             FileUtils.copyToFile(resource.inputStream, destinationFilePath.toFile())
             log.debug("Stored file to $destinationFilePath.")
-            val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFilePath.toFile().readBytes())))
+            val sha256 = sha256Of(destinationFilePath.toFile())
             return Optional.of(
                 SavedFile(
                     id,
                     sha256,
                     destinationFilePath,
                     file.filename,
-                    destinationFilePath.toFile().size().div(1048576.0).toInt()
+                    destinationFilePath.toFile().length()
                 )
             )
         } catch (e: IOException) {
             log.error("Error storing file: ", e)
             return Optional.empty()
         }
+    }
+
+    /**
+     * The SHA-256 of a file, streamed a buffer at a time.
+     *
+     * Reads rather than slurps: the previous `digest(file.readBytes())` materialised the whole archive
+     * as a `ByteArray`, which the shipped 5000 MB multipart limit makes an `OutOfMemoryError` outright —
+     * a Java array cannot exceed about 2 GB.
+     *
+     * Takes a fresh digest per call, deriving only the algorithm from [messageDigestInstance]. A
+     * `MessageDigest` is stateful and not thread-safe, uploads run on request threads, and two
+     * concurrent hashes sharing one instance interleave into two wrong answers — which for a hash the
+     * duplicate-check keys on means a false rejection or a missed duplicate.
+     */
+    fun sha256Of(file: File): String {
+        val digest = MessageDigest.getInstance(messageDigestInstance.algorithm)
+        file.inputStream().buffered().use { source ->
+            val buffer = ByteArray(DIGEST_BUFFER_BYTES)
+            var read = source.read(buffer)
+            while (read != -1) {
+                digest.update(buffer, 0, read)
+                read = source.read(buffer)
+            }
+        }
+        return String(Hex.encode(digest.digest()))
     }
 
     /** The stored file for an id, empty when there is none. */
@@ -135,6 +159,11 @@ class FileSystemStorageService(
     fun delete(id: String) {
         FileSystemUtils.deleteRecursively(rootLocation.resolve("${id}.zip").normalize())
         FileSystemUtils.deleteRecursively(rootLocation.resolve(id).normalize())
+    }
+
+    private companion object {
+        /** Read size for [sha256Of]. Large enough to keep syscalls down, small enough to stay off the heap. */
+        const val DIGEST_BUFFER_BYTES = 8192
     }
 
     /** Delete everything under [rootLocation]. Used by the cleanup schedule, not by a request. */

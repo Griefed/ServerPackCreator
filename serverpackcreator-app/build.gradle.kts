@@ -63,6 +63,10 @@ dependencies {
     testImplementation(libs.kotlinTestJunit5)
     testRuntimeOnly(libs.junitPlatformLauncher)
 
+    // A real mongod, started in-process for the tests that need one. No Docker: Docker's own MongoDB
+    // images refuse to start on Linux kernels 6.19+ (SERVER-121912), which is what made a containerised
+    // database unusable here in the first place.
+    testImplementation(libs.flapdoodleEmbedMongoSpring4x)
     testImplementation(libs.springmockk)
     // springmockk pulls an older mockk transitively (1.14.6 against the catalog's 1.14.11). Declaring
     // the catalog's version explicitly out-ranks it, so this module tests against the same mockk as

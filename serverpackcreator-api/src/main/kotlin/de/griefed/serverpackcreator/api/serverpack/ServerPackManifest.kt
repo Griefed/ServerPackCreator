@@ -65,6 +65,15 @@ class ServerPackManifest {
         inside(destination).writeText(content)
     }
 
+    /**
+     * Where a server pack's manifest lives — the single place that answer is spelled.
+     *
+     * Load-bearing rather than merely tidy: the manifest's *presence* is what tells
+     * [ServerPackUpdater] a generation is an update of an existing pack rather than a first run, and
+     * that decision governs what may be overwritten and what must be preserved — a world, an
+     * `ops.json`, a hand-tuned `server.properties` that ServerPackCreator never wrote. A second
+     * spelling of the name would mean one caller looking where another does not write.
+     */
     companion object {
         /**
          * The name a server pack's manifest is written under. Read through by everything that looks

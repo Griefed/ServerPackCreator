@@ -20,7 +20,7 @@ describe('ModPackCard', () => {
     vi.clearAllMocks()
     modpackPayload = {
       dateCreated: 0, name: 'Cool Pack', projectID: 'p', serverPacks: [{}, {}],
-      sha256: 'abc', size: 12, source: 'CURSEFORGE', status: 'DONE', versionID: 'v'
+      sha256: 'abc', size: 2200000, source: 'CURSEFORGE', status: 'DONE', versionID: 'v'
     }
   })
 
@@ -33,7 +33,7 @@ describe('ModPackCard', () => {
   it('loads the modpack by id and exposes the fetched fields', async () => {
     const wrapper = await mountCard()
     expect(wrapper.vm.name).toBe('Cool Pack')
-    expect(wrapper.vm.size).toBe(12)
+    expect(wrapper.vm.size).toBe(2200000)
     expect(wrapper.vm.serverPacks).toHaveLength(2)
   })
 
@@ -48,10 +48,10 @@ describe('ModPackCard', () => {
     expect(captions[2]!.text()).toBe('N/A')
   })
 
-  it('renders the size in MB and the server-pack count', async () => {
+  it('renders the size with a binary unit and the server-pack count', async () => {
     const wrapper = await mountCard()
     const captions = wrapper.findAll('.q-item__label--caption')
-    expect(captions[5]!.text()).toBe('12 MB')
+    expect(captions[5]!.text()).toBe('2.1 MiB')
     expect(captions[9]!.text()).toBe('2') // serverPacks.length
   })
 })

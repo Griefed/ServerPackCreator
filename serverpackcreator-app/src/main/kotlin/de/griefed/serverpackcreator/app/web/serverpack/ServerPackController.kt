@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.app.web.serverpack
 
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
@@ -68,7 +68,8 @@ class ServerPackController @Autowired constructor(
                         HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"${serverPack.get().fileName}_server_pack.zip\""
                     )
-                    .body(ByteArrayResource(archive.get().readBytes()))
+                    .contentLength(archive.get().length())
+                    .body(FileSystemResource(archive.get()))
             }
         } else {
             ResponseEntity.notFound().build()

@@ -59,28 +59,64 @@ class TaskExecutionServiceImpl @Autowired constructor(
     }
 
     /**
-     * Single Thread on Which Tasks will be performed
+     * Start the single worker that drains the queue. It blocks on [BlockingQueue.take] rather than
+     * polling, and every task is run through [runTask], because nothing a task throws may be allowed
+     * to end this loop — it is the only one there is.
      */
     private fun initiateThread() {
         val thread = Thread {
-            while (true) {
-                try {
-                    if (!blockingQueue.isEmpty()) {
-                        log.info("Processing Next Task from Queue")
-                        val taskDetail = blockingQueue.take()
-                        processTask(taskDetail)
-                    } else {
-                        Thread.sleep(1000)
-                    }
-                } catch (e: InterruptedException) {
-                    log.error("There was an error while processing ", e)
+            while (!Thread.currentThread().isInterrupted) {
+                val taskDetail = try {
+                    blockingQueue.take()
+                } catch (interruption: InterruptedException) {
+                    log.info("Generation queue interrupted. Shutting the worker down.", interruption)
                     Thread.currentThread().interrupt()
+                    break
                 }
+                log.info("Processing Next Task from Queue")
+                runTask(taskDetail)
             }
+            log.warn("Worker Thread ${Thread.currentThread().name} has stopped.")
         }
         thread.name = "GenerationThread"
         thread.start()
         log.info("Worker Thread ${thread.name} initiated successfully")
+    }
+
+    /**
+     * Run one task, surviving whatever it throws. `checkModpack` raises a StorageException for a
+     * missing archive, and generation can fail in any number of ways; before this, any of them ended
+     * the worker for the lifetime of the process and left every later upload stuck in QUEUED.
+     */
+    private fun runTask(taskDetail: TaskDetail) {
+        try {
+            processTask(taskDetail)
+        } catch (failure: Throwable) {
+            log.error("Task for modpack ${taskDetail.modpack.id} failed and was abandoned.", failure)
+            reportFailure(taskDetail, failure)
+        }
+    }
+
+    /**
+     * Record an abandoned task as an ERROR on the modpack and as a [QueueEvent], so the pack does not
+     * sit in CHECKING forever with nothing saying why. Its own failures are swallowed deliberately: an
+     * unreachable database here would otherwise kill the worker, which is the very defect this exists
+     * to remove.
+     */
+    private fun reportFailure(taskDetail: TaskDetail, failure: Throwable) {
+        try {
+            taskDetail.modpack.status = ModPackStatus.ERROR
+            modpackService.saveModpack(taskDetail.modpack)
+            eventService.submit(
+                taskDetail.modpack.id,
+                taskDetail.serverPack?.id,
+                ModPackStatus.ERROR,
+                "Processing failed and was abandoned.",
+                listOf(failure.message ?: failure.javaClass.simpleName)
+            )
+        } catch (reportingFailure: Throwable) {
+            log.error("Could not record the failure of modpack ${taskDetail.modpack.id}.", reportingFailure)
+        }
     }
 
     /**

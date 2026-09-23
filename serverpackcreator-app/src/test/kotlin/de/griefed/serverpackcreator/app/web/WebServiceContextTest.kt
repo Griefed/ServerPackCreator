@@ -31,6 +31,8 @@ import de.griefed.serverpackcreator.app.web.task.EventService
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import de.griefed.serverpackcreator.app.web.integration.EmbeddedMongoAvailable
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
@@ -44,25 +46,34 @@ import org.springframework.context.event.EventListener
  * any reason involving ServerPackCreator, which is why this module's `CLAUDE.md` said to replace
  * rather than extend it.
  *
- * **This needs no database, and that is not an oversight.** The MongoDB driver connects lazily, so the
- * context starts, every bean is constructed and every injection point is resolved without a server
- * being reachable; the driver logs a `ConnectionException` in the background and startup continues.
- * That is exactly the coverage worth having here — bean wiring across all nine controllers, the
- * services, the repositories and the scheduling — and it is the half that breaks when someone adds a
- * constructor parameter or misplaces an annotation. Actually *exercising* a query still needs a live
- * Mongo and belongs in an integration test, not here.
+ * **It now boots against a real MongoDB, started in-process by flapdoodle.** It used to boot with no
+ * database at all — the driver connects lazily, so every bean was constructed and every injection point
+ * resolved anyway — and that was genuinely the coverage worth having: bean wiring across all nine
+ * controllers, the services, the repositories and the scheduling, which is the half that breaks when
+ * someone adds a constructor parameter or misplaces an annotation.
+ *
+ * Two things changed the trade. The `ApplicationReadyEvent` listeners (`DeclaredIndexCreator` and the
+ * migration runner) each perform one operation against Mongo, so with no server every boot waited out
+ * the driver's server-selection timeout twice — measured at **60.37 s** for this class alone. And a
+ * database that is really there means those listeners are actually exercised rather than merely
+ * constructed. The bean-wiring coverage is unchanged; what is added is that startup now has to work.
+ *
+ * Shares its property set with [de.griefed.serverpackcreator.app.web.integration.WebPersistenceIT] on
+ * purpose, so Spring's context cache serves both from one boot.
  *
  * The three schedules are disabled via Spring's `CRON_DISABLED` (`-`) rather than left on their
  * midnight crons: `FileCleanupSchedule` deletes modpack files whose IDs are absent from the database,
  * and a suite that happens to run at 00:30 should not be one unreachable-database away from finding
  * out what that does.
  */
+@ExtendWith(EmbeddedMongoAvailable::class)
 @SpringBootTest(
     classes = [WebService::class],
     properties = [
         "de.griefed.serverpackcreator.spring.schedules.database.cleanup=-",
         "de.griefed.serverpackcreator.spring.schedules.files.cleanup=-",
-        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-"
+        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-",
+        "de.flapdoodle.mongodb.embedded.version=8.0.5"
     ]
 )
 internal class WebServiceContextTest {

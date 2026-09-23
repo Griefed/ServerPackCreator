@@ -89,12 +89,10 @@ class StringUtilities {
          */
         @Suppress("MemberVisibilityCanBePrivate")
         fun pathSecureText(text: String): String {
-            var secured = text
-            while (secured.endsWith(".") || secured.endsWith(" ")) {
-                val toReplace = secured.substring(secured.length - 1)
-                secured = secured.replace(toReplace, "")
-            }
-            return secured
+            // trimEnd, not replace: taking the offending character and calling replace() with it
+            // removed *every* occurrence, so a trailing space deleted all spaces and a trailing dot
+            // deleted every separator in a version number.
+            return text.trimEnd('.', ' ')
                 .replace("/", "")
                 .replace("<", "")
                 .replace(">", "")
@@ -157,12 +155,10 @@ class StringUtilities {
          * @author Griefed
          */
         fun pathSecureTextAlternative(text: String): String {
-            var secured = text
-            while (secured.endsWith(".") || secured.endsWith(" ")) {
-                val toReplace = secured.substring(secured.length - 1)
-                secured = secured.replace(toReplace, "")
-            }
-            return secured
+            // trimEnd, not replace: taking the offending character and calling replace() with it
+            // removed *every* occurrence, so a trailing space deleted all spaces and a trailing dot
+            // deleted every separator in a version number.
+            return text.trimEnd('.', ' ')
                 .replace("<", "")
                 .replace(">", "")
                 .replace(":", "")

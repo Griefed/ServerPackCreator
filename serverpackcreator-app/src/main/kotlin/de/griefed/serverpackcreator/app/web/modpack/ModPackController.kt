@@ -26,7 +26,7 @@ import de.griefed.serverpackcreator.app.web.task.TaskDetail
 import de.griefed.serverpackcreator.app.web.task.TaskExecutionServiceImpl
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
@@ -69,14 +69,19 @@ class ModPackController @Autowired constructor(
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/zip"))
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
-            .body(ByteArrayResource(modpackArchive.get().readBytes()))
+            .contentLength(modpackArchive.get().length())
+            .body(FileSystemResource(modpackArchive.get()))
     }
 
     /**
      * Accept an uploaded archive. A hash-identical upload is recognised and answered with the existing modpack
      * rather than stored twice — the response says which case it was.
      */
-    @PostMapping("/upload", produces = ["application/json"])
+    @PostMapping(
+        "/upload",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     @ResponseBody
     fun uploadModPack(
         @RequestParam("file") file: MultipartFile,
@@ -88,8 +93,10 @@ class ModPackController @Autowired constructor(
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
         var zipResponse: ZipResponse
+        // Deliberately NOT file.bytes.isEmpty(): size == 0L already answers that, and getBytes()
+        // materialises the whole upload as a ByteArray -- with max-file-size at 5000MB that is an
+        // OutOfMemoryError on every large upload, since a Java array cannot exceed about 2 GB.
         if (file.size == 0L ||
-            file.bytes.isEmpty() ||
             minecraftVersion.isEmpty() ||
             modloader.isEmpty() ||
             modloaderVersion.isEmpty()
@@ -127,7 +134,11 @@ class ModPackController @Autowired constructor(
             zipResponse = ZipResponse(
                 message = ex.message!!,
                 success = false,
-                modPackId = ex.id.toString(),
+                // ex.id, not ex.id.toString(): the validation-failure path uses the single-argument
+                // constructor, so id is null, and toString() turns that into the *string* "null" --
+                // which passes the SPA's `!== null` check and sends the user off to regenerate a
+                // modpack whose id is literally "null".
+                modPackId = ex.id,
                 runConfigId = runConfig.id,
                 serverPackId = null,
                 status = ModPackStatus.ERROR

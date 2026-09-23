@@ -42,7 +42,7 @@ class ServerPack {
     /** Which [ModPack][de.griefed.serverpackcreator.app.web.modpack.ModPack] this was generated from. */
     var modpackId: String = ""
     /** Archive size in bytes. */
-    var size: Int = 0
+    var size: Long = 0
     /** How often this server pack has been downloaded. */
     var downloads: Int = 0
     /** How many users have voted that this pack actually runs — a counter, not a flag. */
@@ -53,7 +53,13 @@ class ServerPack {
     var fileID: String? = null
     /** The name the archive is served under, which need not match [fileID]. */
     var fileName: String? = null
-    /** SHA256 of the archive. Indexed, because it is what the de-duplication looks up. */
+    /**
+     * SHA256 of the archive.
+     *
+     * **Not** indexed, and nothing looks a server pack up by it — the de-duplication this doc used to
+     * claim exists only for modpacks, on `ModPack.sha256`, which does carry `@Indexed`. Kept because it
+     * is served to clients that want to verify a download.
+     */
     var sha256: String? = null
 
     /** The configuration this pack was generated with — what makes two packs from one modpack different. */
@@ -61,7 +67,7 @@ class ServerPack {
     var runConfiguration: RunConfiguration? = null
 
     constructor(
-        size: Int,
+        size: Long,
         runConfiguration: RunConfiguration?,
         fileID: String?,
         fileName: String?,
@@ -79,7 +85,7 @@ class ServerPack {
     @PersistenceCreator
     private constructor(
         id: String,
-        size: Int,
+        size: Long,
         downloads: Int,
         confirmedWorking: Int,
         dateCreated: Date,

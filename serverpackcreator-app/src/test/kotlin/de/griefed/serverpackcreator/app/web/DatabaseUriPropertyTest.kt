@@ -53,14 +53,18 @@ import org.springframework.test.context.DynamicPropertySource
     properties = [
         "de.griefed.serverpackcreator.spring.schedules.database.cleanup=-",
         "de.griefed.serverpackcreator.spring.schedules.files.cleanup=-",
-        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-"
+        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-",
+        // Opts OUT of the embedded MongoDB: flapdoodle's autoconfiguration is on the test classpath and
+        // activates for every context, throwing unless a version is set. This class asserts what happens
+        // with NO database, so starting one would destroy the very thing it guards.
+        "spring.autoconfigure.exclude=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration"
     ]
 )
 internal class DatabaseUriPropertyTest {
 
     companion object {
         /** Deliberately not `localhost`: Boot's fallback *is* `localhost`, so only a different host proves binding. */
-        private const val CONFIGURED_URI = "mongodb://spcuser:spcpass@127.0.0.1:27017/spc-guard-db"
+        private const val CONFIGURED_URI = "mongodb://spcuser:spcpass@127.0.0.1:27017/spc-guard-db?serverSelectionTimeoutMS=250"
 
         /**
          * Registers the URI under whatever key [WebserviceConfig] actually writes. Done dynamically rather

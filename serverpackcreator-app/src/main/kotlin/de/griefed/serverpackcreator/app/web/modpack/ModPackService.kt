@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.api.config.ModpackSource
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackRepository
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
@@ -106,33 +107,53 @@ class ModPackService @Autowired constructor(
      */
     @Throws(StorageException::class)
     fun saveUploadedFile(file: MultipartFile): ModPack {
-        val modpack = ModPack()
-        modpack.status = ModPackStatus.QUEUED
-        modpack.source = ModpackSource.ZIP
-        val savedFile = storage.store(file).get()
-        val check = configurationHandler.checkZipArchive(savedFile.file.toString())
+        val landed = storage.land(file).orElseThrow {
+            StorageException("The modpack you uploaded could not be stored. Please try again.")
+        }
+        try {
+            rejectIfInvalid(landed)
+            rejectIfDuplicate(storage.sha256Of(landed))
+
+            val savedFile = storage.store(landed).orElseThrow {
+                StorageException("The modpack you uploaded could not be stored. Please try again.")
+            }
+            val modpack = ModPack()
+            modpack.status = ModPackStatus.QUEUED
+            modpack.source = ModpackSource.ZIP
+            modpack.fileID = savedFile.id
+            modpack.sha256 = savedFile.sha256
+            modpack.name = savedFile.originalName
+            modpack.size = savedFile.size
+            return modpackRepository.save(modpack)
+        } finally {
+            // Always, including on the accepted path: the landing copy is a second full copy of the
+            // archive, and leaving it made every upload wait on the 00:30 sweep to halve its own cost.
+            landed.deleteQuietly()
+        }
+    }
+
+    /** Refuse an archive that is not a usable modpack, naming what was wrong with it. */
+    @Throws(StorageException::class)
+    private fun rejectIfInvalid(landed: File) {
+        val check = configurationHandler.checkZipArchive(landed.toString())
         if (!check.allChecksPassed) {
             throw StorageException(
-                "The modpack you uploaded did not pass validation: ${
-                    check.encounteredErrors.joinToString(
-                        ","
-                    )
-                }"
+                "The modpack you uploaded did not pass validation: ${check.encounteredErrors.joinToString(",")}"
             )
         }
-        modpack.fileID = savedFile.id
-        modpack.sha256 = savedFile.sha256
-        modpack.name = savedFile.originalName
-        modpack.size = savedFile.size
-        val duplicate = existingUploadOf(modpack.sha256)
+    }
+
+    /** Refuse an archive already stored under the same hash, naming the modpack it matched. */
+    @Throws(StorageException::class)
+    private fun rejectIfDuplicate(sha256: String) {
+        val duplicate = existingUploadOf(sha256)
         if (duplicate.isPresent) {
             val available = duplicate.get()
             throw StorageException(
-                "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
+                "Modpack already exists. Not storing. Match found with hash $sha256 in ${available.name} (${available.id})",
                 available.id
             )
         }
-        return modpackRepository.save(modpack)
     }
 
     /**
@@ -142,6 +163,16 @@ class ModPackService @Autowired constructor(
      */
     fun saveModpack(modpack: ModPack): ModPack {
         return modpackRepository.save(modpack)
+    }
+
+    /**
+     * Delete a stored file by its storage id — both copies of it.
+     *
+     * Exists for `FileCleanupSchedule`, which sweeps orphaned files off the filesystem and would
+     * otherwise leave their GridFS twins behind: every stored file is written to both.
+     */
+    fun deleteStoredFile(fileID: String) {
+        storage.delete(fileID)
     }
 
     /** One modpack by id, empty when there is none. */
@@ -194,7 +225,13 @@ class ModPackService @Autowired constructor(
         return packConfig
     }
 
-    /** Delete a modpack, its stored archive and the server packs generated from it. */
+    /**
+     * Delete a modpack and its stored archive — both copies of it, filesystem and GridFS.
+     *
+     * Not the server packs generated from it, despite what this said before. Their rows and archives
+     * survive and stay downloadable; only the `@DBRef` list linking them to this modpack goes, so
+     * `getByServerPack` stops resolving for them.
+     */
     fun deleteModpack(id: String) {
         val modpack = modpackRepository.findById(id)
         if (modpack.isPresent) {

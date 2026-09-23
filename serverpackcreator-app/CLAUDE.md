@@ -139,11 +139,51 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   and discard the test copy — `DeclaredIndexStartupTest` does) *and* assert the behaviour in a booted
   context. A guard that reads a shipped file is not a test that runs with it.
 - Cost to know about: with no database reachable, each context boot pays a driver server-selection timeout
-  per operation — the migration runner's read and now the index creation. Keep new `@SpringBootTest`
+  per operation — the migration runner's read and the index creation. Keep new `@SpringBootTest`
   properties **identical** to `WebServiceContextTest`'s so Spring's context cache reuses one boot; a
   divergent set costs a whole extra one (measured 2m41s vs 1m41s for `:serverpackcreator-app:test`).
-  Shortening `serverSelectionTimeoutMS` in `src/test/resources` does not work — the effective URI comes from
-  the generated test home.
+- **The test URI carries `?serverSelectionTimeoutMS=250`, and removing it costs two minutes.** This entry
+  previously claimed shortening it "does not work — the effective URI comes from the generated test home".
+  **Measured 2026-09-23, that is wrong:** the URI these tests bind is
+  `src/test/resources/serverpackcreator.properties` via `application.properties`' own `spring.config.import`
+  (and, for `DatabaseUriPropertyTest`, its `@DynamicPropertySource`), and `processTestResources` only
+  rewrites two unrelated lines. Bounding it took `WebServiceContextTest` **60.37s → 0.92s**,
+  `DatabaseUriPropertyTest` **62.22s → 5.71s**, and the module suite **147.6s → 29.1s** (the Gradle task
+  2m37s → 39s), with all 214 tests still green — including the guards that assert host, credentials and
+  database still reach the driver, which a query parameter does not disturb. Pinned by
+  `TestDatabaseTimeoutTest`, which reads the *processed* file under `build/resources/test`.
+- **H2 is not an option and never was.** The driver speaks the MongoDB wire protocol and
+  `ConnectionString` accepts only `mongodb://`/`mongodb+srv://` — which is exactly why the JPA-era
+  `spring.data.mongodb.uri=jdbc:h2:mem:testdb` line recorded above was a hard startup failure rather than
+  a working fallback. There is no adapter and Spring Data MongoDB has no relational backend.
+
+## A real MongoDB runs in the test JVM (2026-09-23)
+
+- **`de.flapdoodle.embed.mongo.spring4x` starts a real `mongod` in-process — no Docker.** Docker's own
+  MongoDB images refuse to start on Linux kernels 6.19+
+  ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)), which is what made a containerised
+  database unusable and left the end-to-end verification outstanding. The `spring4x` artifact is the
+  Spring Boot 4 line; `spring3x` against Boot 4 is flapdoodle issue #77 and fails on the changed Mongo
+  autoconfiguration.
+- **LANDMINE — the dependency is not inert. `EmbeddedMongoAutoConfiguration` activates for EVERY Spring
+  context on the test classpath** and throws *"Set the de.flapdoodle.mongodb.embedded.version property"*
+  when it is absent. Adding it broke four tests in two classes immediately. Every `@SpringBootTest`
+  therefore opts **in** (`de.flapdoodle.mongodb.embedded.version=8.0.5`) or **out**
+  (`spring.autoconfigure.exclude=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration`).
+- **Two classes must stay opted out, and it is not a preference.** `DatabaseUriPropertyTest` asserts that
+  the *configured* URI reaches the driver, and an embedded server overrides it — measured, mongod bound
+  port 56242 while the configured URI still read 27017 and the write went to 56242, so embedding it would
+  quietly defeat the guard that exists because Boot 4 once redirected the production database.
+  `DeclaredIndexStartupTest` is named `theContextStartsWithoutADatabase`.
+- **`WebPersistenceIT` is where questions about the database itself belong** — an index that exists, a
+  migration that rewrites a document, an upload round-tripping GridFS *and* the filesystem, a row written
+  before a schema change that still reads back. Everything else in this module pins persistence against
+  Spring Data's own machinery (`MongoMappingContext`, `QueryMapper`, `PartTree`), which is the right
+  substitute for "does this declaration mean what I think" and no substitute for "does the database do it".
+- **`EmbeddedMongoAvailable` skips rather than fails where `mongod` cannot start**, because CI runs on
+  `ubuntu-latest` and the kernel is not ours to pin. Verified by mutation: forcing the probe to throw
+  reports 11 skipped and a green build. **A skipped guard proves nothing** — a CI run that skips these has
+  no database coverage at all, and the skip message is the only thing that will say so.
 
 ## The web module's mod-lists are embedded, not referenced (2026-08-17)
 
@@ -169,9 +209,14 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `Writerside/api-docs.yaml` plus the response samples in `Run-Configs.md`, `Server-Packs.md` and
   `Modpacks.md`, which embed a run-configuration too. An audit caught the last group missed: the spec was
   still `$ref`-ing `StartArgument` / `ClientMod` / `WhitelistedMod` schemas whose classes this very change
-  deleted. **Nothing in the build can catch that** — `serverpackcreator-help` is not a Gradle module and
-  `springdoc` is commented out in `serverpackcreator-app/build.gradle.kts`, so the spec is a hand-maintained
-  snapshot. Treat it as source. (It carries older drift of its own, e.g. `id` typed `integer` where the
+  deleted. **Nothing in the build can catch that** — `serverpackcreator-help` is not a Gradle module, so the
+  spec only tracks the controllers when someone regenerates it. `springdoc` is **not** commented out (it
+  was, until 2026-08; it is now `developmentOnly`, with the `bootRun` + `curl` command beside it in
+  `serverpackcreator-app/build.gradle.kts`), so **regenerate rather than hand-edit** — a regeneration on
+  2026-09-23 found the upload endpoint documented as taking `application/json`. Only the `info:` block is
+  applied by hand afterwards, and says so: springdoc is `developmentOnly`, so it cannot be configured from
+  an annotation on a production class, and its defaults are "OpenAPI definition", version `v0` and a
+  `servers` entry pointing at `http://localhost:8080`. (It carries older drift of its own, e.g. `id` typed `integer` where the
   entities use `@MongoId(FieldType.STRING)`; that predates this work.)
 - **`web/migration/` exists for the upgrade**, and is the pattern to copy if another shape ever changes:
   `RunConfigurationListMigration` is the per-document rewrite (join-free — a DBRef's `$id` is the value,
@@ -232,6 +277,23 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   left on their midnight crons — `FileCleanupSchedule` deletes modpack files whose IDs are absent from
   the database, and a suite running at 00:30 against an unreachable database should not find out what
   that does. Keep them disabled if you add cases.
+- **`web/storage` and `web/scheduling` now have test source sets; before 2026-09-23 they had none.**
+  Everything below `ModPackService` was executed by no test at all — `ModPackControllerTest` mocks the
+  service — which is why a defect as large as "the generation queue dies permanently on the first
+  exception" was invisible. Patterns worth copying: `StorageSystemTest` drives the real
+  `FileSystemStorageService` against a `@TempDir` with only the GridFS collaborators mocked;
+  `DatabaseStorageServiceTest` asks Spring Data's own `QueryMapper` whether an id `String` maps to an
+  `ObjectId`, which is how the GridFS lookup is pinned **without a database**; `DownloadRowMappingTest`
+  asks the `MongoMappingContext` which property is the id and whether a `Sort` names a field the document
+  actually has — a sort on an absent field is not an error in MongoDB, it simply does not order, and two
+  services were doing it.
+- **`cleanFiles` and `cleanDatabase` are `private`.** Spring invokes them reflectively through
+  `@Scheduled`, and so do their tests. Do not widen them to make testing easier.
+- **LANDMINE — do not edit `-api` or `-app` sources while a test task is running.** The test JVM loads
+  classes lazily, so a recompile underneath it surfaces as `NoClassDefFoundError` in tests that have
+  nothing to do with the edit (seen: 7 failures across `ModPackUploadStorageTest` and
+  `InteractiveCommandLineTest`, all `NoClassDefFoundError` on `-api` classes). It looks exactly like a
+  real regression and wastes a full diagnosis. Wait for the run.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
   (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method, plus a
