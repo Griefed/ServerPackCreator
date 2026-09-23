@@ -169,9 +169,14 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `Writerside/api-docs.yaml` plus the response samples in `Run-Configs.md`, `Server-Packs.md` and
   `Modpacks.md`, which embed a run-configuration too. An audit caught the last group missed: the spec was
   still `$ref`-ing `StartArgument` / `ClientMod` / `WhitelistedMod` schemas whose classes this very change
-  deleted. **Nothing in the build can catch that** — `serverpackcreator-help` is not a Gradle module and
-  `springdoc` is commented out in `serverpackcreator-app/build.gradle.kts`, so the spec is a hand-maintained
-  snapshot. Treat it as source. (It carries older drift of its own, e.g. `id` typed `integer` where the
+  deleted. **Nothing in the build can catch that** — `serverpackcreator-help` is not a Gradle module, so the
+  spec only tracks the controllers when someone regenerates it. `springdoc` is **not** commented out (it
+  was, until 2026-08; it is now `developmentOnly`, with the `bootRun` + `curl` command beside it in
+  `serverpackcreator-app/build.gradle.kts`), so **regenerate rather than hand-edit** — a regeneration on
+  2026-09-23 found the upload endpoint documented as taking `application/json`. Only the `info:` block is
+  applied by hand afterwards, and says so: springdoc is `developmentOnly`, so it cannot be configured from
+  an annotation on a production class, and its defaults are "OpenAPI definition", version `v0` and a
+  `servers` entry pointing at `http://localhost:8080`. (It carries older drift of its own, e.g. `id` typed `integer` where the
   entities use `@MongoId(FieldType.STRING)`; that predates this work.)
 - **`web/migration/` exists for the upgrade**, and is the pattern to copy if another shape ever changes:
   `RunConfigurationListMigration` is the per-document rewrite (join-free — a DBRef's `$id` is the value,
@@ -232,6 +237,23 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   left on their midnight crons — `FileCleanupSchedule` deletes modpack files whose IDs are absent from
   the database, and a suite running at 00:30 against an unreachable database should not find out what
   that does. Keep them disabled if you add cases.
+- **`web/storage` and `web/scheduling` now have test source sets; before 2026-09-23 they had none.**
+  Everything below `ModPackService` was executed by no test at all — `ModPackControllerTest` mocks the
+  service — which is why a defect as large as "the generation queue dies permanently on the first
+  exception" was invisible. Patterns worth copying: `StorageSystemTest` drives the real
+  `FileSystemStorageService` against a `@TempDir` with only the GridFS collaborators mocked;
+  `DatabaseStorageServiceTest` asks Spring Data's own `QueryMapper` whether an id `String` maps to an
+  `ObjectId`, which is how the GridFS lookup is pinned **without a database**; `DownloadRowMappingTest`
+  asks the `MongoMappingContext` which property is the id and whether a `Sort` names a field the document
+  actually has — a sort on an absent field is not an error in MongoDB, it simply does not order, and two
+  services were doing it.
+- **`cleanFiles` and `cleanDatabase` are `private`.** Spring invokes them reflectively through
+  `@Scheduled`, and so do their tests. Do not widen them to make testing easier.
+- **LANDMINE — do not edit `-api` or `-app` sources while a test task is running.** The test JVM loads
+  classes lazily, so a recompile underneath it surfaces as `NoClassDefFoundError` in tests that have
+  nothing to do with the edit (seen: 7 failures across `ModPackUploadStorageTest` and
+  `InteractiveCommandLineTest`, all `NoClassDefFoundError` on `-api` classes). It looks exactly like a
+  real regression and wastes a full diagnosis. Wait for the run.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
   (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method, plus a
