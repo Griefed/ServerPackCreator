@@ -1183,3 +1183,22 @@ asserts the tolerated outcome.
    empty repository — which is the only destructive path still unproven against real data.
 4. A frontend case pinning that a failed upload leaves the pickers untouched and does not throw.
 5. Assert served bytes and `contentLength` in `ArchiveStreamingTest`.
+
+### Resolution — closed the same day (2026-09-23)
+
+| Finding | Closed by | Evidence |
+|---|---|---|
+| A-1 | `test(app): repair a guard that stopped reproducing its own condition` | The failure is now produced by making the storage **root** a regular file, so it no longer depends on the filename the fix sanitises, and the guard additionally asserts the result is empty rather than merely non-throwing. Mutation-verified: letting `IOException` escape `land()` fails it. |
+| A-2 | `test(app): pin that an upload name cannot inject a Content-Disposition parameter` (red), `fix(app): build the Content-Disposition header instead of interpolating it` | Both handlers build the header with `ContentDisposition`. **The guard took three attempts**, and the middle one is the lesson: parsing the header back and comparing to the original name passed against the injection, because Spring's own `ContentDisposition.parse` is lenient and recovers `evil".zip"; filename="other.exe` from the escaped *and* the unescaped form alike. The assertion is now on the raw header — remove the escaped pairs and exactly two quotes must remain. |
+| A-3 | `test(app): repair a guard that stopped reproducing its own condition` | One `MONGOD_VERSION`, referenced by both annotations through `VERSION_PROPERTY` and derived by the probe as `"V" + MONGOD_VERSION.replace('.', '_')`. `WebPersistenceIT` still runs 5→7 tests with 0 skipped, i.e. the probe still starts a real mongod rather than silently skipping. |
+| A-4 | `test(app): cover the 415 refusal and both sweeps against a real database`, `test(frontend): ...`, `test(app): pin that an upload name ...` | All four gaps closed. **The cron guard failed on its first run and that is why it was worth writing:** deleting the only `modPack` row left the repository empty, which triggered the empty-repository *refusal* added earlier in the pass, so the GridFS twin survived and the assertion read as a leak. Two behaviours from this pass interact, and the mocked schedule tests could not show it — they stub `findAll()` per case and never see one case's premise invalidate another's. |
+| A-5 | `test(app): repair a guard that stopped reproducing its own condition` | The comment cited `include-stacktrace=ALWAYS`, which a later commit in the same pass set to `NEVER`. Rewritten with the guard. |
+| A-6 | `fix(app): reclaim an orphaned pack once, not once per directory entry` | A set of reclaimed ids. Mutation-verified: removing it fails `anOrphanWithBothAnArchiveAndAnExtractedDirectoryIsReclaimedOnce`. |
+| A-7 | Not fixed — accepted | `reportFailure` persists whatever state the failed task reached. The row is being marked `ERROR`, which is the point; a half-applied `projectID`/`versionID` on a row that is about to be reaped by `DatabaseCleanupSchedule` is not worth a second save path. |
+| A-8 | Not fixed — accepted | The concurrent-upload race is tolerated by design: `findFirstBySha256`'s `First` exists for it and its KDoc says so. Pinning the tolerated outcome would need two real uploads racing inside one test, which buys less than it costs. |
+
+**Three guards in this pass passed for the wrong reason, and mutation found all three** — the C1 fixture
+that stopped reproducing its own condition, the parse-based header assertion, and the frontend error
+path whose `TypeError` became an unhandled rejection. Reading found none of them. That is now four
+instances in this repository's log of the same failure mode, and the only technique that has ever caught
+it is breaking the production code and watching.

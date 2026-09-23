@@ -6656,3 +6656,23 @@ H-A and H-B are both one-paragraph documentation corrections plus, for H-A, one 
 the annotation; neither requires reworking code that is otherwise correct. M-A is the one worth actual
 work: three frontend defects went in unguarded in a module that has a harness. M-B, M-C, M-D and M-E are
 record-keeping. Nothing here argues for reverting any fix.
+
+### Resolution — closed the same day (2026-09-23)
+
+| Finding | Closed by | Evidence |
+|---|---|---|
+| H-A | `fix(api): restore Java source compatibility on unzipArchive`, pinned by `test(api): pin that unzipArchive declares no checked exception to Java` | `@Throws` removed; `javap` shows `public final void unzipArchive(java.lang.String, java.lang.String)` with no throws clause. The behaviour-change row was corrected **in place** with the javap output rather than appended to, because a wrong row is worse than none. The guard reads `method.exceptionTypes` by reflection and was mutation-verified — re-adding the annotation fails it. That mattered: the first fix pinned nothing, and the behaviour the annotation existed for works without it, so every functional guard stayed green while the published Java signature changed. |
+| H-B | `fix(api): restore Java source compatibility on unzipArchive` (same commit, docs half) | Row added naming the consequence that makes this more than cosmetic: `pathSecureText` feeds `ServerPackHandler`, so the *server pack directory* is renamed for any pack ending in a dot or space, and `ServerPackUpdater` decides update-vs-first-run from a manifest inside that directory. |
+| M-A | `test(app): cover the 415 refusal and both sweeps against a real database`, `test(frontend): pin the regeneration path's ids and its error handler` | Three of the four unguarded fixes now have guards. `5aa02a79d` already carried mutation-verified guards in-commit, which is the documented alternative. **The frontend guard needed strengthening before it bit:** reverting `error.response?.data` to `error.data` did *not* fail it, because the TypeError lands in an unawaited `.catch()` and simply leaves the fields untouched — indistinguishable from correct behaviour. It now also spies `resetForm`, which runs after the assignments. Re-mutated: fails. |
+| M-B | Not fixed — recorded | `e94e32d5a` is merged. Relabelling a behaviour-preserving two-line change by force-pushing a shared branch is the wrong trade, the same call made for `358675fbf` and `5d5435ebd`. |
+| M-C | Not fixed — recorded | Same reason. All three messages describe their bundling honestly; only the granularity is wrong, and only before the merge was it cheap. |
+| M-D | `fix(api): restore Java source compatibility on unzipArchive` (docs half) | Row added for the `ModpackZipInspector` message change, which reaches API callers through the 400 body. |
+| M-E | `docs: mark the size row as app-scoped, not published-API` | The row now says in its first words that the three classes are `-app`, and explains at the end why it is kept in an `-api`-scoped file anyway. |
+| L-A | No action | `WebPersistenceIT` runs in the ordinary `test` task by design — there is no integration source set, and the class is gated by `EmbeddedMongoAvailable`. Naming only. |
+| L-B | No action | Disclosed in the commit that made it. |
+
+**Second round, run against the state these fixes produced**, found three more and nothing else:
+stale suite counts in both `CLAUDE.md` files (re-measured, not incremented: api 473 → 474, app 220 →
+226, web-frontend 35 → 37), the unpinned Java signature above, and M-E. Commit hygiene on the ten
+post-merge commits is clean: every `fix` but the two noted has its red pin immediately before it, and
+no `test`/`docs` commit changes executable production code.
