@@ -83,12 +83,20 @@ class FileCleanupSchedule @Autowired constructor(
             )
             return
         }
+        // One stored id can appear as two entries -- "<id>.zip" and the "<id>" directory it was
+        // extracted into -- and deleteStored removes both plus the GridFS document on the first call.
+        // Without this the second entry repeats the whole call, including a Mongo round-trip that can
+        // only match nothing.
+        val reclaimed = mutableSetOf<String>()
         for (file in present.map { it.toFile() }) {
             if (knownFileIDs.any { fileId -> file.name.contains(fileId, ignoreCase = true) }) {
                 continue
             }
             val storageId = file.name.removeSuffix(".zip")
             if (storageId.matches(storageIdPattern)) {
+                if (!reclaimed.add(storageId)) {
+                    continue
+                }
                 deleteStored(storageId)
             } else {
                 file.deleteQuietly()

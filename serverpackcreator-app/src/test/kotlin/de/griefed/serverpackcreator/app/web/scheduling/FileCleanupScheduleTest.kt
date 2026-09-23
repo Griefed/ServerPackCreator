@@ -192,4 +192,18 @@ class FileCleanupScheduleTest {
         Assertions.assertTrue(modpackRoot.resolve("1700000000000-orig-pack.zip").toFile().exists())
         Assertions.assertTrue(serverPackRoot.resolve("651f3c0e9a1b2c3d4e5f6072.zip").toFile().exists())
     }
+
+    @Test
+    fun anOrphanWithBothAnArchiveAndAnExtractedDirectoryIsReclaimedOnce() {
+        // deleteStored removes the archive, the extracted directory and the GridFS document in one
+        // call, so seeing both entries must not repeat it.
+        val schedule = schedule(modpacks = listOf(modPack("keepThisOne")), serverPacks = emptyList())
+        modpackRoot.resolve("keepThisOne.zip").toFile().writeText("kept")
+        modpackRoot.resolve("651f3c0e9a1b2c3d4e5f6071.zip").toFile().writeText("orphan")
+        modpackRoot.resolve("651f3c0e9a1b2c3d4e5f6071").toFile().mkdirs()
+
+        sweep(schedule)
+
+        verify(exactly = 1) { modpackService.deleteStoredFile("651f3c0e9a1b2c3d4e5f6071") }
+    }
 }
