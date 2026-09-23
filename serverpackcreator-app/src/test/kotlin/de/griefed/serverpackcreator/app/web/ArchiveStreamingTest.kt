@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockMultipartFile
 import java.io.File
 import java.nio.file.Path
@@ -103,5 +104,45 @@ class ArchiveStreamingTest {
         val response = controller.uploadModPack(upload, "", "", "", "", "", "")
 
         Assertions.assertTrue(response.statusCode.is4xxClientError)
+    }
+
+    @Test
+    fun aHostileUploadNameCannotBreakOutOfTheContentDispositionHeader() {
+        // ModPack.name is the upload's own filename, preserved verbatim on purpose -- landingName strips
+        // path separators and nothing else. Interpolating it into a quoted header lets a `"` close the
+        // string early and a `;` append a parameter, on a route with no authentication and CORS "*".
+        val controller = ModPackController(modpackService, runConfigurationService, taskExecutionService)
+        val modpack = ModPack().apply {
+            assignEntityId(this, "known")
+            name = """evil".zip"; filename="other.exe"""
+        }
+        every { modpackService.getModpack("known") } returns Optional.of(modpack)
+        every { modpackService.getModPackArchive(modpack) } returns Optional.of(archive())
+        every { modpackService.updateDownloadStats(any()) } returns Optional.of(modpack)
+
+        val disposition = controller.downloadModpack("known").headers.getFirst(HttpHeaders.CONTENT_DISPOSITION)!!
+
+        Assertions.assertEquals(
+            1, disposition.split("filename").size - 1,
+            "the name injected a second filename parameter: $disposition"
+        )
+    }
+
+    @Test
+    fun downloadingServesTheArchivesActualBytesAndLength() {
+        val controller = ModPackController(modpackService, runConfigurationService, taskExecutionService)
+        val modpack = ModPack().apply { assignEntityId(this, "known"); name = "Test Pack" }
+        val file = archive()
+        every { modpackService.getModpack("known") } returns Optional.of(modpack)
+        every { modpackService.getModPackArchive(modpack) } returns Optional.of(file)
+        every { modpackService.updateDownloadStats(any()) } returns Optional.of(modpack)
+
+        val response = controller.downloadModpack("known")
+
+        Assertions.assertEquals(file.length(), response.headers.contentLength)
+        Assertions.assertArrayEquals(
+            file.readBytes(), response.body!!.inputStream.use { it.readBytes() },
+            "the bytes served are not the archive's"
+        )
     }
 }
