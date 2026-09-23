@@ -550,27 +550,24 @@ class ConfigurationHandler(
         // Overwolf's CurseForge or through GDLauncher.
         val amountOfErrors = configCheck.modpackErrors.size
 
-        var packName = checkManifests(unzippedModpack, packConfig, configCheck)
+        checkManifests(unzippedModpack, packConfig, configCheck)
         if (configCheck.modpackErrors.size > amountOfErrors) {
             configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifests.toString())
         }
 
-        // If no json was read from the modpack, we must sadly use the ZIP-files name as the new
-        // destination. Sad-face.
-        if (packName == null) {
-            packName = unzippedModpack
+        // Does the modpack contain a server-icon or server.properties? If so, include them in the
+        // server pack. Looked up inside the extracted modpack, which is the only place they can be:
+        // this used to resolve them under the *pack name* checkManifests returns -- a display string
+        // such as "All the Mods 9", not a path -- so for every modpack carrying a manifest it resolved
+        // against the process working directory and could never match.
+        val extractedModpack = File(unzippedModpack)
+        val serverIcon = File(extractedModpack, "server-icon.png")
+        if (serverIcon.exists()) {
+            packConfig.serverIconPath = serverIcon.absolutePath
         }
-        packName = File(StringUtilities.pathSecureTextAlternative(packName)).path
-
-        // Does the modpack contain a server-icon or server.properties? If so, include
-        // them in the server pack.
-        var file = File(packName, "server-icon.png")
-        if (file.exists()) {
-            packConfig.serverIconPath = file.absolutePath
-        }
-        file = File(packName, "server.properties")
-        if (file.exists()) {
-            packConfig.serverPropertiesPath = file.absolutePath
+        val serverProperties = File(extractedModpack, "server.properties")
+        if (serverProperties.exists()) {
+            packConfig.serverPropertiesPath = serverProperties.absolutePath
         }
         return configCheck
     }
