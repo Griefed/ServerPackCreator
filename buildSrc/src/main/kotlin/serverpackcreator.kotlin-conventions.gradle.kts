@@ -12,8 +12,15 @@ plugins {
 
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    // NO bare "org.jetbrains.kotlin:kotlin-bom"/"kotlin-stdlib" here. A precompiled script plugin cannot
+    // read the version catalog (see .claude/rules/build-layout.md), so declaring them here meant declaring
+    // them WITHOUT a version -- and Gradle published exactly that: a dependencyManagement BOM import with
+    // no version and a runtime kotlin-stdlib with no version. Sonatype Central rejects such a POM, which
+    // is what failed the 9.0.0-beta.2 release at :closeSonatypeStagingRepository.
+    //
+    // They were redundant anyway: `kotlin("jvm")` above adds a stdlib at the plugin's own version
+    // (kotlin.stdlib.default.dependency is unset, so it defaults to true), and a module wanting it
+    // explicitly uses libs.kotlinStdlib, which is versioned.
     testImplementation(kotlin("test"))
 }
 
