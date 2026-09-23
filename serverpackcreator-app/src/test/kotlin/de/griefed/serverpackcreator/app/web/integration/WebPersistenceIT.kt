@@ -57,7 +57,7 @@ import java.util.zip.ZipOutputStream
         "de.griefed.serverpackcreator.spring.schedules.database.cleanup=-",
         "de.griefed.serverpackcreator.spring.schedules.files.cleanup=-",
         "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-",
-        "de.flapdoodle.mongodb.embedded.version=8.0.5"
+        EmbeddedMongoAvailable.VERSION_PROPERTY
     ]
 )
 internal class WebPersistenceIT {

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.integration
 
-import de.flapdoodle.embed.mongo.distribution.Version
+import de.flapdoodle.embed.mongo.distribution.Versions
 import de.flapdoodle.embed.mongo.transitions.Mongod
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess
 import de.flapdoodle.reverse.TransitionWalker
@@ -59,16 +59,34 @@ class EmbeddedMongoAvailable : ExecutionCondition {
             }
         )
 
-    private companion object {
-        /** The version these tests pin against; the same line `docker/docker-compose.yml` deploys. */
+    companion object {
+        /**
+         * The version these tests pin against — the same line `docker/docker-compose.yml` deploys.
+         *
+         * Public and `const` so the `@SpringBootTest` annotations can reference it: the probe that decides
+         * whether to SKIP and the server the tests actually RUN must be the same version, or the probe
+         * validates something the tests never use.
+         */
         const val MONGOD_VERSION = "8.0.5"
+
+        /** The property flapdoodle's autoconfiguration reads, pre-composed so no annotation spells it twice. */
+        const val VERSION_PROPERTY = "de.flapdoodle.mongodb.embedded.version=" + MONGOD_VERSION
 
         /** One start-and-stop per JVM. `lazy` is what makes it once rather than once per class. */
         val probe: Result<Unit> by lazy {
             runCatching {
                 var running: TransitionWalker.ReachedState<RunningMongodProcess>? = null
                 try {
-                    running = Mongod.instance().start(Version.Main.V8_0)
+                    running = Mongod.instance().start(
+                        // Derived from MONGOD_VERSION rather than named again: flapdoodle spells
+                        // "8.0.5" as the enum constant V8_0_5, and a second literal here is how the
+                        // probe and the tests would come to validate different servers.
+                        Versions.withFeatures(
+                            de.flapdoodle.embed.mongo.distribution.Version.valueOf(
+                                "V" + MONGOD_VERSION.replace('.', '_')
+                            )
+                        )
+                    )
                 } finally {
                     running?.close()
                 }

@@ -29,8 +29,10 @@ import org.junit.jupiter.api.io.TempDir
 import org.springframework.data.mongodb.gridfs.GridFsOperations
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.mock.web.MockMultipartFile
+import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
+import java.util.Optional
 import java.security.MessageDigest
 import kotlin.io.path.createDirectories
 import kotlin.io.path.listDirectoryEntries
@@ -158,11 +160,20 @@ class StorageSystemTest {
 
     @Test
     fun anUploadThatCannotBeWrittenIsReportedAsAnEmptyResultRatherThanThrowing() {
-        // ModPackController catches StorageException only, so anything else escaping store() is an
-        // unhandled 500 -- and application.properties ships include-stacktrace=ALWAYS.
-        val root = storageRoot()
-        val upload = MockMultipartFile("file", "sub/dir/pack.zip", "application/zip", ByteArray(16))
+        // ModPackController catches StorageException only, so anything else escaping land() reaches the
+        // caller as an unhandled 500.
+        //
+        // The failure is produced by making the storage ROOT a regular file, not by a hostile filename.
+        // This guard used to send "sub/dir/pack.zip" and rely on transferTo failing on the unsanitised
+        // path -- which it did, until the fix it guards reduced that name to "pack.zip" and the write
+        // started succeeding. It then asserted assertDoesNotThrow against a call that simply worked, and
+        // said so in a comment. A fixture that stops reproducing its own condition is worse than no
+        // guard, because it reads like coverage.
+        val root = tempDir.resolve("notADirectory").also { it.toFile().writeText("occupied") }
+        val upload = MockMultipartFile("file", "pack.zip", "application/zip", ByteArray(16))
 
-        Assertions.assertDoesNotThrow { storageSystem(root).land(upload) }
+        val landed = Assertions.assertDoesNotThrow<Optional<File>> { storageSystem(root).land(upload) }
+
+        Assertions.assertTrue(landed.isEmpty, "an unwritable root must report empty, not partial success")
     }
 }
