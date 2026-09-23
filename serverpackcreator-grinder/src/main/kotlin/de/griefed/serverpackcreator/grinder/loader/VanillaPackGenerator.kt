@@ -89,6 +89,12 @@ class ApiVanillaPackGenerator(
             log.warn("Vanilla generation failed for $loader $loaderVersion / $minecraftVersion: ${generation.errors}")
             return null
         }
+        if (generation.scanFindings.isNotEmpty()) {
+            // A finding is about the pack's contents, not about whether it built -- so it is reported
+            // rather than turned into a failure. A vanilla pack carries no mods, so this should be
+            // empty; if it ever is not, that is worth seeing rather than swallowing.
+            log.warn("Security scan findings in the vanilla pack for $loader $loaderVersion / $minecraftVersion: ${generation.scanFindings}")
+        }
         return generation.serverPack
     }
 

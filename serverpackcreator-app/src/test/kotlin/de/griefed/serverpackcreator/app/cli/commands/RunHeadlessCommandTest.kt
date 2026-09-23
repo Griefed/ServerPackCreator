@@ -38,6 +38,9 @@ internal class RunHeadlessCommandTest {
         val generation = mockk<ServerPackGeneration>()
         every { generation.success } returns generationSucceeds
         every { generation.errors } returns mutableListOf("a generation problem")
+        // errors and scanFindings are now different questions -- "did building it work" versus "what is
+        // inside it" -- so a mock has to answer both. Empty here: these cases are about the outcome.
+        every { generation.scanFindings } returns emptyList()
         every { generation.serverPack } returns File("server-pack")
 
         val configurationHandler = mockk<ConfigurationHandler>()
