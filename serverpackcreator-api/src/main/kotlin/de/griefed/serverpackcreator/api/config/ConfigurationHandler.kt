@@ -734,24 +734,26 @@ class ConfigurationHandler(
     fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
         
         log.info("Preparing a list of directories to include in server pack...")
-        var doNotInclude: String
-        val listDirectoriesInModpack = File(modpackDir).listFiles()
+        // listFiles() returns null when the path is not a readable directory. That used to be handled by
+        // an assert -- disabled at runtime outside tests, so decorative -- followed by `!!` inside a
+        // catch for the NullPointerException it produced. The result was an empty suggestion list and a
+        // log line about "copy dirs" that described a different problem, so an unreadable modpack
+        // silently produced a server pack with no directories in it.
+        val entriesInModpack = File(modpackDir).listFiles()
         val dirsInModpack: ArrayList<InclusionSpecification> = ArrayList(100)
-        try {
-            assert(listDirectoriesInModpack != null)
-            for (dir in listDirectoriesInModpack!!) {
-                if (dir.isDirectory) {
-                    dirsInModpack.add(InclusionSpecification(dir.name))
-                }
-            }
-        } catch (np: NullPointerException) {
+        if (entriesInModpack == null) {
             log.error(
-                "Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.",
-                np
+                "Could not read the contents of $modpackDir. It is not a directory, or it is not readable, " +
+                        "so no directories can be suggested for inclusion in the server pack."
             )
+            return dirsInModpack
         }
-        for (i in apiProperties.directoriesToExclude.indices) {
-            doNotInclude = apiProperties.directoriesToExclude.toList()[i]
+        for (entry in entriesInModpack) {
+            if (entry.isDirectory) {
+                dirsInModpack.add(InclusionSpecification(entry.name))
+            }
+        }
+        for (doNotInclude in apiProperties.directoriesToExclude) {
             dirsInModpack.removeIf { it.source == doNotInclude }
         }
         log.info("Modpack directory checked. Suggested directories for copyDirs-setting are:")
