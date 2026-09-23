@@ -26,18 +26,27 @@ import de.griefed.serverpackcreator.app.web.migration.RunConfigurationListMigrat
 import de.griefed.serverpackcreator.app.web.modpack.ModPackDownload
 import de.griefed.serverpackcreator.app.web.modpack.ModPackDownloadRepository
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
+import com.mongodb.client.gridfs.model.GridFSFile
+import de.griefed.serverpackcreator.app.web.storage.DatabaseStorageService
 import de.griefed.serverpackcreator.app.web.storage.StorageException
 import org.bson.Document
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.gridfs.GridFsOperations
+import org.springframework.data.mongodb.gridfs.GridFsResource
+import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.mock.web.MockMultipartFile
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.Date
+import java.util.Optional
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -67,6 +76,12 @@ internal class WebPersistenceIT {
 
     @Autowired
     private lateinit var mongoTemplate: MongoTemplate
+
+    @Autowired
+    private lateinit var gridFsTemplate: GridFsTemplate
+
+    @Autowired
+    private lateinit var gridFsOperations: GridFsOperations
 
     @Autowired
     private lateinit var modPackService: ModPackService
@@ -264,5 +279,21 @@ internal class WebPersistenceIT {
         FileCleanupSchedule::class.java.getDeclaredMethod("cleanFiles")
             .apply { isAccessible = true }
             .invoke(fileCleanupSchedule)
+    }
+
+    @Test
+    fun loadingAnIdGridFsDoesNotHoldReturnsEmptyRatherThanThrowing() {
+        // Kotlin believes GridFsTemplate.findOne is non-null and warns that the `?: return` in
+        // DatabaseStorageService.load can never fire; Spring's own MongoIterable.first() is @Nullable,
+        // so one of the two is wrong about reality. Asked of the real server, through OUR method rather
+        // than through Spring's, because what matters is what load() does -- this is the path the
+        // download route takes whenever the filesystem copy is gone.
+        val storage = DatabaseStorageService(gridFsTemplate, gridFsOperations)
+
+        val found = Assertions.assertDoesNotThrow<Optional<Pair<GridFSFile, GridFsResource>>> {
+            storage.load("651f3c0e9a1b2c3d4e5f6072")
+        }
+
+        Assertions.assertTrue(found.isEmpty, "a miss must be empty, not a partially-filled Optional")
     }
 }

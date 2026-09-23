@@ -80,9 +80,15 @@ class DatabaseStorageService(
 
     /** Read a file back out of GridFS, as the metadata and the resource together. */
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
-        // findOne returns null for a miss. Wrapping that in Optional.of made an absent file an NPE
-        // rather than an empty result -- a 500 on the download route where a 404 was intended.
-        val result = gridFsTemplate.findOne(query(id)) ?: return Optional.empty()
+        // Typed nullable deliberately. findOne returns null for a miss -- verified against a real
+        // mongod by WebPersistenceIT -- but Spring does not annotate it @Nullable, so Kotlin infers
+        // non-null and warns that the elvis below "always returns the left operand". Letting the type
+        // be inferred would leave a warning claiming the guard is dead when it is the only thing
+        // keeping an absent file from being an NPE instead of an empty Optional.
+        val result: GridFSFile? = gridFsTemplate.findOne(query(id))
+        if (result == null) {
+            return Optional.empty()
+        }
         return Optional.of(Pair(result, gridFsOperations.getResource(result)))
     }
 }
