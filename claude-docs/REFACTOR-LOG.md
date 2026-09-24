@@ -4717,3 +4717,122 @@ warnings.
   suppression would have hidden five real improvements.
 - **A tool cannot read the comment explaining why it is wrong.** If a refusal only lives in the code, the
   tool keeps reporting it and every reader re-litigates it. Put the verdict where the tool looks.
+
+## 2026-09-23 — the modpack upload/check/storage pass
+
+Triggered by a request to analyse how the web service takes a modpack in, checks it and stores it.
+`web/storage` and `web/scheduling` had **no test source at all**, and `ModPackControllerTest` mocks its
+service, so everything below `ModPackService` was executed by nothing. That is the single fact the pass
+turns on: the defects below are not subtle, they were simply unobserved.
+
+Counts: api 460 → 473, app 168 → 214, frontend 32 → 35. Every fix has its guard committed **red** in
+the commit before it, with the failure message quoted in the message; where a guard could not be
+committed red — because expressing it needed a constructor the change itself introduced — teeth were
+verified by mutation and the mutation is quoted instead.
+
+**Two findings changed on contact with evidence, which is the part worth carrying forward.**
+
+- **The upload filename was not an exploitable arbitrary write.** Spring 7.0.8 does hand
+  `getOriginalFilename()` over verbatim, separators and all — confirmed in the sources and on the wire.
+  But no byte ever landed outside the storage root: `"-orig-"` concatenates without a separator, so the
+  first path component is the literal name `<millis>-orig-..`, which is not an existing directory, and
+  the OS resolves `..` only through directories that exist. The open fails with `ENOENT` first. Measured
+  against a real Tomcat, five crafted filenames. **The lesson is the shape of the protection, not its
+  presence:** the only thing between client input and an arbitrary path was an accident of string
+  concatenation, and the codebase's own containment check sat eleven lines away on the *internal* path.
+  What was live was the unhandled `IOException` it produced — an unauthenticated 500 with a stack trace,
+  since the shipped config set `include-stacktrace=ALWAYS`.
+- **The GridFS `_id` query was not broken.** Read as a defect — a `String` queried against a field
+  holding an `ObjectId` — it is not: `MongoConverter.convertId` converts a valid 24-hex `String` for
+  `_id`. Confirmed in `spring-data-mongodb-5.1.0` sources and pinned against `QueryMapper` without a
+  database. The real defect beside it was `Optional.of(Pair(result, …))` on a nullable `findOne`, i.e.
+  an NPE where an empty `Optional` was intended.
+
+**Defects that only the absence of tests explains.**
+
+- The generation queue's worker caught **only** `InterruptedException`, and `checkModpack` itself
+  throws. One missing archive ended `GenerationThread` for the life of the process — no restart, no
+  event, no status change — leaving every later upload in `QUEUED` and the affected pack in `CHECKING`
+  forever, neither of which `DatabaseCleanupSchedule` reaps.
+- The Nekodetector malware scan never ran for a ZIP. `checkConfiguration` captured
+  `File(packConfig.modpackDir)` while it still named the archive and gated on `isDirectory`; `isZip`
+  extracts thirty lines later. Every web upload is a ZIP, and the log said *"Performing Nekodetector
+  scan"* regardless. **A scan reports its findings, never its target, so pointing it at the wrong path
+  is indistinguishable from a clean pack** — which is why the guard asserts the target.
+- Uploads were stored *then* validated: landing copy, GridFS document and final archive all written,
+  and the file fully hashed, before `checkZipArchive` and before the duplicate check. A rejected upload
+  cost exactly what an accepted one cost, and its GridFS half could never be reclaimed — the sweep works
+  back from `ModPack` rows and a rejected upload never gets one.
+- `server-icon.png` and `server.properties` were looked for under the **pack name** `checkManifests`
+  returns — a display string, not a path — so the lookup resolved against the process working directory.
+  A plain ZIP kept its icon; every CurseForge, GDLauncher, ATLauncher and MultiMC export silently lost
+  both. The feature worked only where it was least needed.
+- `modrinth.index.json` was absent from `manifestCandidates`, so a complete, exported Modrinth parser
+  was called by nothing. The symptom was *"Invalid modloader specified"* — a diagnosis pointing at the
+  modpack rather than at the missing branch, which is how it survived without a report.
+
+**Three defects of the same shape, found by asking one question.** *Does this name a thing that exists?*
+`DownloadStatsService` sorted four queries on `"date"` and `EventService` its paginated overload on
+`"dateCreated"`; neither field exists on the document being sorted, and **MongoDB does not reject a sort
+on an absent field — it simply does not order**. `ModPackDownload`/`ServerPackDownload` used a
+millisecond `Date` as their `@MongoId`, a global id rather than a per-pack one, so two downloads in the
+same millisecond overwrote each other. All three are silent by construction.
+
+**`size` is the one users could see.** Computed as truncated mebibytes, documented as bytes, and both
+SPA tables gated their download button on `size > 0` — so any pack under 1 MiB was *undownloadable*.
+Fixing the unit forced the type: 5000MB does not fit in an `Int`.
+
+**Process notes.** Two cost real time and are now landmines in the module's `CLAUDE.md`: editing `-api`
+or `-app` sources while a test task runs surfaces as `NoClassDefFoundError` in unrelated tests and reads
+exactly like a regression; and a guard that passes must be interrogated as hard as one that fails — the
+empty-repository sweep guard passed first time only because the service it asserted on was mocked, so
+"the file is still there" was true either way.
+
+**Not done, deliberately:** B41 (the shared parent directory `checkManifests` reads — latent, and both
+cheap fixes cost something real) and B42 (CORS, no authentication, a state-mutating GET, unbounded
+`/all` routes, no retention — product decisions, not defects). The end-to-end run against a live MongoDB
+that the plan called for **could not be performed**: MongoDB refuses to start under Docker on this
+machine (`Linux kernel versions 6.19 and newer`, SERVER-121912), for `mongo:8.0` and `mongo:latest`
+alike. The id round-trip it would have confirmed is instead pinned against Spring Data's own query
+mapper — a good substitute for "does the query shape map", not for "does Mongo answer".
+
+### Follow-up, same day — the suite gets a real database, and stops waiting for one
+
+Asked whether the tests could run against H2 instead of MongoDB, and whether the connection errors
+could stop. **H2 cannot work**: the driver speaks the MongoDB wire protocol and `ConnectionString`
+accepts only `mongodb://`/`mongodb+srv://`, which is why the JPA-era
+`spring.data.mongodb.uri=jdbc:h2:mem:testdb` this repo already records was a hard startup failure rather
+than a fallback. But both goals behind the question were reachable, and the first was worth far more
+than it looked.
+
+**The connection errors were the suite's dominant cost, not noise.** The two `@SpringBootTest` classes
+each fire two `ApplicationReadyEvent` listeners that touch Mongo, and at the driver's default 30 s
+server-selection timeout that is 60 s per context: **122.6 s of a 147.6 s suite** spent waiting for a
+server nobody expected. Bounding it with `?serverSelectionTimeoutMS=250` took `WebServiceContextTest`
+60.37 s → 0.92 s and `DatabaseUriPropertyTest` 62.22 s → 5.71 s. **This module's `CLAUDE.md` said that
+fix "does not work — the effective URI comes from the generated test home", and measurement says
+otherwise**; the entry is corrected, and `TestDatabaseTimeoutTest` now pins the value so removing it
+cannot silently restore two minutes.
+
+**Then a real database, in-process.** `de.flapdoodle.embed.mongo.spring4x` runs an actual `mongod` in
+the test JVM, which closed the end-to-end verification Docker had blocked. `WebPersistenceIT` proves,
+against a real server rather than against Spring Data's machinery, that the `sha256` index is created,
+that an upload round-trips GridFS *and* the filesystem, that `delete` reclaims **both** copies, that a
+refused duplicate writes **no** GridFS document, and that the migration converts a legacy document while
+leaving a migrated one alone. Final: app 147.6 s → **28.2 s**, 220 tests.
+
+**Three things worth carrying forward.**
+
+- **A dependency can change every test that does not use it.** flapdoodle's autoconfiguration activates
+  for *every* Spring context on the test classpath and throws without a version property — adding it
+  broke four tests in two classes on contact. Each `@SpringBootTest` now opts in or out explicitly.
+- **Embedding a server destroys any test whose subject is the connection.** `DatabaseUriPropertyTest`
+  asserts the *configured* URI reaches the driver; measured, mongod bound port 56242 while the configured
+  URI still read 27017 and the write went to 56242. `DeclaredIndexStartupTest` is named
+  `theContextStartsWithoutADatabase`. Both must stay opted out — converting them wholesale, as first
+  intended, would have quietly voided two guards.
+- **The real database answered a question the pass had created and could not otherwise settle.** Giving
+  `ModPackDownload` its own id left old rows with the timestamp as `_id` and *no* `downloadedAt` field.
+  Whether those still materialise is not answerable by reasoning about Kotlin nullability; seeded into a
+  real mongod, they do. That is also what made it safe to delete the two now-redundant filters rather
+  than widen the field to nullable.

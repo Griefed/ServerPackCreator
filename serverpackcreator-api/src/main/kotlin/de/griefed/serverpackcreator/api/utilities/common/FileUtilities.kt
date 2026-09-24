@@ -76,13 +76,17 @@ class FileUtilities {
          * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
          * @author Griefed
          */
+        // Deliberately NOT @Throws(IOException::class). Kotlin propagates the exception either way; the
+        // annotation's only effect is to put `throws IOException` in the Java-facing signature, which
+        // makes every existing Java caller of this published method stop compiling. Source compatibility
+        // within a major version is the policy, and the fix does not need the annotation to work.
         fun unzipArchive(zipFile: String, destinationDirectory: String) {
             log.info("Extracting ZIP-file: $zipFile")
-            try {
-                ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
-            } catch (ex: IOException) {
-                log.error("Error: There was an error extracting the archive $zipFile", ex)
-            }
+            // Deliberately not caught. A failure here leaves the destination empty or half-written, and
+            // swallowing it let the caller carry on as though the modpack had been extracted. zip4j
+            // reports a rejected zip-slip entry as a ZipException, which is an IOException, so the old
+            // catch silently absorbed a hostile archive along with a truncated one.
+            ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
         }
 
         /**

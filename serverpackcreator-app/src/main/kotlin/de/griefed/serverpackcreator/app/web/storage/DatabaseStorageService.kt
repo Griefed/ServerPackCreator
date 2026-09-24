@@ -70,14 +70,25 @@ class DatabaseStorageService(
         return objectId
     }
 
+    /**
+     * Remove a file from GridFS. A file that is not there is not an error — `GridFsTemplate.delete`
+     * iterates the matches and deletes each, so an empty match is a no-op.
+     */
+    fun delete(id: String) {
+        gridFsTemplate.delete(query(id))
+    }
+
     /** Read a file back out of GridFS, as the metadata and the resource together. */
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
-        val result = gridFsTemplate.findOne(query(id))
-        return Optional.of(
-            Pair(
-                result,
-                gridFsOperations.getResource(result)
-            )
-        )
+        // Typed nullable deliberately. findOne returns null for a miss -- verified against a real
+        // mongod by WebPersistenceIT -- but Spring does not annotate it @Nullable, so Kotlin infers
+        // non-null and warns that the elvis below "always returns the left operand". Letting the type
+        // be inferred would leave a warning claiming the guard is dead when it is the only thing
+        // keeping an absent file from being an NPE instead of an empty Optional.
+        val result: GridFSFile? = gridFsTemplate.findOne(query(id))
+        if (result == null) {
+            return Optional.empty()
+        }
+        return Optional.of(Pair(result, gridFsOperations.getResource(result)))
     }
 }

@@ -246,7 +246,24 @@ class ConfigurationHandler(
      * @return `false` if all checks are passed.
      * @author Griefed
      */
-    fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck {
+    fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck =
+        checkConfiguration(packConfig, configCheck, quietCheck) { SecurityScans.scanUsingNekodetector(it) }
+
+    /**
+     * The body of [checkConfiguration], with the malware scan injectable.
+     *
+     * `internal` and not part of the published surface: it exists so a test can observe *what* gets
+     * scanned, which is not otherwise visible — the scanner reports findings, never its target, and a
+     * scan of the wrong path is indistinguishable from a clean one.
+     *
+     * @param scan The scan to run over the modpack; defaults to the real Nekodetector.
+     */
+    internal fun checkConfiguration(
+        packConfig: PackConfig,
+        configCheck: ConfigCheck,
+        quietCheck: Boolean,
+        scan: (Path) -> List<String>
+    ): ConfigCheck {
         // The single choke point every validating caller passes through -- CLI, interactive shell, web and
         // embedders alike -- which is why the wait lives here rather than at four call sites.
         //
@@ -267,11 +284,6 @@ class ConfigurationHandler(
         }
 
         val modpack = File(packConfig.modpackDir)
-        log.info("Performing security scans")
-        log.info("Performing Nekodetector scan")
-        if (modpack.isDirectory) {
-            configCheck.otherErrors.addAll(nekodetectorFindings(modpack.toPath()))
-        }
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))
@@ -311,6 +323,10 @@ class ConfigurationHandler(
             configCheck.modpackErrors.add(Translations.configuration_log_error_checkmodpackdir.toString())
             log.error("Modpack directory not specified. Please specify an existing directory. Specified: ${packConfig.modpackDir}")
         }
+
+        // After the branch, not before it: for a ZIP source isZip has now extracted the archive and
+        // repointed modpackDir at the directory, which is the only thing Nekodetector can walk.
+        scanModpackForInfections(packConfig, configCheck, scan)
 
         if (checkModloader(packConfig.modloader, configCheck).modloaderChecksPassed) {
             log.debug("modLoader settings check passed.")
@@ -534,27 +550,51 @@ class ConfigurationHandler(
         // Overwolf's CurseForge or through GDLauncher.
         val amountOfErrors = configCheck.modpackErrors.size
 
-        var packName = checkManifests(unzippedModpack, packConfig, configCheck)
+        checkManifests(unzippedModpack, packConfig, configCheck)
         if (configCheck.modpackErrors.size > amountOfErrors) {
             configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifests.toString())
         }
 
-        // If no json was read from the modpack, we must sadly use the ZIP-files name as the new
-        // destination. Sad-face.
-        if (packName == null) {
-            packName = unzippedModpack
+        // Does the modpack contain a server-icon or server.properties? If so, include them in the
+        // server pack. Looked up inside the extracted modpack, which is the only place they can be:
+        // this used to resolve them under the *pack name* checkManifests returns -- a display string
+        // such as "All the Mods 9", not a path -- so for every modpack carrying a manifest it resolved
+        // against the process working directory and could never match.
+        val extractedModpack = File(unzippedModpack)
+        val serverIcon = File(extractedModpack, "server-icon.png")
+        if (serverIcon.exists()) {
+            packConfig.serverIconPath = serverIcon.absolutePath
         }
-        packName = File(StringUtilities.pathSecureTextAlternative(packName)).path
+        val serverProperties = File(extractedModpack, "server.properties")
+        if (serverProperties.exists()) {
+            packConfig.serverPropertiesPath = serverProperties.absolutePath
+        }
+        return configCheck
+    }
 
-        // Does the modpack contain a server-icon or server.properties? If so, include
-        // them in the server pack.
-        var file = File(packName, "server-icon.png")
-        if (file.exists()) {
-            packConfig.serverIconPath = file.absolutePath
-        }
-        file = File(packName, "server.properties")
-        if (file.exists()) {
-            packConfig.serverPropertiesPath = file.absolutePath
+    /**
+     * Run the malware scan over the modpack and fold its findings into [configCheck].
+     *
+     * Reads the modpack directory from [packConfig] at call time rather than from a value captured
+     * earlier: for a ZIP source `modpackDir` names the archive until [isZip] has extracted it and
+     * repointed the field, and a scan of a `.zip` is silently a scan of nothing.
+     *
+     * @param packConfig  The configuration whose modpack is scanned.
+     * @param configCheck Collection the findings are added to.
+     * @param scan        The scan to run; defaults to the real Nekodetector.
+     */
+    internal fun scanModpackForInfections(
+        packConfig: PackConfig,
+        configCheck: ConfigCheck,
+        scan: (Path) -> List<String> = { SecurityScans.scanUsingNekodetector(it) }
+    ): ConfigCheck {
+        val modpack = File(packConfig.modpackDir)
+        log.info("Performing security scans")
+        log.info("Performing Nekodetector scan")
+        if (modpack.isDirectory) {
+            configCheck.otherErrors.addAll(nekodetectorFindings(modpack.toPath(), scan))
+        } else {
+            log.warn("Nekodetector scan skipped: ${packConfig.modpackDir} is not a directory.")
         }
         return configCheck
     }
@@ -694,24 +734,26 @@ class ConfigurationHandler(
     fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
         
         log.info("Preparing a list of directories to include in server pack...")
-        var doNotInclude: String
-        val listDirectoriesInModpack = File(modpackDir).listFiles()
+        // listFiles() returns null when the path is not a readable directory. That used to be handled by
+        // an assert -- disabled at runtime outside tests, so decorative -- followed by `!!` inside a
+        // catch for the NullPointerException it produced. The result was an empty suggestion list and a
+        // log line about "copy dirs" that described a different problem, so an unreadable modpack
+        // silently produced a server pack with no directories in it.
+        val entriesInModpack = File(modpackDir).listFiles()
         val dirsInModpack: ArrayList<InclusionSpecification> = ArrayList(100)
-        try {
-            assert(listDirectoriesInModpack != null)
-            for (dir in listDirectoriesInModpack!!) {
-                if (dir.isDirectory) {
-                    dirsInModpack.add(InclusionSpecification(dir.name))
-                }
-            }
-        } catch (np: NullPointerException) {
+        if (entriesInModpack == null) {
             log.error(
-                "Error: Something went wrong during the setup of the modpack. Copy dirs should never be empty. Please check the logs for errors and open an issue on https://github.com/Griefed/ServerPackCreator/issues.",
-                np
+                "Could not read the contents of $modpackDir. It is not a directory, or it is not readable, " +
+                        "so no directories can be suggested for inclusion in the server pack."
             )
+            return dirsInModpack
         }
-        for (i in apiProperties.directoriesToExclude.indices) {
-            doNotInclude = apiProperties.directoriesToExclude.toList()[i]
+        for (entry in entriesInModpack) {
+            if (entry.isDirectory) {
+                dirsInModpack.add(InclusionSpecification(entry.name))
+            }
+        }
+        for (doNotInclude in apiProperties.directoriesToExclude) {
             dirsInModpack.removeIf { it.source == doNotInclude }
         }
         log.info("Modpack directory checked. Suggested directories for copyDirs-setting are:")

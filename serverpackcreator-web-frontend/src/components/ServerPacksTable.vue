@@ -86,11 +86,11 @@
             </q-btn>
           </span>
           <span v-else-if="col.field === 'size'">
-            {{ col.value }} MB
+            {{ formatBytes(props.row.size) }}
           </span>
           <span v-else-if="col.name === 'download'">
             <q-btn :to="'/download/serverpack/' + props.row.id" color="info" dense icon="download" round size="sm"
-                   @click="props.row.downloads++" v-if="props.row.size > 0">
+                   @click="props.row.downloads++">
               <q-tooltip>
                 Download server pack
               </q-tooltip>
@@ -117,6 +117,7 @@
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks, serverpacks} from 'boot/axios';
+import {formatBytes} from 'src/utils/format';
 import {date, type QTableColumn} from 'quasar';
 import RunConfigurationCard from 'components/RunConfigurationCard.vue';
 
@@ -163,6 +164,7 @@ export default defineComponent({
     const showSimulatedReturnData = ref(false);
     const filter = ref('');
     return {
+      formatBytes,
       visible,
       showSimulatedReturnData,
       filter,

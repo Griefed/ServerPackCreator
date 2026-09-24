@@ -89,12 +89,10 @@ class StringUtilities {
          */
         @Suppress("MemberVisibilityCanBePrivate")
         fun pathSecureText(text: String): String {
-            var secured = text
-            while (secured.endsWith(".") || secured.endsWith(" ")) {
-                val toReplace = secured.substring(secured.length - 1)
-                secured = secured.replace(toReplace, "")
-            }
-            return secured
+            // trimEnd, not replace: taking the offending character and calling replace() with it
+            // removed *every* occurrence, so a trailing space deleted all spaces and a trailing dot
+            // deleted every separator in a version number.
+            return text.trimEnd('.', ' ')
                 .replace("/", "")
                 .replace("<", "")
                 .replace(">", "")
@@ -157,12 +155,10 @@ class StringUtilities {
          * @author Griefed
          */
         fun pathSecureTextAlternative(text: String): String {
-            var secured = text
-            while (secured.endsWith(".") || secured.endsWith(" ")) {
-                val toReplace = secured.substring(secured.length - 1)
-                secured = secured.replace(toReplace, "")
-            }
-            return secured
+            // trimEnd, not replace: taking the offending character and calling replace() with it
+            // removed *every* occurrence, so a trailing space deleted all spaces and a trailing dot
+            // deleted every separator in a version number.
+            return text.trimEnd('.', ' ')
                 .replace("<", "")
                 .replace(">", "")
                 .replace(":", "")
@@ -238,6 +234,12 @@ class StringUtilities {
                     && !text.contains("="))
 
         /**
+         * **Returns `true` when the text is CLEAN.** The name reads like a predicate for "has invalid
+         * characters" and means the opposite, so a caller wanting "this is bad" needs `!`. Kept as-is
+         * because it is published API and renaming it inside a major version would break embedders;
+         * `InclusionsValidator` is the in-repo caller and correctly negates it. `StringUtilitiesTest`
+         * pins both directions, so an inversion cannot land quietly.
+         *
          * Check the passed string whether it contains characters invalid in a path-declaration:
          *  * **&#60;**
          *  * **&#62;**

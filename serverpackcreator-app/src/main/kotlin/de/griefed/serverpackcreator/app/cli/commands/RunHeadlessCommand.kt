@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.serverpack.ServerPackGeneration
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -154,12 +155,32 @@ class RunHeadlessCommand(
                     for (error in generation.errors) {
                         println(error)
                     }
+                    reportScanFindings(generation)
                     return false
                 } else {
                     println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                    reportScanFindings(generation)
                     return true
                 }
             }
         }
+    }
+}
+
+/**
+ * Print what the security scan found, whether or not the generation itself worked.
+ *
+ * File-level so every command in this file can reach it regardless of nesting. Reported separately
+ * from [ServerPackGeneration.errors] because the two are different questions: a pack can build
+ * perfectly and still contain an infected mod, and that used to be reported as "Error generating
+ * Server Pack" while a pack whose files never copied was reported as a success.
+ */
+private fun reportScanFindings(generation: ServerPackGeneration) {
+    if (generation.scanFindings.isEmpty()) {
+        return
+    }
+    println("Security scan findings for this server pack:")
+    for (finding in generation.scanFindings) {
+        println(finding)
     }
 }
