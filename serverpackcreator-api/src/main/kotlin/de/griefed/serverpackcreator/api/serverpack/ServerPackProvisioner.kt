@@ -50,6 +50,15 @@ class ServerPackProvisioner(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /**
+     * The two run-files whose names are fixed, rather than derived from a template key.
+     *
+     * The start- and Java-scripts are named after the templates registered for them, so their names
+     * come from those maps; these two have no template to be named after and would otherwise be
+     * string literals at each use. Both are read from here by [serverRunFileNames] — which the manifest
+     * and the ZIP exclusion consume — and by the preserve-or-write decision below, so a protected
+     * `variables.txt` is recognised as the same file the manifest recorded.
+     */
     companion object {
         /** Name of the file holding the values the start-scripts read their settings from. */
         const val VARIABLES_NAME = "variables.txt"

@@ -69,7 +69,7 @@ class EventService @Autowired constructor(
     }
 
     /** One page of events, as a `Page` so the caller learns the total. */
-    fun loadAll(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<QueueEvent> {
+    fun loadAll(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "timestamp")) : Page<QueueEvent> {
         return queueEventRepository.findAll(sizedPage.withSort(sort))
     }
 

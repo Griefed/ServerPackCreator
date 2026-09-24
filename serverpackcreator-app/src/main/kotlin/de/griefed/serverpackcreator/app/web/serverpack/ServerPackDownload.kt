@@ -33,8 +33,19 @@ import java.util.*
 @Document
 class ServerPackDownload {
 
-    /** When the download happened, set on construction so a retry keeps the original time. */
+    /**
+     * The document id, assigned by MongoDB. `private set` so only Spring Data's persistence constructor
+     * fills it.
+     *
+     * Deliberately separate from [downloadedAt], which used to *be* the id: that made the id a global
+     * millisecond rather than a per-pack one, so two downloads of any two packs in the same millisecond
+     * collided and `save` overwrote the earlier row.
+     */
     @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
+
+    /** When the download happened, set on construction so a retry keeps the original time. */
     var downloadedAt: Date = Date(System.currentTimeMillis())
         private set
 
@@ -48,7 +59,8 @@ class ServerPackDownload {
 
     @Suppress("unused")
     @PersistenceCreator
-    private constructor(downloadedAt: Date, serverPack: ServerPack) {
+    private constructor(id: String?, downloadedAt: Date, serverPack: ServerPack) {
+        this.id = id
         this.downloadedAt = downloadedAt
         this.serverPack = serverPack
     }

@@ -167,4 +167,35 @@ internal class ServerPackHandlerRunTest {
         Assertions.assertFalse(staleFile.exists(), "A stale file from the old manifest must be pruned on update")
         Assertions.assertTrue(File(destination, "mods").isDirectory, "The fresh server pack must still be generated")
     }
+
+    /**
+     * A malware finding is a statement about what the pack *contains*, not about whether building it
+     * worked — so it must not make the generation report failure.
+     *
+     * `errors` was populated by exactly one thing, the Nekodetector scan of the finished pack, so
+     * `success` meant "no malware found". Six call sites branch on it: the web queue turns it into
+     * ModPackStatus.ERROR, both CLI verbs print a failure, the GUI control panel and the grinder's
+     * VanillaPackGenerator do the same. A pack that generated perfectly and happens to contain an
+     * infected mod was reported to all six as a failed generation.
+     */
+    @Test
+    fun aScanFindingDoesNotMakeAGoodGenerationReportFailure(@TempDir tempDir: File) {
+        val destination = File(tempDir, "scanned-pack")
+        val packConfig = forgeConfigInto(destination)
+
+        val generation = serverPackHandler.run(packConfig) {
+            listOf("Nekodetector infections found!", "Stage 1 infections:", "evil.jar")
+        }
+
+        Assertions.assertTrue(
+            generation.success,
+            "a scan finding was reported as a generation failure; errors was ${generation.errors}"
+        )
+        Assertions.assertTrue(generation.errors.isEmpty(), "the scan's output leaked into errors")
+        Assertions.assertEquals(
+            listOf("Nekodetector infections found!", "Stage 1 infections:", "evil.jar"),
+            generation.scanFindings,
+            "the scan's findings were not reported at all"
+        )
+    }
 }

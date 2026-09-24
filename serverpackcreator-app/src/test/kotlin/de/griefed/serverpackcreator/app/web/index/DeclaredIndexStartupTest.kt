@@ -57,7 +57,12 @@ import java.util.Properties
     properties = [
         "de.griefed.serverpackcreator.spring.schedules.database.cleanup=-",
         "de.griefed.serverpackcreator.spring.schedules.files.cleanup=-",
-        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-"
+        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-",
+        // Opts OUT of the embedded MongoDB: flapdoodle's autoconfiguration is on the test classpath and
+        // activates for every context, throwing unless a version is set. This class asserts what happens
+        // with NO database -- theContextStartsWithoutADatabase says so in its name -- so starting one
+        // would destroy the very thing it guards.
+        "spring.autoconfigure.exclude=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration"
     ]
 )
 internal class DeclaredIndexStartupTest {

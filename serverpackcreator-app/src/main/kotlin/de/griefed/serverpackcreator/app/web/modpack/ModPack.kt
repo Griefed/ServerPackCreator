@@ -51,7 +51,7 @@ class ModPack() {
     /** Display name, which for an upload is the archive's file name. */
     var name: String = ""
     /** Archive size in bytes, kept so the disk stats need not stat every file. */
-    var size: Int = 0
+    var size: Long = 0
     /** How often the archive has been downloaded. The getter maps `null` to `0`, so documents written before the field existed read as zero rather than blowing up a response. */
     var downloads: Int? = 0
         get() {
@@ -78,7 +78,7 @@ class ModPack() {
         versionID: String,
         dateCreated: Date,
         name: String,
-        size: Int,
+        size: Long,
         downloads: Int?,
         status: ModPackStatus,
         source: ModpackSource,

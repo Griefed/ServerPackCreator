@@ -118,7 +118,10 @@ class InclusionsValidator {
                         inclusion.exclusionFilter!!.toRegex()
                     } catch (ex: PatternSyntaxException) {
                         log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.exclusionFilter ?: ""))
+                        // The exclusion key, not the inclusion one: reporting a bad exclusion-regex as an
+                        // inclusion problem points the user at the field they did not touch. The key has
+                        // existed in every locale file all along and was used by nothing.
+                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_exclusion(inclusion.exclusionFilter ?: ""))
                     }
                 }
             }

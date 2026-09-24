@@ -52,25 +52,25 @@ class DownloadStatsService @Autowired constructor(
 ) {
 
     /** Modpack downloads aggregated per day, whole series, newest day first. */
-    fun modPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
+    fun modPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
-        for (download in modPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
+        for (download in modPackDownloadRepository.findAll(sort)) {
             dates.add(download.downloadedAt)
         }
         return count(dates)
     }
 
     /** One page of [modPackDownloads]. */
-    fun modPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
+    fun modPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
-        for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
+        for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort))) {
             dates.add(download.downloadedAt)
         }
         return count(dates)
     }
 
     /** Server-pack downloads aggregated per day, whole series, newest day first. */
-    fun serverPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
+    fun serverPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (download in serverPackDownloadRepository.findAll(sort)) {
             dates.add(download.downloadedAt)
@@ -79,7 +79,7 @@ class DownloadStatsService @Autowired constructor(
     }
 
     /** One page of [serverPackDownloads]. */
-    fun serverPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
+    fun serverPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (download in serverPackDownloadRepository.findAll(sizedPage.withSort(sort))) {
             dates.add(download.downloadedAt)

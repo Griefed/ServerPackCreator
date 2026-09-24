@@ -50,6 +50,7 @@ internal class ManifestCandidatesTest {
         val expected = listOf(
             File(modpack, "minecraftinstance.json"),
             File(modpack, "manifest.json"),
+            File(modpack, "modrinth.index.json"),
             File(modpack, "instance.json"),
             File(modpack.parentFile, "instance.json"),
             File(modpack.parentFile, "mmc-pack.json"),
@@ -66,7 +67,7 @@ internal class ManifestCandidatesTest {
     @Test
     fun candidatesAreReportedEvenWhenAbsent() {
         val candidates = parser.manifestCandidates(File("/nonexistent/pack").absolutePath)
-        Assertions.assertEquals(6, candidates.size)
+        Assertions.assertEquals(7, candidates.size)
         Assertions.assertTrue(candidates.none { it.exists() }, "precondition: none of these exist")
     }
 

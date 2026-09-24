@@ -110,12 +110,12 @@
             "source": "ZIP",
             "name": "Survive Create Prosper 4.zip",
             "id": 1,
-            "size": 489.0,
+            "size": 512753664,
             "status": "GENERATED",
             "serverPacks": [
                 {
                     "id": 1,
-                    "size": 353,
+                    "size": 370147328,
                     "downloads": 2,
                     "confirmedWorking": 0,
                     "dateCreated": 1707166386123,
@@ -167,7 +167,7 @@
                     "source": "ZIP",
                     "name": "TNP Limitless 6 - LL6 - Custom.zip",
                     "id": 2,
-                    "size": 931.0,
+                    "size": 976224256,
                     "status": "GENERATING",
                     "serverPacks": [],
                     "sha256": "b32c0a93a5965a4ad9da08c2b0f66550abe62b2fc3c25c915df13d8bf0adb267",
@@ -179,12 +179,12 @@
                     "source": "ZIP",
                     "name": "Survive Create Prosper 4.zip",
                     "id": 1,
-                    "size": 489.0,
+                    "size": 512753664,
                     "status": "GENERATED",
                     "serverPacks": [
                         {
                             "id": 1,
-                            "size": 353,
+                            "size": 370147328,
                             "downloads": 2,
                             "confirmedWorking": 0,
                             "dateCreated": 1707166386123,

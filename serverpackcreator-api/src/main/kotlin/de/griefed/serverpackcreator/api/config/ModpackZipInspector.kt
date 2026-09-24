@@ -70,14 +70,19 @@ class ModpackZipInspector(
             // does -- ~80 ms for a 10,000-entry archive, more for a bigger one.
             openZip(Paths.get(pathToZip).toFile()).use {
                 if (it.isNotValidZipFile()) {
-                    configCheck.modpackErrors.add("$pathToZip is not a valid ZIP-file.")
+                    // Name, not path. These errors are joined verbatim into the 400 body the upload
+                    // endpoint returns, and that endpoint is unauthenticated and CORS-open, so an
+                    // absolute server path in the message is handed to whoever asked. The log below
+                    // keeps the full path, where it is useful and not public.
+                    log.error("$pathToZip is not a valid ZIP-file.")
+                    configCheck.modpackErrors.add("${File(pathToZip).name} is not a valid ZIP-file.")
                     return configCheck
                 }
                 foldersInModpackZip = baseDirectoriesOf(it.fileHeaders.map { header -> header.fileName })
             }
         } catch (ex: IOException) {
             log.error("Could not validate ZIP-file $pathToZip.", ex)
-            configCheck.modpackErrors.add("Could not validate ZIP-file $pathToZip.")
+            configCheck.modpackErrors.add("Could not validate ZIP-file ${File(pathToZip).name}.")
             return configCheck
         }
         try {

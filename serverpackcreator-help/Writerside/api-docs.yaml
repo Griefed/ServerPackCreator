@@ -1,9 +1,12 @@
 openapi: 3.1.0
 info:
   title: ServerPackCreator
-  description: REST API of ServerPackCreator's webservice mode. GENERATED from the controllers by
-    springdoc — do not hand-edit. The regeneration command is in serverpackcreator-app/build.gradle.kts,
-    beside the springdoc dependency.
+  description: REST API of ServerPackCreator's webservice mode. The paths, schemas and request bodies
+    below are GENERATED from the controllers by springdoc — do not hand-edit them. The regeneration
+    command is in serverpackcreator-app/build.gradle.kts, beside the springdoc dependency. Only this
+    info block is applied by hand afterwards, because springdoc is a developmentOnly dependency and so
+    cannot be configured from an annotation on a production class; springdoc's own default title,
+    version and localhost servers entry are replaced by it.
   version: v2
 paths:
   /api/v2/modpacks/upload:
@@ -44,7 +47,7 @@ paths:
           type: string
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -1054,7 +1057,7 @@ components:
           type: string
         size:
           type: integer
-          format: int32
+          format: int64
         downloads:
           type: integer
           format: int32
@@ -1115,7 +1118,7 @@ components:
           type: string
         size:
           type: integer
-          format: int32
+          format: int64
         downloads:
           type:
           - integer

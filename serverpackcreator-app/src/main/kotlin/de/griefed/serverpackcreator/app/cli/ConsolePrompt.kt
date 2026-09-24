@@ -105,6 +105,10 @@ class ConsolePrompt(
         output.append(line).append(System.lineSeparator())
     }
 
+    /**
+     * The prompt text callers and tests share, so neither has to spell it. Constant rather than a
+     * literal at each use because a test asserting on what the console printed has to match it exactly.
+     */
     companion object {
         /** What a prompt asking for a path puts in front of the cursor. */
         const val PATH_PROMPT = "Path: "

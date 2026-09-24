@@ -199,6 +199,15 @@ class ControlPanel(
             if (guiProps.generationFocusEnabled) {
                 mainFrame.toFront()
             }
+            if (generation.scanFindings.isNotEmpty()) {
+                // Reported, not turned into a failure: a finding describes what is inside the pack, and
+                // a pack that built correctly is still a pack that built correctly. WARN so it reaches
+                // the log window rather than only the file.
+                log.warn("Security scan findings for ${generation.serverPack.absolutePath}:")
+                for (finding in generation.scanFindings) {
+                    log.warn(finding)
+                }
+            }
             if (generation.success) {
                 if (JOptionPane.showConfirmDialog(
                         panel.parent,

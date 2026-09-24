@@ -697,8 +697,10 @@ export default defineComponent({
             color: 'positive',
             message: 'Generation queued for ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
           });
-          this.modPackID = response.data.modPackID;
-          this.runConfigID = response.data.runConfigID;
+          // ZipResponse spells these modPackId/runConfigId; modPackID/runConfigID are undefined and
+          // silently cleared the pickers the user had just chosen from.
+          this.modPackID = response.data.modPackId;
+          this.runConfigID = response.data.runConfigId;
           this.resetForm();
         }).catch(error => {
         this.$q.notify({
@@ -709,8 +711,11 @@ export default defineComponent({
           color: 'negative',
           message: 'Request failed: ' + error
         });
-        this.modPackID = error.data.modPackID;
-        this.runConfigID = error.data.runConfigID;
+        // error.data does not exist on an axios error -- the body is error.response.data, and it is
+        // absent entirely for a network-level failure, so reading through it threw a TypeError from
+        // inside the error handler and the notify above was the last thing that ran.
+        this.modPackID = error.response?.data?.modPackId ?? this.modPackID;
+        this.runConfigID = error.response?.data?.runConfigId ?? this.runConfigID;
         this.resetForm();
       })
     },

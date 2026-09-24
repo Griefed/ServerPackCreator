@@ -199,9 +199,23 @@ class ServerPackHandler(
      * @return `true` if the server pack was successfully generated.
      * @author Griefed
      */
-    fun run(packConfig: PackConfig): ServerPackGeneration {
+    fun run(packConfig: PackConfig): ServerPackGeneration =
+        run(packConfig) { SecurityScans.scanUsingNekodetector(it) }
+
+    /**
+     * The body of [run], with the security scan injectable.
+     *
+     * `internal` and not published surface. It exists because what the scan reports, and what the
+     * generation does with it, is otherwise unobservable: a scan over a clean fixture returns nothing,
+     * so a test cannot tell a finding that was routed correctly from one that was never produced.
+     *
+     * @param scan The scan to run over the finished server pack; defaults to the real Nekodetector.
+     */
+    internal fun run(packConfig: PackConfig, scan: (Path) -> List<String>): ServerPackGeneration {
         val files : ArrayList<File> = ArrayList(10000)
         val relativeFiles : ArrayList<String> = ArrayList(10000)
+        // What went wrong while BUILDING the pack, as opposed to what the scan found inside it.
+        val generationErrors : ArrayList<String> = ArrayList(10)
         @Suppress("JoinDeclarationAndAssignment") val serverPackManifest: ServerPackManifest
         var serverPackZip: Optional<File> = Optional.empty()
         val serverPack = if (packConfig.customDestination.isPresent) {
@@ -231,9 +245,14 @@ class ServerPackHandler(
 
         try {
             serverPack.create(createFileOrDir = true, asDirectory = true)
-        } catch (_: IOException) {
-            // The server-pack directory may already exist; a genuine inability to create it would
-            // surface later when files are written into it during generation.
+        } catch (ex: IOException) {
+            // An already-existing directory is the normal case and not a failure. A genuine inability
+            // to create one is, and it used to be assumed it "would surface later when files are
+            // written" -- it did not, because nothing downstream checked anything.
+            if (!serverPack.isDirectory) {
+                log.error("Could not create the server pack directory ${serverPack.absolutePath}.", ex)
+                generationErrors.add("Could not create the server pack directory ${serverPack.absolutePath}.")
+            }
         }
 
         /*
@@ -399,17 +418,25 @@ class ServerPackHandler(
         runGenericEventListeners()
         log.debug("Generation took ${generationStopWatch.stop().getTime()}")
 
+        // A ZIP that was requested and did not appear is a generation failure, and was previously
+        // indistinguishable from one that was never asked for -- both left serverPackZip empty.
+        if (packConfig.isZipCreationDesired && serverPackZip.isEmpty) {
+            log.error("A ZIP-archive was requested but none was created.")
+            generationErrors.add("A ZIP-archive was requested but none was created.")
+        }
+
         log.info("Performing security scans")
         val findings = mutableListOf<String>()
         log.info("Performing Nekodetector scan")
-        findings.addAll(SecurityScans.scanUsingNekodetector(serverPack.toPath()))
+        findings.addAll(scan(serverPack.toPath()))
 
         return ServerPackGeneration(
             serverPack,
-            findings,
+            generationErrors,
             serverPackZip,
             packConfig,
-            files
+            files,
+            findings
         )
     }
 

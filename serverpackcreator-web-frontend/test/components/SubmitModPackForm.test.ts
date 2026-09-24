@@ -112,4 +112,46 @@ describe('SubmitModPackForm', () => {
     expect(wrapper.vm.runConfigID).toBe('does-not-exist')
     expect(wrapper.vm.minecraftVersion).toBe('untouched')
   })
+
+  // --- regeneration path -------------------------------------------------------------------------
+  // Three defects were fixed here without a guard: both handlers read `modPackID`/`runConfigID` where
+  // ZipResponse spells them `modPackId`/`runConfigId`, and the error handler read `error.data` rather
+  // than `error.response.data`, which threw a TypeError from inside the catch block.
+
+  it('keeps the ids the server actually returned after a successful regeneration', async () => {
+    const { modpacks } = await import('boot/axios')
+    vi.mocked(modpacks.postForm).mockResolvedValueOnce({
+      data: { modPackId: 'mp-7', runConfigId: 'rc-9', success: true }
+    })
+    const wrapper = await mountForm()
+    wrapper.vm.modPackID = 'stale'
+    wrapper.vm.runConfigID = 'stale'
+
+    await wrapper.vm.onSubmitRegeneration({ target: document.createElement('form') } as unknown as Event)
+    await flushPromises()
+
+    expect(wrapper.vm.modPackID).toBe('mp-7')
+    expect(wrapper.vm.runConfigID).toBe('rc-9')
+  })
+
+  it('survives a regeneration failure that carries no response body', async () => {
+    const { modpacks } = await import('boot/axios')
+    // A network-level axios failure has no `response` at all; reading through it used to throw.
+    vi.mocked(modpacks.postForm).mockRejectedValueOnce(new Error('Network Error'))
+    const wrapper = await mountForm()
+    wrapper.vm.modPackID = 'chosen'
+    wrapper.vm.runConfigID = 'also-chosen'
+    // Spied because the handler runs inside an unawaited .catch(): a TypeError there becomes an
+    // unhandled rejection and simply leaves the fields untouched, which is indistinguishable from the
+    // handler doing the right thing. resetForm runs AFTER the assignments, so it only happens if the
+    // handler got through them.
+    const resetForm = vi.spyOn(wrapper.vm, 'resetForm')
+
+    await wrapper.vm.onSubmitRegeneration({ target: document.createElement('form') } as unknown as Event)
+    await flushPromises()
+
+    expect(resetForm).toHaveBeenCalled()
+    expect(wrapper.vm.modPackID).toBe('chosen')
+    expect(wrapper.vm.runConfigID).toBe('also-chosen')
+  })
 })

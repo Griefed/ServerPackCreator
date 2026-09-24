@@ -175,6 +175,38 @@ the "do not tidy that away, here is what it cost last time".
     from springmockk (1.14.6), so the catalog's 1.14.11 never applied and `-api`'s comment claiming the
     build is mockk-single-versioned was false. `-app` now declares `libs.mockk` explicitly. Bumping a
     library that reaches a module **only transitively** still needs an explicit declaration there.
+- **LANDMINE — a bare `"group:artifact"` in a convention plugin publishes a POM with no version, and
+  Sonatype rejects it.** `serverpackcreator.kotlin-conventions` declared
+  `implementation(platform("org.jetbrains.kotlin:kotlin-bom"))` and
+  `implementation("org.jetbrains.kotlin:kotlin-stdlib")` with no versions — precompiled script plugins
+  cannot read the catalog (see above), so bare coordinates are the only thing that compiles there, and
+  the version was left to the BOM. Gradle published exactly that: a `<dependencyManagement>` BOM import
+  with no `<version>`, and a runtime `kotlin-stdlib` with no `<version>`. **That failed the 9.0.0-beta.2
+  release** — every other job succeeded, `signMavenJavaPublication` and both repository publishes ran,
+  and `:closeSonatypeStagingRepository` then returned HTTP 400 from
+  `ossrh-staging-api.central.sonatype.com`:
+
+  ```
+  pkg:maven/de.griefed.serverpackcreator/serverpackcreator-api@9.0.0-beta.2
+    - Dependency version information is missing for dependency: org.jetbrains.kotlin:kotlin-stdlib
+    - Dependency management dependency version information is missing for dependency: org.jetbrains.kotlin:kotlin-bom
+  ```
+
+  Both lines were redundant: `kotlin("jvm")` adds a stdlib at the plugin's own version because
+  `kotlin.stdlib.default.dependency` is unset, and a module wanting it explicitly uses
+  `libs.kotlinStdlib`. Measured on the generated POM
+  (`:serverpackcreator-api:generatePomFileForMavenJavaPublication`): **2 dependencies without a version
+  before, 0 after**; `<dependencyManagement>` disappears entirely and `kotlin-stdlib` survives at
+  **2.4.10**, so consumers are unaffected. Total `<dependency>` entries 20 → 17.
+
+  **The rule this leaves behind:** a dependency declared in a precompiled script plugin reaches the POM
+  of every module that applies it, so a bare coordinate there is only safe while no such module is
+  published. `serverpackcreator.spring-conventions` still declares several versionless dependencies that
+  resolve through Boot's BOM — deliberate, and harmless **only because `-app` is unpublished**. Publishing
+  another module means auditing that file first. The cheap check is
+  `generatePomFileForMavenJavaPublication` plus a grep for `<dependency>` blocks with no `<version>`; it
+  costs seconds and is the thing that turns a failed release into a caught mistake.
+
 - **LANDMINE — never do filesystem work in a task's configuration block.** `-api` shipped its
   root-level documents with fifteen bare `copy { }` calls inside `tasks.processResources { }`, so they
   ran when the task was *configured* — including on runs where `processResources` was UP-TO-DATE and did
