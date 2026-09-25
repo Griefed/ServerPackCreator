@@ -174,12 +174,18 @@ internal class ServerPropertiesPatchTest {
      */
     @Test
     fun preservesWindowsLineEndings(@TempDir packDir: File) {
-        val crlf = "motd=Windows\r\nserver-port=25565\r\ndifficulty=hard\r\n"
+        // Carries both port keys, so what this asserts is the line endings and nothing else. A fixture
+        // missing one of them would also exercise the append path, whose own separator choice is a
+        // different question -- pinned by appendsAPortKeyTheFileDoesNotCarry.
+        val crlf = "motd=Windows\r\nquery.port=25565\r\nserver-port=25565\r\ndifficulty=hard\r\n"
         val properties = packWithProperties(packDir, crlf)
 
         ServerPropertiesPatch(packDir).borrow(30123)
 
-        Assertions.assertEquals("motd=Windows\r\nserver-port=30123\r\ndifficulty=hard\r\n", properties.readText())
+        Assertions.assertEquals(
+            "motd=Windows\r\nquery.port=30123\r\nserver-port=30123\r\ndifficulty=hard\r\n",
+            properties.readText()
+        )
     }
 
     /** Restoring without an outstanding borrow does nothing, so a shutdown hook may always call it. */

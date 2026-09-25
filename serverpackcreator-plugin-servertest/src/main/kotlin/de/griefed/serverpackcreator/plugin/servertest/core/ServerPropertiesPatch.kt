@@ -57,7 +57,8 @@ class ServerPropertiesPatch(private val packDirectory: File) {
      * listening socket when enabled, and two test servers sharing one collide exactly as their game ports
      * would. Off in ServerPackCreator's shipped properties, so most packs never need the second port.
      */
-    fun rconEnabled(): Boolean = false
+    fun rconEnabled(): Boolean =
+        propertiesFile.isFile && valueOf(propertiesFile.readText(), ENABLE_RCON_KEY)?.trim().equals("true", true)
 
     /**
      * Take the file, pointing the server at [serverPort] (and RCON at [rconPort] when one is supplied).
@@ -66,6 +67,24 @@ class ServerPropertiesPatch(private val packDirectory: File) {
      * backed up as though it were the user's.
      */
     fun borrow(serverPort: Int, rconPort: Int? = null) {
+        restore()
+
+        if (propertiesFile.isFile) {
+            propertiesFile.copyTo(backupFile, overwrite = true)
+        } else {
+            // No file to borrow, so one is created -- and the empty backup records that there was none, which
+            // is what tells `restore` to remove the file rather than put bytes back into it.
+            propertiesFile.writeText("")
+            backupFile.writeText(ABSENT_MARKER)
+        }
+
+        var contents = propertiesFile.readText()
+        contents = withKey(contents, SERVER_PORT_KEY, serverPort.toString())
+        contents = withKey(contents, QUERY_PORT_KEY, serverPort.toString())
+        if (rconPort != null) {
+            contents = withKey(contents, RCON_PORT_KEY, rconPort.toString())
+        }
+        propertiesFile.writeText(contents)
     }
 
     /**
@@ -75,7 +94,38 @@ class ServerPropertiesPatch(private val packDirectory: File) {
      * to call from both the normal stop path and a shutdown hook.
      */
     fun restore() {
+        if (!backupFile.isFile) {
+            return
+        }
+        if (backupFile.readText() == ABSENT_MARKER) {
+            propertiesFile.delete()
+        } else {
+            backupFile.copyTo(propertiesFile, overwrite = true)
+        }
+        backupFile.delete()
     }
+
+    /**
+     * [contents] with [key] set to [value], replacing every occurrence or appending one when there is none.
+     *
+     * Line-anchored rather than parsed, so comments, blank lines, key order and duplicate keys all survive
+     * untouched — the file belongs to the user and only the port is being borrowed. `.*` stops at a carriage
+     * return because Java's regex counts it as a line terminator, so a CRLF file keeps its endings.
+     */
+    private fun withKey(contents: String, key: String, value: String): String {
+        val line = Regex("^[ \\t]*${Regex.escape(key)}[ \\t]*=.*$", RegexOption.MULTILINE)
+        if (line.containsMatchIn(contents)) {
+            return line.replace(contents) { "$key=$value" }
+        }
+        val separator = if (contents.contains("\r\n")) "\r\n" else "\n"
+        val body = if (contents.isEmpty() || contents.endsWith(separator)) contents else contents + separator
+        return body + "$key=$value" + separator
+    }
+
+    /** The value [key] carries in [contents], or `null` when the key is absent. */
+    private fun valueOf(contents: String, key: String): String? =
+        Regex("^[ \\t]*${Regex.escape(key)}[ \\t]*=(.*)$", RegexOption.MULTILINE)
+            .findAll(contents).lastOrNull()?.groupValues?.get(1)
 
     companion object {
         /** Minecraft's own settings file, and the only place a server's port can be set from here. */
@@ -95,5 +145,13 @@ class ServerPropertiesPatch(private val packDirectory: File) {
 
         /** The switch deciding whether [RCON_PORT_KEY] is listened on at all. */
         const val ENABLE_RCON_KEY = "enable-rcon"
+
+        /**
+         * What the backup holds when the pack had no `server.properties` at all.
+         *
+         * A zero-length backup would be ambiguous with a genuinely empty properties file, and the distinction
+         * decides whether [restore] writes bytes back or deletes the file.
+         */
+        const val ABSENT_MARKER = "#servertest: this server pack had no server.properties\n"
     }
 }
