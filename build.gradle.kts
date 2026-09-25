@@ -82,9 +82,17 @@ val grinderPlugin: Configuration = configurations.create("grinderPlugin") {
     isCanBeResolved = true
 }
 
+// The server-test plugin's jar. Same reasoning as the grinder's: its own configuration, and the app's
+// plugins directory as its only destination.
+val serverTestPlugin: Configuration = configurations.create("serverTestPlugin") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     examplePlugin(project(path = ":serverpackcreator-plugin-example", configuration = "pluginArtifact"))
     grinderPlugin(project(path = ":serverpackcreator-plugin-grinder", configuration = "pluginArtifact"))
+    serverTestPlugin(project(path = ":serverpackcreator-plugin-servertest", configuration = "pluginArtifact"))
 }
 
 val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
@@ -95,10 +103,11 @@ tasks.register<Delete>("cleanAppPlugins") {
 }
 
 tasks.register<Copy>("copyPluginsToApp") {
-    description = "Refreshes the example and grinder plugins in the app's manual-test plugins directory."
+    description = "Refreshes the example, grinder and server-test plugins in the app's manual-test plugins directory."
     dependsOn("cleanAppPlugins")
     from(examplePlugin)
     from(grinderPlugin)
+    from(serverTestPlugin)
     into(appPlugins)
 }
 
@@ -108,8 +117,9 @@ tasks.register<Delete>("cleanApiUnitTestPlugins") {
 
 // DELIBERATELY the example plugin alone. ApiPluginsTest loops over every plugin jar it finds here and
 // asserts each one provides ALL SIX extension types; the grinder plugin provides two (TabExtension and
-// PreGenExtension), so adding it to this copy turns that suite red. The example is the only plugin that
-// exercises every extension point, which is exactly why it is the one this test loads.
+// PreGenExtension) and the server-test plugin provides one (TabExtension), so adding either to this copy
+// turns that suite red. The example is the only plugin that exercises every extension point, which is
+// exactly why it is the one this test loads.
 tasks.register<Copy>("copyPluginsApiUnitTests") {
     description = "Refreshes the example plugin ApiPluginsTest loads through pf4j."
     dependsOn("cleanApiUnitTestPlugins")

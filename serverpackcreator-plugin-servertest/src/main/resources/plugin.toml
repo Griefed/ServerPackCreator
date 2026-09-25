@@ -1,0 +1,5 @@
+id = "${plugin_id}"
+name = "${plugin_name}"
+description = "${plugin_description}"
+author = "${plugin_author}"
+version = "${version}"
