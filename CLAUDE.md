@@ -330,7 +330,7 @@ evidence consulted occasionally, not context every session needs.
 |----------------|---------------|------------------------------------------------------------------|
 | api            | 490 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
 | clientside     | 672           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
-| app            | 226           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| app            | 227           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | plugin-servertest | 90 (1 skip) | Launches a generated pack through its own start scripts, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
