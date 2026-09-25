@@ -20,8 +20,8 @@ change. A launcher that built its own `java` command would not be testing what s
 
 | Package | What lives there |
 |---|---|
-| *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless) and `ServerTestTabExtension` — the one pf4j extension point this plugin provides |
-| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings`, and **`ServerLauncher`/`LaunchOutcome`** — the launch sequence itself |
+| *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless) and the two pf4j extension points: `ServerTestTabExtension` (the GUI tab) and `ServerTestPostGenExtension` (refreshes the list when a pack is generated) |
+| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings`, **`ServerLauncher`/`LaunchOutcome`** — the launch sequence itself — and `GenerationNotifier`/`Subscription` |
 | `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus three pinned non-view units: `ConsoleHints`, `PlainTextRendering` and `Dialogs` |
 
 ## Zero API changes, and what that rests on
@@ -118,6 +118,50 @@ plugin's build file already records as a reason.
   already grown and every position looks scrolled-up, which stops the console following the tail from
   its very first line.
 
+## The server runs in its own JVM, and that is the whole point
+
+**Three OS processes, not one.** ServerPackCreator's JVM spawns `bash start.sh` with `ProcessBuilder`, and
+the script spawns `java` itself. Nothing about the server runs inside ServerPackCreator's own JVM, so its
+heap is not ServerPackCreator's heap and a modpack asking for 12G cannot exhaust a ServerPackCreator
+started with 512M.
+
+Measured rather than asserted (2026-09-25): a launching JVM at `maxHeap=512M`, pid 56250, spawned a shell
+at pid 56251 whose child JVM reported `MaxHeapSize = 3221225472` — 3 GiB, from its own `-Xmx3G`, while the
+launcher stayed at 512M. Separate pids, independent heaps.
+
+The server's heap comes from **`JAVA_ARGS` in the pack's own `variables.txt`** (which Forge and NeoForge
+packs also write into `user_jvm_args.txt`), and `JAVA` there may point at an entirely different Java
+installation — a different major version, even. None of that is negotiated with ServerPackCreator.
+
+**What *is* shared is the machine.** The plugin deliberately allows several packs to run at once, so total
+RAM is the real constraint: three modpack servers at 8G each will hurt whatever else is running, including
+ServerPackCreator. That is a different concern from heap-in-one-JVM, and the honest mitigation is that the
+console shows each server's own output and Force stop kills its whole process tree.
+
+**This is also why `kill()` walks `descendants()`.** The server is a *grandchild* — SIGKILL to the shell
+alone reparents it to init, still holding the world directory, the port and all of that heap. The same
+defect was fixed in `-clientside`'s `HostProcessServerRunner` on this branch.
+
+## Refreshing when a pack is generated
+
+`ServerTestPostGenExtension` hears that a generation finished and publishes to `GenerationNotifier`; the
+tab subscribes while it is in the window.
+
+- **A `PostGenExtension`, not an `SPCPostGenListener`**, though both fire on adjacent lines at the end of
+  `ServerPackHandler.run`. A listener must be registered by reaching back through `ApiWrapper.api()` from
+  plugin `init` — the call the api `CLAUDE.md` records as having caused two unbounded recursions — and
+  `ServerPackHandler` has `addEventListener` with **no `removeEventListener`**, so a rebuilt tab would leak
+  one permanently. `ApiPlugins.runPostGenExtensions` also already wraps every call, so a throw here cannot
+  abort somebody's generation.
+- **`GenerationNotifier` exists because the two extensions cannot reach each other.**
+  `SingletonExtensionFactory` builds each one separately. It is an `object` but **plugin-scoped, not
+  JVM-global** — pf4j gives each plugin its own classloader.
+- **Subscribed in `addNotify`, cancelled in `removeNotify`**, the grinder plugin's timer idiom: the
+  notifier keeps whatever it is given, so an unowned subscription outlives the tab it served.
+- **The generated pack's path is deliberately ignored** and the directory re-read, so the new row's facts
+  come from the same `manifest.json` as every other row's rather than by a second route.
+- Publishing happens on the generation thread, never the EDT, so the tab marshals for itself.
+
 ## The EULA, and why the plugin never writes `eula.txt`
 
 Pure passthrough, by Griefed's decision. The script asks on the console and the user types `I agree`
@@ -143,7 +187,7 @@ user to a five-second countdown rather than ending the session, and Force stop i
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-servertest:test` — 90 tests, of which 89 run by default; the
+`./gradlew :serverpackcreator-plugin-servertest:test` — 98 tests, of which 97 run by default; the
 skip is `RealPackBootTest`, which boots a real server and is switched on deliberately (below).
 
 - **`core` is tested against real processes, not mocks.** What is under test is process behaviour — does
