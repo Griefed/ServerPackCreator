@@ -75,7 +75,20 @@ class PortAllocator(
      * watching a server exit.
      */
     @Synchronized
-    fun allocate(): Int? = null
+    fun allocate(): Int? {
+        val width = range.last - range.first + 1
+        val offset = random.nextInt(width)
+        // Every port is tried exactly once, starting where the RNG pointed and wrapping at the end, so a
+        // starting offset near the top of the range still reaches the ports below it.
+        for (step in 0 until width) {
+            val port = range.first + (offset + step) % width
+            if (port !in allocated && isFree(port)) {
+                allocated.add(port)
+                return port
+            }
+        }
+        return null
+    }
 
     /** Return [port] to the pool once the server holding it has exited. Unknown ports are ignored. */
     @Synchronized
