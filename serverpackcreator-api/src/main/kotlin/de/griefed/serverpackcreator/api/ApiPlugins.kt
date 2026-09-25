@@ -462,20 +462,31 @@ class ApiPlugins(
      * @param tabbedPane The pane the tab is added to.
      */
     internal fun addTabExtensionTab(extension: TabExtension, pluginId: String, tabbedPane: JTabbedPane) {
-        val extensionError = "Extension ${extension.name} in plugin $pluginId encountered an error."
-        pluginsLog.info("Executing TabExtension ${extension.name}")
-        val pluginConfig = getPluginConfig(pluginId)
-        val pluginConfigFile = getPluginConfigFile(pluginId)
-        val tab = extension.getTab(versionMeta, apiProperties, utilities, pluginConfig, pluginConfigFile)
         try {
+            pluginsLog.info("Executing TabExtension ${extension.name}")
+            val pluginConfig = getPluginConfig(pluginId)
+            val pluginConfigFile = getPluginConfigFile(pluginId)
+            val tab = extension.getTab(versionMeta, apiProperties, utilities, pluginConfig, pluginConfigFile)
             tabbedPane.addTab(extension.title, extension.icon, tab, extension.tooltip)
         } catch (ex: ExtensionException) {
-            pluginsLog.error(extensionError, ex)
+            reportTabExtensionFailure(extension, pluginId, ex)
         } catch (ex: Error) {
-            pluginsLog.error(extensionError, ex)
+            reportTabExtensionFailure(extension, pluginId, ex)
         } catch (ex: Exception) {
-            pluginsLog.error(extensionError, ex)
+            reportTabExtensionFailure(extension, pluginId, ex)
         }
+    }
+
+    /**
+     * Log that [extension] from [pluginId] failed, naming it if it can be named.
+     *
+     * The name is read through a guard of its own because it is the same third-party code that just threw:
+     * building the message eagerly is what used to put a `name` call outside the try, and doing it here
+     * unguarded would turn a reportable failure into a second escape from the catch block itself.
+     */
+    private fun reportTabExtensionFailure(extension: TabExtension, pluginId: String, cause: Throwable) {
+        val name = runCatching { extension.name }.getOrElse { "<name unavailable>" }
+        pluginsLog.error("Extension $name in plugin $pluginId encountered an error.", cause)
     }
 
     /**

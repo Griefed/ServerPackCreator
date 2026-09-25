@@ -19,7 +19,9 @@ see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana w
 ## 2026-09-25 — from the server-test plugin branch
 
 > Both defects this branch found were **fixed** on it, so they are not listed here. What is listed is
-> the residue each fix deliberately left behind.
+> the residue each fix deliberately left behind. **B44 was then fixed too**, on the same branch, and is
+> kept below as a closed entry rather than deleted — the reason the fix went wider than the entry
+> proposed is worth more than the entry was.
 
 ### B43 — `ExtensionTab.log` still names `AddonsLogger`, not `PluginsLogger`
 
@@ -41,20 +43,15 @@ one for the addition.
 and never sees either change until that file is deleted. If this is ever worth migrating, the app's
 `MigrationManager` is where it belongs.
 
-### B44 — `ApiPlugins.addTabExtensionTabs` calls `getTab` outside its own try-block
+### B44 — `ApiPlugins.addTabExtensionTabs` calls `getTab` outside its own try-block — **ISSUED AND GONE**
 
-`ApiPlugins.kt:452` builds the tab, and only the `tabbedPane.addTab` beneath it is guarded. An exception
-in any plugin's tab constructor therefore escapes into GUI assembly instead of being logged like every
-other extension failure — taking the rest of that plugin's tabs, and every later plugin's, with it.
-
-**Why it waited:** it is an `-api` robustness fix with no bearing on the server-test plugin, which was
-kept strictly to the plugin plus its two adjacent fixes. The plugin works around it: everything
-reachable from `ServerTestTab`'s constructor reports rather than throws, which is the *right* shape for
-a plugin but should not be the only thing standing between a typo and a GUI with no tabs.
-
-**To pick it up cold:** move the `getTab` call inside the existing `try`, keeping the same three catch
-clauses and the same `extensionError` message. Pin it with a plugin whose `getTab` throws, asserting the
-other plugins' tabs still arrive — `ExtensionScopingTest` is the nearest existing shape to copy.
+Closed 2026-09-25 on the same branch that filed it, at Griefed's request. The fix went wider than the
+entry proposed: `name`, `title`, `icon` and `tooltip` are third-party code on that path too, and were
+outside the guard alongside `getTab`. The whole registration is now inside it, the body lives in an
+**internal** `addTabExtensionTab` so the containment could be pinned without a fixture jar, and the
+failure message reads the extension's `name` through a guard of its own — building it eagerly is what
+put a `name` call outside the try in the first place. See `TabExtensionFailureContainmentTest` and the
+row in `API-BEHAVIOUR-CHANGES.md`.
 
 ## 2026-09-23 — from the modpack upload/check/storage pass
 

@@ -328,7 +328,7 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 485 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| api            | 490 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
 | clientside     | 672           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 226           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
