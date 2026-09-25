@@ -85,5 +85,32 @@ class ServerPackCatalog(
      * A pack with no start script for this host is **listed rather than hidden**, carrying the reason: a pack
      * the user can see in their file manager but not in this list reads as a bug in the plugin.
      */
-    fun packsIn(serverPacksDirectory: File): List<LaunchablePack> = emptyList()
+    fun packsIn(serverPacksDirectory: File): List<LaunchablePack> =
+        (serverPacksDirectory.listFiles() ?: emptyArray())
+            .filter { it.isDirectory && ServerPackManifest.inside(it).isFile }
+            .map { packIn(it) }
+            .sortedBy { it.name.lowercase() }
+
+    /** One directory read into a row: its manifest for the versions, the selector for its launchability. */
+    private fun packIn(directory: File): LaunchablePack {
+        val manifest = readManifest(directory)
+        return LaunchablePack(
+            directory = directory,
+            name = directory.name,
+            minecraftVersion = manifest?.minecraftVersion.orEmpty(),
+            modloader = manifest?.modloader.orEmpty(),
+            modloaderVersion = manifest?.modloaderVersion.orEmpty(),
+            selection = StartScriptSelector.selectFor(directory, platform)
+        )
+    }
+
+    /**
+     * The pack's manifest, or `null` when it cannot be read.
+     *
+     * A failure is deliberately not propagated and not logged as an error: the manifest's *presence* is what
+     * made this a pack, and the fields it carries are display-only. Refusing to list a pack — or refusing to
+     * launch one — because its decoration is corrupt would withhold the one thing the user came for.
+     */
+    private fun readManifest(directory: File): ServerPackManifest? =
+        runCatching { manifestReader.readValue<ServerPackManifest>(ServerPackManifest.inside(directory)) }.getOrNull()
 }
