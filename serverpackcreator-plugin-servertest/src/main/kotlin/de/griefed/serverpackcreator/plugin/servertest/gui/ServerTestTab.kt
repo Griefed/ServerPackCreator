@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.core.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.core.GenerationNotifier
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchOutcome
 import de.griefed.serverpackcreator.plugin.servertest.core.PortAllocator
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerLauncher
@@ -33,6 +34,7 @@ import de.griefed.serverpackcreator.plugin.servertest.core.ServerPackCatalog
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerTestSettings
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionRegistry
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
+import de.griefed.serverpackcreator.plugin.servertest.core.Subscription
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Insets
@@ -95,6 +97,14 @@ class ServerTestTab(
      */
     private val lastStates = mutableMapOf<File, SessionState>()
 
+    /**
+     * Live while the tab is in the window, so a pack generated in the Configs tab shows up here by itself.
+     *
+     * Held so it can be cancelled: [GenerationNotifier] keeps whatever it is given, and a tab that has left
+     * the window would otherwise be kept alive refreshing a list nobody can see.
+     */
+    private var generationSubscription: Subscription? = null
+
     init {
         layout = BorderLayout()
         panes.addTab("Server Packs", packList)
@@ -102,6 +112,39 @@ class ServerTestTab(
 
         registry.installShutdownHook()
         refreshPackList()
+    }
+
+    /**
+     * Start listening for generated server packs when the tab joins the window.
+     *
+     * Paired with [removeNotify] rather than subscribed once in the constructor, which is the same shape
+     * the grinder plugin's dashboard timer uses: a subscription with no owner outlives whatever it was
+     * meant to serve.
+     */
+    override fun addNotify() {
+        super.addNotify()
+        if (generationSubscription == null) {
+            generationSubscription = GenerationNotifier.subscribe { onPackGenerated() }
+        }
+    }
+
+    /** Stop listening when the tab leaves the window. Nothing else would. */
+    override fun removeNotify() {
+        generationSubscription?.cancel()
+        generationSubscription = null
+        super.removeNotify()
+    }
+
+    /**
+     * A server pack was just generated somewhere in ServerPackCreator, so re-read the directory.
+     *
+     * The generated pack's path is deliberately ignored: re-reading gives the new row the same
+     * `manifest.json` every other row came from, where trusting the path would make one row's facts arrive
+     * by a different route than the rest. Marshalled because generation runs on its own dispatcher, never
+     * on the event dispatch thread.
+     */
+    private fun onPackGenerated() {
+        SwingUtilities.invokeLater { refreshPackList() }
     }
 
     /** Re-read the server-packs directory and redraw the list with each pack's current state. */

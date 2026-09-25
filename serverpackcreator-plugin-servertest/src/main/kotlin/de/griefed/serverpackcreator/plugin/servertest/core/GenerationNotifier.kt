@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.core
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -67,7 +69,12 @@ object GenerationNotifier {
      *
      * @param onPackGenerated Handed the generated pack's directory.
      */
-    fun subscribe(onPackGenerated: (File) -> Unit): Subscription = Subscription { }
+    fun subscribe(onPackGenerated: (File) -> Unit): Subscription {
+        subscribers.add(onPackGenerated)
+        // Removal by identity, which is why the handle exists: two lambdas that behave alike are not equal,
+        // so a caller could never ask for "the one I registered" by passing it back.
+        return Subscription { subscribers.remove(onPackGenerated) }
+    }
 
     /**
      * Tell every subscriber that [serverPack] has been generated.
@@ -76,5 +83,12 @@ object GenerationNotifier {
      * generation, and one misbehaving listener must not cost another its refresh.
      */
     fun packGenerated(serverPack: File) {
+        for (subscriber in subscribers) {
+            runCatching { subscriber(serverPack) }
+                .onFailure { log.error("A server-pack-generated subscriber failed.", it) }
+        }
     }
+
+    /** Logged through the name ServerPackCreator routes to `plugins.log`. */
+    private val log: Logger = LogManager.getLogger("AddonsLogger")
 }
