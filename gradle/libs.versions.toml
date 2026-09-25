@@ -5,7 +5,7 @@
 # the allopen/jpa/spring compiler plugins, and the stdlib/reflect/test libraries. JetBrains versions
 # these together, so splitting them only ever produced skew — this was four entries until
 # 2026-08-16, with the compiler on 2.3.20 and the libraries on 2.4.10.
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
 # Keep in lockstep with `springBoot` below — the plugin and the libraries are the same product, and
