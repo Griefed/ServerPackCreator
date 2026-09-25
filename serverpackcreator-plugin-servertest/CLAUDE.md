@@ -40,6 +40,18 @@ plugin's build file already records as a reason.
 
 ## Landmines & decisions (do not relearn)
 
+- **The user picks the start script; the platform only supplies the default.** All four — `start.sh`,
+  `start.bat`, `start.ps1`, `start.fish` — stay selectable in the pack list's dropdown, pre-set to `BAT`
+  on Windows and `SH` everywhere else. The plugin *deciding* is the one failure with no workaround: a
+  guess landing on a script the host cannot run left somebody unable to start a pack at all. An entry
+  this host has no interpreter for is deliberately still offered — that launch fails on the console with
+  the interpreter's own error, which beats a disabled control explaining nothing. **A pack missing the
+  chosen script is refused by name, never substituted**; substituting is what the old platform fallback
+  did, and it hid that the user asked for `start.bat` and got `start.ps1`.
+- **A `LaunchablePack` carries the *set* of scripts it has, not one resolved selection.** The choice
+  changes while the list is on screen, so `StartScriptSelector.selectFor(pack, kind)` is pure and
+  re-decides every row without going back to disk; only `scriptsIn` touches the filesystem, once, at
+  discovery.
 - **The port can only be set through `server.properties`, and that file is the user's.** `start.sh`
   interpolates `ADDITIONAL_ARGS` *before* `-jar`, in JVM-argument position, so Minecraft's `--port`
   never reaches the server; `SERVER_RUN_COMMAND` always ends in `nogui` with no hook for a program
