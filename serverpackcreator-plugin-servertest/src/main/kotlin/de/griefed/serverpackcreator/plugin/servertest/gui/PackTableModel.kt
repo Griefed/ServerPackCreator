@@ -94,6 +94,18 @@ class PackTableModel : AbstractTableModel() {
 
     override fun getColumnName(column: Int): String = COLUMNS[column]
 
+    /**
+     * Every column is a `String`, declared so rather than inherited.
+     *
+     * **Load-bearing, and silently so.** `JTable` resolves a cell renderer by this answer, and
+     * `AbstractTableModel`'s default is `Object` — so while this was inherited, the HTML-disabled renderer
+     * `PackListPane` registers under `String` was never consulted and the stock renderer parsed a pack's
+     * own directory name as markup. Measured at the time: the resolved renderer was
+     * `DefaultTableCellRenderer${'$'}UIResource` with no `html.disable`, and the rendered component carried an
+     * installed HTML view. A registration is not a mitigation until something reaches it.
+     */
+    override fun getColumnClass(columnIndex: Int): Class<*> = String::class.java
+
     override fun getValueAt(rowIndex: Int, columnIndex: Int): String {
         val row = rows[rowIndex]
         return when (columnIndex) {

@@ -38,7 +38,6 @@ import java.awt.BorderLayout
 import java.io.File
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.swing.JOptionPane
 import javax.swing.JTabbedPane
 import javax.swing.SwingUtilities
 
@@ -177,11 +176,24 @@ class ServerTestTab(
         consoles[pack.directory] = console
         lastStates[pack.directory] = SessionState.Starting
 
-        panes.addTab(pack.name, console)
-        panes.selectedComponent = console
+        addConsoleTab(pack, console)
         refreshPackList()
 
         session.start()
+    }
+
+    /**
+     * Add [console] as a sub-tab for [pack] and select it.
+     *
+     * The title is set as a **component** rather than as a string. `BasicTabbedPaneUI` keeps HTML views for
+     * tab titles, so a pack name handed over as a title is a third renderer reached by the same
+     * user-controlled text the table and the dialogs already had to be proofed against. `setTabComponentAt`
+     * is how `MainPanel` labels ServerPackCreator's own tabs, so this is the house idiom.
+     */
+    private fun addConsoleTab(pack: LaunchablePack, console: ConsolePane) {
+        panes.addTab(pack.name, console)
+        panes.setTabComponentAt(panes.tabCount - 1, PlainTextRendering.label(pack.name))
+        panes.selectedComponent = console
     }
 
     /** Push a state change to the pack's console and to the list, on the event dispatch thread. */
@@ -193,9 +205,15 @@ class ServerTestTab(
         }
     }
 
-    /** Say something the user needs to act on, rendered as literal text. */
+    /**
+     * Say something the user needs to act on.
+     *
+     * Goes through [Dialogs] rather than `JOptionPane` directly, because every message here names a server
+     * pack — whose directory name the user chose — and a raw string reaches a renderer that would parse it
+     * as markup.
+     */
     private fun warn(message: String) {
         log.warn(message)
-        JOptionPane.showMessageDialog(this, message, "Server Test", JOptionPane.WARNING_MESSAGE)
+        Dialogs.warn(this, message)
     }
 }
