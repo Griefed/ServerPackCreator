@@ -6815,3 +6815,29 @@ Console wrapping. Covered by the standing "pane rendering untested by design" st
   the right reason (`[Console, ApplicationLogger]`; "Process 71941 outlived the boot that spawned it").
 - **`copyPluginsApiUnitTests` still takes the example plugin alone**, and the comment naming why now
   names both excluded plugins.
+
+## 2026-09-25 (later the same day) — disposition of the findings above
+
+All source findings fixed on the branch. Commit subjects, not hashes.
+
+| Finding | Disposition |
+|---|---|
+| H1 pack table's HTML mitigation inert | Fixed — `PackTableModel.getColumnClass` returns `String`; `HtmlProofingTest` asserts what Swing *resolved* |
+| H2 `warn()` hands `JOptionPane` a String | Fixed — all dialogs go through `Dialogs`, plus a structural guard that no view reaches for `JOptionPane` |
+| H3 tab titles (PLAUSIBLE) | Fixed anyway — `setTabComponentAt` with an HTML-disabled label |
+| M1 `consoles` unsynchronised across threads | Fixed — `ConcurrentHashMap`, with the reason in the field's doc |
+| M2 consoles never released | Fixed — closable tabs; closing a *running* server's tab is refused, since it is the only place it can be stopped from |
+| L1 late `Stopping` overwrites `Exited` | Fixed — `transitionTo` refuses to leave a terminal state |
+| L2 wrapping unguarded | Fixed — pinned, teeth confirmed by mutation |
+
+**M3–M6 are commit-hygiene findings about commits already made, and are deliberately NOT being fixed by
+rewriting history.** Re-splitting 24 commits to separate a seam from its guard would churn the whole
+branch to change how it reads, and the record above is the more useful artifact. M6 in particular —
+seam-plus-guard in one commit — should be a deliberate choice next time rather than a habit, which is
+what recording it achieves. Raised with Griefed rather than decided unilaterally.
+
+**One new finding, from fixing H2.** The structural guard's first version flagged `ServerTestTab` for the
+*sentence in a doc comment* explaining why it does not call `JOptionPane`. A guard that fires on an
+explanation of its own rule invites deleting the explanation, so it now strips comments and reads code.
+Generalises: **ask what a structural guard is actually matching against before trusting its verdict** —
+the same lesson as Qodana seeing only the 22% of stranded KDoc blocks that happened to contain a link.

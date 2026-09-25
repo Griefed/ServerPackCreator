@@ -1331,3 +1331,32 @@ real (notes cut off mid-sentence).
 - **The settings guard's vacuity was already found and fixed** by mutation during development; do not
   re-report it. The lesson (a shipped default equal to the code's fallback makes a value assertion
   blind) is recorded in the module's `CLAUDE.md`.
+
+## 2026-09-25 (later the same day) — disposition, and two guards that proved weaker than they read
+
+Every finding fixed. `ServerLauncher`/`LaunchOutcome` now own the launch sequence (A1), with seven guards
+covering refusal, port counts, the borrow-failure path and the double-release; `RealPackBootTest` was
+rewired to go through it, so the end-to-end exercises the production path rather than a copy that could
+drift — re-run against the NeoForge fixture and green (`Done (3.995s)! For help, type "help"`, fixture
+byte-identical afterwards). A2/A3 fixed as recorded in `REFACTOR-AUDIT.md`. A4–A8, A10 and A11 fixed with
+guards. Module suite 69 → 90.
+
+**A9 could not be pinned, and the attempt is the finding.** The guard written for it —
+`stopAndKillAfterExitLeaveTheStatusIntact` — stays **green with the production fix removed**, because
+once the process is genuinely dead `stop()` and `kill()` return before reaching `transitionTo` at all.
+The race it defends against (liveness checked, process exits, late `Stopping` overwrites `Exited`) is
+real and no deterministic test in this suite reaches it. The test was renamed to what it actually pins
+and its KDoc says so; the production check stands on reasoning, which is worth having stated rather than
+implied by a green tick.
+
+**A7 produced one guard with teeth and one without, which is why it was worth mutating both.**
+`concurrentAllocationsNeverCollide` catches `PortAllocator.allocate` losing its `@Synchronized`.
+`onlyOneConcurrentRegistrationWinsAPack` does **not** catch `SessionRegistry.register` losing its —
+ten threads rarely land in a window a few instructions wide. Both are kept, both documented; they are
+not equal evidence and the difference is now written down rather than assumed away.
+
+**The generalising lesson, third instance on this branch.** A guard that reads like a pin may assert
+nothing: the settings guard (shipped default equal to the code's fallback), the `PackVariables` anchor
+(`lastOrNull` masking a missing `^`), and now these two. In every case the only thing that separated a
+real pin from a decorative one was **running it against a deliberately broken implementation**. Mutation
+is not a finishing flourish here; it is the only way this project's guards have been shown to have teeth.

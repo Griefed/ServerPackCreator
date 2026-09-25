@@ -83,32 +83,34 @@ internal class RealPackBootTest {
         File(pack, "mods").listFiles()?.forEach { it.delete() }
 
         val discovered = ServerPackCatalog(ObjectMapper()).packsIn(workspace).single()
-        val selection = Assertions.assertInstanceOf(
+        Assertions.assertInstanceOf(
             StartScriptSelection.Available::class.java,
             discovered.selection,
             "The pack must be launchable on this host."
         )
 
+        // Through ServerLauncher rather than hand-wired, so this exercises the sequence the Start button
+        // actually runs -- taking the ports, borrowing the properties, registering before starting, and
+        // giving all of it back -- instead of a copy of it that could drift.
         val allocator = PortAllocator()
         val patch = ServerPropertiesPatch(pack)
-        val port = allocator.allocate()
-        Assertions.assertNotNull(port, "No free port to test with.")
-        patch.borrow(port!!)
+        val lines = Collections.synchronizedList(mutableListOf<String>())
+        val states = Collections.synchronizedList(mutableListOf<SessionState>())
+        val closed = IntArray(1)
+
+        val outcome = ServerLauncher(allocator, SessionRegistry()).launch(
+            pack = discovered,
+            onLine = { line -> lines.add(line); println("[pack] $line") },
+            onState = { states.add(it) },
+            onClosed = { closed[0] = closed[0] + 1 }
+        )
+        val started = Assertions.assertInstanceOf(LaunchOutcome.Started::class.java, outcome)
+        val port = started.port
+        val session = started.session
 
         Assertions.assertTrue(
             patch.propertiesFile.readText().contains("server-port=$port"),
             "The borrowed properties must carry the allocated port."
-        )
-
-        val lines = Collections.synchronizedList(mutableListOf<String>())
-        val states = Collections.synchronizedList(mutableListOf<SessionState>())
-        val closed = IntArray(1)
-        val session = ServerSession(
-            workingDirectory = pack,
-            command = selection.command,
-            onLine = { line -> lines.add(line); println("[pack] $line") },
-            onState = { states.add(it) },
-            onClosed = { patch.restore(); allocator.release(port); closed[0] = closed[0] + 1 }
         )
 
         try {

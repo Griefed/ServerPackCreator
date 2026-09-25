@@ -21,8 +21,8 @@ change. A launcher that built its own `java` command would not be testing what s
 | Package | What lives there |
 |---|---|
 | *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless) and `ServerTestTabExtension` — the one pf4j extension point this plugin provides |
-| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings` |
-| `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus two pinned non-view units: `ConsoleHints` and `PlainTextRendering` |
+| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings`, and **`ServerLauncher`/`LaunchOutcome`** — the launch sequence itself |
+| `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus three pinned non-view units: `ConsoleHints`, `PlainTextRendering` and `Dialogs` |
 
 ## Zero API changes, and what that rests on
 
@@ -81,13 +81,35 @@ plugin's build file already records as a reason.
 - **`PackRow.startable` keys on liveness, not on the last state.** Keying it on `state == null` would
   let each pack be tested exactly once per launch of ServerPackCreator, while the row still shows how
   the last run ended.
-- **Every component showing text from outside this plugin disables HTML.** `JLabel` and
-  `DefaultTableCellRenderer` install an HTML view for any string starting with `<html>`, and Swing's
-  HTML subset loads remote images — and a pack's *directory name* is user-controlled, as are the
-  version strings in a hand-editable `manifest.json`. `PlainTextRendering` is a deliberate second copy
-  of the grinder plugin's: both plugins depend on `-api` alone, and promoting eight lines into the
-  published API would be a permanent compatibility obligation bought for very little. If a third plugin
-  needs it, that trade changes.
+- **The launch sequence lives in `core`, not in the tab.** Taking ports, borrowing
+  `server.properties`, registering before starting and giving everything back is `ServerLauncher`'s
+  job; the tab puts a console on screen and starts the session once there is somewhere for its output
+  to go. An audit found the whole sequence uncovered while it sat in a Swing view — it is not
+  rendering, and treating it as such is what hid it. **Two idempotence guards in there, not one:**
+  `giveBack` covers the resources and is shared with the failure path, where the caller must *not* be
+  told a session closed because it never got one; a second guard covers the whole close so the caller
+  is told exactly once.
+- **Three surfaces show a pack's own directory name, and all three had to be proofed separately.**
+  `JLabel`, `DefaultTableCellRenderer`, `JOptionPane`'s string messages and `BasicTabbedPaneUI`'s tab
+  titles all install an HTML view for anything starting with `<html>`, and Swing's HTML subset loads
+  remote images. A directory name is user-controlled and an imported modpack can influence it.
+  **LANDMINE — a registration is not a mitigation until something reaches it.** `PackListPane`
+  registered an HTML-disabled renderer under `String::class.java` while `PackTableModel` inherited
+  `getColumnClass` = `Object`, so `JTable` never consulted it; measured, the resolved renderer was the
+  stock one and the rendered component carried an installed HTML view. `PackTableModel.getColumnClass`
+  is therefore load-bearing, every dialog goes through `Dialogs`, and every console tab's title is set
+  with `setTabComponentAt`. `HtmlProofingTest` asserts what Swing *resolved*, never that a
+  registration was made — and includes a structural guard that no view reaches for `JOptionPane`
+  itself, which reads code rather than comments after its first version flagged the sentence
+  explaining the rule. `PlainTextRendering` is a deliberate second copy of the grinder plugin's: both
+  plugins depend on `-api` alone, and promoting eight lines into the published API would be a
+  permanent compatibility obligation bought for very little. If a third plugin needs it, that trade
+  changes.
+- **`ServerTestTab.consoles` is a `ConcurrentHashMap`, and that is not caution.** It is written on the
+  event dispatch thread and read on each session's reader thread, which is where `ServerSession`
+  documents its callbacks arrive.
+- **Closing a *running* server's console tab is refused.** That tab is the only place the server can be
+  stopped from, so removing it would strand the process.
 - **The console wraps, unlike SPC's own log panes.** Found by rendering the pane and looking: the notes
   it writes are prose and were being cut off mid-sentence behind a horizontal scrollbar. A crash report
   is what a user comes here to read, and hunting for a scrollbar to finish a stack-trace line is worse
@@ -121,7 +143,7 @@ user to a five-second countdown rather than ending the session, and Force stop i
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-servertest:test` — 69 tests, of which 68 run by default; the
+`./gradlew :serverpackcreator-plugin-servertest:test` — 90 tests, of which 89 run by default; the
 skip is `RealPackBootTest`, which boots a real server and is switched on deliberately (below).
 
 - **`core` is tested against real processes, not mocks.** What is under test is process behaviour — does
@@ -152,6 +174,16 @@ skip is `RealPackBootTest`, which boots a real server and is switched on deliber
   fallback, so reading a renamed key returns the fallback and looks identical to reading the right one.
   It now asserts key **presence**. Ask of any settings guard here whether it could tell a live key from a
   dead one.
+- **Two guards are known to be weaker than they read, and say so in their own KDoc.** Do not "fix" them
+  by strengthening the wording. `stopAndKillAfterExitLeaveTheStatusIntact` stays green when
+  `transitionTo`'s terminal check is removed, because once the process is dead `stop()` and `kill()`
+  return before reaching it — the race that check defends against is real and no deterministic test here
+  reaches it, so that guard stands on reasoning. `onlyOneConcurrentRegistrationWinsAPack` stays green
+  when `SessionRegistry.register` loses its `@Synchronized`, because the window is a few instructions
+  wide; `concurrentAllocationsNeverCollide` *does* catch its annotation being removed, so the two are
+  not equal evidence.
+- **`RealPackBootTest` goes through `ServerLauncher`**, not through hand-wired collaborators, so the
+  end-to-end exercises the sequence the Start button actually runs rather than a copy that could drift.
 
 ## Verified end to end (2026-09-25)
 
