@@ -1360,3 +1360,70 @@ nothing: the settings guard (shipped default equal to the code's fallback), the 
 (`lastOrNull` masking a missing `^`), and now these two. In every case the only thing that separated a
 real pin from a decorative one was **running it against a deliberately broken implementation**. Mutation
 is not a finishing flourish here; it is the only way this project's guards have been shown to have teeth.
+
+---
+
+# 2026-09-25 (third pass) — test-depth analysis of the branch delta
+
+Scope: the 19 commits after `0e46afa61`.
+
+## HIGH
+
+### B1 — the dropdown's wiring is unpinned: it can stop refreshing entirely and every guard stays green
+
+`PackListPane` registers `scriptChoice.addActionListener { onScriptChanged() }`. **Deleting that line
+leaves the whole suite green** — measured. The dropdown would then be inert: choosing a different start
+script would change no row's Status and no Start button, until something else triggered a refresh.
+
+The existing selection guards call `pane.show(...)` *directly*, which is what the callback eventually
+causes but not the callback itself. This is the same shape as the audit's earlier finding that a
+registration is not a mitigation until something reaches it: here, a callback is not wired until
+something fires the control.
+
+**Suggested case, and the one applied:** set the combo's selection through the real component and assert
+the callback ran — the only assertion that traverses the listener.
+
+### B4 — an orphaned KDoc block shipped for four commits, hidden by up-to-date checks
+
+`StartScriptSelector.kt:83`: inserting `NO_SCRIPTS_CONFIGURED` put it *between* `known`'s doc comment
+and `known` itself, so that block attached to nothing and dokka would have dropped it. Caught by this
+repository's own `KDocAttachmentTest`, which exists for exactly this.
+
+**The part worth keeping is why it survived.** Two "full build green" claims were made in between, and
+both were true and both were weaker than they read: `./gradlew build` left `:serverpackcreator-api:test`
+**UP-TO-DATE**, because nothing under `-api` had changed, and `KDocAttachmentTest` lives there while the
+file it was failing on lives in the plugin module. The guard only ran once an unrelated
+`build.gradle.kts` edit invalidated the task.
+
+Generalises past this branch: **a cross-module guard is only as current as the module it lives in.** When
+work happens in module B and the guard that covers it lives in module A, a green `build` says nothing
+until A's inputs change. `--rerun-tasks`, or running A's suite explicitly, is what actually asks.
+
+## LOW
+
+### B2 — two shapes of template key are unexercised
+
+`StartScripts.forTemplateKeys` handles them correctly, and nothing says so:
+
+- **Mixed case.** `forKey("SH")` looks the interpreter up lowercased but keeps the key's own case for the
+  file name, so it yields `bash start.SH` — right, because ServerPackCreator generates `start.<key>`
+  verbatim from the configured key.
+- **A duplicate key** is collapsed by `distinct()`, so an operator who lists one twice gets one entry.
+
+### B3 — an empty template key is accepted and yields `start.`
+
+`forKey("")` produces a `StartScript` whose file is `start.`, offered as *"start. — run directly"*.
+Pathological rather than reachable — an empty key in `startScriptTemplates` would already make
+ServerPackCreator generate a file called `start.` — and `scriptKeysIn` already refuses to report one, so
+the two halves disagree only in a configuration nobody has. Recorded rather than guarded.
+
+## Verified clean — do not re-litigate
+
+- **`GenerationNotifier` publishes on a `CopyOnWriteArrayList`**, so a subscriber cancelling during
+  delivery cannot disturb the iteration — the case a plain list would fail on.
+- **The sorting comparator was read for the shadowed-`it` trap** (`preferred.indexOf(it.lowercase())`
+  inside `takeIf { i -> ... }`) and is correct: the inner lambda names its parameter, so the outer `it`
+  is not shadowed.
+- **`ServerTestTab.availableScripts` is read once at construction**, so changing the templates setting
+  takes effect at the next tab build rather than live. Deliberate and documented in the module's
+  `CLAUDE.md`; it is how every other setting a plugin reads behaves.

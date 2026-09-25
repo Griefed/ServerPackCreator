@@ -6851,3 +6851,54 @@ missing red.
 explanation of its own rule invites deleting the explanation, so it now strips comments and reads code.
 Generalises: **ask what a structural guard is actually matching against before trusting its verdict** —
 the same lesson as Qodana seeing only the 22% of stranded KDoc blocks that happened to contain a link.
+
+---
+
+# 2026-09-25 (third pass) — audit of the `servertest` branch delta
+
+Range: `0e46afa61..HEAD`, the 19 commits added after the first audit — the HTML fixes, the launcher
+extraction, the generation hook, the two start-script passes, the selection fix and `buildPlugins`.
+
+## MEDIUM
+
+### D1 — `buildPlugins` names the plugin configurations a fourth time, and its commit message said otherwise
+
+`build.gradle.kts:119` reads
+`val pluginBuildTasks = listOf(examplePlugin, grinderPlugin, serverTestPlugin)`. Its commit message
+claims *"The plugin list is NOT spelled again"*, which is true only of the project **paths** — the
+*configurations* are listed again, right after `copyPluginsToApp` lists the same three with `from(...)`.
+
+So the drift the change set out to prevent is only half prevented: a fourth plugin wired into a
+configuration, a dependency and `copyPluginsToApp` would still be silently absent from `buildPlugins`,
+which is the exact failure the comment above it warns about.
+
+**Rule broken:** *"Duplicated knowledge drifts toward whichever copy is easier to reach"*, and — worse —
+a commit message asserting the opposite. **The message cannot be corrected** without rewriting history,
+which Griefed ruled out on this branch, so the correction lives here. Fix applied: one
+`pluginConfigurations` list, read by both `copyPluginsToApp` and `pluginBuildTasks`, so the copy and the
+build cannot diverge.
+
+### D2 — "full build green" was claimed twice while a guard for the changed code had not run
+
+See `ANALYSIS-AUDIT.md` B4. `KDocAttachmentTest` lives in `-api` and covers the whole repository; the
+work was in the plugin module, so `-api`'s test task stayed UP-TO-DATE and the guard did not execute.
+Neither claim was false, and neither was worth as much as it sounded. **When reporting a build green
+after work in one module, say which suites actually ran** rather than which task succeeded.
+
+## Verified clean — do not re-litigate
+
+- **No unused imports** across the module, checked mechanically after all the churn.
+- **The newest guards have teeth**, confirmed by mutation rather than assumed: removing the imposed
+  dropdown ordering reddens `theChoicesAreBuiltFromTheConfiguredTemplateKeys`; making an unknown
+  template key guess `bash` instead of running the script directly reddens
+  `anOperatorsOwnTemplateIsOfferedAndRunDirectly`; restoring a row *index* instead of a pack reddens
+  exactly the two selection guards that should catch it.
+- **`buildPlugins`' `mustRunAfter` is load-bearing**, and measured to be: without it `copyPluginsToApp`
+  runs *first*, before all three plugin builds.
+- **`ProjectDependency.path`, not `dependencyProject`** — the lazy string, not the cross-project access
+  `build-layout.md` records this build removing.
+- **The three `test(...)` / `feat(...)` pairs in this delta each landed the guard red first**, with the
+  vacuous assertions named in the message, per the seam-plus-guard route Griefed sanctioned.
+- **`./gradlew tasks` failing with "Could not read PGP secret key" is PRE-EXISTING** and not this
+  branch's: it comes from `-api`'s signing configuration, which nothing here touched. Do not attribute
+  it to `buildPlugins`.
