@@ -5,19 +5,19 @@
 # the allopen/jpa/spring compiler plugins, and the stdlib/reflect/test libraries. JetBrains versions
 # these together, so splitting them only ever produced skew — this was four entries until
 # 2026-08-16, with the compiler on 2.3.20 and the libraries on 2.4.10.
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
 # Keep in lockstep with `springBoot` below — the plugin and the libraries are the same product, and
 # letting them drift is what left `spring-boot` resolving 4.0.2 while `spring-boot-starter-web`
 # resolved 4.1.0. The BOM no longer comes from the plugin, but a mismatch is still a trap.
-springGradle = "4.1.0"
+springGradle = "4.1.1"
 
 # https://kotlinlang.org/docs/dokka-get-started.html
-dokka = "2.1.0"
+dokka = "2.2.0"
 
 # https://github.com/jk1/Gradle-License-Report
-licenseReport = "3.0.1"
+licenseReport = "3.1.4"
 
 # https://github.com/Kotlin/kotlinx-kover
 kover = "0.9.9"
@@ -26,7 +26,7 @@ kover = "0.9.9"
 frontendPlugin = "10.0.0"
 
 # https://plugins.gradle.org/plugin/com.install4j.gradle
-install4j = "13.1"
+install4j = "13.1.1"
 
 # https://github.com/gradle-nexus/publish-plugin
 nexusPublish = "2.0.0"
@@ -43,19 +43,19 @@ ktorfit = "2.7.5"
 # -plugin-example can no longer apply a plugin version that disagrees with the libraries.
 i18n4k = "0.11.2"
 nightConfig = "3.9.0"
-jackson = "2.22.1"
+jackson = "2.22.3"
 zip4j = "2.11.6"
 log4jApiKotlin = "1.5.0"
 log4j = "2.26.1"
-pf4j = "3.15.0"
-bouncycastle = "1.85"
+pf4j = "3.16.0"
+bouncycastle = "1.86"
 mslinks = "1.2"
 # Resolved from jitpack; published nowhere else.
 nekodetector = "Version-1.1-pre"
 dockerJava = "3.7.1"
 commonsIo = "2.22.0"
 cronUtils = "9.2.1"
-install4jRuntime = "13.1"
+install4jRuntime = "13.1.1"
 picocli = "4.7.7"
 flatlaf = "3.7.2"
 flatlafFontsJetbrainsMono = "2.304"
@@ -70,10 +70,10 @@ tipoftheday = "0.6.0"
 # tests, no Docker. The `spring4x` artifact is the Spring Boot 4 line; `spring3x` against Boot 4 is what
 # flapdoodle issue #77 was, and it fails on the changed Mongo autoconfiguration.
 flapdoodleEmbedMongo = "4.33.0"
-springBoot = "4.1.0"
+springBoot = "4.1.1"
 # https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
 # spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
-springdoc = "3.1.0"
+springdoc = "3.1.1"
 springmockk = "5.0.1"
 
 [libraries]
