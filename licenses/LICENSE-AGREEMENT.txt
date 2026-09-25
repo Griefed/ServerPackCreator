@@ -520,7 +520,7 @@ URL: https://www.gnu.org/licenses/lgpl-3.0.txt
 (3 of 43)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
-Version: 2.22.1
+Version: 2.22.3
 Project URL: https://github.com/FasterXML/jackson\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -763,7 +763,7 @@ from the source code management (SCM) system project uses.
 (4 of 43)
 Group:   com.fasterxml.jackson.datatype
 Name:    jackson-datatype-jsr310
-Version: 2.22.1
+Version: 2.22.3
 Manifest Project URL: https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310
 
 
@@ -810,7 +810,7 @@ from the source code management (SCM) system project uses.
 (5 of 43)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
-Version: 2.22.1
+Version: 2.22.3
 Project URL: https://github.com/FasterXML/jackson-module-kotlin\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3389,7 +3389,7 @@ The Apache Software Foundation (http://www.apache.org/).
 (17 of 43)
 Group:   com.install4j
 Name:    install4j-runtime
-Version: 13.1
+Version: 13.1.1
 POM Project URL: https://www.ej-technologies.com/install4j
 
 
@@ -4886,7 +4886,7 @@ Copyright 2005-2006 Tim Fennell
 (29 of 43)
 Group:   org.bouncycastle
 Name:    bcpkix-jdk18on
-Version: 1.85
+Version: 1.86
 POM Project URL: https://www.bouncycastle.org/download/bouncy-castle-java/
 
 
@@ -4938,7 +4938,7 @@ URL: http://www.wtfpl.net/about/
 (31 of 43)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 2.4.10
+Version: 2.4.20
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4958,7 +4958,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (32 of 43)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-reflect
-Version: 2.4.10
+Version: 2.4.20
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4978,7 +4978,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (33 of 43)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 2.4.10
+Version: 2.4.20
 POM Project URL: https://kotlinlang.org/
 
 
