@@ -111,6 +111,34 @@ tasks.register<Copy>("copyPluginsToApp") {
     into(appPlugins)
 }
 
+// Every plugin module, taken from the configurations declared above rather than listed again. Those
+// already name each plugin exactly once, and a second list here is the shape that drifts: somebody adds
+// a fourth plugin, wires its configuration and its copy, and silently never builds it from this task.
+// `ProjectDependency.path` rather than `dependencyProject` deliberately — a path is a lazy string, while
+// reaching for the project object is the cross-project access this build spent a sprint removing.
+val pluginBuildTasks: List<String> = listOf(examplePlugin, grinderPlugin, serverTestPlugin)
+    .flatMap { configuration -> configuration.dependencies.withType(ProjectDependency::class.java) }
+    .map { dependency -> "${dependency.path}:build" }
+    .distinct()
+
+// `copyPluginsToApp` already builds the jars it copies — the `pluginArtifact` configurations carry that
+// task dependency — so without this the copy is free to run before the builds that verify them, and the
+// staged jars would be the ones from before the tests that were about to fail. Only ordering: it adds no
+// dependency, so `copyPluginsToApp` on its own is unchanged and still skips the tests.
+tasks.named("copyPluginsToApp") {
+    mustRunAfter(pluginBuildTasks)
+}
+
+tasks.register("buildPlugins") {
+    group = "build"
+    description = "Builds every plugin module, tests included, then refreshes them in the app's manual-test plugins directory."
+    // Both, not just the copy: `copyPluginsToApp` builds the jars but runs none of the plugins' tests,
+    // measured at 0 of them, so a jar staged that way is unverified. The `mustRunAfter` above is what
+    // makes "then" mean anything.
+    dependsOn(pluginBuildTasks)
+    dependsOn("copyPluginsToApp")
+}
+
 tasks.register<Delete>("cleanApiUnitTestPlugins") {
     delete(fileTree(apiPlugins) { include("**/*.jar") })
 }
