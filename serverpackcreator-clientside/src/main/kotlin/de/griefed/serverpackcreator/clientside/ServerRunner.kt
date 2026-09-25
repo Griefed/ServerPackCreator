@@ -140,7 +140,7 @@ class HostProcessServerRunner : ServerRunner {
         val timedOut = !ready.get() && !deadline.hasTimeLeft()
 
         if (process.isAlive) {
-            process.destroyForcibly()
+            destroyTree(process)
             process.waitFor(30, TimeUnit.SECONDS)
         }
         readerThread.join(5_000)
@@ -149,9 +149,52 @@ class HostProcessServerRunner : ServerRunner {
         return RunResult.Completed(synchronized(lines) { ArrayList(lines) }, exitCode, timedOut)
     }
 
+    /**
+     * Kill [process] and everything it started, descendants first.
+     *
+     * `start.sh` is a launcher: the Minecraft server is a `java` child of the shell, so SIGKILLing the shell
+     * alone reparents the server to init and leaves it holding the world directory, the port and its heap.
+     * SIGKILL cannot be trapped or forwarded, which is why the shell cannot be asked to clean up on our behalf.
+     *
+     * The descendant list is taken **before** anything is killed — once the shell dies its children are
+     * reparented and stop being its descendants, so collecting afterwards finds nothing. Everything is asked
+     * to exit first and forced only after one shared budget has elapsed, so a server still able to flush its
+     * world gets the chance; the budget is shared rather than per-process so a deep tree cannot multiply it.
+     *
+     * Exit-code note: the shell now reports 143 (SIGTERM) where it used to report 137 (SIGKILL).
+     * [BootLogClassifier] treats both as "terminated from outside" and neither as a crash, so no verdict moves.
+     */
+    private fun destroyTree(process: Process) {
+        val descendants = process.toHandle().descendants().toList()
+        descendants.forEach { it.destroy() }
+        process.destroy()
+
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(GRACEFUL_TEARDOWN_SECONDS)
+        for (descendant in descendants) {
+            val remainingNanos = deadline - System.nanoTime()
+            if (remainingNanos <= 0) {
+                break
+            }
+            // Failure here is not exceptional: a process that has already exited, or one this JVM may not
+            // observe, simply means there is nothing left to wait for. Either way the force-pass below decides.
+            runCatching { descendant.onExit().get(remainingNanos, TimeUnit.NANOSECONDS) }
+        }
+
+        if (process.isAlive) {
+            process.destroyForcibly()
+        }
+        descendants.filter { it.isAlive }.forEach { it.destroyForcibly() }
+    }
+
     /** The host runner's poll cadence, shared with the suspend-gap threshold it feeds. */
     companion object {
         /** How often the boot's liveness and ready-state are polled; also sets what counts as a suspend gap. */
         internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * How long the whole process tree gets to exit on SIGTERM before it is forced. One shared budget, not
+         * one per process: a pack whose script nests several shells would otherwise multiply the teardown wait.
+         */
+        internal const val GRACEFUL_TEARDOWN_SECONDS = 5L
     }
 }
