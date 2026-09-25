@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.migration
 
+import de.griefed.serverpackcreator.app.web.DatabaseAvailability
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
@@ -94,7 +95,13 @@ class RunConfigurationListMigrationRunner(
             // rewritten, so a pass that rewrote everything and then failed to drop leaves those
             // collections behind for good. Harmless -- they are unreferenced -- but do not read this as a
             // promise that they will eventually go.
-            log.error("Could not migrate run-configuration mod-lists. The rewrite retries on next start.", ex)
+            if (DatabaseAvailability.isUnreachable(ex)) {
+                // WARN and no stack trace: an unreachable database is the expected half of the broad catch
+                // above, not a failure to investigate. A genuine migration fault keeps ERROR and its trace.
+                log.warn("Database not reachable yet, so run-configuration mod-lists were not migrated. Retries on next start.")
+            } else {
+                log.error("Could not migrate run-configuration mod-lists. The rewrite retries on next start.", ex)
+            }
         }
     }
 

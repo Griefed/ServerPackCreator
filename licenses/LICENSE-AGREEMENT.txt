@@ -504,15 +504,15 @@ Version: 3.9.0
 POM Project URL: https://github.com/TheElectronWill/night-config
 
 
-POM License: GNU Lesser General Public License v3.0
- - https://www.gnu.org/licenses/lgpl-3.0.txt
+POM License: GNU LESSER GENERAL PUBLIC LICENSE, Version 3
+ - https://www.gnu.org/licenses/lgpl-3.0
 
 
 POM license(s): 
 
 
-License: GNU Lesser General Public License v3.0
-URL: https://www.gnu.org/licenses/lgpl-3.0.txt
+License: GNU LESSER GENERAL PUBLIC LICENSE, Version 3
+URL: https://www.gnu.org/licenses/lgpl-3.0
 
 
 #######################################
@@ -520,7 +520,7 @@ URL: https://www.gnu.org/licenses/lgpl-3.0.txt
 (3 of 43)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
-Version: 2.22.1
+Version: 2.22.3
 Project URL: https://github.com/FasterXML/jackson\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -763,7 +763,7 @@ from the source code management (SCM) system project uses.
 (4 of 43)
 Group:   com.fasterxml.jackson.datatype
 Name:    jackson-datatype-jsr310
-Version: 2.22.1
+Version: 2.22.3
 Manifest Project URL: https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310
 
 
@@ -810,7 +810,7 @@ from the source code management (SCM) system project uses.
 (5 of 43)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
-Version: 2.22.1
+Version: 2.22.3
 Project URL: https://github.com/FasterXML/jackson-module-kotlin\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3389,7 +3389,7 @@ The Apache Software Foundation (http://www.apache.org/).
 (17 of 43)
 Group:   com.install4j
 Name:    install4j-runtime
-Version: 13.1
+Version: 13.1.1
 POM Project URL: https://www.ej-technologies.com/install4j
 
 
@@ -4886,12 +4886,12 @@ Copyright 2005-2006 Tim Fennell
 (29 of 43)
 Group:   org.bouncycastle
 Name:    bcpkix-jdk18on
-Version: 1.85
+Version: 1.86
 POM Project URL: https://www.bouncycastle.org/download/bouncy-castle-java/
 
 
-POM License: Bouncy Castle Licence
- - https://www.bouncycastle.org/licence.html
+POM License: MIT License
+ - https://opensource.org/licenses/MIT
 
 
 Embedded license:
@@ -4938,7 +4938,7 @@ URL: http://www.wtfpl.net/about/
 (31 of 43)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 2.4.10
+Version: 2.4.20
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4958,7 +4958,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (32 of 43)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-reflect
-Version: 2.4.10
+Version: 2.4.20
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4978,7 +4978,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (33 of 43)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 2.4.10
+Version: 2.4.20
 POM Project URL: https://kotlinlang.org/
 
 
@@ -5058,7 +5058,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (37 of 43)
 Group:   org.pf4j
 Name:    pf4j
-Version: 3.15.0
+Version: 3.16.0
 POM License: Apache License, Version 2.0
  - https://www.apache.org/licenses/LICENSE-2.0
 
@@ -5075,7 +5075,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (38 of 43)
 Group:   org.springframework.boot
 Name:    spring-boot-dependencies
-Version: 4.1.0
+Version: 4.1.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5095,7 +5095,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (39 of 43)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 4.1.0
+Version: 4.1.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5308,7 +5308,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.1.0
+Spring Boot 4.1.1
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -5320,7 +5320,7 @@ the License.
 (40 of 43)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-mongodb
-Version: 4.1.0
+Version: 4.1.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5533,7 +5533,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.1.0
+Spring Boot 4.1.1
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -5545,7 +5545,7 @@ the License.
 (41 of 43)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-log4j2
-Version: 4.1.0
+Version: 4.1.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5758,7 +5758,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.1.0
+Spring Boot 4.1.1
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -5770,7 +5770,7 @@ the License.
 (42 of 43)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
-Version: 4.1.0
+Version: 4.1.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5983,7 +5983,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.1.0
+Spring Boot 4.1.1
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
