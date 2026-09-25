@@ -11,7 +11,7 @@ kotlin = "2.4.20"
 # Keep in lockstep with `springBoot` below — the plugin and the libraries are the same product, and
 # letting them drift is what left `spring-boot` resolving 4.0.2 while `spring-boot-starter-web`
 # resolved 4.1.0. The BOM no longer comes from the plugin, but a mismatch is still a trap.
-springGradle = "4.1.0"
+springGradle = "4.1.1"
 
 # https://kotlinlang.org/docs/dokka-get-started.html
 dokka = "2.2.0"
@@ -70,7 +70,7 @@ tipoftheday = "0.6.0"
 # tests, no Docker. The `spring4x` artifact is the Spring Boot 4 line; `spring3x` against Boot 4 is what
 # flapdoodle issue #77 was, and it fails on the changed Mongo autoconfiguration.
 flapdoodleEmbedMongo = "4.33.0"
-springBoot = "4.1.0"
+springBoot = "4.1.1"
 # https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
 # spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
 springdoc = "3.1.1"
