@@ -30,7 +30,7 @@ constraints.
 - **`serverpackcreator-api` is published to Maven Central, so its public surface is a compatibility
   constraint** — plugins compile against it. Governed by the **API compatibility policy** below.
 - **Every other module is unpublished and therefore churns freely** (`-clientside`, `-app`,
-  `-grinder`, both plugin modules, the frontend). `-clientside` in particular is free to change shape;
+  `-grinder`, all three plugin modules, the frontend). `-clientside` in particular is free to change shape;
   `-plugin-example` is the exception that must always reflect *current* API idiom, because it is
   documentation by example.
 - **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
@@ -323,16 +323,17 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-23).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-09-25).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 474 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| api            | 485 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 672           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 226           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
+| plugin-servertest | 69 (1 skip) | Launches a generated pack through its own start scripts, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
 | web-frontend   | 37 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
 | grinder        | 544 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
