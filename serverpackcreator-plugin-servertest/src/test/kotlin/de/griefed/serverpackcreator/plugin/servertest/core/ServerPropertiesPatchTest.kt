@@ -188,6 +188,50 @@ internal class ServerPropertiesPatchTest {
         )
     }
 
+    /**
+     * A key carried twice is rewritten in both places.
+     *
+     * Legal in a `.properties` file and Minecraft takes the last, so leaving an earlier stale line behind
+     * would be harmless today and a trap the moment anything reads the file top-down. Pinned because the
+     * implementation replaces every occurrence and nothing said so.
+     */
+    @Test
+    fun rewritesEveryOccurrenceOfAPortKey(@TempDir packDir: File) {
+        val properties = packWithProperties(packDir, "server-port=25565\nmotd=Twice\nserver-port=25566\n")
+
+        ServerPropertiesPatch(packDir).borrow(30123)
+
+        Assertions.assertEquals(
+            "server-port=30123\nmotd=Twice\nserver-port=30123\nquery.port=30123\n",
+            properties.readText()
+        )
+    }
+
+    /**
+     * Borrowing twice through the *same* instance still backs up the user's file, not the first borrow's.
+     *
+     * The crash-recovery guard covers two instances, which is the across-processes case. This is the one a
+     * double-click on Start produces, and it goes through the same restore-before-borrow path.
+     */
+    @Test
+    fun borrowingTwiceThroughOneInstanceKeepsTheUsersFile(@TempDir packDir: File) {
+        packWithProperties(packDir)
+        val patch = ServerPropertiesPatch(packDir)
+
+        patch.borrow(30123)
+        patch.borrow(30456)
+
+        Assertions.assertEquals(original, patch.backupFile.readText())
+        patch.restore()
+        Assertions.assertEquals(original, patch.propertiesFile.readText())
+    }
+
+    /** A pack with no properties file at all reports RCON off rather than throwing. */
+    @Test
+    fun rconIsOffWhenThereIsNoPropertiesFile(@TempDir packDir: File) {
+        Assertions.assertFalse(ServerPropertiesPatch(packDir).rconEnabled())
+    }
+
     /** Restoring without an outstanding borrow does nothing, so a shutdown hook may always call it. */
     @Test
     fun restoreWithoutABorrowIsHarmless(@TempDir packDir: File) {

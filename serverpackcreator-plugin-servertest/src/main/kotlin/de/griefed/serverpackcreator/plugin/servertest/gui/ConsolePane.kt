@@ -56,12 +56,9 @@ import javax.swing.SwingUtilities
 class ConsolePane(
     private val session: ServerSession,
     port: Int,
-    variables: PackVariables,
+    private val variables: PackVariables,
     private val scrollback: Int
 ) : JPanel(BorderLayout()) {
-
-    /** The pack's own settings, consulted for the hints this pane adds while the session runs. */
-    private val packVariables = variables
 
     /**
      * The console. Plain text, never markup — a `JTextArea` parses no HTML, unlike a label.
@@ -104,7 +101,7 @@ class ConsolePane(
         stopButton.addActionListener { session.stop() }
         killButton.addActionListener { session.kill() }
 
-        for (note in openingNotes(variables)) {
+        for (note in openingNotes()) {
             append(note)
         }
     }
@@ -115,7 +112,7 @@ class ConsolePane(
      * Every one of them describes something that otherwise reads as the plugin being broken: a prompt the
      * user must answer, a stop that does not stop, or a script that goes silent and waits.
      */
-    private fun openingNotes(variables: PackVariables): List<String> = buildList {
+    private fun openingNotes(): List<String> = buildList {
         add("[ServerPackCreator] Connect a client to $connectAddress once the server reports it is ready.")
         add(
             "[ServerPackCreator] Mojang's EULA is not accepted for you. If this pack has not been started " +
@@ -198,7 +195,7 @@ class ConsolePane(
      */
     fun appendLine(line: String) {
         append(line)
-        ConsoleHints.after(line, packVariables)?.let(::append)
+        ConsoleHints.after(line, variables)?.let(::append)
     }
 
     /** Put one line on screen, trimming to [scrollback] and following the tail. */

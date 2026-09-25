@@ -268,6 +268,82 @@ internal class ServerSessionTest {
         }
     }
 
+    /**
+     * A session that was never started refuses input and refuses to stop, rather than throwing.
+     *
+     * Reachable from the GUI: the Start button builds a session before the process exists, and a user can
+     * reach the console's controls in that window.
+     */
+    @Test
+    fun aSessionThatWasNeverStartedRefusesEverythingQuietly(@TempDir packDir: File) {
+        val session = sessionOver(
+            packDir,
+            Collections.synchronizedList(mutableListOf()),
+            Collections.synchronizedList(mutableListOf()),
+            IntArray(1)
+        )
+
+        Assertions.assertFalse(session.send("hello"), "There is no process to send to.")
+        Assertions.assertFalse(session.stop(), "There is no process to stop.")
+        session.kill()
+        Assertions.assertEquals(SessionState.Starting, session.state)
+    }
+
+    /**
+     * A listener that throws must not kill the reader thread, or one bad line costs the whole console.
+     *
+     * `emit` wraps the callback for exactly this, and nothing proved it: the output after the throw is the
+     * assertion, because a dead reader thread simply stops delivering and looks like a quiet server.
+     */
+    @Test
+    fun aThrowingLineListenerDoesNotKillTheConsole(@TempDir packDir: File) {
+        requireBash()
+        standInScript(packDir)
+        val seen = Collections.synchronizedList(mutableListOf<String>())
+        val session = ServerSession(
+            workingDirectory = packDir,
+            command = listOf("bash", "start.sh"),
+            onLine = { line -> seen.add(line); throw IllegalStateException("a listener misbehaving") },
+            onState = { },
+            onClosed = { }
+        ).also { started.add(it) }
+
+        session.start()
+        awaitUntil("the stand-in to be reading") { seen.isNotEmpty() }
+        session.send("still alive")
+
+        awaitUntil("output to keep arriving after the listener threw") { seen.contains("echoed:still alive") }
+    }
+
+    /**
+     * `stop()` and `kill()` on a session that has already exited are no-ops that leave its status intact.
+     *
+     * **What this does not pin, stated so nobody assumes it does.** `transitionTo` also refuses to move off
+     * `Exited`, which defends against a *race*: `stop()` checks liveness, the process exits, `pump`
+     * publishes `Exited`, and the late `Stopping` overwrites it. Removing that guard leaves this guard
+     * green — measured — because once the process is genuinely dead `stop()` and `kill()` return before
+     * reaching `transitionTo` at all. The race is real and no deterministic test in this suite reaches it,
+     * so the guard in the production code stands on reasoning rather than on this test.
+     */
+    @Test
+    fun stopAndKillAfterExitLeaveTheStatusIntact(@TempDir packDir: File) {
+        requireBash()
+        File(packDir, "start.sh").writeText("#!/usr/bin/env bash\nexit 5\n")
+        val session = sessionOver(
+            packDir,
+            Collections.synchronizedList(mutableListOf()),
+            Collections.synchronizedList(mutableListOf()),
+            IntArray(1)
+        )
+        session.start()
+        awaitUntil("the exit to be observed") { session.state is SessionState.Exited }
+
+        session.stop()
+        session.kill()
+
+        Assertions.assertEquals(SessionState.Exited(5), session.state, "Exited is terminal.")
+    }
+
     /** A pack whose script cannot be spawned reports an exit rather than throwing into the caller. */
     @Test
     fun anUnlaunchableCommandEndsAsAnExitRatherThanAnException(@TempDir packDir: File) {

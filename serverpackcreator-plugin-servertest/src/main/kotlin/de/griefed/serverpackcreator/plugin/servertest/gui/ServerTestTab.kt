@@ -26,18 +26,21 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.core.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.core.LaunchOutcome
 import de.griefed.serverpackcreator.plugin.servertest.core.PortAllocator
+import de.griefed.serverpackcreator.plugin.servertest.core.ServerLauncher
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerPackCatalog
-import de.griefed.serverpackcreator.plugin.servertest.core.ServerPropertiesPatch
-import de.griefed.serverpackcreator.plugin.servertest.core.ServerSession
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerTestSettings
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionRegistry
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelection
 import java.awt.BorderLayout
+import java.awt.FlowLayout
+import java.awt.Insets
 import java.io.File
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ConcurrentHashMap
+import javax.swing.JButton
+import javax.swing.JPanel
 import javax.swing.JTabbedPane
 import javax.swing.SwingUtilities
 
@@ -70,14 +73,21 @@ class ServerTestTab(
     private val catalog = ServerPackCatalog(utilities.jsonUtilities.objectMapper)
     private val allocator = PortAllocator(settings.portRangeStart, settings.portRangeEnd)
     private val registry = SessionRegistry()
+    private val launcher = ServerLauncher(allocator, registry)
 
     /** The pack list plus one console per running server; the list is always the first tab. */
     private val panes = JTabbedPane()
 
     private val packList = PackListPane(onStart = ::launch, onRefresh = ::refreshPackList)
 
-    /** Consoles by pack directory, so a state change can find the pane it belongs to. */
-    private val consoles = mutableMapOf<File, ConsolePane>()
+    /**
+     * Consoles by pack directory, so a line arriving from a session can find the pane it belongs to.
+     *
+     * Concurrent, and that is not caution: the entry is written here on the event dispatch thread and read
+     * on **each session's own reader thread**, which is where `ServerSession` documents its callbacks
+     * arrive. A plain `HashMap` read while another thread is resizing it is undefined behaviour.
+     */
+    private val consoles = ConcurrentHashMap<File, ConsolePane>()
 
     /**
      * The last state reported per pack, kept after the session ends so the list can still say how a run
@@ -101,85 +111,41 @@ class ServerTestTab(
     }
 
     /**
-     * Launch [pack]: take a port, borrow its `server.properties`, start the script and open its console.
+     * Launch [pack] and open a console for it, or say why not.
      *
-     * The order matters on the way out as much as on the way in, which is why releasing the port and giving
-     * the properties file back are one callback handed to the session rather than steps at each exit.
+     * The sequence this used to contain — take a port, borrow `server.properties`, register before
+     * starting, give everything back exactly once — now lives in [ServerLauncher], where it is reachable
+     * headless. What is left here is the part that is genuinely a view's job: put a console on screen,
+     * and start the session only once there is somewhere for its output to go.
      */
     private fun launch(pack: LaunchablePack) {
-        val selection = pack.selection as? StartScriptSelection.Available ?: return
-
-        if (registry.isRunning(pack.directory)) {
-            warn("${pack.name} is already running. Two servers over one world directory would corrupt it.")
-            return
-        }
-
-        val patch = ServerPropertiesPatch(pack.directory)
-        val serverPort = allocator.allocate()
-        if (serverPort == null) {
-            warn(
-                "No free port between ${allocator.range.first} and ${allocator.range.last}. Stop a running " +
-                        "server, or widen the range in this plugin's config.toml."
-            )
-            return
-        }
-        // Only when the pack has RCON switched on: it is a second real listening socket, and two test
-        // servers sharing one collide exactly as their game ports would.
-        val rconPort = if (patch.rconEnabled()) allocator.allocate() else null
-
-        val givenBack = AtomicBoolean(false)
-        val giveBack = {
-            // Guarded because it is reachable from two places: the session's close callback, and the failure
-            // path below when the borrow itself fails before any session exists.
-            if (givenBack.compareAndSet(false, true)) {
-                runCatching { patch.restore() }
-                    .onFailure { log.error("Could not restore ${patch.propertiesFile.absolutePath}.", it) }
-                allocator.release(serverPort)
-                rconPort?.let(allocator::release)
-            }
-        }
-
-        try {
-            patch.borrow(serverPort, rconPort)
-        } catch (ex: Exception) {
-            giveBack()
-            warn("Could not set the port in ${pack.name}'s server.properties: ${ex.message}")
-            return
-        }
-
-        val session = ServerSession(
-            workingDirectory = pack.directory,
-            command = selection.command,
+        when (val outcome = launcher.launch(
+            pack = pack,
             onLine = { line -> consoles[pack.directory]?.appendLine(line) },
             onState = { state -> onSessionState(pack, state) },
-            onClosed = {
-                giveBack()
-                registry.unregister(pack.directory)
-                SwingUtilities.invokeLater { refreshPackList() }
+            onClosed = { SwingUtilities.invokeLater { refreshPackList() } }
+        )) {
+            is LaunchOutcome.Refused -> warn(outcome.reason)
+
+            is LaunchOutcome.Started -> {
+                val console = ConsolePane(
+                    session = outcome.session,
+                    port = outcome.port,
+                    variables = PackVariables.read(pack.directory),
+                    scrollback = settings.consoleScrollback
+                )
+                consoles[pack.directory] = console
+                lastStates[pack.directory] = SessionState.Starting
+
+                addConsoleTab(pack, console)
+                refreshPackList()
+
+                // Started last, deliberately: the session streams to `consoles[pack.directory]`, so a
+                // process spawned before that entry exists would drop its first lines on the floor --
+                // which, for a pack that fails immediately, is the only output there would ever be.
+                outcome.session.start()
             }
-        )
-
-        // Registered before it is started, so a second Start pressed in the same instant is refused rather
-        // than racing into a second server over the same world.
-        if (!registry.register(pack.directory, session)) {
-            giveBack()
-            warn("${pack.name} is already running.")
-            return
         }
-
-        val console = ConsolePane(
-            session = session,
-            port = serverPort,
-            variables = PackVariables.read(pack.directory),
-            scrollback = settings.consoleScrollback
-        )
-        consoles[pack.directory] = console
-        lastStates[pack.directory] = SessionState.Starting
-
-        addConsoleTab(pack, console)
-        refreshPackList()
-
-        session.start()
     }
 
     /**
@@ -192,8 +158,50 @@ class ServerTestTab(
      */
     private fun addConsoleTab(pack: LaunchablePack, console: ConsolePane) {
         panes.addTab(pack.name, console)
-        panes.setTabComponentAt(panes.tabCount - 1, PlainTextRendering.label(pack.name))
+        panes.setTabComponentAt(panes.tabCount - 1, consoleTabLabel(pack, console))
         panes.selectedComponent = console
+    }
+
+    /**
+     * The tab's own label: the pack's name, rendered literally, with a close control beside it.
+     *
+     * Without a way to close one, a console is kept for the life of the application — its `JTextArea`
+     * holding up to `consoleScrollback` lines — for every pack ever launched, and the maps behind it grow
+     * with it. Closing a *running* server's tab is refused rather than silently killing it: the tab is the
+     * only place that server can be stopped from, so taking it away would strand the process.
+     */
+    private fun consoleTabLabel(pack: LaunchablePack, console: ConsolePane): JPanel =
+        JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+            isOpaque = false
+            add(PlainTextRendering.label(pack.name))
+            add(
+                JButton("\u00d7").apply {
+                    toolTipText = "Close this console"
+                    isFocusable = false
+                    margin = Insets(0, 4, 0, 0)
+                    isBorderPainted = false
+                    isContentAreaFilled = false
+                    addActionListener { closeConsole(pack, console) }
+                }
+            )
+        }
+
+    /**
+     * Drop [pack]'s console, unless its server is still running.
+     *
+     * The state the list shows is dropped with it: a pack whose console has been closed has no run to
+     * report any more, so it goes back to reading "Ready to launch" rather than keeping a stale exit code
+     * next to a tab that is no longer there.
+     */
+    private fun closeConsole(pack: LaunchablePack, console: ConsolePane) {
+        if (registry.isRunning(pack.directory)) {
+            warn("${pack.name} is still running. Stop it first — this tab is the only place you can.")
+            return
+        }
+        panes.remove(console)
+        consoles.remove(pack.directory)
+        lastStates.remove(pack.directory)
+        refreshPackList()
     }
 
     /** Push a state change to the pack's console and to the list, on the event dispatch thread. */

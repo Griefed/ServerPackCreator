@@ -92,5 +92,66 @@ class ServerLauncher(
         onLine: (String) -> Unit,
         onState: (SessionState) -> Unit,
         onClosed: () -> Unit
-    ): LaunchOutcome = LaunchOutcome.Refused("Launching is not implemented yet.")
+    ): LaunchOutcome {
+        val selection = pack.selection as? StartScriptSelection.Available
+            ?: return LaunchOutcome.Refused((pack.selection as StartScriptSelection.Missing).reason)
+
+        if (registry.isRunning(pack.directory)) {
+            return LaunchOutcome.Refused(
+                "${pack.name} is already running. Two servers over one world directory would corrupt it."
+            )
+        }
+
+        val patch = patchFor(pack.directory)
+        val serverPort = allocator.allocate() ?: return LaunchOutcome.Refused(
+            "No free port between ${allocator.range.first} and ${allocator.range.last}. Stop a running " +
+                    "server, or widen the range in this plugin's config.toml."
+        )
+        // Only when the pack has RCON switched on: it is a second real listening socket, and two test
+        // servers sharing one collide exactly as their game ports would.
+        val rconPort = if (patch.rconEnabled()) allocator.allocate() else null
+
+        val givenBack = AtomicBoolean(false)
+        val giveBack = {
+            // Guarded because it is reachable twice: from the session's close callback, and from the
+            // failure path below when the borrow itself fails before any session exists. Releasing twice
+            // would hand a live server's port to the next pack.
+            if (givenBack.compareAndSet(false, true)) {
+                runCatching { patch.restore() }
+                allocator.release(serverPort)
+                rconPort?.let(allocator::release)
+            }
+        }
+
+        try {
+            patch.borrow(serverPort, rconPort)
+        } catch (ex: Exception) {
+            giveBack()
+            return LaunchOutcome.Refused(
+                "Could not set the port in ${pack.name}'s ${ServerPropertiesPatch.PROPERTIES_NAME}: ${ex.message}"
+            )
+        }
+
+        // A second guard, deliberately not the same one. `giveBack` covers the resources and is shared
+        // with the failure path above, where the caller must NOT be told a session closed -- it never got
+        // one. This covers the whole close, so a caller is told exactly once even though `ServerSession`
+        // already promises that; the promise is one class away and this costs a boolean.
+        val closed = AtomicBoolean(false)
+        val session = sessionFor(pack.directory, selection.command, onLine, onState) {
+            if (closed.compareAndSet(false, true)) {
+                giveBack()
+                registry.unregister(pack.directory)
+                onClosed()
+            }
+        }
+
+        // Registered before it is handed back, so a second Start pressed in the same instant is refused
+        // rather than racing into a second server over the same world.
+        if (!registry.register(pack.directory, session)) {
+            giveBack()
+            return LaunchOutcome.Refused("${pack.name} is already running.")
+        }
+
+        return LaunchOutcome.Started(session, serverPort)
+    }
 }

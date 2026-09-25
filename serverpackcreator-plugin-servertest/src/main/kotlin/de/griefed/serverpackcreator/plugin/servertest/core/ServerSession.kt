@@ -197,8 +197,18 @@ class ServerSession(
         descendants.filter { it.isAlive }.forEach { it.destroyForcibly() }
     }
 
-    /** Record and publish a state change. */
+    /**
+     * Record and publish a state change, unless the session has already ended.
+     *
+     * [SessionState.Exited] is terminal. Without this, a `stop()` that checks liveness and then transitions
+     * can be overtaken by the process actually exiting, and the late `Stopping` overwrites `Exited` — which
+     * leaves the pack's row reading "Stopping…" for good, for a server that is long gone.
+     */
+    @Synchronized
     private fun transitionTo(next: SessionState) {
+        if (state is SessionState.Exited) {
+            return
+        }
         state = next
         onState(next)
     }

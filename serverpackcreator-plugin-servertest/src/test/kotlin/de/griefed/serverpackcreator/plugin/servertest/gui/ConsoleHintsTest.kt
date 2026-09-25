@@ -20,6 +20,10 @@
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.core.ServerSession
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import javax.swing.JTextArea
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -65,5 +69,35 @@ internal class ConsoleHintsTest {
         Assertions.assertNull(ConsoleHints.after("Done (5.862s)! For help, type \"help\"", waiting))
         Assertions.assertNull(ConsoleHints.after("[Server thread/INFO]: Exiting... the nether portal", waiting))
         Assertions.assertNull(ConsoleHints.after("", waiting))
+    }
+
+    /**
+     * The console wraps its lines.
+     *
+     * Two properties, pinned because the defect they fix was real and invisible to every other guard: the
+     * notes this pane writes are prose, and at the pane's width one of them ended mid-sentence behind a
+     * horizontal scrollbar nobody would think to drag. Found by rendering the pane and looking at it.
+     */
+    @Test
+    fun theConsoleWrapsSoLongNotesStayReadable(@TempDir packDir: File) {
+        val pane = ConsolePane(
+            session = ServerSession(packDir, listOf("true"), {}, {}, {}),
+            port = 25565,
+            variables = waiting,
+            scrollback = 100
+        )
+
+        val console = findTextArea(pane)
+        Assertions.assertNotNull(console, "The pane must contain the console text area.")
+        Assertions.assertTrue(console!!.lineWrap, "Long notes are cut off without wrapping.")
+        Assertions.assertTrue(console.wrapStyleWord, "Wrapping mid-word makes a path or a mod name unreadable.")
+    }
+
+    private fun findTextArea(container: java.awt.Container): JTextArea? {
+        for (child in container.components) {
+            if (child is JTextArea) return child
+            if (child is java.awt.Container) findTextArea(child)?.let { return it }
+        }
+        return null
     }
 }
