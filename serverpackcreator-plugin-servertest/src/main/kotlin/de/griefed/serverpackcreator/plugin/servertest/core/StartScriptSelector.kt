@@ -113,7 +113,15 @@ object StartScripts {
      * generated start script executable, so a custom template carrying a shebang runs on its own. Guessing
      * an interpreter for a key nobody documented would be the same mistake the platform fallback made.
      */
-    fun forKey(key: String): StartScript = StartScript(key, key, emptyList())
+    fun forKey(key: String): StartScript {
+        val fileName = StartScript.FILE_PREFIX + key
+        val interpreter = known[key.lowercase()]
+        return StartScript(
+            key = key,
+            label = if (interpreter == null) "$fileName — run directly" else "$fileName — ${interpreter.first}",
+            command = interpreter?.second?.plus(fileName) ?: listOf("./$fileName")
+        )
+    }
 
     /**
      * The choices for [templateKeys], in a stable order so the dropdown does not reshuffle between reads.
@@ -122,7 +130,12 @@ object StartScripts {
      * has no order of its own — the known types first, in the order a user is likely to want them, and
      * anything an operator added after, alphabetically.
      */
-    fun forTemplateKeys(templateKeys: Collection<String>): List<StartScript> = emptyList()
+    fun forTemplateKeys(templateKeys: Collection<String>): List<StartScript> {
+        val preferred = known.keys.toList()
+        return templateKeys.distinct()
+            .sortedWith(compareBy({ preferred.indexOf(it.lowercase()).takeIf { i -> i >= 0 } ?: preferred.size }, { it }))
+            .map(::forKey)
+    }
 
     /**
      * Which of [available] to pre-select on [platform]: the batch shim on Windows, bash elsewhere.
@@ -131,7 +144,13 @@ object StartScripts {
      * nothing is — an operator *can* configure no start scripts at all, and a dropdown with no entries is
      * a better answer than one lying about a script that will never exist.
      */
-    fun defaultFor(available: List<StartScript>, platform: Platform = Platform.of()): StartScript? = null
+    fun defaultFor(available: List<StartScript>, platform: Platform = Platform.of()): StartScript? {
+        val preferred = when (platform) {
+            Platform.WINDOWS -> "bat"
+            Platform.POSIX -> "sh"
+        }
+        return available.firstOrNull { it.key.equals(preferred, ignoreCase = true) } ?: available.firstOrNull()
+    }
 }
 
 /**
@@ -169,7 +188,14 @@ object StartScriptSelector {
 
     /** Whether [pack] carries [script], and what to run. */
     fun selectFor(pack: LaunchablePack, script: StartScript): StartScriptSelection =
-        StartScriptSelection.Missing("Script selection is not implemented yet.")
+        if (script.key in pack.scriptKeysPresent) {
+            StartScriptSelection.Available(File(pack.directory, script.fileName), script.command)
+        } else {
+            StartScriptSelection.Missing(
+                "This server pack has no ${script.fileName}. Pick another start script, or regenerate the " +
+                        "pack with that template configured."
+            )
+        }
 
     /**
      * The template keys [packDirectory] actually carries a `start.<key>` for.
@@ -179,5 +205,9 @@ object StartScriptSelector {
      * under a different template set still reports itself honestly. `isFile`, so a directory named
      * `start.sh` is reported absent instead of failing at spawn time with a shell error.
      */
-    fun scriptKeysIn(packDirectory: File): Set<String> = emptySet()
+    fun scriptKeysIn(packDirectory: File): Set<String> =
+        (packDirectory.listFiles() ?: emptyArray())
+            .filter { it.isFile && it.name.startsWith(StartScript.FILE_PREFIX) }
+            .mapNotNull { it.name.removePrefix(StartScript.FILE_PREFIX).takeIf(String::isNotEmpty) }
+            .toSet()
 }
