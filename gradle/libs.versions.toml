@@ -17,7 +17,7 @@ springGradle = "4.1.0"
 dokka = "2.1.0"
 
 # https://github.com/jk1/Gradle-License-Report
-licenseReport = "3.0.1"
+licenseReport = "3.1.4"
 
 # https://github.com/Kotlin/kotlinx-kover
 kover = "0.9.9"
