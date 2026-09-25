@@ -6676,3 +6676,142 @@ stale suite counts in both `CLAUDE.md` files (re-measured, not incremented: api 
 226, web-frontend 35 → 37), the unpinned Java signature above, and M-E. Commit hygiene on the ten
 post-merge commits is clean: every `fix` but the two noted has its red pin immediately before it, and
 no `test`/`docs` commit changes executable production code.
+
+---
+
+# 2026-09-25 — audit of the `servertest` branch (24 commits, `develop..HEAD`)
+
+Range: `7d057b136` *(test(api): pin that AddonsLogger reaches the plugins appender)* …
+`0e46afa61` *(fix(api): contain a misbehaving tab extension instead of losing every tab)*.
+Read-only pass. Subjects, not hashes, are load-bearing here — this branch has not been rebased, but
+the file's own standing lesson is that hashes do not survive one.
+
+## HIGH
+
+### H1 — the pack table's HTML mitigation is inert, so the landmine the module documents is live
+
+`serverpackcreator-plugin-servertest/.../gui/PackListPane.kt`, in `c0e61a00e`, registers
+`setDefaultRenderer(String::class.java, PlainTextRendering.tableCellRenderer())`. `PackTableModel`
+never overrides `getColumnClass`, so `AbstractTableModel` answers `Object` for every column and
+`JTable` never consults that registration.
+
+**Measured, not argued** (throwaway probe, removed after):
+
+```
+columnClass(0)        = class java.lang.Object
+resolved renderer     = javax.swing.table.DefaultTableCellRenderer$UIResource
+html.disable on it    = null
+rendered view is HTML = true
+```
+
+So a pack whose *directory name* is `<html><img src="http://…">` makes ServerPackCreator issue that
+request. The module's own `CLAUDE.md` states this surface is protected; it is not. This is the same
+shape as the grinder plugin's `getColumnClass` landmine (`Boolean::class.javaObjectType`, not
+`.java`) arriving from the other direction — there the wrong class broke *rendering*, here it breaks
+*protection*, and only the second kind is silent.
+
+**Rule broken:** the module's stated invariant, and "fix bugs when you find them" — the guard was
+written and never checked to be reached. **Severity HIGH:** a security mitigation that does nothing.
+
+### H2 — `ServerTestTab.warn()` hands `JOptionPane` a String, so the same injection reaches a dialog
+
+`gui/ServerTestTab.kt` (`c0e61a00e`) calls `JOptionPane.showMessageDialog(this, message, …)` where
+`message` interpolates `pack.name` — the user-controlled directory name — and, on the borrow-failure
+path, `ex.message`.
+
+**Measured:**
+
+```
+JOptionPane message=String labels=2 htmlViews=1
+JOptionPane message=JLabel labels=2 htmlViews=0
+```
+
+A String message gets an HTML view installed; the same text passed as a `PlainTextRendering.label`
+does not. Second surface, same class as H1, missed for the same reason: the landmine was written
+down as being about tables and labels, so the dialog was not checked against it.
+
+**Severity HIGH**, same reasoning as H1.
+
+### H3 — console sub-tab titles are user-controlled text on a third renderer
+
+`ServerTestTab.launch` calls `panes.addTab(pack.name, console)`. `BasicTabbedPaneUI` maintains
+`htmlViews` for tab titles, so this is a third instance of the same input reaching a third renderer.
+**Not confirmed by measurement** — reflection into that private field failed and was abandoned rather
+than pursued — so this is **PLAUSIBLE**, listed here because the mitigation costs nothing
+(`setTabComponentAt` with an HTML-disabled label, which is already `MainPanel`'s own idiom) and the
+other two in this family were both confirmed live.
+
+## MEDIUM
+
+### M1 — `ServerTestTab.consoles` is an unsynchronised `HashMap` shared across threads
+
+Written on the event dispatch thread in `launch` (`consoles[pack.directory] = console`) and **read on
+each session's reader thread** in the `onLine` and `onState` lambdas. `ServerSession` documents that
+its callbacks arrive on that thread, so this is by design on one side and unguarded on the other. A
+concurrent structural write during a read is undefined; the classic failure is a resize seen
+mid-flight. `lastStates` is EDT-confined and fine, but nothing says so or enforces it.
+
+### M2 — console sub-tabs cannot be closed, and nothing is ever released
+
+One `ConsolePane` per pack ever launched, each retaining up to `consoleScrollback` lines, kept for the
+life of the application: `panes` only ever gains tabs, and `consoles`/`lastStates` only ever gain
+entries. The approved plan said the sub-tab "has a close (X)"; it was not implemented and the gap was
+not flagged. **Scope shortfall against the stated plan**, and an unbounded retention.
+
+### M3 — `c63ca42d6` bundles three unrelated units, all written before their guards
+
+`ServerTestSettings`, `PackVariables` and `SessionRegistry` share one commit, and none had a guard
+land red first. The message says so, and mutation testing was run instead — which earned its keep by
+finding the settings guard vacuous. Recorded anyway: the mitigation does not make it one concern, and
+"pin first means commit first" is explicit in the root `CLAUDE.md`.
+
+### M4 — `05a2053a7` is a `feat:` that also rewrites an existing test's expectation
+
+The CRLF fixture in `ServerPropertiesPatchTest` was corrected inside the implementation commit. The
+message explains it and the red had been valid, but correcting a guard is its own concern and belongs
+in its own commit.
+
+### M5 — `30fdbdd56` mixes an end-to-end test, a build change and a new feature
+
+`RealPackBootTest` + the `tasks.test` switch forwarding (test infrastructure), `ConsoleHints` + its
+guard (a new feature), and a `ConsolePane` change (behaviour) in one commit. Three concerns.
+
+### M6 — no commit on this branch is a pure "add tests" commit
+
+Every `test(servertest): …` commit also adds production seam files, because a guard that cannot
+compile is not a red pin. The root `CLAUDE.md` offers two ways out — land the seam as its own
+behaviour-preserving commit, *or* say in the message that the boundary is missing and quote the
+mutation. This branch consistently took a third: seam-plus-guard in one commit, stating the stub and
+naming which assertions were vacuous against it. Defensible and uniformly documented, but it is a
+deviation and should be a deliberate choice next time rather than a habit.
+
+## LOW
+
+### L1 — a late `Stopping` can overwrite a terminal `Exited`
+
+`ServerSession.stop()`/`kill()` check liveness, then `transitionTo(Stopping)`. If the process exits
+between the two, `pump` has already published `Exited` and the late transition overwrites it, leaving
+the row reading "Stopping…" for good. Cosmetic only: `startable` keys on the registry, which
+`onClosed` clears, so the pack can still be relaunched.
+
+### L2 — `296a82b45` changes behaviour with no guard
+
+Console wrapping. Covered by the standing "pane rendering untested by design" stance, but
+`lineWrap`/`wrapStyleWord` are two trivially assertable properties, and the defect they fix was real.
+
+## Verified clean — do not re-litigate
+
+- **`00724058a` is a genuine pure refactor.** Statement order preserved, try-block scope unchanged,
+  `internal` rather than public so nothing is added to the published surface, and all four
+  `ExtensionScopingTest` guards plus `ApiPluginsTest` stayed green with **no assertion edited**.
+- **Both `-api` behaviour changes carry an `API-BEHAVIOUR-CHANGES.md` row** (AddonsLogger routing;
+  tab-extension containment), each stating what an embedder actually sees.
+- **Module boundaries hold.** `serverpackcreator-plugin-servertest` depends on `-api` only; the
+  temptation to reach for `-clientside`'s `HostProcessServerRunner` is recorded in the build file with
+  the reason it was refused.
+- **Zero changes to the published API surface for the plugin itself**, which was the branch's stated
+  constraint.
+- **The two adjacent defects were fixed, not deferred**, each with a guard that was observed red for
+  the right reason (`[Console, ApplicationLogger]`; "Process 71941 outlived the boot that spawned it").
+- **`copyPluginsApiUnitTests` still takes the example plugin alone**, and the comment naming why now
+  names both excluded plugins.

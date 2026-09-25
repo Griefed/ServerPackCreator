@@ -1202,3 +1202,132 @@ that stopped reproducing its own condition, the parse-based header assertion, an
 path whose `TypeError` became an unhandled rejection. Reading found none of them. That is now four
 instances in this repository's log of the same failure mode, and the only technique that has ever caught
 it is breaking the production code and watching.
+
+---
+
+# 2026-09-25 — test-depth & defect analysis of the `servertest` branch
+
+Scope: `serverpackcreator-plugin-servertest` in full, plus the `-api` and `-clientside` changes on the
+branch. Companion to the same day's section in `REFACTOR-AUDIT.md`, which covers commit hygiene; this
+one covers depth, edge cases, defects and security. Findings confirmed by measurement say so; the rest
+are marked PLAUSIBLE.
+
+## HIGH
+
+### A1 — the whole launch orchestration is untested, and it is logic, not rendering
+
+`gui/ServerTestTab.launch` is ~60 lines of decisions: refuse an already-running pack, allocate a port,
+allocate a *second* port only when RCON is on, borrow `server.properties`, build the session, register
+it before starting it, and release the port and give the file back exactly once however the run ends.
+None of it is covered. The module's testing stance — "pane rendering is untested by design" — is being
+applied to something that is not rendering.
+
+The `givenBack` `AtomicBoolean` is the sharpest example: it exists precisely because the give-back path
+is reachable twice, and nothing asserts that it is not run twice, nor that it runs at all when `borrow`
+throws.
+
+**This is an MVC finding as much as a coverage one.** A view is holding the controller. Extracting the
+orchestration into a `ServerLauncher` in `core` makes every branch above testable headless and leaves
+the tab doing what a tab should.
+
+**Suggested cases:** starting a pack already running refuses and allocates nothing; a `borrow` that
+throws releases both ports and leaves no backup; RCON off allocates one port, RCON on allocates two;
+the close callback releases exactly once when it is invoked twice; a pack with no free port refuses
+without touching `server.properties`.
+
+### A2 — three HTML-injection surfaces, two confirmed live
+
+Carried over from `REFACTOR-AUDIT.md` H1–H3 because they are defects, not hygiene:
+
+- **Pack table (CONFIRMED).** `getColumnClass` answers `Object`, so the HTML-disabled renderer is never
+  consulted: `rendered view is HTML = true`.
+- **`warn()` dialog (CONFIRMED).** A String message to `JOptionPane` installs an HTML view
+  (`htmlViews=1`); the same text as a `PlainTextRendering.label` does not (`htmlViews=0`).
+- **Console sub-tab titles (PLAUSIBLE).** `addTab(pack.name, …)` puts user-controlled text through
+  `BasicTabbedPaneUI`'s `htmlViews`; not measured.
+
+The input in all three is a *server-pack directory name*, which the user creates and which an
+imported/downloaded modpack can influence.
+
+### A3 — `ServerTestTab.warn`'s doc comment is false
+
+`gui/ServerTestTab.kt:196` — *"Say something the user needs to act on, rendered as literal text."* It is
+rendered as HTML, as A2 measured. The root `CLAUDE.md` is explicit that a stale comment is worse than
+none; this one actively asserts the safety property that is missing, which is how the gap survived
+review.
+
+## MEDIUM
+
+### A4 — `consoles` is an unsynchronised `HashMap` crossing threads
+
+Written on the EDT, read on each session's reader thread (`onLine`, `onState`). See `REFACTOR-AUDIT.md`
+M1. No test could have caught it; it is a reading finding.
+
+### A5 — console panes are never released
+
+No close control on a sub-tab, and `consoles`/`lastStates` only grow. One `JTextArea` of up to
+`consoleScrollback` lines is retained per pack ever launched. Also a shortfall against the approved
+plan, which specified closable sub-tabs.
+
+### A6 — error paths are implemented and unexercised
+
+Each of these is handled in code and asserted nowhere:
+
+- `ServerSession.send` before `start()` — `standardInput` is null, returns `false`.
+- `ServerSession.stop()`/`kill()` on a never-started session.
+- A throwing `onLine` listener — `emit` wraps it in `runCatching` specifically so a bad listener cannot
+  kill the reader thread; nothing proves it.
+- `ServerPropertiesPatch.borrow` against a read-only `server.properties` (a generated pack ships it
+  `rw-r--r--`, but a user may chmod it, and the pack may sit on a read-only mount).
+- `ServerPropertiesPatch.rconEnabled()` with no properties file at all.
+- `ServerPackCatalog` against a pack directory it cannot read.
+
+### A7 — `@Synchronized` is claimed and never exercised concurrently
+
+`PortAllocator.allocate/release` and every `SessionRegistry` method are `@Synchronized` because they are
+reached from the EDT and from reader threads. Every guard is single-threaded. A guard that hammered
+`allocate()` from N threads and asserted N distinct ports would make the annotation load-bearing.
+
+### A8 — `ServerPropertiesPatch` misses two realistic file shapes
+
+- A file carrying `server-port` **twice** (legal in `.properties`; Minecraft takes the last). The
+  implementation replaces every occurrence, which is right, and nothing pins it.
+- `borrow` called twice on the **same instance** without an intervening `restore`. The crash-recovery
+  guard uses two instances, which is the cross-process case; the same-instance case is the one a
+  double-click on Start would produce.
+
+## LOW
+
+### A9 — a late `Stopping` can overwrite a terminal `Exited`
+
+`ServerSession.stop()`/`kill()` check liveness and then transition. If the process exits in between,
+`Exited` is overwritten and the row reads "Stopping…" for good. Cosmetic — `startable` keys on the
+registry, not the state.
+
+### A10 — `ConsolePane` aliases a constructor parameter for no reason
+
+`private val packVariables = variables` where the parameter could simply be `private val variables`.
+Introduced when `ConsoleHints` was wired in.
+
+### A11 — console wrapping changed behaviour with no guard
+
+`lineWrap` and `wrapStyleWord` are two trivially assertable properties and the defect they fixed was
+real (notes cut off mid-sentence).
+
+## Verified clean — do not re-litigate
+
+- **No unused imports** anywhere in the module — checked mechanically across every `.kt` file in
+  `src/main` and `src/test`, not by eye.
+- **No secrets, no credentials, no network calls.** The plugin talks to the local filesystem and spawns
+  one child process.
+- **Arbitrary-script execution is properly gated.** The plugin will only run `start.sh` from a directory
+  containing ServerPackCreator's own `manifest.json`, which is what stops it offering to execute any
+  `start.sh` a user happens to keep in the server-packs directory. Pinned by
+  `ServerPackCatalogTest.skipsADirectoryWithoutAManifest`.
+- **Process teardown kills descendants**, in both `-clientside` and the plugin, each pinned against a
+  real spawned grandchild rather than a mock.
+- **`core` is tested against real processes, real sockets and real files**, not mocks — the one place a
+  mock would have agreed with the implementation and taught nothing.
+- **The settings guard's vacuity was already found and fixed** by mutation during development; do not
+  re-report it. The lesson (a shipped default equal to the code's fallback makes a value assertion
+  blind) is recorded in the module's `CLAUDE.md`.
