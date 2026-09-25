@@ -32,6 +32,7 @@ import de.griefed.serverpackcreator.plugin.servertest.core.PortAllocator
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerLauncher
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerPackCatalog
 import de.griefed.serverpackcreator.plugin.servertest.core.ServerTestSettings
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionRegistry
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
 import de.griefed.serverpackcreator.plugin.servertest.core.Subscription
@@ -80,7 +81,17 @@ class ServerTestTab(
     /** The pack list plus one console per running server; the list is always the first tab. */
     private val panes = JTabbedPane()
 
+    /**
+     * The scripts the user may pick from: ServerPackCreator's own configured templates.
+     *
+     * Read once, from the same setting `ServerPackProvisioner` writes generated packs from, so the dropdown
+     * cannot offer a script no generation produces. Changing the setting takes effect the next time the tab
+     * is built, which is the same as every other setting a plugin reads at construction.
+     */
+    private val availableScripts = StartScripts.forTemplateKeys(apiProperties.startScriptTemplates.keys)
+
     private val packList = PackListPane(
+        availableScripts = availableScripts,
         onStart = ::launch,
         onRefresh = ::refreshPackList,
         onScriptChanged = ::refreshPackList
@@ -167,9 +178,14 @@ class ServerTestTab(
      * and start the session only once there is somewhere for its output to go.
      */
     private fun launch(pack: LaunchablePack) {
+        val script = packList.selectedScript
+        if (script == null) {
+            warn(StartScripts.NO_SCRIPTS_CONFIGURED)
+            return
+        }
         when (val outcome = launcher.launch(
             pack = pack,
-            kind = packList.selectedScript,
+            script = script,
             onLine = { line -> consoles[pack.directory]?.appendLine(line) },
             onState = { state -> onSessionState(pack, state) },
             onClosed = { SwingUtilities.invokeLater { refreshPackList() } }

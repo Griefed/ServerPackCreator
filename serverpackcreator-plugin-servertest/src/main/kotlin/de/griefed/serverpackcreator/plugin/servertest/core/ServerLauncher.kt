@@ -84,7 +84,7 @@ class ServerLauncher(
     /**
      * Take everything [pack] needs and build its session, or refuse and take nothing.
      *
-     * [kind] is the script the *user* picked, not one this class chose. A pack that does not carry it is
+     * [script] is the one the *user* picked, not one this class chose. A pack that does not carry it is
      * refused with a reason naming the file, which is a better answer than silently running a different one.
      *
      * [onClosed] runs after the plugin's own give-back, so a caller can drop its console without having to
@@ -92,12 +92,12 @@ class ServerLauncher(
      */
     fun launch(
         pack: LaunchablePack,
-        kind: StartScriptKind,
+        script: StartScript,
         onLine: (String) -> Unit,
         onState: (SessionState) -> Unit,
         onClosed: () -> Unit
     ): LaunchOutcome {
-        val selection = StartScriptSelector.selectFor(pack, kind)
+        val selection = StartScriptSelector.selectFor(pack, script)
         if (selection !is StartScriptSelection.Available) {
             return LaunchOutcome.Refused((selection as StartScriptSelection.Missing).reason)
         }

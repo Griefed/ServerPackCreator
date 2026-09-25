@@ -20,7 +20,8 @@
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptKind
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.FlowLayout
@@ -47,6 +48,7 @@ import javax.swing.ListSelectionModel
  * @author Griefed
  */
 class PackListPane(
+    availableScripts: List<StartScript>,
     private val onStart: (LaunchablePack) -> Unit,
     private val onRefresh: () -> Unit,
     private val onScriptChanged: () -> Unit = {}
@@ -55,14 +57,16 @@ class PackListPane(
     /**
      * Which of the four start scripts a launch uses.
      *
-     * Pre-selected for the host and then left to the user. The plugin choosing on their behalf is the one
-     * failure that has no workaround: a guess landing on a script their machine cannot run would leave them
-     * unable to start anything, with nowhere to say otherwise. Every entry stays selectable for that reason,
-     * including ones this host has no interpreter for — such a launch fails on the console with the
-     * interpreter's own error, which is a better answer than a disabled control.
+     * The entries are **ServerPackCreator's own configured start-script templates**, so the list can neither
+     * offer a script no generation produces nor omit one an operator added. Pre-selected for the host and
+     * then left to the user: the plugin choosing on their behalf is the one failure with no workaround, as
+     * a guess landing on a script their machine cannot run would leave them unable to start anything. Every
+     * entry stays selectable for that reason, including ones this host has no interpreter for — such a
+     * launch fails on the console with the interpreter's own error, which beats a disabled control.
      */
-    private val scriptChoice = JComboBox(StartScriptKind.entries.toTypedArray()).apply {
-        selectedItem = StartScriptKind.defaultFor()
+    private val scriptChoice = JComboBox(availableScripts.toTypedArray()).apply {
+        selectedItem = StartScripts.defaultFor(availableScripts)
+        isEnabled = availableScripts.isNotEmpty()
         toolTipText = "Which start script to run. Defaults to the one for this operating system."
         // The labels are this plugin's own literals, so markup is not a concern here as it is for pack
         // names — but the renderer is shared with nothing, and showing `label` rather than the enum's
@@ -75,14 +79,14 @@ class PackListPane(
                 isSelected: Boolean,
                 cellHasFocus: Boolean
             ): Component = super.getListCellRendererComponent(
-                list, (value as? StartScriptKind)?.label ?: value, index, isSelected, cellHasFocus
+                list, (value as? StartScript)?.label ?: value, index, isSelected, cellHasFocus
             )
         }
     }
 
-    /** The script the user has chosen for a launch. */
-    val selectedScript: StartScriptKind
-        get() = scriptChoice.selectedItem as? StartScriptKind ?: StartScriptKind.defaultFor()
+    /** The script the user has chosen, or `null` when ServerPackCreator has no templates configured. */
+    val selectedScript: StartScript?
+        get() = scriptChoice.selectedItem as? StartScript
 
     /** The rows. Owned here, replaced wholesale on every refresh. */
     val model = PackTableModel()

@@ -68,7 +68,7 @@ internal class ServerPackCatalogTest {
         Assertions.assertEquals("1.21", pack.minecraftVersion)
         Assertions.assertEquals("NeoForge", pack.modloader)
         Assertions.assertEquals("21.0.18", pack.modloaderVersion)
-        Assertions.assertEquals(setOf(StartScriptKind.SH), pack.scriptsPresent)
+        Assertions.assertEquals(setOf("sh"), pack.scriptKeysPresent)
     }
 
     /**
@@ -100,7 +100,7 @@ internal class ServerPackCatalogTest {
         generatedPack(serverPacks, "Scriptless", withStartScript = false)
 
         val pack = catalog.packsIn(serverPacks).single()
-        Assertions.assertTrue(pack.scriptsPresent.isEmpty(), "The pack carries no scripts, and is still listed.")
+        Assertions.assertTrue(pack.scriptKeysPresent.isEmpty(), "The pack carries no scripts, and is still listed.")
     }
 
     /**
@@ -131,7 +131,7 @@ internal class ServerPackCatalogTest {
 
         val pack = catalog.packsIn(serverPacks).single()
         Assertions.assertEquals("", pack.minecraftVersion, "An unreadable manifest yields no version, not a crash.")
-        Assertions.assertEquals(setOf(StartScriptKind.SH), pack.scriptsPresent)
+        Assertions.assertEquals(setOf("sh"), pack.scriptKeysPresent)
     }
 
     /** Sorted case-insensitively, so a refresh never reshuffles the rows under the user's cursor. */

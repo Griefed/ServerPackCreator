@@ -21,7 +21,8 @@ package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptKind
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
 import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelection
 import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelector
 import javax.swing.table.AbstractTableModel
@@ -39,12 +40,14 @@ data class PackRow(
     val state: SessionState?,
     /** Whether a server is running out of it *right now*, which [state] alone cannot say. */
     val running: Boolean,
-    /** The start script the user has chosen, which decides whether this row can be launched at all. */
-    val kind: StartScriptKind
+    /** The start script the user has chosen, or `null` when none is configured at all. */
+    val script: StartScript?
 ) {
 
     /** Whether this pack carries the chosen script, and what to run — recomputed as the choice changes. */
-    private val selection: StartScriptSelection get() = StartScriptSelector.selectFor(pack, kind)
+    private val selection: StartScriptSelection
+        get() = script?.let { StartScriptSelector.selectFor(pack, it) }
+            ?: StartScriptSelection.Missing(StartScripts.NO_SCRIPTS_CONFIGURED)
 
     /**
      * Whether Start should be offered: the pack has a script and nothing is running out of it.

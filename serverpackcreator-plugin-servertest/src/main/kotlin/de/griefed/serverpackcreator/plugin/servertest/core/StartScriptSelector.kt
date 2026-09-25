@@ -45,17 +45,18 @@ enum class Platform {
 }
 
 /**
- * One of the four start scripts ServerPackCreator writes into every server pack, and how to run it.
+ * One start script a generated pack may carry, and how to run it.
  *
- * Every pack ships all four, so which to use is a question about the *host* — and one the user answers,
- * not the plugin. Offering all four is the point: a guess that lands on a script the user's machine cannot
- * run leaves them unable to start anything, with no way to say otherwise.
+ * Built from a **template key** rather than enumerated, because the keys are ServerPackCreator's own:
+ * `ApiProperties.startScriptTemplates` maps one key per script type to its template, and
+ * `ServerPackProvisioner` writes each out as `start.<key>`. Reading the same setting is what keeps this
+ * dropdown from offering a script no generation produces, or omitting one an operator added.
  *
  * @author Griefed
  */
-enum class StartScriptKind(
-    /** The file inside the server pack, exactly as ServerPackCreator names it. */
-    val fileName: String,
+data class StartScript(
+    /** The template key, which is also the generated script's extension — `sh`, `bat`, `ps1`, `fish`, … */
+    val key: String,
 
     /** What the dropdown shows: the file, plus who it is for. */
     val label: String,
@@ -63,42 +64,74 @@ enum class StartScriptKind(
     /** The argv to spawn. The script is named relatively, so the working directory decides which pack. */
     val command: List<String>
 ) {
-    /** The bash script, and the default everywhere that is not Windows. */
-    SH("start.sh", "start.sh — Linux / macOS (bash)", listOf("bash", "start.sh")),
-
-    /**
-     * The Windows batch shim, and the default there. Its entire job is to run `start.ps1` without the user
-     * having to change their execution policy, which is why the pack's own `HOW-TO-RUN.md` prefers it.
-     */
-    BAT("start.bat", "start.bat — Windows (recommended)", listOf("cmd", "/c", "start.bat")),
-
-    /**
-     * PowerShell directly, for a Windows user who would rather skip the shim — or whose pack was generated
-     * without one. `-NoProfile` because a profile that writes to the console would land in the server log,
-     * and `-ExecutionPolicy Bypass` because that is the restriction the shim exists to work around.
-     */
-    PS1(
-        "start.ps1",
-        "start.ps1 — Windows (PowerShell directly)",
-        listOf("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "start.ps1")
-    ),
-
-    /** The fish script, for users of that shell. Never a default: fish is a deliberate install, bash is not. */
-    FISH("start.fish", "start.fish — fish shell", listOf("fish", "start.fish"));
+    /** The file inside a server pack, which `ServerPackProvisioner` names `start.<key>`. */
+    val fileName: String get() = "$FILE_PREFIX$key"
 
     companion object {
-        /**
-         * The script pre-selected for [platform]: the batch shim on Windows, bash everywhere else.
-         *
-         * A *default*, not a decision — the user may pick any of the four, including one this host has no
-         * interpreter for. That launch fails on the console with the interpreter's own error, which is a
-         * better outcome than a plugin that quietly refuses to offer the script somebody needs.
-         */
-        fun defaultFor(platform: Platform = Platform.of()): StartScriptKind = when (platform) {
-            Platform.WINDOWS -> BAT
-            Platform.POSIX -> SH
-        }
+        /** The prefix `ServerPackProvisioner.startScriptName` gives every generated start script. */
+        const val FILE_PREFIX = "start."
     }
+}
+
+/**
+ * Turns ServerPackCreator's configured start-script templates into the choices the user is offered.
+ *
+ * @author Griefed
+ */
+object StartScripts {
+
+    /**
+     * How to run each script type ServerPackCreator ships a template for, and what to call it.
+     *
+     * Keyed on the same strings `ScriptTemplatesConfig.defaultStartScriptTemplates` uses. A key that is not
+     * here is still offered — see [forKey] — because an operator may add a template for a shell this map
+     * has never heard of, and refusing to list it would be the plugin overruling their configuration.
+     */
+    /**
+     * Shown when ServerPackCreator has no start-script templates configured at all.
+     *
+     * Reachable rather than defensive: the templates are a user-editable setting, and emptying it means
+     * generations produce no start scripts, so there is genuinely nothing this plugin could run.
+     */
+    const val NO_SCRIPTS_CONFIGURED =
+        "No start-script templates are configured in ServerPackCreator's settings, so no server pack has " +
+                "a script to run."
+
+    private val known: Map<String, Pair<String, List<String>>> = mapOf(
+        "sh" to ("Linux / macOS (bash)" to listOf("bash")),
+        "bat" to ("Windows (recommended)" to listOf("cmd", "/c")),
+        "ps1" to ("Windows (PowerShell directly)" to listOf(
+            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File"
+        )),
+        "fish" to ("fish shell" to listOf("fish"))
+    )
+
+    /**
+     * The choice for template key [key].
+     *
+     * An unknown key is executed **directly** rather than guessed at: ServerPackCreator marks every
+     * generated start script executable, so a custom template carrying a shebang runs on its own. Guessing
+     * an interpreter for a key nobody documented would be the same mistake the platform fallback made.
+     */
+    fun forKey(key: String): StartScript = StartScript(key, key, emptyList())
+
+    /**
+     * The choices for [templateKeys], in a stable order so the dropdown does not reshuffle between reads.
+     *
+     * The keys come straight from `ApiProperties.startScriptTemplates`, which is a `HashMap` and therefore
+     * has no order of its own — the known types first, in the order a user is likely to want them, and
+     * anything an operator added after, alphabetically.
+     */
+    fun forTemplateKeys(templateKeys: Collection<String>): List<StartScript> = emptyList()
+
+    /**
+     * Which of [available] to pre-select on [platform]: the batch shim on Windows, bash elsewhere.
+     *
+     * Falls back to whatever is offered when the preferred key is not configured, and to `null` when
+     * nothing is — an operator *can* configure no start scripts at all, and a dropdown with no entries is
+     * a better answer than one lying about a script that will never exist.
+     */
+    fun defaultFor(available: List<StartScript>, platform: Platform = Platform.of()): StartScript? = null
 }
 
 /**
@@ -127,35 +160,24 @@ sealed interface StartScriptSelection {
 /**
  * Answers whether a given pack can be launched with a given script.
  *
- * Pure: the scripts a pack carries are read once, when the pack is discovered, so changing the dropdown
+ * Pure: which scripts a pack carries is read once, when the pack is discovered, so changing the dropdown
  * re-decides every row without touching the disk again.
  *
  * @author Griefed
  */
 object StartScriptSelector {
 
-    /**
-     * Whether [pack] can be launched with [kind], and with what.
-     *
-     * Keyed on what the catalog found when it read the directory rather than on a fresh check, so every row
-     * in the list answers from the same reading.
-     */
-    fun selectFor(pack: LaunchablePack, kind: StartScriptKind): StartScriptSelection =
-        if (kind in pack.scriptsPresent) {
-            StartScriptSelection.Available(File(pack.directory, kind.fileName), kind.command)
-        } else {
-            StartScriptSelection.Missing(
-                "This server pack has no ${kind.fileName}. Pick another start script, or regenerate the " +
-                        "pack with that template enabled."
-            )
-        }
+    /** Whether [pack] carries [script], and what to run. */
+    fun selectFor(pack: LaunchablePack, script: StartScript): StartScriptSelection =
+        StartScriptSelection.Missing("Script selection is not implemented yet.")
 
     /**
-     * Which of the four scripts [packDirectory] actually carries.
+     * The template keys [packDirectory] actually carries a `start.<key>` for.
      *
-     * `isFile` rather than `exists`, so a directory that happens to be named `start.sh` is reported absent
-     * instead of failing at spawn time with a shell error.
+     * Every `start.*` regular file, deliberately — not only the configured ones. What a pack *has* is a
+     * fact about the directory, and keeping it independent of the settings means an older pack generated
+     * under a different template set still reports itself honestly. `isFile`, so a directory named
+     * `start.sh` is reported absent instead of failing at spawn time with a shell error.
      */
-    fun scriptsIn(packDirectory: File): Set<StartScriptKind> =
-        StartScriptKind.entries.filterTo(mutableSetOf()) { File(packDirectory, it.fileName).isFile }
+    fun scriptKeysIn(packDirectory: File): Set<String> = emptySet()
 }

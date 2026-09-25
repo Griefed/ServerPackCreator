@@ -21,7 +21,8 @@ package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptKind
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -37,7 +38,7 @@ internal class PackTableModelTest {
 
     private fun pack(
         name: String = "NeoForge-1.21",
-        scripts: Set<StartScriptKind> = setOf(StartScriptKind.SH)
+        scripts: Set<String> = setOf("sh")
     ) = LaunchablePack(File("/packs/$name"), name, "1.21", "NeoForge", "21.0.18", scripts)
 
     /** A row for [pack] under the script the user has chosen; SH unless a test says otherwise. */
@@ -45,8 +46,8 @@ internal class PackTableModelTest {
         pack: LaunchablePack,
         state: SessionState? = null,
         running: Boolean = false,
-        kind: StartScriptKind = StartScriptKind.SH
-    ) = PackRow(pack, state, running, kind)
+        script: StartScript? = StartScripts.forKey("sh")
+    ) = PackRow(pack, state, running, script)
 
     /** The columns carry the manifest's facts, in the documented order. */
     @Test
@@ -67,7 +68,7 @@ internal class PackTableModelTest {
      */
     @Test
     fun aBlockedPackShowsItsReasonAndCannotBeStarted() {
-        val reason = StartScriptKind.SH.fileName
+        val reason = "start.sh"
         val model = PackTableModel().apply {
             rows = listOf(row(pack(scripts = emptySet())))
         }
@@ -128,6 +129,23 @@ internal class PackTableModelTest {
 
         Assertions.assertEquals("Starting…", model.getValueAt(0, PackTableModel.STATUS_COLUMN))
         Assertions.assertEquals("Stopping…", model.getValueAt(1, PackTableModel.STATUS_COLUMN))
+    }
+
+    /**
+     * With no start-script templates configured there is nothing to run, and the row says so.
+     *
+     * Reachable: the templates are a user-editable setting and can be emptied, which makes generations
+     * produce no start scripts at all.
+     */
+    @Test
+    fun aRowWithNoConfiguredScriptSaysSoAndCannotBeStarted() {
+        val model = PackTableModel().apply { rows = listOf(row(pack(), script = null)) }
+
+        Assertions.assertEquals(
+            StartScripts.NO_SCRIPTS_CONFIGURED,
+            model.getValueAt(0, PackTableModel.STATUS_COLUMN)
+        )
+        Assertions.assertFalse(model.startableAt(0))
     }
 
     /** The pane acts on the pack behind a row, so the mapping must survive a rows assignment. */

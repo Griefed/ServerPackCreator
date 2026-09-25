@@ -43,13 +43,13 @@ data class LaunchablePack(
     /** Modloader version from the manifest, or blank when the manifest could not be read. */
     val modloaderVersion: String,
     /**
-     * Which of the four start scripts this pack actually carries, read once when it was discovered.
+     * The template keys this pack carries a `start.<key>` for, read once when it was discovered.
      *
-     * A set rather than a single chosen script, because the choice belongs to the user and changing it must
-     * not send every row back to the disk. `StartScriptSelector.selectFor` turns this plus a choice into an
+     * Keys rather than one resolved choice, because the choice belongs to the user and changing it must not
+     * send every row back to the disk. `StartScriptSelector.selectFor` turns this plus a choice into an
      * answer.
      */
-    val scriptsPresent: Set<StartScriptKind>
+    val scriptKeysPresent: Set<String>
 )
 
 /**
@@ -102,7 +102,7 @@ class ServerPackCatalog(objectMapper: ObjectMapper) {
             minecraftVersion = manifest?.minecraftVersion.orEmpty(),
             modloader = manifest?.modloader.orEmpty(),
             modloaderVersion = manifest?.modloaderVersion.orEmpty(),
-            scriptsPresent = StartScriptSelector.scriptsIn(directory)
+            scriptKeysPresent = StartScriptSelector.scriptKeysIn(directory)
         )
     }
 
