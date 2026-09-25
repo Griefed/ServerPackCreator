@@ -138,6 +138,12 @@ plugin's build file already records as a reason.
   documents its callbacks arrive.
 - **Closing a *running* server's console tab is refused.** That tab is the only place the server can be
   stopped from, so removing it would strand the process.
+- **`PackListPane.show` restores the selection by *pack*, and that is load-bearing twice over.** Replacing
+  the rows fires a table-wide change and Swing drops the selection, which made choosing a start script
+  clear the selected pack and grey out Start — reported from use. The same redraw runs on Refresh and on
+  every finished generation, so the auto-refresh had the identical defect. **Restoring a row *index*
+  instead would be worse than losing the selection:** a refresh can reorder the list, so the selection
+  would silently land on a different pack and Start would launch something nobody chose.
 - **The console wraps, unlike SPC's own log panes.** Found by rendering the pane and looking: the notes
   it writes are prose and were being cut off mid-sentence behind a horizontal scrollbar. A crash report
   is what a user comes here to read, and hunting for a scrollbar to finish a stack-trace line is worse
@@ -215,7 +221,7 @@ user to a five-second countdown rather than ending the session, and Force stop i
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-servertest:test` — 106 tests, of which 105 run by default; the
+`./gradlew :serverpackcreator-plugin-servertest:test` — 110 tests, of which 109 run by default; the
 skip is `RealPackBootTest`, which boots a real server and is switched on deliberately (below).
 
 - **`core` is tested against real processes, not mocks.** What is under test is process behaviour — does

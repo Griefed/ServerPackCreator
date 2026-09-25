@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
+import java.io.File
 import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
 import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
 import java.awt.BorderLayout
@@ -150,9 +151,46 @@ class PackListPane(
     /** Whether the selected row can be launched right now. */
     private fun selectedStartable(): Boolean = selectedModelRow()?.let { model.startableAt(it) } ?: false
 
-    /** Replace the rows, keeping the Start button's state consistent with the new selection. */
+    /**
+     * Replace the rows, keeping whatever the user had selected selected.
+     *
+     * Replacing the rows fires a table-wide change and Swing answers by dropping the selection, which is
+     * why this is restored by hand. It is not only about the dropdown: the same redraw runs on Refresh and
+     * on every finished generation, so without this an auto-refresh could clear the selection out from
+     * under somebody reaching for Start.
+     *
+     * Restored by **pack**, never by row index. A refresh can reorder the list — a generation adds a pack
+     * that sorts before the selected one — and restoring an index would quietly move the selection onto a
+     * different pack, which is worse than losing it: Start would then launch something the user did not
+     * choose.
+     */
     fun show(rows: List<PackRow>) {
+        val previouslySelected = selectedPack()?.directory
+
         model.rows = rows
+        reselect(previouslySelected)
+
         startButton.isEnabled = selectedStartable()
+    }
+
+    /**
+     * Select the row for [directory] again, if it is still on show.
+     *
+     * A pack that has gone leaves nothing selected rather than handing its selection to whatever took its
+     * place. The view index is asked for separately because the table sorts for itself, so the model's row
+     * order is not what the user is looking at.
+     */
+    private fun reselect(directory: File?) {
+        if (directory == null) {
+            return
+        }
+        val modelRow = model.rows.indexOfFirst { it.pack.directory == directory }
+        if (modelRow < 0) {
+            return
+        }
+        val viewRow = table.convertRowIndexToView(modelRow)
+        if (viewRow >= 0) {
+            table.setRowSelectionInterval(viewRow, viewRow)
+        }
     }
 }
