@@ -66,5 +66,13 @@
         <Logger name="PluginsLogger" level="ALL" additivity="false">
             <AppenderRef ref="PluginsLogger" level="${log-level-spc}" />
         </Logger>
+
+        <!-- The name plugins actually log through. `ExtensionTab` and `ExtensionConfigPanel` hand every plugin
+        `LogManager.getLogger("AddonsLogger")`, so without this entry plugin output inherits Root and lands in
+        serverpackcreator.log. Routed to the same appender as `PluginsLogger` rather than renamed, because the
+        name is baked into the published API and into every third-party plugin compiled against it. -->
+        <Logger name="AddonsLogger" level="ALL" additivity="false">
+            <AppenderRef ref="PluginsLogger" level="${log-level-spc}" />
+        </Logger>
     </Loggers>
 </Configuration>
