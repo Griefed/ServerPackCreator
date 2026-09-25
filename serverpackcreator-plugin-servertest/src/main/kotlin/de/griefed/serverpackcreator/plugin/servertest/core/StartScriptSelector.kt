@@ -84,6 +84,33 @@ object StartScriptSelector {
      * Checks the file is a regular file rather than merely present, so a directory that happens to be named
      * `start.sh` is reported as missing instead of failing at spawn time with a shell error.
      */
-    fun selectFor(packDirectory: File, platform: Platform = Platform.of()): StartScriptSelection =
-        StartScriptSelection.Missing("Start-script selection is not implemented yet.")
+    fun selectFor(packDirectory: File, platform: Platform = Platform.of()): StartScriptSelection {
+        for ((scriptName, argv) in candidatesFor(platform)) {
+            val script = File(packDirectory, scriptName)
+            if (script.isFile) {
+                return StartScriptSelection.Available(script, argv)
+            }
+        }
+        val wanted = candidatesFor(platform).joinToString(" or ") { (scriptName, _) -> scriptName }
+        return StartScriptSelection.Missing("No $wanted in this server pack, so it cannot be launched here.")
+    }
+
+    /**
+     * The scripts to try for [platform], best first, each with the argv that runs it.
+     *
+     * Windows gets a fallback and POSIX deliberately does not. A pack generated with `bat` dropped from the
+     * start-script templates still has `start.ps1`, and invoking PowerShell directly is exactly what the shim
+     * would have done — so the fallback costs nothing and rescues a real configuration. `start.fish` is *not*
+     * a POSIX fallback for the opposite reason: bash is on every Linux and macOS install while fish is a
+     * deliberate user choice, so reaching for it would swap a clear "no script" message for
+     * `fish: command not found` at launch — a failure that reads as the pack being broken rather than the
+     * shell being absent.
+     */
+    private fun candidatesFor(platform: Platform): List<Pair<String, List<String>>> = when (platform) {
+        Platform.WINDOWS -> listOf(
+            "start.bat" to listOf("cmd", "/c", "start.bat"),
+            "start.ps1" to listOf("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "start.ps1")
+        )
+        Platform.POSIX -> listOf("start.sh" to listOf("bash", "start.sh"))
+    }
 }
