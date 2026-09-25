@@ -20,11 +20,16 @@
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptKind
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.FlowLayout
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
+import javax.swing.DefaultListCellRenderer
 import javax.swing.JButton
+import javax.swing.JComboBox
+import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTable
@@ -43,8 +48,41 @@ import javax.swing.ListSelectionModel
  */
 class PackListPane(
     private val onStart: (LaunchablePack) -> Unit,
-    private val onRefresh: () -> Unit
+    private val onRefresh: () -> Unit,
+    private val onScriptChanged: () -> Unit = {}
 ) : JPanel(BorderLayout()) {
+
+    /**
+     * Which of the four start scripts a launch uses.
+     *
+     * Pre-selected for the host and then left to the user. The plugin choosing on their behalf is the one
+     * failure that has no workaround: a guess landing on a script their machine cannot run would leave them
+     * unable to start anything, with nowhere to say otherwise. Every entry stays selectable for that reason,
+     * including ones this host has no interpreter for — such a launch fails on the console with the
+     * interpreter's own error, which is a better answer than a disabled control.
+     */
+    private val scriptChoice = JComboBox(StartScriptKind.entries.toTypedArray()).apply {
+        selectedItem = StartScriptKind.defaultFor()
+        toolTipText = "Which start script to run. Defaults to the one for this operating system."
+        // The labels are this plugin's own literals, so markup is not a concern here as it is for pack
+        // names — but the renderer is shared with nothing, and showing `label` rather than the enum's
+        // name is why it exists.
+        renderer = object : DefaultListCellRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component = super.getListCellRendererComponent(
+                list, (value as? StartScriptKind)?.label ?: value, index, isSelected, cellHasFocus
+            )
+        }
+    }
+
+    /** The script the user has chosen for a launch. */
+    val selectedScript: StartScriptKind
+        get() = scriptChoice.selectedItem as? StartScriptKind ?: StartScriptKind.defaultFor()
 
     /** The rows. Owned here, replaced wholesale on every refresh. */
     val model = PackTableModel()
@@ -66,6 +104,9 @@ class PackListPane(
 
         table.selectionModel.addListSelectionListener { startButton.isEnabled = selectedStartable() }
         startButton.addActionListener { selectedPack()?.let(onStart) }
+        // Changing the script re-decides every row: a pack missing the chosen one becomes unlaunchable and
+        // says so, which is the whole reason the Status column carries the reason rather than a tooltip.
+        scriptChoice.addActionListener { onScriptChanged() }
     }
 
     /** The two things a user needs to know before pressing Start, stated once rather than per launch. */
@@ -85,10 +126,12 @@ class PackListPane(
         )
     }
 
-    /** Refresh and Start, with Start disabled until a launchable row is picked. */
+    /** Refresh, Start, and the script the launch uses — in the order a user reads them. */
     private fun controls(): JPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
         add(JButton("Refresh").apply { addActionListener { onRefresh() } })
         add(startButton)
+        add(PlainTextRendering.label("  using  "))
+        add(scriptChoice)
     }
 
     /** The model row behind the current selection, accounting for the table's own sorting. */

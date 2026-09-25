@@ -39,7 +39,7 @@ import java.io.File
  */
 internal class ServerPackCatalogTest {
 
-    private val catalog = ServerPackCatalog(ObjectMapper(), Platform.POSIX)
+    private val catalog = ServerPackCatalog(ObjectMapper())
 
     /** A generated pack: a manifest naming its versions, and the start scripts SPC writes beside it. */
     private fun generatedPack(
@@ -68,7 +68,7 @@ internal class ServerPackCatalogTest {
         Assertions.assertEquals("1.21", pack.minecraftVersion)
         Assertions.assertEquals("NeoForge", pack.modloader)
         Assertions.assertEquals("21.0.18", pack.modloaderVersion)
-        Assertions.assertInstanceOf(StartScriptSelection.Available::class.java, pack.selection)
+        Assertions.assertEquals(setOf(StartScriptKind.SH), pack.scriptsPresent)
     }
 
     /**
@@ -100,8 +100,7 @@ internal class ServerPackCatalogTest {
         generatedPack(serverPacks, "Scriptless", withStartScript = false)
 
         val pack = catalog.packsIn(serverPacks).single()
-        val missing = Assertions.assertInstanceOf(StartScriptSelection.Missing::class.java, pack.selection)
-        Assertions.assertTrue(missing.reason.isNotBlank(), "A blocked pack must carry a reason to show.")
+        Assertions.assertTrue(pack.scriptsPresent.isEmpty(), "The pack carries no scripts, and is still listed.")
     }
 
     /**
@@ -132,7 +131,7 @@ internal class ServerPackCatalogTest {
 
         val pack = catalog.packsIn(serverPacks).single()
         Assertions.assertEquals("", pack.minecraftVersion, "An unreadable manifest yields no version, not a crash.")
-        Assertions.assertInstanceOf(StartScriptSelection.Available::class.java, pack.selection)
+        Assertions.assertEquals(setOf(StartScriptKind.SH), pack.scriptsPresent)
     }
 
     /** Sorted case-insensitively, so a refresh never reshuffles the rows under the user's cursor. */

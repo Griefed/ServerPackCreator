@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelection
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptKind
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.awt.Container
@@ -55,7 +55,7 @@ internal class HtmlProofingTest {
         minecraftVersion = HOSTILE,
         modloader = HOSTILE,
         modloaderVersion = HOSTILE,
-        selection = StartScriptSelection.Available(File("start.sh"), listOf("bash", "start.sh"))
+        scriptsPresent = setOf(StartScriptKind.SH)
     )
 
     /** Whether Swing decided [component] is markup, which is the only thing that matters here. */
@@ -90,7 +90,7 @@ internal class HtmlProofingTest {
     /** What the table actually renders for a hostile pack name must be literal text. */
     @Test
     fun theTableRendersAHostilePackNameLiterally() {
-        val pane = PackListPane({}, {}).apply { show(listOf(PackRow(hostilePack, null, running = false))) }
+        val pane = PackListPane({}, {}).apply { show(listOf(PackRow(hostilePack, null, running = false, StartScriptKind.SH))) }
         val table = labelsOrTable(pane)
 
         for (column in PackTableModel.COLUMNS.indices) {

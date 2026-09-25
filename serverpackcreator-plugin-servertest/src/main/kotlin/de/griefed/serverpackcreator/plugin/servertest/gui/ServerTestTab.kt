@@ -80,7 +80,11 @@ class ServerTestTab(
     /** The pack list plus one console per running server; the list is always the first tab. */
     private val panes = JTabbedPane()
 
-    private val packList = PackListPane(onStart = ::launch, onRefresh = ::refreshPackList)
+    private val packList = PackListPane(
+        onStart = ::launch,
+        onRefresh = ::refreshPackList,
+        onScriptChanged = ::refreshPackList
+    )
 
     /**
      * Consoles by pack directory, so a line arriving from a session can find the pane it belongs to.
@@ -150,7 +154,8 @@ class ServerTestTab(
     /** Re-read the server-packs directory and redraw the list with each pack's current state. */
     private fun refreshPackList() {
         val packs = catalog.packsIn(apiProperties.serverPacksDirectory)
-        packList.show(packs.map { PackRow(it, lastStates[it.directory], registry.isRunning(it.directory)) })
+        val chosen = packList.selectedScript
+        packList.show(packs.map { PackRow(it, lastStates[it.directory], registry.isRunning(it.directory), chosen) })
     }
 
     /**
@@ -164,6 +169,7 @@ class ServerTestTab(
     private fun launch(pack: LaunchablePack) {
         when (val outcome = launcher.launch(
             pack = pack,
+            kind = packList.selectedScript,
             onLine = { line -> consoles[pack.directory]?.appendLine(line) },
             onState = { state -> onSessionState(pack, state) },
             onClosed = { SwingUtilities.invokeLater { refreshPackList() } }

@@ -83,10 +83,10 @@ internal class RealPackBootTest {
         File(pack, "mods").listFiles()?.forEach { it.delete() }
 
         val discovered = ServerPackCatalog(ObjectMapper()).packsIn(workspace).single()
-        Assertions.assertInstanceOf(
-            StartScriptSelection.Available::class.java,
-            discovered.selection,
-            "The pack must be launchable on this host."
+        val kind = StartScriptKind.defaultFor()
+        Assertions.assertTrue(
+            kind in discovered.scriptsPresent,
+            "The pack must carry this host's default script, but has ${discovered.scriptsPresent}."
         )
 
         // Through ServerLauncher rather than hand-wired, so this exercises the sequence the Start button
@@ -100,6 +100,7 @@ internal class RealPackBootTest {
 
         val outcome = ServerLauncher(allocator, SessionRegistry()).launch(
             pack = discovered,
+            kind = kind,
             onLine = { line -> lines.add(line); println("[pack] $line") },
             onState = { states.add(it) },
             onClosed = { closed[0] = closed[0] + 1 }

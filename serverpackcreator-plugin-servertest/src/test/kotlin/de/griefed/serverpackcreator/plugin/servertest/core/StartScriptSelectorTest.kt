@@ -25,102 +25,131 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Pins which script a pack is launched with, and with what argv.
+ * Pins which script a launch uses, now that the **user** picks it.
  *
- * The answers come from the pack's own `HOW-TO-RUN.md` rather than from taste: `bash start.sh` on Linux and
- * macOS, `start.bat` on Windows — the shipped shim whose entire job is to run `start.ps1` without the user
- * changing their ExecutionPolicy. Getting this wrong is not a crash but a hang or a cryptic shell error, so
- * it is worth pinning rather than eyeballing.
- *
- * Every case is exercised for **both** platforms regardless of the host, because a selector that silently
- * agrees with whatever machine ran the suite is the one defect this cannot afford.
+ * The plugin used to choose, falling back across candidates per platform, and the failure mode had no
+ * workaround: a guess landing on a script the host could not run left somebody unable to start a pack with
+ * nowhere to say otherwise. So all four are offerable, the platform only supplies the pre-selection, and a
+ * pack that does not carry the chosen script is refused by name rather than quietly launched with another.
  */
 internal class StartScriptSelectorTest {
 
-    /** A generated pack always carries every template's script, so the realistic fixture carries them all. */
+    /** A generated pack always carries all four scripts, so the realistic fixture carries them all. */
     private fun packWithAllScripts(directory: File): File = directory.apply {
-        for (script in listOf("start.sh", "start.bat", "start.ps1", "start.fish")) {
-            File(this, script).writeText("#placeholder\n")
+        for (kind in StartScriptKind.entries) {
+            File(this, kind.fileName).writeText("#placeholder\n")
         }
     }
 
-    /** Linux and macOS run the pack through bash, with the script named relatively so the cwd decides. */
-    @Test
-    fun posixRunsStartShThroughBash(@TempDir packDir: File) {
-        val selection = StartScriptSelector.selectFor(packWithAllScripts(packDir), Platform.POSIX)
-        Assertions.assertTrue(selection is StartScriptSelection.Available, "A pack with start.sh must be launchable.")
-        val available = selection as StartScriptSelection.Available
-        Assertions.assertEquals(listOf("bash", "start.sh"), available.command)
-        Assertions.assertEquals(File(packDir, "start.sh"), available.script)
-    }
+    private fun packAt(directory: File) = LaunchablePack(
+        directory = directory,
+        name = directory.name,
+        minecraftVersion = "1.21",
+        modloader = "NeoForge",
+        modloaderVersion = "21.0.18",
+        scriptsPresent = StartScriptSelector.scriptsIn(directory)
+    )
 
-    /**
-     * Windows runs the batch shim, not PowerShell directly. `start.bat` exists precisely so a user does not
-     * have to change their system's ExecutionPolicy, and the pack's own HOW-TO-RUN.md says to prefer it.
-     */
+    /** Every kind knows its file and how to run it, and the argv names the script relatively. */
     @Test
-    fun windowsRunsStartBatThroughCmd(@TempDir packDir: File) {
-        val selection = StartScriptSelector.selectFor(packWithAllScripts(packDir), Platform.WINDOWS)
-        val available = Assertions.assertInstanceOf(StartScriptSelection.Available::class.java, selection)
-        Assertions.assertEquals(listOf("cmd", "/c", "start.bat"), available.command)
-    }
-
-    /**
-     * A pack generated with `bat` removed from the start-script templates still has `start.ps1`, so Windows
-     * falls back to invoking PowerShell the way the shim would have. `-NoProfile` because a user profile that
-     * writes to the console would land in the server log, `-ExecutionPolicy Bypass` because that is the whole
-     * reason the shim exists.
-     */
-    @Test
-    fun windowsFallsBackToPowerShellWhenTheShimIsAbsent(@TempDir packDir: File) {
-        packWithAllScripts(packDir)
-        File(packDir, "start.bat").delete()
-        val selection = StartScriptSelector.selectFor(packDir, Platform.WINDOWS)
-        val available = Assertions.assertInstanceOf(StartScriptSelection.Available::class.java, selection)
+    fun eachKindCarriesItsFileAndArgv() {
+        Assertions.assertEquals(listOf("bash", "start.sh"), StartScriptKind.SH.command)
+        Assertions.assertEquals(listOf("cmd", "/c", "start.bat"), StartScriptKind.BAT.command)
         Assertions.assertEquals(
             listOf("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "start.ps1"),
-            available.command
+            StartScriptKind.PS1.command
         )
-    }
+        Assertions.assertEquals(listOf("fish", "start.fish"), StartScriptKind.FISH.command)
 
-    /**
-     * POSIX does **not** fall back to `start.fish`. bash is on every Linux and macOS install; fish is a
-     * deliberate user choice, so invoking it would swap a clear "no script" message for `fish: command not
-     * found` at launch time — a failure that reads as the pack being broken rather than the shell missing.
-     */
-    @Test
-    fun posixDoesNotFallBackToFish(@TempDir packDir: File) {
-        packWithAllScripts(packDir)
-        File(packDir, "start.sh").delete()
-        val selection = StartScriptSelector.selectFor(packDir, Platform.POSIX)
-        val missing = Assertions.assertInstanceOf(StartScriptSelection.Missing::class.java, selection)
-        Assertions.assertTrue(
-            missing.reason.contains("start.sh"),
-            "The reason must name the file that is missing, but was: ${missing.reason}"
-        )
-    }
-
-    /** An empty directory is not launchable on either platform, and says which script it wanted. */
-    @Test
-    fun aPackWithNoScriptsIsNotLaunchable(@TempDir packDir: File) {
-        for (platform in Platform.entries) {
-            val missing = Assertions.assertInstanceOf(
-                StartScriptSelection.Missing::class.java,
-                StartScriptSelector.selectFor(packDir, platform),
-                "A pack with no start scripts must not be launchable on $platform."
+        for (kind in StartScriptKind.entries) {
+            Assertions.assertTrue(
+                kind.command.contains(kind.fileName),
+                "${kind.name}'s argv must name ${kind.fileName} relatively, so the working directory picks the pack."
             )
-            Assertions.assertTrue(missing.reason.isNotBlank(), "A blocked pack must say why.")
+            Assertions.assertTrue(kind.label.contains(kind.fileName), "${kind.name}'s label must name its file.")
         }
     }
 
-    /** A directory entry with the right name but the wrong kind is not a script. */
+    /** The pre-selection follows the host: the batch shim on Windows, bash everywhere else. */
     @Test
-    fun aDirectoryNamedLikeAScriptIsNotAScript(@TempDir packDir: File) {
-        File(packDir, "start.sh").mkdirs()
-        Assertions.assertInstanceOf(
+    fun theDefaultFollowsThePlatform() {
+        Assertions.assertEquals(StartScriptKind.BAT, StartScriptKind.defaultFor(Platform.WINDOWS))
+        Assertions.assertEquals(StartScriptKind.SH, StartScriptKind.defaultFor(Platform.POSIX))
+    }
+
+    /** All four are offerable, so a user is never stuck with a script their machine cannot run. */
+    @Test
+    fun everyScriptKindCanBeChosen(@TempDir packDir: File) {
+        packWithAllScripts(packDir)
+        val pack = packAt(packDir)
+
+        for (kind in StartScriptKind.entries) {
+            val selection = StartScriptSelector.selectFor(pack, kind)
+            val available = Assertions.assertInstanceOf(
+                StartScriptSelection.Available::class.java,
+                selection,
+                "${kind.name} must be launchable when the pack carries ${kind.fileName}."
+            )
+            Assertions.assertEquals(kind.command, available.command)
+            Assertions.assertEquals(File(packDir, kind.fileName), available.script)
+        }
+    }
+
+    /**
+     * A pack missing the chosen script is refused by name — **never** silently launched with another.
+     *
+     * That substitution is precisely what the old platform-fallback did, and it is why this is pinned: the
+     * user asked for one script, and running a different one hides what actually happened.
+     */
+    @Test
+    fun aMissingScriptIsRefusedByNameRatherThanSubstituted(@TempDir packDir: File) {
+        packWithAllScripts(packDir)
+        File(packDir, StartScriptKind.BAT.fileName).delete()
+        val pack = packAt(packDir)
+
+        val missing = Assertions.assertInstanceOf(
             StartScriptSelection.Missing::class.java,
-            StartScriptSelector.selectFor(packDir, Platform.POSIX)
+            StartScriptSelector.selectFor(pack, StartScriptKind.BAT)
         )
+        Assertions.assertTrue(
+            missing.reason.contains(StartScriptKind.BAT.fileName),
+            "The reason must name the file the user asked for, but was: ${missing.reason}"
+        )
+        Assertions.assertInstanceOf(
+            StartScriptSelection.Available::class.java,
+            StartScriptSelector.selectFor(pack, StartScriptKind.SH),
+            "The other scripts must be unaffected by one being absent."
+        )
+    }
+
+    /** What a pack carries is read once, from disk, and a directory named like a script is not one. */
+    @Test
+    fun readsWhichScriptsAPackCarries(@TempDir packDir: File) {
+        packWithAllScripts(packDir)
+        File(packDir, StartScriptKind.FISH.fileName).delete()
+        File(packDir, StartScriptKind.PS1.fileName).delete()
+        File(packDir, StartScriptKind.PS1.fileName).mkdirs()
+
+        Assertions.assertEquals(
+            setOf(StartScriptKind.SH, StartScriptKind.BAT),
+            StartScriptSelector.scriptsIn(packDir),
+            "A directory named start.ps1 is not a script, and start.fish is gone."
+        )
+    }
+
+    /** An empty directory carries nothing, and every kind is refused rather than throwing. */
+    @Test
+    fun aPackWithNoScriptsCarriesNoneAndRefusesAll(@TempDir packDir: File) {
+        Assertions.assertTrue(StartScriptSelector.scriptsIn(packDir).isEmpty())
+
+        val pack = packAt(packDir)
+        for (kind in StartScriptKind.entries) {
+            Assertions.assertInstanceOf(
+                StartScriptSelection.Missing::class.java,
+                StartScriptSelector.selectFor(pack, kind),
+                "${kind.name} must be refused when the pack carries nothing."
+            )
+        }
     }
 
     /** The host's own family is read from `os.name`, the only thing that distinguishes the two branches. */

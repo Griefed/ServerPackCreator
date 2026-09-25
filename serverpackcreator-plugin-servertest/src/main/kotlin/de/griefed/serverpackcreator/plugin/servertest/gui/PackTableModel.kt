@@ -21,7 +21,9 @@ package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptKind
 import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelection
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelector
 import javax.swing.table.AbstractTableModel
 
 /**
@@ -36,8 +38,13 @@ data class PackRow(
     /** The last state reported for this pack, including after it stopped; `null` if it never ran. */
     val state: SessionState?,
     /** Whether a server is running out of it *right now*, which [state] alone cannot say. */
-    val running: Boolean
+    val running: Boolean,
+    /** The start script the user has chosen, which decides whether this row can be launched at all. */
+    val kind: StartScriptKind
 ) {
+
+    /** Whether this pack carries the chosen script, and what to run — recomputed as the choice changes. */
+    private val selection: StartScriptSelection get() = StartScriptSelector.selectFor(pack, kind)
 
     /**
      * Whether Start should be offered: the pack has a script and nothing is running out of it.
@@ -46,7 +53,7 @@ data class PackRow(
      * be tested again — its last state stays on show as `Stopped (exit 0)` while the button comes back.
      */
     val startable: Boolean
-        get() = !running && pack.selection is StartScriptSelection.Available
+        get() = !running && selection is StartScriptSelection.Available
 
     /** What the Status column reads, in one short phrase. */
     val status: String
@@ -57,9 +64,9 @@ data class PackRow(
             is SessionState.Exited -> "Stopped (exit ${state.exitCode ?: "unknown"})"
             // A blocked pack's reason belongs here rather than in a tooltip: it is the answer to the only
             // question the row raises, which is why its Start button is grey.
-            null -> when (val selection = pack.selection) {
+            null -> when (val chosen = selection) {
                 is StartScriptSelection.Available -> "Ready to launch"
-                is StartScriptSelection.Missing -> selection.reason
+                is StartScriptSelection.Missing -> chosen.reason
             }
         }
 }

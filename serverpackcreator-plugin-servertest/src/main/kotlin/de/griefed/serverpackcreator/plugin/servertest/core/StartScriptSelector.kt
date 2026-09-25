@@ -22,22 +22,22 @@ package de.griefed.serverpackcreator.plugin.servertest.core
 import java.io.File
 
 /**
- * The two families of host this plugin launches on, which is as fine a distinction as the choice needs.
+ * The two families of host this plugin runs on, used only to pick a sensible **default** script.
  *
- * A pack ships a script per shell, but only the shell family decides the argv: everything that is not
- * Windows runs the same `bash start.sh`, because bash is present on every Linux and macOS installation.
+ * It decides nothing else. Which script actually runs is the user's choice, because the plugin guessing
+ * wrong is the one failure that leaves somebody unable to start a pack at all.
  */
 enum class Platform {
-    /** Windows, where the pack is launched through its batch shim rather than a shell. */
+    /** Windows, where a pack is launched through its batch shim by default. */
     WINDOWS,
 
-    /** Linux and macOS — anything that has bash, which is the launch vehicle for both. */
+    /** Linux and macOS — anything that is not Windows, where `bash start.sh` is the default. */
     POSIX;
 
     companion object {
         /**
          * The family [osName] belongs to. Defaults to the running host, and takes the name as an argument so
-         * the selector's rules can be exercised for both families on either one.
+         * both families can be exercised on either one.
          */
         fun of(osName: String = System.getProperty("os.name") ?: ""): Platform =
             if (osName.lowercase().contains("win")) WINDOWS else POSIX
@@ -45,22 +45,76 @@ enum class Platform {
 }
 
 /**
- * Whether a pack can be launched on a given platform, and with what.
+ * One of the four start scripts ServerPackCreator writes into every server pack, and how to run it.
+ *
+ * Every pack ships all four, so which to use is a question about the *host* — and one the user answers,
+ * not the plugin. Offering all four is the point: a guess that lands on a script the user's machine cannot
+ * run leaves them unable to start anything, with no way to say otherwise.
+ *
+ * @author Griefed
+ */
+enum class StartScriptKind(
+    /** The file inside the server pack, exactly as ServerPackCreator names it. */
+    val fileName: String,
+
+    /** What the dropdown shows: the file, plus who it is for. */
+    val label: String,
+
+    /** The argv to spawn. The script is named relatively, so the working directory decides which pack. */
+    val command: List<String>
+) {
+    /** The bash script, and the default everywhere that is not Windows. */
+    SH("start.sh", "start.sh — Linux / macOS (bash)", listOf("bash", "start.sh")),
+
+    /**
+     * The Windows batch shim, and the default there. Its entire job is to run `start.ps1` without the user
+     * having to change their execution policy, which is why the pack's own `HOW-TO-RUN.md` prefers it.
+     */
+    BAT("start.bat", "start.bat — Windows (recommended)", listOf("cmd", "/c", "start.bat")),
+
+    /**
+     * PowerShell directly, for a Windows user who would rather skip the shim — or whose pack was generated
+     * without one. `-NoProfile` because a profile that writes to the console would land in the server log,
+     * and `-ExecutionPolicy Bypass` because that is the restriction the shim exists to work around.
+     */
+    PS1(
+        "start.ps1",
+        "start.ps1 — Windows (PowerShell directly)",
+        listOf("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "start.ps1")
+    ),
+
+    /** The fish script, for users of that shell. Never a default: fish is a deliberate install, bash is not. */
+    FISH("start.fish", "start.fish — fish shell", listOf("fish", "start.fish"));
+
+    companion object {
+        /**
+         * The script pre-selected for [platform]: the batch shim on Windows, bash everywhere else.
+         *
+         * A *default*, not a decision — the user may pick any of the four, including one this host has no
+         * interpreter for. That launch fails on the console with the interpreter's own error, which is a
+         * better outcome than a plugin that quietly refuses to offer the script somebody needs.
+         */
+        fun defaultFor(platform: Platform = Platform.of()): StartScriptKind = SH
+    }
+}
+
+/**
+ * Whether the chosen script is actually in the pack, and what to run if it is.
  *
  * A sealed pair rather than a nullable script plus a nullable reason: exactly one of the two is always
  * meaningful, and a type that says so cannot be read the wrong way round.
  */
 sealed interface StartScriptSelection {
 
-    /** The pack has a script for this platform. [command] is the argv, relative to the pack directory. */
+    /** The pack has the chosen script. [command] is the argv, relative to the pack directory. */
     data class Available(
-        /** The script that will be run, as an absolute file — for existence checks and for the UI to name. */
+        /** The script that will be run, as an absolute file — for the UI to name and for a final check. */
         val script: File,
         /** The argv to spawn, with the script named relatively so the working directory decides which pack. */
         val command: List<String>
     ) : StartScriptSelection
 
-    /** The pack has no script this platform can run. [reason] names the file that was wanted. */
+    /** The pack does not carry the chosen script. [reason] names the file that is missing. */
     data class Missing(
         /** Why nothing can be launched, in words the pack list can show a user. */
         val reason: String
@@ -68,49 +122,29 @@ sealed interface StartScriptSelection {
 }
 
 /**
- * Picks the script a generated server pack is launched with, and the argv to launch it.
+ * Answers whether a given pack can be launched with a given script.
  *
- * The answers come from the pack's own `HOW-TO-RUN.md` rather than from taste: `bash start.sh` on Linux and
- * macOS, `start.bat` on Windows — the shipped shim whose only job is to run `start.ps1` without the user
- * changing their ExecutionPolicy.
+ * Pure: the scripts a pack carries are read once, when the pack is discovered, so changing the dropdown
+ * re-decides every row without touching the disk again.
  *
  * @author Griefed
  */
 object StartScriptSelector {
 
     /**
-     * The script and argv for [packDirectory] on [platform], or why there is none.
+     * Whether [pack] can be launched with [kind], and with what.
      *
-     * Checks the file is a regular file rather than merely present, so a directory that happens to be named
-     * `start.sh` is reported as missing instead of failing at spawn time with a shell error.
+     * Keyed on what the catalog found when it read the directory rather than on a fresh check, so every row
+     * in the list answers from the same reading.
      */
-    fun selectFor(packDirectory: File, platform: Platform = Platform.of()): StartScriptSelection {
-        for ((scriptName, argv) in candidatesFor(platform)) {
-            val script = File(packDirectory, scriptName)
-            if (script.isFile) {
-                return StartScriptSelection.Available(script, argv)
-            }
-        }
-        val wanted = candidatesFor(platform).joinToString(" or ") { (scriptName, _) -> scriptName }
-        return StartScriptSelection.Missing("No $wanted in this server pack, so it cannot be launched here.")
-    }
+    fun selectFor(pack: LaunchablePack, kind: StartScriptKind): StartScriptSelection =
+        StartScriptSelection.Missing("Script selection is not implemented yet.")
 
     /**
-     * The scripts to try for [platform], best first, each with the argv that runs it.
+     * Which of the four scripts [packDirectory] actually carries.
      *
-     * Windows gets a fallback and POSIX deliberately does not. A pack generated with `bat` dropped from the
-     * start-script templates still has `start.ps1`, and invoking PowerShell directly is exactly what the shim
-     * would have done — so the fallback costs nothing and rescues a real configuration. `start.fish` is *not*
-     * a POSIX fallback for the opposite reason: bash is on every Linux and macOS install while fish is a
-     * deliberate user choice, so reaching for it would swap a clear "no script" message for
-     * `fish: command not found` at launch — a failure that reads as the pack being broken rather than the
-     * shell being absent.
+     * `isFile` rather than `exists`, so a directory that happens to be named `start.sh` is reported absent
+     * instead of failing at spawn time with a shell error.
      */
-    private fun candidatesFor(platform: Platform): List<Pair<String, List<String>>> = when (platform) {
-        Platform.WINDOWS -> listOf(
-            "start.bat" to listOf("cmd", "/c", "start.bat"),
-            "start.ps1" to listOf("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "start.ps1")
-        )
-        Platform.POSIX -> listOf("start.sh" to listOf("bash", "start.sh"))
-    }
+    fun scriptsIn(packDirectory: File): Set<StartScriptKind> = emptySet()
 }

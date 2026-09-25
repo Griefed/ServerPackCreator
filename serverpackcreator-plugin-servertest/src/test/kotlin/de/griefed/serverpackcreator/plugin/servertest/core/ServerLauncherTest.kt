@@ -42,7 +42,7 @@ internal class ServerLauncherTest {
         minecraftVersion = "1.21",
         modloader = "NeoForge",
         modloaderVersion = "21.0.18",
-        selection = StartScriptSelection.Available(File(directory, "start.sh"), listOf("bash", "start.sh"))
+        scriptsPresent = setOf(StartScriptKind.SH)
     )
 
     /** An allocator over a known range whose ports are all free, so counts are exact. */
@@ -59,7 +59,7 @@ internal class ServerLauncherTest {
     fun takesAPortWritesItIntoThePackAndRegistersTheSession(@TempDir packDir: File) {
         File(packDir, ServerPropertiesPatch.PROPERTIES_NAME).writeText("motd=Test\nserver-port=25565\n")
         val registry = SessionRegistry()
-        val outcome = launcherOver(allocator(), registry).launch(packAt(packDir), {}, {}, {})
+        val outcome = launcherOver(allocator(), registry).launch(packAt(packDir), StartScriptKind.SH, {}, {}, {})
 
         val started = Assertions.assertInstanceOf(LaunchOutcome.Started::class.java, outcome)
         Assertions.assertEquals(31000, started.port)
@@ -77,7 +77,7 @@ internal class ServerLauncherTest {
         val allocator = allocator()
         val launcher = launcherOver(allocator, SessionRegistry().also { it.register(packDir, unstarted(packDir)) })
 
-        val outcome = launcher.launch(packAt(packDir, "Occupied"), {}, {}, {})
+        val outcome = launcher.launch(packAt(packDir, "Occupied"), StartScriptKind.SH, {}, {}, {})
 
         val refused = Assertions.assertInstanceOf(LaunchOutcome.Refused::class.java, outcome)
         Assertions.assertTrue(refused.reason.contains("Occupied"), "The refusal must name the pack: ${refused.reason}")
@@ -91,7 +91,7 @@ internal class ServerLauncherTest {
     /** With every port busy there is nothing to hand out, and the refusal says so rather than launching. */
     @Test
     fun refusesWhenNoPortIsFree(@TempDir packDir: File) {
-        val outcome = launcherOver(allocator(free = { false })).launch(packAt(packDir), {}, {}, {})
+        val outcome = launcherOver(allocator(free = { false })).launch(packAt(packDir), StartScriptKind.SH, {}, {}, {})
 
         val refused = Assertions.assertInstanceOf(LaunchOutcome.Refused::class.java, outcome)
         Assertions.assertTrue(refused.reason.contains("31000"), "The refusal must name the range it searched.")
@@ -104,7 +104,7 @@ internal class ServerLauncherTest {
         File(packDir, ServerPropertiesPatch.PROPERTIES_NAME).writeText("enable-rcon=false\nserver-port=25565\n")
         val allocator = allocator()
 
-        launcherOver(allocator).launch(packAt(packDir), {}, {}, {})
+        launcherOver(allocator).launch(packAt(packDir), StartScriptKind.SH, {}, {}, {})
 
         Assertions.assertEquals(31001, allocator.allocate(), "Only one port should have been taken.")
     }
@@ -116,7 +116,7 @@ internal class ServerLauncherTest {
             .writeText("enable-rcon=true\nrcon.port=25575\nserver-port=25565\n")
         val allocator = allocator()
 
-        launcherOver(allocator).launch(packAt(packDir), {}, {}, {})
+        launcherOver(allocator).launch(packAt(packDir), StartScriptKind.SH, {}, {}, {})
 
         Assertions.assertEquals(31002, allocator.allocate(), "Two ports should have been taken, not one.")
         Assertions.assertTrue(
@@ -136,7 +136,7 @@ internal class ServerLauncherTest {
         // borrow has to write, so `writeText` fails exactly as it would on a read-only mount.
         File(packDir, ServerPropertiesPatch.PROPERTIES_NAME).mkdirs()
 
-        val outcome = launcherOver(allocator).launch(packAt(packDir), {}, {}, {})
+        val outcome = launcherOver(allocator).launch(packAt(packDir), StartScriptKind.SH, {}, {}, {})
 
         Assertions.assertInstanceOf(LaunchOutcome.Refused::class.java, outcome)
         Assertions.assertEquals(31000, allocator.allocate(), "A failed borrow must give its port back.")
@@ -165,7 +165,7 @@ internal class ServerLauncherTest {
             }
         )
 
-        launcher.launch(packAt(packDir), {}, {}, { callerNotified++ })
+        launcher.launch(packAt(packDir), StartScriptKind.SH, {}, {}, { callerNotified++ })
 
         // Invoked twice on purpose: the give-back is reachable from the session's own close callback and
         // from the failure path, and a second release would hand a live server's port to the next pack.
@@ -181,6 +181,35 @@ internal class ServerLauncherTest {
             "The user's properties must come back exactly."
         )
         Assertions.assertEquals(31000, allocator.allocate(), "The port must be released once, and be reusable.")
+    }
+
+    /**
+     * The script the user picked is the script that runs — and a pack without it is refused by name.
+     *
+     * The launcher must not fall back to a script the pack happens to have: the user asked for one, and
+     * quietly running another hides what actually happened.
+     */
+    @Test
+    fun launchesWithTheScriptTheUserChoseAndRefusesAPackWithoutIt(@TempDir packDir: File) {
+        File(packDir, ServerPropertiesPatch.PROPERTIES_NAME).writeText("server-port=25565\n")
+        val pack = LaunchablePack(
+            directory = packDir,
+            name = packDir.name,
+            minecraftVersion = "1.21",
+            modloader = "NeoForge",
+            modloaderVersion = "21.0.18",
+            scriptsPresent = setOf(StartScriptKind.SH, StartScriptKind.FISH)
+        )
+
+        val chosen = launcherOver(allocator()).launch(pack, StartScriptKind.FISH, {}, {}, {})
+        Assertions.assertInstanceOf(LaunchOutcome.Started::class.java, chosen)
+
+        val refused = launcherOver(allocator(31100, 31109))
+            .launch(pack, StartScriptKind.BAT, {}, {}, {})
+        Assertions.assertTrue(
+            (refused as LaunchOutcome.Refused).reason.contains(StartScriptKind.BAT.fileName),
+            "A pack without the chosen script must be refused by name: ${refused.reason}"
+        )
     }
 
     private fun unstarted(packDir: File) = ServerSession(packDir, listOf("bash", "start.sh"), {}, {}, {})
