@@ -63,10 +63,19 @@ class ConsolePane(
     /** The pack's own settings, consulted for the hints this pane adds while the session runs. */
     private val packVariables = variables
 
-    /** The console. Plain text, never markup — a `JTextArea` parses no HTML, unlike a label. */
+    /**
+     * The console. Plain text, never markup — a `JTextArea` parses no HTML, unlike a label.
+     *
+     * Wrapped, unlike ServerPackCreator's own log panes, which scroll horizontally instead. Two reasons this
+     * surface differs: the notes this pane writes are prose and were being cut off mid-sentence at the pane's
+     * width, and a crash report is the thing a user comes here to read — hunting for a horizontal scrollbar
+     * to finish a stack-trace line is worse than a wrapped one. Wrapped on word boundaries so a path or a mod
+     * name stays readable across the break.
+     */
     private val console = JTextArea().apply {
         isEditable = false
-        lineWrap = false
+        lineWrap = true
+        wrapStyleWord = true
     }
 
     private val consoleScroller = JScrollPane(console)
