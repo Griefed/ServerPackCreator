@@ -3,8 +3,8 @@
   <groupId>net.neoforged</groupId>
   <artifactId>neoforge</artifactId>
   <versioning>
-    <latest>21.1.250</latest>
-    <release>21.1.250</release>
+    <latest>26.3.0.22-beta</latest>
+    <release>26.3.0.22-beta</release>
     <versions>
       <version>20.2.12-beta</version>
       <version>20.2.13-beta</version>
@@ -1700,7 +1700,42 @@
       <version>26.2.0.79</version>
       <version>26.1.2.106</version>
       <version>21.1.250</version>
+      <version>26.2.0.80</version>
+      <version>26.1.2.107</version>
+      <version>26.2.0.81</version>
+      <version>26.2.0.82</version>
+      <version>26.2.0.83</version>
+      <version>26.2.0.84</version>
+      <version>26.1.2.108</version>
+      <version>26.2.0.85</version>
+      <version>26.1.2.109</version>
+      <version>26.2.0.86</version>
+      <version>26.2.0.87</version>
+      <version>26.2.0.88</version>
+      <version>26.3.0.0-beta</version>
+      <version>26.3.0.1-beta</version>
+      <version>26.3.0.2-beta</version>
+      <version>26.3.0.3-beta</version>
+      <version>26.3.0.4-beta</version>
+      <version>26.3.0.5-beta</version>
+      <version>26.3.0.6-beta</version>
+      <version>21.1.251</version>
+      <version>26.3.0.7-beta</version>
+      <version>26.3.0.8-beta</version>
+      <version>26.3.0.9-beta</version>
+      <version>26.3.0.10-beta</version>
+      <version>26.3.0.11-beta</version>
+      <version>26.3.0.12-beta</version>
+      <version>26.3.0.13-beta</version>
+      <version>26.3.0.14-beta</version>
+      <version>26.3.0.16-beta</version>
+      <version>26.3.0.17-beta</version>
+      <version>26.3.0.18-beta</version>
+      <version>26.3.0.19-beta</version>
+      <version>26.3.0.20-beta</version>
+      <version>26.3.0.21-beta</version>
+      <version>26.3.0.22-beta</version>
     </versions>
-    <lastUpdated>20260906164617</lastUpdated>
+    <lastUpdated>20260925190306</lastUpdated>
   </versioning>
 </metadata>
