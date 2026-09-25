@@ -94,7 +94,10 @@ enum class StartScriptKind(
          * interpreter for. That launch fails on the console with the interpreter's own error, which is a
          * better outcome than a plugin that quietly refuses to offer the script somebody needs.
          */
-        fun defaultFor(platform: Platform = Platform.of()): StartScriptKind = SH
+        fun defaultFor(platform: Platform = Platform.of()): StartScriptKind = when (platform) {
+            Platform.WINDOWS -> BAT
+            Platform.POSIX -> SH
+        }
     }
 }
 
@@ -138,7 +141,14 @@ object StartScriptSelector {
      * in the list answers from the same reading.
      */
     fun selectFor(pack: LaunchablePack, kind: StartScriptKind): StartScriptSelection =
-        StartScriptSelection.Missing("Script selection is not implemented yet.")
+        if (kind in pack.scriptsPresent) {
+            StartScriptSelection.Available(File(pack.directory, kind.fileName), kind.command)
+        } else {
+            StartScriptSelection.Missing(
+                "This server pack has no ${kind.fileName}. Pick another start script, or regenerate the " +
+                        "pack with that template enabled."
+            )
+        }
 
     /**
      * Which of the four scripts [packDirectory] actually carries.
@@ -146,5 +156,6 @@ object StartScriptSelector {
      * `isFile` rather than `exists`, so a directory that happens to be named `start.sh` is reported absent
      * instead of failing at spawn time with a shell error.
      */
-    fun scriptsIn(packDirectory: File): Set<StartScriptKind> = emptySet()
+    fun scriptsIn(packDirectory: File): Set<StartScriptKind> =
+        StartScriptKind.entries.filterTo(mutableSetOf()) { File(packDirectory, it.fileName).isFile }
 }
