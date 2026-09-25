@@ -40,18 +40,34 @@ plugin's build file already records as a reason.
 
 ## Landmines & decisions (do not relearn)
 
-- **The user picks the start script; the platform only supplies the default.** All four — `start.sh`,
-  `start.bat`, `start.ps1`, `start.fish` — stay selectable in the pack list's dropdown, pre-set to `BAT`
-  on Windows and `SH` everywhere else. The plugin *deciding* is the one failure with no workaround: a
-  guess landing on a script the host cannot run left somebody unable to start a pack at all. An entry
-  this host has no interpreter for is deliberately still offered — that launch fails on the console with
+- **The scripts on offer come from `ApiProperties.startScriptTemplates`, not from a list here.** Those
+  keys are what `ServerPackProvisioner` generates packs from — one per script type, each written out as
+  `start.<key>` — so reading the same setting is the only thing that stops the dropdown offering a script
+  no generation produces, or hiding one an operator added. **`StartScripts.forKey` must keep agreeing
+  with `ServerPackProvisioner.startScriptName` (`"start.$key"`)**; disagree and every row reports a
+  missing script that is sitting right there in the pack.
+- **A key this plugin has no interpreter for is still offered, and executed directly** (`./start.zsh`).
+  ServerPackCreator marks every generated start script executable, so a custom template carrying a
+  shebang runs on its own — and inventing an interpreter for an undocumented key would repeat the
+  mistake the old platform fallback made.
+- **The order is imposed because `startScriptTemplates` is a `HashMap`.** Known types first in the order
+  a user wants them, an operator's additions after, alphabetically. Without it the dropdown reshuffles
+  between reads.
+- **No templates configured is a real state, not a defensive one** — the setting is user-editable and can
+  be emptied, which makes generations produce no start scripts at all. The choice is therefore nullable,
+  the dropdown disables itself, and the Status column carries `StartScripts.NO_SCRIPTS_CONFIGURED`.
+- **The user picks; the platform only supplies the default** (`bat` on Windows, `sh` elsewhere, falling
+  back to whatever *is* configured). The plugin *deciding* is the one failure with no workaround: a guess
+  landing on a script the host cannot run leaves somebody unable to start a pack at all. An entry this
+  host has no interpreter for is deliberately still selectable — that launch fails on the console with
   the interpreter's own error, which beats a disabled control explaining nothing. **A pack missing the
   chosen script is refused by name, never substituted**; substituting is what the old platform fallback
   did, and it hid that the user asked for `start.bat` and got `start.ps1`.
-- **A `LaunchablePack` carries the *set* of scripts it has, not one resolved selection.** The choice
-  changes while the list is on screen, so `StartScriptSelector.selectFor(pack, kind)` is pure and
-  re-decides every row without going back to disk; only `scriptsIn` touches the filesystem, once, at
-  discovery.
+- **What a pack *carries* is independent of what is *configured*.** The catalog records every `start.*`
+  regular file it finds, so a pack generated under a different template set still reports itself
+  honestly; the current configuration is applied at the dropdown, not at discovery.
+  `StartScriptSelector.selectFor(pack, script)` is pure, so changing the choice re-decides every row
+  without going back to disk.
 - **The port can only be set through `server.properties`, and that file is the user's.** `start.sh`
   interpolates `ADDITIONAL_ARGS` *before* `-jar`, in JVM-argument position, so Minecraft's `--port`
   never reaches the server; `SERVER_RUN_COMMAND` always ends in `nogui` with no hook for a program
@@ -199,7 +215,7 @@ user to a five-second countdown rather than ending the session, and Force stop i
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-servertest:test` — 98 tests, of which 97 run by default; the
+`./gradlew :serverpackcreator-plugin-servertest:test` — 106 tests, of which 105 run by default; the
 skip is `RealPackBootTest`, which boots a real server and is switched on deliberately (below).
 
 - **`core` is tested against real processes, not mocks.** What is under test is process behaviour — does
