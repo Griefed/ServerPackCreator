@@ -88,3 +88,12 @@ tasks.jar {
         )
     }
 }
+
+tasks.test {
+    // Forward the two switches `RealPackBootTest` reads. A bare `-D` on the command line reaches the Gradle
+    // daemon, not the forked test JVM, so without this the integration test silently SKIPs however it is
+    // invoked -- a green run that booted nothing, which is worse than a red one.
+    for (switch in listOf("servertest.integration", "servertest.pack")) {
+        providers.systemProperty(switch).orNull?.let { systemProperty(switch, it) }
+    }
+}

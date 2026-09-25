@@ -60,6 +60,9 @@ class ConsolePane(
     private val scrollback: Int
 ) : JPanel(BorderLayout()) {
 
+    /** The pack's own settings, consulted for the hints this pane adds while the session runs. */
+    private val packVariables = variables
+
     /** The console. Plain text, never markup — a `JTextArea` parses no HTML, unlike a label. */
     private val console = JTextArea().apply {
         isEditable = false
@@ -93,7 +96,7 @@ class ConsolePane(
         killButton.addActionListener { session.kill() }
 
         for (note in openingNotes(variables)) {
-            appendLine(note)
+            append(note)
         }
     }
 
@@ -173,14 +176,24 @@ class ConsolePane(
         val line = input.text
         input.text = ""
         if (session.send(line)) {
-            appendLine("> $line")
+            append("> $line")
         } else {
-            appendLine("[ServerPackCreator] Not sent — this server is no longer running.")
+            append("[ServerPackCreator] Not sent — this server is no longer running.")
         }
     }
 
-    /** Append [line] to the console from any thread, trimming to [scrollback] and following the tail. */
+    /**
+     * Append [line] to the console, plus any note it calls for, from any thread.
+     *
+     * The note is appended here rather than by the caller so the two always arrive together and in order.
+     */
     fun appendLine(line: String) {
+        append(line)
+        ConsoleHints.after(line, packVariables)?.let(::append)
+    }
+
+    /** Put one line on screen, trimming to [scrollback] and following the tail. */
+    private fun append(line: String) {
         SwingUtilities.invokeLater {
             val scrollBar = consoleScroller.verticalScrollBar
             // Decided BEFORE the append: afterwards the maximum has already grown and every position looks
