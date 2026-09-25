@@ -6830,11 +6830,21 @@ All source findings fixed on the branch. Commit subjects, not hashes.
 | L1 late `Stopping` overwrites `Exited` | Fixed — `transitionTo` refuses to leave a terminal state |
 | L2 wrapping unguarded | Fixed — pinned, teeth confirmed by mutation |
 
-**M3–M6 are commit-hygiene findings about commits already made, and are deliberately NOT being fixed by
-rewriting history.** Re-splitting 24 commits to separate a seam from its guard would churn the whole
-branch to change how it reads, and the record above is the more useful artifact. M6 in particular —
-seam-plus-guard in one commit — should be a deliberate choice next time rather than a habit, which is
-what recording it achieves. Raised with Griefed rather than decided unilaterally.
+**M3–M6 are commit-hygiene findings about commits already made. DECIDED — do not re-open.** Griefed's
+call, same day: **the seam-plus-guard approach stands and history is not being rewritten.** Re-splitting
+24 commits to separate a seam from its guard would churn the whole branch to change only how it reads,
+and the record here is the more useful artifact.
+
+M6 is therefore **not a violation to be corrected but a third sanctioned route**, now written into the
+root `CLAUDE.md` beside the two that were already there — for new code there is no behaviour to preserve,
+so no honest "behaviour-preserving seam commit" exists, and the alternative is a guard that fails on a
+missing symbol and proves nothing. The one cost stays real and stays the obligation: no commit is a pure
+"add tests" commit, so each such message must name which assertions are vacuous against the stub. This
+branch did that every time; that is what makes the route defensible rather than merely convenient.
+
+M3 (three units in one commit, written before their guards) and M4/M5 (mixed concerns) remain genuine
+lapses rather than sanctioned practice — they are recorded, not re-litigated, and mutation covered M3's
+missing red.
 
 **One new finding, from fixing H2.** The structural guard's first version flagged `ServerTestTab` for the
 *sentence in a doc comment* explaining why it does not call `JOptionPane`. A guard that fires on an

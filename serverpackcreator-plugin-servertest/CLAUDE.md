@@ -182,6 +182,13 @@ skip is `RealPackBootTest`, which boots a real server and is switched on deliber
   when `SessionRegistry.register` loses its `@Synchronized`, because the window is a few instructions
   wide; `concurrentAllocationsNeverCollide` *does* catch its annotation being removed, so the two are
   not equal evidence.
+- **Seam-plus-guard is the sanctioned shape here, not a lapse.** Every `test(servertest): …` commit on
+  this branch also lands the production seam with a stubbed body, because for new code there is no
+  behaviour to preserve and a guard that cannot compile fails on a missing symbol rather than on a wrong
+  answer. Griefed sanctioned it on 2026-09-25 and declined to re-split the branch; the rule and its two
+  siblings are in the root `CLAUDE.md`. **The obligation that comes with it:** name, in the commit
+  message, which assertions are vacuous against the stub — those are the ones that will otherwise be
+  mistaken for pins.
 - **`RealPackBootTest` goes through `ServerLauncher`**, not through hand-wired collaborators, so the
   end-to-end exercises the sequence the Start button actually runs rather than a copy that could drift.
 

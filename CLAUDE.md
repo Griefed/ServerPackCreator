@@ -370,8 +370,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   report's wording is part of the evidence, which is the argument for it being precise.
 - **A test can pass against unfixed code because one fixture value is a prefix of another.** Ask why a
   guard *passed*, not only why it failed, whenever fixture values could contain one another.
-- **A guard that cannot compile is not a red pin.** Land the seam first as its own behaviour-preserving
-  commit, or say in the message that the boundary is missing and quote the mutation that reproduces the red.
+- **A guard that cannot compile is not a red pin.** It fails on a missing symbol, which says nothing about
+  the logic. Three sanctioned ways out, all of which make the red a *wrong answer*: land the seam first as
+  its own behaviour-preserving commit; say in the message that the boundary is missing and quote the
+  mutation that reproduces the red; or — **for new code, where there is no behaviour to preserve and so no
+  honest "behaviour-preserving" seam commit exists** — land the seam *with* the guard in the `test(...)`
+  commit, with the implementation stubbed, and state in the message which assertions are vacuous against
+  that stub. **Griefed's call, 2026-09-25**, after the `servertest` branch took the third route nine times
+  and an audit flagged it: the branch is not being re-split, and the route is sanctioned rather than merely
+  tolerated. It costs one thing — no commit is a pure "add tests" commit — so name the vacuous guards
+  explicitly, because they are the ones that will otherwise be mistaken for pins.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.
