@@ -33,15 +33,23 @@ the "do not tidy that away, here is what it cost last time".
   it measures — stops being collected by `build` and counted as three skipped *tests*. Declared in the
   **module's own build script**, not a convention plugin: a real script can use the version catalog and
   reaches no other module. Three traps if you add a second one:
-  - **`java-conventions` configures `tasks.test` by name, not `tasks.withType<Test>().configureEach`.** A new
-    `Test` task therefore inherits none of `useJUnitPlatform()`, the mockk/ByteBuddy agent `jvmArgs`,
-    `TestHome.prepare`, the isolated Preferences node and home, or `testLogging`. Replicate what you need.
-    Broadening the convention is the tidier fix and reaches all seven modules plus `-app`'s own
-    re-declaration, so it is a decision to take deliberately rather than as a side effect.
-  - **`testLogging` is part of that**, and its absence is silent: the benchmark ran 3 tests in 10.2 s and
-    printed *nothing*, its measurements captured into the XML report and never shown.
+  - **LANDMINE — every task of type `Test` is pulled into `check` here.** By type: not by name, not by
+    group, and with nothing in any build file declaring it — verified by renaming the task, by moving it
+    out of the `verification` group, and by removing the Kover block, none of which changed it. So
+    "register a `Test` task and simply do not wire it into `check`" **does not work**: the first attempt
+    at this did exactly that and `./gradlew build` ran the benchmark anyway. Anything that must stay out
+    of `build` has to not be a `Test` task. `StoreWriteBenchmark` is a plain `main` run by a `JavaExec`,
+    which is also why it needs no environment-variable gate.
+  - **`java-conventions` configures `tasks.test` by name, not `tasks.withType<Test>().configureEach`.** Any
+    *other* `Test` task therefore inherits none of `useJUnitPlatform()`, the mockk/ByteBuddy agent `jvmArgs`,
+    `TestHome.prepare`, the isolated Preferences node and home, or `testLogging` — and the last is silent:
+    a JUnit benchmark ran 3 tests in 10.2 s and printed *nothing*, its output captured to XML and never
+    shown. Broadening the convention is the tidier fix and reaches all seven modules plus `-app`, so it is
+    a decision to take deliberately rather than as a side effect.
   - **Kover instruments every Kotlin compilation**, so a new source set counts as production code and moves
-    the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it.
+    the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it. A
+    non-test source set wants its configurations extending `implementation`/`runtimeOnly`, not the test
+    ones — otherwise it compiles without the module's own dependencies.
 - **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
   with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
   failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps

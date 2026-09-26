@@ -3,10 +3,8 @@ package de.griefed.serverpackcreator.grinder.report
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Files
 import java.time.Duration
 import java.time.Instant
 
@@ -25,15 +23,18 @@ import java.time.Instant
  * What it *does* assert is its own fixture. A benchmark measuring the wrong thing is worse than none,
  * so every run checks that the store really loaded the rows it was seeded with before timing anything.
  *
- * Named a benchmark rather than a test because it cannot fail on the thing it exists to report, and it
- * lives in the `benchmark` source set rather than `test` for the same reason: `./gradlew build` never
- * collects it, so it cannot appear in a skip count as a test that did not run. **Not being in `test` is
- * the gate** — the `SPC_GRINDER_BENCH` environment variable it used to need is gone. Run it with
- * `./gradlew :serverpackcreator-grinder:benchmark`.
+ * It is a **program, not a test** — a plain `main` in the `benchmark` source set, run by a `JavaExec`
+ * task: `./gradlew :serverpackcreator-grinder:benchmark`. That is not stylistic. Measured on this build,
+ * **every task of type `Test` is pulled into `check`**, by type and regardless of name, group, or whether
+ * anything declares the dependency — so a JUnit benchmark ran on every `./gradlew build` no matter how it
+ * was gated. A `JavaExec` is not, and needs no environment variable to stay out of the way.
+ *
+ * A bad fixture still stops it: the seeding checks throw rather than assert, because there is no
+ * framework here to assert with, and a benchmark measuring the wrong thing is worse than none.
  *
  * @author Griefed
  */
-internal class StoreWriteBenchmark {
+internal object StoreWriteBenchmark {
     private fun verdict(i: Int) = GrindVerdict(
         "Modrinth", "mod$i", "https://modrinth.com/mod/mod$i", "Forge", "mod$i-",
         "Forge 47.2.0 / Minecraft 1.20.1 -> SURVIVED (exit 137)", Instant.parse("2026-08-29T00:00:00Z")
@@ -55,13 +56,12 @@ internal class StoreWriteBenchmark {
     }
 
     /** Write-through cost: milliseconds per `record()` as the file grows, the number B35 started from. */
-    @Test
-    fun measureWriteThroughCostPerRecord(@TempDir dir: File) {
+    fun measureWriteThroughCostPerRecord(dir: File) {
         for (size in listOf(1_000, 10_000, 100_000)) {
             val file = File(dir, "verdicts-$size.json")
             seed(file, size)
             val store = JsonVerdictStore(file)
-            Assertions.assertEquals(size, store.all().size, "the benchmark seeded $size rows but the store loaded a different count")
+            check(store.all().size == size) { "seeded $size rows, the store loaded ${store.all().size}" }
             repeat(3) { store.record(verdict(size + it)) }
             val started = System.nanoTime()
             repeat(10) { store.record(verdict(size + 100 + it)) }
@@ -71,13 +71,12 @@ internal class StoreWriteBenchmark {
     }
 
     /** The same measurement with writes coalesced — B35's fix, against the write-through number above. */
-    @Test
-    fun measureCoalescedCostPerRecord(@TempDir dir: File) {
+    fun measureCoalescedCostPerRecord(dir: File) {
         for (size in listOf(1_000, 10_000, 100_000)) {
             val file = File(dir, "coalesced-$size.json")
             seed(file, size)
             JsonVerdictStore(file, flushInterval = Duration.ofSeconds(30)).use { store ->
-                Assertions.assertEquals(size, store.all().size, "the benchmark seeded $size rows but the store loaded a different count")
+                check(store.all().size == size) { "seeded $size rows, the store loaded ${store.all().size}" }
                 repeat(3) { store.record(verdict(size + it)) }
                 val started = System.nanoTime()
                 repeat(10) { store.record(verdict(size + 100 + it)) }
@@ -91,12 +90,11 @@ internal class StoreWriteBenchmark {
      * Splits `persist()`'s cost three ways, to answer B35's actual question: is dropping the pretty-printer
      * enough on its own, or does the store need an append-log?
      */
-    @Test
-    fun measurePersistComponents(@TempDir dir: File) {
+    fun measurePersistComponents(dir: File) {
         val mapper = jacksonObjectMapper().findAndRegisterModules()
         for (size in listOf(10_000, 100_000)) {
             val rows = (0 until size).map { verdict(it) }
-            Assertions.assertEquals(size, rows.size, "the benchmark built a different number of rows than it is about to time")
+            check(rows.size == size) { "built ${rows.size} rows, about to time $size" }
             fun time(label: String, body: () -> Unit) {
                 repeat(2) { body() }
                 val started = System.nanoTime()
@@ -113,5 +111,22 @@ internal class StoreWriteBenchmark {
                 mapper.writerWithDefaultPrettyPrinter().writeValue(out, rows.sortedWith(compareBy({ it.slug }, { it.loader })))
             }
         }
+    }
+}
+
+/**
+ * Run all three measurements against one throwaway directory, then delete it.
+ *
+ * The entry point the `benchmark` JavaExec task names. Anything thrown -- a mis-seeded fixture -- exits
+ * non-zero and fails the task, which is the only way this can go red and the only way it should.
+ */
+fun main() {
+    val dir = Files.createTempDirectory("spc-store-benchmark").toFile()
+    try {
+        StoreWriteBenchmark.measureWriteThroughCostPerRecord(dir)
+        StoreWriteBenchmark.measureCoalescedCostPerRecord(dir)
+        StoreWriteBenchmark.measurePersistComponents(dir)
+    } finally {
+        dir.deleteRecursively()
     }
 }

@@ -647,19 +647,27 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   which `qodana.yml` and `docs.yml` already rely on. The other gates stay unset on purpose: they need a live
   Modrinth or CurseForge API, a built image plus a Minecraft download per cell, or a deployed grinder.
 
-- **Measurements live in a `benchmark` source set, not in `test` (2026-09-26).**
-  `src/benchmark/kotlin` holds `StoreWriteBenchmark`, run with `./gradlew :serverpackcreator-grinder:benchmark`.
-  It reports what `JsonVerdictStore` costs per `record()` and **asserts nothing about the timings** — this
-  project pins I/O by request, read and open counts and never by wall-clock, and `CoalescedVerdictWritesTest`
-  already pins the behaviour those numbers motivated. It does assert its own fixture, because a benchmark
-  measuring the wrong thing is worse than none.
-  **Not being in `test` is the gate** — there is no `SPC_GRINDER_BENCH` variable any more. While it lived in
-  `src/test` every build reported it as three skipped *tests*, which is three phantom entries in a number
-  people read. This is the **first custom source set in the repository**; three things it does not inherit,
-  because `java-conventions` configures `tasks.test` *by name* rather than `withType<Test>().configureEach`:
-  `useJUnitPlatform()` + the mockk agent args, the test-home/Preferences isolation, and `testLogging` — the
-  last of which matters most here, since without it the measurements are captured to XML and never printed.
-  Kover needs `excludedSourceSets` or the benchmark counts as production code.
+- **Measurements live in a `benchmark` source set and are a *program*, not a test (2026-09-26).**
+  `src/benchmark/kotlin` holds `StoreWriteBenchmark` — a plain `main`, run by a **`JavaExec`** task:
+  `./gradlew :serverpackcreator-grinder:benchmark`. It reports what `JsonVerdictStore` costs per `record()`
+  and **asserts nothing about the timings** — this project pins I/O by request, read and open counts and
+  never by wall-clock, and `CoalescedVerdictWritesTest` already pins the behaviour those numbers motivated.
+  It does check its own fixture (`check(...)`, no framework), because a benchmark measuring the wrong thing
+  is worse than none. While it lived in `src/test` every build reported it as three skipped *tests*.
+
+  **LANDMINE — in this build every task of type `Test` is pulled into `check`.** By type: not by name, not
+  by group, and with nothing in any build file declaring it. The first attempt at this moved the benchmark
+  into its own source set but kept it a JUnit `Test` task and simply did not wire it to `check` — and
+  `./gradlew build` ran it anyway, all three measurements, which is exactly what the move existed to stop.
+  Probed three ways before believing it: renaming the task changed nothing, moving it out of the
+  `verification` group changed nothing, removing the Kover block changed nothing. **A `JavaExec` is not
+  collected**, needs no environment-variable gate, and prints to the console without the `testLogging`
+  that `java-conventions` only sets on `tasks.test`. If you add a second measurement here, make it a
+  program too.
+
+  This is the **first custom source set in the repository**. Its configurations extend `implementation` /
+  `runtimeOnly` rather than the test ones — it needs main's dependencies and no test framework — and Kover
+  needs `excludedSourceSets` or the benchmark counts as production code.
 - **`GrinderAuditIT` grades a live daemon's published verdicts against their own evidence, and it exists
   because sample-and-fix failed twice.** A 200-log census (2026-08-29) and a merge gate reporting `HIGH 8 → 4`
   both preceded the 2026-08-31 finding that **four of five** sampled boot logs were scored `CRASHED` by the

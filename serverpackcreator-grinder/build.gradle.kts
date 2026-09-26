@@ -1,6 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
@@ -51,10 +48,6 @@ sourceSets {
     }
 }
 
-// JUnit and the Kotlin test helpers, without naming them a second time.
-configurations["benchmarkImplementation"].extendsFrom(configurations["testImplementation"])
-configurations["benchmarkRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
-
 // Kover instruments every Kotlin compilation, so without this the benchmark counts as production
 // code and moves the coverage number for a reason that has nothing to do with the product.
 kover {
@@ -65,28 +58,23 @@ kover {
     }
 }
 
-tasks.register<Test>("benchmark") {
+// main's own dependencies -- clientside, jackson -- reach the benchmark. `implementation` extends `api`,
+// so the module's `api(...)` declarations come with it and nothing is named twice. Deliberately NOT
+// `testImplementation`: the benchmark needs no test framework, which is the point of it being a program.
+configurations["benchmarkImplementation"].extendsFrom(configurations["implementation"])
+configurations["benchmarkRuntimeOnly"].extendsFrom(configurations["runtimeOnly"])
+
+tasks.register<JavaExec>("benchmark") {
     group = "verification"
     description = "Measures JsonVerdictStore write cost. Asserts nothing about the timings -- see the class doc."
-    testClassesDirs = sourceSets["benchmark"].output.classesDirs
+    mainClass.set("de.griefed.serverpackcreator.grinder.report.StoreWriteBenchmarkKt")
     classpath = sourceSets["benchmark"].runtimeClasspath
-    // Everything below is duplicated from java-conventions rather than inherited, because that plugin
-    // configures `tasks.test` by name and not `tasks.withType<Test>().configureEach`. Broadening it
-    // would be tidier and would reach all seven modules plus -app's own re-declaration, so it is a
-    // separate decision, not a side effect of adding a benchmark.
-    useJUnitPlatform()
-    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
-    // Insurance, not a current need: this benchmark only uses @TempDir. But a task in this project
-    // that reaches SPC's home without these has twice relocated a live daemon's home and deleted it.
+    // JavaExec rather than Test, and this is the load-bearing part. Measured on this build: EVERY task
+    // of type `Test` is pulled into `check` -- by type, not by name or group, and with nothing in any
+    // build file declaring it. A JUnit benchmark therefore ran on every `./gradlew build` however it was
+    // registered, which is the whole thing this source set exists to prevent. Probed three ways before
+    // believing it: renaming the task changed nothing, moving it out of the `verification` group changed
+    // nothing, removing the Kover block changed nothing.
     systemProperty("de.griefed.serverpackcreator.preferences.node", "ServerPackCreator-test-${project.name}")
     systemProperty("de.griefed.serverpackcreator.home", layout.projectDirectory.dir("tests").asFile.absolutePath)
-    // The measurements ARE the output. Without this they are captured into the XML report and never
-    // shown, so an invocation prints nothing but BUILD SUCCESSFUL -- which for a benchmark is the same
-    // as printing nothing at all. (Found by running it: 3 tests, 0 skipped, 10.2s, zero console output.)
-    testLogging {
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.FAILED)
-        exceptionFormat = TestExceptionFormat.FULL
-        showStandardStreams = true
-    }
-    // Deliberately not wired into `check`: that is what keeps `build` from collecting it.
 }
