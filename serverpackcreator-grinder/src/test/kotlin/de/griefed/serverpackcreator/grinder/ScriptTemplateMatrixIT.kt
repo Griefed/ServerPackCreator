@@ -51,6 +51,12 @@ import java.util.concurrent.Future
  * whose loader has no build for the Minecraft version (or whose JDK the image lacks) are reported as
  * skipped, not failed.
  *
+ * Parsing the shipped `.ps1` templates used to live here too and no longer does: it needed nothing from
+ * this image or this matrix, and behind this gate it never ran. `ShellTemplateSyntaxTest` in `-api` now
+ * asks fish *and* PowerShell the same question on every push, in a stock container when the interpreter
+ * is not installed. What stays here is what needs more than a parser — booting a cell, and executing
+ * `RunInstallerJavaCommand` to prove the `JAVA_INSTALLER` fallback.
+ *
  * Integration-only — needs a live Docker daemon, the built `spc-grinder-templates` image and a real
  * `ApiWrapper` — so it is **gated behind `GRINDER_TEMPLATE_IT=1`** and skipped on a normal run. It is
  * network-heavy and slow (each cell downloads a Minecraft server + loader). Run:
@@ -278,52 +284,6 @@ internal class ScriptTemplateMatrixIT {
         Assertions.assertTrue(
             output.lines.any { it.contains("OVERRIDE:") && it.contains("/installer/java21") },
             "a set JAVA_INSTALLER must be used for the installer, got:\n$rendered"
-        )
-    }
-
-    /**
-     * PowerShell's coverage: parse both shipped `.ps1` templates with PowerShell's **own** parser inside
-     * the image. This is the honest ceiling on Linux — the templates invoke Windows `CMD`, so they cannot
-     * be *booted* here (see [scriptFor]) — but a parse catches the syntax-level regressions that are the
-     * whole reason these templates get tested at all (the `.fish` bug was found the same way, one rung up).
-     * Templates are mounted read-only straight from the api resources, so this checks what actually ships.
-     */
-    @Test
-    @EnabledIfEnvironmentVariable(named = "GRINDER_TEMPLATE_IT", matches = "1")
-    fun powerShellTemplatesParse() {
-        val templates = File("../serverpackcreator-api/src/main/resources/de/griefed/resources/server_files")
-            .canonicalFile
-        Assertions.assertTrue(templates.isDirectory, "template resources not found at $templates")
-
-        // `HOME=/tmp` because pwsh writes $HOME/.cache on start-up and the rootfs is read-only (tmpfs /tmp).
-        val script = """
-            HOME=/tmp exec pwsh -NoProfile -Command '
-              ${'$'}failed = 0
-              foreach (${'$'}f in @("/templates/default_template.ps1","/templates/default_java_template.ps1")) {
-                ${'$'}errors = ${'$'}null
-                [System.Management.Automation.Language.Parser]::ParseFile(${'$'}f, [ref]${'$'}null, [ref]${'$'}errors) | Out-Null
-                if (${'$'}errors) { Write-Output ("PARSE ERRORS in " + ${'$'}f); ${'$'}errors | ForEach-Object { Write-Output ${'$'}_.ToString() }; ${'$'}failed = 1 }
-                else { Write-Output ("parse OK: " + ${'$'}f) }
-              }
-              exit ${'$'}failed'
-        """.trimIndent()
-
-        val output = DockerJavaContainerEngine().run(
-            ContainerSpec(
-                image = image,
-                command = listOf("sh", "-c", script),
-                workingDir = "/templates",
-                mounts = listOf(BindMount(templates.absolutePath, "/templates", readOnly = true)),
-                networkMode = "none"
-            ),
-            readyPattern = Regex("""PARSE ERRORS"""), // never expected; the run simply exits
-            timeout = Duration.ofMinutes(3)
-        )
-        val rendered = output.lines.joinToString("\n")
-        Assertions.assertEquals(0, output.exitCode, "PowerShell reported parse errors:\n$rendered")
-        Assertions.assertTrue(
-            rendered.contains("parse OK: /templates/default_template.ps1"),
-            "expected a successful parse of default_template.ps1, got:\n$rendered"
         )
     }
 
