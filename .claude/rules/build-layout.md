@@ -120,7 +120,7 @@ the "do not tidy that away, here is what it cost last time".
     before the catalog exists), which is why the foojay resolver keeps a literal version there. `buildSrc/settings.gradle.kts` points at the same file
   explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
   block fails with `Unresolved reference: libs`).
-  **Everything Kotlin is ONE `kotlin` entry (2.4.10) — keep it that way.** The compiler plugin, the
+  **Everything Kotlin is ONE `kotlin` entry (2.4.20) — keep it that way.** The compiler plugin, the
   allopen/jpa/spring compiler plugins and the stdlib/reflect/test libraries all read `version.ref =
   "kotlin"`. JetBrains versions these together, so a split only ever produces skew: until 2026-08-16
   this was four entries (`kotlin`, `kotlinAllOpen`, `kotlinJpa` on 2.3.20; `kotlinLibs` on 2.4.10),
@@ -153,15 +153,22 @@ the "do not tidy that away, here is what it cost last time".
 - **Configuration cache is NOT enabled, and step 5 above is not what is blocking it** — measured, because
   this was claimed and was wrong: `build --dry-run --configuration-cache` reported the *same* 20 problems
   (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
-  Those constructs block project **isolation**, a different feature. The 20 problems are:
-  - `:generateLicenseReport` holds a `Project` reference — **third-party** (jk1 gradle-license-report),
-    not fixable here.
-  - every module's `test` and `processTestResources` "cannot serialize Gradle script object references" —
-    **ours**: the `filter { }` in `processTestResources` and the `doFirst { cleanup() }` in `test`, both in
-    `java-conventions`, capture the enclosing script; `-app`'s `test.doFirst` additionally captures
-    `projectDir`.
-  So the ceiling without excluding `generateLicenseReport` is "fewer problems", not zero. Fixing our own is
-  a real, separate piece of work; do not start it expecting the cache to switch on at the end of it.
+  Those constructs block project **isolation**, a different feature.
+
+  **Re-measured 2026-09-26 — our half is fixed, and only the third-party half is left.**
+  `./gradlew build --configuration-cache --dry-run` now reports **8 problems, 2 of which seem unique, all
+  of them `:generateLicenseReport`** holding a `Project` (jk1 gradle-license-report — not fixable here).
+  `./gradlew :serverpackcreator-app:test --configuration-cache` stores an entry with **no problems at all**.
+
+  It used to be 20 problems, 13 unique, and the entry above used to name ours: the `filter { }` in
+  `processTestResources` and a `doFirst { cleanup() }` in `test`, both capturing the enclosing script,
+  plus `-app`'s own `test.doFirst` capturing `projectDir`. All three are gone — `cleanup()` became
+  `TestHome.prepare(File)`, a **compiled buildSrc class** that closes over nothing but the `File` handed
+  to it, and `-app`'s duplicate `doFirst` was deleted once it was shown to be redundant.
+
+  So the ceiling *is* now `generateLicenseReport`: excluding that one task is the difference between 8
+  problems and zero, rather than merely "fewer". Re-run the command above before believing this
+  paragraph — it is the kind of fact that goes stale the moment a task action captures a script again.
 - **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
   that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`
   2.2.21, `kotlin-coroutines.version` 1.10.2, `log4j2.version` 2.25.3, `jackson-2-bom.version` 2.20.2,
@@ -212,7 +219,7 @@ the "do not tidy that away, here is what it cost last time".
   `libs.kotlinStdlib`. Measured on the generated POM
   (`:serverpackcreator-api:generatePomFileForMavenJavaPublication`): **2 dependencies without a version
   before, 0 after**; `<dependencyManagement>` disappears entirely and `kotlin-stdlib` survives at
-  **2.4.10**, so consumers are unaffected. Total `<dependency>` entries 20 → 17.
+  the catalog's `kotlin` of the day (**2.4.10** then, 2.4.20 now), so consumers are unaffected. Total `<dependency>` entries 20 → 17.
 
   **The rule this leaves behind:** a dependency declared in a precompiled script plugin reaches the POM
   of every module that applies it, so a bare coordinate there is only safe while no such module is

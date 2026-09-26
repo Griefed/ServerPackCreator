@@ -17,7 +17,8 @@
   newer version costs one `mcserver/<version>.json` fetch. The snapshot **no longer lags its parent manifest** —
   `minecraft-manifest.json`'s `latest.release` has a matching `mcserver/` file — which was B25, closed by the
   `updateManifests` retarget.
-  `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
+  `TestHome.prepare` in the java-conventions plugin (a compiled buildSrc class; it was called `cleanup()`
+  until 2026-08) wipes the test home before every run but **spares `manifests/`** —
   before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
 
 - **LANDMINE — dependency optionality has two spellings, and reading only one silently makes every

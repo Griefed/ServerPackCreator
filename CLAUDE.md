@@ -243,7 +243,7 @@ evidence consulted occasionally, not context every session needs.
   home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
   Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
   a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
-  outcome of the manifest work even though nothing can guard `cleanup()` itself, because `ApiWrapper.setup()`
+  outcome of the manifest work even though nothing can guard `TestHome.prepare` itself, because `ApiWrapper.setup()`
   re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
 - **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
   commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves

@@ -283,8 +283,9 @@ though their detail lives deeper:
     JVM is about to overwrite. Trust in-process logs and same-JVM tests, not cross-process snapshots. (A per-module
     loop appearing to show "every suite writes the shared node" was exactly this artifact.)
   - **ANSWERED 2026-07-31 — it was the build itself, and it is fixed.** Three build-script writers touched the
-    shared node: `java-conventions`' `cleanup()` did `removeNode()` and then wrote the module's `tests` directory in
-    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. `cleanup()` runs
+    shared node: `java-conventions`' test-home preparation (then `cleanup()`, today the compiled
+    `TestHome.prepare`) did `removeNode()` and then wrote the module's `tests` directory in
+    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. It runs
     in `doFirst` of **both `test` and `clean`, for every module**, so any build relocated the home of the
     developer's own GUI — and of a running daemon — into the repository. All three are gone; the isolated per-module
     node plus the injected `-Dde.griefed.serverpackcreator.home` replace them entirely. The `-app` call sites were
