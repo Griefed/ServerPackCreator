@@ -183,7 +183,7 @@ class HostProcessServerRunner : ServerRunner {
         if (process.isAlive) {
             process.destroyForcibly()
         }
-        descendants.filter { it.isAlive }.forEach { it.destroyForcibly() }
+        descendants.filter { isStillRunning(it) }.forEach { it.destroyForcibly() }
     }
 
     /** The host runner's poll cadence, shared with the suspend-gap threshold it feeds. */
@@ -196,5 +196,14 @@ class HostProcessServerRunner : ServerRunner {
          * one per process: a pack whose script nests several shells would otherwise multiply the teardown wait.
          */
         internal const val GRACEFUL_TEARDOWN_SECONDS = 5L
+
+        /**
+         * Whether [handle] names a process teardown must still deal with.
+         *
+         * Named rather than inlined so the liveness question teardown asks has one definition instead of one
+         * per call-site: [destroyTree] asks it to decide what to force-kill, and will ask it again to decide
+         * what is still worth waiting for.
+         */
+        internal fun isStillRunning(handle: ProcessHandle): Boolean = handle.isAlive
     }
 }
