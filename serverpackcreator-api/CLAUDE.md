@@ -238,6 +238,17 @@
   component below the major) and `allTemplatesBypassTheStarterJarForTheAffectedForgeVersionsAndTestTheMajor`.
   fish and PowerShell were verified by **executing** the extracted function in containers: all three shells agree
   on all ten versions, and both templates pass their own parser (`fish -n`, PowerShell's `Parser::ParseFile`).
+- **LANDMINE — a syntax guard that skips when its interpreter is missing is a guard that never runs.** The
+  fish check aborted itself on `which("fish") == null`, which is every machine without fish *and* the CI
+  runner, and PowerShell's only parse check sat inside the grinder's `ScriptTemplateMatrixIT` behind
+  `GRINDER_TEMPLATE_IT=1`, which no workflow sets. So the two shells this module has twice shipped silent
+  template bugs in were the two whose guards never executed. `ShellTemplateSyntaxTest` now asks the real
+  interpreter — local if installed, a container otherwise, and a **skip, never a pass**, when neither is
+  reachable. Keep that asymmetry: a syntax check that cannot run must not read as one that passed.
+  **Name the PowerShell image's platform.** `mcr.microsoft.com/powershell` publishes amd64, arm/v7 and
+  windows/amd64 — no linux/arm64 — so an Apple-Silicon daemon picks arm/v7, qemu dies with `uncaught target
+  signal 11`, and the container then hangs rather than exiting. Measured: a 5-minute stall without
+  `--platform linux/amd64`, ~30 s with it.
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI

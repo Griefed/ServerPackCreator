@@ -701,10 +701,14 @@ from the bash reference. Don't "fix" it again.
 Java version then reads as `do_not_manually_edit`, and the run aborts at the Jabba prompt — a platform
 mismatch, **not** a template defect. (A `pwsh` boot also needs `HOME` on a writable mount, since it
 creates `$HOME/.cache` and the rootfs is read-only — exit 133 before it even parses the script.) So
-PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's *own* parser
-(`Parser::ParseFile`) over both shipped `.ps1` files inside the image — catching the syntax-class
-regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
-rejects it with the reason.
+PowerShell's parse coverage is **`ShellTemplateSyntaxTest` in `-api`**, which runs PowerShell's *own*
+parser (`Parser::ParseFile`) over both shipped `.ps1` files — catching the syntax-class regressions
+these tests exist for. It lived here as `powerShellTemplatesParse` until 2026-09-26 and was moved
+because it needed nothing from this image or this matrix, and behind `GRINDER_TEMPLATE_IT` it never
+ran; in `-api` it runs on every push, in a stock container when no interpreter is installed. What
+still needs this image is `powerShellInstallerJavaSelectionHonoursTheOverrideAndItsFallback`, which
+*executes* the template's function rather than parsing it. Don't "fix" the matrix by adding a `pwsh`
+boot cell; `scriptFor` rejects it with the reason.
 
 **Matrix results are point-in-time** — the last full run (5 Minecraft × 5 loaders × {bash, fish}, bash ≡
 fish everywhere, `.ps1` parse ✅) is recorded in `claude-docs/REFACTOR-LOG.md`. Re-run it, don't trust a
