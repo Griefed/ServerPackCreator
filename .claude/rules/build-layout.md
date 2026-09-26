@@ -27,6 +27,21 @@ the "do not tidy that away, here is what it cost last time".
 > *supposed* to be absent there, so absence looks identical to broken — we ran exactly that test first
 > and misread it. Touch a file matching the globs, *then* look.
 
+- **One module has a source set beyond `main`/`test`, and it did not come for free.**
+  `serverpackcreator-grinder` declares `benchmark` (`src/benchmark/kotlin`, task
+  `:serverpackcreator-grinder:benchmark`) so `StoreWriteBenchmark` — which measures and cannot fail on what
+  it measures — stops being collected by `build` and counted as three skipped *tests*. Declared in the
+  **module's own build script**, not a convention plugin: a real script can use the version catalog and
+  reaches no other module. Three traps if you add a second one:
+  - **`java-conventions` configures `tasks.test` by name, not `tasks.withType<Test>().configureEach`.** A new
+    `Test` task therefore inherits none of `useJUnitPlatform()`, the mockk/ByteBuddy agent `jvmArgs`,
+    `TestHome.prepare`, the isolated Preferences node and home, or `testLogging`. Replicate what you need.
+    Broadening the convention is the tidier fix and reaches all seven modules plus `-app`'s own
+    re-declaration, so it is a decision to take deliberately rather than as a side effect.
+  - **`testLogging` is part of that**, and its absence is silent: the benchmark ran 3 tests in 10.2 s and
+    printed *nothing*, its measurements captured into the XML report and never shown.
+  - **Kover instruments every Kotlin compilation**, so a new source set counts as production code and moves
+    the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it.
 - **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
   with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
   failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps

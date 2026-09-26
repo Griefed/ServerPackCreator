@@ -632,7 +632,7 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
 
   | Test | Gate | Also needs | Last verified |
   |---|---|---|---|
-  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` | a daemon + `docker pull busybox` | Docker 29.5, 2026-06-26 |
+  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` — **set by CI since 2026-09-26** | a daemon + `docker pull busybox` | Docker 29.7.2, 2026-09-26 |
   | *(boot-log capture, verified by a live one-shot rather than an IT)* | — | a daemon + `spc-grinder-runtime` | Docker 29.7.2, 2026-08-29 |
   | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
   | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
@@ -640,6 +640,25 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   | `CurseForgeCrawlLiveIT` | `GRINDER_CF_IT=1` | **plus** `CURSEFORGE_API_KEY` | 2026-07-30 |
 
   e.g. `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`
+
+  **`DockerJavaContainerEngineIT` is no longer dark.** `.forgejo/workflows/test.yml` pulls busybox and sets
+  `GRINDER_DOCKER_IT=1`, so all nine run on every push (30.1 s measured) — the runner has a working socket,
+  which `qodana.yml` and `docs.yml` already rely on. The other gates stay unset on purpose: they need a live
+  Modrinth or CurseForge API, a built image plus a Minecraft download per cell, or a deployed grinder.
+
+- **Measurements live in a `benchmark` source set, not in `test` (2026-09-26).**
+  `src/benchmark/kotlin` holds `StoreWriteBenchmark`, run with `./gradlew :serverpackcreator-grinder:benchmark`.
+  It reports what `JsonVerdictStore` costs per `record()` and **asserts nothing about the timings** — this
+  project pins I/O by request, read and open counts and never by wall-clock, and `CoalescedVerdictWritesTest`
+  already pins the behaviour those numbers motivated. It does assert its own fixture, because a benchmark
+  measuring the wrong thing is worse than none.
+  **Not being in `test` is the gate** — there is no `SPC_GRINDER_BENCH` variable any more. While it lived in
+  `src/test` every build reported it as three skipped *tests*, which is three phantom entries in a number
+  people read. This is the **first custom source set in the repository**; three things it does not inherit,
+  because `java-conventions` configures `tasks.test` *by name* rather than `withType<Test>().configureEach`:
+  `useJUnitPlatform()` + the mockk agent args, the test-home/Preferences isolation, and `testLogging` — the
+  last of which matters most here, since without it the measurements are captured to XML and never printed.
+  Kover needs `excludedSourceSets` or the benchmark counts as production code.
 - **`GrinderAuditIT` grades a live daemon's published verdicts against their own evidence, and it exists
   because sample-and-fix failed twice.** A 200-log census (2026-08-29) and a merge gate reporting `HIGH 8 → 4`
   both preceded the 2026-08-31 finding that **four of five** sampled boot logs were scored `CRASHED` by the
