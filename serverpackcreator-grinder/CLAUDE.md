@@ -705,9 +705,10 @@ PowerShell's parse coverage is **`ShellTemplateSyntaxTest` in `-api`**, which ru
 parser (`Parser::ParseFile`) over both shipped `.ps1` files — catching the syntax-class regressions
 these tests exist for. It lived here as `powerShellTemplatesParse` until 2026-09-26 and was moved
 because it needed nothing from this image or this matrix, and behind `GRINDER_TEMPLATE_IT` it never
-ran; in `-api` it runs on every push, in a stock container when no interpreter is installed. What
-still needs this image is `powerShellInstallerJavaSelectionHonoursTheOverrideAndItsFallback`, which
-*executes* the template's function rather than parsing it. Don't "fix" the matrix by adding a `pwsh`
+ran; in `-api` it runs on every push, in a stock container when no interpreter is installed. The
+`JAVA_INSTALLER` probe followed it as `PowerShellInstallerJavaTest` for the same reason — executing one
+lifted function needs `pwsh`, not this image. **No PowerShell check is left here**; the gate now guards
+only what genuinely needs it, which is booting a cell. Don't "fix" the matrix by adding a `pwsh`
 boot cell; `scriptFor` rejects it with the reason.
 
 **Matrix results are point-in-time** — the last full run (5 Minecraft × 5 loaders × {bash, fish}, bash ≡

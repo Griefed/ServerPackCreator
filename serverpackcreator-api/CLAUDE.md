@@ -249,6 +249,18 @@
   windows/amd64 — no linux/arm64 — so an Apple-Silicon daemon picks arm/v7, qemu dies with `uncaught target
   signal 11`, and the container then hangs rather than exiting. Measured: a 5-minute stall without
   `--platform linux/amd64`, ~30 s with it.
+  **And do not read pwsh's exit code on an aarch64 host.** Even pinned to amd64 it runs under Rosetta, which
+  mistranslates .NET's dynamic call sites: the probe prints every correct line and *then* dies at teardown
+  (`assertion failed [block != nullptr] … BuilderBase.h:561`, exit 133), and the parse check exits 0 on one
+  run and crashes on the next — green on CI's native amd64, red on the machine the work happens on. Both
+  checks therefore prove success **positively**: `SETUP_MARKER` when the interpreter is usable, `FAIL <name>`
+  per rejected template, `DONE_MARKER` last. Same reason `PowerShellInstallerJavaTest` walks the AST with a
+  `Where-Object` pipeline instead of `Ast.FindAll`, whose ScriptBlock-as-.NET-delegate call site dies with
+  `NullReferenceException` at `CallSite.Target` before printing anything.
+  **`PowerShellInstallerJavaTest` is where the `JAVA_INSTALLER` override lives now**, promoted out of the
+  grinder's gated matrix on 2026-09-26: the fallback to `JAVA` is the branch every hand-made pack takes, and
+  no parse check can see it. `TemplateInterpreterRunner` is the one definition of "reach an interpreter,
+  locally or in a container" that both tests use — don't grow a second.
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI
