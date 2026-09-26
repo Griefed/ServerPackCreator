@@ -4,7 +4,6 @@ import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -26,9 +25,11 @@ import java.time.Instant
  * What it *does* assert is its own fixture. A benchmark measuring the wrong thing is worse than none,
  * so every run checks that the store really loaded the rows it was seeded with before timing anything.
  *
- * Named a benchmark rather than a test because it cannot fail on the thing it exists to report. It is
- * gated behind `SPC_GRINDER_BENCH=1` and skipped otherwise; run it with
- * `SPC_GRINDER_BENCH=1 ./gradlew :serverpackcreator-grinder:test --tests "*StoreWriteBenchmark"`.
+ * Named a benchmark rather than a test because it cannot fail on the thing it exists to report, and it
+ * lives in the `benchmark` source set rather than `test` for the same reason: `./gradlew build` never
+ * collects it, so it cannot appear in a skip count as a test that did not run. **Not being in `test` is
+ * the gate** — the `SPC_GRINDER_BENCH` environment variable it used to need is gone. Run it with
+ * `./gradlew :serverpackcreator-grinder:benchmark`.
  *
  * @author Griefed
  */
@@ -56,10 +57,6 @@ internal class StoreWriteBenchmark {
     /** Write-through cost: milliseconds per `record()` as the file grows, the number B35 started from. */
     @Test
     fun measureWriteThroughCostPerRecord(@TempDir dir: File) {
-        Assumptions.assumeTrue(
-            System.getenv("SPC_GRINDER_BENCH") != null,
-            "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
-        )
         for (size in listOf(1_000, 10_000, 100_000)) {
             val file = File(dir, "verdicts-$size.json")
             seed(file, size)
@@ -76,10 +73,6 @@ internal class StoreWriteBenchmark {
     /** The same measurement with writes coalesced — B35's fix, against the write-through number above. */
     @Test
     fun measureCoalescedCostPerRecord(@TempDir dir: File) {
-        Assumptions.assumeTrue(
-            System.getenv("SPC_GRINDER_BENCH") != null,
-            "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
-        )
         for (size in listOf(1_000, 10_000, 100_000)) {
             val file = File(dir, "coalesced-$size.json")
             seed(file, size)
@@ -100,10 +93,6 @@ internal class StoreWriteBenchmark {
      */
     @Test
     fun measurePersistComponents(@TempDir dir: File) {
-        Assumptions.assumeTrue(
-            System.getenv("SPC_GRINDER_BENCH") != null,
-            "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
-        )
         val mapper = jacksonObjectMapper().findAndRegisterModules()
         for (size in listOf(10_000, 100_000)) {
             val rows = (0 until size).map { verdict(it) }
