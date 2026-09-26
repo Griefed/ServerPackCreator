@@ -3,6 +3,7 @@ package de.griefed.serverpackcreator.grinder.report
 import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -10,7 +11,28 @@ import java.io.File
 import java.time.Duration
 import java.time.Instant
 
-internal class StoreWriteBenchTest {
+/**
+ * Measures what [JsonVerdictStore] costs per `record()`, and **asserts nothing about the timings** it
+ * prints.
+ *
+ * That is deliberate, not an omission. This project pins I/O by request, read and open *counts* and
+ * never by wall-clock, so a benchmark has no honest assertion to make about the numbers it produces —
+ * and the behaviour these measurements motivated is already pinned, properly, by
+ * [CoalescedVerdictWritesTest]: that a coalesced store does not rewrite per `record()`, that `flush()`
+ * and `close()` write what is buffered, that the scheduled flusher fires, and that a write-through
+ * store still persists immediately. Adding timing assertions here would duplicate that guard with a
+ * flakier one.
+ *
+ * What it *does* assert is its own fixture. A benchmark measuring the wrong thing is worse than none,
+ * so every run checks that the store really loaded the rows it was seeded with before timing anything.
+ *
+ * Named a benchmark rather than a test because it cannot fail on the thing it exists to report. It is
+ * gated behind `SPC_GRINDER_BENCH=1` and skipped otherwise; run it with
+ * `SPC_GRINDER_BENCH=1 ./gradlew :serverpackcreator-grinder:test --tests "*StoreWriteBenchmark"`.
+ *
+ * @author Griefed
+ */
+internal class StoreWriteBenchmark {
     private fun verdict(i: Int) = GrindVerdict(
         "Modrinth", "mod$i", "https://modrinth.com/mod/mod$i", "Forge", "mod$i-",
         "Forge 47.2.0 / Minecraft 1.20.1 -> SURVIVED (exit 137)", Instant.parse("2026-08-29T00:00:00Z")
@@ -31,8 +53,9 @@ internal class StoreWriteBenchTest {
         }
     }
 
+    /** Write-through cost: milliseconds per `record()` as the file grows, the number B35 started from. */
     @Test
-    fun bench(@TempDir dir: File) {
+    fun measureWriteThroughCostPerRecord(@TempDir dir: File) {
         Assumptions.assumeTrue(
             System.getenv("SPC_GRINDER_BENCH") != null,
             "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
@@ -41,7 +64,7 @@ internal class StoreWriteBenchTest {
             val file = File(dir, "verdicts-$size.json")
             seed(file, size)
             val store = JsonVerdictStore(file)
-            check(store.all().size == size) { "seeded $size but loaded ${store.all().size}" }
+            Assertions.assertEquals(size, store.all().size, "the benchmark seeded $size rows but the store loaded a different count")
             repeat(3) { store.record(verdict(size + it)) }
             val started = System.nanoTime()
             repeat(10) { store.record(verdict(size + 100 + it)) }
@@ -52,7 +75,7 @@ internal class StoreWriteBenchTest {
 
     /** The same measurement with writes coalesced — B35's fix, against the write-through number above. */
     @Test
-    fun benchCoalesced(@TempDir dir: File) {
+    fun measureCoalescedCostPerRecord(@TempDir dir: File) {
         Assumptions.assumeTrue(
             System.getenv("SPC_GRINDER_BENCH") != null,
             "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
@@ -61,7 +84,7 @@ internal class StoreWriteBenchTest {
             val file = File(dir, "coalesced-$size.json")
             seed(file, size)
             JsonVerdictStore(file, flushInterval = Duration.ofSeconds(30)).use { store ->
-                check(store.all().size == size)
+                Assertions.assertEquals(size, store.all().size, "the benchmark seeded $size rows but the store loaded a different count")
                 repeat(3) { store.record(verdict(size + it)) }
                 val started = System.nanoTime()
                 repeat(10) { store.record(verdict(size + 100 + it)) }
@@ -76,7 +99,7 @@ internal class StoreWriteBenchTest {
      * enough on its own, or does the store need an append-log?
      */
     @Test
-    fun benchComponents(@TempDir dir: File) {
+    fun measurePersistComponents(@TempDir dir: File) {
         Assumptions.assumeTrue(
             System.getenv("SPC_GRINDER_BENCH") != null,
             "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
@@ -84,6 +107,7 @@ internal class StoreWriteBenchTest {
         val mapper = jacksonObjectMapper().findAndRegisterModules()
         for (size in listOf(10_000, 100_000)) {
             val rows = (0 until size).map { verdict(it) }
+            Assertions.assertEquals(size, rows.size, "the benchmark built a different number of rows than it is about to time")
             fun time(label: String, body: () -> Unit) {
                 repeat(2) { body() }
                 val started = System.nanoTime()
