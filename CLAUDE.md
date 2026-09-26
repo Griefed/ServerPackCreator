@@ -328,7 +328,7 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 485           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| api            | 488           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
 | clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 232           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
@@ -371,6 +371,23 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   guard *passed*, not only why it failed, whenever fixture values could contain one another.
 - **A guard that cannot compile is not a red pin.** Land the seam first as its own behaviour-preserving
   commit, or say in the message that the boundary is missing and quote the mutation that reproduces the red.
+- **An expression statement reads exactly like an assertion and asserts nothing.** `suggestInclusionsTest`
+  called `dirs.any { it.source == "config" }` six times and discarded every result — valid Kotlin, no
+  warning, and indistinguishable from a guard at a glance. It passed against *any* return value, proven by
+  mutating `suggestInclusions` to `return ArrayList()`: the old body stayed green, the replacement fails with
+  `'config' must be suggested, got []`. Its last line was also the wrong question — `any { it != x }` is true
+  the moment a second element exists, where the intent was `none { it == x }`. A whole-repository scan for
+  `@Test` functions with no assertion reachable through their same-file helpers found **three real cases in
+  2094** (the other two only smoke-tested a logging call), so the class is rare but silent, and the two ways
+  it hides are a bare `any`/`map`/`filter` whose result is dropped, and a call that can fail only by throwing.
+  Frontend specs were scanned the same way and were clean.
+- **A benchmark is not a test, and naming it one costs a guard.** `StoreWriteBenchTest`'s three methods
+  printed timings and could not fail on them. The fix was not to assert the timings — this project pins I/O
+  by request, read and open counts, never by wall-clock, and `CoalescedVerdictWritesTest` already pins the
+  behaviour the numbers motivated. It is now `StoreWriteBenchmark`, its methods say `measure…`, and it
+  asserts its own *fixture* so a run that mis-seeds fails loudly instead of reporting a confident number
+  about nothing. Ask of a measurement what it would take to make it red; if the answer is "nothing", it
+  belongs in a file that does not claim otherwise.
 - **A guard gated on something nobody supplies is indistinguishable from no guard, and it reports as a
   skip rather than a gap.** Measured on 2026-09-26: 30 of the suite's tests were gated on an env var, a
   secret or an installed interpreter, and **not one of those gates was set in any workflow** — `test.yml`
