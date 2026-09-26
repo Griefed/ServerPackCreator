@@ -63,7 +63,26 @@ jobs:
       - name: Set Permissions
         run: chmod +x gradlew
 
+      # DockerJavaContainerEngineIT is the only cover the grinder's container engine has against a real
+      # daemon, and it is gated behind GRINDER_DOCKER_IT so it never runs where there is none. The runner
+      # has a working socket -- qodana.yml and docs.yml already `docker run` from an ordinary
+      # `runs-on: ubuntu-latest` job, which is the sanctioned shape (see .claude/rules/ci-workflows.md;
+      # a `container:` of a tool image is the landmine, not docker itself). Pulling busybox up front keeps
+      # the pull out of the test's own timeout. Measured locally: 9 tests, all green, 64s.
+      # ShellTemplateSyntaxTest asks fish and PowerShell themselves whether the shipped templates parse,
+      # in a container when the interpreter is not installed -- which on this runner is both of them.
+      - name: Pull the images the container-backed tests use
+        run: |
+          docker pull busybox:latest
+          docker pull alpine:latest
+          docker pull mcr.microsoft.com/powershell:latest
+
       - name: Build with Gradle
+        env:
+          # Turns on the 9 DockerJavaContainerEngineIT tests above. The other GRINDER_*_IT gates stay
+          # unset on purpose: they need a live Modrinth/CurseForge API, a built image, or a deployed
+          # grinder, none of which belong on a per-push build.
+          GRINDER_DOCKER_IT: "1"
         run: ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace
 
       # GitLab rendered `reports: junit:` in its UI; Forgejo has no equivalent, so the XML is uploaded
