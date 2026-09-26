@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
@@ -15,10 +14,11 @@ import java.time.Instant
  * That is deliberate, not an omission. This project pins I/O by request, read and open *counts* and
  * never by wall-clock, so a benchmark has no honest assertion to make about the numbers it produces —
  * and the behaviour these measurements motivated is already pinned, properly, by
- * [CoalescedVerdictWritesTest]: that a coalesced store does not rewrite per `record()`, that `flush()`
+ * `CoalescedVerdictWritesTest`: that a coalesced store does not rewrite per `record()`, that `flush()`
  * and `close()` write what is buffered, that the scheduled flusher fires, and that a write-through
  * store still persists immediately. Adding timing assertions here would duplicate that guard with a
- * flakier one.
+ * flakier one. (Named in backticks rather than linked: the `benchmark` source set compiles against
+ * `main`, not against `test`, so a KDoc link to a test class has nothing to resolve against.)
  *
  * What it *does* assert is its own fixture. A benchmark measuring the wrong thing is worse than none,
  * so every run checks that the store really loaded the rows it was seeded with before timing anything.
