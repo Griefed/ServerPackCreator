@@ -1430,6 +1430,34 @@ so the threshold is testable at all: both real callers are integration-shaped an
 **Landmine:** any new poll/park loop that bounds a boot must use it rather than `System.currentTimeMillis()`, or that
 path silently reacquires the bug.
 
+## Boot teardown kills the tree, and "alive" is not "running" (2026-09-25/26)
+
+`start.sh` is a launcher: the Minecraft server is a `java` child of the `bash` the runner spawned, so
+`destroyForcibly()` on that shell reparents the server to init and leaves it holding the world directory, the
+port and its heap. `HostProcessServerRunner.destroyTree` therefore collects `ProcessHandle.descendants()`
+**before** anything is killed — once the shell dies its children are reparented and stop being its descendants,
+so collecting afterwards finds nothing — asks the whole tree to exit, and forces only what is left after one
+shared budget. `HostProcessDescendantTeardownTest` pins it by asking the operating system, because `RunResult`
+reports the *shell's* exit either way.
+
+**Landmine — `ProcessHandle.isAlive` is true for a process that has exited and not been reaped.** The PID is
+still in the table; the process is gone. An orphan is reparented to PID 1, and a container whose PID 1 is
+`tail -f /dev/null` rather than an init never reaps it, so there the zombie is permanent. This is the CI job
+container, and it turned CI run 629 red against a `sleep` the runner had killed correctly — while the identical
+code was green on macOS, where launchd reaps. Two containers differing only in PID 1, same program: with
+`tail`, `/proc/<pid>` state `Z` and `isAlive=true`; with `docker-init`, gone.
+
+The liveness question has one definition, `HostProcessServerRunner.isStillRunning` — alive **and** still
+carrying a command line, which the kernel drops on exit while the PID lingers. Ask it rather than `isAlive`
+anywhere teardown or a guard wants to know whether a boot's processes survived. It is also why the graceful
+wait **polls** instead of awaiting `onExit()`: `onExit()` never completes for a process nobody will reap, so one
+zombie descendant spent the entire `GRACEFUL_TEARDOWN_SECONDS` budget waiting for an exit that had already
+happened — 5000+ ms before, 3 ms after, measured in that same container.
+
+`HostProcessLivenessTest` pins the distinction without touching PID 1: `bash` backgrounds a child and then
+`exec`s itself into `sleep`, so the child's parent is a process that can never call `wait()`. Deterministic on
+macOS 27 and eclipse-temurin:21 alike; where it cannot stage, it skips rather than passing vacuously.
+
 ## Refactor state — condensed summary (removed 2026-09-11)
 
 > This was a **verbatim** copy of the sections above, moved here from the root `CLAUDE.md` on 2026-09-05

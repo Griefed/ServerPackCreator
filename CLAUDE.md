@@ -323,13 +323,13 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-25).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-09-26).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
 | api            | 490 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 672           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| clientside     | 673           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 227           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
@@ -380,6 +380,14 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   and an audit flagged it: the branch is not being re-split, and the route is sanctioned rather than merely
   tolerated. It costs one thing — no commit is a pure "add tests" commit — so name the vacuous guards
   explicitly, because they are the ones that will otherwise be mistaken for pins.
+- **When a guard is green on one host and red on another, suspect the question before the hosts.** CI run 629
+  failed `HostProcessDescendantTeardownTest` against a process the runner had killed correctly. `ProcessHandle.isAlive`
+  answers *"is this PID in the table"*; the guard meant *"is this process running"*, and the two differ only for a
+  process that has exited and not been reaped — which is permanent under a container PID 1 that is not an init, and
+  invisible on a developer machine where launchd reaps. Both the fix and the guard were right; the *predicate* was the
+  wrong predicate. Two containers differing only in PID 1 separated them in minutes, and the same difference was
+  costing the production teardown its whole 5 s budget (5000+ ms → 3 ms) on a process that had already stopped. An
+  environment-shaped failure is evidence that an assertion is asking something narrower or wider than it means.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.
