@@ -51,11 +51,11 @@ import java.util.concurrent.Future
  * whose loader has no build for the Minecraft version (or whose JDK the image lacks) are reported as
  * skipped, not failed.
  *
- * Parsing the shipped `.ps1` templates used to live here too and no longer does: it needed nothing from
- * this image or this matrix, and behind this gate it never ran. `ShellTemplateSyntaxTest` in `-api` now
- * asks fish *and* PowerShell the same question on every push, in a stock container when the interpreter
- * is not installed. What stays here is what needs more than a parser — booting a cell, and executing
- * `RunInstallerJavaCommand` to prove the `JAVA_INSTALLER` fallback.
+ * Every PowerShell check that used to live here has moved to `-api`, where it runs on every push against
+ * a stock `mcr.microsoft.com/powershell` image: `ShellTemplateSyntaxTest` parses the shipped templates and
+ * `PowerShellInstallerJavaTest` executes `RunInstallerJavaCommand` for the `JAVA_INSTALLER` override and
+ * its fallback. Neither needed this image or this matrix, and behind this gate neither ever ran. What is
+ * left here is the one thing that genuinely does need them: booting a cell.
  *
  * Integration-only — needs a live Docker daemon, the built `spc-grinder-templates` image and a real
  * `ApiWrapper` — so it is **gated behind `GRINDER_TEMPLATE_IT=1`** and skipped on a normal run. It is
@@ -214,77 +214,6 @@ internal class ScriptTemplateMatrixIT {
             })
         }
         return tests
-    }
-
-    /**
-     * Executes the `.ps1` template's **own** `RunInstallerJavaCommand` on Linux pwsh to prove the
-     * installer-JDK selection works in both directions. The template as a whole cannot be booted here (it
-     * shells out to Windows `CMD`), but the *selection* is ordinary PowerShell: extract that one function
-     * from the shipped file via the AST, define a `CMD` stub that records what it is handed, and assert
-     * that an unset `$JavaInstaller` falls back to `$Java` while a set one wins.
-     *
-     * This closes the gap a parse check leaves — the fallback is the branch every existing pack takes
-     * (nothing writes `JAVA_INSTALLER` for a hand-made pack), so a quoting slip there would break installs
-     * for everyone while a parse-only test stayed green.
-     */
-    @Test
-    @EnabledIfEnvironmentVariable(named = "GRINDER_TEMPLATE_IT", matches = "1")
-    fun powerShellInstallerJavaSelectionHonoursTheOverrideAndItsFallback() {
-        val templates = File("../serverpackcreator-api/src/main/resources/de/griefed/resources/server_files")
-            .canonicalFile
-        Assertions.assertTrue(templates.isDirectory, "template resources not found at $templates")
-
-        val d = '$'
-        val probe = File.createTempFile("spc-ps-installer-probe-", ".ps1").apply {
-            deleteOnExit()
-            writeText(
-                """
-                ${d}ErrorActionPreference = 'Stop'
-                ${d}errors = ${d}null
-                ${d}ast = [System.Management.Automation.Language.Parser]::ParseFile('/templates/default_template.ps1', [ref]${d}null, [ref]${d}errors)
-                if (${d}errors) { throw 'template does not parse' }
-                ${d}fn = ${d}ast.FindAll({ param(${d}n) ${d}n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and ${d}n.Name -like '*RunInstallerJavaCommand' }, ${d}true)
-                if (${d}fn.Count -ne 1) { throw "expected one RunInstallerJavaCommand, found ${d}(${d}fn.Count)" }
-                # Define the template's own function, and stub CMD so nothing Windows-only actually runs.
-                Invoke-Expression ${d}fn[0].Extent.Text
-                function global:CMD { param([string]${d}Slash, [string]${d}Line) ${d}global:Recorded = ${d}Line }
-
-                ${d}global:Java = '/server/java8'
-                ${d}global:JavaInstaller = ${d}null
-                RunInstallerJavaCommand '-jar quilt-installer.jar'
-                Write-Output "FALLBACK:${d}Recorded"
-
-                ${d}global:JavaInstaller = '/installer/java21'
-                RunInstallerJavaCommand '-jar quilt-installer.jar'
-                Write-Output "OVERRIDE:${d}Recorded"
-                """.trimIndent()
-            )
-        }
-
-        val output = DockerJavaContainerEngine().run(
-            ContainerSpec(
-                image = image,
-                command = listOf("sh", "-c", "HOME=/tmp exec pwsh -NoProfile -File /probe.ps1"),
-                workingDir = "/templates",
-                mounts = listOf(
-                    BindMount(templates.absolutePath, "/templates", readOnly = true),
-                    BindMount(probe.absolutePath, "/probe.ps1", readOnly = true)
-                ),
-                networkMode = "none"
-            ),
-            readyPattern = Regex("this-never-appears"),
-            timeout = Duration.ofMinutes(3)
-        )
-        val rendered = output.lines.joinToString("\n")
-        Assertions.assertEquals(0, output.exitCode, "the probe failed:\n$rendered")
-        Assertions.assertTrue(
-            output.lines.any { it.contains("FALLBACK:") && it.contains("/server/java8") },
-            "an unset JAVA_INSTALLER must fall back to the server's Java, got:\n$rendered"
-        )
-        Assertions.assertTrue(
-            output.lines.any { it.contains("OVERRIDE:") && it.contains("/installer/java21") },
-            "a set JAVA_INSTALLER must be used for the installer, got:\n$rendered"
-        )
     }
 
     /** Boot one cell in a container and classify by the ready-line. */
