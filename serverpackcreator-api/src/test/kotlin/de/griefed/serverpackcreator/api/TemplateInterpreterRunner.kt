@@ -45,7 +45,7 @@ internal class TemplateInterpreterRunner {
      * One directory rather than a temp file each, because the container mounts it whole and a probe can
      * then name its siblings without the test repeating the list.
      */
-    fun stageTemplates(vararg names: String): File {
+    fun stageTemplates(names: List<String>): File {
         val directory = Files.createTempDirectory("spc-template-probe").toFile().canonicalFile
         directory.deleteOnExit()
         for (name in names) {
@@ -62,42 +62,30 @@ internal class TemplateInterpreterRunner {
         File(staged, name).apply { writeText(body); deleteOnExit() }
 
     /**
-     * Run [interpreter] over each staged template, or return null when it is not on the PATH.
+     * Run [interpreter] over each labelled command in [commands], or null when it is not on the PATH.
      *
-     * Null means "not run here", which is what makes the container a fallback rather than the only
-     * path — a developer with the interpreter installed pays no container start.
+     * Null means "not run here", which is what makes the container a fallback rather than the only path —
+     * a developer with the interpreter installed pays no container start. One command or one per template
+     * is the caller's choice; the labels are what a synthesised failure line names, so they should be the
+     * things a reader would look for.
      */
-    fun runLocally(interpreter: String, staged: File, commandFor: (File) -> List<String>): Outcome? {
+    fun runLocally(interpreter: String, commands: Map<String, List<String>>): Outcome? {
         if (onPath(interpreter) == null) {
             return null
         }
         val transcript = StringBuilder()
         var timedOut = false
-        for (template in staged.listFiles().orEmpty().sortedBy { it.name }) {
-            val run = execute(commandFor(template))
+        for ((label, command) in commands) {
+            val run = execute(command)
             transcript.append(run.output)
             timedOut = timedOut || run.timedOut
             // Synthesise the same FAIL line a container script prints, so success has one definition
             // whichever path answered. Locally the exit code is trustworthy, which is what makes this safe.
             if (run.exitCode != 0) {
-                transcript.append("\n$FAILURE_PREFIX ${template.name} (exit ${run.exitCode})\n")
+                transcript.append("\n$FAILURE_PREFIX $label (exit ${run.exitCode})\n")
             }
         }
         return Outcome("local $interpreter", transcript.toString(), setUp = !timedOut, completed = !timedOut)
-    }
-
-    /**
-     * Run one [command] with a local [interpreter], or null when it is not on the PATH.
-     *
-     * The single-shot sibling of [runLocally], for a probe that inspects the whole staged directory in
-     * one invocation rather than once per template.
-     */
-    fun runLocalCommand(interpreter: String, command: List<String>): Outcome? {
-        if (onPath(interpreter) == null) {
-            return null
-        }
-        val run = execute(command)
-        return Outcome("local $interpreter", run.output, setUp = !run.timedOut, completed = !run.timedOut)
     }
 
     /**

@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.SETU
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * Asks the real interpreters whether the shipped fish and PowerShell templates are even parseable.
@@ -57,8 +58,9 @@ internal class ShellTemplateSyntaxTest {
      */
     @Test
     fun fishTemplatesAreSyntacticallyValid() {
-        val staged = runner.stageTemplates("default_template.fish", "default_java_template.fish")
-        val checked = runner.runLocally("fish", staged) { file -> listOf("fish", "-n", file.absolutePath) }
+        val names = listOf("default_template.fish", "default_java_template.fish")
+        val staged = runner.stageTemplates(names)
+        val checked = runner.runLocally("fish", names.associateWith { listOf("fish", "-n", File(staged, it).absolutePath) })
             ?: runner.runInContainer(
                 image = "alpine:latest",
                 staged = staged,
@@ -76,10 +78,11 @@ internal class ShellTemplateSyntaxTest {
      */
     @Test
     fun powerShellTemplatesParse() {
-        val staged = runner.stageTemplates("default_template.ps1", "default_java_template.ps1")
-        val checked = runner.runLocally("pwsh", staged) { file ->
-            listOf("pwsh", "-NoProfile", "-Command", parseCommandFor(file.absolutePath))
-        } ?: runner.runInContainer(
+        val names = listOf("default_template.ps1", "default_java_template.ps1")
+        val staged = runner.stageTemplates(names)
+        val checked = runner.runLocally("pwsh", names.associateWith {
+            listOf("pwsh", "-NoProfile", "-Command", parseCommandFor(File(staged, it).absolutePath))
+        }) ?: runner.runInContainer(
             image = POWERSHELL_IMAGE,
             staged = staged,
             platform = POWERSHELL_PLATFORM,

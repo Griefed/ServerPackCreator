@@ -61,10 +61,10 @@ internal class PowerShellInstallerJavaTest {
      */
     @Test
     fun theInstallerJavaOverrideWinsAndFallsBackToTheServersJava() {
-        val staged = runner.stageTemplates("default_template.ps1")
+        val staged = runner.stageTemplates(listOf("default_template.ps1"))
         val probeScript = runner.stageScript(staged, PROBE_NAME, probe())
 
-        val outcome = runner.runLocalCommand("pwsh", listOf("pwsh", "-NoProfile", "-File", probeScript.absolutePath))
+        val outcome = runner.runLocally("pwsh", mapOf(PROBE_NAME to listOf("pwsh", "-NoProfile", "-File", probeScript.absolutePath)))
             ?: runner.runInContainer(
             image = POWERSHELL_IMAGE,
             staged = staged,
