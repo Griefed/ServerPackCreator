@@ -116,17 +116,10 @@ tasks.build {
 
 tasks.test {
     dependsOn(":serverpackcreator-api:processTestResources")
-    useJUnitPlatform()
+    // Jakarta/JBoss logging has to be the manager before the first log call; this is the only
+    // module-specific thing `test` needs. `useJUnitPlatform()` and the test-home preparation come from
+    // `java-conventions`, which this module reaches via application-conventions -> kotlin-conventions,
+    // and re-declaring them here only created a second copy of TestHome.prepare's mkdirs-and-.gitkeep
+    // to drift out of step with it.
     systemProperty("java.util.logging.manager","org.jboss.logmanager.LogManager")
-    // Captured as a File so the action closes over that alone. Reading projectDir or calling
-    // Project.mkdir inside a task action holds the project object, which the configuration cache
-    // cannot serialize.
-    val testHome = layout.projectDirectory.dir("tests").asFile
-    doFirst {
-        testHome.mkdirs()
-        val gitkeep = File(testHome, ".gitkeep")
-        if (!gitkeep.exists()) {
-            gitkeep.writeText("Hi")
-        }
-    }
 }
