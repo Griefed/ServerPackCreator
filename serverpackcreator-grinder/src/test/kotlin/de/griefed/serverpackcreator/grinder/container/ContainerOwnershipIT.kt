@@ -71,6 +71,32 @@ internal class ContainerOwnershipIT {
             .withLabelFilter(mapOf(DockerJavaContainerEngine.INSTANCE_LABEL to engine.instanceId))
             .exec().map { it.id }
 
+    /** The containers [engine] has *running*, which is what `close` promises to end. */
+    private fun runningContainersOf(engine: DockerJavaContainerEngine): List<String> =
+        DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(false)
+            .withLabelFilter(mapOf(DockerJavaContainerEngine.INSTANCE_LABEL to engine.instanceId))
+            .exec().map { it.id }
+
+    /**
+     * Wait for [engine] to have nothing running, rather than asserting the instant `close` returns.
+     *
+     * `close` budgets the whole sweep: it asks the daemon to stop each container and gives the set one
+     * grace window, then interrupts its own stoppers so shutdown cannot hang. A busy daemon can miss that
+     * window — measured on the runner while `docker-test.yml` was pulling an image beside it — and the
+     * container is then stopped by the daemon a moment later, with its *removal* left to the next
+     * startup's reap. That is the documented design, so the test waits for the outcome `close` promises
+     * (nothing running) instead of the one it does not (nothing left at all).
+     */
+    private fun awaitNothingRunning(engine: DockerJavaContainerEngine): List<String> {
+        val until = System.currentTimeMillis() + 60_000
+        var running = runningContainersOf(engine)
+        while (running.isNotEmpty() && System.currentTimeMillis() < until) {
+            Thread.sleep(250)
+            running = runningContainersOf(engine)
+        }
+        return running
+    }
+
     /** Start a container in the background and block until the daemon reports it, so the test never races. */
     private fun startSleeper(engine: DockerJavaContainerEngine): Thread {
         val booting = Thread {
@@ -78,7 +104,10 @@ internal class ContainerOwnershipIT {
                 engine.run(sleeperSpec(), Regex("this-never-appears"), Duration.ofMinutes(2)) { }
             }
         }.apply { isDaemon = true; start() }
-        val until = System.currentTimeMillis() + 30_000
+        // 60s, not 30: a runner sharing its daemon with an image build takes noticeably longer to get a
+        // container up, and this wait failing reads as "there was nothing to reap" rather than as "the
+        // daemon was slow" — a fixture timing out disguised as a verdict.
+        val until = System.currentTimeMillis() + 60_000
         while (System.currentTimeMillis() < until && containersOf(engine).isEmpty()) {
             Thread.sleep(200)
         }
@@ -122,8 +151,15 @@ internal class ContainerOwnershipIT {
 
             closing.close()
 
-            Assertions.assertTrue(containersOf(closing).isEmpty(), "the closed engine must take its own container")
-            Assertions.assertEquals(1, containersOf(surviving).size, "and must leave the other engine's alone")
+            Assertions.assertTrue(
+                awaitNothingRunning(closing).isEmpty(),
+                "the closed engine's own container must stop"
+            )
+            Assertions.assertEquals(
+                1,
+                runningContainersOf(surviving).size,
+                "and the other engine's must still be running"
+            )
         } finally {
             surviving.close()
         }
