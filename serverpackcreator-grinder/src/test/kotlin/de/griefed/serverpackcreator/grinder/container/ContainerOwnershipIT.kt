@@ -48,13 +48,23 @@ import java.util.concurrent.atomic.AtomicBoolean
 @EnabledIfEnvironmentVariable(named = "GRINDER_DOCKER_IT", matches = "1")
 internal class ContainerOwnershipIT {
 
-    /** Long enough to be caught running, short enough not to hold the suite up if something goes wrong. */
+    /**
+     * A container that waits to be stopped, and actually stops when asked.
+     *
+     * The trap and the one-second loop are not decoration. `sh -c "…; sleep 120"` leaves `sh` as PID 1,
+     * which ignores SIGTERM and does not forward it, so `docker stop` waits out its whole grace window and
+     * `close` gives up and interrupts its own stopper mid-call — a fixture that fails the engine for doing
+     * exactly what it promises. The same idiom is in `DockerJavaContainerEngineIT` for the same reason.
+     */
     private fun sleeperSpec() = ContainerSpec(
         image = "busybox:latest",
-        command = listOf("sh", "-c", "echo up-and-waiting; sleep 120"),
+        command = listOf("sh", "-c", "trap 'exit 0' TERM; echo up-and-waiting; while true; do sleep 1; done"),
         workingDir = "/",
         mounts = emptyList()
     )
+
+    /** An engine whose shutdown grace is short, so a test that closes one does not wait out production's. */
+    private fun engine() = DockerJavaContainerEngine(shutdownGrace = Duration.ofSeconds(5))
 
     /** Every container this engine has on the daemon, asked for by its own instance label. */
     private fun containersOf(engine: DockerJavaContainerEngine): List<String> =
@@ -79,8 +89,8 @@ internal class ContainerOwnershipIT {
     /** Two engines on one daemon must be distinguishable, and each must see only its own container. */
     @Test
     fun eachEngineStampsItsOwnContainersAndCanFindThemAlone() {
-        val first = DockerJavaContainerEngine()
-        val second = DockerJavaContainerEngine()
+        val first = engine()
+        val second = engine()
         try {
             Assertions.assertNotEquals(first.instanceId, second.instanceId, "two engines must not share an identity")
             startSleeper(first)
@@ -105,8 +115,8 @@ internal class ContainerOwnershipIT {
      */
     @Test
     fun closingOneEngineLeavesAnotherEnginesContainerRunning() {
-        val closing = DockerJavaContainerEngine()
-        val surviving = DockerJavaContainerEngine()
+        val closing = engine()
+        val surviving = engine()
         try {
             startSleeper(closing)
             startSleeper(surviving)
@@ -128,7 +138,7 @@ internal class ContainerOwnershipIT {
      */
     @Test
     fun reapingSparesTheReapersOwnContainers() {
-        val reaper = DockerJavaContainerEngine()
+        val reaper = engine()
         try {
             startSleeper(reaper)
             Assertions.assertEquals(1, containersOf(reaper).size, "test setup: the reaper must own a container")
