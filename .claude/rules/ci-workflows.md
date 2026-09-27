@@ -108,6 +108,58 @@ above survived three audit iterations that validated YAML, checked action pinnin
 verified secret names. None of that touches whether the runner can execute a step. The only test that
 finds these is a real run on the real instance.
 
+## A run has two numbers, and the web routes disagree about which one they take
+
+**LANDMINE — `/actions/runs/{run}` takes the per-repo index everywhere except the artifact download,
+which takes the instance-wide id.** Every handler under that path resolves the run with
+`GetRunByIndex` — the run page, the job view, the logs, the artifact *listing* — while
+`ArtifactsDownloadView` calls `getRunByID` (`routers/web/repo/actions/view.go`). One path, two
+identifiers, no redirect between them. Probed against this instance for one Qodana scan of
+`ad5269302`, which is run index 644 and run id 936:
+
+```
+/actions/runs/644/artifacts/qodana-report -> 404
+/actions/runs/936/artifacts/qodana-report -> 200, 2515070 bytes
+/actions/runs/644/                        -> 307 to the job view
+/actions/runs/936/                        -> 404
+```
+
+The two values reach a workflow under names that do not hint at the difference
+(`services/actions/context.go`): **`github.run_number` is `run.Index`** (the number in a run's URL)
+and **`github.run_id` is `run.ID`** (what the API and the artifact route want). The REST API takes the
+id too, which is why `/api/v1/repos/{owner}/{repo}/actions/runs/222` 404s while the run's page is
+`/actions/runs/222`; `index_in_repo` in a listing is the bridge between them.
+
+This shipped a dead link in `qodana.yml`'s Discord message until 2026-09-26, and the comment that
+caused it had the premise right and the conclusion inverted: it refused the upload action's own
+`artifact-url` output *because* that output is built from `github.context.runId`. That is exactly the
+identifier the route wants — the action logged `.../actions/runs/936/artifacts/879` in the same job,
+and it was correct. **When a forge hands you two identifiers for one object, probe the route rather
+than reasoning about which one is "the" run number.** `curl -o /dev/null -w '%{http_code}'` answers it
+anonymously in a second.
+
+## `concurrency` is per-ref here, and two refs build the same commit on every push
+
+**Forgejo implements `concurrency` (since v14), and its `cancel-in-progress: false` QUEUES rather than
+doing nothing** — *"any previous invocation of any workflow in the repository with the same concurrency
+group will be executed before the newer invocation"*, with exact ordering documented as not guaranteed.
+Worth stating because a search summary of the same feature says the opposite ("no concurrency management
+will occur"), and because GitHub and Forgejo do not describe it identically. Read the
+[reference](https://forgejo.org/docs/v15.0/user/actions/reference/), not a summary.
+
+**The group in this directory is `<workflow>-${{ github.ref }}`, which is deliberate and has a cost worth
+knowing: a push to `develop` also builds PR #678 (`develop` → `beta`) at the same commit, in parallel, on
+the same runner.** Two jobs, one Docker daemon, one filesystem. That is fine for everything that only reads
+— and it is not fine for anything that asks the daemon a global question or performs a global side effect.
+It cost `DockerJavaContainerEngineIT` three red runs in a row on 2026-09-27 (947, 954, 956), each failing a
+*different* test of the same class, which is the signature of interference rather than of a defect: a defect
+fails the same test in both jobs.
+
+`grinder-container-it.yml` is the answer where exclusivity is genuinely required — a group with **no ref in
+it**, so one run at a time repository-wide, and `cancel-in-progress: false` so a second one queues. It holds
+only the two classes that need it, because the lock is only cheap while the job is short; serialising
+`test.yml` itself would have worked and cost every push a second full 35-minute run in series.
+
 ## The mirror can only be as current as the repository it mirrors into
 
 **gitlab.com was dropped as an outward mirror on 2026-08-23, and no release-API change could have saved it.**

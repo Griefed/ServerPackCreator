@@ -7,6 +7,37 @@ projectJDK: "21"
 
 linter: jetbrains/qodana-jvm-community:2026.2
 
+# -----------------------------------------------------------------------------------------------
+# Inspections turned on ON TOP of qodana.recommended.
+#
+# `JUnitTestMethodWithNoAssertions` flags a @Test method that asserts nothing. A repository-wide
+# audit on 2026-09-26 scanned 2094 @Test functions and found three: the worst,
+# ConfigurationHandlerTest.suggestInclusionsTest, called `dirs.any { … }` six times and discarded
+# every result, so it passed against an empty list. All three are fixed; this exists so a fourth
+# cannot arrive unnoticed. Runs 817 and 832 did not report any of them, which is the evidence that
+# the rule is not part of qodana.recommended -- a hypothesis this entry tests, not a fact.
+#
+# READ THE SAME WAY AS THE EXCLUDE BLOCK BELOW: a wrong rule name matches nothing and reports
+# nothing, so a clean run is NOT confirmation. What confirms it is the problem count CHANGING on the
+# next run. Three outcomes and what each means:
+#   - count rises, findings real   -> it works on Kotlin; triage and scope exclusions per file
+#   - count rises, findings noise  -> it works, but its assertion-method list is too narrow (below)
+#   - count unchanged              -> wrong name, or the rule is Java-only via UAST and blind to
+#                                     Kotlin, which is the same shape as KDocUnresolvedReference
+#                                     naming 4 of 18 instances. Fall back to a bytecode-based guard.
+#
+# Expect false positives before assuming a finding is real. The default assertion-method list knows
+# JUnit's own; it does not know mockk `verify` (16 files), MockMvc `andExpect` (7 files), or this
+# repository's six custom helpers -- assertClaims, assertFallbackSurvives, assertParsed,
+# assertRejects, assertSatisfies, assertViolates. If the run floods, the answer is a custom profile
+# configuring those method names, not deleting this entry.
+#
+# Deliberately NOT paired with a failThreshold: a rule whose false-positive rate here is unmeasured
+# must not be able to fail a build on its first outing.
+# -----------------------------------------------------------------------------------------------
+include:
+  - name: JUnitTestMethodWithNoAssertions
+
 exclude:
   - name: All
     paths:

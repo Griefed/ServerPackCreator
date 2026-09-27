@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.index
 
+import de.griefed.serverpackcreator.app.web.DatabaseAvailability
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
@@ -68,10 +69,16 @@ class DeclaredIndexCreator(
                     val created = indexStore.create(declared.collection, declared)
                     log.info("Ensured index '$created' on '${declared.collection}'.")
                 } catch (ex: Exception) {
-                    log.warn(
-                        "Could not create the index declared on '${declared.collection}' for " +
-                                "'${declared.path}'. Queries using it will scan until the next start.", ex
-                    )
+                    val what = "the index declared on '${declared.collection}' for '${declared.path}'"
+                    if (DatabaseAvailability.isUnreachable(ex)) {
+                        // No stack trace: this is the case the listener exists to tolerate. docker-compose
+                        // starts the app beside its `db` service, so losing that race is the normal first
+                        // boot, and two stack traces per boot for an expected condition is noise that
+                        // buries the failures worth reading.
+                        log.warn("Database not reachable yet, so $what was not created. Retries on next start.")
+                    } else {
+                        log.warn("Could not create $what. Queries using it will scan until the next start.", ex)
+                    }
                 }
             }
         }

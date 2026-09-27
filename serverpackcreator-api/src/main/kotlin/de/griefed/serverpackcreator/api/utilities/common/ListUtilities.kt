@@ -139,9 +139,13 @@ class ListUtilities {
          * 1-based index-range of the chunk when [printIndexes] is set), and hand each formatted line
          * to [emit]. Shared backend for the console- and log-printing chunk helpers.
          *
+         * `internal` rather than private so a test can assert the lines themselves: both public callers
+         * only differ in where they send them, so driving this is the only way to check the chunking
+         * without capturing stdout or a log appender. Not part of the published API surface.
+         *
          * @author Griefed
          */
-        private fun forEachChunkedLine(
+        internal fun forEachChunkedLine(
             list: List<String>,
             chunkSize: Int,
             prefix: String,

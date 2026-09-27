@@ -29,6 +29,10 @@ import java.io.File
  * `ScriptTemplateMatrixIT` actually boots them, but it is gated behind a live Docker daemon + a built
  * image, so it never runs in CI — these assertions do, and they pin the fixes that IT paid to discover.
  *
+ * Whether the fish and PowerShell templates *parse at all* lives in [ShellTemplateSyntaxTest], which asks
+ * the real interpreters rather than reading the source. The fish check used to sit here and skipped itself
+ * on every machine without fish, the CI runner included.
+ *
  * Kept deliberately narrow: it asserts *specific, load-bearing constructs*, not whole-file snapshots,
  * so ordinary template edits don't churn it.
  */
@@ -85,30 +89,6 @@ internal class ScriptTemplateContentTest {
                     body.contains("RunJavaCommand \"-jar quilt-installer.jar"),
                 "$name must not run the Quilt installer with the server's JAVA"
             )
-        }
-    }
-
-    /**
-     * Syntax-checks the fish templates with `fish -n` when a fish interpreter is available, so a broken
-     * edit is caught without needing the container matrix. Skipped (not failed) where fish is absent,
-     * which is the normal case on CI and most dev machines.
-     */
-    @Test
-    fun fishTemplatesAreSyntacticallyValidWhenFishIsAvailable() {
-        // `abort` returns Nothing-like, so `fish` is non-null below without a !! assertion.
-        val fish = which("fish") ?: Assumptions.abort("fish not installed — syntax check skipped")
-
-        for (name in listOf("default_template.fish", "default_java_template.fish")) {
-            val temp = File.createTempFile("spc-template-", ".fish").apply {
-                writeText(template(name))
-                deleteOnExit()
-            }
-            val process = ProcessBuilder(fish.absolutePath, "-n", temp.absolutePath)
-                .redirectErrorStream(true)
-                .start()
-            val output = process.inputStream.bufferedReader().use { it.readText() }
-            val exit = process.waitFor()
-            Assertions.assertEquals(0, exit, "`fish -n` rejected $name:\n$output")
         }
     }
 

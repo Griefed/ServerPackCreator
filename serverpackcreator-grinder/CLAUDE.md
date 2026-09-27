@@ -283,8 +283,9 @@ though their detail lives deeper:
     JVM is about to overwrite. Trust in-process logs and same-JVM tests, not cross-process snapshots. (A per-module
     loop appearing to show "every suite writes the shared node" was exactly this artifact.)
   - **ANSWERED 2026-07-31 — it was the build itself, and it is fixed.** Three build-script writers touched the
-    shared node: `java-conventions`' `cleanup()` did `removeNode()` and then wrote the module's `tests` directory in
-    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. `cleanup()` runs
+    shared node: `java-conventions`' test-home preparation (then `cleanup()`, today the compiled
+    `TestHome.prepare`) did `removeNode()` and then wrote the module's `tests` directory in
+    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. It runs
     in `doFirst` of **both `test` and `clean`, for every module**, so any build relocated the home of the
     developer's own GUI — and of a running daemon — into the repository. All three are gone; the isolated per-module
     node plus the injected `-Dde.griefed.serverpackcreator.home` replace them entirely. The `-app` call sites were
@@ -401,12 +402,26 @@ though their detail lives deeper:
   the engine is built, exit 1 so `Restart=on-failure` retries and `systemctl status` shows `failed`), and
   `ContainerEngine.hasImage` defaults to `true` so no test fake is affected. **The recovery is
   `--requeue-since <the moment it broke>`** — `--requeue-before` selects the exact complement of an outage.
-- **Every container carries `OWNER_LABEL`, and that label is the only way to find an orphan.**
+- **Every container carries two labels, and the difference between them is the whole point.**
   A SIGKILLed JVM leaves containers running with nothing tracking them — the in-memory set died with the
-  process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery, and it
-  assumes **one grinder per Docker daemon**: the label says "a grinder made this", not "*this* grinder", so a
-  second instance sharing a daemon would have its live boots reaped by the first one's startup. The shipped
-  unit is a singleton, which is what makes the simple label safe.
+  process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery.
+  `OWNER_LABEL` says "a grinder made this"; `INSTANCE_LABEL` says "*this* engine made this"
+  (`DockerJavaContainerEngine.instanceId`, random per instance). Anything asking the daemon a question about
+  ownership must ask with the second, because the first is a question about the whole machine.
+  - `close()` was always instance-scoped (it sweeps an in-process set) and `reapOrphans()` now skips its own
+    instance, but **the rest of the landmine is not fixable with a label and remains**: a container belonging
+    to a second, *live* engine is indistinguishable from one left by a process that died, because the daemon
+    knows what made a container and never whether that maker is still running. A pid does not settle it
+    either — the other grinder is in its own pid namespace, on a CI runner in its own job container.
+  - So **two grinders sharing a daemon still have to be kept apart by whoever starts them.** The shipped unit
+    is a singleton; `.forgejo/workflows/grinder-container-it.yml` holds a repository-wide concurrency lock so
+    the tests are the same.
+  - **This is not theoretical, and the shape of the failure is worth knowing.** `test.yml`'s group is per-ref,
+    so a push to `develop` and PR #678 (develop → beta) build the same commit at the same time on one runner.
+    On 2026-09-27 runs 954 and 956 reached the container suite seven seconds apart and each failed a
+    *different* test of it — 954 `refusesToCreateAContainerOnceClosed`, 956
+    `closeSignalsAContainerBeforeKillingIt`, the run before that a third one. **A defect fails the same test
+    in both; that pattern is interference.**
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the
@@ -632,7 +647,8 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
 
   | Test | Gate | Also needs | Last verified |
   |---|---|---|---|
-  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` | a daemon + `docker pull busybox` | Docker 29.5, 2026-06-26 |
+  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` — set by `grinder-container-it.yml`, **not** by `test.yml` | a daemon + `docker pull busybox` | Docker 29.7.2, 2026-09-27 |
+  | `ContainerOwnershipIT` | same gate, same workflow | the same | Docker 29.7.2, 2026-09-27 |
   | *(boot-log capture, verified by a live one-shot rather than an IT)* | — | a daemon + `spc-grinder-runtime` | Docker 29.7.2, 2026-08-29 |
   | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
   | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
@@ -640,6 +656,37 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   | `CurseForgeCrawlLiveIT` | `GRINDER_CF_IT=1` | **plus** `CURSEFORGE_API_KEY` | 2026-07-30 |
 
   e.g. `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`
+
+  **`DockerJavaContainerEngineIT` is no longer dark, and since 2026-09-27 it runs in its own workflow.**
+  `.forgejo/workflows/grinder-container-it.yml` pulls busybox, sets `GRINDER_DOCKER_IT=1` and holds a
+  concurrency group with **no ref in it**, so one run of these two classes happens at a time across the whole
+  repository. **~40 s is the tests, not the job** — the job also provisions a JDK and compiles three modules,
+  and what the lock actually costs on the runner has not been measured. `test.yml` deliberately no longer sets the gate: its group is per-ref, which is
+  what lets two of its jobs share the runner's daemon, and one of these tests reaps every grinder container on
+  it. The other gates stay unset on purpose: they need a live Modrinth or CurseForge API, a built image plus a
+  Minecraft download per cell, or a deployed grinder.
+
+- **Measurements live in a `benchmark` source set and are a *program*, not a test (2026-09-26).**
+  `src/benchmark/kotlin` holds `StoreWriteBenchmark` — a plain `main`, run by a **`JavaExec`** task:
+  `./gradlew :serverpackcreator-grinder:benchmark`. It reports what `JsonVerdictStore` costs per `record()`
+  and **asserts nothing about the timings** — this project pins I/O by request, read and open counts and
+  never by wall-clock, and `CoalescedVerdictWritesTest` already pins the behaviour those numbers motivated.
+  It does check its own fixture (`check(...)`, no framework), because a benchmark measuring the wrong thing
+  is worse than none. While it lived in `src/test` every build reported it as three skipped *tests*.
+
+  **LANDMINE — in this build every task of type `Test` is pulled into `check`.** By type: not by name, not
+  by group, and with nothing in any build file declaring it. The first attempt at this moved the benchmark
+  into its own source set but kept it a JUnit `Test` task and simply did not wire it to `check` — and
+  `./gradlew build` ran it anyway, all three measurements, which is exactly what the move existed to stop.
+  Probed three ways before believing it: renaming the task changed nothing, moving it out of the
+  `verification` group changed nothing, removing the Kover block changed nothing. **A `JavaExec` is not
+  collected**, needs no environment-variable gate, and prints to the console without the `testLogging`
+  that `java-conventions` only sets on `tasks.test`. If you add a second measurement here, make it a
+  program too.
+
+  This is the **first custom source set in the repository**. Its configurations extend `implementation` /
+  `runtimeOnly` rather than the test ones — it needs main's dependencies and no test framework — and Kover
+  needs `excludedSourceSets` or the benchmark counts as production code.
 - **`GrinderAuditIT` grades a live daemon's published verdicts against their own evidence, and it exists
   because sample-and-fix failed twice.** A 200-log census (2026-08-29) and a merge gate reporting `HIGH 8 → 4`
   both preceded the 2026-08-31 finding that **four of five** sampled boot logs were scored `CRASHED` by the
@@ -701,10 +748,15 @@ from the bash reference. Don't "fix" it again.
 Java version then reads as `do_not_manually_edit`, and the run aborts at the Jabba prompt — a platform
 mismatch, **not** a template defect. (A `pwsh` boot also needs `HOME` on a writable mount, since it
 creates `$HOME/.cache` and the rootfs is read-only — exit 133 before it even parses the script.) So
-PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's *own* parser
-(`Parser::ParseFile`) over both shipped `.ps1` files inside the image — catching the syntax-class
-regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
-rejects it with the reason.
+PowerShell's parse coverage is **`ShellTemplateSyntaxTest` in `-api`**, which runs PowerShell's *own*
+parser (`Parser::ParseFile`) over both shipped `.ps1` files — catching the syntax-class regressions
+these tests exist for. It lived here as `powerShellTemplatesParse` until 2026-09-26 and was moved
+because it needed nothing from this image or this matrix, and behind `GRINDER_TEMPLATE_IT` it never
+ran; in `-api` it runs on every push, in a stock container when no interpreter is installed. The
+`JAVA_INSTALLER` probe followed it as `PowerShellInstallerJavaTest` for the same reason — executing one
+lifted function needs `pwsh`, not this image. **No PowerShell check is left here**; the gate now guards
+only what genuinely needs it, which is booting a cell. Don't "fix" the matrix by adding a `pwsh`
+boot cell; `scriptFor` rejects it with the reason.
 
 **Matrix results are point-in-time** — the last full run (5 Minecraft × 5 loaders × {bash, fish}, bash ≡
 fish everywhere, `.ps1` parse ✅) is recorded in `claude-docs/REFACTOR-LOG.md`. Re-run it, don't trust a

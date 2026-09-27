@@ -243,7 +243,7 @@ evidence consulted occasionally, not context every session needs.
   home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
   Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
   a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
-  outcome of the manifest work even though nothing can guard `cleanup()` itself, because `ApiWrapper.setup()`
+  outcome of the manifest work even though nothing can guard `TestHome.prepare` itself, because `ApiWrapper.setup()`
   re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
 - **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
   commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
@@ -323,18 +323,18 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-23).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-09-26).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 474 (1 skip)  | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| api            | 491           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
 | clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
-| app            | 226           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| app            | 232           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | web-frontend   | 37 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 544 (29 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 539 (15 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -371,6 +371,46 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   guard *passed*, not only why it failed, whenever fixture values could contain one another.
 - **A guard that cannot compile is not a red pin.** Land the seam first as its own behaviour-preserving
   commit, or say in the message that the boundary is missing and quote the mutation that reproduces the red.
+- **An expression statement reads exactly like an assertion and asserts nothing.** `suggestInclusionsTest`
+  called `dirs.any { it.source == "config" }` six times and discarded every result — valid Kotlin, no
+  warning, and indistinguishable from a guard at a glance. It passed against *any* return value, proven by
+  mutating `suggestInclusions` to `return ArrayList()`: the old body stayed green, the replacement fails with
+  `'config' must be suggested, got []`. Its last line was also the wrong question — `any { it != x }` is true
+  the moment a second element exists, where the intent was `none { it == x }`. A whole-repository scan for
+  `@Test` functions with no assertion reachable through their same-file helpers found **three real cases in
+  2094** (the other two only smoke-tested a logging call), so the class is rare but silent, and the two ways
+  it hides are a bare `any`/`map`/`filter` whose result is dropped, and a call that can fail only by throwing.
+  Frontend specs were scanned the same way and were clean.
+- **A benchmark is not a test, and naming it one costs a guard.** `StoreWriteBenchTest`'s three methods
+  printed timings and could not fail on them. The fix was not to assert the timings — this project pins I/O
+  by request, read and open counts, never by wall-clock, and `CoalescedVerdictWritesTest` already pins the
+  behaviour the numbers motivated. It is now `StoreWriteBenchmark`, its methods say `measure…`, and it
+  asserts its own *fixture* so a run that mis-seeds fails loudly instead of reporting a confident number
+  about nothing. Ask of a measurement what it would take to make it red; if the answer is "nothing", it
+  belongs in a file that does not claim otherwise.
+- **A guard gated on something nobody supplies is indistinguishable from no guard, and it reports as a
+  skip rather than a gap.** Measured on 2026-09-26: 30 of the suite's tests were gated on an env var, a
+  secret or an installed interpreter, and **not one of those gates was set in any workflow** — `test.yml`
+  requires no secrets at all, by design. Nine of them (`DockerJavaContainerEngineIT`) needed nothing but
+  `busybox` and now run on every push in 30 s; three more — the fish and PowerShell parse checks and the
+  `JAVA_INSTALLER` probe — were the guards for the two shells this repo has twice shipped silent template
+  bugs in, and the third guarded a branch every hand-made pack takes. Ask of a skipped
+  test *who is supposed to set its gate*, and if the answer is nobody, it is not gated — it is absent.
+  The corollary for writing one: a check that cannot run must **skip, never pass**, or the gap disappears
+  entirely.
+- **A container's mount is resolved where the daemon is, not where the test is — and a wrong one is
+  silent.** Those three ungated checks ran for the first time on 2026-09-26 (run 646) and all three
+  answered about an empty directory: `docker run -v <hostPath>:/templates` resolves the source on the
+  **daemon's** filesystem, and the Forgejo runner's job container talks to a sibling daemon that holds no
+  copy of its `/tmp`, so Docker created the missing directory and mounted that. Zero exit, no warning.
+  One transport defect produced three different-looking verdicts — fish FAILED on a glob it could not
+  expand, the PowerShell parse check **PASSED** having parsed nothing, and the installer-Java probe
+  SKIPPED for want of its script — and only the middle one is dangerous, because it is the one that reads
+  as a clean bill. `docker cp` streams through the daemon API and fails loudly where the bind fails
+  silently. The transferable part is the reproduction: a developer machine cannot show this, because its
+  daemon *is* its filesystem. `docker run -d --privileged -e DOCKER_TLS_CERTDIR= -p 12375:2375
+  docker:dind` plus `DOCKER_HOST=tcp://127.0.0.1:12375` reproduces the runner's topology in about a
+  minute, and is what turned an argument into a measurement.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.

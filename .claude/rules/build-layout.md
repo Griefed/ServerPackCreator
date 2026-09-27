@@ -27,6 +27,29 @@ the "do not tidy that away, here is what it cost last time".
 > *supposed* to be absent there, so absence looks identical to broken — we ran exactly that test first
 > and misread it. Touch a file matching the globs, *then* look.
 
+- **One module has a source set beyond `main`/`test`, and it did not come for free.**
+  `serverpackcreator-grinder` declares `benchmark` (`src/benchmark/kotlin`, task
+  `:serverpackcreator-grinder:benchmark`) so `StoreWriteBenchmark` — which measures and cannot fail on what
+  it measures — stops being collected by `build` and counted as three skipped *tests*. Declared in the
+  **module's own build script**, not a convention plugin: a real script can use the version catalog and
+  reaches no other module. Three traps if you add a second one:
+  - **LANDMINE — every task of type `Test` is pulled into `check` here.** By type: not by name, not by
+    group, and with nothing in any build file declaring it — verified by renaming the task, by moving it
+    out of the `verification` group, and by removing the Kover block, none of which changed it. So
+    "register a `Test` task and simply do not wire it into `check`" **does not work**: the first attempt
+    at this did exactly that and `./gradlew build` ran the benchmark anyway. Anything that must stay out
+    of `build` has to not be a `Test` task. `StoreWriteBenchmark` is a plain `main` run by a `JavaExec`,
+    which is also why it needs no environment-variable gate.
+  - **`java-conventions` configures `tasks.test` by name, not `tasks.withType<Test>().configureEach`.** Any
+    *other* `Test` task therefore inherits none of `useJUnitPlatform()`, the mockk/ByteBuddy agent `jvmArgs`,
+    `TestHome.prepare`, the isolated Preferences node and home, or `testLogging` — and the last is silent:
+    a JUnit benchmark ran 3 tests in 10.2 s and printed *nothing*, its output captured to XML and never
+    shown. Broadening the convention is the tidier fix and reaches all seven modules plus `-app`, so it is
+    a decision to take deliberately rather than as a side effect.
+  - **Kover instruments every Kotlin compilation**, so a new source set counts as production code and moves
+    the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it. A
+    non-test source set wants its configurations extending `implementation`/`runtimeOnly`, not the test
+    ones — otherwise it compiles without the module's own dependencies.
 - **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
   with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
   failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps
@@ -105,7 +128,7 @@ the "do not tidy that away, here is what it cost last time".
     before the catalog exists), which is why the foojay resolver keeps a literal version there. `buildSrc/settings.gradle.kts` points at the same file
   explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
   block fails with `Unresolved reference: libs`).
-  **Everything Kotlin is ONE `kotlin` entry (2.4.10) — keep it that way.** The compiler plugin, the
+  **Everything Kotlin is ONE `kotlin` entry (2.4.20) — keep it that way.** The compiler plugin, the
   allopen/jpa/spring compiler plugins and the stdlib/reflect/test libraries all read `version.ref =
   "kotlin"`. JetBrains versions these together, so a split only ever produces skew: until 2026-08-16
   this was four entries (`kotlin`, `kotlinAllOpen`, `kotlinJpa` on 2.3.20; `kotlinLibs` on 2.4.10),
@@ -138,15 +161,22 @@ the "do not tidy that away, here is what it cost last time".
 - **Configuration cache is NOT enabled, and step 5 above is not what is blocking it** — measured, because
   this was claimed and was wrong: `build --dry-run --configuration-cache` reported the *same* 20 problems
   (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
-  Those constructs block project **isolation**, a different feature. The 20 problems are:
-  - `:generateLicenseReport` holds a `Project` reference — **third-party** (jk1 gradle-license-report),
-    not fixable here.
-  - every module's `test` and `processTestResources` "cannot serialize Gradle script object references" —
-    **ours**: the `filter { }` in `processTestResources` and the `doFirst { cleanup() }` in `test`, both in
-    `java-conventions`, capture the enclosing script; `-app`'s `test.doFirst` additionally captures
-    `projectDir`.
-  So the ceiling without excluding `generateLicenseReport` is "fewer problems", not zero. Fixing our own is
-  a real, separate piece of work; do not start it expecting the cache to switch on at the end of it.
+  Those constructs block project **isolation**, a different feature.
+
+  **Re-measured 2026-09-26 — our half is fixed, and only the third-party half is left.**
+  `./gradlew build --configuration-cache --dry-run` now reports **8 problems, 2 of which seem unique, all
+  of them `:generateLicenseReport`** holding a `Project` (jk1 gradle-license-report — not fixable here).
+  `./gradlew :serverpackcreator-app:test --configuration-cache` stores an entry with **no problems at all**.
+
+  It used to be 20 problems, 13 unique, and the entry above used to name ours: the `filter { }` in
+  `processTestResources` and a `doFirst { cleanup() }` in `test`, both capturing the enclosing script,
+  plus `-app`'s own `test.doFirst` capturing `projectDir`. All three are gone — `cleanup()` became
+  `TestHome.prepare(File)`, a **compiled buildSrc class** that closes over nothing but the `File` handed
+  to it, and `-app`'s duplicate `doFirst` was deleted once it was shown to be redundant.
+
+  So the ceiling *is* now `generateLicenseReport`: excluding that one task is the difference between 8
+  problems and zero, rather than merely "fewer". Re-run the command above before believing this
+  paragraph — it is the kind of fact that goes stale the moment a task action captures a script again.
 - **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
   that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`
   2.2.21, `kotlin-coroutines.version` 1.10.2, `log4j2.version` 2.25.3, `jackson-2-bom.version` 2.20.2,
@@ -197,7 +227,7 @@ the "do not tidy that away, here is what it cost last time".
   `libs.kotlinStdlib`. Measured on the generated POM
   (`:serverpackcreator-api:generatePomFileForMavenJavaPublication`): **2 dependencies without a version
   before, 0 after**; `<dependencyManagement>` disappears entirely and `kotlin-stdlib` survives at
-  **2.4.10**, so consumers are unaffected. Total `<dependency>` entries 20 → 17.
+  the catalog's `kotlin` of the day (**2.4.10** then, 2.4.20 now), so consumers are unaffected. Total `<dependency>` entries 20 → 17.
 
   **The rule this leaves behind:** a dependency declared in a precompiled script plugin reaches the POM
   of every module that applies it, so a bare coordinate there is only safe while no such module is

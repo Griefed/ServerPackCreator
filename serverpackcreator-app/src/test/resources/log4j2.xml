@@ -63,6 +63,19 @@
             <AppenderRef ref="ApplicationLogger" level="${log-level-spc}" />
         </Logger>
 
+        <!-- TEST-ONLY. The driver's server monitor logs "Exception in monitor thread while connecting"
+             at INFO, with a full stack trace, every time it cannot reach a server. Two test classes run
+             deliberately WITHOUT a database - DeclaredIndexStartupTest and DatabaseUriPropertyTest, whose
+             whole subject is that the context starts anyway - so that trace is expected output there, and
+             IDEA's build view scrapes it and paints a green build red. WARN keeps everything the driver
+             considers a real problem and drops only the reconnect chatter. The shipped configuration is
+             deliberately NOT changed: in production that trace is how an operator learns the database is
+             down. -->
+        <Logger name="org.mongodb.driver.cluster" level="WARN" additivity="false">
+            <AppenderRef ref="Console" level="${log-level}"/>
+            <AppenderRef ref="ApplicationLogger" level="${log-level}" />
+        </Logger>
+
         <Logger name="PluginsLogger" level="ALL" additivity="false">
             <AppenderRef ref="PluginsLogger" level="${log-level-spc}" />
         </Logger>

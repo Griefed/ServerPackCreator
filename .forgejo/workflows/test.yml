@@ -63,6 +63,25 @@ jobs:
       - name: Set Permissions
         run: chmod +x gradlew
 
+      # The api's container-backed tests need these. `TemplateInterpreterRunner` copies the shipped
+      # templates into a container and asks the real interpreter whether they parse -- busybox for the
+      # transport guard, alpine for fish, the PowerShell image for `.ps1` -- because neither interpreter
+      # is installed on this runner. Pulling up front keeps the pull out of a test's own timeout. The
+      # runner has a working socket; qodana.yml and docs.yml already `docker run` from an ordinary
+      # `runs-on: ubuntu-latest` job, which is the sanctioned shape (see .claude/rules/ci-workflows.md;
+      # a `container:` of a tool image is the landmine, not docker itself).
+      - name: Pull the images the container-backed tests use
+        run: |
+          docker pull busybox:latest
+          docker pull alpine:latest
+          docker pull mcr.microsoft.com/powershell:latest
+
+      # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests moved to
+      # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them
+      # reaps every grinder-labelled container on the daemon and this workflow's per-ref group lets two
+      # of its jobs -- a push to `develop` and PR #678 at the same commit -- share the runner. Setting it
+      # again here puts that collision straight back. The other GRINDER_*_IT gates stay unset because
+      # they need a live Modrinth/CurseForge API, a built image, or a deployed grinder.
       - name: Build with Gradle
         run: ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace
 
@@ -80,6 +99,7 @@ jobs:
             serverpackcreator-clientside/build/test-results/test/TEST-*.xml
             serverpackcreator-grinder/build/test-results/test/TEST-*.xml
             serverpackcreator-plugin-example/build/test-results/test/TEST-*.xml
+            serverpackcreator-plugin-grinder/build/test-results/test/TEST-*.xml
           if-no-files-found: warn
           # Deletion is automatic and server-side: the artifact carries this expiry, and Forgejo's
           # `cron.cleanup_actions` job (ENABLED true, SCHEDULE @midnight by default) removes what has

@@ -481,7 +481,9 @@ class ApiWrapper private constructor(
         overwriteServerFilesFile(apiProperties.defaultJavaShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaPowerShellScriptTemplate)
-        overwriteServerFilesFile(apiProperties.defaultJavaBatchScriptTemplate)
+        // No Batch java-installer template is staged, because none exists and none is needed: start.bat
+        // is a wrapper that runs start.ps1, which sources install_java.ps1. Staging one wrote a 0-byte
+        // default_java_template.bat on every launch for as long as this line existed.
         if (serverProperties || serverIcon) {
             log.warn("#################################################################")
             log.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#")

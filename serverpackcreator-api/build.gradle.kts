@@ -115,8 +115,9 @@ tasks.jar {
 // test home, not the app's: the api suite is what exercises `MinecraftMeta`, so it is the one that fetches the
 // per-version `mcserver/<id>.json` files -- pointing at `serverpackcreator-app/tests` made this a no-op for them
 // (measured: app 643 files, api 659, the difference being exactly the 16 releases that were missing from the
-// shipped set). Since `cleanup()` stopped wiping `manifests/`, that home accumulates rather than resetting each
-// run, so a plain `test` followed by this task genuinely advances the snapshot.
+// shipped set). Since `TestHome.prepare` (then called `cleanup()`) stopped wiping `manifests/`, that home
+// accumulates rather than resetting each run, so a plain `test` followed by this task genuinely advances
+// the snapshot.
 // Pinned by `ShippedManifestSnapshotTest`, which fails when the shipped set falls behind its own parent manifest.
 tasks.register<Copy>("updateManifests") {
     dependsOn(tasks.test)
