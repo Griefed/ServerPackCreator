@@ -56,9 +56,11 @@ production grind image stays bash-only and lean; the grinder never uses it.
 
 **`.ps1` cannot be *booted* here** (verified, not assumed): the PowerShell template calls Windows
 `CMD /C` for Java detection, the server launch and the bit check, so on Linux it fails at
-`The term 'CMD' is not recognized` and aborts. `pwsh` is therefore present for **static parse
-validation** of the shipped `.ps1` templates (`ScriptTemplateMatrixIT.powerShellTemplatesParse`), which is
-the honest ceiling on this platform. Booting `.ps1` needs a Windows host.
+`The term 'CMD' is not recognized` and aborts. `pwsh` is therefore present only as part of this image's
+toolchain: both PowerShell checks moved to `-api` on 2026-09-26 — `ShellTemplateSyntaxTest` (parse) and
+`PowerShellInstallerJavaTest` (executes the lifted `RunInstallerJavaCommand`) — where they run on every
+push against a stock `mcr.microsoft.com/powershell` image rather than behind this image's gate. Booting
+`.ps1` needs a Windows host either way.
 
 ```sh
 docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker            # base first

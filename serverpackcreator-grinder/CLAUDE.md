@@ -283,8 +283,9 @@ though their detail lives deeper:
     JVM is about to overwrite. Trust in-process logs and same-JVM tests, not cross-process snapshots. (A per-module
     loop appearing to show "every suite writes the shared node" was exactly this artifact.)
   - **ANSWERED 2026-07-31 — it was the build itself, and it is fixed.** Three build-script writers touched the
-    shared node: `java-conventions`' `cleanup()` did `removeNode()` and then wrote the module's `tests` directory in
-    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. `cleanup()` runs
+    shared node: `java-conventions`' test-home preparation (then `cleanup()`, today the compiled
+    `TestHome.prepare`) did `removeNode()` and then wrote the module's `tests` directory in
+    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. It runs
     in `doFirst` of **both `test` and `clean`, for every module**, so any build relocated the home of the
     developer's own GUI — and of a running daemon — into the repository. All three are gone; the isolated per-module
     node plus the injected `-Dde.griefed.serverpackcreator.home` replace them entirely. The `-app` call sites were
@@ -632,7 +633,7 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
 
   | Test | Gate | Also needs | Last verified |
   |---|---|---|---|
-  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` | a daemon + `docker pull busybox` | Docker 29.5, 2026-06-26 |
+  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` — **set by CI since 2026-09-26** | a daemon + `docker pull busybox` | Docker 29.7.2, 2026-09-26 |
   | *(boot-log capture, verified by a live one-shot rather than an IT)* | — | a daemon + `spc-grinder-runtime` | Docker 29.7.2, 2026-08-29 |
   | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
   | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
@@ -640,6 +641,33 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   | `CurseForgeCrawlLiveIT` | `GRINDER_CF_IT=1` | **plus** `CURSEFORGE_API_KEY` | 2026-07-30 |
 
   e.g. `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`
+
+  **`DockerJavaContainerEngineIT` is no longer dark.** `.forgejo/workflows/test.yml` pulls busybox and sets
+  `GRINDER_DOCKER_IT=1`, so all nine run on every push (30.1 s measured) — the runner has a working socket,
+  which `qodana.yml` and `docs.yml` already rely on. The other gates stay unset on purpose: they need a live
+  Modrinth or CurseForge API, a built image plus a Minecraft download per cell, or a deployed grinder.
+
+- **Measurements live in a `benchmark` source set and are a *program*, not a test (2026-09-26).**
+  `src/benchmark/kotlin` holds `StoreWriteBenchmark` — a plain `main`, run by a **`JavaExec`** task:
+  `./gradlew :serverpackcreator-grinder:benchmark`. It reports what `JsonVerdictStore` costs per `record()`
+  and **asserts nothing about the timings** — this project pins I/O by request, read and open counts and
+  never by wall-clock, and `CoalescedVerdictWritesTest` already pins the behaviour those numbers motivated.
+  It does check its own fixture (`check(...)`, no framework), because a benchmark measuring the wrong thing
+  is worse than none. While it lived in `src/test` every build reported it as three skipped *tests*.
+
+  **LANDMINE — in this build every task of type `Test` is pulled into `check`.** By type: not by name, not
+  by group, and with nothing in any build file declaring it. The first attempt at this moved the benchmark
+  into its own source set but kept it a JUnit `Test` task and simply did not wire it to `check` — and
+  `./gradlew build` ran it anyway, all three measurements, which is exactly what the move existed to stop.
+  Probed three ways before believing it: renaming the task changed nothing, moving it out of the
+  `verification` group changed nothing, removing the Kover block changed nothing. **A `JavaExec` is not
+  collected**, needs no environment-variable gate, and prints to the console without the `testLogging`
+  that `java-conventions` only sets on `tasks.test`. If you add a second measurement here, make it a
+  program too.
+
+  This is the **first custom source set in the repository**. Its configurations extend `implementation` /
+  `runtimeOnly` rather than the test ones — it needs main's dependencies and no test framework — and Kover
+  needs `excludedSourceSets` or the benchmark counts as production code.
 - **`GrinderAuditIT` grades a live daemon's published verdicts against their own evidence, and it exists
   because sample-and-fix failed twice.** A 200-log census (2026-08-29) and a merge gate reporting `HIGH 8 → 4`
   both preceded the 2026-08-31 finding that **four of five** sampled boot logs were scored `CRASHED` by the
@@ -701,10 +729,15 @@ from the bash reference. Don't "fix" it again.
 Java version then reads as `do_not_manually_edit`, and the run aborts at the Jabba prompt — a platform
 mismatch, **not** a template defect. (A `pwsh` boot also needs `HOME` on a writable mount, since it
 creates `$HOME/.cache` and the rootfs is read-only — exit 133 before it even parses the script.) So
-PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's *own* parser
-(`Parser::ParseFile`) over both shipped `.ps1` files inside the image — catching the syntax-class
-regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
-rejects it with the reason.
+PowerShell's parse coverage is **`ShellTemplateSyntaxTest` in `-api`**, which runs PowerShell's *own*
+parser (`Parser::ParseFile`) over both shipped `.ps1` files — catching the syntax-class regressions
+these tests exist for. It lived here as `powerShellTemplatesParse` until 2026-09-26 and was moved
+because it needed nothing from this image or this matrix, and behind `GRINDER_TEMPLATE_IT` it never
+ran; in `-api` it runs on every push, in a stock container when no interpreter is installed. The
+`JAVA_INSTALLER` probe followed it as `PowerShellInstallerJavaTest` for the same reason — executing one
+lifted function needs `pwsh`, not this image. **No PowerShell check is left here**; the gate now guards
+only what genuinely needs it, which is booting a cell. Don't "fix" the matrix by adding a `pwsh`
+boot cell; `scriptFor` rejects it with the reason.
 
 **Matrix results are point-in-time** — the last full run (5 Minecraft × 5 loaders × {bash, fish}, bash ≡
 fish everywhere, `.ps1` parse ✅) is recorded in `claude-docs/REFACTOR-LOG.md`. Re-run it, don't trust a
