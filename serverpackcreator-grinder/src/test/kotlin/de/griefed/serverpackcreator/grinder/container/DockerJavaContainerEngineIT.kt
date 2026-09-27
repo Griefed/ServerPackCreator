@@ -133,7 +133,6 @@ internal class DockerJavaContainerEngineIT {
         )
     }
 
-    /** Count running containers that look like this test's probe, so the assertion can't match anything else. */
     /**
      * How many containers [engine] has *running*, by instance label.
      *
@@ -197,12 +196,11 @@ internal class DockerJavaContainerEngineIT {
      * The SIGKILL case, which no in-process hook can cover: systemd kills the JVM before `close` finishes and the
      * containers keep running, parented by the docker daemon rather than the unit's cgroup. They carry a label so
      * the next start can find and remove them — without one, an orphan survives every restart forever.
-     */
-    /**
-     * **The one test here that cannot be scoped, and the reason `test.yml` serialises this job.** Reaping is
-     * global by definition — an orphan is a container whose maker is gone, and the daemon cannot say who is
-     * gone — so this removes every grinder container on the machine, including a concurrent job's live ones.
-     * Its *assertions* are scoped to the orphan it made; the side effect is not scopeable.
+     *
+     * **This is also the one test here that cannot be scoped, and the reason `grinder-container-it.yml` holds a
+     * repository-wide lock.** Reaping is global by definition — an orphan is a container whose maker is gone, and
+     * the daemon cannot say who is gone — so this removes every grinder container on the machine, including a
+     * concurrent job's live ones. Its *assertions* are scoped to the orphan it made; the side effect is not.
      */
     @Test
     fun reapsALabelledOrphanLeftByAPreviousProcess() {
@@ -305,7 +303,6 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertTrue(tmpMount.contains("nodev"), "nodev must NOT be given away with it: $tmpMount")
     }
 
-    /** Every container this engine owns, by the label it stamps on them. */
     /**
      * The containers [engine] has on the daemon — **its own**, by instance label.
      *
