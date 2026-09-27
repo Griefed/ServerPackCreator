@@ -1,0 +1,79 @@
+# The grinder's container integration tests, alone on the runner's Docker daemon.
+#
+# They are not in `test.yml` for one reason: `reapsALabelledOrphanLeftByAPreviousProcess` removes every
+# grinder-labelled container on the daemon, because an orphan is a container whose maker is gone and the
+# daemon cannot say who is gone. That side effect is not scopeable, so the only defence is exclusivity —
+# and `test.yml` cannot provide it. Its concurrency group is per-ref, deliberately, so a new push cancels
+# its own outdated run; every push to `develop` also builds PR #678 (develop → beta) at the same commit,
+# so two of its jobs share the runner and its daemon as a matter of course. On 2026-09-27 runs 954 and 956
+# reached the container suite seven seconds apart and each failed a *different* test of it.
+#
+# Making `test.yml` itself repo-wide-exclusive would fix that and cost every push a second full 35-minute
+# run in series. This file costs ~40 s of tests instead, and leaves `test.yml`'s cancellation alone.
+name: Grinder Container IT
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# NO ref in the group, and that is the whole point of this file: one run of these tests at a time across
+# the entire repository, whatever branch asked for it. `cancel-in-progress: false` queues rather than
+# cancels -- Forgejo runs "any previous invocation of any workflow in the repository with the same
+# concurrency group ... before the newer invocation". Exact ordering is documented as not guaranteed,
+# which is fine: what is needed here is mutual exclusion, not FIFO.
+concurrency:
+  group: grinder-container-it
+  cancel-in-progress: false
+
+jobs:
+  containers:
+    name: "containers"
+    runs-on: ubuntu-latest
+    # Skip the push that *creates* `alpha`/`beta`: Forgejo fires `push` for a new ref as well as
+    # `create`, and such a branch carries main's state, which `main` has already tested. On a new ref
+    # `github.event.before` is the all-zero object id — Forgejo's push payload has no `created` field,
+    # so GitHub's `github.event.created == false` cannot be used here. See .claude/rules/ci-workflows.md.
+    if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      # Pulled up front so the pull is not inside a test's own timeout.
+      - name: Pull the image the container tests boot
+        run: docker pull busybox:latest
+
+      # Only these two classes. Everything else in the module is offline and already runs in `test.yml`;
+      # running it again here would pay for it twice and, worse, would make this job long enough that
+      # holding the repository-wide lock actually costs something.
+      - name: Run the container integration tests
+        env:
+          GRINDER_DOCKER_IT: "1"
+        run: >
+          ./gradlew :serverpackcreator-grinder:test
+          --tests "*DockerJavaContainerEngineIT*"
+          --tests "*ContainerOwnershipIT*"
+
+      - name: Upload test results
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        if: ${{ always() }}
+        with:
+          name: grinder-container-it-results
+          path: serverpackcreator-grinder/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7
