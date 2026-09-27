@@ -1,3 +1,80 @@
+## [9.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-beta.3...9.0.0-beta.4) (2026-09-27)
+
+### :scissors: Refactor
+
+* **api:** make the chunked-line backend reachable from a test ([80e4a2b](https://git.griefed.de/Griefed/ServerPackCreator/commit/80e4a2b6ad8cd9911f36f9cd9d236a473bffea81))
+* **api:** one local runner, taking labelled commands ([2a68d10](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a68d10baf429c7b96c4e29da16737a734b5823d))
+
+### 📔 Docs
+
+* append the container-ownership audit, with every finding and its resolution ([2bea631](https://git.griefed.de/Griefed/ServerPackCreator/commit/2bea6315b135af9e36abd83c074bfab4610ea1e6))
+* correct four stale references to `cleanup()` and a configuration-cache claim it was part of ([f7b6d6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7b6d6c8e1187f4b2a027c8706c6b025cb0ca742))
+* make the self-extracting server pack buildable off Linux, and runnable on Windows ([885580c](https://git.griefed.de/Griefed/ServerPackCreator/commit/885580c8d1fd49cac984802d8ca2d376f038eb97))
+* record that a bind mount is resolved by the daemon, and re-derive the api count ([bab9e35](https://git.griefed.de/Griefed/ServerPackCreator/commit/bab9e3530907d773b6baf63c585db0f22ea0a924))
+* record that a gate nobody sets is an absent guard, not a skipped one ([650c321](https://git.griefed.de/Griefed/ServerPackCreator/commit/650c3216474db6779e91662bf2cc9396ab30929e))
+* record the benchmark source set and the three things it does not inherit ([166d151](https://git.griefed.de/Griefed/ServerPackCreator/commit/166d15158272ad4eb219db4be7ac2cdbdf7d53e7))
+* record the Rosetta exit-code trap and where the PowerShell checks live ([355e875](https://git.griefed.de/Griefed/ServerPackCreator/commit/355e875797d20a0e249fef224bf94629ecbf8cb7))
+* record what a repository-wide assertion audit found ([66913f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/66913f1c2e523237d63cd003d1579ec9dc9f2726))
+* **ci:** record that a Forgejo run has two numbers and the routes disagree ([c493137](https://git.griefed.de/Griefed/ServerPackCreator/commit/c4931374c4b35fcbd786c67f2142e0b016b0bb48))
+* **grinder,ci:** record the two labels, and that two refs build every commit in parallel ([ee0cdd8](https://git.griefed.de/Griefed/ServerPackCreator/commit/ee0cdd832e1d104cf8de76cca75d51703f40c6f3)), closes [#678](https://git.griefed.de/Griefed/ServerPackCreator/issues/678)
+
+### 📦 Other
+
+* regenerate the license agreement for the dependency bumps ([8bc69ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/8bc69efa281b2461029adff1d99292dd91c8947a))
+* update the shipped manifest snapshot to Minecraft 26.3 ([152f895](https://git.griefed.de/Griefed/ServerPackCreator/commit/152f8956349ce9e724adb1a6955e957aacba991f))
+
+### 🦊 CI/CD
+
+* bump dokka 2.1.0 -> 2.2.0 ([19096ae](https://git.griefed.de/Griefed/ServerPackCreator/commit/19096ae726d62bfef9f1f8316c888b75b016e541))
+* bump jackson, springdoc, bouncycastle and install4j ([5bfca6b](https://git.griefed.de/Griefed/ServerPackCreator/commit/5bfca6b6cbac8d4a06cca60a088de8edcd645d62))
+* bump Kotlin 2.4.10 -> 2.4.20 ([3b242ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b242cab7b3ae68ff8eccec2eb5244182c25f5d2))
+* bump pf4j 3.15.0 -> 3.16.0 ([fdc1920](https://git.griefed.de/Griefed/ServerPackCreator/commit/fdc19206608143d04572631ccc67ec50f9c9fcef))
+* bump Spring Boot 4.1.0 -> 4.1.1, plugin and BOM together ([5acc101](https://git.griefed.de/Griefed/ServerPackCreator/commit/5acc101abd5bab359bd5fd693848bbd72b8e2377))
+* bump the license-report plugin 3.0.1 -> 3.1.4 ([b53955f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b53955f8feed3323ebe06c069aa77f784be18248))
+* **app:** stop re-declaring what java-conventions already does for `test` ([f7e1d0f](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7e1d0fc47927f4291b23598addc3bc66affc52b))
+* **grinder:** give the store benchmark its own source set ([9eaea96](https://git.griefed.de/Griefed/ServerPackCreator/commit/9eaea96010d78c0183e8c8ac9b365475122bc0d9))
+* ask Qodana for @Test methods that assert nothing ([f4a761e](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4a761eba5ecb3710310cac3a10af06da3f20134))
+* give the grinder's container tests the daemon to themselves ([de38369](https://git.griefed.de/Griefed/ServerPackCreator/commit/de38369a9a57422e0ee2b679d31a48e59575bd82)), closes [#678](https://git.griefed.de/Griefed/ServerPackCreator/issues/678)
+* run the container-engine integration tests on every push ([f273ca5](https://git.griefed.de/Griefed/ServerPackCreator/commit/f273ca5650cb7768a833a0223c35a87fd8228cd6))
+
+### 🧪 Tests
+
+* **api:** ask fish and PowerShell themselves whether the templates parse ([aa77104](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa771043015a4ce163654925e6ba7941afde097c))
+* **api:** make three tests that only looked like guards actually assert ([ecfef13](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecfef139e351bf591803fdf96fd152b95c3c084f))
+* **api:** pin that a template probe's container can actually see the templates ([205474d](https://git.griefed.de/Griefed/ServerPackCreator/commit/205474dbcaba44d77d864463b733575af9f4ff29))
+* **api:** pin that staging writes no empty file, and that a missing jar resource is loud ([3a52fc9](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a52fc9b0a8014b5aec77e01628983b05b481010))
+* **api:** pin that the Batch wrapper starts a pack whose path contains an apostrophe ([22bcf36](https://git.griefed.de/Griefed/ServerPackCreator/commit/22bcf36fe443341cde85635810bd7cf8df775705))
+* **api:** pin the other copyFileFromJar overload, which had the same hole ([3f391ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f391ef4af20f2d5d9999a80787dd55d77e0b3f7))
+* **api:** pin the PowerShell installer-Java override and its fallback on every push ([87660a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/87660a61e42cc1080ec9cc36f839afe03160bf48))
+* **grinder:** pin that a container says which engine made it ([e0dfbbf](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0dfbbfc0aa8b596cf0b53c6ea9e5ef07ba1faa8))
+* **grinder:** stop the store benchmark claiming to be a test ([d0caf44](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0caf447f6f17e4eff449e6366009177b420d008))
+
+### 🚀 Features
+
+* **grinder:** give a container engine an identity, before anything uses it ([6e75484](https://git.griefed.de/Griefed/ServerPackCreator/commit/6e7548470b2206732dbaa561258edc27d7abae13))
+
+### 🛠 Fixes
+
+* **api:** close the same hole in the directory-taking copyFileFromJar, and repair the test it fooled ([bf29b30](https://git.griefed.de/Griefed/ServerPackCreator/commit/bf29b301d6bf44ca5f25f846ed87015808c83171))
+* **api:** copy the templates into the probe container instead of bind-mounting them ([fe961ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe961ca732341e4dd395f70581006500f29202d2))
+* **api:** decide the template checks by completion marker, not exit code ([f2d97ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2d97caea751123c293cfb5ff58a1a957dab0d4d))
+* **api:** hand PowerShell the start script's path instead of pasting it into a string ([8a85fdb](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a85fdbd714d34649a8349ecbc04c66348999ce7))
+* **api:** make a PowerShell glob that matches nothing a failure, not a silent pass ([e5efd09](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5efd093179dc40bb4760c66a1ea6c43f32a5114))
+* **api:** stop staging a Java batch template that does not exist, and fail loudly when one is missing ([25f3355](https://git.griefed.de/Griefed/ServerPackCreator/commit/25f3355613b6b1b0d86c451cad71ff9a9607afbd))
+* **app:** stop logging a stack trace for a database that is merely absent ([136a27a](https://git.griefed.de/Griefed/ServerPackCreator/commit/136a27a526d65b4fb5978b6e62ab968cfabcc05e))
+* **app:** tell the analyser that GridFS really does return null, rather than let it be wrong twice ([6a72173](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a72173ed895062b01bf0c94cb5de0f82457a00f))
+* **ci,grinder:** authenticate the ghcr pull, and finish raising the container ITs' waits ([40921ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/40921acdcc7029f2f69832c18ca3f450a0c2b382))
+* **ci:** link the Qodana artifact by run id, which is not the number in a run's URL ([06eb59a](https://git.griefed.de/Griefed/ServerPackCreator/commit/06eb59ab2aa67ffc09268972f517f9595f54d21b))
+* **ci:** upload plugin-grinder's test results too ([ecaf2cf](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecaf2cfe6ce65b9bac49d1fa5ded4258dcf346e4))
+* **grinder,ci:** close the audit's findings — a vacuous assertion, a loose one, and a silent skip ([797c247](https://git.griefed.de/Griefed/ServerPackCreator/commit/797c247b8a056924358920df4784787215ac0ffb))
+* **grinder:** assert what close promises, not what a quiet daemon happens to deliver ([240dd82](https://git.griefed.de/Griefed/ServerPackCreator/commit/240dd82c161c321ebcb8b519e2d4711cac8cf282))
+* **grinder:** drop the benchmark's unused import and its unresolvable KDoc link ([cb61d70](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb61d7096672b9d58cbdeed1622b91819226896a))
+* **grinder:** make the benchmark a program, because a Test task cannot escape `check` ([ad52693](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad5269302660ff2ff7e6c6358606b97272878a06))
+* **grinder:** make the ownership fixture stoppable, which is what the third guard was failing on ([283710a](https://git.griefed.de/Griefed/ServerPackCreator/commit/283710ad71d1241373a73b6c9568b32ef781744a))
+* **grinder:** reattach three KDoc blocks the container-IT edits stranded ([7d70e44](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d70e4428b7a2d3a622c9d0d4958e7fb7384666e))
+* **grinder:** scope the container IT's assertions to the engine that made the containers ([589c1d3](https://git.griefed.de/Griefed/ServerPackCreator/commit/589c1d376d127f233534b762df265873848d199c))
+* **grinder:** stamp which engine made a container, and never reap your own ([87e8ce6](https://git.griefed.de/Griefed/ServerPackCreator/commit/87e8ce660a035ecc2ebc6b6c1f036fd9459409c8))
+
 ## [9.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-beta.2...9.0.0-beta.3) (2026-09-24)
 
 ### :scissors: Refactor
