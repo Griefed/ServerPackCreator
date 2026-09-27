@@ -93,8 +93,10 @@ class DockerJavaContainerEngine(
             // to an address and the id does not exist until after this call. See CONTAINER_HOST_NAME.
             .withHostName(spec.hostName)
             // Stamped so a container that outlives its JVM can still be identified. Nothing else can find it:
-            // it has no name, no autoremove, and the tracking set above dies with the process.
-            .withLabels(mapOf(OWNER_LABEL to "1"))
+            // it has no name, no autoremove, and the tracking set above dies with the process. Two labels,
+            // because "a grinder made this" and "*this* engine made this" are different questions and only
+            // the second one can be asked safely while something else shares the daemon.
+            .withLabels(mapOf(OWNER_LABEL to "1", INSTANCE_LABEL to instanceId))
             .exec()
             .id
         liveContainers.add(containerId)
@@ -219,16 +221,22 @@ class DockerJavaContainerEngine(
     }
 
     /**
-     * Remove every container carrying [OWNER_LABEL], which at startup can only be an orphan of a previous
-     * process — this engine has started none yet.
+     * Remove every container carrying [OWNER_LABEL] that this engine did not create, which at startup can
+     * only be an orphan of a previous process — this engine has started none yet.
      *
-     * **LANDMINE: this assumes one grinder per Docker daemon.** The label says "a grinder made this", not
-     * "*this* grinder made this", so a second instance sharing the daemon would have its in-flight boots
-     * removed by the first one's startup. The shipped unit is a singleton service, which is what makes the
-     * simple label safe; anything else needs a per-instance label first.
+     * **LANDMINE: this still assumes one grinder per Docker daemon, and a label cannot fix that.** Skipping
+     * its own containers is the part that *is* fixable and is done here; what remains is that a container
+     * belonging to a **second, live** engine is indistinguishable from one left by a process that died,
+     * because the daemon knows only what made a container, never whether that maker is still running. A pid
+     * would not settle it either: the other grinder is in its own pid namespace — on a CI runner, in its own
+     * job container — so its pid either does not exist here or belongs to something else entirely.
+     *
+     * So two grinders sharing a daemon must still be kept apart by whoever starts them. The shipped unit is
+     * a singleton service, and `.forgejo/workflows/test.yml` serialises the job that runs the container
+     * suite for the same reason.
      */
     override fun reapOrphans(): Int {
-        val orphans = runCatching {
+        val labelled = runCatching {
             client.listContainersCmd().withShowAll(true)
                 .withLabelFilter(mapOf(OWNER_LABEL to "1"))
                 .exec()
@@ -236,6 +244,10 @@ class DockerJavaContainerEngine(
             log.warn("Could not list containers to reap orphans: ${it.message}")
             return 0
         }
+        // Never the reaper's own. At startup there are none, but this is public and nothing stops a running
+        // engine calling it — and "orphan" has always meant "not mine", so say it rather than rely on when
+        // it happens to be called.
+        val orphans = labelled.filter { it.labels?.get(INSTANCE_LABEL) != instanceId }
         if (orphans.isEmpty()) {
             return 0
         }
