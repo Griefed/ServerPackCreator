@@ -25,7 +25,10 @@ import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.serverpackhandler.PostGenExtension
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
+import de.griefed.serverpackcreator.plugin.selfextract.core.SelfExtractingArchive
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.pf4j.Extension
+import java.io.File
 import java.util.Optional
 
 /**
@@ -55,7 +58,30 @@ class SelfExtractPostGenExtension : PostGenExtension {
         destination: String,
         pluginConfig: Optional<CommentedConfig>,
         packSpecificConfigs: ArrayList<CommentedConfig>
-    ): Unit = TODO("the extension does not wrap anything yet")
+    ) {
+        val pack = File(destination)
+        if (!pack.isDirectory) {
+            log.warn("No server pack at $destination - nothing to wrap.")
+            return
+        }
+        // Reported and skipped rather than followed. Windows cannot recreate a symbolic link without
+        // Developer Mode, and one pointing out of the pack would let extraction write outside the
+        // destination directory - a vulnerability, not a packaging quirk.
+        val links = pack.walkTopDown().filter { java.nio.file.Files.isSymbolicLink(it.toPath()) }.toList()
+        if (links.isNotEmpty()) {
+            log.warn("Not wrapping ${pack.name}: it contains symbolic links, which neither artifact can carry.")
+            links.forEach { log.warn("  symbolic link: $it") }
+            return
+        }
+        // Nothing here may throw. The generation is already finished and the pack already on disk, so
+        // the only thing an exception could achieve is turning a good generation into a reported one.
+        runCatching { SelfExtractingArchive.wrap(pack) }
+            .onSuccess { written -> written.forEach { log.info("Wrote ${it.name} (${it.length()} bytes).") } }
+            .onFailure { log.error("Could not wrap $destination into a self-extracting server pack.", it) }
+    }
+
+    /** This extension's own log, named after the class the way every other SPC component is. */
+    private val log = cachedLoggerOf(this.javaClass)
 
     /** This extension's name as SPC lists it in `plugins.log`. */
     override val name = "Self-extracting server pack"
