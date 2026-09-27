@@ -127,9 +127,16 @@ internal class TarGzWriterTest {
     fun theArchiveCarriesNoOwnership() {
         val listing = run("tar", "-tvzf", archiveOf(pack()).absolutePath) ?: return
 
+        // Asserted by what must NOT be there rather than by a column layout: GNU tar prints `0/0` and
+        // bsdtar prints `0  0`, so matching the format pins the local tar, not the archive. The name
+        // of whoever built it is the thing that must never appear, whichever tar reads it back.
+        Assertions.assertFalse(
+            listing.contains(System.getProperty("user.name")),
+            "the builder's user name is in the archive, listing:\n$listing"
+        )
         Assertions.assertTrue(
-            listing.lines().filter { it.isNotBlank() }.all { it.contains(" 0/0 ") },
-            "every entry must be owned by 0/0, listing:\n$listing"
+            listing.lines().filter { it.isNotBlank() }.all { Regex("\\s0[/ ]\\s*0\\s").containsMatchIn(it) },
+            "every entry must be owned by uid 0 and gid 0, listing:\n$listing"
         )
     }
 
