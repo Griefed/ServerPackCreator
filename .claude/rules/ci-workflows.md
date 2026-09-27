@@ -108,6 +108,36 @@ above survived three audit iterations that validated YAML, checked action pinnin
 verified secret names. None of that touches whether the runner can execute a step. The only test that
 finds these is a real run on the real instance.
 
+## A run has two numbers, and the web routes disagree about which one they take
+
+**LANDMINE — `/actions/runs/{run}` takes the per-repo index everywhere except the artifact download,
+which takes the instance-wide id.** Every handler under that path resolves the run with
+`GetRunByIndex` — the run page, the job view, the logs, the artifact *listing* — while
+`ArtifactsDownloadView` calls `getRunByID` (`routers/web/repo/actions/view.go`). One path, two
+identifiers, no redirect between them. Probed against this instance for one Qodana scan of
+`ad5269302`, which is run index 644 and run id 936:
+
+```
+/actions/runs/644/artifacts/qodana-report -> 404
+/actions/runs/936/artifacts/qodana-report -> 200, 2515070 bytes
+/actions/runs/644/                        -> 307 to the job view
+/actions/runs/936/                        -> 404
+```
+
+The two values reach a workflow under names that do not hint at the difference
+(`services/actions/context.go`): **`github.run_number` is `run.Index`** (the number in a run's URL)
+and **`github.run_id` is `run.ID`** (what the API and the artifact route want). The REST API takes the
+id too, which is why `/api/v1/repos/{owner}/{repo}/actions/runs/222` 404s while the run's page is
+`/actions/runs/222`; `index_in_repo` in a listing is the bridge between them.
+
+This shipped a dead link in `qodana.yml`'s Discord message until 2026-09-26, and the comment that
+caused it had the premise right and the conclusion inverted: it refused the upload action's own
+`artifact-url` output *because* that output is built from `github.context.runId`. That is exactly the
+identifier the route wants — the action logged `.../actions/runs/936/artifacts/879` in the same job,
+and it was correct. **When a forge hands you two identifiers for one object, probe the route rather
+than reasoning about which one is "the" run number.** `curl -o /dev/null -w '%{http_code}'` answers it
+anonymously in a second.
+
 ## The mirror can only be as current as the repository it mirrors into
 
 **gitlab.com was dropped as an outward mirror on 2026-08-23, and no release-API change could have saved it.**

@@ -219,7 +219,12 @@ jobs:
             exit 0
           fi
           set -eu
+          # TWO different run identifiers, deliberately, and they are not interchangeable -- see the
+          # ARTIFACT_BASE comment below. RUN_URL is the human run page and takes the per-repo index
+          # (`github.run_number` = `run.Index`); ARTIFACT_BASE is the artifact download and takes the
+          # instance-wide id (`github.run_id` = `run.ID`). For this scan they were 644 and 936.
           export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
+          export ARTIFACT_BASE="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           export SHORT_SHA="$(echo "$COMMIT" | cut -c1-8)"
           # Discord renders <t:EPOCH:f> in each reader's own timezone and locale, so the message can say
           # when the link dies without anyone doing arithmetic. The epoch is Forgejo's own `expires_at`
@@ -267,14 +272,22 @@ jobs:
               > artifacts.json || echo "Could not read the artifact listing - posting without an expiry"
             EXPIRES_EPOCH="$(python3 expiry.py || true)"
           fi
-          # Forgejo serves an artifact at <run>/artifacts/<name-or-id> -- verified in its own routing
-          # table, `m.Get("/artifacts/{artifact_name_or_id}", actions.ArtifactsDownloadView)`. The name is
-          # used rather than the id because it is stable and readable, and rather than the upload action's
-          # own `artifact-url` output because that output is built from `github.context.runId`, which on
-          # Forgejo is not the per-repo index its run URLs use -- the same reason RUN_URL above uses
-          # `github.run_number`. The id is still consulted, as the existence check.
+          # LANDMINE -- `/actions/runs/{run}` means two different things on Forgejo depending on what
+          # follows it, and this posted a dead link for it. Every handler under that path resolves the
+          # run by its PER-REPO INDEX (`GetRunByIndex`) -- except `ArtifactsDownloadView`, which calls
+          # `getRunByID`. So the same scan is run 644 on its own page and run 936 for its artifact.
+          # Probed on this instance, which is the only proof that counts:
+          #   /actions/runs/644/artifacts/qodana-report -> 404
+          #   /actions/runs/936/artifacts/qodana-report -> 200, 2515070 bytes
+          #   /actions/runs/644/ -> 307 to the job view      /actions/runs/936/ -> 404
+          # The previous wording had the premise right and the conclusion inverted: it rejected the
+          # upload action's own `artifact-url` output *because* that output is built from
+          # `github.context.runId` -- which is exactly the identifier this route wants. That action
+          # logged `.../actions/runs/936/artifacts/879` on the same run, and it was correct.
+          # The name is still used rather than the artifact id because it is stable and readable, and
+          # the id is still consulted, as the existence check.
           if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
-            export TARGET_URL="$RUN_URL/artifacts/qodana-report"
+            export TARGET_URL="$ARTIFACT_BASE/artifacts/qodana-report"
             export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it."
             # $'\n' rather than a literal newline: an unindented continuation line would dedent out of
             # this YAML block scalar and be parsed as a mapping key. The default shell here is bash.

@@ -89,10 +89,19 @@ internal class TemplateInterpreterRunner {
     }
 
     /**
-     * Run a check inside [image] with [staged] mounted read-only at `/templates`, or null without Docker.
+     * Run a check inside [image] with [staged] **copied** into it at `/templates`, or null without Docker.
      *
      * `script` goes through `sh -c` for an image that must install its interpreter first; `command` is
      * used verbatim where the image already carries one.
+     *
+     * Copied, not bind-mounted, and that is the load-bearing part. `docker run -v <hostPath>:/templates`
+     * resolves the source on the **daemon's** filesystem, so wherever the daemon is not the machine
+     * running these tests — Forgejo's runner, whose job container talks to a sibling daemon — Docker
+     * creates the missing source directory and mounts an empty one. Nothing fails; the probe simply sees
+     * no templates, which CI reported as a rejected template (run 646). `docker cp` streams the files
+     * through the daemon API, so it works in both topologies and, unlike the bind, says so when it
+     * cannot. The read-only flag goes with the bind: these are throwaway copies of copies, and a
+     * container that writes to them reaches nothing outside itself.
      */
     fun runInContainer(
         image: String,
@@ -105,7 +114,7 @@ internal class TemplateInterpreterRunner {
         if (onPath("docker") == null) {
             return null
         }
-        val invocation = mutableListOf("docker", "run", "--rm", "-v", "${staged.absolutePath}:/templates:ro")
+        val invocation = mutableListOf("docker", "create")
         if (platform != null) {
             invocation += listOf("--platform", platform)
         }
@@ -118,13 +127,44 @@ internal class TemplateInterpreterRunner {
             invocation += image
             invocation += command.orEmpty()
         }
-        val run = execute(invocation)
-        // No marker means the image never reached the check — no daemon, no network for the pull, no
-        // package — and a timeout means it never finished one. Both are environment answers, not verdicts
-        // on the template, so neither may read as a rejection.
-        val reached = run.output.contains(SETUP_MARKER) && !run.timedOut
-        return Outcome("container $image", run.output, setUp = reached, completed = run.output.contains(DONE_MARKER))
+
+        val created = execute(invocation)
+        val container = containerIdIn(created.output)
+        // No container is an environment answer -- no daemon, no such image, no network for the pull --
+        // and must read as "not checked" rather than as a verdict, hence setUp = false.
+        if (container == null) {
+            return Outcome("container $image", created.output, setUp = false, completed = false)
+        }
+        try {
+            val copied = execute(listOf("docker", "cp", "${staged.absolutePath}/.", "$container:/templates"))
+            if (copied.exitCode != 0) {
+                return Outcome(
+                    "container $image",
+                    "${created.output}${copied.output}",
+                    setUp = false,
+                    completed = false
+                )
+            }
+            val run = execute(listOf("docker", "start", "--attach", container))
+            // No marker means the image never reached the check — no interpreter, no package — and a
+            // timeout means it never finished one. Both are environment answers, not verdicts on the
+            // template, so neither may read as a rejection.
+            val reached = run.output.contains(SETUP_MARKER) && !run.timedOut
+            return Outcome("container $image", run.output, setUp = reached, completed = run.output.contains(DONE_MARKER))
+        } finally {
+            execute(listOf("docker", "rm", "--force", container))
+        }
     }
+
+    /**
+     * The container id `docker create` printed, or null when it printed none.
+     *
+     * The id is the last line because a pull writes its progress to the same stream; anything else —
+     * an error, an empty output — is not an id and must not be handed to `docker cp`.
+     */
+    private fun containerIdIn(output: String): String? =
+        output.lines().map { it.trim() }.lastOrNull { it.isNotEmpty() }
+            ?.takeIf { it.matches(CONTAINER_ID) }
 
     /**
      * Run [command] under a bound generous enough for an image pull but not for a wedged container.
@@ -197,6 +237,14 @@ internal class TemplateInterpreterRunner {
 
         /** How a script reports a rejected template, so one rule decides success on every path. */
         const val FAILURE_PREFIX = "FAIL"
+
+        /**
+         * What a container id looks like, so a pull's progress lines cannot be mistaken for one.
+         *
+         * `docker create` prints the full 64-character id; the short form is accepted too because every
+         * other `docker` subcommand prints and accepts it, and a 12-hex line is no likelier to be noise.
+         */
+        val CONTAINER_ID = Regex("^[0-9a-f]{12,64}$")
 
         /** Bound per invocation: an emulated PowerShell pull took ~30 s measured, a wedged one never ends. */
         const val CHECK_TIMEOUT_SECONDS = 180L

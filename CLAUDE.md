@@ -328,7 +328,7 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 488           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| api            | 491           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
 | clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 232           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
@@ -398,6 +398,19 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   test *who is supposed to set its gate*, and if the answer is nobody, it is not gated — it is absent.
   The corollary for writing one: a check that cannot run must **skip, never pass**, or the gap disappears
   entirely.
+- **A container's mount is resolved where the daemon is, not where the test is — and a wrong one is
+  silent.** Those three ungated checks ran for the first time on 2026-09-26 (run 646) and all three
+  answered about an empty directory: `docker run -v <hostPath>:/templates` resolves the source on the
+  **daemon's** filesystem, and the Forgejo runner's job container talks to a sibling daemon that holds no
+  copy of its `/tmp`, so Docker created the missing directory and mounted that. Zero exit, no warning.
+  One transport defect produced three different-looking verdicts — fish FAILED on a glob it could not
+  expand, the PowerShell parse check **PASSED** having parsed nothing, and the installer-Java probe
+  SKIPPED for want of its script — and only the middle one is dangerous, because it is the one that reads
+  as a clean bill. `docker cp` streams through the daemon API and fails loudly where the bind fails
+  silently. The transferable part is the reproduction: a developer machine cannot show this, because its
+  daemon *is* its filesystem. `docker run -d --privileged -e DOCKER_TLS_CERTDIR= -p 12375:2375
+  docker:dind` plus `DOCKER_HOST=tcp://127.0.0.1:12375` reproduces the runner's topology in about a
+  minute, and is what turned an argument into a measurement.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.

@@ -96,13 +96,54 @@ internal class ShellTemplateSyntaxTest {
     }
 
     /**
-     * The PowerShell one-liner that parses [glob] and exits non-zero with the parser's own messages.
+     * The zero-match guard in [parseCommandFor] has to be able to fire, or it is decoration.
+     *
+     * Points the same command at an empty directory — which is precisely what the probe container held
+     * on run 646 — and demands the `FAIL` line. Without it `foreach` iterates nothing, the check reports
+     * no failures, and a run that parsed zero templates is indistinguishable from a clean one.
+     */
+    @Test
+    fun aPowerShellGlobThatMatchesNothingIsAFailure() {
+        val empty = runner.stageTemplates(emptyList())
+        val checked = runner.runLocally(
+            "pwsh",
+            mapOf("empty" to listOf("pwsh", "-NoProfile", "-Command", parseCommandFor(File(empty, "*.ps1").absolutePath)))
+        ) ?: runner.runInContainer(
+            image = POWERSHELL_IMAGE,
+            staged = empty,
+            platform = POWERSHELL_PLATFORM,
+            environment = POWERSHELL_ENVIRONMENT,
+            command = listOf(
+                "pwsh", "-NoProfile", "-Command",
+                "Write-Output '$SETUP_MARKER'; " + parseCommandFor("/templates/*.ps1") + "\nWrite-Output '$DONE_MARKER'"
+            )
+        )
+
+        Assumptions.assumeTrue(checked != null, "no PowerShell interpreter and no Docker daemon — the guard was NOT checked")
+        Assumptions.assumeTrue(
+            checked!!.setUp && checked.completed,
+            "the PowerShell check did not run to its end: ${checked.output.take(400)}"
+        )
+        Assertions.assertTrue(
+            checked.failures.isNotEmpty(),
+            "a glob matching no template must be reported as a failure, got:\n${checked.output}"
+        )
+    }
+
+    /**
+     * The PowerShell one-liner that parses [glob] and reports a `FAIL` line per rejected template.
      *
      * Shared by the local and container paths so the two cannot drift into checking different things.
+     *
+     * A glob that matches nothing is itself a `FAIL`, because `foreach` over an empty match runs zero
+     * times and the check would otherwise report success for having parsed nothing — which is what it
+     * did on run 646, where the templates never reached the container and only fish was loud about it.
      */
     private fun parseCommandFor(glob: String): String =
         """
-        foreach (${'$'}f in (Get-ChildItem -Path '$glob')) {
+        ${'$'}templates = @(Get-ChildItem -Path '$glob' -ErrorAction SilentlyContinue)
+        if (${'$'}templates.Count -eq 0) { Write-Output "$FAILURE_PREFIX nothing matched '$glob', so nothing was parsed" }
+        foreach (${'$'}f in ${'$'}templates) {
           ${'$'}errs = ${'$'}null
           [System.Management.Automation.Language.Parser]::ParseFile(${'$'}f.FullName, [ref]${'$'}null, [ref]${'$'}errs) | Out-Null
           if (${'$'}errs.Count -gt 0) { Write-Output "$FAILURE_PREFIX ${'$'}(${'$'}f.Name)"; ${'$'}errs | ForEach-Object { Write-Output ${'$'}_.Message } }

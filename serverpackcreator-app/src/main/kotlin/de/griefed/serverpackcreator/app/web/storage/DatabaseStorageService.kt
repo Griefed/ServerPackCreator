@@ -79,6 +79,13 @@ class DatabaseStorageService(
     }
 
     /** Read a file back out of GridFS, as the metadata and the resource together. */
+    // Both inspections below are wrong here, and wrong for the same reason: Spring's
+    // `org.springframework.data.mongodb.gridfs` package is `@NonNullApi`, so the analyser believes
+    // `findOne` cannot return null, and from that concludes the declared `?` is redundant and the guard
+    // is foldable into an elvis that "always returns the left operand". Asked of a real mongod,
+    // `findOne` DOES return null for a miss -- `WebPersistenceIT.loadingAnIdGridFsDoesNotHoldReturnsEmptyRatherThanThrowing`.
+    // Taking either suggestion turns an absent file into an NPE on the download route.
+    @Suppress("RedundantNullableReturnType", "FoldInitializerAndIfToElvis")
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
         // Typed nullable deliberately. findOne returns null for a miss -- verified against a real
         // mongod by WebPersistenceIT -- but Spring does not annotate it @Nullable, so Kotlin infers
