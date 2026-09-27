@@ -45,6 +45,32 @@ class JarUtilitiesTest internal constructor() {
         )
     }
 
+    /**
+     * The directory-taking overload has to answer the same way, because it had the same hole.
+     *
+     * Both spellings of `copyFileFromJar` created the destination before resolving the stream and wrote
+     * it with `it?.transferTo(out)`. Fixing the one `ApiWrapper` happens to call would have left the one
+     * the GUI's delete-watcher calls still handing back an empty file and a `true`.
+     */
+    @Test
+    fun copyingAResourceThatIsNotInTheJarIntoADirectoryFailsAndLeavesNoFileBehind() {
+        val directory = Files.createTempDirectory("spc-missing-resource-directory").toFile()
+        directory.deleteOnExit()
+
+        Assertions.assertThrows(JarAccessException::class.java) {
+            JarUtilities.copyFileFromJar(
+                "this_resource_has_never_existed.bat",
+                JarUtilitiesTest::class.java,
+                directory.absolutePath
+            )
+        }
+        Assertions.assertEquals(
+            emptyList<String>(),
+            directory.list()?.toList() ?: emptyList<String>(),
+            "a resource that could not be read must not leave an empty file in $directory"
+        )
+    }
+
     @Test
     fun systemInformationTest() {
         val system: HashMap<String, String> = JarUtilities.jarInformation(JarUtilitiesTest::class.java)
