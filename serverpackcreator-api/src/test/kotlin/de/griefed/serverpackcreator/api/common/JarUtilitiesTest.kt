@@ -1,9 +1,11 @@
 package de.griefed.serverpackcreator.api.common
 
+import de.griefed.serverpackcreator.api.utilities.common.JarAccessException
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.nio.file.Files
 
 class JarUtilitiesTest internal constructor() {
 
@@ -14,6 +16,33 @@ class JarUtilitiesTest internal constructor() {
             File("tests").absolutePath
         )
         Assertions.assertTrue(File("tests/banner.txt").isFile)
+    }
+
+    /**
+     * A resource that is not in the jar must fail loudly and leave nothing behind.
+     *
+     * It used to do neither. `copyFileFromJar` created the destination *before* resolving the stream
+     * and then wrote it with `it?.transferTo(out)`, so a missing resource was swallowed by the safe
+     * call, the file existed, and the function reported success. `ApiWrapper.stageOne()` staged
+     * `default_java_template.bat` that way - a resource that has never existed - and recreated a
+     * 0-byte file on every single launch, in every test home, with nothing logged.
+     */
+    @Test
+    fun copyingAResourceThatIsNotInTheJarFailsAndLeavesNoFileBehind() {
+        val destination = File(Files.createTempDirectory("spc-missing-resource").toFile(), "not-in-the-jar.bat")
+        destination.deleteOnExit()
+
+        Assertions.assertThrows(JarAccessException::class.java) {
+            JarUtilities.copyFileFromJar(
+                "de/griefed/resources/server_files/this_resource_has_never_existed.bat",
+                destination,
+                JarUtilitiesTest::class.java
+            )
+        }
+        Assertions.assertFalse(
+            destination.exists(),
+            "a resource that could not be read must not leave an empty file at $destination"
+        )
     }
 
     @Test
