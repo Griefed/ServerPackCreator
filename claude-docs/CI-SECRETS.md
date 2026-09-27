@@ -68,13 +68,15 @@ Useful when you want a partial setup working rather than all of it at once.
 
 | Workflow | Needs | Degrades to |
 |---|---|---|
-| `test.yml`, `docker-test.yml` | **nothing** | — |
+| `test.yml` | **nothing** | — |
 | `qodana.yml` | **nothing required**; `WEBHOOK_URL` optional | silently skips the Discord post without the webhook |
 | `release-generate.yml` | `FJ_ACTOR`, `FJ_TOKEN`, `GIT_USER`, `GIT_MAIL` | nothing releases — this is the workflow that cuts the version and pushes the tag |
 | `release-build.yml` | everything else | see below — several jobs fail independently |
 | `devbuild.yml` | `FJ_*`, `GH_TOKEN`, `INSTALL4J_LICENSE`, `SPCUPLOAD_*` | no nightly `continuous` build |
 | `docs.yml` | `GH_TOKEN`, `DOCKERHUB_USER`, `DOCKERHUB_TOKEN` | no help image |
+| `docker-test.yml` | **nothing required**; `GH_TOKEN` + `DOCKERHUB_USER` optional | without them the ghcr base image is pulled anonymously, and ghcr rate-limits that per source address — `429 Too Many Requests` fails the build, as it did on runs 676 and 680 |
 | `update-readme.yml` | `FJ_*`, `GH_TOKEN`, `GIT_USER`, `GIT_MAIL` | sponsors/contributors stop refreshing |
+| `grinder-container-it.yml` | **nothing** | — |
 
 Inside `release-build.yml` the jobs fail independently, so a missing secret usually costs one job
 rather than the release:

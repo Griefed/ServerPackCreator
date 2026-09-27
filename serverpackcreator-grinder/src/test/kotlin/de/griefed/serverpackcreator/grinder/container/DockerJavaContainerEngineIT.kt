@@ -99,7 +99,7 @@ internal class DockerJavaContainerEngineIT {
         booting.interrupt()
 
         // close() force-removes, so the sleeper must be gone almost immediately.
-        val goneBy = System.currentTimeMillis() + 30_000
+        val goneBy = System.currentTimeMillis() + 60_000
         while (runningContainersOf(drainEngine) > 0 && System.currentTimeMillis() < goneBy) {
             Thread.sleep(500)
         }
@@ -170,7 +170,7 @@ internal class DockerJavaContainerEngineIT {
 
         waitForContainerOf(signalEngine)
         signalEngine.close()
-        booting.join(30_000)
+        booting.join(60_000)
 
         Assertions.assertTrue(sawSignal.get(), "the container must receive SIGTERM and get to run its handler before removal")
         Assertions.assertTrue(containersOf(signalEngine).isEmpty(), "nothing may be left running after close")
@@ -315,9 +315,16 @@ internal class DockerJavaContainerEngineIT {
             .withLabelFilter(mapOf(DockerJavaContainerEngine.INSTANCE_LABEL to engine.instanceId))
             .exec().map { it.id }
 
-    /** Block until [engine]'s own container is actually up, so a test never pulls the rug before there is one. */
+    /**
+     * Block until [engine]'s own container is actually up, so a test never pulls the rug before there is one.
+     *
+     * 60s, not 30: this runs on a runner that shares its Docker daemon with whatever else CI is doing, and
+     * when the wait expires the failure surfaces as the *next* assertion — "test setup: the orphan must be
+     * running ==> expected 1 but was 0" (run 681) — which reads as a verdict about reaping rather than as a
+     * slow daemon. A fixture that gives up too early does not fail, it misattributes.
+     */
     private fun waitForContainerOf(engine: DockerJavaContainerEngine) {
-        val until = System.currentTimeMillis() + 30_000
+        val until = System.currentTimeMillis() + 60_000
         while (System.currentTimeMillis() < until && containersOf(engine).isEmpty()) {
             Thread.sleep(200)
         }
