@@ -402,12 +402,26 @@ though their detail lives deeper:
   the engine is built, exit 1 so `Restart=on-failure` retries and `systemctl status` shows `failed`), and
   `ContainerEngine.hasImage` defaults to `true` so no test fake is affected. **The recovery is
   `--requeue-since <the moment it broke>`** — `--requeue-before` selects the exact complement of an outage.
-- **Every container carries `OWNER_LABEL`, and that label is the only way to find an orphan.**
+- **Every container carries two labels, and the difference between them is the whole point.**
   A SIGKILLed JVM leaves containers running with nothing tracking them — the in-memory set died with the
-  process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery, and it
-  assumes **one grinder per Docker daemon**: the label says "a grinder made this", not "*this* grinder", so a
-  second instance sharing a daemon would have its live boots reaped by the first one's startup. The shipped
-  unit is a singleton, which is what makes the simple label safe.
+  process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery.
+  `OWNER_LABEL` says "a grinder made this"; `INSTANCE_LABEL` says "*this* engine made this"
+  (`DockerJavaContainerEngine.instanceId`, random per instance). Anything asking the daemon a question about
+  ownership must ask with the second, because the first is a question about the whole machine.
+  - `close()` was always instance-scoped (it sweeps an in-process set) and `reapOrphans()` now skips its own
+    instance, but **the rest of the landmine is not fixable with a label and remains**: a container belonging
+    to a second, *live* engine is indistinguishable from one left by a process that died, because the daemon
+    knows what made a container and never whether that maker is still running. A pid does not settle it
+    either — the other grinder is in its own pid namespace, on a CI runner in its own job container.
+  - So **two grinders sharing a daemon still have to be kept apart by whoever starts them.** The shipped unit
+    is a singleton; `.forgejo/workflows/grinder-container-it.yml` holds a repository-wide concurrency lock so
+    the tests are the same.
+  - **This is not theoretical, and the shape of the failure is worth knowing.** `test.yml`'s group is per-ref,
+    so a push to `develop` and PR #678 (develop → beta) build the same commit at the same time on one runner.
+    On 2026-09-27 runs 954 and 956 reached the container suite seven seconds apart and each failed a
+    *different* test of it — 954 `refusesToCreateAContainerOnceClosed`, 956
+    `closeSignalsAContainerBeforeKillingIt`, the run before that a third one. **A defect fails the same test
+    in both; that pattern is interference.**
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the
@@ -633,7 +647,8 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
 
   | Test | Gate | Also needs | Last verified |
   |---|---|---|---|
-  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` — **set by CI since 2026-09-26** | a daemon + `docker pull busybox` | Docker 29.7.2, 2026-09-26 |
+  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` — set by `grinder-container-it.yml`, **not** by `test.yml` | a daemon + `docker pull busybox` | Docker 29.7.2, 2026-09-27 |
+  | `ContainerOwnershipIT` | same gate, same workflow | the same | Docker 29.7.2, 2026-09-27 |
   | *(boot-log capture, verified by a live one-shot rather than an IT)* | — | a daemon + `spc-grinder-runtime` | Docker 29.7.2, 2026-08-29 |
   | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
   | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
@@ -642,10 +657,13 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
 
   e.g. `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`
 
-  **`DockerJavaContainerEngineIT` is no longer dark.** `.forgejo/workflows/test.yml` pulls busybox and sets
-  `GRINDER_DOCKER_IT=1`, so all nine run on every push (30.1 s measured) — the runner has a working socket,
-  which `qodana.yml` and `docs.yml` already rely on. The other gates stay unset on purpose: they need a live
-  Modrinth or CurseForge API, a built image plus a Minecraft download per cell, or a deployed grinder.
+  **`DockerJavaContainerEngineIT` is no longer dark, and since 2026-09-27 it runs in its own workflow.**
+  `.forgejo/workflows/grinder-container-it.yml` pulls busybox, sets `GRINDER_DOCKER_IT=1` and holds a
+  concurrency group with **no ref in it**, so one run of these two classes happens at a time across the whole
+  repository (~40 s measured). `test.yml` deliberately no longer sets the gate: its group is per-ref, which is
+  what lets two of its jobs share the runner's daemon, and one of these tests reaps every grinder container on
+  it. The other gates stay unset on purpose: they need a live Modrinth or CurseForge API, a built image plus a
+  Minecraft download per cell, or a deployed grinder.
 
 - **Measurements live in a `benchmark` source set and are a *program*, not a test (2026-09-26).**
   `src/benchmark/kotlin` holds `StoreWriteBenchmark` — a plain `main`, run by a **`JavaExec`** task:
