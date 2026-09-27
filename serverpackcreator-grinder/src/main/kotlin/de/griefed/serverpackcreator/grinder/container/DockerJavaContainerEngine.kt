@@ -57,6 +57,15 @@ class DockerJavaContainerEngine(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
+     * Identifies this engine among any others sharing the daemon, and every container it creates carries it.
+     *
+     * Random per instance rather than derived from the process: a pid means nothing to a second grinder in
+     * its own pid namespace, which is precisely the case on a CI runner, and two engines in one JVM would
+     * share it anyway.
+     */
+    val instanceId: String = UUID.randomUUID().toString()
+
+    /**
      * Containers currently owned by this engine. [run]'s `finally` removes a container on the normal
      * path, but that block never executes if the JVM is torn down mid-boot — which is exactly what a
      * `SIGTERM` to the daemon does — leaking a running Minecraft server. [close] force-removes whatever
@@ -84,8 +93,10 @@ class DockerJavaContainerEngine(
             // to an address and the id does not exist until after this call. See CONTAINER_HOST_NAME.
             .withHostName(spec.hostName)
             // Stamped so a container that outlives its JVM can still be identified. Nothing else can find it:
-            // it has no name, no autoremove, and the tracking set above dies with the process.
-            .withLabels(mapOf(OWNER_LABEL to "1"))
+            // it has no name, no autoremove, and the tracking set above dies with the process. Two labels,
+            // because "a grinder made this" and "*this* engine made this" are different questions and only
+            // the second one can be asked safely while something else shares the daemon.
+            .withLabels(mapOf(OWNER_LABEL to "1", INSTANCE_LABEL to instanceId))
             .exec()
             .id
         liveContainers.add(containerId)
@@ -210,16 +221,22 @@ class DockerJavaContainerEngine(
     }
 
     /**
-     * Remove every container carrying [OWNER_LABEL], which at startup can only be an orphan of a previous
-     * process — this engine has started none yet.
+     * Remove every container carrying [OWNER_LABEL] that this engine did not create, which at startup can
+     * only be an orphan of a previous process — this engine has started none yet.
      *
-     * **LANDMINE: this assumes one grinder per Docker daemon.** The label says "a grinder made this", not
-     * "*this* grinder made this", so a second instance sharing the daemon would have its in-flight boots
-     * removed by the first one's startup. The shipped unit is a singleton service, which is what makes the
-     * simple label safe; anything else needs a per-instance label first.
+     * **LANDMINE: this still assumes one grinder per Docker daemon, and a label cannot fix that.** Skipping
+     * its own containers is the part that *is* fixable and is done here; what remains is that a container
+     * belonging to a **second, live** engine is indistinguishable from one left by a process that died,
+     * because the daemon knows only what made a container, never whether that maker is still running. A pid
+     * would not settle it either: the other grinder is in its own pid namespace — on a CI runner, in its own
+     * job container — so its pid either does not exist here or belongs to something else entirely.
+     *
+     * So two grinders sharing a daemon must still be kept apart by whoever starts them. The shipped unit is
+     * a singleton service, and `.forgejo/workflows/test.yml` serialises the job that runs the container
+     * suite for the same reason.
      */
     override fun reapOrphans(): Int {
-        val orphans = runCatching {
+        val labelled = runCatching {
             client.listContainersCmd().withShowAll(true)
                 .withLabelFilter(mapOf(OWNER_LABEL to "1"))
                 .exec()
@@ -227,6 +244,10 @@ class DockerJavaContainerEngine(
             log.warn("Could not list containers to reap orphans: ${it.message}")
             return 0
         }
+        // Never the reaper's own. At startup there are none, but this is public and nothing stops a running
+        // engine calling it — and "orphan" has always meant "not mine", so say it rather than rely on when
+        // it happens to be called.
+        val orphans = labelled.filter { it.labels?.get(INSTANCE_LABEL) != instanceId }
         if (orphans.isEmpty()) {
             return 0
         }
@@ -309,6 +330,16 @@ class DockerJavaContainerEngine(
          * found. Without it an orphan is indistinguishable from any other container on the host.
          */
         const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
+
+        /**
+         * Docker label carrying *which* engine created a container, where [OWNER_LABEL] says only that a
+         * grinder did.
+         *
+         * The difference is the whole of this label's reason to exist: every question asked of the daemon
+         * through the owner label alone — what is still running, what may be removed — is a question about
+         * the entire machine, and is only safe while one grinder has that machine to itself.
+         */
+        const val INSTANCE_LABEL = "de.griefed.serverpackcreator.grinder.instance"
 
 
 

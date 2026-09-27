@@ -6676,3 +6676,114 @@ stale suite counts in both `CLAUDE.md` files (re-measured, not incremented: api 
 226, web-frontend 35 → 37), the unpinned Java signature above, and M-E. Commit hygiene on the ten
 post-merge commits is clean: every `fix` but the two noted has its red pin immediately before it, and
 no `test`/`docs` commit changes executable production code.
+
+---
+
+# 2026-09-27 — `claude-grinder-container-ownership` (8 commits, `develop..HEAD`)
+
+**Scope.** The branch answers one CI failure — `DockerJavaContainerEngineIT` failing a *different* test
+on each of three consecutive `develop` runs (947, 954, 956) — with three changes: a per-instance
+container label in production, instance-scoped assertions in the integration test, and a dedicated
+workflow holding a repository-wide concurrency lock for the one test whose side effect cannot be scoped.
+
+**Every finding below was reported first and fixed afterwards**, in *fix(grinder,ci): close the audit's
+findings — a vacuous assertion, a loose one, and a silent skip* and *feat(grinder): give a container
+engine an identity, before anything uses it*. Both the finding and its resolution are kept: the value of
+this log is the class of mistake, not the diff.
+
+**Commits are cited by subject, not by hash, and that is itself the first thing this audit got wrong.**
+The draft of this section quoted seven abbreviated hashes; rewording one commit later in the same session
+replayed the branch and invalidated all of them — the exact failure this file already records
+(*"54 commit hashes killed by a rebase … that file cites hashes at volume, so it is the guaranteed
+casualty of every history rewrite — write subjects there the first time"*). Subjects survived the replay
+untouched.
+
+**Evidence gathered for this audit rather than taken from the commit messages:**
+
+- **The production change keeps the pre-existing suite green with its pre-existing assertions.** Checked
+  out *fix(grinder): stamp which engine made a container, and never reap your own* in a detached worktree
+  and ran `DockerJavaContainerEngineIT` as it stood *before* the scoping commit: **9 tests, all PASSED,
+  37 s**.
+- **The collision reproduces and the fix holds.** A container planted with `OWNER_LABEL` and a foreign
+  instance id — what the other job had — makes the *old* global assertion fail and the new scoped one
+  pass, same tree, same daemon.
+- **Test isolation assumption verified:** neither `java-conventions` nor the grinder's build script sets
+  `maxParallelForks` or `forkEvery`, so the two container classes cannot run concurrently in one job.
+- **The reword replayed without touching content:** the branch tip's tree is byte-identical before and
+  after (`2f2dfe8a5b9db533503c229c154ba2f45098f533`).
+
+## HIGH
+
+**H-A — the CI half of the fix had no way to report its own absence. FIXED.**
+The new workflow is the only thing that now sets `GRINDER_DOCKER_IT`; `test.yml` no longer does. If it
+ever stops reaching the JVM, all twelve container tests **skip** and the job goes green having verified
+nothing — *"a guard gated on something nobody supplies is indistinguishable from no guard, and it reports
+as a skip rather than a gap"*.
+
+The job now reads its own results and fails on a skip, or on reports that are not there. Proven in both
+directions, which is the only way this kind of step is worth anything:
+
+```
+gate set    container tests: 12, of which skipped: 0    exit 0
+gate unset  container tests: 12, of which skipped: 12   exit 1, ::error::
+```
+
+**The first version of that step was itself the defect it guards against**, and is the reason the
+proof-in-both-directions is not optional: `grep -c` over a glob printed `ran=1 skipped=0` and exited **0**
+while both of its greps were failing with *"No such file or directory"*. A verification step that passed
+having verified nothing. It reads the JUnit suite attributes now, in python, where an absent file raises.
+
+**Residual, and not fixable from here:** whether the workflow *triggers at all* on this instance can only
+be answered by a push. Two things to check on the first one — that a `Grinder Container IT` run appears,
+and that its *Prove the tests ran rather than skipped* step reports 12 and 0.
+
+## MEDIUM
+
+**M-A — an assertion that could not fail, in a guard this branch added. FIXED.**
+`ContainerOwnershipIT` asserted `reapOrphans() >= 0` through an `AtomicBoolean` and called it
+*"test setup: the reap must have run"*. The method returns a count, so the assertion was **always** true —
+the class this repository already records (*"an expression statement reads exactly like an assertion and
+asserts nothing"*), reintroduced two days after it was written down, by the same pass that cites it.
+The test now starts a container on a *second* engine, so it pins both halves in one run: the foreign
+container is reaped, the reaper's own survives. It can no longer pass against a `reapOrphans` that removes
+nothing.
+
+**M-B — an existing assertion was weakened rather than removed. FIXED by removing it.**
+`assertEquals(1, reaped)` had become `assertTrue(reaped >= 1)` in the orphan test. Reaping is global, so
+that count includes whatever else the host had orphaned and `>= 1` would pass against a reap that took
+fifty containers — the scenario that breaks a concurrent job. The assertion is gone: what that test owns
+is whether *its* orphan went, and it says so. The count is pinned in `ContainerOwnershipIT`, where a known
+foreign container makes it mean something.
+
+**M-C — a guard that had never been red for its own subject. FIXED by making it red.**
+`closingOneEngineLeavesAnotherEnginesContainerRunning` pins that one engine's `close` spares another's
+container — behaviour that predates the branch, so its red state came from the missing label, not from
+`close` misbehaving. Mutation supplies what was missing: rewriting `close()` as a sweep over every
+owner-labelled container — the shape `reapOrphans` has, and the one the guard forbids — turns it red with
+*"and must leave the other engine's alone ==> expected: 1 but was 0"*, and restoring it turns it green.
+
+## LOW
+
+**L-A — `refactor:` on a commit that adds public declarations. FIXED by rewording to `feat:`.**
+Behaviour was preserved, so the label was within the convention as written — but the commit adds
+`INSTANCE_LABEL` and `instanceId` to a public class, and a reader scanning subjects for new surface would
+not find them under a subject claiming nothing changed. The same seam in the self-extract plugin was
+labelled `feat`, so this also removes an inconsistency inside one session's work.
+
+**L-B — "~40 s" was the tests, not the job. FIXED by saying which.**
+Both the workflow header and the module `CLAUDE.md` quoted it next to the concurrency lock, where the
+number that matters is how long the lock is *held* — and the job also checks out, provisions a JDK,
+resolves Gradle and compiles three modules. Both now say ~40 s is the tests and that the job's cost is
+unmeasured until a real run.
+
+## Verified clean — do not re-litigate
+
+- **Commit hygiene.** Eight commits, one concern each: seam (`feat`), pin (`test`, red), production
+  (`fix`), fixture correction (`fix`), test scoping (`fix`), CI (`ci`), documentation (`docs`), audit
+  fixes (`fix`). No `test` or `docs` commit touches executable production code; no `fix` bundles its pin.
+- **`reapOrphans`' filter is null-safe in the right direction.** `it.labels?.get(INSTANCE_LABEL) !=
+  instanceId` reaps a container carrying *no* instance label, which is what one from an older build is.
+- **The landmine documentation was narrowed, not deleted.** Both the KDoc and the module `CLAUDE.md` state
+  which half a label fixes and which half it cannot, with the pid-namespace reason. Nobody is left
+  believing two grinders can now share a daemon safely.
+- **No module boundary crossed, no published API touched** — everything is inside the unpublished grinder.
