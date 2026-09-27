@@ -57,6 +57,15 @@ class DockerJavaContainerEngine(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
+     * Identifies this engine among any others sharing the daemon, and every container it creates carries it.
+     *
+     * Random per instance rather than derived from the process: a pid means nothing to a second grinder in
+     * its own pid namespace, which is precisely the case on a CI runner, and two engines in one JVM would
+     * share it anyway.
+     */
+    val instanceId: String = UUID.randomUUID().toString()
+
+    /**
      * Containers currently owned by this engine. [run]'s `finally` removes a container on the normal
      * path, but that block never executes if the JVM is torn down mid-boot — which is exactly what a
      * `SIGTERM` to the daemon does — leaking a running Minecraft server. [close] force-removes whatever
@@ -309,6 +318,16 @@ class DockerJavaContainerEngine(
          * found. Without it an orphan is indistinguishable from any other container on the host.
          */
         const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
+
+        /**
+         * Docker label carrying *which* engine created a container, where [OWNER_LABEL] says only that a
+         * grinder did.
+         *
+         * The difference is the whole of this label's reason to exist: every question asked of the daemon
+         * through the owner label alone — what is still running, what may be removed — is a question about
+         * the entire machine, and is only safe while one grinder has that machine to itself.
+         */
+        const val INSTANCE_LABEL = "de.griefed.serverpackcreator.grinder.instance"
 
 
 
