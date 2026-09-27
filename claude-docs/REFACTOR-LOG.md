@@ -4836,3 +4836,109 @@ leaving a migrated one alone. Final: app 147.6 s → **28.2 s**, 220 tests.
   Whether those still materialise is not answerable by reasoning about Kotlin nullability; seeded into a
   real mongod, they do. That is also what made it safe to delete the two now-redundant filters rather
   than widen the field to nullable.
+
+## 2026-09-25 — the server-test plugin (`servertest` branch)
+
+**What it is.** A third pf4j plugin, `serverpackcreator-plugin-servertest`, adding a GUI tab that lists
+every generated server pack and launches the selected one **through the pack's own start scripts**,
+streaming that server's console into the window and giving the user a line into its standard input.
+Griefed's framing: testing a pack should cost one click plus connecting a client.
+
+**The constraint, and that it held.** No changes to `serverpackcreator-api`'s published surface — the
+beta is feature-complete and plugins compile against it. Checked before any code was written, and it was
+already all there: `TabExtension`/`ExtensionTab`, `ApiProperties.serverPacksDirectory`,
+`ServerPackManifest.inside`, `utilities.jsonUtilities.objectMapper`. Zero API changes shipped.
+
+**The one thing that could not be done the obvious way.** Several packs run at once, and every generated
+pack ships the same `server-port=25565`. There is no way to pass a port through the start scripts:
+`ADDITIONAL_ARGS` is interpolated *before* `-jar`, in JVM-argument position, and `SERVER_RUN_COMMAND`
+always ends in `nogui` with no hook for a program argument, so Minecraft's `--port` is unreachable
+without abandoning the scripts. That leaves `server.properties` — which is on SPC's own protected-paths
+list precisely because it is the user's. So the plugin *borrows* it: back it up byte-for-byte, rewrite
+only the port lines, restore on the way out, including restoring to *absent*. The backup's presence is
+the crash marker, the same shape as `manifest.json` being SPC's "did I produce this?" marker.
+
+**Two adjacent defects, found and fixed rather than deferred.**
+
+- `log4j2.xml` declared only `PluginsLogger`, while `ExtensionTab.log` hands every plugin
+  `LogManager.getLogger("AddonsLogger")`. The name fell through to Root, so **every plugin's output had
+  been landing in `serverpackcreator.log` rather than `plugins.log`** — and the example plugin's KDoc
+  stated the opposite as fact. Measured before the fix: the logger resolved to
+  `[Console, ApplicationLogger]`. Added rather than renamed, because the name is baked into every
+  third-party plugin already compiled against the published API.
+- `HostProcessServerRunner.destroyForcibly()` killed the `bash` it spawned and **not the server that
+  bash started** — reparented to init, still holding the world directory, the port and its heap. Nothing
+  in the repository called `ProcessHandle.descendants()`. Reproduced before the fix ("Process 71941
+  outlived the boot that spawned it") and pinned.
+
+**Lessons worth carrying past this branch.**
+
+- **A settings guard whose shipped default equals the code's fallback asserts nothing.** The first
+  `ServerTestSettingsTest` read each key back and compared it to the default — and stayed green with
+  `portRangeStart` renamed to `portRangeStartMUTATED`, because a missing key returns the fallback and
+  looks exactly like a present one. Only asserting key *presence* can tell a live key from a dead one.
+  Found by mutation, run precisely because those three units had been written before their guards.
+- **`lastOrNull()` masks a missing regex anchor.** `PackVariables` read the last match of a key, so an
+  unanchored pattern still answered correctly in every fixture where the impostor came first. The guard
+  only grew teeth once the impostor followed the real setting — `AUTO_RESTART` after `RESTART`. This is
+  the prefix/suffix-fixture trap this project already recorded, in a new costume.
+- **A green suite says nothing about a prompt nobody can see.** A real NeoForge boot reached ready, took
+  `stop`, saved every dimension, printed `Exiting...` — and hung for three minutes.
+  `WAIT_FOR_USER_INPUT=true` ends the script on `read -n 1 -s -r -p`, and **bash writes a `read -p`
+  prompt only when standard input is a terminal**. Over a pipe there is no prompt at all, so a finished
+  server is indistinguishable from a hung one. The console now says so at that exact line.
+- **Rendering a pane and looking at it found what every guard missed.** The notes the console writes are
+  prose, and at the pane's width the second one ended "You will be a" behind a horizontal scrollbar
+  nobody would drag. Nothing the model held was wrong, so nothing could have gone red. Same class as the
+  grinder plugin's clipped table columns, which were also found one screenshot at a time.
+- **A bare `-D` reaches the Gradle daemon, not the forked test JVM.** The first run of the end-to-end
+  boot reported BUILD SUCCESSFUL having SKIPped and booted nothing — a green run that verified nothing,
+  which is worse than a red one. The test task now forwards the switches explicitly.
+
+**Verified end to end** against `serverpackcreator-app/tests/server-packs/NeoForge-1.21`: real
+ServerStarterJar download, real NeoForge install, the EULA answered over stdin and `eula.txt` written by
+the *script*, `Done (4.772s)! For help, type "help"`, a clean `stop`, and afterwards a byte-identical
+`server.properties` with no orphaned server JVM. Full detail and landmines:
+**`serverpackcreator-plugin-servertest/CLAUDE.md`**.
+
+## 2026-09-26 — the boot teardown guard that only the CI container could fail (`-clientside`)
+
+CI run 629 on `servertest` was red on exactly one of 672 tests:
+`HostProcessDescendantTeardownTest > tearingDownABootKillsTheProcessesTheScriptSpawned`, reporting
+`Process 1778 outlived the boot that spawned it`. The same commit was green on macOS. The guard and its
+subject were both correct — the pin (*pin that a boot's teardown kills the server, not only bash*) and its
+fix (*destroy the boot process's descendants before the process*) had landed in the right order, and
+`destroyTree` really does kill the tree.
+
+The question was wrong. `ProcessHandle.isAlive` is true for a process that has exited and not yet been
+reaped: the PID is still in the table, the process is gone. An orphan is reparented to PID 1, and the act job
+container's PID 1 is not an init, so nothing ever reaps it. Two containers differing only in that — same
+program, same script — separated the layers: with `tail -f /dev/null`, `/proc/<pid>` state `Z` and
+`isAlive=true`; with `docker-init`, gone.
+
+The same confusion was costing the production path its whole teardown budget. `ProcessHandle.onExit()` never
+completes for a process nobody will reap, so one unreaped descendant burned all five seconds of
+`GRACEFUL_TEARDOWN_SECONDS` waiting for an exit that had already happened, then force-killed a zombie for
+nothing. Measured in that container: **5000+ ms before, 3 ms after.**
+
+Landed in three commits, in the order the conventions ask for:
+
+- *name the liveness test destroyTree makes* — behaviour-preserving seam, `isStillRunning = handle.isAlive`,
+  so the guard that follows can compile and fail on logic rather than on a missing symbol.
+- *pin that a descendant awaiting reaping is not still running* — red, and red for the logic: the fixture
+  staged, the running-process direction passed, only the zombie assertion failed. `HostProcessLivenessTest`
+  stages a zombie without touching PID 1 (bash backgrounds a child, then `exec`s itself into `sleep`, so the
+  child's parent can never call `wait()`), deterministic on macOS 27 and eclipse-temurin:21 alike. The same
+  commit points `HostProcessDescendantTeardownTest` at the shared predicate, so "still running" has one
+  definition instead of two that can drift.
+- *stop counting an unreaped descendant as a live process* — predicate becomes alive **and** still carrying a
+  command line; the graceful wait polls it instead of awaiting `onExit()`. 673 tests, 0 failures, 0 skipped.
+
+Teeth re-checked by mutation rather than assumed: with `destroyTree` reverted to killing only the shell, the
+corrected teardown guard goes red again with its original message, so pointing it at the new predicate did not
+blunt it.
+
+**Lessons.** *When a guard is green on one host and red on another, suspect the question before the hosts* —
+an environment-shaped failure is evidence that an assertion asks something narrower or wider than it means.
+And *a predicate that two call-sites spell out will eventually disagree with itself*: the fix was cheap here
+only because there was one place to change.

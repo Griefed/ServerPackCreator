@@ -430,6 +430,10 @@ serverpackcreator-grinder/tests/*
 # ServerPackCreator Grinder Plugin
 serverpackcreator-plugin-grinder/tests/*
 !serverpackcreator-plugin-grinder/tests/.gitkeep
+
+# ServerPackCreator Server Test Plugin
+serverpackcreator-plugin-servertest/tests/*
+!serverpackcreator-plugin-servertest/tests/.gitkeep
 serverpackcreator-app/src/main/resources/static/*
 !serverpackcreator-app/src/main/resources/static/.gitkeep
 

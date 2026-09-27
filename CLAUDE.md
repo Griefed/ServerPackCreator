@@ -30,7 +30,7 @@ constraints.
 - **`serverpackcreator-api` is published to Maven Central, so its public surface is a compatibility
   constraint** — plugins compile against it. Governed by the **API compatibility policy** below.
 - **Every other module is unpublished and therefore churns freely** (`-clientside`, `-app`,
-  `-grinder`, both plugin modules, the frontend). `-clientside` in particular is free to change shape;
+  `-grinder`, all three plugin modules, the frontend). `-clientside` in particular is free to change shape;
   `-plugin-example` is the exception that must always reflect *current* API idiom, because it is
   documentation by example.
 - **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
@@ -333,6 +333,7 @@ evidence consulted occasionally, not context every session needs.
 | app            | 232           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
+| plugin-servertest | 110 (1 skip) | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
 | web-frontend   | 37 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
 | grinder        | 539 (15 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
@@ -369,8 +370,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   report's wording is part of the evidence, which is the argument for it being precise.
 - **A test can pass against unfixed code because one fixture value is a prefix of another.** Ask why a
   guard *passed*, not only why it failed, whenever fixture values could contain one another.
-- **A guard that cannot compile is not a red pin.** Land the seam first as its own behaviour-preserving
-  commit, or say in the message that the boundary is missing and quote the mutation that reproduces the red.
+- **A guard that cannot compile is not a red pin.** It fails on a missing symbol, which says nothing about
+  the logic. Three sanctioned ways out, all of which make the red a *wrong answer*: land the seam first as
+  its own behaviour-preserving commit; say in the message that the boundary is missing and quote the
+  mutation that reproduces the red; or — **for new code, where there is no behaviour to preserve and so no
+  honest "behaviour-preserving" seam commit exists** — land the seam *with* the guard in the `test(...)`
+  commit, with the implementation stubbed, and state in the message which assertions are vacuous against
+  that stub. **Griefed's call, 2026-09-25**, after the `servertest` branch took the third route nine times
+  and an audit flagged it: the branch is not being re-split, and the route is sanctioned rather than merely
+  tolerated. It costs one thing — no commit is a pure "add tests" commit — so name the vacuous guards
+  explicitly, because they are the ones that will otherwise be mistaken for pins.
 - **An expression statement reads exactly like an assertion and asserts nothing.** `suggestInclusionsTest`
   called `dirs.any { it.source == "config" }` six times and discarded every result — valid Kotlin, no
   warning, and indistinguishable from a guard at a glance. It passed against *any* return value, proven by
@@ -411,6 +420,14 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   daemon *is* its filesystem. `docker run -d --privileged -e DOCKER_TLS_CERTDIR= -p 12375:2375
   docker:dind` plus `DOCKER_HOST=tcp://127.0.0.1:12375` reproduces the runner's topology in about a
   minute, and is what turned an argument into a measurement.
+- **When a guard is green on one host and red on another, suspect the question before the hosts.** CI run 629
+  failed `HostProcessDescendantTeardownTest` against a process the runner had killed correctly. `ProcessHandle.isAlive`
+  answers *"is this PID in the table"*; the guard meant *"is this process running"*, and the two differ only for a
+  process that has exited and not been reaped — which is permanent under a container PID 1 that is not an init, and
+  invisible on a developer machine where launchd reaps. Both the fix and the guard were right; the *predicate* was the
+  wrong predicate. Two containers differing only in PID 1 separated them in minutes, and the same difference was
+  costing the production teardown its whole 5 s budget (5000+ ms → 3 ms) on a process that had already stopped. An
+  environment-shaped failure is evidence that an assertion is asking something narrower or wider than it means.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.

@@ -140,7 +140,7 @@ class HostProcessServerRunner : ServerRunner {
         val timedOut = !ready.get() && !deadline.hasTimeLeft()
 
         if (process.isAlive) {
-            process.destroyForcibly()
+            destroyTree(process)
             process.waitFor(30, TimeUnit.SECONDS)
         }
         readerThread.join(5_000)
@@ -149,9 +149,70 @@ class HostProcessServerRunner : ServerRunner {
         return RunResult.Completed(synchronized(lines) { ArrayList(lines) }, exitCode, timedOut)
     }
 
+    /**
+     * Kill [process] and everything it started, descendants first.
+     *
+     * `start.sh` is a launcher: the Minecraft server is a `java` child of the shell, so SIGKILLing the shell
+     * alone reparents the server to init and leaves it holding the world directory, the port and its heap.
+     * SIGKILL cannot be trapped or forwarded, which is why the shell cannot be asked to clean up on our behalf.
+     *
+     * The descendant list is taken **before** anything is killed — once the shell dies its children are
+     * reparented and stop being its descendants, so collecting afterwards finds nothing. Everything is asked
+     * to exit first and forced only after one shared budget has elapsed, so a server still able to flush its
+     * world gets the chance; the budget is shared rather than per-process so a deep tree cannot multiply it.
+     *
+     * "Has exited" is [isStillRunning], not `isAlive`: a descendant left unreaped is finished as far as this
+     * teardown is concerned, and treating it otherwise burned the entire budget waiting for an exit that had
+     * already happened.
+     *
+     * Exit-code note: the shell now reports 143 (SIGTERM) where it used to report 137 (SIGKILL).
+     * [BootLogClassifier] treats both as "terminated from outside" and neither as a crash, so no verdict moves.
+     */
+    private fun destroyTree(process: Process) {
+        val descendants = process.toHandle().descendants().toList()
+        descendants.forEach { it.destroy() }
+        process.destroy()
+
+        // Polled rather than awaited: ProcessHandle.onExit never completes for a process nobody will reap,
+        // so a single such descendant used to spend the whole budget on something that had already stopped.
+        // One shared deadline for the tree, so a pack whose script nests several shells cannot multiply it.
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(GRACEFUL_TEARDOWN_SECONDS)
+        while (System.nanoTime() < deadline && descendants.any { isStillRunning(it) }) {
+            Thread.sleep(TEARDOWN_POLL_MILLIS)
+        }
+
+        if (process.isAlive) {
+            process.destroyForcibly()
+        }
+        descendants.filter { isStillRunning(it) }.forEach { it.destroyForcibly() }
+    }
+
     /** The host runner's poll cadence, shared with the suspend-gap threshold it feeds. */
     companion object {
         /** How often the boot's liveness and ready-state are polled; also sets what counts as a suspend gap. */
         internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * How long the whole process tree gets to exit on SIGTERM before it is forced. One shared budget, not
+         * one per process: a pack whose script nests several shells would otherwise multiply the teardown wait.
+         */
+        internal const val GRACEFUL_TEARDOWN_SECONDS = 5L
+
+        /** How often the tree is re-checked while it is being given its chance to exit on SIGTERM. */
+        internal const val TEARDOWN_POLL_MILLIS = 25L
+
+        /**
+         * Whether [handle] names a process teardown must still deal with — one that is *running*, not merely
+         * one whose PID is still in the table.
+         *
+         * `isAlive` answers the second question: it stays true for a process that has exited and not yet been
+         * reaped, and an orphan reparented to a PID 1 that is not an init is never reaped at all. Such a
+         * process holds no port, no world directory and no heap, so waiting on it or force-killing it
+         * achieves nothing. The command line is what separates the two states — the kernel drops it on exit
+         * while the PID lingers — and it is readable here because every handle teardown sees belongs to a
+         * process this JVM started, under the same user.
+         */
+        internal fun isStillRunning(handle: ProcessHandle): Boolean =
+            handle.isAlive && handle.info().command().isPresent
     }
 }

@@ -445,22 +445,48 @@ class ApiPlugins(
             log.info("Executing TabExtensions extensions.")
             pluginsLog.info("Executing TabExtensions extensions.")
             for (extension in getAllExtensionsOfPlugin(plugin, TabExtension::class.java)) {
-                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
-                pluginsLog.info("Executing TabExtension ${extension.name}")
-                val pluginConfig = getPluginConfig(plugin.pluginId)
-                val pluginConfigFile = getPluginConfigFile(plugin.pluginId)
-                val tab = extension.getTab(versionMeta, apiProperties, utilities, pluginConfig, pluginConfigFile)
-                try {
-                    tabbedPane.addTab(extension.title, extension.icon, tab, extension.tooltip)
-                } catch (ex: ExtensionException) {
-                    pluginsLog.error(extensionError, ex)
-                } catch (ex: Error) {
-                    pluginsLog.error(extensionError, ex)
-                } catch (ex: Exception) {
-                    pluginsLog.error(extensionError, ex)
-                }
+                addTabExtensionTab(extension, plugin.pluginId, tabbedPane)
             }
         }
+    }
+
+    /**
+     * Ask one [TabExtension] for its tab and add it to [tabbedPane], reporting rather than propagating a
+     * failure so one misbehaving plugin cannot cost the others their tabs.
+     *
+     * Internal rather than private so the containment can be pinned against an extension that throws on
+     * purpose, which no installed plugin does.
+     *
+     * @param extension  The extension to ask for a tab.
+     * @param pluginId   The plugin it came from, named in the log when it misbehaves.
+     * @param tabbedPane The pane the tab is added to.
+     */
+    internal fun addTabExtensionTab(extension: TabExtension, pluginId: String, tabbedPane: JTabbedPane) {
+        try {
+            pluginsLog.info("Executing TabExtension ${extension.name}")
+            val pluginConfig = getPluginConfig(pluginId)
+            val pluginConfigFile = getPluginConfigFile(pluginId)
+            val tab = extension.getTab(versionMeta, apiProperties, utilities, pluginConfig, pluginConfigFile)
+            tabbedPane.addTab(extension.title, extension.icon, tab, extension.tooltip)
+        } catch (ex: ExtensionException) {
+            reportTabExtensionFailure(extension, pluginId, ex)
+        } catch (ex: Error) {
+            reportTabExtensionFailure(extension, pluginId, ex)
+        } catch (ex: Exception) {
+            reportTabExtensionFailure(extension, pluginId, ex)
+        }
+    }
+
+    /**
+     * Log that [extension] from [pluginId] failed, naming it if it can be named.
+     *
+     * The name is read through a guard of its own because it is the same third-party code that just threw:
+     * building the message eagerly is what used to put a `name` call outside the try, and doing it here
+     * unguarded would turn a reportable failure into a second escape from the catch block itself.
+     */
+    private fun reportTabExtensionFailure(extension: TabExtension, pluginId: String, cause: Throwable) {
+        val name = runCatching { extension.name }.getOrElse { "<name unavailable>" }
+        pluginsLog.error("Extension $name in plugin $pluginId encountered an error.", cause)
     }
 
     /**
