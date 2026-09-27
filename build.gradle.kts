@@ -82,9 +82,18 @@ val grinderPlugin: Configuration = configurations.create("grinderPlugin") {
     isCanBeResolved = true
 }
 
+// The self-extracting-packs plugin's jar. Same reasoning as the grinder's: its own configuration, and
+// the app's plugins directory as its only destination — it provides one extension point, where
+// `copyPluginsApiUnitTests` below needs a plugin that provides all six.
+val selfExtractPlugin: Configuration = configurations.create("selfExtractPlugin") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     examplePlugin(project(path = ":serverpackcreator-plugin-example", configuration = "pluginArtifact"))
     grinderPlugin(project(path = ":serverpackcreator-plugin-grinder", configuration = "pluginArtifact"))
+    selfExtractPlugin(project(path = ":serverpackcreator-plugin-selfextract", configuration = "pluginArtifact"))
 }
 
 val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
@@ -95,10 +104,11 @@ tasks.register<Delete>("cleanAppPlugins") {
 }
 
 tasks.register<Copy>("copyPluginsToApp") {
-    description = "Refreshes the example and grinder plugins in the app's manual-test plugins directory."
+    description = "Refreshes the example, grinder and self-extract plugins in the app's manual-test plugins directory."
     dependsOn("cleanAppPlugins")
     from(examplePlugin)
     from(grinderPlugin)
+    from(selfExtractPlugin)
     into(appPlugins)
 }
 
