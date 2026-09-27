@@ -922,8 +922,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val defaultJavaPowerShellScriptTemplate: File get() = pathsConfig.defaultJavaPowerShellScriptTemplate
 
     /**
-     * The default Batch-template for the java-install scripts.
+     * The path a Batch template for the java-install scripts would have - see the deprecation.
      */
+    @Deprecated(
+        "No Batch java-installer template exists; the Batch start script delegates to PowerShell.",
+        ReplaceWith("defaultJavaPowerShellScriptTemplate")
+    )
+    @Suppress("DEPRECATION")
     val defaultJavaBatchScriptTemplate: File get() = pathsConfig.defaultJavaBatchScriptTemplate
 
     /**

@@ -32,6 +32,32 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
+      # The Dockerfile's runtime stage is `ghcr.io/linuxserver/baseimage-ubuntu:noble`, and ghcr throttles
+      # ANONYMOUS pulls per source address. Runs 676 and 680 died an hour apart on the same thing, so it is
+      # a state of the host rather than a blip:
+      #   ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET
+      #   https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:4ead6a81… 429 Too Many Requests
+      # An authenticated pull is counted against the account instead, which is a far larger allowance. The
+      # credentials are the pair `docs.yml` and `release-build.yml` already use for ghcr; `GH_TOKEN` carries
+      # `write:packages`, which covers the login (claude-docs/CI-SECRETS.md).
+      #
+      # Deliberately a `run:` rather than `docker/login-action`, and deliberately tolerant: this job asked
+      # for no secrets before, so a fork or an instance without them must keep building. Missing credentials
+      # log one line and fall back to the anonymous pull that has always been used. `docker/build-push-action`
+      # forwards whatever is in the daemon's credential store to the builder.
+      - name: Log in to ghcr.io when credentials are available
+        env:
+          GHCR_USER: ${{ secrets.DOCKERHUB_USER }}
+          GHCR_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if [ -z "${GHCR_USER:-}" ] || [ -z "${GHCR_TOKEN:-}" ]; then
+            echo "No ghcr.io credentials configured - the base image will be pulled anonymously, which ghcr rate-limits."
+            exit 0
+          fi
+          set -eu
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          echo "Authenticated to ghcr.io as $GHCR_USER."
+
       - name: Build image
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:

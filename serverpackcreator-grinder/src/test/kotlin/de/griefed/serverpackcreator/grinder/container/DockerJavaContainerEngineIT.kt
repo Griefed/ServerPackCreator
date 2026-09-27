@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
-import com.github.dockerjava.api.DockerClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
@@ -69,7 +68,14 @@ internal class DockerJavaContainerEngineIT {
 
         Assertions.assertTrue(output.lines.any { it.contains("For help") }, "ready line must be captured: ${output.lines}")
         Assertions.assertFalse(output.timedOut, "ready was seen, so this is not a timeout")
-        Assertions.assertTrue(elapsedSeconds < 30, "must stop on ready, not wait out the 120s sleep (took ${elapsedSeconds}s)")
+        // Below the container's 120s sleep, not an arbitrary 30. What pins the behaviour is the assertion
+        // above: `run`'s budget here is 60s, so a ready line that was *missed* ends at that deadline with
+        // `timedOut = true`, and waiting out the sleep is already impossible. This bound therefore catches
+        // nothing about the engine that `timedOut` does not, and everything about how loaded the daemon is
+        // -- run 726 took 38s and failed on a run where the engine had behaved correctly. It stays as a
+        // backstop for the day someone raises the timeout past the sleep, at a threshold that discriminates
+        // between the two outcomes instead of between two daemons.
+        Assertions.assertTrue(elapsedSeconds < 90, "must stop on ready, not wait out the 120s sleep (took ${elapsedSeconds}s)")
     }
 
     /**
@@ -88,12 +94,11 @@ internal class DockerJavaContainerEngineIT {
         }.apply { isDaemon = true; start() }
 
         // Wait for the container to actually exist before pulling the rug out.
-        val client = DockerJavaContainerEngine.defaultClient()
         val deadline = System.currentTimeMillis() + 60_000
-        var running = countBusyboxSleepers(client)
+        var running = runningContainersOf(drainEngine)
         while (running == 0 && System.currentTimeMillis() < deadline) {
             Thread.sleep(500)
-            running = countBusyboxSleepers(client)
+            running = runningContainersOf(drainEngine)
         }
         Assertions.assertTrue(running > 0, "the probe container should be running before close()")
 
@@ -101,11 +106,11 @@ internal class DockerJavaContainerEngineIT {
         booting.interrupt()
 
         // close() force-removes, so the sleeper must be gone almost immediately.
-        val goneBy = System.currentTimeMillis() + 30_000
-        while (countBusyboxSleepers(client) > 0 && System.currentTimeMillis() < goneBy) {
+        val goneBy = System.currentTimeMillis() + 60_000
+        while (runningContainersOf(drainEngine) > 0 && System.currentTimeMillis() < goneBy) {
             Thread.sleep(500)
         }
-        Assertions.assertEquals(0, countBusyboxSleepers(client), "close() must force-remove abandoned containers")
+        Assertions.assertEquals(0, runningContainersOf(drainEngine), "close() must leave none of its containers running")
     }
 
     /**
@@ -135,12 +140,16 @@ internal class DockerJavaContainerEngineIT {
         )
     }
 
-    /** Count running containers that look like this test's probe, so the assertion can't match anything else. */
-    private fun countBusyboxSleepers(client: DockerClient): Int =
-        client.listContainersCmd().withShowAll(false).exec()
-            .count { container ->
-                container.image == "busybox:latest" && (container.command?.contains("sleep 300") == true)
-            }
+    /**
+     * How many containers [engine] has *running*, by instance label.
+     *
+     * Was a count of every `busybox … sleep 300` on the daemon, which is a description of the fixture rather
+     * than of ownership — and matched the identical container a concurrent job was running.
+     */
+    private fun runningContainersOf(engine: DockerJavaContainerEngine): Int =
+        DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(false)
+            .withLabelFilter(mapOf(DockerJavaContainerEngine.INSTANCE_LABEL to engine.instanceId))
+            .exec().size
 
     /**
      * `systemctl stop` must *signal* a container, not shoot it. `close` therefore issues a `docker stop` with a
@@ -166,12 +175,19 @@ internal class DockerJavaContainerEngineIT {
             }
         }.apply { isDaemon = true; start() }
 
-        waitForContainer()
+        waitForContainerOf(signalEngine)
         signalEngine.close()
-        booting.join(30_000)
+        booting.join(60_000)
 
         Assertions.assertTrue(sawSignal.get(), "the container must receive SIGTERM and get to run its handler before removal")
-        Assertions.assertTrue(runningGrinderContainers().isEmpty(), "nothing may be left running after close")
+        // What `close` promises is that nothing of this engine's is left *running*, not that nothing is left at
+        // all: when the grace window expires it logs "abandoning them so shutdown can finish ... reaped on the
+        // next start" and returns with the container still listed. `containersOf` is withShowAll(true), so the
+        // old form asserted removal -- a promise close does not make -- and sampled it instantly. Run 719 is
+        // what that costs: close hit its 5s window, logged the documented abandonment, and this failed
+        // "nothing may be left running after close ==> expected: <true> but was: <false>" on a daemon doing
+        // exactly what it was told.
+        Assertions.assertEquals(0, awaitNothingRunning(signalEngine), "nothing may be left running after close")
     }
 
     /**
@@ -187,13 +203,18 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertThrows(IllegalStateException::class.java) {
             closedEngine.run(busyboxSpec("echo should-never-start"), Regex("x"), Duration.ofSeconds(30))
         }
-        Assertions.assertTrue(runningGrinderContainers().isEmpty(), "a refused run must leave nothing behind")
+        Assertions.assertTrue(containersOf(closedEngine).isEmpty(), "a refused run must leave nothing behind")
     }
 
     /**
      * The SIGKILL case, which no in-process hook can cover: systemd kills the JVM before `close` finishes and the
      * containers keep running, parented by the docker daemon rather than the unit's cgroup. They carry a label so
      * the next start can find and remove them — without one, an orphan survives every restart forever.
+     *
+     * **This is also the one test here that cannot be scoped, and the reason `grinder-container-it.yml` holds a
+     * repository-wide lock.** Reaping is global by definition — an orphan is a container whose maker is gone, and
+     * the daemon cannot say who is gone — so this removes every grinder container on the machine, including a
+     * concurrent job's live ones. Its *assertions* are scoped to the orphan it made; the side effect is not.
      */
     @Test
     fun reapsALabelledOrphanLeftByAPreviousProcess() {
@@ -203,15 +224,19 @@ internal class DockerJavaContainerEngineIT {
                 orphanEngine.run(busyboxSpec("echo orphan-alive; sleep 300"), Regex("this-never-appears"), Duration.ofMinutes(5))
             }
         }.apply { isDaemon = true; start() }
-        waitForContainer()
+        waitForContainerOf(orphanEngine)
         // Forget the container the way a killed JVM does: the tracking set dies with the process, the container
         // does not. A fresh engine is exactly what the next `systemctl start` brings up.
-        Assertions.assertEquals(1, runningGrinderContainers().size, "test setup: the orphan must be running")
+        Assertions.assertEquals(1, runningContainersOf(orphanEngine), "test setup: the orphan must be running")
 
-        val reaped = DockerJavaContainerEngine().reapOrphans()
+        // The return value is deliberately not asserted here: reaping is global, so the count includes
+        // whatever else the machine had orphaned, and `>= 1` would pass against a reap that took fifty
+        // containers — which is the scenario that breaks a concurrent job. What this test owns is whether
+        // *its* orphan went. `ContainerOwnershipIT` pins the count where a known foreign container makes
+        // it exact enough to mean something.
+        DockerJavaContainerEngine().reapOrphans()
 
-        Assertions.assertEquals(1, reaped, "the labelled orphan must be found and removed")
-        Assertions.assertTrue(runningGrinderContainers().isEmpty(), "no grinder container may survive the reap")
+        Assertions.assertTrue(awaitGone(orphanEngine).isEmpty(), "the orphan may not survive the reap")
         // The engine that made the orphan is still open, and its worker is still polling a container that no
         // longer exists. Close it here rather than leaving the only test in this file that does not tidy up.
         orphanEngine.close()
@@ -292,18 +317,75 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertTrue(tmpMount.contains("nodev"), "nodev must NOT be given away with it: $tmpMount")
     }
 
-    /** Every container this engine owns, by the label it stamps on them. */
-    private fun runningGrinderContainers(): List<String> =
+    /**
+     * The containers [engine] has on the daemon — **its own**, by instance label.
+     *
+     * Scoped deliberately. Asking for every container with the owner label asks about the whole machine, and
+     * on 2026-09-27 the whole machine had a second `test.yml` job on it: runs 954 and 956 reached this class
+     * seven seconds apart and each failed a *different* test of it. A test may only assert about what it did.
+     */
+    private fun containersOf(engine: DockerJavaContainerEngine): List<String> =
         DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(true)
-            .withLabelFilter(mapOf(DockerJavaContainerEngine.OWNER_LABEL to "1"))
+            .withLabelFilter(mapOf(DockerJavaContainerEngine.INSTANCE_LABEL to engine.instanceId))
             .exec().map { it.id }
 
-    /** Block until a grinder-labelled container is actually up, so a test never pulls the rug before there is one. */
-    private fun waitForContainer() {
-        val until = System.currentTimeMillis() + 30_000
-        while (System.currentTimeMillis() < until && runningGrinderContainers().isEmpty()) {
+    /**
+     * Block until [engine]'s own container is actually up, so a test never pulls the rug before there is one.
+     *
+     * 60s, not 30: this runs on a runner that shares its Docker daemon with whatever else CI is doing, and
+     * when the wait expires the failure surfaces as the *next* assertion — "test setup: the orphan must be
+     * running ==> expected 1 but was 0" (run 681) — which reads as a verdict about reaping rather than as a
+     * slow daemon. A fixture that gives up too early does not fail, it misattributes.
+     */
+    private fun waitForContainerOf(engine: DockerJavaContainerEngine) {
+        val until = System.currentTimeMillis() + 90_000
+        while (System.currentTimeMillis() < until && runningContainersOf(engine) == 0) {
             Thread.sleep(200)
         }
+        // Loudly, because the doc above is right about what silence costs: an expiry used to surface as the
+        // *next* assertion and read as a verdict about reaping. `runningContainersOf`, not `containersOf`:
+        // the latter is withShowAll(true) and so answers the moment `run` has *created* the container,
+        // several statements before `startContainerCmd`, which is a state no assertion here is about.
+        Assertions.assertNotEquals(
+            0,
+            runningContainersOf(engine),
+            "the fixture never got this engine's container running within 90s; the daemon was too slow, " +
+                "which is not what any test in this class is about"
+        )
+    }
+
+    /**
+     * Wait for [engine] to have nothing running, which is what `close` promises -- not "nothing left at all".
+     *
+     * `close` gives the whole sweep one grace window and then interrupts its own stoppers so shutdown cannot
+     * hang, logging that it is abandoning what is left for the next start to reap. A busy daemon misses that
+     * window routinely, and the container is stopped a moment later. Mirrors `ContainerOwnershipIT`.
+     */
+    private fun awaitNothingRunning(engine: DockerJavaContainerEngine): Int {
+        val until = System.currentTimeMillis() + 60_000
+        var running = runningContainersOf(engine)
+        while (running > 0 && System.currentTimeMillis() < until) {
+            Thread.sleep(250)
+            running = runningContainersOf(engine)
+        }
+        return running
+    }
+
+    /**
+     * Wait for [engine]'s containers to be gone entirely, for the one assertion that really is about removal.
+     *
+     * `removeContainerCmd` returns before the daemon has finished: run 719 logged
+     * `409: removal of container ... is already in progress` against a container a reap had just taken, so a
+     * removal that succeeded can still be listed for a moment afterwards.
+     */
+    private fun awaitGone(engine: DockerJavaContainerEngine): List<String> {
+        val until = System.currentTimeMillis() + 60_000
+        var present = containersOf(engine)
+        while (present.isNotEmpty() && System.currentTimeMillis() < until) {
+            Thread.sleep(250)
+            present = containersOf(engine)
+        }
+        return present
     }
 
 }

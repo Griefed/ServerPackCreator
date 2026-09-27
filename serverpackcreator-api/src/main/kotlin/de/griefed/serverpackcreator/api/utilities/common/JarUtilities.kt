@@ -84,8 +84,13 @@ class JarUtilities {
             if (!File(directory, fileToCopy).exists()) {
                 try {
                     val file = File(directory, fileToCopy).absoluteFile
-                    identifierClass.getResourceAsStream("/$fileToCopy").use {
-                        file.outputStream().use { out -> it?.transferTo(out) }
+                    // Resolved before the file is opened, for the reason spelled out on the sibling
+                    // overload below: opening first turns a resource that is not in the jar into a
+                    // 0-byte file and a `true` return.
+                    val resource = identifierClass.getResourceAsStream("/$fileToCopy")
+                        ?: throw JarAccessException("$fileToCopy does not exist in the JAR of $identifierClass")
+                    resource.use {
+                        file.outputStream().use { out -> it.transferTo(out) }
                     }
                     if (file.exists()) {
                         true
@@ -144,10 +149,16 @@ class JarUtilities {
          */
         fun copyFileFromJar(fileToCopy: String, destinationFile: File, identifierClass: Class<*>) =
             if (!destinationFile.absoluteFile.exists()) {
-                destinationFile.create()
                 try {
-                    identifierClass.getResourceAsStream("/$fileToCopy").use {
-                        destinationFile.absoluteFile.outputStream().use { out -> it?.transferTo(out) }
+                    // Resolved BEFORE the destination is created. The other way round -- create, then
+                    // `it?.transferTo(out)` -- turns a resource that is not in the jar into a 0-byte file
+                    // and a `true` return, which is how `default_java_template.bat` was staged on every
+                    // launch for as long as it was asked for. A missing jar resource is never valid here.
+                    val resource = identifierClass.getResourceAsStream("/$fileToCopy")
+                        ?: throw JarAccessException("$fileToCopy does not exist in the JAR of $identifierClass")
+                    destinationFile.create()
+                    resource.use {
+                        destinationFile.absoluteFile.outputStream().use { out -> it.transferTo(out) }
                     }
                     if (destinationFile.absoluteFile.exists()) {
                         true
