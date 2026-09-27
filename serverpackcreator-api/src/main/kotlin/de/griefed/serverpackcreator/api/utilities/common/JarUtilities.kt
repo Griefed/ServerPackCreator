@@ -84,8 +84,13 @@ class JarUtilities {
             if (!File(directory, fileToCopy).exists()) {
                 try {
                     val file = File(directory, fileToCopy).absoluteFile
-                    identifierClass.getResourceAsStream("/$fileToCopy").use {
-                        file.outputStream().use { out -> it?.transferTo(out) }
+                    // Resolved before the file is opened, for the reason spelled out on the sibling
+                    // overload below: opening first turns a resource that is not in the jar into a
+                    // 0-byte file and a `true` return.
+                    val resource = identifierClass.getResourceAsStream("/$fileToCopy")
+                        ?: throw JarAccessException("$fileToCopy does not exist in the JAR of $identifierClass")
+                    resource.use {
+                        file.outputStream().use { out -> it.transferTo(out) }
                     }
                     if (file.exists()) {
                         true

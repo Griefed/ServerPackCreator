@@ -9,13 +9,27 @@ import java.nio.file.Files
 
 class JarUtilitiesTest internal constructor() {
 
+    /**
+     * Copying a resource this module really ships must produce the resource, byte for byte.
+     *
+     * It used to ask for `banner.txt`, which lives in `serverpackcreator-app` and has never been on
+     * this module's classpath, and then asserted only that the destination `isFile`. That was true
+     * because the broken `copyFileFromJar` created the file before it went looking for the resource -
+     * so the test passed against the defect, on an empty file, for as long as the defect existed.
+     * Asserting the *content* is what makes it a copy test rather than a file-exists test.
+     */
     @Test
     fun copyFileFromJarTest() {
-        JarUtilities.copyFileFromJar(
-            "banner.txt", JarUtilitiesTest::class.java,
-            File("tests").absolutePath
+        val destination = File(Files.createTempDirectory("spc-copy-from-jar").toFile(), "log4j2.xml")
+        destination.deleteOnExit()
+        val expected = JarUtilitiesTest::class.java.getResourceAsStream("/log4j2.xml")!!
+            .bufferedReader().use { it.readText() }
+
+        Assertions.assertTrue(
+            JarUtilities.copyFileFromJar("log4j2.xml", destination, JarUtilitiesTest::class.java),
+            "copying a resource that is in the jar must report success"
         )
-        Assertions.assertTrue(File("tests/banner.txt").isFile)
+        Assertions.assertEquals(expected, destination.readText(), "the copy must be the resource")
     }
 
     /**
