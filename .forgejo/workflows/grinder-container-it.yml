@@ -9,7 +9,11 @@
 # reached the container suite seven seconds apart and each failed a *different* test of it.
 #
 # Making `test.yml` itself repo-wide-exclusive would fix that and cost every push a second full 35-minute
-# run in series. This file costs ~40 s of tests instead, and leaves `test.yml`'s cancellation alone.
+# run in series. This file leaves `test.yml`'s cancellation alone and holds its lock for one job instead.
+# **How long that lock is held has not been measured on the runner.** The tests are ~40 s locally; the job
+# around them also checks out, provisions a JDK, resolves Gradle and compiles `-api`, `-clientside` and the
+# grinder, and only a real run can say what that costs here. If it turns out to be long enough to matter,
+# the lever is this job's scope, not the lock.
 name: Grinder Container IT
 
 on:
@@ -68,6 +72,43 @@ jobs:
           ./gradlew :serverpackcreator-grinder:test
           --tests "*DockerJavaContainerEngineIT*"
           --tests "*ContainerOwnershipIT*"
+
+      # The failure mode this whole file exists to avoid is silence, and moving the gate out of `test.yml`
+      # introduced a new way to be silent: if `GRINDER_DOCKER_IT` ever stops reaching the JVM, every one of
+      # these tests SKIPS and the job goes green having verified nothing. So the job reads its own results
+      # and fails on a skip, or on results that are not there at all.
+      #
+      # Python rather than grep: the first version of this step counted matching *lines* with `grep -c`
+      # across a glob, and reported `ran=1 skipped=0` and exit 0 while both of its greps were failing with
+      # "No such file or directory" — a verification step that passed having verified nothing, which is
+      # precisely the bug it was written to prevent. The suite attributes are exact and an absent file
+      # raises instead of vanishing.
+      - name: Prove the tests ran rather than skipped
+        if: ${{ always() }}
+        run: |
+          python3 - <<'PROOF'
+          import glob, sys, xml.etree.ElementTree as ElementTree
+
+          results = "serverpackcreator-grinder/build/test-results/test"
+          reports = sorted(
+              glob.glob(f"{results}/TEST-*DockerJavaContainerEngineIT.xml")
+              + glob.glob(f"{results}/TEST-*ContainerOwnershipIT.xml")
+          )
+          if len(reports) != 2:
+              print(f"::error::Expected both container suites to report; found {[r.split('/')[-1] for r in reports]}")
+              sys.exit(1)
+
+          ran = skipped = 0
+          for report in reports:
+              suite = ElementTree.parse(report).getroot()
+              ran += int(suite.get("tests", "0"))
+              skipped += int(suite.get("skipped", "0"))
+
+          print(f"container tests: {ran}, of which skipped: {skipped}")
+          if ran < 10 or skipped:
+              print("::error::The container tests did not run. Did GRINDER_DOCKER_IT reach the JVM, and was a daemon reachable?")
+              sys.exit(1)
+          PROOF
 
       - name: Upload test results
         uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork

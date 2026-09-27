@@ -660,7 +660,8 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   **`DockerJavaContainerEngineIT` is no longer dark, and since 2026-09-27 it runs in its own workflow.**
   `.forgejo/workflows/grinder-container-it.yml` pulls busybox, sets `GRINDER_DOCKER_IT=1` and holds a
   concurrency group with **no ref in it**, so one run of these two classes happens at a time across the whole
-  repository (~40 s measured). `test.yml` deliberately no longer sets the gate: its group is per-ref, which is
+  repository. **~40 s is the tests, not the job** — the job also provisions a JDK and compiles three modules,
+  and what the lock actually costs on the runner has not been measured. `test.yml` deliberately no longer sets the gate: its group is per-ref, which is
   what lets two of its jobs share the runner's daemon, and one of these tests reaps every grinder container on
   it. The other gates stay unset on purpose: they need a live Modrinth or CurseForge API, a built image plus a
   Minecraft download per cell, or a deployed grinder.

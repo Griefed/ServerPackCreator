@@ -217,9 +217,13 @@ internal class DockerJavaContainerEngineIT {
         // does not. A fresh engine is exactly what the next `systemctl start` brings up.
         Assertions.assertEquals(1, containersOf(orphanEngine).size, "test setup: the orphan must be running")
 
-        val reaped = DockerJavaContainerEngine().reapOrphans()
+        // The return value is deliberately not asserted here: reaping is global, so the count includes
+        // whatever else the machine had orphaned, and `>= 1` would pass against a reap that took fifty
+        // containers — which is the scenario that breaks a concurrent job. What this test owns is whether
+        // *its* orphan went. `ContainerOwnershipIT` pins the count where a known foreign container makes
+        // it exact enough to mean something.
+        DockerJavaContainerEngine().reapOrphans()
 
-        Assertions.assertTrue(reaped >= 1, "the labelled orphan must be found and removed")
         Assertions.assertTrue(containersOf(orphanEngine).isEmpty(), "the orphan may not survive the reap")
         // The engine that made the orphan is still open, and its worker is still polling a container that no
         // longer exists. Close it here rather than leaving the only test in this file that does not tidy up.

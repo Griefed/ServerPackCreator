@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Pins that a container says *which* engine made it, not merely that a grinder did.
@@ -131,24 +130,30 @@ internal class ContainerOwnershipIT {
     }
 
     /**
-     * Reaping must not remove the reaper's own live containers.
+     * Reaping takes another engine's container and spares its own — both halves, in one run.
      *
-     * At startup an engine has none, which is why this never bit — but `reapOrphans` is public and nothing
-     * stops it being called from a running engine, and its whole definition of an orphan is "not mine".
+     * At startup an engine owns nothing, which is why the sparing half never bit; but `reapOrphans` is
+     * public, nothing stops a running engine calling it, and its whole definition of an orphan is "not
+     * mine". Asserting only the sparing half would pass against a `reapOrphans` that removed *nothing*,
+     * so the foreign container is here to make the other half fail if the filter is inverted or absent.
      */
     @Test
-    fun reapingSparesTheReapersOwnContainers() {
+    fun reapingTakesAnotherEnginesContainerAndSparesItsOwn() {
         val reaper = engine()
+        val foreign = engine()
         try {
             startSleeper(reaper)
+            startSleeper(foreign)
             Assertions.assertEquals(1, containersOf(reaper).size, "test setup: the reaper must own a container")
+            Assertions.assertEquals(1, containersOf(foreign).size, "test setup: there must be one to reap")
 
-            val reaped = AtomicBoolean(false)
-            reaper.reapOrphans().also { reaped.set(it >= 0) }
+            val reaped = reaper.reapOrphans()
 
-            Assertions.assertTrue(reaped.get(), "test setup: the reap must have run")
+            Assertions.assertTrue(reaped >= 1, "the other engine's container is an orphan to this one, got $reaped")
+            Assertions.assertTrue(containersOf(foreign).isEmpty(), "the other engine's container must be reaped")
             Assertions.assertEquals(1, containersOf(reaper).size, "a reap must not take the reaper's own container")
         } finally {
+            foreign.close()
             reaper.close()
         }
     }
