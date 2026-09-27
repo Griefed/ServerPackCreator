@@ -59,6 +59,13 @@ tasks.test {
     // Mockk/ByteBuddy attach an agent to the running JVM; without these the run warns on every start
     // and will fail outright once self-attach is disabled by default.
     jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
+    // Headless, because a test JVM that touches AWT becomes a windowed application. On macOS that
+    // means a Dock icon and the keyboard focus, taken away from whatever the developer was typing in,
+    // once per forked test JVM -- and this build forks one per module. Several suites legitimately
+    // construct Swing components (renderers, a JTextArea, a table model); constructing them is allowed
+    // headless, and anything that genuinely needs a screen would now say so with a HeadlessException
+    // rather than silently depending on the developer having one.
+    systemProperty("java.awt.headless", "true")
     // A fresh, isolated test home for every run. The directory is captured as a File so the action
     // closes over that and nothing else; calling a script-level function here would capture the build
     // script, which the configuration cache cannot serialize.
