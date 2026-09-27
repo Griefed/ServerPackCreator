@@ -1218,9 +1218,10 @@ from being rewritten at all. In either case check the archive before sharing it.
 
 ### Self-extracting, self-contained script
 
-> The scripts were written using this guide: https://www.linuxjournal.com/node/1005818
-> 
-> For Linux/UNIX-systems only! Only tested in Ubuntu 22, in WSL.
+> The `.bsx` idea comes from this guide: https://www.linuxjournal.com/node/1005818
+>
+> The build-script is Java, so a server pack can be wrapped on Linux, macOS **or** Windows. The
+> artifacts it produces run on Linux and macOS (`.bsx`) and on Windows 10 1803 or newer (`.cmd`).
 >
 {style="note"}
 
@@ -1229,99 +1230,547 @@ from being rewritten at all. In either case check the archive before sharing it.
 >
 {style="warning"}
 
-It's possible to store the contents of your server pack in side a bash script which upon execution, will extract itself,
-and therefor the contents of the server pack, to a sub-directory in your users home-directory and then immediately
+It's possible to store the contents of your server pack inside a script which, upon execution, will extract itself,
+and therefore the contents of the server pack, to a sub-directory in your users home-directory and then immediately
 start the server.
 
 So instead of shipping/sending a ZIP-file to CurseForge, Modrinth, your friends, you can send them a script and tell them
 to simply run it.
 
-#### build-script
+Two artifacts come out of one build, and they carry a byte-identical archive:
+
+| Artifact    | Runs on                    | Extracts to                          | Then runs   |
+|-------------|----------------------------|--------------------------------------|-------------|
+| `<pack>.bsx`| Linux, macOS, any POSIX sh | `$HOME/mc-servers/<pack>`            | `start.sh`  |
+| `<pack>.cmd`| Windows 10 1803 and newer  | `%USERPROFILE%\mc-servers\<pack>`    | `start.bat` |
+
+#### What you need
+
+A JDK 11 or newer, and three jars from Maven Central. `commons-io` and `commons-lang3` are **not**
+optional extras — `TarArchiveOutputStream` and `TarArchiveEntry` import them directly, and leaving
+them off the classpath fails with a `NoClassDefFoundError` on the first file the builder archives.
 
 ```bash
-#!/bin/bash
-cd $1
-tar cf ../$1.tar ./*
-cd ..
-
-if [ -e "$1.tar" ]; then
-    gzip $1.tar
-
-    if [ -e "$1.tar.gz" ]; then
-        cat decompress $1.tar.gz > $1.bsx
-    else
-        echo "$1.tar.gz does not exist"
-        exit 1
-    fi
-else
-    echo "$1.tar does not exist"
-    exit 1
-fi
-
-echo "$1.bsx created"
-exit 0
+curl -LO https://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.28.0/commons-compress-1.28.0.jar
+curl -LO https://repo1.maven.org/maven2/commons-io/commons-io/2.20.0/commons-io-2.20.0.jar
+curl -LO https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar
 ```
 
-#### decompress-script
+Why a TAR and not the ZIP ServerPackCreator already makes: `tar` is built into Linux, into macOS, and
+into Windows since 10 1803, so one archive format serves all three stubs with nothing to install. The
+JDK can gzip on its own but cannot write TAR, which is what the one dependency is for.
 
-```bash
-#!/bin/bash
-echo ""
-echo "Self Extracting Installer"
-echo ""
+#### build-script
 
-export TMPDIR=`mktemp -d /tmp/selfextract.XXXXXX`
-script=$(basename "$0")
-me=${HOME}/mc-servers/$(echo $script | sed 's/.bsx//g')
-mkdir -p $me
+Save this as `SelfExtract.java` in your `server-packs` directory, beside the three jars.
 
-ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0`
+```java
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
-tail -n+$ARCHIVE $0 | tar xzv -C $TMPDIR
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-echo "Copying server pack to $me"
+/**
+ * Wraps a ServerPackCreator server pack in a self-extracting script - one for Linux and macOS, one
+ * for Windows - from any operating system with a JDK 11 or newer.
+ *
+ * Needs three jars from Maven Central. commons-io and commons-lang3 are not optional extras:
+ * TarArchiveOutputStream and TarArchiveEntry import them directly, and without them the build dies
+ * with a NoClassDefFoundError on the first archive entry.
+ *
+ *   java -cp "commons-compress-1.28.0.jar:commons-io-2.20.0.jar:commons-lang3-3.18.0.jar" \
+ *        SelfExtract.java <serverPackDirectory>
+ *
+ * On Windows the classpath separator is a semicolon rather than a colon.
+ */
+public final class SelfExtract {
 
-cp -r $TMPDIR/* $me
-rm -rf $TMPDIR
+    /**
+     * The placeholder the payload's byte offset is written into.
+     *
+     * Deliberately not a number: a stub that somehow escaped substitution then fails loudly on
+     * `tail -c +SPC_ARCHIVE_OFFSET` instead of quietly seeking to the wrong place.
+     */
+    private static final String OFFSET_PLACEHOLDER = "SPC_ARCHIVE_OFFSET";
 
-cd $me
-./start.sh
+    /** What the stubs call the pack; also the folder the server is installed into. */
+    private static final String NAME_PLACEHOLDER = "SPC_PACK_NAME";
 
-exit 0
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1) {
+            System.err.println("usage: java -cp <the three jars> SelfExtract.java <serverPackDirectory>");
+            System.exit(2);
+        }
+        Path pack = Paths.get(args[0]).toAbsolutePath().normalize();
+        requireServerPack(pack);
 
-__ARCHIVE_BELOW__
+        String name = sanitise(pack.getFileName().toString());
+        Path payload = Files.createTempFile("spc-selfextract-", ".tar.gz");
+        try {
+            long packed = writeTarGz(pack, payload);
+            System.out.printf(Locale.ROOT, "packed %s into %,d bytes%n", pack.getFileName(), packed);
+
+            Path bsx = pack.resolveSibling(name + ".bsx");
+            Path cmd = pack.resolveSibling(name + ".cmd");
+            writeArtifact(bsx, shellStub(name), payload);
+            writeArtifact(cmd, batchStub(name), payload);
+            makeExecutable(bsx);
+
+            System.out.println("created " + bsx);
+            System.out.println("created " + cmd);
+        } finally {
+            Files.deleteIfExists(payload);
+        }
+    }
+
+    /**
+     * Refuse anything that is not a generated server pack, rather than building an artifact that
+     * fails at the recipient's end.
+     */
+    private static void requireServerPack(Path pack) throws IOException {
+        if (!Files.isDirectory(pack)) {
+            throw new IllegalArgumentException(pack + " is not a directory");
+        }
+        if (!Files.isRegularFile(pack.resolve("start.sh")) && !Files.isRegularFile(pack.resolve("start.bat"))) {
+            throw new IllegalArgumentException(pack + " carries no start.sh and no start.bat - is it a server pack?");
+        }
+        refuseSymbolicLinks(pack);
+    }
+
+    /**
+     * Refuse a pack containing symbolic links rather than quietly resolving them.
+     *
+     * Windows cannot recreate one without Developer Mode, and a link pointing outside the pack would
+     * let extraction write outside the destination directory - which is a vulnerability, not a
+     * packaging quirk.
+     */
+    private static void refuseSymbolicLinks(Path pack) throws IOException {
+        List<Path> links;
+        try (Stream<Path> walk = Files.walk(pack)) {
+            links = walk.filter(Files::isSymbolicLink).collect(Collectors.toList());
+        }
+        if (!links.isEmpty()) {
+            links.forEach(link -> System.err.println("symbolic link: " + link));
+            throw new IllegalArgumentException("the server pack contains symbolic links (listed above) - "
+                    + "replace them with the files they point at and build again");
+        }
+    }
+
+    /**
+     * Reduce a folder name to characters both a POSIX shell and cmd.exe can carry without quoting
+     * games, so neither stub has to escape anything.
+     */
+    private static String sanitise(String name) {
+        String cleaned = name.replaceAll("[^A-Za-z0-9._+-]", "_");
+        return cleaned.isEmpty() ? "server-pack" : cleaned;
+    }
+
+    /**
+     * Write the pack's contents - not the pack folder itself - as a gzipped tar, and return its size.
+     *
+     * Everything is streamed: a server pack is routinely gigabytes, and none of it is ever held in
+     * memory.
+     */
+    private static long writeTarGz(Path pack, Path destination) throws IOException {
+        try (OutputStream out = Files.newOutputStream(destination);
+             BufferedOutputStream buffered = new BufferedOutputStream(out, 1 << 16);
+             GzipCompressorOutputStream gzip = new GzipCompressorOutputStream(buffered);
+             TarArchiveOutputStream tar = new TarArchiveOutputStream(gzip)) {
+            // Server pack paths can pass the 100-character ustar limit, and the default mode throws
+            // on the first one. GNU 'L' headers are read by GNU tar, by libarchive (macOS, Windows)
+            // and by busybox alike.
+            tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+            tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
+
+            List<Path> entries;
+            try (Stream<Path> walk = Files.walk(pack)) {
+                entries = walk.filter(path -> !path.equals(pack)).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+            }
+            for (Path path : entries) {
+                boolean directory = Files.isDirectory(path);
+                String relative = relativeName(pack, path, directory);
+                // Built from the name rather than from the File: the File constructor also copies
+                // creation time and ownership, which become pax extension headers GNU tar then warns
+                // about on every extraction ("Ignoring unknown extended header keyword
+                // LIBARCHIVE.creationtime"). Nothing here needs them.
+                TarArchiveEntry entry = new TarArchiveEntry(relative);
+                entry.setSize(directory ? 0L : Files.size(path));
+                entry.setLastModifiedTime(Files.getLastModifiedTime(path));
+                entry.setMode(modeFor(relative, directory));
+                entry.setUserId(0);
+                entry.setGroupId(0);
+                entry.setUserName("");
+                entry.setGroupName("");
+                tar.putArchiveEntry(entry);
+                if (!directory) {
+                    Files.copy(path, tar);
+                }
+                tar.closeArchiveEntry();
+            }
+        }
+        return Files.size(destination);
+    }
+
+    /**
+     * Decide an entry's permissions outright, because nothing else will.
+     *
+     * Commons Compress does not read permission bits off disk on *any* platform - it assigns its own
+     * defaults - and Windows has none to read in the first place. On top of that the bits
+     * ServerPackCreator itself sets are owner-only (0544, from `File.setExecutable(true)`), so a pack
+     * extracted by anyone but the account that built it would arrive with a start script nobody may
+     * run. This line is what makes the extracted pack usable, on every host.
+     */
+    private static int modeFor(String relative, boolean directory) {
+        if (directory) {
+            return 0755;
+        }
+        String fileName = relative.substring(relative.lastIndexOf('/') + 1);
+        boolean runnable = fileName.startsWith("start.") || fileName.startsWith("install_java.");
+        return runnable ? 0755 : 0644;
+    }
+
+    /**
+     * Write stub + payload, with the payload's byte offset substituted into the stub first.
+     *
+     * The stub goes out as bytes with LF endings and no BOM. A CRLF here is the single most likely
+     * way a Windows-built .bsx fails: "#!/bin/sh\r" names an interpreter that does not exist.
+     */
+    private static void writeArtifact(Path artifact, String stub, Path payload) throws IOException {
+        if (countOccurrences(stub, OFFSET_PLACEHOLDER) != 1) {
+            throw new IllegalStateException("the stub must carry the offset placeholder exactly once");
+        }
+        byte[] header = substituteOffset(stub);
+
+        try (OutputStream out = Files.newOutputStream(artifact);
+             BufferedOutputStream buffered = new BufferedOutputStream(out, 1 << 16)) {
+            buffered.write(header);
+            Files.copy(payload, buffered);
+        }
+    }
+
+    /**
+     * Substitute the payload's byte offset into the stub, which is circular: the offset is the
+     * stub's own length plus one, and writing a longer number makes the stub longer.
+     *
+     * Settled by iterating rather than by padding the number to a fixed width. Padding looks
+     * tidier and does not work: BSD tail, which is what macOS ships, rejects a zero-padded count
+     * outright with "illegal offset -- +000000000639". Each round can only add digits, never
+     * remove them, so this converges in one or two.
+     */
+    private static byte[] substituteOffset(String stub) {
+        String offset = "1";
+        for (int attempt = 0; attempt < 8; attempt++) {
+            byte[] candidate = stub.replace(OFFSET_PLACEHOLDER, offset).getBytes(StandardCharsets.UTF_8);
+            // +1 because this is a 1-based byte position: `tail -c +N` counts from one, and the
+            // Windows stub subtracts the one for its 0-based Seek. One number serves both stubs.
+            String next = Long.toString(candidate.length + 1);
+            if (next.equals(offset)) {
+                return candidate;
+            }
+            offset = next;
+        }
+        throw new IllegalStateException("the payload offset did not settle");
+    }
+
+    /**
+     * The entry's name inside the archive, built element by element.
+     *
+     * Not `relativize(...).toString()`: on Windows that yields backslashes, which are legal filename
+     * characters in tar and would arrive on Linux as one file with slashes in its name.
+     */
+    private static String relativeName(Path pack, Path path, boolean directory) {
+        StringBuilder name = new StringBuilder();
+        for (Path element : pack.relativize(path)) {
+            if (name.length() > 0) {
+                name.append('/');
+            }
+            name.append(element.toString());
+        }
+        return directory ? name.append('/').toString() : name.toString();
+    }
+
+    /** How often [needle] occurs in [haystack]; the stub's offset placeholder must occur once. */
+    private static int countOccurrences(String haystack, String needle) {
+        int count = 0;
+        for (int at = haystack.indexOf(needle); at >= 0; at = haystack.indexOf(needle, at + needle.length())) {
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * Set the executable bit where the filesystem has one, and say so where it does not.
+     *
+     * Windows has no POSIX view, so a .bsx built there arrives without the bit and the recipient has
+     * to set it. Saying that is better than pretending it was done.
+     */
+    private static void makeExecutable(Path artifact) {
+        if (Files.getFileAttributeView(artifact, PosixFileAttributeView.class) == null) {
+            System.out.println("note: this filesystem has no executable bit - tell the recipient to run "
+                    + "`chmod +x " + artifact.getFileName() + "` before running it");
+            return;
+        }
+        if (!artifact.toFile().setExecutable(true, false)) {
+            System.out.println("note: could not set the executable bit on " + artifact.getFileName());
+        }
+    }
+
+    /** The Linux/macOS stub: seek past itself, unpack into the destination, start the server. */
+    private static String shellStub(String name) {
+        return String.join("\n",
+                "#!/bin/sh",
+                "# Self-extracting ServerPackCreator server pack.",
+                "# Everything below the marker at the end of this file is a gzipped tar archive.",
+                "set -eu",
+                "OFFSET=" + OFFSET_PLACEHOLDER,
+                "NAME=" + NAME_PLACEHOLDER,
+                "DEST=\"${SPC_TARGET:-$HOME/mc-servers/$NAME}\"",
+                "if [ -e \"$DEST\" ]; then",
+                "  echo \"$DEST already exists - refusing to overwrite it.\"",
+                "  echo \"Set SPC_TARGET to install somewhere else, or move the old server pack away.\"",
+                "  exit 1",
+                "fi",
+                "echo \"Extracting $NAME to $DEST\"",
+                "mkdir -p \"$DEST\"",
+                "tail -c +$OFFSET \"$0\" | tar -xzf - -C \"$DEST\"",
+                "chmod 0755 \"$DEST\"/start.* \"$DEST\"/install_java.* 2>/dev/null || true",
+                "cd \"$DEST\"",
+                "exec ./start.sh",
+                "exit 0",
+                "# __ARCHIVE_BELOW__",
+                "").replace(NAME_PLACEHOLDER, name);
+    }
+
+    /**
+     * The Windows stub: hand cmd.exe's job to PowerShell, which can seek.
+     *
+     * Strictly linear, and it ends at EXIT /B before the payload: gzip output is full of null bytes,
+     * and a batch file with runs of unseparated nulls breaks `goto` label resolution, so there is no
+     * `goto` and no label anywhere above the archive. State reaches PowerShell through environment
+     * variables rather than through the -Command string, because %~f0 may contain spaces, ampersands
+     * and parentheses, and the PowerShell itself carries no double quote and no percent sign - both
+     * would end, or be eaten by, cmd's own parsing of that argument.
+     */
+    private static String batchStub(String name) {
+        String powershell = String.join(" ",
+                "$ErrorActionPreference = 'Stop';",
+                "$sfx = $env:SPC_SFX;",
+                "$offset = [int64]::Parse($env:SPC_OFFSET);",
+                "$dest = Join-Path $env:USERPROFILE (Join-Path 'mc-servers' $env:SPC_NAME);",
+                "if (Test-Path -LiteralPath $dest) { Write-Host ($dest + ' already exists - refusing to overwrite it.'); exit 1 };",
+                "$tar = Get-Command tar.exe -ErrorAction SilentlyContinue;",
+                "if ($null -eq $tar) { Write-Host 'tar.exe was not found - Windows 10 1803 or newer is required.'; exit 1 };",
+                "Write-Host ('Extracting ' + $env:SPC_NAME + ' to ' + $dest);",
+                "New-Item -ItemType Directory -Path $dest -Force | Out-Null;",
+                "$tmp = Join-Path $env:TEMP ($env:SPC_NAME + '.tar.gz');",
+                // FileShare ReadWrite, not OpenRead: cmd.exe still holds this very file open while the
+                // batch part is running, and a Read-only share would be denied.
+                "$in = [System.IO.File]::Open($sfx, 'Open', 'Read', 'ReadWrite');",
+                "try { [void]$in.Seek($offset - 1, 'Begin');",
+                "$out = [System.IO.File]::Create($tmp);",
+                "try { $in.CopyTo($out, 1048576) } finally { $out.Dispose() } } finally { $in.Dispose() };",
+                "& $tar.Source -x -z -f $tmp -C $dest;",
+                "$code = $LASTEXITCODE;",
+                "Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue;",
+                "if ($code -ne 0) { Write-Host ('Extraction failed, exit code ' + $code + '. Incomplete files are in ' + $dest); exit $code };",
+                "Write-Host ('Starting the server in ' + $dest);",
+                "Set-Location -LiteralPath $dest;",
+                "& (Join-Path $dest 'start.bat');",
+                "exit $LASTEXITCODE");
+        return String.join("\r\n",
+                "@ECHO OFF",
+                ":: Self-extracting ServerPackCreator server pack.",
+                ":: Everything below the marker at the end of this file is a gzipped tar archive.",
+                "SETLOCAL",
+                "SET \"SPC_SFX=%~f0\"",
+                "SET \"SPC_OFFSET=" + OFFSET_PLACEHOLDER + "\"",
+                "SET \"SPC_NAME=" + NAME_PLACEHOLDER + "\"",
+                "PowerShell -NoProfile -ExecutionPolicy Bypass -Command \"" + powershell + "\"",
+                // One line, because %SPC_EXIT% is substituted before ENDLOCAL discards it. Split in
+                // two and the batch always reports success, whatever happened.
+                "SET \"SPC_EXIT=%ERRORLEVEL%\"",
+                "ENDLOCAL & EXIT /B %SPC_EXIT%",
+                ":: __ARCHIVE_BELOW__",
+                "").replace(NAME_PLACEHOLDER, name);
+    }
+}
 ```
 
 #### How To
 
-Create both the `build` and the `decompress` scripts inside the `server-packs` directory of ServerPackCreator.
+Run it against the server pack you want to wrap:
 
-Run the build-script with the server pack you want to create a self-extracting script of like so: `./build <ServerPackFolder>`,
-where `<ServerPackFolder>` is to be replaced with the name of the server pack folder, for example `All_the_Mods_9_-_ATM9`, so the call
-becomes `./build All_the_Mods_9_-_ATM9`.
+```bash
+# Linux, macOS
+java -cp "commons-compress-1.28.0.jar:commons-io-2.20.0.jar:commons-lang3-3.18.0.jar" \
+     SelfExtract.java All_the_Mods_9_-_ATM9
+```
 
-Depending on the size of your server pack, this may take a while.
+```bash
+:: Windows - note the semicolons
+java -cp "commons-compress-1.28.0.jar;commons-io-2.20.0.jar;commons-lang3-3.18.0.jar" ^
+     SelfExtract.java All_the_Mods_9_-_ATM9
+```
 
-When the script finishes you should see `All_the_Mods_9_-_ATM9.bsx created` in your console and a file called `All_the_Mods_9_-_ATM9.bsx`
-in your server-packs folder. The script file should be roughly the same size as the folder of your server pack.
+Depending on the size of your server pack, this may take a while. When it finishes you have
+`All_the_Mods_9_-_ATM9.bsx` and `All_the_Mods_9_-_ATM9.cmd` beside the folder, each roughly the size
+of the server pack.
 
-Copy the script to some other directory and run it: `./All_the_Mods_9_-_ATM9.bsx`
+Copy the one your recipient needs to some other directory and run it: `./All_the_Mods_9_-_ATM9.bsx`,
+or double-click the `.cmd`. It extracts into `mc-servers/All_the_Mods_9_-_ATM9` inside the users home
+directory, makes the start scripts executable, changes into that directory and starts the server.
 
-It will extract the contents to `/tmp/selfextract.XXXXXX` first, then create a new folder inside your users home-directory
-and copy the files there, so you then have `/home/<YOUR_USER>/mc-servers/All_the_Mods_9_-_ATM9`.
+Set `SPC_TARGET` to install somewhere else: `SPC_TARGET=/srv/atm9 ./All_the_Mods_9_-_ATM9.bsx`.
 
-When all files have been copied, the extract-script switches to the aforementioned directory and runs the `start.sh`-script,
-immediately starting the server.
+Neither script will overwrite an existing destination. That is deliberate — after the first run the
+destination contains a server, and a server contains a `world`.
 
-Done!
-
-Nice, quick and easy server pack provision.
-
-> Step 1. Create script
+> Step 1. Build script
 > Step 2. Copy script
 > Step 3. Run script
 > Step 4. ???
 > Step 5. Server
+
+#### What the .bsx looks like
+
+The builder writes this ahead of the archive. The `OFFSET` is where the payload begins, counted in
+bytes from one, which is what `tail -c +N` wants.
+
+```bash
+#!/bin/sh
+# Self-extracting ServerPackCreator server pack.
+# Everything below the marker at the end of this file is a gzipped tar archive.
+set -eu
+OFFSET=630
+NAME=All_the_Mods_9_-_ATM9
+DEST="${SPC_TARGET:-$HOME/mc-servers/$NAME}"
+if [ -e "$DEST" ]; then
+  echo "$DEST already exists - refusing to overwrite it."
+  echo "Set SPC_TARGET to install somewhere else, or move the old server pack away."
+  exit 1
+fi
+echo "Extracting $NAME to $DEST"
+mkdir -p "$DEST"
+tail -c +$OFFSET "$0" | tar -xzf - -C "$DEST"
+chmod 0755 "$DEST"/start.* "$DEST"/install_java.* 2>/dev/null || true
+cd "$DEST"
+exec ./start.sh
+exit 0
+# __ARCHIVE_BELOW__
+```
+
+Three details in there are load-bearing:
+
+- **`tail -c +$OFFSET`, not `awk` and `tail -n+N`.** A byte offset is one seek. Counting *lines*
+  means scanning the whole multi-gigabyte payload, and gzip output contains newline bytes, so a
+  payload could in principle carry the marker line and be found instead of it.
+- **The `chmod` is not belt-and-braces.** Commons Compress does not read permission bits off disk on
+  any platform, and Windows has none to read in the first place, so the archive carries whatever
+  modes the builder decided. It decides 0755 for the start scripts — and this line repeats it, because
+  a broken permission is the difference between a server and a `Permission denied`.
+- **`exec ./start.sh`** hands the terminal and the signals to the server, so Ctrl+C reaches the JVM
+  rather than a wrapper that is no longer interesting.
+
+#### What the .cmd looks like
+
+```bash
+@ECHO OFF
+:: Self-extracting ServerPackCreator server pack.
+:: Everything below the marker at the end of this file is a gzipped tar archive.
+SETLOCAL
+SET "SPC_SFX=%~f0"
+SET "SPC_OFFSET=1631"
+SET "SPC_NAME=All_the_Mods_9_-_ATM9"
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; $sfx = $env:SPC_SFX; $offset = [int64]::Parse($env:SPC_OFFSET); $dest = Join-Path $env:USERPROFILE (Join-Path 'mc-servers' $env:SPC_NAME); if (Test-Path -LiteralPath $dest) { Write-Host ($dest + ' already exists - refusing to overwrite it.'); exit 1 }; $tar = Get-Command tar.exe -ErrorAction SilentlyContinue; if ($null -eq $tar) { Write-Host 'tar.exe was not found - Windows 10 1803 or newer is required.'; exit 1 }; Write-Host ('Extracting ' + $env:SPC_NAME + ' to ' + $dest); New-Item -ItemType Directory -Path $dest -Force | Out-Null; $tmp = Join-Path $env:TEMP ($env:SPC_NAME + '.tar.gz'); $in = [System.IO.File]::Open($sfx, 'Open', 'Read', 'ReadWrite'); try { [void]$in.Seek($offset - 1, 'Begin'); $out = [System.IO.File]::Create($tmp); try { $in.CopyTo($out, 1048576) } finally { $out.Dispose() } } finally { $in.Dispose() }; & $tar.Source -x -z -f $tmp -C $dest; $code = $LASTEXITCODE; Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; if ($code -ne 0) { Write-Host ('Extraction failed, exit code ' + $code + '. Incomplete files are in ' + $dest); exit $code }; Write-Host ('Starting the server in ' + $dest); Set-Location -LiteralPath $dest; & (Join-Path $dest 'start.bat'); exit $LASTEXITCODE"
+SET "SPC_EXIT=%ERRORLEVEL%"
+ENDLOCAL & EXIT /B %SPC_EXIT%
+:: __ARCHIVE_BELOW__
+```
+
+cmd.exe cannot seek, so PowerShell does the work — the same way the generated `start.bat` already
+runs `start.ps1`, with `-ExecutionPolicy Bypass`, because a `.ps1` on its own would be blocked. The
+rules that keep this file working, all of which are easy to break by "tidying" it:
+
+- **No `goto`, no labels.** cmd.exe resolves a label by scanning the file, and gzip output is full of
+  null bytes it cannot scan across. Everything runs forward, once, and `EXIT /B` ends the batch before
+  the payload is ever reached.
+- **No `"`, no `%`, no `!` inside the `-Command` string.** A double quote ends cmd's quoted argument
+  and turns the rest of the line into cmd operators; a `%` is substituted before PowerShell sees it;
+  a `!` is eaten when delayed expansion is on. Every string in that one-liner is single-quoted.
+- **The path to the script travels in an environment variable.** `%~f0` can contain spaces,
+  ampersands and parentheses; pasting it into the PowerShell text is the first thing that breaks.
+- **`[System.IO.File]::Open(..., 'Read', 'ReadWrite')`, not `OpenRead`.** cmd.exe still holds the
+  running `.cmd` open, and the read-only share `OpenRead` asks for would be denied.
+- **`SET "SPC_EXIT=%ERRORLEVEL%"` then `ENDLOCAL & EXIT /B %SPC_EXIT%` on one line**, because
+  `%SPC_EXIT%` is substituted before `ENDLOCAL` discards it. Split them and the batch always reports
+  success, whatever happened.
+
+#### Caveats
+
+> **`tar.exe` needs Windows 10 1803 or newer.** The `.cmd` extracts with the `tar.exe` Microsoft
+> ships in Windows (libarchive), which arrived in build 17063. Older Windows stops with a message
+> rather than a half-extracted folder.
+>
+{style="note"}
+
+> **Downloaded scripts are treated as hostile, and rightly so.** Windows attaches a Mark-of-the-Web to
+> anything a browser wrote, so expect a SmartScreen prompt and possibly *Properties → Unblock*. On
+> Linux and macOS the executable bit does not survive a download either: `chmod +x <pack>.bsx`, or run
+> it as `sh <pack>.bsx`. A `.bsx` built on Windows never had the bit in the first place, and the
+> builder says so when it writes one.
+>
+{style="warning"}
+
+> **Disk space.** The `.bsx` pipes straight into the destination and needs room for the extracted pack
+> and nothing more. The `.cmd` needs the compressed payload in `%TEMP%` *and* the extracted pack,
+> because `tar.exe` cannot be handed the middle of a file.
+>
+{style="note"}
+
+> **Symbolic links are refused.** Windows cannot recreate one without Developer Mode, and a link
+> pointing out of the pack would let extraction write outside the destination. Replace them with the
+> files they point at.
+>
+{style="note"}
+
+#### Verifying one yourself
+
+Worth doing once on your own pack, because every one of these either works byte-exactly or not at all:
+
+```bash
+# the payload must start exactly at the offset the stub names
+OFFSET=$(grep -a -m1 '^OFFSET=' pack.bsx | cut -d= -f2)
+tail -c +$OFFSET pack.bsx | gzip -t && echo "offset is correct"
+
+# the stub must be LF-only - a CRLF shebang is an interpreter that does not exist
+head -c $((OFFSET-1)) pack.bsx | tr -dc '\r' | wc -c        # must print 0
+
+# the start scripts must be 0755, and long paths must have survived
+tail -c +$OFFSET pack.bsx | tar -tvzf - | grep start.sh
+
+# both artifacts must carry the same archive
+cmp <(tail -c +$OFFSET pack.bsx) <(tail -c +$CMD_OFFSET pack.cmd)
+```
+
+Then run it into a throwaway directory, and run it a second time to see it refuse:
+
+```bash
+SPC_TARGET=/tmp/spc-test ./pack.bsx
+SPC_TARGET=/tmp/spc-test ./pack.bsx     # "already exists - refusing to overwrite it."
+```
 
 ##
 

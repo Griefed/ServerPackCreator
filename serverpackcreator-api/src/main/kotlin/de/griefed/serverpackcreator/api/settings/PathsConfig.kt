@@ -651,11 +651,18 @@ class PathsConfig(
     val defaultJavaPowerShellScriptTemplate: File get() = File(serverFilesDirectory, "default_java_template.ps1")
 
     /**
-     * The default Batch-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * `javaScriptTemplates`.
+     * The path a Batch template for the java-install scripts would have, if one existed.
+     *
+     * **Nothing is behind this path and nothing ever was.** No `default_java_template.bat` ships in the
+     * jar, none is staged into `server_files`, and `ScriptTemplatesConfig` registers no `bat` key for
+     * Java installers - because `start.bat` is a wrapper that runs `start.ps1`, which sources
+     * `install_java.ps1`. Pointing a `de.griefed.serverpackcreator.serverpack.java.template.bat`
+     * property at this file yields an `install_java.bat` with nothing in it.
      */
+    @Deprecated(
+        "No Batch java-installer template exists; the Batch start script delegates to PowerShell.",
+        ReplaceWith("defaultJavaPowerShellScriptTemplate")
+    )
     val defaultJavaBatchScriptTemplate: File get() = File(serverFilesDirectory, "default_java_template.bat")
 
     /**

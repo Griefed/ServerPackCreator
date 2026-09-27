@@ -115,7 +115,14 @@ internal class PathsConfigTest {
         }
     }
 
-    /** The eight shipped script templates, by property name, for asserting on all of them at once. */
+    /**
+     * The eight template paths, by property name, for asserting on all of them at once.
+     *
+     * `defaultJavaBatchScriptTemplate` is deprecated and has no resource behind it, but it is still
+     * exported, so where it *points* is still worth pinning: an embedder reading it must get a path
+     * inside the current home, not one inside a home the user has left.
+     */
+    @Suppress("DEPRECATION")
     private fun templatePaths(config: PathsConfig): Map<String, File> = mapOf(
         "defaultShellScriptTemplate" to config.defaultShellScriptTemplate,
         "defaultFishScriptTemplate" to config.defaultFishScriptTemplate,
@@ -219,6 +226,7 @@ internal class PathsConfigTest {
      * Pins that the default script-templates reside in the server_files-directory.
      */
     @Test
+    @Suppress("DEPRECATION")
     fun defaultScriptTemplatesResideInServerFilesDirectory(@TempDir tempDir: File) {
         scratchPreferences.put(PathsConfig.HOME_DIRECTORY_KEY, tempDir.absolutePath)
         val paths = pathsConfig()
