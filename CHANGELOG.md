@@ -1,3 +1,80 @@
+## [9.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.2...9.0.0) (2026-09-28)
+
+### ⚠ BREAKING CHANGES
+
+* **api,clientside:** version metadata as snapshots, and a dependency named and found
+* **clientside:** the four-verdict result system, with every rule in an editable file
+* **clientside,grinder,app:** drop the headless-browser download route
+* **modscanning:** the scan rewrite — sideness, dependencies, and one scanner contract
+
+### :scissors: Refactor
+
+* **app:** Phase 2 and 3 — app layering, the ConfigEditor view-model, the plugin-example suite ([72db77a](https://git.griefed.de/Griefed/ServerPackCreator/commit/72db77a82c56753e7d66dfceb3d6f16ed1f6379f))
+* **clientside:** extract the clientside-mod verification engine into its own module ([1b47cba](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b47cbaab9fbae6d3acff4b1abc3575fbc976e9b))
+* **gui:** own every coroutine on a component-scoped CoroutineScope ([ef4387b](https://git.griefed.de/Griefed/ServerPackCreator/commit/ef4387bbbf7265681491b8381749c73df98d0902))
+
+### ⏩ Performance
+
+* network, startup, GUI typing, generation throughput and the web query shapes ([41498bb](https://git.griefed.de/Griefed/ServerPackCreator/commit/41498bb8b54772fdcc83125dbf2d8a54e55f4d6d))
+
+### ✨ Milestone
+
+* 9.0.0 — Phase 0 and 1, the characterization baseline and the API decomposition ([5fc86aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fc86aa5edcef2358f08ff4b27de4b6006b990ae))
+
+### 📔 Docs
+
+* close the dokka backlog — 626 undocumented declarations to zero ([fdac288](https://git.griefed.de/Griefed/ServerPackCreator/commit/fdac2880e28684c66b8a211eefe6745149b9ad0c))
+* KDoc across every module, and the Qodana audit fixes ([4153ea1](https://git.griefed.de/Griefed/ServerPackCreator/commit/4153ea1aa024ab6de1446f9c90efce128349ba9a))
+
+### 🦊 CI/CD
+
+* eleven dependency refs to their latest stable ([955ab76](https://git.griefed.de/Griefed/ServerPackCreator/commit/955ab7672466de518b0e1e1b85608bf5962d06cf))
+* one version catalog, real Copy tasks, and a configuration-cache-friendly build ([38d9b82](https://git.griefed.de/Griefed/ServerPackCreator/commit/38d9b82158076a37c18ce148d3607989a69fbdfb))
+* the coroutines 1.11 fallout, the Spring Boot BOM, and Kotlin 2.4.10 ([c0f8a20](https://git.griefed.de/Griefed/ServerPackCreator/commit/c0f8a2022400a9880f78bf104d67837b7a1f7801))
+* move the pipeline from GitLab to Forgejo ([e36cafb](https://git.griefed.de/Griefed/ServerPackCreator/commit/e36cafbaab747b6b8dcbfcf39742098a73217060))
+* **qodana:** the scan starts reading what it reports on, and reaches zero ([5ba1baf](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ba1baf9dbebaa3a107dd9749bfb0413d0f4fc2b))
+
+### 🧪 Tests
+
+* **api:** ask fish and PowerShell themselves whether the templates parse ([ccc1ccf](https://git.griefed.de/Griefed/ServerPackCreator/commit/ccc1ccf7ab2b5bcb8dd37232d47ee21853af5dd8))
+* **api:** pin that no KDoc block comes loose from its declaration ([1bb5b86](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bb5b86ade7f35ec27c699e3d816b5c433f7f7fd))
+* **api:** the coverage, dead-code and tech-debt pass ([515355b](https://git.griefed.de/Griefed/ServerPackCreator/commit/515355b6659f3210fc8d660f1931a345a2cf90d3))
+* **frontend:** Phase 4 — Vitest, the TypeScript migration and component coverage ([5efbfd1](https://git.griefed.de/Griefed/ServerPackCreator/commit/5efbfd15ae80b2d590584c6d853a72caedc97c90))
+
+### 🚀 Features
+
+* **api,grinder:** fish start-script templates, continuous grinding, and the script-template matrix ([6dde67f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6dde67f3aa91abc5021dda78349757a6402dbe47))
+* **api:** updating an existing server pack stops being experimental ([d6d20f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6d20f325b16972e91423189faf82c98ef8da4e1))
+* **app:** automate clientside-mod request verification, and harden the Actions workflows ([8be0954](https://git.griefed.de/Griefed/ServerPackCreator/commit/8be09549d5dc091ca35de68372b679a521151abb))
+* **clientside,grinder,app:** drop the headless-browser download route ([e9eaead](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9eaead599af2e0919ee74827ed3d898a1e2ad36))
+* **clientside:** grind one target per Minecraft version-line ([21e3234](https://git.griefed.de/Griefed/ServerPackCreator/commit/21e32344ab48e39ece9306bdcccc8653d6b09cdc))
+* **clientside:** LOCKED and UNVERIFIABLE, so ERROR means what it says ([c4d881e](https://git.griefed.de/Griefed/ServerPackCreator/commit/c4d881ebe1a0930782229922ba64c2550eac0266))
+* **clientside:** the four-verdict result system, with every rule in an editable file ([d094693](https://git.griefed.de/Griefed/ServerPackCreator/commit/d094693522722b78ced8b2dbd5cbe1bd7d5bd3af))
+* **grinder:** a container-backed daemon that boots every candidate mod ([d2a124b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2a124beb8684f75ec42ec34bb76fab4164781e4))
+* **grinder:** a live dashboard for /status, and the Fabric API and QSL module maps ([083ae7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/083ae7a602db0d30bc4d6bd2824e226824b1610a))
+* **grinder:** container identity, /as-properties, graceful shutdown, and the CPU and memory caps ([2d489ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d489babba9cd7c8ec6d496fbeec138ddc07f817))
+* **grinder:** crawl the whole catalog, cache loader installs, and stream live boot logs ([6b892ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b892cae78ba633cc977664a87c9ca69207926fd))
+* **grinder:** one deploy script for the daemon, with --clear and --bootstrap ([37707a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/37707a6cd29ab8f017589bed32b369849e241e8c))
+* **grinder:** per-attempt boot logs, verdict provenance, and operator-editable boot rules ([b322e2b](https://git.griefed.de/Griefed/ServerPackCreator/commit/b322e2b2abf9066bd63906026b1f69e8ef486ffa))
+* **grinder:** re-check a crash across versions and loaders, and re-grind what that got wrong ([a967ebf](https://git.griefed.de/Griefed/ServerPackCreator/commit/a967ebfc211ddf81f947b8b808d960cc1a54b8a6))
+* **grinder:** run as a service — home resolution, a systemd unit, an installer and a bind address ([d7486e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7486e03c398ee21450f7ba7df7f911fada9d9c4))
+* **plugin-grinder:** a GUI plugin over the grinder's verdict feed ([b7b661f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b7b661fbfd8389de9c637aa48ec55236e26477dc))
+
+### 🛠 Fixes
+
+* **api,clientside:** version metadata as snapshots, and a dependency named and found ([53a659c](https://git.griefed.de/Griefed/ServerPackCreator/commit/53a659c8c9efcd78803b65d80caf203d27f6d2df))
+* **api,grinder:** a self-extractor anyone can build, and a container engine with an identity ([a276a64](https://git.griefed.de/Griefed/ServerPackCreator/commit/a276a64ed58f6b53246687c53d9e5913b2e85e6b)), closes [#679](https://git.griefed.de/Griefed/ServerPackCreator/issues/679)
+* **api:** bypass the ServerStarterJar where it cannot launch Forge ([c0c5d41](https://git.griefed.de/Griefed/ServerPackCreator/commit/c0c5d41e0cdd1e7857405cd3c602e5941ecee498))
+* **api:** the backlog pass — Forge launcher eras, the security-manager flag, the home preference ([2d764b1](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d764b17e75f1f39d6296ce870da0a3aadf41643))
+* **api:** write the database URI under the key Spring Boot 4 actually reads ([3acc371](https://git.griefed.de/Griefed/ServerPackCreator/commit/3acc37119f5fd69244509bedc7f54ce5a4c56868))
+* **app:** the headless verbs report instead of throwing, and ConsolePrompt ([0a4baca](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a4baca06199c49c33835e0c09572dc1f08c80f3))
+* **app:** the modpack upload, check and storage pass, against a real database ([a672f13](https://git.griefed.de/Griefed/ServerPackCreator/commit/a672f1332475dc6f6ed4d79521fc30a6eaac0cdb))
+* **build,ci:** publish an actual library, and let the release body travel in a file ([1fb65ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/1fb65ff493246a34eacb47123ff30d5305808e46))
+* **ci,clientside:** repair the release's Maven publish, and read a published version properly ([5eb4c41](https://git.griefed.de/Griefed/ServerPackCreator/commit/5eb4c41b9c005a6351e7294a5dcff1e7f5ca724b))
+* **ci,docker:** the Qodana JBR cache, the dind scope, and the container's MongoDB wiring ([8f2cca7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8f2cca770704252d76ea7a6bc4cddffe840fe1ea))
+* **clientside:** publish only a crash that is decisive evidence of sideness ([e6e2b71](https://git.griefed.de/Griefed/ServerPackCreator/commit/e6e2b711438c4132901bcddf8c09c67674f7e28a))
+* **modscanning:** the scan rewrite — sideness, dependencies, and one scanner contract ([1632cfc](https://git.griefed.de/Griefed/ServerPackCreator/commit/1632cfc49aea8a01ea1a59b75ae2aaebbab737c1))
+
 ## [8.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.1...8.1.2) (2026-06-10)
 
 ### 📦 Other
