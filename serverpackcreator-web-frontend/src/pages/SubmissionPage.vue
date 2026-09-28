@@ -19,7 +19,7 @@
   </q-page>
 </template>
 
-<script >
+<script lang="ts">
 import { defineComponent } from 'vue';
 import HistoryTable from 'components/HistoryTable.vue';
 import SubmitModPackForm from 'components/SubmitModPackForm.vue';
@@ -35,14 +35,14 @@ export default defineComponent({
         borderRadius: '5px',
         backgroundColor: '#325358',
         width: '5px',
-        opacity: 0.75
+        opacity: '0.75'
       },
       barStyle: {
         right: '2px',
         borderRadius: '9px',
         backgroundColor: '#54A896',
         width: '9px',
-        opacity: 0.2
+        opacity: '0.2'
       }
     };
   }

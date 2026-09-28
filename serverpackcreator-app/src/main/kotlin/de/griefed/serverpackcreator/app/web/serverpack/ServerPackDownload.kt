@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,13 +26,30 @@ import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 import java.util.*
 
+/**
+ * One recorded server-pack download — a row per download rather than a counter, which is what makes the
+ * download *history* possible. The counter on the pack itself is kept alongside for the cheap case.
+ */
 @Document
 class ServerPackDownload {
 
+    /**
+     * The document id, assigned by MongoDB. `private set` so only Spring Data's persistence constructor
+     * fills it.
+     *
+     * Deliberately separate from [downloadedAt], which used to *be* the id: that made the id a global
+     * millisecond rather than a per-pack one, so two downloads of any two packs in the same millisecond
+     * collided and `save` overwrote the earlier row.
+     */
     @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
+
+    /** When the download happened, set on construction so a retry keeps the original time. */
     var downloadedAt: Date = Date(System.currentTimeMillis())
         private set
 
+    /** Which pack was downloaded. */
     @DBRef
     var serverPack: ServerPack
 
@@ -42,7 +59,8 @@ class ServerPackDownload {
 
     @Suppress("unused")
     @PersistenceCreator
-    private constructor(downloadedAt: Date, serverPack: ServerPack) {
+    private constructor(id: String?, downloadedAt: Date, serverPack: ServerPack) {
+        this.id = id
         this.downloadedAt = downloadedAt
         this.serverPack = serverPack
     }

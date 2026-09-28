@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,8 +25,12 @@ import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -43,6 +47,7 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 import javax.swing.event.ListSelectionEvent
+import kotlin.time.Duration.Companion.milliseconds
 
 
 /**
@@ -70,6 +75,10 @@ class InclusionsEditor(
     whitelistSettings: ScrollTextArea
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns the tip-update and source-edit coroutines, cancelled on [removeNotify] so they stop
+     * when the editor is closed instead of leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
     private val expertInclusionSettingsPanel = JPanel(
         MigLayout(
             "left,wrap",
@@ -254,9 +263,8 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
-        GlobalScope.launch(guiProps.miscDispatcher) {
+        componentScope.scope().launch(guiProps.miscDispatcher) {
             selectedInclusionDetailsScrollPanel.isEnabled = false
             inclusionList.isEnabled = false
             selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_updating.toString()
@@ -309,6 +317,8 @@ class InclusionsEditor(
                     }
                 }
             } catch (_: ArrayIndexOutOfBoundsException) {
+                // An index ran out of range while assembling the inclusion preview; keep whatever
+                // was gathered so far rather than failing the preview.
             } catch (ex: Exception) {
                 log.error("Couldn't acquire files to include for ${inclusionSelection.source}. ", ex)
             }
@@ -317,6 +327,8 @@ class InclusionsEditor(
                     selectedInclusionDetailsScrollPanel.text = tipContent
                     selectedInclusionDetailsScrollPanel.updateUI()
                 } catch (_: NullPointerException) {
+                    // The details panel may not be fully realized yet; skip updating its text this
+                    // pass.
                 }
                 selectedInclusionDetailsScrollPanel.isEnabled = true
                 inclusionList.isEnabled = true
@@ -346,10 +358,9 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun sourceWasEdited() {
-        GlobalScope.launch(Dispatchers.Swing) {
-            delay(200)
+        componentScope.scope().launch(Dispatchers.Swing) {
+            delay(200.milliseconds)
             if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty && !inclusionList.valueIsAdjusting) {
                 if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
                     inclusionList.selectedValue.source = source.text
@@ -489,6 +500,7 @@ class InclusionsEditor(
         validate()
     }
 
+    /** Re-check the inclusions and update the status icon. Overrides Swing's own `validate`, so it also lays the panel out. */
     override fun validate() {
         super.validate()
         inclusionList.updateUI()
@@ -539,16 +551,17 @@ class InclusionsEditor(
     }
 
     /**
+     * Remove the currently selected inclusion and keep the selection where it was, so the entry that
+     * shifted up into the freed slot becomes selected. Removing the last entry has nothing to shift up,
+     * so the selection falls back to the new final row.
+     *
      * @author Griefed
      */
     private fun removeSelectedEntry() {
-        var selected = inclusionList.selectedIndex
-        removeEntry(inclusionList.selectedIndex)
-        if (selected++ < inclusionList.lastVisibleIndex) {
-            inclusionList.selectedIndex = --selected
-        } else {
-            inclusionList.selectedIndex = inclusionList.lastVisibleIndex
-        }
+        val selected = inclusionList.selectedIndex
+        removeEntry(selected)
+        inclusionList.selectedIndex =
+            if (selected < inclusionList.lastVisibleIndex) selected else inclusionList.lastVisibleIndex
     }
 
     /**
@@ -649,14 +662,13 @@ class InclusionsEditor(
             exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
     }
 
+    /** Accepts files dragged onto the inclusions list, so a source can be added by dropping it rather than through the chooser. */
     class InclusionsListHandler(private val editor: InclusionsEditor): TransferHandler() {
-        override fun canImport(support: TransferSupport): Boolean {
-            if (!support.isDrop) {
-                return false
-            }
-            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
-        }
+        /** Whether the drag carries files, which is the only thing this list accepts. */
+        override fun canImport(support: TransferSupport) =
+            support.isDrop && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
 
+        /** Add one inclusion per dropped file, and select the last so the details panel shows it. */
         override fun importData(support: TransferSupport): Boolean {
             if (!canImport(support)) {
                 return false
@@ -678,6 +690,15 @@ class InclusionsEditor(
 
             return true
         }
+    }
+
+    /**
+     * Cancel the tip-update and source-edit coroutines when this editor is removed from the screen,
+     * so none of them run on a discarded component.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 
     /**

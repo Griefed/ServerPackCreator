@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,7 @@ class ServerPackService @Autowired constructor(
         gridFsOperations
     )
 
+    /** One server pack by id, empty when there is none. */
     fun getServerPack(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)
     }
@@ -121,10 +122,12 @@ class ServerPackService @Autowired constructor(
         }
     }
 
+    /** Every server pack, newest first by default. */
     fun getServerPacks(sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): List<ServerPack> {
         return serverPackRepository.findAll(sort)
     }
 
+    /** One page of server packs, as a `Page` so the caller learns the total. */
     fun getServerPacks(
         sizedPage: PageRequest,
         sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")
@@ -153,6 +156,16 @@ class ServerPackService @Autowired constructor(
     }
 
     /**
+     * Delete a stored file by its storage id — both copies of it.
+     *
+     * Exists for `FileCleanupSchedule`, which sweeps orphaned files off the filesystem and would
+     * otherwise leave their GridFS twins behind: every stored file is written to both.
+     */
+    fun deleteStoredFile(fileID: String) {
+        storage.delete(fileID)
+    }
+
+    /**
      * Deletes a server pack with the given id.
      *
      * @param serverPack The serverpack to delete.
@@ -163,6 +176,7 @@ class ServerPackService @Autowired constructor(
         serverPackRepository.deleteById(serverPack.id!!)
     }
 
+    /** Delete a server pack by id, **and** its stored archive. The id overload is the one that cleans up disk. */
     @Suppress("unused")
     fun deleteServerPack(id: String) {
         val serverPack = serverPackRepository.findById(id)
@@ -183,6 +197,7 @@ class ServerPackService @Autowired constructor(
         return storage.load(serverPack.fileID!!)
     }
 
+    /** One server pack by id, for a read-only view — identical to [getServerPack] but named for the call site that only displays it. */
     @Suppress("unused")
     fun getServerPackView(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)

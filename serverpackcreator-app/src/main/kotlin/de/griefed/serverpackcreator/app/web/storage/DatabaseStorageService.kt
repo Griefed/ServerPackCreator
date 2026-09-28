@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
+/**
+ * GridFS storage, kept for installations that still hold their files in MongoDB. New files go to the filesystem;
+ * this exists so the old ones can still be read and migrated.
+ */
 class DatabaseStorageService(
     private val gridFsTemplate: GridFsTemplate,
     private val gridFsOperations: GridFsOperations
@@ -52,11 +56,12 @@ class DatabaseStorageService(
         }
     }
 
+    /** Store a file in GridFS, returning its object id. */
     fun store(file: File): ObjectId {
         val originalName = determineFilename(file.name)
         val metaData = BasicDBObject()
-        metaData.put("type", "zip")
-        metaData.put("title", originalName)
+        metaData["type"] = "zip"
+        metaData["title"] = originalName
         val objectId = gridFsTemplate.store(
             FileInputStream(file),
             originalName,
@@ -65,16 +70,32 @@ class DatabaseStorageService(
         return objectId
     }
 
+    /**
+     * Remove a file from GridFS. A file that is not there is not an error — `GridFsTemplate.delete`
+     * iterates the matches and deletes each, so an empty match is a no-op.
+     */
+    fun delete(id: String) {
+        gridFsTemplate.delete(query(id))
+    }
+
+    /** Read a file back out of GridFS, as the metadata and the resource together. */
+    // Both inspections below are wrong here, and wrong for the same reason: Spring's
+    // `org.springframework.data.mongodb.gridfs` package is `@NonNullApi`, so the analyser believes
+    // `findOne` cannot return null, and from that concludes the declared `?` is redundant and the guard
+    // is foldable into an elvis that "always returns the left operand". Asked of a real mongod,
+    // `findOne` DOES return null for a miss -- `WebPersistenceIT.loadingAnIdGridFsDoesNotHoldReturnsEmptyRatherThanThrowing`.
+    // Taking either suggestion turns an absent file into an NPE on the download route.
+    @Suppress("RedundantNullableReturnType", "FoldInitializerAndIfToElvis")
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
-        val result = gridFsTemplate.findOne(query(id))
-        if (result != null) {
-            return Optional.of(
-                Pair(
-                    result,
-                    gridFsOperations.getResource(result)
-                )
-            )
+        // Typed nullable deliberately. findOne returns null for a miss -- verified against a real
+        // mongod by WebPersistenceIT -- but Spring does not annotate it @Nullable, so Kotlin infers
+        // non-null and warns that the elvis below "always returns the left operand". Letting the type
+        // be inferred would leave a warning claiming the guard is dead when it is the only thing
+        // keeping an absent file from being an NPE instead of an empty Optional.
+        val result: GridFSFile? = gridFsTemplate.findOne(query(id))
+        if (result == null) {
+            return Optional.empty()
         }
-        return Optional.empty()
+        return Optional.of(Pair(result, gridFsOperations.getResource(result)))
     }
 }

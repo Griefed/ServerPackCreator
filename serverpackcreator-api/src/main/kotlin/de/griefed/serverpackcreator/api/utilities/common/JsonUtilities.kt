@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -141,12 +141,12 @@ class JsonUtilities(
          * We do not use getNestedElement(...).asBoolean() because we need to throw if the value does
          * not exist or if it is otherwise not a valid boolean.
          */
-        return if (bool.equals("true", ignoreCase = true)) {
-            true
-        } else if (bool.equals("false", ignoreCase = true)) {
-            false
-        } else {
-            throw JsonException("Invalid boolean $bool")
+        return when {
+            bool.equals("true", ignoreCase = true) -> true
+            bool.equals("false", ignoreCase = true) -> false
+            // Deliberately not toBooleanStrictOrNull(): that is case-sensitive, and JSON in the wild
+            // carries "True"/"FALSE".
+            else -> throw JsonException("Invalid boolean $bool")
         }
     }
 

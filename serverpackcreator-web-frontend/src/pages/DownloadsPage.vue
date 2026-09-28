@@ -6,7 +6,7 @@
   </q-page>
 </template>
 
-<script >
+<script lang="ts">
 import { defineComponent } from 'vue';
 import ModpacksTable from 'components/ModpacksTable.vue';
 

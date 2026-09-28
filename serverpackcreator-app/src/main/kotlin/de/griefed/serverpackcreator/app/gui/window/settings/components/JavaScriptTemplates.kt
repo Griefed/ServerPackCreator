@@ -6,6 +6,7 @@ import de.griefed.serverpackcreator.app.gui.components.ConvenientJTable
 import java.util.*
 import javax.swing.event.TableModelListener
 
+/** The table mapping a Java-script type to the template it is generated from — the Java-args counterpart of `ScriptTemplates`. */
 class JavaScriptTemplates(guiProps: GuiProps, tableModelListener: TableModelListener) : ConvenientJTable(
     guiProps,
     Translations.settings_global_javascripts_key.toString(),
@@ -26,6 +27,7 @@ class JavaScriptTemplates(guiProps: GuiProps, tableModelListener: TableModelList
         super.loadData(data, clearDataBeforeLoad)
     }
 
+    /** The configured template for one type, empty when the table names none. */
     @Suppress("unused")
     fun getTemplatePath(type: String): Optional<String> {
         return Optional.ofNullable(getData()[type])

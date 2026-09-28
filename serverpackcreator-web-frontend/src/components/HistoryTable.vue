@@ -93,16 +93,16 @@
 </template>
 
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {events} from 'boot/axios';
-import {date} from 'quasar';
+import {date, type QTableColumn} from 'quasar';
 import ModPackCard from 'components/ModPackCard.vue';
 import ServerPackCard from 'components/ServerPackCard.vue';
 import RunConfigurationCard from 'components/RunConfigurationCard.vue';
 import ErrorsCard from 'components/ErrorsCard.vue';
 
-const columns = [
+const columns: QTableColumn[] = [
   {name: 'modPackId', label: 'Modpack ID', field: 'modPackId', sortable: true, align: 'left'},
   {name: 'serverPackId', label: 'Server Pack ID', field: 'serverPackId', sortable: true, align: 'left'},
   {name: 'status', label: 'Status', field: 'status', sortable: true, align: 'left'},

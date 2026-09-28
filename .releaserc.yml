@@ -16,14 +16,15 @@ tagFormat: '${version}'
 
 # Global plugin options (will be passed to all plugins)
 preset: 'conventionalcommits'
-gitlabUrl: 'https://git.griefed.de/' # your gitlab url
+# No `gitlabUrl` and no @semantic-release/gitlab: git.griefed.de is Forgejo now, and its API is not
+# GitLab's. semantic-release's job here is version + changelog + tag; the RELEASE is created by
+# .forgejo/workflows/release-build.yml, which reacts to the tag and is where the assets are.
 
 # Responsible for verifying conditions necessary to proceed with the release:
 # configuration is correct, authentication token are valid, etc...
 verifyConditions:
   - '@semantic-release/changelog'
   - '@semantic-release/git'
-  - '@semantic-release/gitlab'
 
 # Responsible for determining the type of the next release (major, minor or patch).
 # If multiple plugins with a analyzeCommits step are defined, the release type will be
@@ -141,10 +142,10 @@ prepare:
     assets: ['CHANGELOG.md']
 
 # Responsible for publishing the release.
-publish:
-  - path: '@semantic-release/gitlab'
-    # Publish a GitLab release
-    #  (https://docs.gitlab.com/ce/user/project/releases/index.html#add-release-notes-to-git-tags)
+# Disabled on purpose. semantic-release still creates and pushes the tag -- that is core behaviour, not a
+# publish plugin -- and the tag is what triggers release-build.yml. Publishing the release itself there
+# rather than here is what lets the release carry its assets, since that is the job that builds them.
+publish: false
 
 success: false
 

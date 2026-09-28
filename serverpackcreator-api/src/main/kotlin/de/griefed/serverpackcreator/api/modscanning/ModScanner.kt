@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,12 @@
 package de.griefed.serverpackcreator.api.modscanning
 
 /**
- * Easy-access class for scanning of mods inside a modpack. This class itself does not do much,
- * other than bringing the different mod-scanners to one place for ease-of-use.
+ * Brings the per-loader mod-scanners to one place, and owns the rule for choosing between them.
+ *
+ * Which scanner reads a pack depends on the modloader *and* the Minecraft version, because loaders
+ * have changed their descriptor over time. That rule lives here — see [scannerFor] — rather than at
+ * the call-sites, so a pack's mod list and the clientside engine's metadata signal cannot disagree
+ * about what a jar declared.
  *
  * @param forgeAnnotationScanner For scanning `fml-cache-annotation.json`
  * @param fabricScanner     For scanning `fabric.mod.json`
@@ -35,5 +39,34 @@ class ModScanner(
     val fabricScanner: FabricScanner,
     val quiltScanner: QuiltScanner,
     val forgeTomlScanner: ForgeTomlScanner,
+    /** Scanner for NeoForge jars, which moved the descriptor and so cannot reuse Forge's path. */
     val neoForgeTomlScanner: NeoForgeTomlScanner
-)
+) {
+    /** Scans a Quilt pack, whose jars may carry either descriptor or both. */
+    val quiltPackScanner = QuiltPackScanner(quiltScanner, fabricScanner)
+
+    /**
+     * The scanner that reads a pack on [modloader] and [minecraftVersion], or `null` when no scanner
+     * knows the loader.
+     *
+     * A `null` is deliberately not an error: the caller decides what an unknown loader means, and
+     * both of them keep every mod rather than silently producing an empty result.
+     *
+     * @param modloader        Canonical modloader name, as [de.griefed.serverpackcreator.api.config.SupportedModloaders] spells it.
+     * @param minecraftVersion The pack's Minecraft version, which decides the descriptor era.
+     */
+    fun scannerFor(modloader: String, minecraftVersion: String): ModJarScanner? = when (modloader) {
+        "LegacyFabric", "Fabric" -> fabricScanner
+        "Quilt" -> quiltPackScanner
+        // The era boundaries are `LoaderDescriptors`' to state, not this class's: the clientside engine's
+        // pre-boot gate has to answer the same question about the same jars, and it used to hold a second,
+        // version-blind copy that read every `mods.toml` as Forge's.
+        "Forge" ->
+            if (LoaderDescriptors.forgeUsesToml(minecraftVersion)) forgeTomlScanner else forgeAnnotationScanner
+
+        "NeoForge" ->
+            if (LoaderDescriptors.neoForgeUsesNeoToml(minecraftVersion)) neoForgeTomlScanner else forgeTomlScanner
+
+        else -> null
+    }
+}

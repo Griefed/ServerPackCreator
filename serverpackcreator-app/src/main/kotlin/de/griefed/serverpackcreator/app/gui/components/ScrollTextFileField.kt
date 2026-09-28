@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,7 @@ class ScrollTextFileField(
         this.addDocumentListener(documentChangeListener)
     }
 
+    /** The path as a `File`, so callers need not parse the text themselves. Setting it writes the path back into the field. */
     var file: File
         get() {
             return File(text).absoluteFile

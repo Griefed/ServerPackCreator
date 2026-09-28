@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,8 +55,11 @@ class UpdateDialogs(
     /*private var i4JUpdatable = false
     private var i4JDownload = false
     private var i4JExecute = false*/
+    /** The button that appears once an update is known, animated to draw the eye. */
     val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
+    /** Re-runs the check on demand, for the menu entry that asks for one. */
     val updateCheckListener = ActionListener { checkForUpdate() }
+    /** The update found, if any. Checked once at construction and then re-assigned by [updateCheckListener]. */
     var update: Optional<Update> = updateChecker.checkForUpdate(
         apiProperties.apiVersion,
         apiProperties.isCheckingForPreReleasesEnabled

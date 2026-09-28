@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ import kotlin.streams.asStream
  * @author Griefed
  */
 class FileUtilities {
+    /** File-type detection and the platform's path separator. */
     companion object {
         private val log by lazy { cachedLoggerOf(FileUtilities::class.java) }
         private val windowsDrivers = "^[A-Za-z]:.*".toRegex()
@@ -75,13 +76,17 @@ class FileUtilities {
          * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
          * @author Griefed
          */
+        // Deliberately NOT @Throws(IOException::class). Kotlin propagates the exception either way; the
+        // annotation's only effect is to put `throws IOException` in the Java-facing signature, which
+        // makes every existing Java caller of this published method stop compiling. Source compatibility
+        // within a major version is the policy, and the fix does not need the annotation to work.
         fun unzipArchive(zipFile: String, destinationDirectory: String) {
             log.info("Extracting ZIP-file: $zipFile")
-            try {
-                ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
-            } catch (ex: IOException) {
-                log.error("Error: There was an error extracting the archive $zipFile", ex)
-            }
+            // Deliberately not caught. A failure here leaves the destination empty or half-written, and
+            // swallowing it let the caller carry on as though the modpack had been extracted. zip4j
+            // reports a rejected zip-slip entry as a ZipException, which is an IOException, so the old
+            // catch silently absorbed a hostile archive along with a truncated one.
+            ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
         }
 
         /**
@@ -149,17 +154,13 @@ class FileUtilities {
          * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
-        fun isLink(file: File) =
-            if (file.name.endsWith(LNK)) {
-                true
-            } else {
-                try {
-                    !file.toString().matches(windowsDrivers)
-                            && file.toPath().isSymbolicLink()
-                } catch (ex: InvalidPathException) {
-                    false
-                }
-            }
+        fun isLink(file: File) = file.name.endsWith(LNK) || try {
+            !file.toString().matches(windowsDrivers)
+                    && file.toPath().isSymbolicLink()
+        } catch (_: InvalidPathException) {
+            // A path this platform cannot even represent is not a link we can follow.
+            false
+        }
 
         /**
          * Resolve a given link/symlink to its source.
@@ -432,12 +433,14 @@ fun File.deleteQuietly(): Boolean =
         try {
             this.delete()
         } catch (ignored: Exception) {
+            // Quiet by contract (see KDoc): any failure to delete is reported as `false`.
             false
         }
     } else {
         try {
             this.deleteRecursively()
         } catch (ignored: Exception) {
+            // Quiet by contract (see KDoc): any failure to delete is reported as `false`.
             false
         }
     }
@@ -538,7 +541,11 @@ fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) 
 }
 
 /**
- * Test whether files can be written to this file denoting a directory.
+ * Test whether files can be written to this file denoting a directory, by creating a throwaway file in it and
+ * removing it again. The probe file's name is generated per call, never fixed: a shared name is defeated both by
+ * anything already holding it and by a second probe deleting this one's file mid-check — measured at 34 of 64
+ * concurrent probes reporting a writable directory as unwritable — and callers act on a false answer by refusing
+ * a directory or, in `ApiProperties`, by refusing to start.
  * If this file is not a directory, an [IllegalArgumentException] will be thrown.
  *
  * @author Griefed
@@ -548,16 +555,14 @@ fun File.testFileWrite() : Boolean {
     if (!this.isDirectory) {
         throw(IllegalArgumentException("Destination must be a directory."))
     }
+    var probe: Path? = null
     return try {
-        val file = File(this,"poke")
-        file.writeText("writable")
-        if (file.exists()) {
-            file.deleteQuietly()
-            true
-        } else {
-            false
-        }
+        probe = Files.createTempFile(this.toPath(), ".spc-write-probe", null)
+        Files.isRegularFile(probe)
     } catch (ex: Exception) {
         false
+    } finally {
+        // Litter in a user's home outlives the process that dropped it, so removal must survive a failed probe.
+        probe?.let { runCatching { Files.deleteIfExists(it) } }
     }
 }

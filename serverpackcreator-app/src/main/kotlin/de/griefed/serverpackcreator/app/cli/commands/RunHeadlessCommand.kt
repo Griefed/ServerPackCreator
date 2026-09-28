@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,9 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.serverpack.ServerPackGeneration
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.app.cli.ConsolePrompt
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
 import picocli.CommandLine
@@ -40,9 +42,14 @@ import javax.xml.parsers.ParserConfigurationException
     ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
-class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+/** Generates server packs without the shell, either from one named configuration or from every one in the config directory. */
+class RunHeadlessCommand(
+    private val apiWrapper: ApiWrapper = ApiWrapper.api(),
+    private val prompt: ConsolePrompt = ConsolePrompt()
+) : Command {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Invoked with no subcommand: generate from the default config, `<home>/serverpackcreator.conf`. */
     override fun run() {
         runHeadless()
     }
@@ -54,6 +61,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "You will be asked to enter the path to the desired config after starting this command."
         ]
     )
+    /** Generate from one named configuration file, optionally into a chosen destination. */
     @Suppress("unused")
     fun withSpecificConfig(
         @CommandLine.Option(
@@ -89,38 +97,47 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "The config-directory is inside ServerPackCreators home-directory."
         ]
     )
-    fun withAllInConfigDir() {
-        val configs = apiWrapper.apiProperties.configsDirectory.listFiles()
-        for (config in configs) {
-            runHeadless(config)
+    /**
+     * Generate from every configuration file in the configured directory, one after another, and report
+     * whether every one of them produced a server pack.
+     */
+    fun withAllInConfigDir(): Boolean {
+        val configsDirectory = apiWrapper.apiProperties.configsDirectory
+        // listFiles() is null for anything that is not a readable directory, and the loop used to
+        // iterate that straight into a NullPointerException.
+        val configs = configsDirectory.listFiles()
+        if (configs == null) {
+            log.error("Cannot read the configs-directory ${configsDirectory.absolutePath}.")
+            return false
         }
+        if (configs.isEmpty()) {
+            log.warn("No configurations in ${configsDirectory.absolutePath}, nothing to generate.")
+            return true
+        }
+        var allGenerated = true
+        for (config in configs) {
+            allGenerated = runHeadless(config) && allGenerated
+        }
+        return allGenerated
     }
 
-    private fun requestConfigFile(): File {
-        val scanner = Scanner(System.`in`)
-        println("Enter the full path to the new ServerPackCreator home-directory.")
+    private fun requestConfigFile(): File =
+        prompt.readExistingFile("Enter the full path to the server pack config.")
 
-        var path: String
-        do {
-            print("Path: ")
-            path = scanner.nextLine()
-            if (!File(path).isFile) {
-                println("File '$path' does not exist.")
-            }
-        } while (!File(path).isFile)
-        try {
-            scanner.close()
-        } catch (_: Exception) {}
-        return File(path)
-    }
-
+    /**
+     * The shared body both subcommands end in: check the configuration, then generate if it passes.
+     *
+     * Returns whether a server pack was actually produced, so a headless run can be turned into an exit
+     * code. Every path that prints a problem returns `false`.
+     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     fun runHeadless(
         config: File = apiWrapper.apiProperties.defaultConfig,
         destination: Optional<File> = Optional.empty()
-    ) {
+    ): Boolean {
         if (!config.isFile) {
             log.warn("${config.absolutePath} not found...")
+            return false
         } else {
             val packConfig = PackConfig()
             packConfig.customDestination = destination
@@ -130,6 +147,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 for (error in check.encounteredErrors) {
                     println(error)
                 }
+                return false
             } else {
                 val generation = apiWrapper.serverPackHandler.run(packConfig)
                 if (!generation.success) {
@@ -137,10 +155,32 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                     for (error in generation.errors) {
                         println(error)
                     }
+                    reportScanFindings(generation)
+                    return false
                 } else {
                     println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                    reportScanFindings(generation)
+                    return true
                 }
             }
         }
+    }
+}
+
+/**
+ * Print what the security scan found, whether or not the generation itself worked.
+ *
+ * File-level so every command in this file can reach it regardless of nesting. Reported separately
+ * from [ServerPackGeneration.errors] because the two are different questions: a pack can build
+ * perfectly and still contain an infected mod, and that used to be reported as "Error generating
+ * Server Pack" while a pack whose files never copied was reported as a success.
+ */
+private fun reportScanFindings(generation: ServerPackGeneration) {
+    if (generation.scanFindings.isEmpty()) {
+        return
+    }
+    println("Security scan findings for this server pack:")
+    for (finding in generation.scanFindings) {
+        println(finding)
     }
 }

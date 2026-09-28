@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +21,10 @@ package de.griefed.serverpackcreator.app.web.serverpack
 
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -64,11 +65,17 @@ class ServerPackController @Autowired constructor(
                 serverPackService.updateDownloadStats(id)
                 ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType("application/zip"))
+                    // Built rather than interpolated -- see ModPackController.downloadModpack. The name here
+                    // is generated rather than user-supplied, but the two headers should not differ in how
+                    // carefully they are built.
                     .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"${serverPack.get().fileName}_server_pack.zip\""
+                        ContentDisposition.attachment()
+                            .filename("${serverPack.get().fileName}_server_pack.zip")
+                            .build().toString()
                     )
-                    .body(ByteArrayResource(archive.get().readBytes()))
+                    .contentLength(archive.get().length())
+                    .body(FileSystemResource(archive.get()))
             }
         } else {
             ResponseEntity.notFound().build()
@@ -118,6 +125,7 @@ class ServerPackController @Autowired constructor(
         )
     }
 
+    /** One page of server packs, newest first. */
     @GetMapping("/allpaginated", produces = ["application/json"])
     @ResponseBody
     fun getAllServerPacksPaginated(
@@ -133,6 +141,7 @@ class ServerPackController @Autowired constructor(
         )
     }
 
+    /** One server pack by id. */
     @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getServerPack(@PathVariable id: String): ResponseEntity<ServerPack> {

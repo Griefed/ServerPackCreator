@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,10 @@ import java.io.IOException
     description = ["Print a list of arguments to start ServerPackCreator with, as well as some general help."],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Prints the interactive shell's own help — what to type, and what each verb does. */
 class HelpCommand : Command {
 
+    /** Print the help text. */
     override fun run() {
         printHelp()
     }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,11 +21,10 @@ package de.griefed.serverpackcreator.app.gui.window.menu.about
 
 import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import javax.swing.JMenuItem
@@ -40,6 +39,10 @@ import javax.swing.JTextPane
  */
 class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiProps: GuiProps) :
     JMenuItem(Translations.menubar_gui_menuitem_licensereport.toString()) {
+    /** Owns the dialog-display coroutine; cancelled on [removeNotify] rather than leaking on
+     * [kotlinx.coroutines.GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
+
     private val thirdPartyNoticesWindowTextPane: JTextPane = JTextPane()
     private val thirdPartyNoticesScrollPane = JScrollPane(
         thirdPartyNoticesWindowTextPane,
@@ -59,9 +62,8 @@ class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiPro
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun displayThirdPartyNotices() {
-        GlobalScope.launch(Dispatchers.Swing) {
+        componentScope.scope().launch(Dispatchers.Swing) {
             DialogUtilities.createDialog(
                 thirdPartyNoticesScrollPane,
                 Translations.menubar_gui_menuitem_licensereport.toString(),
@@ -74,5 +76,14 @@ class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiPro
                 width = 800, height = 600
             )
         }
+    }
+
+    /**
+     * Cancel the dialog-display coroutine when this menu item is torn down (window close), so it
+     * does not run after the frame is gone.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }

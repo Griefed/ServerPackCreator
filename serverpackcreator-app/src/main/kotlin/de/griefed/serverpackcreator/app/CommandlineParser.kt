@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.*
-import java.util.prefs.Preferences
 
 /**
  * The Commandline Parser checks the passed commandline arguments to determine the mode to run in.
@@ -46,17 +45,44 @@ import java.util.prefs.Preferences
  */
 open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    /** Which application the arguments select. Defaults to the GUI, so a double-clicked jar needs no arguments. */
     var mode: Mode = Mode.GUI
+    /** Locale from `-lang`, or `null` to keep whatever is configured. */
     var language: Locale? = null
+    /** The properties file to load, preferring an `overrides.properties` beside the jar when one exists. */
     var propertiesFile: File = if (File(appInfo.jarFolder, "overrides.properties").isFile) {
         File(appInfo.jarFolder, "overrides.properties")
     } else {
         File(appInfo.jarFolder, "serverpackcreator.properties")
     }
+    /** The configuration to generate from, for a headless run. */
     var serverPackConfig : Optional<File> = Optional.empty()
+    /** Where the generated server pack should land, overriding the configured directory. */
     var serverPackDestination : Optional<File> = Optional.empty()
+    /** The modpack to derive a configuration from, for `-cgen`. */
     var modpackDirectory: Optional<File> = Optional.empty()
+    /** The home directory to use, which every other path is resolved against. */
     var homeDir: Optional<File> = Optional.empty()
+    /** The directory of jars `-scan` reads sideness from. */
+    var scanDirectory: Optional<File> = Optional.empty()
+    /** Which loader `-scan` should read those jars as; the descriptors differ per loader. */
+    var scanLoader: String? = null
+    /** Which Minecraft version `-scan` assumes, since it decides which Forge scanner applies. */
+    var scanMinecraftVersion: String? = null
+    /** The project link `-clientsidereport` assesses from metadata alone. */
+    var clientsideLink: Optional<String> = Optional.empty()
+    /** Where that report is written, or `null` for stdout. */
+    var clientsideReportOutput: String? = null
+    /** The project link `-verifyclientside` assesses with a real server boot as well as metadata. */
+    var clientsideVerifyLink: Optional<String> = Optional.empty()
+    /** Where that verification report is written, or `null` for stdout. */
+    var clientsideVerifyOutput: String? = null
+    /** The accepted report `-clientsideapply` inserts entries from. */
+    var clientsideApplyReport: Optional<String> = Optional.empty()
+    /** Override for the `GenerationConfig.kt` the apply step edits — the fallback list's Kotlin source. */
+    var clientsideApplyGenerationConfig: String? = null
+    /** Override for the `serverpackcreator.properties` the apply step edits alongside it. */
+    var clientsideApplyProperties: String? = null
 
     init {
         val argsList = args.toList()
@@ -78,14 +104,16 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
         * Check whether the user wants to set the home-directory
         */
         if (argsList.any { entry -> entry.contains(Mode.HOME.argument()) }) {
-            val setupPos = argsList.indexOf(Mode.HOME.argument()) + 1
-            val setupArg = argsList[setupPos]
-            val setupFile = File(setupArg).absoluteFile
-            if (argsList.size > 1 && setupFile.isDirectory) {
+            val setupFile = pathAfter(argsList, Mode.HOME.argument())?.absoluteFile
+            if (setupFile == null) {
+                log.error("${Mode.HOME.argument()} requires the path to an existing directory.")
+            } else if (!setupFile.isDirectory) {
+                log.error("Home-directory ${setupFile.absolutePath} does not exist. Keeping the configured one.")
+            } else {
                 homeDir = Optional.of(setupFile)
             }
             if (homeDir.isPresent) {
-                Preferences.userRoot().node("ServerPackCreator").put("de.griefed.serverpackcreator.home",homeDir.get().absolutePath)
+                HomeDirectoryPreference.store(homeDir.get().absolutePath)
                 log.info("Home-directory overwritten: ${homeDir.get().absolutePath}")
             }
         }
@@ -116,15 +144,65 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             }
 
             /*
+            * Check whether the user wants to scan a mods-directory for declared sideness.
+            */
+            if (argsList.any { entry -> entry == Mode.SCAN.argument() }) {
+                val directoryArg = argsList.getOrNull(argsList.indexOf(Mode.SCAN.argument()) + 1)
+                if (directoryArg != null && File(directoryArg).isDirectory) {
+                    scanDirectory = Optional.of(File(directoryArg))
+                }
+                scanLoader = optionValue(argsList, "--loader", "-l")
+                scanMinecraftVersion = optionValue(argsList, "--minecraft", "-m")
+                mode = Mode.SCAN
+                return@run
+            }
+
+            /*
+            * Check whether the user wants a clientside-only assessment of a CurseForge/Modrinth link.
+            */
+            if (argsList.any { entry -> entry == Mode.CLIENTSIDE_REPORT.argument() }) {
+                val linkArg = argsList.getOrNull(argsList.indexOf(Mode.CLIENTSIDE_REPORT.argument()) + 1)
+                if (!linkArg.isNullOrBlank()) {
+                    clientsideLink = Optional.of(linkArg)
+                }
+                clientsideReportOutput = optionValue(argsList, "--output", "-o")
+                mode = Mode.CLIENTSIDE_REPORT
+                return@run
+            }
+
+            /*
+            * Check whether the user wants a clientside-only assessment including a server-boot test.
+            */
+            if (argsList.any { entry -> entry == Mode.VERIFY_CLIENTSIDE.argument() }) {
+                val linkArg = argsList.getOrNull(argsList.indexOf(Mode.VERIFY_CLIENTSIDE.argument()) + 1)
+                if (!linkArg.isNullOrBlank()) {
+                    clientsideVerifyLink = Optional.of(linkArg)
+                }
+                clientsideVerifyOutput = optionValue(argsList, "--output", "-o")
+                mode = Mode.VERIFY_CLIENTSIDE
+                return@run
+            }
+
+            /*
+            * Check whether the user wants to apply a clientside-report's entries to the list files.
+            */
+            if (argsList.any { entry -> entry == Mode.CLIENTSIDE_APPLY.argument() }) {
+                val reportArg = optionValue(argsList, "--report", "-r")
+                    ?: argsList.getOrNull(argsList.indexOf(Mode.CLIENTSIDE_APPLY.argument()) + 1)
+                if (!reportArg.isNullOrBlank()) {
+                    clientsideApplyReport = Optional.of(reportArg)
+                }
+                clientsideApplyGenerationConfig = optionValue(argsList, "--generation-config")
+                clientsideApplyProperties = optionValue(argsList, "--properties")
+                mode = Mode.CLIENTSIDE_APPLY
+                return@run
+            }
+
+            /*
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
-                val modpackPos = argsList.indexOf(Mode.CGEN.argument()) + 1
-                val modpackArg = argsList[modpackPos]
-                val modpackDir = File(modpackArg)
-                if (argsList.size > 1 && modpackDir.isDirectory) {
-                    modpackDirectory = Optional.of(modpackDir)
-                }
+                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.CGEN.argument()))
                 mode = Mode.CGEN
                 return@run
             }
@@ -133,20 +211,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a specific server pack config from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CONFIG.argument()) }) {
-                val confPos = argsList.indexOf(Mode.CONFIG.argument()) + 1
-                val confArg = argsList[confPos]
-                val confFile = File(confArg)
-                if (argsList.size > 1 && confFile.isFile) {
-                    serverPackConfig = Optional.of(confFile)
-                }
-
-                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
-                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
-                    val destArg = argsList[destPos]
-                    val destFile = File(destArg)
-                    serverPackDestination = Optional.of(destFile)
-                }
-
+                serverPackConfig = Optional.ofNullable(pathAfter(argsList, Mode.CONFIG.argument()))
+                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION.argument()))
                 mode = Mode.CONFIG
                 return@run
             }
@@ -155,20 +221,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a specific server pack config from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.FEELINGLUCKY.argument()) }) {
-                val modpackPos = argsList.indexOf(Mode.FEELINGLUCKY.argument()) + 1
-                val modpackArg = argsList[modpackPos]
-                val modpackDir = File(modpackArg)
-                if (argsList.size > 1 && modpackDir.isDirectory) {
-                    modpackDirectory = Optional.of(modpackDir)
-                }
-
-                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
-                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
-                    val destArg = argsList[destPos]
-                    val destFile = File(destArg)
-                    serverPackDestination = Optional.of(destFile)
-                }
-
+                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.FEELINGLUCKY.argument()))
+                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION.argument()))
                 mode = Mode.FEELINGLUCKY
                 return@run
             }
@@ -201,11 +255,12 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to set up and prepare the environment for subsequent runs.
             */
             if (argsList.any { entry -> entry.contains(Mode.SETUP.argument()) }) {
-                val setupPos = argsList.indexOf(Mode.SETUP.argument()) + 1
-                val setupArg = argsList[setupPos]
-                val setupFile = File(setupArg)
-                if (argsList.size > 1 && setupFile.isFile) {
-                    propertiesFile = setupFile
+                pathAfter(argsList, Mode.SETUP.argument())?.let { given ->
+                    if (given.isFile) {
+                        propertiesFile = given
+                    } else {
+                        log.error("Properties-file ${given.absolutePath} does not exist. Using ${propertiesFile.absolutePath}.")
+                    }
                 }
                 mode = Mode.SETUP
                 return@run
@@ -222,5 +277,40 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
                 return@run
             }
         }
+    }
+
+    /**
+     * Read the path following [flag] in [args] as a [File], or `null` when [flag] is absent or is the
+     * last word on the commandline.
+     *
+     * Records the path as given, without asking whether it exists: a run that knows *which* path it
+     * was handed can say so, whereas discarding it leaves the caller with nothing to name. Guarding
+     * the index is what stops a trailing `-config` aborting the application with an
+     * IndexOutOfBoundsException before it has printed anything actionable.
+     *
+     * @author Griefed
+     */
+    private fun pathAfter(args: List<String>, flag: String): File? {
+        val valueIndex = args.indexOf(flag) + 1
+        if (valueIndex == 0 || valueIndex >= args.size) {
+            return null
+        }
+        return File(args[valueIndex])
+    }
+
+    /**
+     * Read the value following the first present option-flag among [names] in [args], or `null` when
+     * none of the flags occur with a following value. Used to parse the `-scan` sub-options.
+     *
+     * @author Griefed
+     */
+    private fun optionValue(args: List<String>, vararg names: String): String? {
+        for (name in names) {
+            val index = args.indexOf(name)
+            if (index >= 0 && index + 1 < args.size) {
+                return args[index + 1]
+            }
+        }
+        return null
     }
 }

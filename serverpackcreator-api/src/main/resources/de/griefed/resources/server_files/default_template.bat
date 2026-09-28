@@ -1,5 +1,5 @@
 ::###############################################################################################
-:: Copyright (C) 2025 Griefed
+:: Copyright (C) 2026 Griefed
 ::
 :: This script is free software; you can redistribute it and/or
 :: modify it under the terms of the GNU Lesser General Public
@@ -31,4 +31,8 @@ PUSHD %~dp0
 
 SET SCRIPTDIR=%~dp0
 SET PSSCRIPTPATH=%SCRIPTDIR%start.ps1
-PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '%PSSCRIPTPATH%' %1";
+:: -File, not -Command. -Command pasted this path into a single-quoted PowerShell string, so an
+:: apostrophe in it - C:\Users\O'Brien\... - closed the string early and the server pack would not
+:: start, with an error naming neither the path nor the quote. -File hands PowerShell the path as one
+:: argument, which it never re-parses, and passes the script's exit code back to whoever ran this.
+PowerShell -NoProfile -ExecutionPolicy Bypass -File "%PSSCRIPTPATH%" %1

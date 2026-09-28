@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,10 +26,15 @@ import org.springframework.stereotype.Service
 import java.io.File
 import java.util.*
 
+/**
+ * Disk usage per relevant directory, refreshed on a timer rather than per request: measuring SPC's share means
+ * walking a directory tree, which is far too expensive to do while answering a dashboard call.
+ */
 @Service
 class DiskStatsService @Autowired constructor(
     private val apiProperties: ApiProperties
 ) {
+    /** The most recent measurement. Replaced wholesale by the timer, so a reader sees one consistent snapshot. */
     val stats: MutableList<DiskStatsData> = mutableListOf()
 
     init {

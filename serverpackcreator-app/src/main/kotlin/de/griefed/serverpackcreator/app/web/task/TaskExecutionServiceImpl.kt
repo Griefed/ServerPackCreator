@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,13 @@ import java.io.File
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingDeque
 
+/**
+ * The generation queue's one worker: a blocking queue drained by a single thread, so two generations never run
+ * at once. That is deliberate — concurrent generations would race in the same server-packs directory.
+ * 
+ * Progress is reported by writing `QueueEvent`s as each stage completes, which is the only way a caller learns
+ * what happened to a fire-and-forget submission.
+ */
 @Service
 class TaskExecutionServiceImpl @Autowired constructor(
     private val modpackService: ModPackService,
@@ -52,28 +59,64 @@ class TaskExecutionServiceImpl @Autowired constructor(
     }
 
     /**
-     * Single Thread on Which Tasks will be performed
+     * Start the single worker that drains the queue. It blocks on [BlockingQueue.take] rather than
+     * polling, and every task is run through [runTask], because nothing a task throws may be allowed
+     * to end this loop — it is the only one there is.
      */
     private fun initiateThread() {
         val thread = Thread {
-            while (true) {
-                try {
-                    if (!blockingQueue.isEmpty()) {
-                        log.info("Processing Next Task from Queue")
-                        val taskDetail = blockingQueue.take()
-                        processTask(taskDetail)
-                    } else {
-                        Thread.sleep(1000)
-                    }
-                } catch (e: InterruptedException) {
-                    log.error("There was an error while processing ", e)
+            while (!Thread.currentThread().isInterrupted) {
+                val taskDetail = try {
+                    blockingQueue.take()
+                } catch (interruption: InterruptedException) {
+                    log.info("Generation queue interrupted. Shutting the worker down.", interruption)
                     Thread.currentThread().interrupt()
+                    break
                 }
+                log.info("Processing Next Task from Queue")
+                runTask(taskDetail)
             }
+            log.warn("Worker Thread ${Thread.currentThread().name} has stopped.")
         }
         thread.name = "GenerationThread"
         thread.start()
         log.info("Worker Thread ${thread.name} initiated successfully")
+    }
+
+    /**
+     * Run one task, surviving whatever it throws. `checkModpack` raises a StorageException for a
+     * missing archive, and generation can fail in any number of ways; before this, any of them ended
+     * the worker for the lifetime of the process and left every later upload stuck in QUEUED.
+     */
+    private fun runTask(taskDetail: TaskDetail) {
+        try {
+            processTask(taskDetail)
+        } catch (failure: Throwable) {
+            log.error("Task for modpack ${taskDetail.modpack.id} failed and was abandoned.", failure)
+            reportFailure(taskDetail, failure)
+        }
+    }
+
+    /**
+     * Record an abandoned task as an ERROR on the modpack and as a [QueueEvent], so the pack does not
+     * sit in CHECKING forever with nothing saying why. Its own failures are swallowed deliberately: an
+     * unreachable database here would otherwise kill the worker, which is the very defect this exists
+     * to remove.
+     */
+    private fun reportFailure(taskDetail: TaskDetail, failure: Throwable) {
+        try {
+            taskDetail.modpack.status = ModPackStatus.ERROR
+            modpackService.saveModpack(taskDetail.modpack)
+            eventService.submit(
+                taskDetail.modpack.id,
+                taskDetail.serverPack?.id,
+                ModPackStatus.ERROR,
+                "Processing failed and was abandoned.",
+                listOf(failure.message ?: failure.javaClass.simpleName)
+            )
+        } catch (reportingFailure: Throwable) {
+            log.error("Could not record the failure of modpack ${taskDetail.modpack.id}.", reportingFailure)
+        }
     }
 
     /**
@@ -194,6 +237,18 @@ class TaskExecutionServiceImpl @Autowired constructor(
 
             serverPackService.saveServerPack(serverPack)
             taskDetail.modpack.serverPacks.addLast(serverPack)
+            if (generation.scanFindings.isNotEmpty()) {
+                // Recorded as an event against the still-GENERATED pack: the generation worked, and
+                // what the scan found about its contents is a separate thing the user should see. It
+                // used to arrive as ModPackStatus.ERROR, i.e. as "generation failed".
+                eventService.submit(
+                    taskDetail.modpack.id,
+                    taskDetail.serverPack?.id,
+                    ModPackStatus.GENERATED,
+                    "Security scan findings for this server pack.",
+                    generation.scanFindings
+                )
+            }
             taskDetail.modpack.status = ModPackStatus.GENERATED
             eventService.submit(
                 taskDetail.modpack.id,

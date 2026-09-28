@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,8 +41,8 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.*
+import kotlin.system.exitProcess
 import java.util.concurrent.Executors
-import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import kotlin.jvm.optionals.getOrNull
@@ -54,8 +54,27 @@ import kotlin.jvm.optionals.getOrNull
  */
 fun main(args: Array<String>) {
     val app = ServerPackCreator(args)
-    app.run(app.commandlineParser.mode)
+    val exitCode = app.run(app.commandlineParser.mode)
+
+    // LANDMINE - never exit unconditionally here, and never exitProcess(0).
+    //
+    // GUI and WEB return from run() the moment they have handed off: the GUI to the Swing event
+    // dispatch thread, the webservice to the embedded server. Both keep the JVM alive on their own
+    // non-daemon threads, and an exitProcess(0) on this line would kill the window or the server the
+    // instant it finished starting.
+    //
+    // So only a failure exits explicitly. A successful run falls off the end of main and lets the JVM
+    // end when nothing is left running, exactly as every mode did before exit codes existed.
+    if (exitCode != EXIT_SUCCESS) {
+        exitProcess(exitCode)
+    }
 }
+
+/** A run that did what it was asked. Also what every long-lived mode reports, since it never fails here. */
+const val EXIT_SUCCESS = 0
+
+/** A one-shot run that did not produce what it was asked for: bad arguments, a failed check, a failed generation. */
+const val EXIT_FAILURE = 1
 
 /**
  * Create and manage instances required to run ServerPackCreator and provide access to various aspects, such as the
@@ -65,12 +84,11 @@ fun main(args: Array<String>) {
 class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val appInfo = JarInformation(ServerPackCreator::class.java)
+    /** The parsed arguments, which decide everything below — including which home directory the API is built against. */
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
 
     init {
-        val prefs = Optional.ofNullable(
-            Preferences.userRoot().node("ServerPackCreator").get("de.griefed.serverpackcreator.home", null)
-        )
+        val prefs = Optional.ofNullable(HomeDirectoryPreference.stored())
         if (commandlineParser.mode == Mode.GUI && prefs.isEmpty && commandlineParser.homeDir.isEmpty) {
 
             FlatJetBrainsMonoFont.install()
@@ -96,15 +114,16 @@ class ServerPackCreator(private val args: Array<String>) {
                 chooser.dialogTitle = "Pick a home-directory for ServerPackCreator"
                 val result = chooser.showOpenDialog(null)
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    Preferences.userRoot().node("ServerPackCreator").put(
-                        "de.griefed.serverpackcreator.home",
-                        chooser.selectedFile.absolutePath
-                    )
+                    HomeDirectoryPreference.store(chooser.selectedFile.absolutePath)
                 }
             }
         }
     }
 
+    /**
+     * The API this process shares. Built eagerly and *before* the first log statement on purpose: `ApiProperties`
+     * is log4j's own `ConfigurationFactory`, so logging first would construct one against an unresolved home.
+     */
     val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
 
     init {
@@ -114,18 +133,27 @@ class ServerPackCreator(private val args: Array<String>) {
         apiWrapper.apiProperties.isExe()
     }
 
+    /** The release-feed check. Lazy, so a run that never asks about updates makes no network call. */
     @Suppress("MemberVisibilityCanBePrivate")
     @get:Synchronized
     val updateChecker: UpdateChecker by lazy {
         UpdateChecker(apiWrapper.apiProperties)
     }
 
+    /** The picocli shell. Lazy, because only the interactive mode ever builds it. */
     @get:Synchronized
     val interactiveCommandLine: InteractiveCommandLine by lazy {
         InteractiveCommandLine(apiWrapper, updateChecker)
     }
 
-    fun run(mode: Mode = Mode.GUI) {
+    /**
+     * Start the application the arguments selected — GUI, web, CLI, one of the headless verbs, or the
+     * updater — and report [EXIT_SUCCESS] or [EXIT_FAILURE].
+     *
+     * A long-lived mode (GUI, WEB, CLI) always reports success: it has not failed, it has started, and
+     * [main] deliberately does not exit on success so that it can keep running.
+     */
+    fun run(mode: Mode = Mode.GUI): Int {
         log.info("Running with args: ${args.joinToString(" ")}")
         log.info("Running in mode:   $mode")
         log.info("App information:")
@@ -138,8 +166,9 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("OS name:           ${apiWrapper.apiProperties.getOSName()}")
         log.info("OS version:        ${apiWrapper.apiProperties.getOSVersion()}")
 
-        when (mode) {
-            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI -> {
+        return when (mode) {
+            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI,
+            Mode.SCAN, Mode.CLIENTSIDE_REPORT, Mode.VERIFY_CLIENTSIDE -> {
 
                 apiWrapper.stageOne()
                 migrationManager.migrate()
@@ -150,48 +179,135 @@ class ServerPackCreator(private val args: Array<String>) {
                     Mode.WEB -> {
                         stageFour()
                         WebService(apiWrapper).start(args)
+                        EXIT_SUCCESS
                     }
 
                     Mode.CONFIG -> {
-                        interactiveCommandLine.runHeadlessCommand.runHeadless(
-                            commandlineParser.serverPackConfig.get(),
-                            commandlineParser.serverPackDestination
-                        )
+                        // No path followed -config at all, so there is nothing to name in an error and
+                        // nothing to run. runHeadless reports a path that merely does not exist.
+                        if (commandlineParser.serverPackConfig.isEmpty) {
+                            log.error(
+                                "${Mode.CONFIG.argument()} requires the path to a server pack config, " +
+                                        "e.g. ${Mode.CONFIG.argument()} \"/path/to/serverpackcreator.conf\"."
+                            )
+                            EXIT_FAILURE
+                        } else {
+                            exitCodeOf(
+                                interactiveCommandLine.runHeadlessCommand.runHeadless(
+                                    commandlineParser.serverPackConfig.get(),
+                                    commandlineParser.serverPackDestination
+                                )
+                            )
+                        }
                     }
 
                     Mode.WITHALLINCONFIGDIR -> {
-                        interactiveCommandLine.runHeadlessCommand.withAllInConfigDir()
+                        exitCodeOf(interactiveCommandLine.runHeadlessCommand.withAllInConfigDir())
                     }
 
                     Mode.FEELINGLUCKY -> {
-                        interactiveCommandLine.cliCommands.feelingLucky(
-                            commandlineParser.modpackDirectory.get().absolutePath,
-                            commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
-                        )
+                        // Same shape as CONFIG above: feelingLucky reports a modpack-directory that does
+                        // not exist, but it cannot report one it was never given.
+                        if (commandlineParser.modpackDirectory.isEmpty) {
+                            log.error(
+                                "${Mode.FEELINGLUCKY.argument()} requires the path to a modpack-directory, " +
+                                        "e.g. ${Mode.FEELINGLUCKY.argument()} \"/path/to/modpack\"."
+                            )
+                            EXIT_FAILURE
+                        } else {
+                            exitCodeOf(
+                                interactiveCommandLine.cliCommands.feelingLucky(
+                                    commandlineParser.modpackDirectory.get().absolutePath,
+                                    commandlineParser.serverPackDestination.getOrNull()?.absolutePath,
+                                )
+                            )
+                        }
                     }
 
                     Mode.CLI -> {
                         interactiveCommandLine.cli(args)
+                        EXIT_SUCCESS
                     }
 
-                    else -> log.debug("Exiting...")
+                    Mode.SCAN -> {
+                        if (commandlineParser.scanDirectory.isEmpty) {
+                            log.error(
+                                "${Mode.SCAN.argument()} requires an existing directory of mods, " +
+                                        "e.g. ${Mode.SCAN.argument()} \"/path/to/mods\" --loader Forge --minecraft 1.20.1."
+                            )
+                            EXIT_FAILURE
+                        } else {
+                            interactiveCommandLine.scanCommand.scan(
+                                commandlineParser.scanDirectory.get(),
+                                commandlineParser.scanLoader ?: "",
+                                commandlineParser.scanMinecraftVersion ?: ""
+                            )
+                            EXIT_SUCCESS
+                        }
+                    }
+
+                    Mode.CLIENTSIDE_REPORT -> {
+                        if (commandlineParser.clientsideLink.isEmpty) {
+                            log.error("${Mode.CLIENTSIDE_REPORT.argument()} requires a CurseForge or Modrinth project-link.")
+                            EXIT_FAILURE
+                        } else {
+                            interactiveCommandLine.clientsideReportCommand.report(
+                                commandlineParser.clientsideLink.get(),
+                                commandlineParser.clientsideReportOutput?.let { File(it) }
+                            )
+                            EXIT_SUCCESS
+                        }
+                    }
+
+                    Mode.VERIFY_CLIENTSIDE -> {
+                        if (commandlineParser.clientsideVerifyLink.isEmpty) {
+                            log.error("${Mode.VERIFY_CLIENTSIDE.argument()} requires a CurseForge or Modrinth project-link.")
+                            EXIT_FAILURE
+                        } else {
+                            interactiveCommandLine.verifyClientsideCommand.verify(
+                                commandlineParser.clientsideVerifyLink.get(),
+                                commandlineParser.clientsideVerifyOutput?.let { File(it) }
+                            )
+                            EXIT_SUCCESS
+                        }
+                    }
+
                 }
 
             }
 
             Mode.HELP -> {
                 interactiveCommandLine.helpCommand.run()
+                EXIT_SUCCESS
             }
 
             Mode.UPDATE -> {
                 interactiveCommandLine.updateCommand.run()
+                EXIT_SUCCESS
             }
 
             Mode.CGEN -> {
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
-                interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
+                exitCodeOf(
+                    interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
+                )
+            }
+
+            Mode.CLIENTSIDE_APPLY -> {
+                // Pure source-editing of the fallback-list files; no API staging or network needed.
+                if (commandlineParser.clientsideApplyReport.isEmpty) {
+                    log.error("${Mode.CLIENTSIDE_APPLY.argument()} requires the path to a clientside-report JSON.")
+                    EXIT_FAILURE
+                } else {
+                    interactiveCommandLine.clientsideApplyCommand.apply(
+                        File(commandlineParser.clientsideApplyReport.get()),
+                        commandlineParser.clientsideApplyGenerationConfig?.let { File(it) },
+                        commandlineParser.clientsideApplyProperties?.let { File(it) }
+                    )
+                    EXIT_SUCCESS
+                }
             }
 
             Mode.GUI -> {
@@ -211,19 +327,32 @@ class ServerPackCreator(private val args: Array<String>) {
                     splashScreen!!,
                     migrationManager
                 )
+                EXIT_SUCCESS
             }
 
             Mode.SETUP -> {
                 interactiveCommandLine.setupCommand.run()
                 log.info("Setup completed.")
                 log.debug("Exiting...")
+                EXIT_SUCCESS
             }
 
-            Mode.EXIT -> log.debug("Exiting...")
-            else -> log.debug("Exiting...")
+            Mode.EXIT -> {
+                log.debug("Exiting...")
+                EXIT_SUCCESS
+            }
+
+            else -> {
+                log.debug("Exiting...")
+                EXIT_SUCCESS
+            }
         }
     }
 
+    /** Turn a verb's "did it work" into the code the process exits with. */
+    private fun exitCodeOf(succeeded: Boolean) = if (succeeded) EXIT_SUCCESS else EXIT_FAILURE
+
+    /** The splash window while the GUI starts, held so it can be closed once the main frame is up. `null` in every non-GUI mode. */
     @get:Synchronized
     var splashScreen: SplashScreen? = null
         get() {
@@ -238,6 +367,7 @@ class ServerPackCreator(private val args: Array<String>) {
             return field!!
         }
 
+    /** Runs the release-to-release migrations for this installation. Lazy, so a mode that touches no settings does not. */
     @get:Synchronized
     val migrationManager: MigrationManager by lazy {
         MigrationManager(
@@ -308,12 +438,30 @@ class ServerPackCreator(private val args: Array<String>) {
                         } else if (check(file, apiWrapper.apiProperties.defaultShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultShellScriptTemplate)
                             log.info("Restored default_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultFishScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultFishScriptTemplate)
+                            log.info("Restored default_template.fish.")
                         } else if (check(file, apiWrapper.apiProperties.defaultBatchScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultBatchScriptTemplate)
                             log.info("Restored default_template.bat.")
                         } else if (check(file, apiWrapper.apiProperties.defaultPowerShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultPowerShellScriptTemplate)
                             log.info("Restored default_template.ps1.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaShellScriptTemplate)
+                            log.info("Restored default_Java_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaFishScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaFishScriptTemplate)
+                            log.info("Restored default_Java_template.fish.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)
+                            log.info("Restored default_Java_template.ps1.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultVariablesTemplate)) {
+                            // Generation reads this template, so a deleted one would otherwise fall back to the copy in
+                            // the jar silently — restoring it keeps what the operator edits and what generation uses the
+                            // same file.
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultVariablesTemplate)
+                            log.info("Restored variables.txt.")
                         }
                     }
                 }

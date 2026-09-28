@@ -1,0 +1,303 @@
+# Static analysis, replacing GitLab's `Qodana` + `Qodana Post`.
+#
+# The report is a workflow artifact now. GitLab served it from Pages and the Discord message linked there;
+# with Pages gone the message links the artifact itself, one click from Discord instead of a run page and
+# a hunt for the download. Nothing renders it in-browser: the link serves the zip, whose index.html opens
+# locally. Forgejo has no Pages, and a report committed to a branch would not work either -- raw files
+# come back as `text/plain` with `nosniff`, verified against this instance, so the HTML would show as
+# source and its CSS/JS would be blocked.
+#
+# Entirely Cloud-free: no Qodana Cloud subscription, no QODANA_TOKEN, no upload. Everything this job
+# reports comes out of the SARIF it produces locally.
+name: Qodana
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: qodana-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qodana:
+    name: "scan"
+    runs-on: ubuntu-latest
+    # Skip the push that *creates* `alpha`/`beta`: Forgejo fires `push` for a new ref as well as
+    # `create`, and such a branch carries main's state, which `main` has already tested. On a new ref
+    # `github.event.before` is the all-zero object id — Forgejo's push payload has no `created` field,
+    # so GitHub's `github.event.created == false` cannot be used here. See .claude/rules/ci-workflows.md.
+    if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
+    # Whether an artifact actually exists, for the notify job. Empty when the upload produced nothing --
+    # `if-no-files-found: warn` means a scan that died before writing a report warns rather than fails --
+    # and notify falls back to the run URL rather than posting a link that 404s.
+    outputs:
+      report_artifact_id: ${{ steps.upload_report.outputs.artifact-id }}
+    # NO `container:` HERE, DELIBERATELY. Forgejo Actions (act) runs every JavaScript action by exec'ing
+    # `node` INSIDE the job container, and jetbrains/qodana-jvm-community ships none -- verified,
+    # `command -v node` in that image returns nothing. GitHub's hosted runners inject a node binary into
+    # container jobs; act does not, so checkout/cache/upload-artifact all died with exit 127
+    # (nektos/act#107). The linter runs as a `docker run` below, which needs nothing from the image but
+    # the linter itself.
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      # B39. The scan used to run against a raw checkout, so i18n4k's generated `Translations` and
+      # `Example` objects did not exist during analysis and 85 source files referenced a symbol the
+      # scanner could not resolve. A file with an unresolved core symbol is analysed with its
+      # inspections DEGRADED, so the low finding count for -app was not evidence that -app was clean.
+      # Run 832 (revision d97a6e188) carried 35 sanity failures on exactly that: 30 x "Unresolved
+      # reference Translations" and 5 x "Unresolved reference Example", split -app 24 / -api 6 /
+      # -plugin-example 5.
+      #
+      # These three steps are what close that. Measured on a clean checkout: the generation costs
+      # 23.0 s with every task re-executed and no build cache, 16.4 s with one -- against a scan that
+      # takes minutes, which is why the extra dependency resolution is worth it.
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      # `generateI18n4kFiles` resolves in -api and -plugin-example, `kaptKotlin` in both plugin
+      # modules -- exactly the three modules the sanity failures came from. kaptKotlin drags in
+      # :serverpackcreator-api:compileKotlin, which is a feature rather than a cost: it means -app is
+      # analysed against a compiled -api rather than against sources alone.
+      #
+      # NOT `build`: the scan needs the generated SOURCES to exist, not the artifacts, and a full build
+      # here would cost the frontend, the license report and the test suites for nothing.
+      - name: Generate the sources the scan cannot see
+        run: |
+          chmod +x gradlew
+          ./gradlew generateI18n4kFiles kaptKotlin
+
+      - name: Cache Qodana
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: qodana/cache
+          key: qodana-2026.2-${{ github.ref_name }}
+          restore-keys: |
+            qodana-2026.2-
+
+      # GitLab needed a chmod dance here: Qodana 2026.2 downloads its own JBR into <cache-dir>/qodana-jbr
+      # and GitLab's cache round-trip drops the executable bit, surfacing as the unhelpful "Failed to
+      # create effective configuration". actions/cache archives with tar, which *does* preserve modes, so
+      # this should be unnecessary -- it is kept as cheap insurance and logs what it finds, so if the same
+      # failure ever appears here the evidence is already in the log rather than needing a rediscovery.
+      - name: Restore JBR executable bits
+        run: |
+          jbr="$GITHUB_WORKSPACE/qodana/cache/qodana-jbr"
+          if [ ! -d "$jbr" ]; then
+            echo "No cached JBR directory ($jbr) - Qodana will download one"
+          else
+            find "$jbr" -type f -path '*/bin/java' -exec ls -l {} + || true
+            chmod -R +x "$jbr" || true
+          fi
+
+      # No QODANA_TOKEN, deliberately. A token is required only for the paid linters and for uploading
+      # to Qodana Cloud; it is optional for the Community linters, and this is qodana-jvm-community.
+      # There is no free Cloud tier, so the whole job is self-contained: the SARIF is counted below,
+      # the HTML report is attached as an artifact, and Discord links the run. Do not re-add the token
+      # env -- an empty one implies a Cloud setup that does not exist.
+      # `qodana-jvm-community` is NOT a binary in that image -- verified, `command -v` finds nothing. The
+      # entrypoint is the Qodana CLI at /opt/idea/bin/qodana and it needs the `scan` subcommand, so this
+      # step would have failed even with node present; it never got the chance, checkout died first.
+      # The /data/{project,cache,results,report} mounts this step used to pass are gone, and NOT because
+      # the image's conventions changed -- they are still its conventions, and its WorkingDir is still
+      # /data/project. Under docker-in-docker a `-v "$PWD:..."` bind is resolved by the DIND daemon, whose
+      # filesystem holds no copy of the job's workspace: verified 2026-08-22 against docker:dind, the
+      # sibling saw an EMPTY directory and exited 0, i.e. Qodana would have scanned nothing and the
+      # `|| true` would have hidden it. `--volumes-from` inherits the job container's own workspace volume,
+      # so $PWD names the same files on both sides and the CLI's --*-dir flags point straight at them.
+      # THIS REQUIRES the runner's `container.options` to mount a volume at the workspace parent
+      # (`-v /workspace`); without it nothing propagates to the sibling.
+      # The /data-mount form was the one proven by a local run against this repo; this workspace-path
+      # form has NOT been run locally, so the first CI run is its proof.
+      # THE GENERATED SOURCES MUST ALREADY EXIST when this runs -- that is the codegen step above, which
+      # closed B39. Do not delete it and do not move it below this step. Without it i18n4k's `Translations`
+      # and `Example` objects are absent, 85 source files (79 of them in -app) reference an unresolved
+      # symbol, and every one of those files is analysed with its inspections DEGRADED. The failure is
+      # silent in the worst possible direction: it LOWERS the finding count, so a broken scan reads as a
+      # clean report. The regression signal is therefore the sanity-failure count in results/sanity.json,
+      # not the problem count -- 35 on run 817 and still 35 on run 832, both before this step existed.
+      - name: Run Qodana
+        run: |
+          mkdir -p qodana/cache qodana/results qodana/report
+          # Fail loudly if the sibling cannot see the workspace. The scan below ends in `|| true`, so
+          # without this guard a broken `--volumes-from` looks exactly like "no problems found". Uses the
+          # Qodana image itself rather than adding a second one -- it is being pulled anyway.
+          docker run --rm --volumes-from "$(cat /etc/hostname)" -w "$PWD" \
+            --entrypoint sh jetbrains/qodana-jvm-community:2026.2 -c 'test -f gradlew'
+          docker run --rm \
+            --volumes-from "$(cat /etc/hostname)" \
+            -w "$PWD" \
+            jetbrains/qodana-jvm-community:2026.2 \
+            scan \
+              --project-dir "$PWD" \
+              --cache-dir "$PWD/qodana/cache" \
+              --results-dir "$PWD/qodana/results" \
+              --report-dir "$PWD/qodana/report" \
+            || true
+          # The image runs as uid 0, so its output is root-owned. upload-artifact runs as the runner user
+          # and cannot read that unless the runner is also root -- normalise, tolerating failure because
+          # it is already readable in the root case.
+          chown -R "$(id -u):$(id -g)" qodana 2>/dev/null || true
+
+      # Both numbers, deliberately. The problem count alone cannot tell a clean scan from a broken one:
+      # an unresolved symbol degrades a file's inspections and so *lowers* the problem count, which is
+      # why B39's regression signal is the sanity-failure count beside it rather than the total. A run
+      # whose sanity count has climbed off zero is reporting on code it could not fully read, and its
+      # problem count must not be read as a clean bill -- see the landmine on the scan step above.
+      - name: Report problem and sanity counts
+        run: |
+          SARIF="qodana/results/qodana.sarif.json"
+          SANITY="qodana/report/results/sanity.json"
+          if [ -f "$SARIF" ]; then
+            COUNT=$(python3 -c "import json;d=json.load(open('$SARIF'));print(sum(len(r.get('results',[])) for r in d.get('runs',[])))")
+            echo "Qodana problems: $COUNT"
+            echo "**Qodana problems: $COUNT**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No SARIF produced"
+          fi
+          # Absent sanity.json is reported as such rather than as zero: "the scanner wrote no sanity
+          # report" and "the scanner resolved everything" are opposite states and must not read alike.
+          if [ -f "$SANITY" ]; then
+            SANITY_COUNT=$(python3 -c "import json;print(len(json.load(open('$SANITY')).get('listProblem',[])))")
+            echo "Qodana sanity failures: $SANITY_COUNT (expected 0; 35 before B39 landed)"
+            echo "**Qodana sanity failures: $SANITY_COUNT** (expected 0; 35 before B39 landed)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No sanity.json produced - cannot confirm the scan resolved its symbols"
+            echo "**Qodana sanity failures: unknown** (no sanity.json)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload report
+        id: upload_report
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        if: ${{ always() }}
+        with:
+          name: qodana-report
+          path: |
+            qodana/report
+            qodana/results/qodana.sarif.json
+          if-no-files-found: warn
+          # The Discord message links this artifact, so its lifetime is how long that link stays good --
+          # seven days, rather than the instance default of ARTIFACT_RETENTION_DAYS (90). Deletion is
+          # server-side once an expiry is set: `cron.cleanup_actions` runs @midnight and is enabled by
+          # default. An older message keeps pointing at its own run's artifact, so it goes dead rather
+          # than quietly showing a newer scan.
+          retention-days: 7
+
+  notify:
+    name: "notify"
+    needs: qodana
+    # `always()` runs this even when `qodana` is SKIPPED, so the creation guard has to be repeated
+    # here — otherwise the branch-creation run posts a Discord notice about a scan that never ran.
+    if: ${{ always() && (github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta'))) }}
+    runs-on: ubuntu-latest
+    steps:
+      # Discord, as before, but the embed now links the report artifact instead of the run page.
+      # Skipped silently when no webhook is configured.
+      - name: Post to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          REPORT_ARTIFACT_ID: ${{ needs.qodana.outputs.report_artifact_id }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          # A missing webhook is fine and exits cleanly; a webhook that is configured and then fails to
+          # accept the post is a real failure and must not be swallowed -- hence set -e AFTER the guard.
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "No WEBHOOK_URL configured - skipping"
+            exit 0
+          fi
+          set -eu
+          # TWO different run identifiers, deliberately, and they are not interchangeable -- see the
+          # ARTIFACT_BASE comment below. RUN_URL is the human run page and takes the per-repo index
+          # (`github.run_number` = `run.Index`); ARTIFACT_BASE is the artifact download and takes the
+          # instance-wide id (`github.run_id` = `run.ID`). For this scan they were 644 and 936.
+          export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
+          export ARTIFACT_BASE="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          export SHORT_SHA="$(echo "$COMMIT" | cut -c1-8)"
+          # Discord renders <t:EPOCH:f> in each reader's own timezone and locale, so the message can say
+          # when the link dies without anyone doing arithmetic. The epoch is Forgejo's own `expires_at`
+          # for this artifact, not retention-days re-added to "now": if those two ever disagree the
+          # instance is the one that deletes, so it is the one worth quoting. The listing answers
+          # anonymously for this repo (verified), so no token is involved. When the lookup yields
+          # nothing the line is left out entirely -- no expiry beats a wrong one.
+          cat > expiry.py <<'EXPIRY_PY'
+          import datetime, json, os, sys
+
+          def epoch(stamp):
+              """Parse Forgejo's RFC3339 expires_at into a UTC epoch, accepting both the plain-Z and
+              numeric-offset spellings the API may emit."""
+              for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+                  try:
+                      parsed = datetime.datetime.strptime(stamp, fmt)
+                  except ValueError:
+                      continue
+                  if parsed.tzinfo is None:
+                      parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+                  return int(parsed.timestamp())
+              return None
+
+          wanted = os.environ.get("REPORT_ARTIFACT_ID", "")
+          try:
+              listing = json.load(open("artifacts.json"))
+          except Exception:
+              sys.exit(0)
+          # The endpoint returns a bare array; tolerate a paginated object in case that ever changes.
+          entries = listing if isinstance(listing, list) else listing.get("entries") or []
+          for entry in entries:
+              if str(entry.get("id")) == wanted and entry.get("expires_at"):
+                  stamp = epoch(entry["expires_at"])
+                  if stamp:
+                      print(stamp)
+                  break
+          EXPIRY_PY
+          EXPIRES_EPOCH=""
+          if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
+            # Explicit, rather than trusting the redirect below to truncate: a listing left over from
+            # anything else would otherwise be read as this run's and dated the message wrongly.
+            rm -f artifacts.json
+            curl -sf --max-time 30 \
+              "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/actions/artifacts?limit=100" \
+              > artifacts.json || echo "Could not read the artifact listing - posting without an expiry"
+            EXPIRES_EPOCH="$(python3 expiry.py || true)"
+          fi
+          # LANDMINE -- `/actions/runs/{run}` means two different things on Forgejo depending on what
+          # follows it, and this posted a dead link for it. Every handler under that path resolves the
+          # run by its PER-REPO INDEX (`GetRunByIndex`) -- except `ArtifactsDownloadView`, which calls
+          # `getRunByID`. So the same scan is run 644 on its own page and run 936 for its artifact.
+          # Probed on this instance, which is the only proof that counts:
+          #   /actions/runs/644/artifacts/qodana-report -> 404
+          #   /actions/runs/936/artifacts/qodana-report -> 200, 2515070 bytes
+          #   /actions/runs/644/ -> 307 to the job view      /actions/runs/936/ -> 404
+          # The previous wording had the premise right and the conclusion inverted: it rejected the
+          # upload action's own `artifact-url` output *because* that output is built from
+          # `github.context.runId` -- which is exactly the identifier this route wants. That action
+          # logged `.../actions/runs/936/artifacts/879` on the same run, and it was correct.
+          # The name is still used rather than the artifact id because it is stable and readable, and
+          # the id is still consulted, as the existence check.
+          if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
+            export TARGET_URL="$ARTIFACT_BASE/artifacts/qodana-report"
+            export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it."
+            # $'\n' rather than a literal newline: an unindented continuation line would dedent out of
+            # this YAML block scalar and be parsed as a mapping key. The default shell here is bash.
+            if [ -n "$EXPIRES_EPOCH" ]; then
+              export DESCRIPTION="$DESCRIPTION"$'\n'"Expires at: <t:$EXPIRES_EPOCH:f>"
+            fi
+          else
+            export TARGET_URL="$RUN_URL"
+            export DESCRIPTION="No report was produced for $SHORT_SHA - the scan did not get that far. This links the run."
+          fi
+          python3 -c "import json,os;print(json.dumps({'username':'ServerPackCreator','embeds':[{'title':'New Qodana report','description':os.environ['DESCRIPTION'],'url':os.environ['TARGET_URL'],'color':12648430}]}))" > payload.json
+          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          echo "Posted: $TARGET_URL"

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,4 +19,9 @@
  */
 package de.griefed.serverpackcreator.app.cli.commands
 
+/**
+ * Marker for every subcommand of the interactive shell: a picocli `@Command` that picocli invokes as a
+ * `Runnable`. Its own annotation carries the name and help; this interface exists so the shell can collect them
+ * as one type rather than as `Runnable`s.
+ */
 interface Command : Runnable

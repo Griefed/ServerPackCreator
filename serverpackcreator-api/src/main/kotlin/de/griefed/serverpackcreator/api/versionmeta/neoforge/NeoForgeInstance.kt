@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,9 +23,26 @@ import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftClient
 import java.net.URL
 import java.util.*
 
+/**
+ * One NeoForge build: which Minecraft it targets, the build itself, and where its installer is fetched from.
+ *
+ * An interface with two implementations, because **NeoForge changed where it publishes**. Its first releases —
+ * Minecraft 1.20 and 1.20.1 — live under the legacy `net/neoforged/forge/` artifact group and need both
+ * versions to address the installer (`OldNeoForgeInstance`); everything later is addressed by the bare NeoForge
+ * version (`NewNeoForgeInstance`). `NeoForgeLoader` picks the right one per build, so callers here see one type
+ * and never that split.
+ *
+ * @author Griefed
+ */
 interface NeoForgeInstance {
+    /** The Minecraft version this NeoForge build targets. */
     val minecraftVersion: String
+    /** The NeoForge build, meaningful only together with [minecraftVersion]. */
     val neoForgeVersion: String
+    /**
+     * Where this build's installer is downloaded from. **Landmine:** maven metadata can list a version whose
+     * installer 404s, so a failure here means "upstream is incomplete", not "the version does not exist".
+     */
     val installerUrl: URL
 
     /**

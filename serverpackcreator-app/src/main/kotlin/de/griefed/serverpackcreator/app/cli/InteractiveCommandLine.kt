@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.cli
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.serverpack.ServerPackGeneration
 import de.griefed.serverpackcreator.app.cli.commands.*
 import de.griefed.serverpackcreator.app.updater.UpdateChecker
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -45,16 +46,31 @@ import java.nio.file.Path
 import java.util.*
 import java.util.function.Supplier
 
+/** The interactive shell: a picocli command tree read from a JLine terminal, for driving SPC without the GUI. */
 class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: UpdateChecker) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** The picocli root the subcommands below hang off. */
     val cliCommands = CliCommands(apiWrapper)
+    /** Generates a configuration by interviewing the user about a modpack. */
     val configGenCommand = ConfigGenCommand(apiWrapper)
+    /** Prints the interactive shell's own help. */
     val helpCommand = HelpCommand()
+    /** Runs a generation without the shell, from a configuration file. */
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
+    /** Re-runs first-time setup (home directory, shipped files). */
     val setupCommand = SetupCommand(apiWrapper)
+    /** Checks whether a newer ServerPackCreator has been published. */
     val updateCommand = UpdateCommand(updateChecker)
+    /** Reads declared sideness out of a directory of jars. */
+    val scanCommand = ScanCommand(apiWrapper)
+    /** Assesses a project from platform metadata alone. */
+    val clientsideReportCommand = ClientsideReportCommand(apiWrapper)
+    /** Assesses a project with a real server boot on top of the metadata. */
+    val verifyClientsideCommand = VerifyClientsideCommand(apiWrapper)
+    /** Inserts an accepted report's entries into the shipped clientside list. */
+    val clientsideApplyCommand = ClientsideApplyCommand()
 
     @CommandLine.Command(
         name = "",
@@ -67,20 +83,31 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             RunHeadlessCommand::class,
             SetupCommand::class,
             UpdateCommand::class,
+            ScanCommand::class,
+            ClientsideReportCommand::class,
+            VerifyClientsideCommand::class,
+            ClientsideApplyCommand::class,
             ClearScreen::class,
             CommandLine.HelpCommand::class
         ]
     )
+    /**
+     * The picocli root every verb hangs off. A `Runnable` because picocli invokes the top-level command when the
+     * user types nothing recognisable, which is where the help goes.
+     */
     class CliCommands(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Runnable {
         private val log by lazy { cachedLoggerOf(this.javaClass) }
         private var reader: LineReaderImpl? = null
+        /** Where the commands write. Held so the shell hands them all the same terminal it reads from. */
         var out: PrintWriter? = null
 
+        /** Hand the shared line reader to the commands that prompt, so they read from the same terminal this shell owns. */
         fun setReader(reader: LineReader) {
             this.reader = reader as LineReaderImpl
             out = reader.terminal.writer()
         }
 
+        /** Invoked when no subcommand matched: print the usage rather than doing anything. */
         override fun run() {
             out!!.println(CommandLine(this).usageMessage)
         }
@@ -91,6 +118,12 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                 "Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server pack in one go. No warranty. No guarantees."
             ]
         )
+        /**
+         * The one-shot convenience path: derive a configuration from a modpack directory, check it, and generate if it
+         * passes — the whole flow a new user is walked through, without the questions.
+         *
+         * Returns whether a server pack was produced, so a headless run can be turned into an exit code.
+         */
         fun feelingLucky(
             @CommandLine.Option(
                 names = ["-m", "--modpackDir"],
@@ -109,18 +142,19 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                 ],
                 required = false
             ) destination: String?
-        ) {
+        ): Boolean {
             if (modpackDir != null && File(modpackDir).isDirectory) {
                 val modpack = File(modpackDir)
                 val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
                 packConfig.customDestination = Optional.ofNullable(destination?.let { File(it) })
                 val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
-                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name))
+                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name), apiWrapper.apiProperties)
                 if (!check.allChecksPassed) {
                     println("Encountered the following errors/problems with the config:")
                     for (error in check.encounteredErrors) {
                         println(error)
                     }
+                    return false
                 } else {
                     val generation = apiWrapper.serverPackHandler.run(packConfig)
                     if (!generation.success) {
@@ -128,16 +162,25 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                         for (error in generation.errors) {
                             println(error)
                         }
+                        reportScanFindings(generation)
+                        return false
                     } else {
                         println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                        reportScanFindings(generation)
+                        return true
                     }
                 }
             } else {
                 log.error("Modpack-directory $modpackDir doesn't exist.")
+                return false
             }
         }
     }
 
+    /**
+     * Run the interactive shell: build the picocli command tree, then read and dispatch lines until the user quits.
+     * The reader's working directory is SPC's home, so a relative path typed at the prompt means what the user expects.
+     */
     fun cli(args: Array<String> = arrayOf("")) {
         try {
             val workDir: Supplier<Path> = Supplier { apiWrapper.apiProperties.homeDirectory.absoluteFile.toPath() }
@@ -196,5 +239,23 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
         } catch (t: Throwable) {
             log.error("Error initializing terminal.", t)
         }
+    }
+}
+
+/**
+ * Print what the security scan found, whether or not the generation itself worked.
+ *
+ * File-level so every command in this file can reach it regardless of nesting. Reported separately
+ * from [ServerPackGeneration.errors] because the two are different questions: a pack can build
+ * perfectly and still contain an infected mod, and that used to be reported as "Error generating
+ * Server Pack" while a pack whose files never copied was reported as a success.
+ */
+private fun reportScanFindings(generation: ServerPackGeneration) {
+    if (generation.scanFindings.isEmpty()) {
+        return
+    }
+    println("Security scan findings for this server pack:")
+    for (finding in generation.scanFindings) {
+        println(finding)
     }
 }

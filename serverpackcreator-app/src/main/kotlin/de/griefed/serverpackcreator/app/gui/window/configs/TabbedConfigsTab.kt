@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,15 @@ import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeExceptio
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.TabPanel
 import de.griefed.serverpackcreator.app.gui.components.TabTitle
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ConfigCheckTimer
 import de.griefed.serverpackcreator.app.gui.window.menu.file.ConfigChooser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
@@ -48,23 +51,29 @@ import java.awt.event.MouseEvent
 import java.io.File
 import java.util.concurrent.Executors
 import javax.swing.*
+import javax.swing.event.AncestorEvent
+import javax.swing.event.AncestorListener
 
 /**
  * Tabbed pane housing every server pack config tab.
  *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class)
 class TabbedConfigsTab(
     private val guiProps: GuiProps,
     private val apiWrapper: ApiWrapper,
     private val mainFrame: MainFrame
 ) : TabPanel() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns this tab's coroutines. TabPanel is not a Swing component, so cancellation is anchored to
+     * [panel] via an ancestor-listener (see `init`) and effectively fires when the window closes. */
+    private val componentScope = ComponentCoroutineScope()
     private val choose = arrayOf(Translations.createserverpack_gui_quickselect_choose.toString())
     private val noVersions = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()
-    private val timer = ConfigCheckTimer(500, guiProps, apiWrapper,this)
+    private val timer = ConfigCheckTimer(500, guiProps, this)
+    /** The editor of the tab currently in front, or `null` when the pane holds none. */
     val selectedEditor: ConfigEditor?
         get() {
             return if (activeTab != null) {
@@ -74,13 +83,25 @@ class TabbedConfigsTab(
             }
         }
 
+    /** This tab-group's own title component in the outer window. */
     val title = TabTitle(guiProps,"Configs")
 
     init {
         iconsDirectoryWatcher()
         propertiesDirectoryWatcher()
+        // Cancel this tab's coroutines when its panel leaves the screen (window close); the scope
+        // lazily re-creates, so a main-window tab-switch (also fires ancestorRemoved) is harmless.
+        panel.addAncestorListener(object : AncestorListener {
+            override fun ancestorRemoved(event: AncestorEvent?) {
+                componentScope.cancel()
+            }
+
+            override fun ancestorAdded(event: AncestorEvent?) {}
+
+            override fun ancestorMoved(event: AncestorEvent?) {}
+        })
         tabs.addChangeListener {
-            GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
                 if (tabs.tabCount != 0) {
                     for (tab in 0 until tabs.tabCount) {
                         (tabs.getComponentAt(tab) as ConfigEditor).title.closeButton.isVisible = false
@@ -95,7 +116,7 @@ class TabbedConfigsTab(
 
         tabs.dropTarget = object : DropTarget() {
             override fun drop(event: DropTargetDropEvent) {
-                val transferable = event?.transferable ?: return
+                val transferable = event.transferable ?: return
                 if (!event.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                     return
                 }
@@ -167,6 +188,7 @@ class TabbedConfigsTab(
         tabs.addMouseListener(mouseAdapter)
     }
 
+    /** Open a fresh, empty configuration tab and return its editor. The caller usually fills it in immediately. */
     fun addTab(): ConfigEditor {
         val editor = ConfigEditor(
             guiProps,
@@ -181,6 +203,7 @@ class TabbedConfigsTab(
         return editor
     }
 
+    /** Save every open tab. A tab that has never been saved gets a path derived from its title. */
     fun saveAll() {
         for (tab in allTabs) {
             (tab as ConfigEditor).saveCurrentConfiguration()
@@ -188,6 +211,7 @@ class TabbedConfigsTab(
         checkAll()
     }
 
+    /** Save one tab to a path the user picks, defaulting to the tab in front. */
     fun saveAs(editor: ConfigEditor? = selectedEditor) {
         if (editor == null) {
             return
@@ -196,16 +220,22 @@ class TabbedConfigsTab(
         configChooser.dialogType = JFileChooser.SAVE_DIALOG
         if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
-                editor.getCurrentConfiguration().save(configChooser.selectedFile.absoluteFile)
+                editor.getCurrentConfiguration().save(configChooser.selectedFile.absoluteFile, apiWrapper.apiProperties)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
             } else {
-                editor.getCurrentConfiguration().save(File("${configChooser.selectedFile.absoluteFile}.conf"))
+                editor.getCurrentConfiguration().save(File("${configChooser.selectedFile.absoluteFile}.conf"), apiWrapper.apiProperties)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
             }
         }
         checkAll()
     }
 
+    /**
+     * Re-check every open tab and update the status icons.
+     * 
+     * **This is on the typing path.** It is what the 500 ms debounce timer fires, and it validates *all* open tabs,
+     * so anything expensive added here is paid per keystroke-pause multiplied by the user's open configs.
+     */
     fun checkAll() {
         timer.restart()
     }
@@ -223,7 +253,7 @@ class TabbedConfigsTab(
         if (configFile.isFile) {
             tab.loadConfiguration(PackConfig(configFile), configFile)
         } else {
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 JOptionPane.showMessageDialog(
                     panel,
                     Translations.createserverpack_gui_tabs_notfound_message(configFile.absoluteFile),
@@ -234,6 +264,7 @@ class TabbedConfigsTab(
         }
     }
 
+    /** Ask the user for a configuration file and open it in a new tab. */
     fun loadConfigFile() {
         val configChooser = ConfigChooser(apiWrapper.apiProperties, Translations.createserverpack_gui_buttonloadconfig_title.toString())
         configChooser.isMultiSelectionEnabled = true
@@ -246,7 +277,7 @@ class TabbedConfigsTab(
                     file.absoluteFile
                 }
             }
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 for (file in files) {
                     if (tabs.tabCount > 0 &&
                         DialogUtilities.createShowGet(
@@ -401,6 +432,7 @@ class TabbedConfigsTab(
         return getNames(apiWrapper.apiProperties.propertiesDirectory, guiProps.propertiesRegex)
     }
 
+    /** Walk the user through creating a configuration from scratch, for a first run. */
     fun stepByStepGuide() {
         selectedEditor?.stepByStepGuide() ?: addTab().stepByStepGuide()
     }

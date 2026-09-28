@@ -10,39 +10,24 @@
         <sample>
         {
             "id": 1,
-            "size": 353.0,
+            "size": 370147328,
             "runConfiguration": {
                 "id": 1,
                 "minecraftVersion": "1.16.5",
                 "modloader": "Forge",
                 "modloaderVersion": "36.2.39",
                 "startArgs": [
-                    {
-                        "id": 1,
-                        "argument": "-Xms4G"
-                    },
-                    { ... },
-                    {
-                        "id": 22,
-                        "argument": "-Daikars.new.flags=true"
-                    }
+                    "-Xms4G",
+                    ...,
+                    "-Daikars.new.flags=true"
                 ],
                 "clientMods": [
-                    {
-                        "id": 1,
-                        "mod": "3dskinlayers-"
-                    },
-                    { ... },
-                    {
-                        "id": 310,
-                        "mod": "yisthereautojump-"
-                    }
+                    "3dskinlayers-",
+                    ...,
+                    "yisthereautojump-"
                 ],
                 "whitelistedMods": [
-                    {
-                        "id": 1,
-                        "mod": "Ping-Wheel-"
-                    }
+                    "Ping-Wheel-"
                 ]
             },
             "confirmedWorking": 0,
@@ -89,39 +74,24 @@
         [
             {
                 "id": 1,
-                "size": 353.0,
+                "size": 370147328,
                 "runConfiguration": {
                     "id": 1,
                     "minecraftVersion": "1.16.5",
                     "modloader": "Forge",
                     "modloaderVersion": "36.2.39",
                     "startArgs": [
-                        {
-                            "id": 1,
-                            "argument": "-Xms4G"
-                        },
-                        { ... },
-                        {
-                            "id": 22,
-                            "argument": "-Daikars.new.flags=true"
-                        }
+                        "-Xms4G",
+                        ...,
+                        "-Daikars.new.flags=true"
                     ],
                     "clientMods": [
-                        {
-                            "id": 1,
-                            "mod": "3dskinlayers-"
-                        },
-                        { ... },
-                        {
-                            "id": 310,
-                            "mod": "yisthereautojump-"
-                        }
+                        "3dskinlayers-",
+                        ...,
+                        "yisthereautojump-"
                     ],
                     "whitelistedMods": [
-                        {
-                            "id": 1,
-                            "mod": "Ping-Wheel-"
-                        }
+                        "Ping-Wheel-"
                     ]
                 },
                 "confirmedWorking": 0,

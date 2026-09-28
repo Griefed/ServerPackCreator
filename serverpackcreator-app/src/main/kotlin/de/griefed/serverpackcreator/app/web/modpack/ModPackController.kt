@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,9 +26,10 @@ import de.griefed.serverpackcreator.app.web.task.TaskDetail
 import de.griefed.serverpackcreator.app.web.task.TaskExecutionServiceImpl
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -36,6 +37,10 @@ import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
+/**
+ * The modpack half of the public v2 API: upload an archive, ask for a server pack to be generated from it,
+ * and read back what exists. Delegates to `ModPackService`; the generation itself is queued, not done here.
+ */
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/modpacks")
@@ -47,6 +52,7 @@ class ModPackController @Autowired constructor(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Serve one modpack's archive, and count the download. */
     @GetMapping("/download/{id:[0-9a-zA-Z]+}", produces = ["application/zip"])
     @ResponseBody
     fun downloadModpack(@PathVariable id: String): ResponseEntity<Resource> {
@@ -63,11 +69,26 @@ class ModPackController @Autowired constructor(
         modpackService.updateDownloadStats(modpack.get())
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/zip"))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
-            .body(ByteArrayResource(modpackArchive.get().readBytes()))
+            // Built rather than interpolated: the name is the upload's own filename, kept verbatim, so a
+            // quote in it closes the value early and a semicolon appends a parameter. ContentDisposition
+            // encodes per RFC 6266.
+            .header(
+                HttpHeaders.CONTENT_DISPOSITION,
+                ContentDisposition.attachment().filename(modpack.get().name).build().toString()
+            )
+            .contentLength(modpackArchive.get().length())
+            .body(FileSystemResource(modpackArchive.get()))
     }
 
-    @PostMapping("/upload", produces = ["application/json"])
+    /**
+     * Accept an uploaded archive. A hash-identical upload is recognised and answered with the existing modpack
+     * rather than stored twice — the response says which case it was.
+     */
+    @PostMapping(
+        "/upload",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     @ResponseBody
     fun uploadModPack(
         @RequestParam("file") file: MultipartFile,
@@ -79,8 +100,10 @@ class ModPackController @Autowired constructor(
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
         var zipResponse: ZipResponse
+        // Deliberately NOT file.bytes.isEmpty(): size == 0L already answers that, and getBytes()
+        // materialises the whole upload as a ByteArray -- with max-file-size at 5000MB that is an
+        // OutOfMemoryError on every large upload, since a Java array cannot exceed about 2 GB.
         if (file.size == 0L ||
-            file.bytes.isEmpty() ||
             minecraftVersion.isEmpty() ||
             modloader.isEmpty() ||
             modloaderVersion.isEmpty()
@@ -118,7 +141,11 @@ class ModPackController @Autowired constructor(
             zipResponse = ZipResponse(
                 message = ex.message!!,
                 success = false,
-                modPackId = ex.id.toString(),
+                // ex.id, not ex.id.toString(): the validation-failure path uses the single-argument
+                // constructor, so id is null, and toString() turns that into the *string* "null" --
+                // which passes the SPA's `!== null` check and sends the user off to regenerate a
+                // modpack whose id is literally "null".
+                modPackId = ex.id,
                 runConfigId = runConfig.id,
                 serverPackId = null,
                 status = ModPackStatus.ERROR
@@ -128,6 +155,7 @@ class ModPackController @Autowired constructor(
         }
     }
 
+    /** Queue a server-pack generation for an already-uploaded modpack with a given run configuration. */
     @PostMapping("/generate", produces = ["application/json"])
     @ResponseBody
     fun requestGeneration(
@@ -191,6 +219,7 @@ class ModPackController @Autowired constructor(
             )
     }
 
+    /** Every modpack, newest first. Unbounded — prefer the paginated route. */
     @GetMapping("/all", produces = ["application/json"])
     @ResponseBody
     fun getAllModPacks(): ResponseEntity<List<ModPack>> {
@@ -199,6 +228,7 @@ class ModPackController @Autowired constructor(
         )
     }
 
+    /** One page of modpacks, newest first. */
     @GetMapping("/allpaginated", produces = ["application/json"])
     @ResponseBody
     fun getAllModPacksPaginated(
@@ -214,6 +244,7 @@ class ModPackController @Autowired constructor(
         )
     }
 
+    /** One modpack by id. */
     @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getModpack(@PathVariable id: String): ResponseEntity<ModPack> {
@@ -227,6 +258,7 @@ class ModPackController @Autowired constructor(
         }
     }
 
+    /** The modpack a given server pack was generated from. */
     @GetMapping("byserverpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getModPackByServerPack(@PathVariable id: String): ResponseEntity<ModPack> {

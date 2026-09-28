@@ -10,7 +10,7 @@ import java.net.URI
 
 class WebUtilitiesTest internal constructor() {
     private var webUtilities: WebUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).webUtilities
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).webUtilities
 
     @Suppress("SpellCheckingInspection")
     @Test

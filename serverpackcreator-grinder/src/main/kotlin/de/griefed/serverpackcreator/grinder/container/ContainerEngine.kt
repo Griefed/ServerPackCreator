@@ -1,0 +1,333 @@
+/* Copyright (C) 2026 Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.grinder.container
+
+import java.time.Duration
+import kotlin.math.roundToLong
+
+/**
+ * Where a server pack is bind-mounted inside a grinder container — and every such container's working
+ * directory, since the pack's `start` script expects to run from the pack root. Single source of truth
+ * for the mount point: the boot runner, the loader installer and the template matrix must all agree, or
+ * a pack would be mounted somewhere its script isn't looking.
+ */
+const val PACK_MOUNT = "/srv/pack"
+
+/**
+ * The hostname every boot container carries — a fixed name rather than the daemon's default, which is the
+ * container's own id and therefore different on every boot.
+ *
+ * It exists because it has to be *resolvable*: the daemon writes an `<ip> <hostname>` line into `/etc/hosts`
+ * only for a container that has an address, and a grinder boot deliberately has none. Without that line
+ * `getaddrinfo` fails on the container's own name, and a Minecraft server asks for it immediately — log4j
+ * calls `InetAddress.getLocalHost()` while configuring itself, so every NeoForge boot opened with three
+ * `UnknownHostException: <container-id>: Temporary failure in name resolution` stacktraces before a single mod
+ * was loaded. Fixing the name here lets the engine map it, which a per-boot container id could not: the id is
+ * only known *after* the container is created, and the mapping has to be part of creating it.
+ */
+const val CONTAINER_HOST_NAME = "spc-grinder"
+
+/**
+ * Mount options for every boot container's tmpfs. **`exec` is a deliberate, owner-approved weakening of the
+ * sandbox** (2026-08-24); the rest of the posture in [ContainerSpec] is untouched.
+ *
+ * **Why it is needed.** Docker mounts a `--tmpfs` `nosuid,nodev,noexec` and the rootfs is read-only, so nothing
+ * inside can write a shared object and map it executable — which is exactly what JNA does when it unpacks its
+ * native library, and what Minecraft's own `oshi` system-report probes need. Measured with the production
+ * posture otherwise unchanged (no network, read-only rootfs, all caps dropped, no-new-privileges), JNA loading
+ * its native library: with `rw` it fails `UnsatisfiedLinkError: /tmp/jna….tmp: failed to map segment from
+ * shared object`; with `rw,exec` it answers `JNA-OK pointerSize=8`. On a boot console that failure shows up as
+ * `NoClassDefFoundError: Could not initialize class com.sun.jna.Native` — noise in a crash report, but a mod
+ * needing JNA *at load time* would die for the environment and reach the classifier looking like a crash,
+ * which is a false clientside signal and the reason this changed.
+ *
+ * **What it costs, stated plainly.** A mod can now run a native binary it wrote into `/tmp`. That is a smaller
+ * step than it reads: the workload is an untrusted JVM, which is already an arbitrary-code execution engine, and
+ * the container it runs in has no network, no capabilities, no privilege escalation, a read-only rootfs and a
+ * non-root user — none of which changes here. `nosuid` and `nodev` stay too: docker keeps applying both even
+ * when only `exec` is asked for, which was verified rather than assumed (`rw,exec` and
+ * `rw,nosuid,nodev,exec` produce the identical `rw,nosuid,nodev,relatime`).
+ */
+const val TMPFS_OPTIONS = "rw,exec"
+
+/**
+ * How long anything the grinder is tearing down gets to exit on its own before it is killed.
+ *
+ * Applies to both halves of a shutdown, because both are on the same clock: the container is asked to stop
+ * with this as its `docker stop` timeout (SIGTERM, then the daemon's own SIGKILL), and the workers get the
+ * same window to come back from whatever they were doing. It has to stay comfortably below the unit's
+ * `TimeoutStopSec`, or systemd's SIGKILL lands *during* the cleanup that exists to prevent orphans.
+ */
+val SHUTDOWN_GRACE: Duration = Duration.ofSeconds(15)
+
+/**
+ * How many containers are asked to stop at once during shutdown.
+ *
+ * The window in [SHUTDOWN_GRACE] is *per container*, so anything below the number in flight turns one window
+ * into several: at a cap of 8 and ten workers, the container phase alone was 30 seconds and the workers were
+ * left with none of the shared budget. A `docker stop` is an HTTP call that spends its time waiting, and
+ * concurrent boots are memory-bound at roughly twenty, so a cap well above any real worker count costs nothing
+ * and makes the single window the documentation promises actually true.
+ */
+const val MAX_PARALLEL_STOPS = 64
+
+/**
+ * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
+ * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
+ *
+ * Prefer [forLimits] (or [forCpus]) over setting [cpuQuota] and [memoryBytes] by hand: cores and gibibytes
+ * are the units an operator thinks in, and the quota only means anything relative to [cpuPeriod].
+ *
+ * @param memoryBytes Hard memory limit (`--memory`); the server's heap must fit inside this.
+ * @param cpuQuota    CFS CPU quota in microseconds per [cpuPeriod] (`200_000` at the default period =
+ *                    ~2 cores). `0` disables the quota entirely, which is docker's own "no limit".
+ * @param cpuPeriod   CFS scheduling period in microseconds the quota is measured against
+ *                    (`--cpu-period`). Stated rather than inherited, so the cores-to-quota arithmetic
+ *                    cannot be silently invalidated by a daemon or kernel default.
+ * @param pidsLimit   Maximum process/thread count (`--pids-limit`), guarding against fork-bombs.
+ * @author Griefed
+ */
+data class ContainerResources(
+    val memoryBytes: Long = 3L * 1024 * 1024 * 1024,
+    val cpuQuota: Long = 200_000,
+    val cpuPeriod: Long = 100_000,
+    val pidsLimit: Long = 512
+) {
+    /**
+     * The memory cap in the unit it was set in, for the startup line: `3.0 GiB`, or `uncapped`. Worth logging
+     * even though it is rarely changed — it is what every boot's heap is derived from, so it is the first
+     * number to check when boots die with `Killed`.
+     */
+    fun memoryCapDescription(): String =
+        if (memoryBytes == UNSET_MEMORY) "uncapped" else "${memoryBytes.toDouble() / BYTES_PER_GIBIBYTE} GiB"
+
+    /**
+     * The CPU cap in the unit it was set in, for the startup line: `2.0 cores (200000/100000µs)`, or
+     * `uncapped` when there is no quota. The raw pair rides along because it is what the kernel was actually
+     * given, which is the number to compare against a container's own `cpu.max` when a boot looks throttled.
+     */
+    fun cpuCapDescription(): String =
+        if (cpuQuota == UNSET_QUOTA) "uncapped" else "${cpuQuota.toDouble() / cpuPeriod} cores ($cpuQuota/${cpuPeriod}µs)"
+
+    /**
+     * The daemon's own floors and its two "unset means no limit" sentinels, plus the [forCpus]/[forLimits]
+     * factories that convert cores and gibibytes into them. Every value here is docker's, not ours, which is why
+     * they are constants with the daemon's wording quoted rather than tunables.
+     */
+    companion object {
+        /**
+         * The smallest quota the docker daemon accepts — it rejects anything under 1ms per period with
+         * "CPU cfs quota can not be less than 1ms", which would fail every container rather than the knob.
+         */
+        private const val MINIMUM_QUOTA_MICROSECONDS = 1_000L
+
+        /** The quota docker reads as "no limit at all" — an unset one. Verified: the cgroup then reads `max`. */
+        private const val UNSET_QUOTA = 0L
+
+        /**
+         * The smallest memory limit the docker daemon accepts, in its own words: "Minimum memory limit
+         * allowed is 6MB". Raised to here rather than refused there, for the same reason as the CPU floor.
+         */
+        private const val MINIMUM_MEMORY_BYTES = 6L * 1024 * 1024
+
+        /** The memory limit docker reads as unlimited — the same unset-means-no-limit rule as the quota. */
+        private const val UNSET_MEMORY = 0L
+
+        /** One gibibyte, the unit the memory cap is documented, configured and reported in. */
+        private const val BYTES_PER_GIBIBYTE = 1024L * 1024 * 1024
+
+        /**
+         * Caps a container at [cpus] cores, converting to the quota docker actually wants by multiplying
+         * against the period — the same arithmetic docker's own `--cpus` performs, though **not** the same
+         * validation: `--cpus` is bounded by the host's CPU count, while the raw quota this sets is not
+         * (measured on a 16-core host, a 1000-core quota is accepted and simply means "effectively
+         * uncapped"), so an over-large value is the operator's to get right.
+         *
+         * Exactly `0.0` means uncapped (an unset quota), matching how `0` reads elsewhere in the daemon's
+         * configuration. Every other accepted value produces a real cap: anything below the daemon's own
+         * floor is raised to it, since a quota docker refuses breaks the run instead of throttling it. The
+         * decision is made on the *input* rather than on the computed quota, because a count that rounds
+         * away to 0µs is still a request for a cap and must not collapse into "no limit". A negative or
+         * non-finite count has no sensible reading and throws.
+         */
+        fun forCpus(cpus: Double, base: ContainerResources = ContainerResources()): ContainerResources {
+            require(cpus.isFinite()) { "A container's CPU cap must be a finite core count, was $cpus." }
+            require(cpus >= 0.0) { "A container's CPU cap cannot be negative, was $cpus — use 0 for uncapped." }
+            if (cpus == 0.0) {
+                return base.copy(cpuQuota = UNSET_QUOTA)
+            }
+            return base.copy(cpuQuota = maxOf(MINIMUM_QUOTA_MICROSECONDS, (cpus * base.cpuPeriod).roundToLong()))
+        }
+
+        /**
+         * Caps a container at [cpus] cores and [memoryGiB] gibibytes — the whole per-container budget in one
+         * call, which is what the entry point wants, since both halves come from the environment together.
+         *
+         * The memory half follows exactly the rules [forCpus] established, deliberately: an exact `0.0` is
+         * uncapped, a smaller positive value is raised to the daemon's floor rather than refused by it, and
+         * negative or non-finite input throws. **Changing the memory cap changes what every boot's heap is:**
+         * the packs the grinder builds leave `javaArgs` empty, so the JVM sizes its own heap from the cgroup
+         * limit (measured at 25% — a 3 GiB cap gives a 768 MiB heap), and it is also the divisor in the
+         * worker-sizing advice. Hence the warning that travels with the knob.
+         */
+        fun forLimits(
+            cpus: Double,
+            memoryGiB: Double,
+            base: ContainerResources = ContainerResources()
+        ): ContainerResources {
+            require(memoryGiB.isFinite()) { "A container's memory cap must be a finite GiB count, was $memoryGiB." }
+            require(memoryGiB >= 0.0) { "A container's memory cap cannot be negative, was $memoryGiB — use 0 for uncapped." }
+            val memoryBytes = if (memoryGiB == 0.0) {
+                UNSET_MEMORY
+            } else {
+                maxOf(MINIMUM_MEMORY_BYTES, (memoryGiB * BYTES_PER_GIBIBYTE).roundToLong())
+            }
+            return forCpus(cpus, base.copy(memoryBytes = memoryBytes))
+        }
+    }
+}
+
+/**
+ * A host-path → container-path bind mount.
+ *
+ * @param hostPath      Absolute path on the host (the generated server pack, or a cached loader tree).
+ * @param containerPath Mount point inside the container.
+ * @param readOnly      Whether the container may write through the mount.
+ * @author Griefed
+ */
+data class BindMount(val hostPath: String, val containerPath: String, val readOnly: Boolean)
+
+/**
+ * Everything needed to launch one isolated boot container. The defaults are the security posture for
+ * running an **untrusted** mod: no network (no exfiltration / phone-home / lateral movement), a
+ * read-only root filesystem with only an explicit tmpfs writable, every Linux capability dropped, no
+ * privilege escalation, and a non-root user. The Docker socket is never mounted.
+ *
+ * The one deliberate concession is that the tmpfs is **executable** ([TMPFS_OPTIONS]); everything else above
+ * is unchanged, `nosuid` and `nodev` included.
+ *
+ * @param image            The runtime image (a JRE + the ServerStarterJar + a fixed entrypoint).
+ * @param command          The command to run inside the container (e.g. `bash start.sh`).
+ * @param workingDir       Working directory inside the container (where the pack is mounted).
+ * @param mounts           Bind mounts (at minimum the generated server pack).
+ * @param resources        CPU/memory/pid caps.
+ * @param networkMode      Docker network mode; `none` for an untrusted boot.
+ * @param readonlyRootfs   Whether the root filesystem is read-only.
+ * @param dropAllCapabilities Whether to drop all Linux capabilities.
+ * @param noNewPrivileges  Whether to forbid privilege escalation (`no-new-privileges`).
+ * @param user             The `uid:gid` to run as (non-root). The default matches the image's own `USER`;
+ *                         callers that bind-mount a host directory pass the host owner (see `ContainerUser`).
+ * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only. Mounted
+ *                         **executable** — see [TMPFS_OPTIONS] for what that grants and why.
+ * @param hostName         The container's own hostname, which the engine also makes resolvable. A *networked*
+ *                         container gets an `<ip> <hostname>` line in `/etc/hosts` from the daemon; `none` has
+ *                         no address, so nothing resolves it and `InetAddress.getLocalHost()` throws — see
+ *                         [CONTAINER_HOST_NAME].
+ * @author Griefed
+ */
+data class ContainerSpec(
+    val image: String,
+    val command: List<String>,
+    val workingDir: String,
+    val mounts: List<BindMount>,
+    val resources: ContainerResources = ContainerResources(),
+    val networkMode: String = "none",
+    val readonlyRootfs: Boolean = true,
+    val dropAllCapabilities: Boolean = true,
+    val noNewPrivileges: Boolean = true,
+    val user: String = "1000:1000",
+    val tmpfsMounts: List<String> = listOf("/tmp"),
+    val hostName: String = CONTAINER_HOST_NAME
+)
+
+/**
+ * Raw result of a container run, before any clientside classification: the captured console [lines],
+ * the container [exitCode] (`null` if it had to be force-killed) and whether the budget [timedOut]
+ * before the ready-line appeared. Mirrors what `de.griefed.serverpackcreator.clientside.RunResult.Completed`
+ * needs, so the runner can map straight across and reuse the existing `BootLogClassifier`.
+ *
+ * @author Griefed
+ */
+data class ContainerRunOutput(
+    /** The container's combined stdout+stderr, in order. What the classifier reads — the console decides, not the exit code. */
+    val lines: List<String>,
+    /** The container's exit status, or `null` when it could not be determined (killed, or inspect failed). */
+    val exitCode: Int?,
+    /** Whether the boot ran out of its budget rather than finishing. Suspended host time is excluded; see `SuspendAwareDeadline`. */
+    val timedOut: Boolean
+)
+
+/**
+ * Thin, mockable boundary over the container runtime. An implementation creates + starts a container
+ * from a [ContainerSpec], streams its combined console while watching for [run]'s ready pattern, stops
+ * it once ready or that call's timeout elapses, and **always removes it** — returning the captured
+ * lines + exit status.
+ *
+ * Keeping the runtime behind this seam (the same pattern as the clientside module's `HttpFetcher`) lets
+ * [ContainerServerRunner]'s orchestration be unit-tested with a fake, while the real
+ * [DockerJavaContainerEngine] is exercised only against a live daemon.
+ *
+ * @author Griefed
+ */
+interface ContainerEngine : AutoCloseable {
+    /**
+     * Run [spec] to a terminal state, stopping once [readyPattern] is seen or [timeout] elapses, and
+     * return its captured output. Implementations must remove the container before returning.
+     *
+     * [onLine] receives each console line **as it is streamed**, so the caller can persist a boot log live
+     * rather than only once the container has exited — without it, a hung boot is undiagnosable until its
+     * timeout fires. Implementations must still return every line in [ContainerRunOutput]; the sink is
+     * additive, and a throwing sink must not break the run.
+     */
+    fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration, onLine: (String) -> Unit = {}): ContainerRunOutput
+
+    /**
+     * Release whatever [run] could not clean up itself — the per-run removal is skipped when the JVM is
+     * torn down mid-boot, which would leave a container (and a Minecraft server) running. Part of the seam
+     * rather than one implementation, so *any* engine can be drained on shutdown and the contract above
+     * ("always removes it") holds even on an interrupted run. Must be idempotent and must not throw; the
+     * default is a no-op for engines with nothing to release (e.g. test fakes).
+     */
+    override fun close() {
+        // Nothing to release by default.
+    }
+
+    /**
+     * Remove containers this engine's *previous* process left behind, returning how many went.
+     *
+     * Distinct from [close], which cleans up after the process it runs in. Containers are children of the
+     * container daemon, not of the unit's control group, so a JVM killed outright — systemd's SIGKILL once
+     * `TimeoutStopSec` expires — leaves them running with nothing to tidy them. Called at startup, this is the
+     * only thing that ever collects them. Default no-op for engines with no such notion (test fakes).
+     */
+    fun reapOrphans(): Int = 0
+
+    /**
+     * Whether [image] is available to this engine right now. Defaults to `true`, so an engine with no notion
+     * of images — every test fake here — never blocks a startup it cannot have an opinion about.
+     *
+     * Exists because the answer is knowable in one call and the alternative is discovering it thousands of
+     * verdicts later: with the runtime image absent, every loader install throws, every tuple goes on
+     * cooldown, and every candidate wanting one is scored INCONCLUSIVE about a mod that was never booted
+     * (measured 2026-09-03). `false` also covers a daemon that cannot be reached at all, which is the same
+     * conclusion for the caller — no container is going to run — and implementations log which it was.
+     */
+    fun hasImage(image: String): Boolean = true
+}

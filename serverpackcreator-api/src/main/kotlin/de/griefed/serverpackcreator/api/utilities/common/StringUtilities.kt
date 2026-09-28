@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +21,6 @@
 
 package de.griefed.serverpackcreator.api.utilities.common
 
-import de.griefed.serverpackcreator.api.utilities.common.StringUtilities.Companion.pathSecureText
-
-
 /**
  * Utility-class revolving around Strings.
  *
@@ -31,6 +28,8 @@ import de.griefed.serverpackcreator.api.utilities.common.StringUtilities.Compani
  */
 @Suppress("unused")
 class StringUtilities {
+
+    /** String cleanup and the Mongo URI builder the web backend configures itself from. */
 
     companion object {
         /**
@@ -90,12 +89,10 @@ class StringUtilities {
          */
         @Suppress("MemberVisibilityCanBePrivate")
         fun pathSecureText(text: String): String {
-            var secured = text
-            while (secured.endsWith(".") || secured.endsWith(" ")) {
-                val toReplace = secured.substring(secured.length - 1)
-                secured = secured.replace(toReplace, "")
-            }
-            return secured
+            // trimEnd, not replace: taking the offending character and calling replace() with it
+            // removed *every* occurrence, so a trailing space deleted all spaces and a trailing dot
+            // deleted every separator in a version number.
+            return text.trimEnd('.', ' ')
                 .replace("/", "")
                 .replace("<", "")
                 .replace(">", "")
@@ -158,12 +155,10 @@ class StringUtilities {
          * @author Griefed
          */
         fun pathSecureTextAlternative(text: String): String {
-            var secured = text
-            while (secured.endsWith(".") || secured.endsWith(" ")) {
-                val toReplace = secured.substring(secured.length - 1)
-                secured = secured.replace(toReplace, "")
-            }
-            return secured
+            // trimEnd, not replace: taking the offending character and calling replace() with it
+            // removed *every* occurrence, so a trailing space deleted all spaces and a trailing dot
+            // deleted every separator in a version number.
+            return text.trimEnd('.', ' ')
                 .replace("<", "")
                 .replace(">", "")
                 .replace(":", "")
@@ -239,6 +234,12 @@ class StringUtilities {
                     && !text.contains("="))
 
         /**
+         * **Returns `true` when the text is CLEAN.** The name reads like a predicate for "has invalid
+         * characters" and means the opposite, so a caller wanting "this is bad" needs `!`. Kept as-is
+         * because it is published API and renaming it inside a major version would break embedders;
+         * `InclusionsValidator` is the in-repo caller and correctly negates it. `StringUtilitiesTest`
+         * pins both directions, so an inversion cannot land quietly.
+         *
          * Check the passed string whether it contains characters invalid in a path-declaration:
          *  * **&#60;**
          *  * **&#62;**
@@ -265,23 +266,23 @@ class StringUtilities {
          */
         fun checkForInvalidPathCharacters(text: String) =
             (!text.contains("<")
-                    || !text.contains(">")
-                    || !text.contains(":")
-                    || !text.contains("\"")
-                    || !text.contains("|")
-                    || !text.contains("?")
-                    || !text.contains("*")
-                    || !text.contains("#")
-                    || !text.contains("%")
-                    || !text.contains("&")
-                    || !text.contains("{")
-                    || !text.contains("}")
-                    || !text.contains("$")
-                    || !text.contains("!")
-                    || !text.contains("@")
-                    || !text.contains("`")
-                    || !text.contains("´")
-                    || !text.contains("="))
+                    && !text.contains(">")
+                    && !text.contains(":")
+                    && !text.contains("\"")
+                    && !text.contains("|")
+                    && !text.contains("?")
+                    && !text.contains("*")
+                    && !text.contains("#")
+                    && !text.contains("%")
+                    && !text.contains("&")
+                    && !text.contains("{")
+                    && !text.contains("}")
+                    && !text.contains("$")
+                    && !text.contains("!")
+                    && !text.contains("@")
+                    && !text.contains("`")
+                    && !text.contains("´")
+                    && !text.contains("="))
 
         /**
          * Replace '$', ':', '/', '?', '#', '[', ']', '@' with percent-encoded characters, according to RFC3986.
@@ -303,6 +304,7 @@ class StringUtilities {
             return encoded.toString()
         }
 
+        /** Assemble the Mongo connection URI the web backend configures itself from. */
         fun createMongoUri(user: String, password: String, host: String, port: Int, database: String) =
             "mongodb://${percentEncode(user)}" +
                     ":${percentEncode(password)}" +

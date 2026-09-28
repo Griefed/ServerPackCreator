@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,9 +22,6 @@ package de.griefed.serverpackcreator.api.utilities
 import me.cortex.jarscanner.Main
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.nio.file.Path
-/*import dev.kosmx.needle.CheckWrapper
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking*/
 
 /**
  * Various methods to perform security-related scans, such as Nekodetector.
@@ -33,12 +30,17 @@ import kotlinx.coroutines.runBlocking*/
  */
 class SecurityScans {
 
+    /**
+     * The scans themselves. Static because they hold no state: each takes a path and returns findings.
+     *
+     * There is exactly one, [scanUsingNekodetector]. An earlier doc here promised "zip-slip and
+     * archive-safety checks applied before an upload is trusted", which never existed in this class —
+     * archive traversal is rejected by zip4j during extraction, which is a fact about a dependency and
+     * not something this file does.
+     */
     companion object {
+        /** Logger for the scans below, so a scan that could not run leaves a trace of *why*. */
         val log by lazy { cachedLoggerOf(SecurityScans::class.java) }
-
-        /*init {
-            CheckWrapper.init()
-        }*/
 
         /**
          * Uses MCRcortex's nekodetector to detect files infected by the fractureiser malware.
@@ -68,37 +70,13 @@ class SecurityScans {
                         results.add(entry)
                     }
                 }
-            } catch (ex: Exception) {
-                log.error("Error during Nekodetector scan.", ex)
+            } catch (failure: Throwable) {
+                // Throwable, not Exception: the scanner is a third-party jitpack artifact, so a missing
+                // transitive class surfaces as a LinkageError rather than an Exception -- and a scan that
+                // cannot run must cost the scan, never the generation that asked for it.
+                log.error("Error during Nekodetector scan; this modpack was NOT scanned.", failure)
             }
             return results
         }
-
-        /**
-         * Uses KosmX's jNeedle (or Needle) to detect files infected by the malware.
-         * The code can be found at [KosmX/jneedle](https://github.com/KosmX/jneedle)
-         *
-         * Initially provided via a plugin, available at [Griefed/spc-jneedle-plugin](https://github.com/Griefed/spc-jneedle-plugin)
-         * @author Griefed
-         */
-        /*fun scanUsingJNeedle(destination: Path) : List<String> {
-            val results = mutableListOf<String>()
-            runBlocking {
-                launch {
-                    try {
-                        log.info("Scanning $destination for infections using jNeedle...")
-                        val run = CheckWrapper.checkPath(destination)
-                        for (result in run) {
-                            for (jarCheckResult in result.second) {
-                                results.add("${jarCheckResult.status}: ${jarCheckResult.getMessage()}\n".padStart(9,' '))
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        log.error("Error during jNeedle scan.", ex)
-                    }
-                }
-            }
-            return results
-        }*/
     }
 }

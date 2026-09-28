@@ -25,7 +25,7 @@
         </q-item-section>
         <q-item-section>
           <q-item-label>Size</q-item-label>
-          <q-item-label caption>{{ size }} MB</q-item-label>
+          <q-item-label caption>{{ formatBytes(size) }}</q-item-label>
         </q-item-section>
       </q-item>
 
@@ -72,9 +72,10 @@
   </q-card>
 </template>
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {serverpacks} from 'boot/axios';
+import {formatBytes} from 'src/utils/format';
 import {date} from 'quasar';
 
 export default defineComponent({
@@ -94,6 +95,7 @@ export default defineComponent({
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);
     return {
+      formatBytes,
       visible,
       showSimulatedReturnData,
       showTextLoading() {
@@ -113,7 +115,7 @@ export default defineComponent({
     };
   },
   methods: {
-    copyToClipboard(text) {
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,7 @@ open class ResizeIndicatorScrollPane(
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
 ) : JScrollPane(view, verticalScrollbarVisibility, horizontalScrollbarVisibility) {
 
+    /** Where the drag handle was last painted, which is what the mouse listener hit-tests against. `null` until the first paint. */
     var handleBarPosition: Rectangle? = null
         private set
 

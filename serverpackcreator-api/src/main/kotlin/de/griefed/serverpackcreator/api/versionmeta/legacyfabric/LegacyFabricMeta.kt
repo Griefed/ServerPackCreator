@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -129,5 +129,7 @@ class LegacyFabricMeta(
      * @return All Legacy Fabric supported Minecraft versions.
      * @author Griefed
      */
-    fun supportedMinecraftVersions(): MutableList<String> = gameVersions.allVersions
+    // Narrowed from `MutableList` to `List`: the returned collection is now an immutable snapshot, and
+    // the old type advertised that a caller could mutate the metadata's own state through it.
+    fun supportedMinecraftVersions(): List<String> = gameVersions.allVersions
 }

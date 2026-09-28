@@ -30,15 +30,15 @@ test something, or just release a new server pack for the new modpack version.
 The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
 into the world of programming. And here we are.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X7X31GM8DG)
+# **READ BEFORE USE:**
 
-**Disclaimer:**
+**FOR THE LOVE OF GODS, TEST YOUR SERVER PACKS BEFORE YOU SHIP THEM!**
 
-* ServerPackCreator is not a guarantee for working server packs. It helps you create them, but you **must still test them**!
+* ServerPackCreator is **not** a guarantee for working server packs. It helps you create them, but you **must still test them**!
 * You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
 * When using alpha, beta or in-dev version of ServerPackCreator, it is advised to make a backup of your ServerPackCreator-directory in your home-directory.
 * Things will break with alpha releases, stuff may break when using beta releases.
-* If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
+* If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you **do so at your own risk**.
 * I will not be held responsible for errors in your server pack caused by you using a pre-release.
 * I will not be held responsible for errors in your server pack in general. **Test your server packs before you ship them!**
 * **TL;DR:** Don't use test to ship to prod! **Test** before shipping!
@@ -178,17 +178,434 @@ run the JAR via double-click or other methods, or you *may* need to run it from 
 
 There are a couple of arguments which may or may not be helpful for you, depending on how you plan on using ServerPackCreator:
 
-| Argument  | Description                                                                                                                                                                                                             |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `-help`   | Print ServerPackCreators help to commandline.                                                                                                                                                                           |
-| `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
-| `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
-| `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
-| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
-| `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
-| `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
+| Argument              | Description                                                                                                                                                                                                                                                                                                                  |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-help`               | Print ServerPackCreators help to commandline.                                                                                                                                                                                                                                                                                |
+| `-update`             | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                                                                                                                             |
+| `-gui`                | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                                                                                                                          |
+| `-cli`                | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                                                                                                              |
+| `-web`                | Run ServerPackCreator as a webservice.                                                                                                                                                                                                                                                                                       |
+| `-cgen`               | Run the generation of a basic server pack config from a given modpack.                                                                                                                                                                                                                                                       |
+| `-config`             | Generate a server pack from a specific server pack config, without a UI.                                                                                                                                                                                                                                                     |
+| `--destination`       | Generate the server pack from the config given to `-config` in a specific location. Requires `-config` or `-feelinglucky`.                                                                                                                                                                                                   |
+| `-feelinglucky`       | Generate a server pack config from a passed modpack-directory **and** generate the server pack in one go. No warranty, no guarantees. Combine with `--destination` to choose where it lands.                                                                                                                                 |
+| `-withallinconfigdir` | Run a generation for every configuration present in ServerPackCreator's configs-directory.                                                                                                                                                                                                                                   |
+| `-scan`               | Scan the mods in a directory for the sideness they declare in their metadata and print the result as JSON. Requires a directory, a modloader and a Minecraft version.                                                                                                                                                        |
+| `-clientsidereport`   | Assess whether the mod behind a CurseForge/Modrinth project-link is clientside-only and print a Markdown report. Requires the project-link.                                                                                                                                                                                  |
+| `-verifyclientside`   | Like `-clientsidereport`, but additionally boots a server with the mod force-included, to detect crashes. Requires the project-link.                                                                                                                                                                                         |
+| `-clientsideapply`    | Apply the suggested entries from a clientside-report JSON to the official fallback-list files. Requires the report-JSON path.                                                                                                                                                                                                |
+| `--setup`             | Set up and prepare the environment for subsequent runs of ServerPackCreator. Creates/copies all files needed for ServerPackCreator to function from inside its JAR. Optionally takes a `properties`-file whose values are loaded and then stored in the `serverpackcreator.properties` in ServerPackCreators home-directory. |
+| `--home`              | Override any and all configuration of ServerPackCreators home-directory. Usable on the initial run, or to move the home-directory later on.                                                                                                                                                                                  |
+| `-lang`               | Change the language ServerPackCreator uses.                                                                                                                                                                                                                                                                                  |
 
-### 5.1 Running ServerPackCreator as a webservice
+The four clientside-verification arguments (`-scan`, `-clientsidereport`, `-verifyclientside`,
+`-clientsideapply`) are aimed at maintainers of the clientside-only mod list rather than at everyday
+use. `-verifyclientside` boots a real Minecraft server, so expect it to take a while.
+
+### 5.1 Generating a server pack from a modpack, via CLI
+
+Everything the GUI does to turn a modpack into a server pack is reachable from the commandline, and
+none of it needs a graphical environment. There are three routes, and which one you want depends on
+how much control you need:
+
+| Route                                        | You get                                                                          | Use it when                                                              |
+|----------------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `-feelinglucky <modpack>`                    | Config **and** server pack, in one go, no questions asked.                       | The modpack carries a launcher-manifest and you want the pack *now*.     |
+| `-cgen <modpack>` then `-config <config>`    | A config you can edit before anything gets generated.                            | You want to tweak exclusions, Java args, inclusions, the suffix, …       |
+| `-withallinconfigdir`                        | One server pack per config in the configs-directory.                             | You maintain several packs and want to rebuild them all.                 |
+
+All three are one-shot: ServerPackCreator starts, does the thing, prints the result and exits. The
+interactive shell (`-cli`, see **5.1.6**) wraps the same verbs in a prompt with tab-completion, if
+you'd rather poke around.
+
+> **Which command do I type?**
+> The examples below all use `java -jar ServerPackCreator.jar`, because that is the form which works
+> everywhere. If you acquired ServerPackCreator some other way, use its launcher instead — the
+> arguments are the same:
+> * `java -jar ServerPackCreator-<VERSION>.jar -feelinglucky "/path/to/modpack"`
+> * `./ServerPackCreator-<VERSION>-x86_64.AppImage -feelinglucky "/path/to/modpack"`
+> * `"C:\Program Files\ServerPackCreator\ServerPackCreator.exe" -feelinglucky "C:/modpacks/MyPack"`
+>
+> The installers additionally place a **ServerPackCreator-CLI** launcher next to the main one. That
+> one starts with `-cli` already applied, so it drops you straight into the interactive shell of
+> **5.1.6**.
+
+#### 5.1.1 The thirty-second version
+
+```bash
+# Generate a server pack from a modpack directory. That's it. That's the command.
+java -jar ServerPackCreator.jar -feelinglucky "/home/griefed/CurseForge/Instances/Survive Create Prosper"
+```
+
+On success the last line printed is:
+
+```
+Successfully generated Server Pack: /home/griefed/serverpackcreator/server-packs/Survive Create Prosper
+```
+
+#### 5.1.2 Where things end up
+
+Unless you say otherwise, every path is resolved relative to ServerPackCreator's **home-directory**.
+The home-directory is picked on first run and remembered afterwards; `--home` (see **5.1.7**)
+overrides it.
+
+| What                                       | Where                           | Overridable with                                                                               |
+|--------------------------------------------|---------------------------------|------------------------------------------------------------------------------------------------|
+| The default config                         | `<home>/serverpackcreator.conf` | `-config <file>`                                                                               |
+| Configs written by `-cgen`/`-feelinglucky` | `<home>/configs/<modpack name>` | –                                                                                              |
+| Generated server packs                     | `<home>/server-packs/`          | `--destination <dir>`, or `de.griefed.serverpackcreator.configuration.directories.serverpacks` |
+| Logs                                       | `<home>/logs/`                  | –                                                                                              |
+
+Not sure where your home-directory is? Check the log for `Home directory set to:`, or run with
+`--home` to put it somewhere you chose.
+
+#### 5.1.3 `-feelinglucky` — modpack in, server pack out
+
+`-feelinglucky` does the whole pipeline in one shot: derive a config from the modpack, save that
+config into `<home>/configs/`, check it, and — if the check passes — generate the server pack. No
+warranty, no guarantees; if the check fails it prints the problems and stops without generating.
+
+```bash
+# Simplest form. Server pack lands in <home>/server-packs/
+java -jar ServerPackCreator.jar -feelinglucky "/home/griefed/modpacks/Survive Create Prosper"
+
+# Choose where the server pack lands. Parent folders are created for you.
+java -jar ServerPackCreator.jar -feelinglucky "/home/griefed/modpacks/SCP" --destination "/srv/minecraft/scp-server"
+
+# Paths with spaces MUST be quoted. This is the single most common mistake.
+java -jar ServerPackCreator.jar -feelinglucky "/home/griefed/Some Modpack With Spaces"
+
+# Relative paths work and are resolved against your current working directory.
+java -jar ServerPackCreator.jar -feelinglucky "./modpacks/SCP"
+
+# A CurseForge (Overwolf) instance — point at the instance folder, the one holding minecraftinstance.json
+java -jar ServerPackCreator.jar -feelinglucky "/home/griefed/CurseForge/Instances/All the Mods 9"
+
+# Windows, PowerShell. Forward slashes are fine and spare you the escaping.
+java -jar ServerPackCreator.jar -feelinglucky "C:/Users/Griefed/curseforge/minecraft/Instances/All the Mods 9"
+
+# Windows, cmd.exe, with backslashes
+java -jar ServerPackCreator.jar -feelinglucky "C:\Users\Griefed\curseforge\minecraft\Instances\All the Mods 9"
+
+# Windows, generating straight onto a mapped network drive
+java -jar ServerPackCreator.jar -feelinglucky "C:/modpacks/SCP" --destination "Z:/servers/scp"
+
+# Combine with an explicit home-directory, so nothing touches your normal installation
+java -jar ServerPackCreator.jar --home "/tmp/spc-scratch" -feelinglucky "/home/griefed/modpacks/SCP"
+```
+
+#### 5.1.4 `-cgen` and `-config` — the two-step, when you want control
+
+`-feelinglucky` gives you no chance to intervene. Splitting it in two does:
+
+**Step 1 — derive the config:**
+
+```bash
+java -jar ServerPackCreator.jar -cgen "/home/griefed/modpacks/Survive Create Prosper"
+```
+
+`-cgen` inspects the modpack, writes a config to `<home>/configs/<modpack name>` and prints the
+resulting configuration to the console. It does **not** generate a server pack. The path it wrote to
+is in the log line `Config for <modpack> available at <config>`.
+
+**Step 2 — edit it, then generate from it:**
+
+```bash
+# Open <home>/configs/Survive Create Prosper in your editor, change what you like, then:
+java -jar ServerPackCreator.jar -config "/home/griefed/serverpackcreator/configs/Survive Create Prosper"
+```
+
+More `-config` examples:
+
+```bash
+# Config kept next to your modpacks rather than in the configs-directory
+java -jar ServerPackCreator.jar -config "/home/griefed/modpacks/scp/serverpackcreator.conf"
+
+# Generate into a specific location instead of <home>/server-packs/
+java -jar ServerPackCreator.jar -config "/home/griefed/configs/scp.conf" --destination "/srv/minecraft/scp"
+
+# Straight into a running server's directory, ready to be started
+java -jar ServerPackCreator.jar -config "./scp.conf" --destination "/opt/minecraft/servers/scp"
+
+# Windows
+java -jar ServerPackCreator.jar -config "C:/Users/Griefed/serverpackcreator/configs/AllTheMods9" --destination "C:/servers/atm9"
+
+# Same config, several destinations — handy when you run a test server and a live one
+java -jar ServerPackCreator.jar -config "./scp.conf" --destination "/srv/mc/scp-test"
+java -jar ServerPackCreator.jar -config "./scp.conf" --destination "/srv/mc/scp-live"
+
+# Explicit home-directory, so the config-, server-pack- and log-directories all come from there
+java -jar ServerPackCreator.jar --home "/srv/spc" -config "/srv/spc/configs/scp" --destination "/srv/mc/scp"
+```
+
+If you pass **no** `-config`, the interactive shell's `run` verb falls back to
+`<home>/serverpackcreator.conf` — see **5.1.6**.
+
+##### 5.1.4.1 What a config looks like
+
+A config derived by `-cgen` is a plain text file you can edit by hand. The interesting fields:
+
+```hocon
+# Path to your modpack. Can be either relative or absolute.
+modpackDir = "/home/griefed/modpacks/Survive Create Prosper"
+
+# Mods to force-include even if they look clientside. Filenames, no versions.
+whitelist = ["Ping-Wheel-"]
+
+# Additional clientside-only mods to delete from the server pack. Filenames, no versions.
+clientMods = ["AmbientSounds_","ClientTweaks-","PackMenu-","BetterAdvancements-"]
+
+# What gets copied into the server pack. Source is required, the rest is optional.
+[[inclusions]]
+	source = "mods"
+	destination = ""
+	inclusionFilter = ""
+	exclusionFilter = ""
+[[inclusions]]
+	source = "config"
+[[inclusions]]
+	source = "defaultconfigs"
+
+minecraftVersion = "1.20.1"
+modLoader = "Forge"          # Forge, NeoForge, Fabric, Quilt or LegacyFabric
+modLoaderVersion = "47.2.20"
+
+includeServerIcon = true
+includeServerProperties = true
+includeZipCreation = true
+
+# Java arguments baked into the generated start-scripts. "empty" for none.
+javaArgs = "-Xmx4G -Xms4G"
+
+# Appended to the server pack's name, so several variants can coexist
+serverPackSuffix = ""
+
+# Replaced verbatim in the start-scripts
+[scripts]
+	SPC_JAVA_SPC = "java"
+```
+
+Editing that file and re-running `-config` is the whole "advanced" workflow. Common edits:
+
+```bash
+# 1. Derive
+java -jar ServerPackCreator.jar -cgen "/home/griefed/modpacks/SCP"
+# 2. Add a mod to clientMods, bump javaArgs to -Xmx8G, set serverPackSuffix = "-lite"
+$EDITOR "/home/griefed/serverpackcreator/configs/SCP"
+# 3. Generate
+java -jar ServerPackCreator.jar -config "/home/griefed/serverpackcreator/configs/SCP"
+```
+
+##### 5.1.4.2 Which modpacks get detected automatically
+
+`-cgen` and `-feelinglucky` fill in `minecraftVersion`, `modLoader`, `modLoaderVersion` and the pack
+name by reading whichever launcher-manifest they find. The first match wins, in this order:
+
+| Manifest                                  | Looked for in                    | Written by                          |
+|-------------------------------------------|----------------------------------|--------------------------------------|
+| `minecraftinstance.json`                  | the modpack directory            | CurseForge (Overwolf) app            |
+| `manifest.json`                           | the modpack directory            | a CurseForge modpack export          |
+| `instance.json`                           | the modpack directory            | ATLauncher                           |
+| `instance.json`                           | the **parent** directory         | recent GDLauncher versions           |
+| `mmc-pack.json` (+ `instance.cfg`)        | the **parent** directory         | MultiMC / Prism Launcher             |
+
+That "parent directory" row is the one that trips people up. For MultiMC, Prism and GDLauncher you
+point the argument at the **`.minecraft`/`minecraft` folder inside the instance**, not at the
+instance folder — the manifest then sits one level up, which is exactly where ServerPackCreator
+looks:
+
+```bash
+# Prism Launcher
+java -jar ServerPackCreator.jar -cgen "/home/griefed/.local/share/PrismLauncher/instances/ATM9/minecraft"
+
+# MultiMC
+java -jar ServerPackCreator.jar -cgen "/home/griefed/MultiMC/instances/ATM9/.minecraft"
+
+# GDLauncher
+java -jar ServerPackCreator.jar -cgen "/home/griefed/gdlauncher_next/instances/ATM9/instance"
+
+# ATLauncher — manifest sits in the instance directory itself
+java -jar ServerPackCreator.jar -cgen "/home/griefed/ATLauncher/instances/ATM9"
+```
+
+If none of those manifests is present — a hand-assembled modpack, a `.mrpack` you unzipped yourself,
+a server directory you are re-packing — nothing breaks, but `minecraftVersion`, `modLoader` and
+`modLoaderVersion` come out empty. Fill them in by hand, then run `-config`:
+
+```bash
+java -jar ServerPackCreator.jar -cgen "/home/griefed/modpacks/hand-rolled"
+$EDITOR "/home/griefed/serverpackcreator/configs/hand-rolled"   # set the three version fields
+java -jar ServerPackCreator.jar -config "/home/griefed/serverpackcreator/configs/hand-rolled"
+```
+
+#### 5.1.5 `-withallinconfigdir` — rebuild everything
+
+Runs a check-and-generate for **every** file in `<home>/configs/`, one after another.
+
+```bash
+# Rebuild every server pack you have a config for
+java -jar ServerPackCreator.jar -withallinconfigdir
+
+# Same, against a dedicated home-directory — the pattern for a build server
+java -jar ServerPackCreator.jar --home "/srv/spc" -withallinconfigdir
+```
+
+`--destination` is **not** honoured here; each pack lands in `<home>/server-packs/`. Give each config
+a distinct `serverPackSuffix` if you need to tell variants apart.
+
+#### 5.1.6 `-cli` — the interactive shell
+
+`-cli` opens a prompt with tab-completion, autosuggestions and inline help. It is the same set of
+verbs, just interactive, and it is what you get automatically in a headless environment when no
+other argument was passed.
+
+```bash
+java -jar ServerPackCreator.jar -cli
+```
+
+```
+ServerPackCreator> feelingLucky -m "/home/griefed/modpacks/SCP"
+ServerPackCreator> feelingLucky -m "/home/griefed/modpacks/SCP" -d "/srv/mc/scp"
+ServerPackCreator> cgen                                   # prompts for the modpack directory
+ServerPackCreator> run                                    # generates from <home>/serverpackcreator.conf
+ServerPackCreator> run withSpecificConfig -c "/home/griefed/configs/scp.conf"
+ServerPackCreator> run withSpecificConfig -c "./scp.conf" -d "/srv/mc/scp"
+ServerPackCreator> run withAllInConfigDir                 # same as -withallinconfigdir
+ServerPackCreator> homeDir                                # change the home-directory
+ServerPackCreator> lang                                   # list and pick a language
+ServerPackCreator> setup                                  # re-run first-time setup
+ServerPackCreator> update                                 # check for a newer release
+ServerPackCreator> printHelp                              # the full help-text
+ServerPackCreator> help run                               # help for one verb
+ServerPackCreator> clear                                  # or 'cls'
+```
+
+Press `Tab` to complete, `Alt+S` to toggle the suggestion line, and `Ctrl+D` to leave.
+
+#### 5.1.7 Combining with the global arguments
+
+`--home` and `-lang` are parsed before the mode is decided, so they combine with any of the above.
+
+```bash
+# Run against a throwaway home-directory. The directory must already exist.
+java -jar ServerPackCreator.jar --home "/tmp/spc-test" -feelinglucky "/home/griefed/modpacks/SCP"
+
+# Prepare a fresh home-directory before the first generation
+mkdir -p /srv/spc
+java -jar ServerPackCreator.jar --home "/srv/spc" --setup
+
+# Seed that home-directory from a prepared properties-file, then generate
+java -jar ServerPackCreator.jar --home "/srv/spc" --setup "/srv/spc-defaults.properties"
+java -jar ServerPackCreator.jar --home "/srv/spc" -withallinconfigdir
+
+# Pick a language for this run (and every run after it — the choice is stored)
+java -jar ServerPackCreator.jar -lang en_GB -feelinglucky "/home/griefed/modpacks/SCP"
+java -jar ServerPackCreator.jar -lang pt_BR -cgen "/home/griefed/modpacks/SCP"
+
+# Print the help-text, which lists every argument with examples
+java -jar ServerPackCreator.jar -help
+
+# Check for a newer release. With an installer-based installation this also installs it.
+java -jar ServerPackCreator.jar -update
+```
+
+**`--home` is sticky.** It is not a per-run override — it is written to your user preferences, and
+every subsequent run without `--home` uses it too. Pass it again to move back.
+
+#### 5.1.8 Automating it
+
+Generation is one process invocation, so anything that can run a command can run this.
+
+```bash
+#!/usr/bin/env bash
+# Rebuild one server pack and deploy it. Run from cron, a git hook, CI, whatever.
+set -euo pipefail
+
+SPC_JAR="/opt/serverpackcreator/ServerPackCreator.jar"
+MODPACK="/srv/modpacks/SCP"
+DESTINATION="/srv/minecraft/scp"
+
+java -jar "$SPC_JAR" --home /srv/spc -feelinglucky "$MODPACK" --destination "$DESTINATION"
+```
+
+```bash
+# Rebuild every modpack under a directory, one server pack each
+for modpack in /srv/modpacks/*/; do
+    java -jar /opt/serverpackcreator/ServerPackCreator.jar \
+        -feelinglucky "$modpack" \
+        --destination "/srv/server-packs/$(basename "$modpack")"
+done
+```
+
+```bash
+# Nightly rebuild of everything you have a config for, at 04:00
+0 4 * * * java -jar /opt/serverpackcreator/ServerPackCreator.jar --home /srv/spc -withallinconfigdir >> /var/log/spc.log 2>&1
+```
+
+```powershell
+# Windows, PowerShell
+& java -jar "C:\Tools\ServerPackCreator.jar" -feelinglucky "C:/modpacks/SCP" --destination "C:/servers/scp"
+```
+
+```bash
+# Containerised, no GUI involved. Note this uses a plain JRE image and the JAR — NOT the
+# griefed/serverpackcreator image, which is hard-wired to start the webservice and does not
+# forward arguments to the application.
+docker run --rm -v "$PWD:/work" -w /work eclipse-temurin:21-jre \
+  java -jar /work/ServerPackCreator.jar \
+    --home /work/spc-home \
+    -feelinglucky "/work/modpacks/SCP" \
+    --destination "/work/server-packs/SCP"
+```
+
+**The exit code is meaningful.** A one-shot run exits `0` only when it produced what you asked for,
+and `1` when it did not — a missing argument, a path that does not exist, a configuration check that
+failed, or a generation that errored. So `&&` does what you would expect:
+
+```bash
+java -jar "$SPC_JAR" -config "./scp.conf" && deploy_the_server_pack
+```
+
+```bash
+if ! java -jar "$SPC_JAR" -withallinconfigdir; then
+    echo "At least one server pack failed to generate, see output above." >&2
+    exit 1
+fi
+```
+
+`-withallinconfigdir` exits `1` if *any* configuration failed, and `0` when the configs-directory is
+simply empty — nothing to do is not a failure. The long-running modes (`-gui`, `-web`, `-cli`) do not
+exit on their own, so there is nothing to check.
+
+#### 5.1.9 Argument precedence, and other things that will bite you
+
+The arguments are **not** independent flags — the first one that matches decides the whole run, and
+everything else on the commandline is ignored. The order checked is:
+
+`-help` → `-update` → `-withallinconfigdir` → `-scan` → `-clientsidereport` → `-verifyclientside` →
+`-clientsideapply` → `-cgen` → `-config` → `-feelinglucky` → `-cli` → `-web` → `-gui` → `--setup`
+
+So `-cgen "/modpack" -feelinglucky "/modpack"` writes a config and **does not** generate a server
+pack, because `-cgen` is checked first. Pick one.
+
+Everything else worth knowing:
+
+* **The path is a separate argument, not `=`.** `--home "/srv/spc"` works; `--home=/srv/spc` does not.
+* **Always pass the path.** `-cgen`, `-config`, `-feelinglucky`, `--setup`, `--destination` and
+  `--home` all read the *next* argument. Leaving it off — `java -jar ServerPackCreator.jar -config` —
+  is reported as a missing value, nothing is generated, and the run exits `1`.
+* **`-config` wants a file that exists, `-cgen`/`-feelinglucky` want a directory that exists.** A
+  typo'd path is reported, naming the path it could not find; it is never created for you.
+* **`--home` needs the directory to exist already.** If it does not, the run says so and keeps the
+  previously configured home-directory.
+* **`--destination` only does something next to `-config` or `-feelinglucky`.** On its own, or with
+  `-cgen` or `-withallinconfigdir`, it is ignored.
+* **Quote paths with spaces.** On every platform, in every shell.
+* **Windows paths take `/` as well as `\`.** Forward slashes save you a round of escaping.
+* **A first run has setup to do.** Expect the very first invocation on a fresh home-directory to take
+  longer and to reach out to the network for version manifests.
+
+### 5.2 Running ServerPackCreator as a webservice
 
 **DISCLAIMER**
 
@@ -199,22 +616,23 @@ ZIP-archives uploaded by anonymous people may contain illegal or otherwise dange
 
 If you want to open your webservice-instance to the public, make sure to properly protect it by putting it behind required authorization.
 
-#### 5.1.1 JAR
+#### 5.2.1 JAR
 
 1. Download the JAR-file from the latest release
-2. Run it once, using the `-web` argument. ServerPackCreator will crash, complaining about JDBC-related things. This is expected, don't worry.
+2. Run it once, using the `-web` argument. It will fail to reach a database — you have not configured one yet — but this first run is what creates the home-directory you need in the next step. This is expected, don't worry.
 3. Browser to the now generated ServerPackCreator home-directory
     1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
 4. Install / setup / provide a MongoDB-database for ServerPackCreator. See [MongoDB Installation Tutorial](https://www.mongodb.com/docs/manual/installation/)
 5. Set the database-properties in the `serverpackcreator.properties` according to your database
-   1. `spring.data.mongodb.uri=`
+   1. `spring.mongodb.uri=`
+       - Named `spring.data.mongodb.uri` before ServerPackCreator moved to Spring Boot 4, which retired that key. An existing file using the old name is still read and upgraded automatically.
        - Example:`mongodb\://<USER>:<PASSWORD>@localhost\:27017/serverpackcreatordb`
        - If the username or password includes the following characters `$ : / ? # [ ] @`, those characters must be converted using percent encoding (https://datatracker.ietf.org/doc/html/rfc3986#section-2.1) : `$ : / ? # [ ] @`
 
 6. Run ServerPackCreator, using the `-web`-argument, again
 7. Browse to `http://localhost:8080`
 
-##### 5.1.1.1 Tweaking the webservice
+##### 5.2.1.1 Tweaking the webservice
 
 You may edit the following properties inside the `serverpackcreator.properties` if you wish to change some parts of the webservice-behaviour:
 
@@ -234,7 +652,7 @@ You may edit the following properties inside the `serverpackcreator.properties` 
 | `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled`          | Whether files should be excluded from a server pack archive.                                                                         |
 | `server.port`                                                          | The port at which the webservice will be available at. Default is `8080`.                                                            |
 
-#### 5.1.2 Docker (recommended)
+#### 5.2.2 Docker (recommended)
 
 The recommended, and easiest, way to deploy ServerPackCreator as a webservice is via [docker](https://www.docker.com/) and [docker-compose](https://docs.docker.com/compose/).
 
@@ -246,11 +664,10 @@ When setting up ServerPackCreator as a webservice for production, make sure to *
 
 You must replace `<DB_ROOT_USERNAME>` and `<DB_ROOT_PASSWORD>` accordingly.
 Do note the `- ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro` in the **serverpackcreatorb**-service.
-An example for this file is available at [docker/docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
+An example for this file is available at [docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
 the MongoDB with the required user, database and collection.
 
 ```yaml
-version: '3'
 services:
   serverpackcreatordb:
     image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
@@ -292,7 +709,7 @@ volumes:
   spcdb-conf:
 ```
 
-##### 5.1.2.1 Tweaking the docker deployment
+##### 5.2.2.1 Tweaking the docker deployment
 
 You may edit the following container-properties if you wish to change some parts of the webservice-behaviour:
 
@@ -309,6 +726,8 @@ You may edit the following container-properties if you wish to change some parts
 | `SPC_SERVERPACK_AUTODISCOVERY_FILTER`         | Filter method used to exclude mods from the clientside-only list. Possible values are `START`, `END`, `CONTAIN`, `REGEX`, `EITHER`   |
 | `SPC_SERVERPACK_ZIP_EXCLUDE`                  | Files or directories which should be excluded from a server pack archive.                                                            |
 | `SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED`          | Whether files should be excluded from a server pack archive.                                                                         |
+| `SPC_CONFIGURATION_AIKAR`                     | JVM flags offered as "Aikar's flags". Mind the escaping — see the example compose-file.                                              |
+| `SPC_LOG_LEVEL`                               | Log level of the containerised ServerPackCreator. `INFO` by default, `DEBUG` to troubleshoot.                                        |
 
 ## 6. API
 
@@ -332,7 +751,7 @@ Replace `$VERSION` with the version you want to use.
 
 #### Gradle
 
-```kotlin
+```groovy
 implementation 'de.griefed.serverpackcreator:serverpackcreator-api:$VERSION'
 ```
 

@@ -9,7 +9,7 @@ import java.io.File
 import java.util.*
 
 internal class InteractiveCommandLineTest {
-    private val apiWrapper = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val apiWrapper = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val interactiveCommandLine = InteractiveCommandLine(apiWrapper, UpdateChecker(apiWrapper.apiProperties))
 
     @Test

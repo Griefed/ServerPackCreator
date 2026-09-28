@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,15 +30,21 @@ import com.formdev.flatlaf.fonts.roboto_mono.FlatRobotoMonoFont
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.app.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.app.gui.themes.ThemeManager
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.updater.MigrationManager
 import de.griefed.serverpackcreator.app.updater.UpdateChecker
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import java.awt.EventQueue
 import java.awt.Frame
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 import javax.swing.Timer
@@ -49,7 +55,6 @@ import javax.swing.Timer
  *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class)
 class MainWindow(
     private val apiWrapper: ApiWrapper,
     private val updateChecker: UpdateChecker,
@@ -58,6 +63,10 @@ class MainWindow(
 ) {
     private val guiProps = GuiProps(apiWrapper.apiProperties)
     private val themeManager = ThemeManager(apiWrapper, guiProps)
+
+    /** Owns the one-shot first-run-dialog coroutine; cancelled when the main frame is disposed
+     * (see the window-listener in `init`) rather than leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
 
     init {
         EventQueue.invokeLater {
@@ -84,13 +93,19 @@ class MainWindow(
             )
             splashScreen.close()
             guiProps.font = guiProps.font
+            // Cancel this window's coroutines when the frame is disposed (app exit).
+            main.frame.addWindowListener(object : WindowAdapter() {
+                override fun windowClosed(event: WindowEvent?) {
+                    componentScope.cancel()
+                }
+            })
             if (guiProps.startFocusEnabled) {
                 main.toFront()
             } else {
                 main.show()
             }
             if (apiWrapper.firstRun) {
-                GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+                componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                     if (JOptionPane.showConfirmDialog(
                             main.frame,
                             Translations.firstrun_message.toString(),

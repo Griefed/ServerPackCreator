@@ -65,7 +65,7 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <span v-if="col.name === 'download'">
             <q-btn :to="'/download/modpack/' + props.row.id" color="info" dense icon="download" round size="sm"
-                   @click="props.row.downloads++" v-if="props.row.size > 0" >
+                   @click="props.row.downloads++">
               <q-tooltip>
                 Download modpack
               </q-tooltip>
@@ -85,23 +85,27 @@
   </q-table>
 </template>
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks} from 'boot/axios';
-import {date} from 'quasar';
+import {formatBytes} from 'src/utils/format';
+import {date, type QTableColumn} from 'quasar';
 import ServerPacksTable from 'components/ServerPacksTable.vue';
 
-const columns = [
+// `field` is required on QTableColumn; the 'download' column renders via a body-cell slot, so its
+// field is inert (kept only to satisfy the type). Typing the array fixes the `align` literals,
+// which would otherwise widen to `string` and fail the QTable `columns` prop type.
+const columns: QTableColumn[] = [
   {name: 'id', label: 'Modpack ID', field: 'id', sortable: true, align: 'left'},
   {name: 'name', label: 'Name', field: 'name', sortable: false, align: 'left'},
   {name: 'fileID', label: 'File ID', field: 'fileID', sortable: false, align: 'left'},
-  {name: 'download', label: 'Download', sortable: false, align: 'center'},
+  {name: 'download', label: 'Download', field: 'download', sortable: false, align: 'center'},
   {name: 'downloads', label: 'Downloads', field: 'downloads', sortable: true, align: 'left'},
   {name: 'projectID', label: 'Project ID', field: 'projectID', sortable: true, align: 'left'},
   {name: 'versionID', label: 'Version ID', field: 'versionID', sortable: true, align: 'left'},
   {name: 'source', label: 'Source', field: 'source', sortable: false, align: 'left'},
   {name: 'status', label: 'Status', field: 'status', sortable: false, align: 'left'},
-  {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
+  {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left', format: (val) => formatBytes(val)},
   {
     name: 'serverPacks',
     label: 'Server Packs',
@@ -129,6 +133,7 @@ export default defineComponent({
     const showSimulatedReturnData = ref(false);
     const filter = ref('');
     return {
+      formatBytes,
       visible,
       showSimulatedReturnData,
       filter,

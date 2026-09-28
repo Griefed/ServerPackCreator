@@ -11,11 +11,11 @@ import java.nio.file.Paths
 
 internal class ConfigurationHandlerTest {
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).configurationHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).configurationHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
     private val projectDir = apiProperties.homeDirectory.parentFile.parentFile
 
     @Test
@@ -860,7 +860,10 @@ internal class ConfigurationHandlerTest {
         packConfig.modloader = "Forge"
         packConfig.modloaderVersion = "36.1.2"
         packConfig.javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j"
-        configurationHandler.printConfigurationModel(packConfig)
+        // Logging-only: there is no return value to check, so what is asserted is that a fully
+        // populated model can be printed at all. Stated with assertDoesNotThrow rather than left
+        // implicit, so the test says what it guards instead of merely not exploding.
+        Assertions.assertDoesNotThrow { configurationHandler.printConfigurationModel(packConfig) }
     }
 
     @Test
@@ -997,15 +1000,25 @@ internal class ConfigurationHandlerTest {
         )
     }
 
+    /**
+     * Every directory the fabric fixture holds must be suggested, and `server_pack` must not be.
+     *
+     * The six `any {}` calls this replaces discarded their results, so the test passed against any
+     * return value at all — an empty list included. The last of them was also the wrong question:
+     * "at least one entry is not server_pack" is true the moment a second directory exists, where
+     * what matters is that the generated output directory is never suggested as an input.
+     */
     @Test
     fun suggestInclusionsTest() {
         val dirs: List<InclusionSpecification> = configurationHandler.suggestInclusions("src/test/resources/fabric_tests")
-        dirs.any { inclusion -> inclusion.source == "config" }
-        dirs.any { inclusion -> inclusion.source == "defaultconfigs" }
-        dirs.any { inclusion -> inclusion.source == "mods" }
-        dirs.any { inclusion -> inclusion.source == "scripts" }
-        dirs.any { inclusion -> inclusion.source == "seeds" }
-        dirs.any { inclusion -> inclusion.source != "server_pack" }
+        val suggested = dirs.map { inclusion -> inclusion.source }
+        for (expected in listOf("config", "defaultconfigs", "mods", "scripts", "seeds")) {
+            Assertions.assertTrue(suggested.contains(expected), "'$expected' must be suggested, got $suggested")
+        }
+        Assertions.assertFalse(
+            suggested.contains("server_pack"),
+            "the generated server pack must never be suggested as an inclusion, got $suggested"
+        )
     }
 
     @Test

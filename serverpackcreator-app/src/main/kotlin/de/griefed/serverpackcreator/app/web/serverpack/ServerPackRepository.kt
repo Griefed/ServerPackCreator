@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,5 +22,6 @@ package de.griefed.serverpackcreator.app.web.serverpack
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
+/** Stored server packs. No derived queries — the id and the inherited paging are all any caller needs. */
 @Repository
 interface ServerPackRepository : MongoRepository<ServerPack, String>

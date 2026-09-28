@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,13 @@ class MinecraftClient {
     private val forgeMeta: ForgeMeta
     private val utilities: Utilities
     private val apiProperties: ApiProperties
+    /** The Minecraft version, e.g. `1.20.1` or `26.2`. */
     val version: String
+    /** Whether this is a release or a snapshot, which is what the release-only gates filter on. */
     val type: Type
+    /** This version's own JSON on Mojang's servers — the document that declares the required Java. */
     val url: URL
+    /** The matching server for this version. Not every version has a usable one; see `MinecraftServer.url`. */
     val minecraftServer: MinecraftServer
 
     /**

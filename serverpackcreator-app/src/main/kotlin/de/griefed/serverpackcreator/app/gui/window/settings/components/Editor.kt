@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,9 @@ import javax.swing.JScrollPane
  * @author Griefed
  */
 abstract class Editor(name: String, guiProps : GuiProps) : JScrollPane(), SettingsEditor {
+    /** This editor's tab title. */
     val title = SettingsTitle(guiProps)
+    /** The editor's content panel, which the settings tab group adds. */
     val panel = JPanel(
         MigLayout(
             "left,wrap",

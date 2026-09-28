@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,12 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+/**
+ * Removes database rows whose file is gone — the opposite direction from `FileCleanupSchedule`.
+ * 
+ * Runs on a cron, disabled in tests: a suite running at the scheduled minute against an unreachable database
+ * should not get to find out what this does.
+ */
 @Suppress("unused")
 @Service
 class DatabaseCleanupSchedule @Autowired constructor(
@@ -43,15 +49,18 @@ class DatabaseCleanupSchedule @Autowired constructor(
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
     private fun cleanDatabase() {
         log.info("Cleaning database...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }
         for (modpack in modpackRepository.findAll()) {
-            if (modpack.status == ModPackStatus.ERROR) {
-                modpackService.deleteModpack(modpack.id!!)
-                log.info("Deleted Modpack: ${modpack.id}-${modpack.name}")
-            } else if (modpackFiles.find { modpackFile -> modpackFile.name.contains(modpack.fileID!!, ignoreCase = true) } == null) {
+            // A row with no fileID never had an archive, so it is as orphaned as one whose archive is
+            // gone. Reading it through a local val rather than `!!` is the point: one such row used to
+            // end the whole pass, partway through, after other rows had already been deleted.
+            val fileID = modpack.fileID
+            val archiveIsGone = fileID == null ||
+                    modpackFiles.none { modpackFile -> modpackFile.name.contains(fileID, ignoreCase = true) }
+            if (modpack.status == ModPackStatus.ERROR || archiveIsGone) {
                 modpackService.deleteModpack(modpack.id!!)
                 log.info("Deleted Modpack: ${modpack.id}-${modpack.name}")
             }
@@ -59,13 +68,19 @@ class DatabaseCleanupSchedule @Autowired constructor(
 
         val serverPackFiles = serverPackRoot.listDirectoryEntries().map { it.toFile() }
         for (serverpack in serverPackRepository.findAll()) {
-            if (serverPackFiles.find { serverPackFile -> serverPackFile.name.contains(serverpack.fileID!!, ignoreCase = true) } == null) {
-                val modpack = modpackService.getByServerPack(serverpack)
+            // A server pack has no fileID until its generation finishes, so skipping those is not just
+            // null-safety -- deleting one would remove a pack that is still being built.
+            val fileID = serverpack.fileID ?: continue
+            if (serverPackFiles.any { serverPackFile -> serverPackFile.name.contains(fileID, ignoreCase = true) }) {
+                continue
+            }
+            val modpack = modpackService.getByServerPack(serverpack)
+            if (modpack.isPresent) {
                 modpack.get().serverPacks.removeIf { pack -> pack.id == serverpack.id }
                 modpackService.saveModpack(modpack.get())
-                serverPackRepository.delete(serverpack)
-                log.info("Deleted Server Pack ${serverpack.id} from modpack ${modpack.get().id}-${modpack.get().name}")
             }
+            serverPackRepository.delete(serverpack)
+            log.info("Deleted Server Pack ${serverpack.id}, whose archive is gone.")
         }
         log.info("Database cleanup completed.")
     }

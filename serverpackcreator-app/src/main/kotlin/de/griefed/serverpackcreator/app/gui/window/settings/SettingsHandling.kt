@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ class SettingsHandling(
     private val mainFrame: MainFrame,
     private val controlPanel: ControlPanel
 ) {
+    /** The load/save button row this class owns, placed above the settings tabs. */
     val panel = JPanel()
     private val load =
         BalloonTipButton(Translations.settings_handle_load_label.toString(), guiProps.loadIcon, Translations.settings_handle_load_tooltip.toString(), guiProps) { load() }
@@ -75,16 +76,31 @@ class SettingsHandling(
         return format.format(Date())
     }
 
+    /**
+     * Persist every settings tab, then **re-load them all** before re-checking.
+     * 
+     * The reload is not cosmetic: several settings are normalised on write or read, so a tab compared against its
+     * pre-save widget values would report unsaved changes forever. Do not remove it.
+     */
     fun save() {
         for (tab in settingsEditorsTab.allTabs) {
             (tab as Editor).saveSettings()
         }
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
+        // Re-sync each editor from the persisted properties before re-checking. Several settings are
+        // normalized when stored (e.g. database-URI migration, locale parsing, the Tomcat base-dir
+        // being reset to the home-directory), so comparing the raw widget value against the
+        // normalized property would leave the unsaved-changes icon stuck on after a save. Reloading
+        // makes the widgets hold exactly what hasUnsavedChanges() reads back — mirrors load().
+        for (tab in settingsEditorsTab.allTabs) {
+            (tab as Editor).loadSettings()
+        }
         lastAction = Translations.settings_handle_saved(currentTime())
         checkAll()
         controlPanel.updateStatus(Translations.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))
     }
 
+    /** Load settings from a properties file the user picks, replacing what is configured. */
     fun load() {
         val propertiesChooser = PropertiesChooser(apiProperties, Translations.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
@@ -98,6 +114,7 @@ class SettingsHandling(
         checkAll()
     }
 
+    /** Re-run every tab's dirty-check and update the unsaved-changes indicator. */
     fun checkAll() {
         val changes = settingsEditorsTab.allTabs.any {
             (it as Editor).hasUnsavedChanges()

@@ -6,15 +6,21 @@ Clone a branch of the repository:
 
 `git clone -b $BRANCH https://github.com/Griefed/ServerPackCreator.git`
 
-Where `$BRANCH` represents the branch you want to clone.
+Where `$BRANCH` represents the branch you want to clone. Contributions target `develop`.
 
-If you are on linux, run `chmod +x gradlew` first.
+If you are on Linux or macOS, run `chmod +x gradlew` first.
 
 Build with:
 
-`build --info --full-stacktrace`
+`./gradlew build`
 
-The `Build All` task is configured to do everything automatically, from installing frontend dependencies, assembling the web-frontend, copying some files around, build and testing.
+That single task does everything: it downloads its own Node.js, installs the frontend dependencies,
+assembles the web-frontend, compiles all modules, runs every test suite (JVM **and** frontend) and
+assembles the jars. You need a **JDK 21** installed — the build does not download one for you.
+
+**[BUILD.md](https://github.com/Griefed/ServerPackCreator/blob/main/BUILD.md) is the map of the build**: the module layout, where dependency versions and
+repositories are declared, why `<module>/tests` exists, and the handful of things that surprise
+newcomers. Read it before changing anything under `buildSrc/` or a `build.gradle.kts`.
 
 ## Contributing via GitHub Forks
 

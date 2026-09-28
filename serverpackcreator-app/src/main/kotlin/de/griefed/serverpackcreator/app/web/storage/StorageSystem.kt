@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,16 @@ import org.springframework.data.mongodb.gridfs.GridFsOperations
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.io.IOException
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.*
 
+/**
+ * The storage seam the web layer talks to. Delegates to [FileSystemStorageService] for the bytes while keeping
+ * the GridFS collaborators around, which is what lets an installation still holding files in the database be
+ * migrated onto the filesystem.
+ */
 class StorageSystem(
     private val fsStorageService: FileSystemStorageService,
     gridFsTemplate: GridFsTemplate,
@@ -53,17 +59,65 @@ class StorageSystem(
         gridFsOperations
     )
 
-    fun store(file: MultipartFile): Optional<SavedFile> {
-        val destination = File(fsStorageService.rootLocation.toFile(), System.currentTimeMillis().toString() + "-orig-" + (file.originalFilename ?: file.name))
-        file.transferTo(destination)
-        return store(destination)
+    /**
+     * Land an upload in the storage root **without** committing it, so it can be validated and hashed
+     * before anything durable is written.
+     *
+     * The caller owns the returned file and must delete it. Committing is [store]; nothing here reaches
+     * GridFS or the archive's final name, which is the point — a rejected upload used to cost all three
+     * writes, and the GridFS one could never be reclaimed because the sweep works back from ModPack rows.
+     */
+    fun land(file: MultipartFile): Optional<File> {
+        val uploadName = landingName(file)
+        val root = fsStorageService.rootLocation.toAbsolutePath().normalize()
+        val destination = root.resolve("${System.currentTimeMillis()}-orig-$uploadName").normalize()
+        if (destination.parent != root) {
+            // Belt and braces. landingName already reduces the client's string to a base name, so this
+            // cannot trigger today; it is here because the thing it guards is an arbitrary path built
+            // from a request, and the same check already sits on the internal path in FileSystemStorageService.
+            log.error("Refusing to store an upload outside $root.")
+            return Optional.empty()
+        }
+        return try {
+            file.transferTo(destination.toFile())
+            Optional.of(destination.toFile())
+        } catch (failure: IOException) {
+            // ModPackController catches StorageException only, so anything else escaping here is an
+            // unhandled 500 -- and the shipped application.properties sets include-stacktrace=ALWAYS.
+            log.error("Could not store the uploaded file $uploadName.", failure)
+            Optional.empty()
+        } catch (failure: IllegalStateException) {
+            // The other half of MultipartFile.transferTo's contract: the part has already been moved.
+            log.error("The upload $uploadName was no longer available to store.", failure)
+            Optional.empty()
+        }
     }
 
+    /**
+     * The name an upload is landed under: the base name of what the client sent, never a path.
+     *
+     * `MultipartFile.getOriginalFilename()` is whatever the caller put in `Content-Disposition`, and
+     * Spring hands it over verbatim — separators included. Before this, the only thing keeping a
+     * `../../../` out of the resulting path was that `"-orig-"` concatenates without a separator, so
+     * the first component became a directory name that happens not to exist. That is an accident of
+     * string concatenation, not a check, and it stops holding the moment the prefix changes.
+     */
+    private fun landingName(file: MultipartFile): String {
+        val candidate = file.originalFilename ?: file.name
+        val baseName = candidate.replace('\\', '/').substringAfterLast('/').trim()
+        return baseName.ifBlank { file.name.ifBlank { "upload" } }
+    }
+
+    /** The SHA-256 of a file, for a caller that needs it before deciding whether to keep the file. */
+    fun sha256Of(file: File): String = fsStorageService.sha256Of(file)
+
+    /** Store a file already on disk, for a generated archive rather than an upload. */
     fun store(file: File): Optional<SavedFile> {
         val id = dbStorageService.store(file)
         return fsStorageService.store(file, id.toString())
     }
 
+    /** The stored file for an id, empty when there is none. */
     fun load(id: String): Optional<File> {
         val fileSys = fsStorageService.load(id)
         if (fileSys.isPresent) {
@@ -91,10 +145,18 @@ class StorageSystem(
         }
     }
 
+    /**
+     * Delete one stored file — from the filesystem *and* from GridFS.
+     *
+     * Every file is written to both, so reclaiming only one of them left the database growing without
+     * bound, including for uploads that were rejected before a ModPack row ever existed.
+     */
     fun delete(id: String) {
         fsStorageService.delete(id)
+        dbStorageService.delete(id)
     }
 
+    /** Delete everything stored. For the cleanup schedule, not for a request. */
     @Suppress("unused")
     fun deleteAll() {
         fsStorageService.deleteAll()

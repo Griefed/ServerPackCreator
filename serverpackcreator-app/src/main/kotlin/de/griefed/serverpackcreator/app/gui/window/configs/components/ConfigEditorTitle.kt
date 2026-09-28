@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ class ConfigEditorTitle(
     private val configEditor: ConfigEditor
 ) : TabTitle(guiProps) {
 
+    /** The tab's close button. Exposed so the tabbed pane can wire closing without reaching into the layout. */
     val closeButton = JButton(guiProps.closeIcon)
     private val editorTitleMouseAdapter = object : MouseAdapter() {
         val closeSaveAndSaveAsMenu = JPopupMenu()

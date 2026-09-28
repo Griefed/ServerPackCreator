@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,12 +35,14 @@ open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 
     private val warningIconLabel = JLabel(guiProps.smallWarningIcon)
     private val titleLabel = JLabel(Translations.createserverpack_gui_title_new.toString())
 
+    /** Whether the warning icon is showing. Kept as state because the icon is also driven by the timer, which must not toggle it twice. */
     var hasUnsavedChanges: Boolean = false
         get() {
             return warningIconLabel.isVisible
         }
         private set
 
+    /** The tab's label. Setting it re-lays out the title component, since a longer name needs more room. */
     var title: String
         get() {
             return titleLabel.text

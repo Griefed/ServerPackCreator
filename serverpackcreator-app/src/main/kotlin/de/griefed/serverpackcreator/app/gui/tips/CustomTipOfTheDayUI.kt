@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -238,7 +238,10 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
             }
             parent.size = preferredDimension
             parent.preferredSize = preferredDimension
-        } catch (_: NullPointerException) {}
+        } catch (_: NullPointerException) {
+            // No enclosing JDialog was found while walking the parent chain, so there is nothing
+            // to resize.
+        }
     }
 
     private fun updateViewedTips() {
@@ -253,12 +256,14 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
      * @author Hiroshi Miura
      */
     inner class PreviousTipAction : AbstractAction("previousTip") {
+        /** Advance or go back one tip. */
         override fun actionPerformed(e: ActionEvent) {
             tipPane.previousTip()
             updateViewedTips()
             updatePreferredSize()
         }
 
+        /** Whether there is a tip in that direction — what greys the button out at either end. */
         override fun isEnabled(): Boolean {
             return tipPane.isEnabled
         }
@@ -270,12 +275,14 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
      * @author Hiroshi Miura
      */
     inner class NextTipAction : AbstractAction("nextTip") {
+        /** Advance one tip, recording it as viewed and re-fitting the dialog to the new content. */
         override fun actionPerformed(e: ActionEvent) {
             tipPane.nextTip()
             updateViewedTips()
             updatePreferredSize()
         }
 
+        /** Whether there is a further tip to show — what greys the button out at the end. */
         override fun isEnabled(): Boolean {
             return tipPane.isEnabled
         }

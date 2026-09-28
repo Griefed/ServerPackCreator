@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,12 +56,16 @@ class MainPanel(
     ),
     "growx,growy,north"
 ) {
+    /** The configuration editors — the tab group a user spends their time in. */
     val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper, mainFrame)
 
+    /** The log viewers. */
     @Suppress("MemberVisibilityCanBePrivate")
     val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
 
+    /** The always-visible bottom bar: generate, open server packs, and the status scanner. */
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper, mainFrame)
+    /** The settings tab group. */
     @Suppress("MemberVisibilityCanBePrivate")
     val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame, themeManager, controlPanel)
 

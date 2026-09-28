@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,13 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      */
     init {
         gitHub = try {
-            GitHubChecker("Griefed/ServerPackCreator").refresh()
+            // Timeouts applied before refresh(), which is what performs the first request. VersionChecker
+            // cannot read them itself -- it has no ApiProperties, and giving it one would change every
+            // subclass constructor -- so the component that does have them sets them here.
+            GitHubChecker("Griefed/ServerPackCreator").apply {
+                connectTimeout = apiProperties.networkConnectTimeout
+                readTimeout = apiProperties.networkReadTimeout
+            }.refresh()
         } catch (ex: IOException) {
             log.error(
                 "Either GitHub is currently unreachable, or the GitHub user/repository you set resulted in a malformed URL. "
