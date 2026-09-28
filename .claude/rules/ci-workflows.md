@@ -385,3 +385,51 @@ how five tags ended up 300-odd commits away from the code they name. Note the mi
 this right for the GitHub side — it passes `target_commitish: ${{ github.sha }}` precisely because the
 tag has usually not mirrored across yet. That covers an absent **tag** only: the commit it names still has
 to be present, which is why the job now probes for it first (see above).
+
+## ghcr's 429 is a burst limiter on the *host*, and authenticating does not lift it
+
+**LANDMINE — a registry 429 that asks for a sub-millisecond wait is not a quota you can buy your way out
+of, and buildkit will not wait for it.** `docker-test.yml` has lost three runs to the pull of
+`ghcr.io/linuxserver/baseimage-ubuntu:noble` — 676 and 680 on 2026-09-27, 739 on 2026-09-28 — and all
+three end the same way:
+
+```
+#9 ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET request to
+https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:5d9a14c0…: 429 Too Many Requests
+::error::buildx failed with: toomanyrequests: retry-after: 933.17µs, allowed: 44000/minute
+```
+
+The phase varies — 676 died resolving the *manifest*, 680 and 739 fetching a *blob* — so anything that
+touches the registry is exposed, not one request.
+
+**The first fix was wrong, and the evidence that it was wrong is in the run it shipped in.** The `Log in
+to ghcr.io when credentials are available` step was added on the premise that ghcr throttles *anonymous*
+pulls per source address and an authenticated pull is counted against the account instead. Run 739 carried
+that step, logged `Login Succeeded` and `Authenticated to ghcr.io as ***`, buildkit emitted its `[auth]
+… token for ghcr.io` vertex (absent from job 1712, which had no credentials) — and the blob GET came back
+429 anyway. Two numbers in the error say why: **44,000/minute is not an allowance one build can exhaust**,
+and **the retry-after is 933 µs**. That is a token bucket keyed on the requesting host, refilling in under
+a millisecond; an account-scoped credential is the wrong axis entirely. The login is kept — it costs one
+second and is the right thing for Docker Hub's genuine per-account quota — but it is not why the job is
+green.
+
+**What works is waiting, and the only retry a `uses:` step admits is `continue-on-error` plus a second
+copy of it.** `nick-fields/retry` and its kin run shell commands, not JavaScript actions. Verified against
+the runner's own engine rather than assumed: `pkg/runner/step.go` in `code.forgejo.org/forgejo/act` sets
+`stepResult.Outcome` to `failure` while `isContinueOnError` turns `Conclusion` back to `success`, and
+`StepResult` (`pkg/model/step_result.go`) marshals `outcome` as exactly the string an
+`if: steps.<id>.outcome == 'failure'` compares against. Both `docker-test.yml` and `release-build.yml`
+now do this; the second is the one that matters, because a 429 there costs the release its images and
+takes the `mirror` job (`needs: docker`) down with it.
+
+**One retry, not a loop.** The limiter resets in under a millisecond, so a host still limiting a minute
+later is a condition worth failing loudly on rather than grinding against. In `docker-test.yml` the retry
+is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
+In `release-build.yml` it is not: `no-cache: true` means attempt two rebuilds the whole Gradle stage,
+about fifteen minutes. Pushing the same tags twice is idempotent, so that is the price of the insurance.
+
+**The standing exposure the retry does not remove:** every job on this instance pulls
+`ghcr.io/catthehacker/ubuntu:runner-latest`, the grinder pulls its own images, and `concurrency` is keyed
+per-ref, so one push routinely runs two builds of the same commit side by side against one registry from
+one address. A pull-through cache in front of ghcr on the runner host is the fix that removes the cause
+rather than absorbing it; it is host configuration, not a repository change.

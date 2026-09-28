@@ -389,7 +389,36 @@ jobs:
           fi
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
+      # Retried for the same reason `docker-test.yml` retries: ghcr answers a pull with
+      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips its
+      # per-source burst limiter, and buildkit does not wait. Being logged in does not help -- run 739's job
+      # logged `Login Succeeded` and still died on a blob GET. That workflow has lost three runs to it; here
+      # the same minute would cost the release its images and take the `mirror` job (`needs: docker`) with it.
+      #
+      # The retry is expensive and deliberately so: `no-cache: true` means attempt two rebuilds the whole
+      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a needless
+      # retry is time, and the cost of not having one is a release with no image.
       - name: Build and push
+        id: buildpush
+        continue-on-error: true
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          build-args: VERSION=${{ needs.prepare.outputs.version }}
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Wait out the registry's burst limiter
+        if: ${{ steps.buildpush.outcome == 'failure' }}
+        run: |
+          echo "The first build-and-push failed. If it was a registry 429 the limiter has long since reset; retrying once."
+          sleep 30
+
+      - name: Build and push (retry)
+        if: ${{ steps.buildpush.outcome == 'failure' }}
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .

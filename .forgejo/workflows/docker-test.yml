@@ -33,13 +33,18 @@ jobs:
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
       # The Dockerfile's runtime stage is `ghcr.io/linuxserver/baseimage-ubuntu:noble`, and ghcr throttles
-      # ANONYMOUS pulls per source address. Runs 676 and 680 died an hour apart on the same thing, so it is
-      # a state of the host rather than a blip:
+      # pulls. Three runs have died on it -- 676 and 680 anonymously, 739 *while authenticated*:
       #   ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET
-      #   https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:4ead6a81… 429 Too Many Requests
-      # An authenticated pull is counted against the account instead, which is a far larger allowance. The
-      # credentials are the pair `docs.yml` and `release-build.yml` already use for ghcr; `GH_TOKEN` carries
-      # `write:packages`, which covers the login (claude-docs/CI-SECRETS.md).
+      #   https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:5d9a14c0... 429 Too Many Requests
+      #   toomanyrequests: retry-after: 933.17us, allowed: 44000/minute
+      #
+      # This login is kept, but it is NOT the fix, and the comment that once said so was wrong. Job 1821
+      # (run 739) logged `Login Succeeded` and `Authenticated to ghcr.io as ***`, buildkit emitted its
+      # `#3 [auth] linuxserver/baseimage-ubuntu:pull token for ghcr.io` vertex -- and the blob GET still
+      # came back 429. An allowance of 44000/minute is not something one build can exhaust, and the
+      # retry-after is under a millisecond: this is a per-source burst limiter on the runner host, not an
+      # account quota, so an account-scoped credential cannot lift it. What lifts it is waiting, which
+      # buildkit does not do -- hence the retry on the build step below.
       #
       # Deliberately a `run:` rather than `docker/login-action`, and deliberately tolerant: this job asked
       # for no secrets before, so a fork or an instance without them must keep building. Missing credentials
@@ -58,7 +63,33 @@ jobs:
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
           echo "Authenticated to ghcr.io as $GHCR_USER."
 
+      # `continue-on-error` plus a second, identical build is the only retry a JavaScript action admits:
+      # `nick-fields/retry` and friends run shell commands, not `uses:` steps. Verified against the runner's
+      # own engine rather than assumed -- `pkg/runner/step.go` in code.forgejo.org/forgejo/act sets
+      # `stepResult.Outcome` to failure while `isContinueOnError` turns `Conclusion` back to success, which
+      # is exactly what `steps.build.outcome` below reads.
+      #
+      # One retry, not a loop: the registry asks for under a millisecond, so a burst that is still limiting
+      # a minute later is a state of the host worth failing loudly on. The retry is also cheap -- the builder
+      # container outlives the step, so whatever buildkit already fetched or built is reused.
       - name: Build image
+        id: build
+        continue-on-error: true
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: serverpackcreator:${{ github.sha }}
+
+      - name: Wait out the registry's burst limiter
+        if: ${{ steps.build.outcome == 'failure' }}
+        run: |
+          echo "The first build failed. If it was ghcr's 429 the limiter has long since reset; retrying once."
+          sleep 30
+
+      - name: Build image (retry)
+        if: ${{ steps.build.outcome == 'failure' }}
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .
