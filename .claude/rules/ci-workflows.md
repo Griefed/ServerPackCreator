@@ -431,5 +431,10 @@ about fifteen minutes. Pushing the same tags twice is idempotent, so that is the
 **The standing exposure the retry does not remove:** every job on this instance pulls
 `ghcr.io/catthehacker/ubuntu:runner-latest`, the grinder pulls its own images, and `concurrency` is keyed
 per-ref, so one push routinely runs two builds of the same commit side by side against one registry from
-one address. A pull-through cache in front of ghcr on the runner host is the fix that removes the cause
-rather than absorbing it; it is host configuration, not a repository change.
+one address. Caching in front of the registries on the runner host is the fix that removes the cause
+rather than absorbing it — **`claude-docs/RUNNER-REGISTRY-CACHE.md`** has the configuration, the two
+constraints that decide its shape (Docker Engine's `registry-mirrors` is Docker-Hub-only; BuildKit's is
+not, and falls back to upstream — verified from `util/resolver/resolver.go`, which the buildkitd
+reference does not state), and the bridge-gateway/`INPUT policy DROP` trap that makes a mirror look like
+it simply does not work. It is host configuration, not a repository change, so the workflow half of it
+must not land before the host half.
