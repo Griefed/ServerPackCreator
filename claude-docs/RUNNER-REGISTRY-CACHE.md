@@ -248,10 +248,21 @@ are not by default:
   docker-compose examples for `forgejo-runner` set it to `true`, and several jobs run per push. If it is
   `true` here, the host is pulling `ghcr.io/catthehacker/ubuntu:runner-latest` **once per job** for no
   benefit, and that alone could be the burst. Check it before building anything.
-- **`concurrency` is keyed per-ref** (`<workflow>-${{ github.ref }}`), so one push to `develop` builds the
-  same commit twice, in parallel, against one registry from one address. That is a deliberate trade
-  recorded in `.claude/rules/ci-workflows.md`; it is also a x2 on every pull this file is trying to
-  reduce.
+- **One push can build the same commit twice, which doubles every pull below.** Three conditions have to
+  coincide, and all three are normal here: a workflow triggers on **both** `push:` and `pull_request:`; a
+  long-lived PR is open whose head is the branch being pushed (the standing `develop` → `beta` one); and
+  the concurrency group carries `${{ github.ref }}`, which differs between `refs/heads/develop` and the
+  PR's ref, so nothing deduplicates them. The per-ref key is the *enabling* condition, not the cause — it
+  is what stops the second run being queued behind the first.
+
+  Of the nine workflows, `docker-test.yml` and `test.yml` meet all three and run in parallel;
+  `grinder-container-it.yml` also fires twice but its group carries **no ref**, so the two runs queue.
+  `docs.yml`, `qodana.yml` and the release workflows trigger on `push:` only and never double. Clearest
+  evidence in the run list: indices **665 (#678)** and **666 (develop)**, same commit, both started
+  `2026-09-27T15:10:11`. The trade is deliberate and recorded in `.claude/rules/ci-workflows.md` — a
+  ref-less group would serialise `test.yml` and cost every push a second 35-minute run in series — but it
+  is still a x2 on every pull this file is trying to reduce, and it is what made
+  `DockerJavaContainerEngineIT` fail three runs in a row on 2026-09-27.
 
 ## What none of this fixes
 
