@@ -88,7 +88,7 @@ jobs:
           path: |
             serverpackcreator-api/build/libs/*.jar
             serverpackcreator-app/build/libs/*.jar
-            serverpackcreator-plugin-example/build/libs/*.jar
+            serverpackcreator-plugin-*/build/libs/*_experimental.jar
           retention-days: 1
 
   build-appimage-x86_64:

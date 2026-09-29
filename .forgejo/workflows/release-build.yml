@@ -130,8 +130,26 @@ jobs:
              "serverpackcreator-app/build/libs/ServerPackCreator-$V.jar"
           cp serverpackcreator-api/build/libs/*.jar            "release/$V/"
           cp serverpackcreator-app/build/libs/*.jar            "release/$V/"
-          cp serverpackcreator-plugin-example/build/libs/*.jar "release/$V/"
           cp media/*                                          "release/$V/"
+          # Every plugin module, by glob rather than by name: the modules are already listed in
+          # settings.gradle.kts and in the root build's `appPluginConfigurations`, and a third list here
+          # is the one that silently stops growing -- which is exactly what happened while this line
+          # named `-plugin-example` alone and three more plugins existed. `_experimental` is decided by
+          # `serverpackcreator.plugin-conventions` and nothing here repeats it, the same arrangement the
+          # AppImages have below.
+          #
+          # The count is derived, not written down, so it cannot go stale either: one jar per plugin
+          # module, no more and no fewer. Fewer means a module whose jar did not build or did not get
+          # the name; more means a stale jar from an earlier build, which a release workspace should
+          # never have and which would ship twice if it did.
+          PLUGIN_MODULES="$(ls -d serverpackcreator-plugin-*/ | wc -l)"
+          PLUGIN_JARS="$(ls -1 serverpackcreator-plugin-*/build/libs/*_experimental.jar 2>/dev/null | wc -l)"
+          if [ "$PLUGIN_JARS" -ne "$PLUGIN_MODULES" ]; then
+            echo "::error::Expected one _experimental jar per plugin module ($PLUGIN_MODULES), found $PLUGIN_JARS"
+            ls -la serverpackcreator-plugin-*/build/libs/ 2>/dev/null || echo "no plugin build directories at all"
+            exit 1
+          fi
+          cp serverpackcreator-plugin-*/build/libs/*_experimental.jar "release/$V/"
           # The AppImages carry `_experimental` in their names -- `misc/build-appimage.sh` decides that,
           # and nothing here repeats it. They land in the release directory before checksum.txt is
           # generated below, so they are covered by it like every other asset.
