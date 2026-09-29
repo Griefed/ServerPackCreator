@@ -30,7 +30,7 @@ constraints.
 - **`serverpackcreator-api` is published to Maven Central, so its public surface is a compatibility
   constraint** — plugins compile against it. Governed by the **API compatibility policy** below.
 - **Every other module is unpublished and therefore churns freely** (`-clientside`, `-app`,
-  `-grinder`, all three plugin modules, the frontend). `-clientside` in particular is free to change shape;
+  `-grinder`, every plugin module, the frontend). `-clientside` in particular is free to change shape;
   `-plugin-example` is the exception that must always reflect *current* API idiom, because it is
   documentation by example.
 - **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
