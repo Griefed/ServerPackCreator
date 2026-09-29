@@ -20,9 +20,9 @@ change. A launcher that built its own `java` command would not be testing what s
 
 | Package | What lives there |
 |---|---|
-| *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless) and `ServerTestTabExtension` — the one pf4j extension point this plugin provides |
-| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings` |
-| `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus two pinned non-view units: `ConsoleHints` and `PlainTextRendering` |
+| *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless) and the two pf4j extension points: `ServerTestTabExtension` (the GUI tab) and `ServerTestPostGenExtension` (refreshes the list when a pack is generated) |
+| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings`, **`ServerLauncher`/`LaunchOutcome`** — the launch sequence itself — and `GenerationNotifier`/`Subscription` |
+| `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus three pinned non-view units: `ConsoleHints`, `PlainTextRendering` and `Dialogs` |
 
 ## Zero API changes, and what that rests on
 
@@ -40,6 +40,34 @@ plugin's build file already records as a reason.
 
 ## Landmines & decisions (do not relearn)
 
+- **The scripts on offer come from `ApiProperties.startScriptTemplates`, not from a list here.** Those
+  keys are what `ServerPackProvisioner` generates packs from — one per script type, each written out as
+  `start.<key>` — so reading the same setting is the only thing that stops the dropdown offering a script
+  no generation produces, or hiding one an operator added. **`StartScripts.forKey` must keep agreeing
+  with `ServerPackProvisioner.startScriptName` (`"start.$key"`)**; disagree and every row reports a
+  missing script that is sitting right there in the pack.
+- **A key this plugin has no interpreter for is still offered, and executed directly** (`./start.zsh`).
+  ServerPackCreator marks every generated start script executable, so a custom template carrying a
+  shebang runs on its own — and inventing an interpreter for an undocumented key would repeat the
+  mistake the old platform fallback made.
+- **The order is imposed because `startScriptTemplates` is a `HashMap`.** Known types first in the order
+  a user wants them, an operator's additions after, alphabetically. Without it the dropdown reshuffles
+  between reads.
+- **No templates configured is a real state, not a defensive one** — the setting is user-editable and can
+  be emptied, which makes generations produce no start scripts at all. The choice is therefore nullable,
+  the dropdown disables itself, and the Status column carries `StartScripts.NO_SCRIPTS_CONFIGURED`.
+- **The user picks; the platform only supplies the default** (`bat` on Windows, `sh` elsewhere, falling
+  back to whatever *is* configured). The plugin *deciding* is the one failure with no workaround: a guess
+  landing on a script the host cannot run leaves somebody unable to start a pack at all. An entry this
+  host has no interpreter for is deliberately still selectable — that launch fails on the console with
+  the interpreter's own error, which beats a disabled control explaining nothing. **A pack missing the
+  chosen script is refused by name, never substituted**; substituting is what the old platform fallback
+  did, and it hid that the user asked for `start.bat` and got `start.ps1`.
+- **What a pack *carries* is independent of what is *configured*.** The catalog records every `start.*`
+  regular file it finds, so a pack generated under a different template set still reports itself
+  honestly; the current configuration is applied at the dropdown, not at discovery.
+  `StartScriptSelector.selectFor(pack, script)` is pure, so changing the choice re-decides every row
+  without going back to disk.
 - **The port can only be set through `server.properties`, and that file is the user's.** `start.sh`
   interpolates `ADDITIONAL_ARGS` *before* `-jar`, in JVM-argument position, so Minecraft's `--port`
   never reaches the server; `SERVER_RUN_COMMAND` always ends in `nogui` with no hook for a program
@@ -81,13 +109,41 @@ plugin's build file already records as a reason.
 - **`PackRow.startable` keys on liveness, not on the last state.** Keying it on `state == null` would
   let each pack be tested exactly once per launch of ServerPackCreator, while the row still shows how
   the last run ended.
-- **Every component showing text from outside this plugin disables HTML.** `JLabel` and
-  `DefaultTableCellRenderer` install an HTML view for any string starting with `<html>`, and Swing's
-  HTML subset loads remote images — and a pack's *directory name* is user-controlled, as are the
-  version strings in a hand-editable `manifest.json`. `PlainTextRendering` is a deliberate second copy
-  of the grinder plugin's: both plugins depend on `-api` alone, and promoting eight lines into the
-  published API would be a permanent compatibility obligation bought for very little. If a third plugin
-  needs it, that trade changes.
+- **The launch sequence lives in `core`, not in the tab.** Taking ports, borrowing
+  `server.properties`, registering before starting and giving everything back is `ServerLauncher`'s
+  job; the tab puts a console on screen and starts the session once there is somewhere for its output
+  to go. An audit found the whole sequence uncovered while it sat in a Swing view — it is not
+  rendering, and treating it as such is what hid it. **Two idempotence guards in there, not one:**
+  `giveBack` covers the resources and is shared with the failure path, where the caller must *not* be
+  told a session closed because it never got one; a second guard covers the whole close so the caller
+  is told exactly once.
+- **Three surfaces show a pack's own directory name, and all three had to be proofed separately.**
+  `JLabel`, `DefaultTableCellRenderer`, `JOptionPane`'s string messages and `BasicTabbedPaneUI`'s tab
+  titles all install an HTML view for anything starting with `<html>`, and Swing's HTML subset loads
+  remote images. A directory name is user-controlled and an imported modpack can influence it.
+  **LANDMINE — a registration is not a mitigation until something reaches it.** `PackListPane`
+  registered an HTML-disabled renderer under `String::class.java` while `PackTableModel` inherited
+  `getColumnClass` = `Object`, so `JTable` never consulted it; measured, the resolved renderer was the
+  stock one and the rendered component carried an installed HTML view. `PackTableModel.getColumnClass`
+  is therefore load-bearing, every dialog goes through `Dialogs`, and every console tab's title is set
+  with `setTabComponentAt`. `HtmlProofingTest` asserts what Swing *resolved*, never that a
+  registration was made — and includes a structural guard that no view reaches for `JOptionPane`
+  itself, which reads code rather than comments after its first version flagged the sentence
+  explaining the rule. `PlainTextRendering` is a deliberate second copy of the grinder plugin's: both
+  plugins depend on `-api` alone, and promoting eight lines into the published API would be a
+  permanent compatibility obligation bought for very little. If a third plugin needs it, that trade
+  changes.
+- **`ServerTestTab.consoles` is a `ConcurrentHashMap`, and that is not caution.** It is written on the
+  event dispatch thread and read on each session's reader thread, which is where `ServerSession`
+  documents its callbacks arrive.
+- **Closing a *running* server's console tab is refused.** That tab is the only place the server can be
+  stopped from, so removing it would strand the process.
+- **`PackListPane.show` restores the selection by *pack*, and that is load-bearing twice over.** Replacing
+  the rows fires a table-wide change and Swing drops the selection, which made choosing a start script
+  clear the selected pack and grey out Start — reported from use. The same redraw runs on Refresh and on
+  every finished generation, so the auto-refresh had the identical defect. **Restoring a row *index*
+  instead would be worse than losing the selection:** a refresh can reorder the list, so the selection
+  would silently land on a different pack and Start would launch something nobody chose.
 - **The console wraps, unlike SPC's own log panes.** Found by rendering the pane and looking: the notes
   it writes are prose and were being cut off mid-sentence behind a horizontal scrollbar. A crash report
   is what a user comes here to read, and hunting for a scrollbar to finish a stack-trace line is worse
@@ -95,6 +151,50 @@ plugin's build file already records as a reason.
 - **Auto-scroll decides whether it was at the bottom BEFORE appending.** Afterwards the maximum has
   already grown and every position looks scrolled-up, which stops the console following the tail from
   its very first line.
+
+## The server runs in its own JVM, and that is the whole point
+
+**Three OS processes, not one.** ServerPackCreator's JVM spawns `bash start.sh` with `ProcessBuilder`, and
+the script spawns `java` itself. Nothing about the server runs inside ServerPackCreator's own JVM, so its
+heap is not ServerPackCreator's heap and a modpack asking for 12G cannot exhaust a ServerPackCreator
+started with 512M.
+
+Measured rather than asserted (2026-09-25): a launching JVM at `maxHeap=512M`, pid 56250, spawned a shell
+at pid 56251 whose child JVM reported `MaxHeapSize = 3221225472` — 3 GiB, from its own `-Xmx3G`, while the
+launcher stayed at 512M. Separate pids, independent heaps.
+
+The server's heap comes from **`JAVA_ARGS` in the pack's own `variables.txt`** (which Forge and NeoForge
+packs also write into `user_jvm_args.txt`), and `JAVA` there may point at an entirely different Java
+installation — a different major version, even. None of that is negotiated with ServerPackCreator.
+
+**What *is* shared is the machine.** The plugin deliberately allows several packs to run at once, so total
+RAM is the real constraint: three modpack servers at 8G each will hurt whatever else is running, including
+ServerPackCreator. That is a different concern from heap-in-one-JVM, and the honest mitigation is that the
+console shows each server's own output and Force stop kills its whole process tree.
+
+**This is also why `kill()` walks `descendants()`.** The server is a *grandchild* — SIGKILL to the shell
+alone reparents it to init, still holding the world directory, the port and all of that heap. The same
+defect was fixed in `-clientside`'s `HostProcessServerRunner` on this branch.
+
+## Refreshing when a pack is generated
+
+`ServerTestPostGenExtension` hears that a generation finished and publishes to `GenerationNotifier`; the
+tab subscribes while it is in the window.
+
+- **A `PostGenExtension`, not an `SPCPostGenListener`**, though both fire on adjacent lines at the end of
+  `ServerPackHandler.run`. A listener must be registered by reaching back through `ApiWrapper.api()` from
+  plugin `init` — the call the api `CLAUDE.md` records as having caused two unbounded recursions — and
+  `ServerPackHandler` has `addEventListener` with **no `removeEventListener`**, so a rebuilt tab would leak
+  one permanently. `ApiPlugins.runPostGenExtensions` also already wraps every call, so a throw here cannot
+  abort somebody's generation.
+- **`GenerationNotifier` exists because the two extensions cannot reach each other.**
+  `SingletonExtensionFactory` builds each one separately. It is an `object` but **plugin-scoped, not
+  JVM-global** — pf4j gives each plugin its own classloader.
+- **Subscribed in `addNotify`, cancelled in `removeNotify`**, the grinder plugin's timer idiom: the
+  notifier keeps whatever it is given, so an unowned subscription outlives the tab it served.
+- **The generated pack's path is deliberately ignored** and the directory re-read, so the new row's facts
+  come from the same `manifest.json` as every other row's rather than by a second route.
+- Publishing happens on the generation thread, never the EDT, so the tab marshals for itself.
 
 ## The EULA, and why the plugin never writes `eula.txt`
 
@@ -121,7 +221,7 @@ user to a five-second countdown rather than ending the session, and Force stop i
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-servertest:test` — 69 tests, of which 68 run by default; the
+`./gradlew :serverpackcreator-plugin-servertest:test` — 110 tests, of which 109 run by default; the
 skip is `RealPackBootTest`, which boots a real server and is switched on deliberately (below).
 
 - **`core` is tested against real processes, not mocks.** What is under test is process behaviour — does
@@ -152,6 +252,23 @@ skip is `RealPackBootTest`, which boots a real server and is switched on deliber
   fallback, so reading a renamed key returns the fallback and looks identical to reading the right one.
   It now asserts key **presence**. Ask of any settings guard here whether it could tell a live key from a
   dead one.
+- **Two guards are known to be weaker than they read, and say so in their own KDoc.** Do not "fix" them
+  by strengthening the wording. `stopAndKillAfterExitLeaveTheStatusIntact` stays green when
+  `transitionTo`'s terminal check is removed, because once the process is dead `stop()` and `kill()`
+  return before reaching it — the race that check defends against is real and no deterministic test here
+  reaches it, so that guard stands on reasoning. `onlyOneConcurrentRegistrationWinsAPack` stays green
+  when `SessionRegistry.register` loses its `@Synchronized`, because the window is a few instructions
+  wide; `concurrentAllocationsNeverCollide` *does* catch its annotation being removed, so the two are
+  not equal evidence.
+- **Seam-plus-guard is the sanctioned shape here, not a lapse.** Every `test(servertest): …` commit on
+  this branch also lands the production seam with a stubbed body, because for new code there is no
+  behaviour to preserve and a guard that cannot compile fails on a missing symbol rather than on a wrong
+  answer. Griefed sanctioned it on 2026-09-25 and declined to re-split the branch; the rule and its two
+  siblings are in the root `CLAUDE.md`. **The obligation that comes with it:** name, in the commit
+  message, which assertions are vacuous against the stub — those are the ones that will otherwise be
+  mistaken for pins.
+- **`RealPackBootTest` goes through `ServerLauncher`**, not through hand-wired collaborators, so the
+  end-to-end exercises the sequence the Start button actually runs rather than a copy that could drift.
 
 ## Verified end to end (2026-09-25)
 

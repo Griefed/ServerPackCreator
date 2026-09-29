@@ -19,108 +19,213 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.core
 
+import de.griefed.serverpackcreator.api.settings.ScriptTemplatesConfig
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Pins which script a pack is launched with, and with what argv.
+ * Pins that the scripts on offer are **ServerPackCreator's own configured templates**, and that the user
+ * picks among them.
  *
- * The answers come from the pack's own `HOW-TO-RUN.md` rather than from taste: `bash start.sh` on Linux and
- * macOS, `start.bat` on Windows — the shipped shim whose entire job is to run `start.ps1` without the user
- * changing their ExecutionPolicy. Getting this wrong is not a crash but a hang or a cryptic shell error, so
- * it is worth pinning rather than eyeballing.
- *
- * Every case is exercised for **both** platforms regardless of the host, because a selector that silently
- * agrees with whatever machine ran the suite is the one defect this cannot afford.
+ * Two separate mistakes are being guarded against. Offering a fixed list would let the dropdown name a
+ * script no generation produces — or hide one an operator added — because
+ * `ApiProperties.startScriptTemplates` is what `ServerPackProvisioner` actually writes packs from. And
+ * choosing *for* the user is the failure with no workaround: a guess landing on a script their machine
+ * cannot run leaves them unable to start a pack with nowhere to say otherwise.
  */
 internal class StartScriptSelectorTest {
 
-    /** A generated pack always carries every template's script, so the realistic fixture carries them all. */
-    private fun packWithAllScripts(directory: File): File = directory.apply {
-        for (script in listOf("start.sh", "start.bat", "start.ps1", "start.fish")) {
-            File(this, script).writeText("#placeholder\n")
-        }
-    }
+    /** The template keys ServerPackCreator ships by default, taken from its own defaults rather than typed. */
+    private val shippedKeys = listOf("sh", "ps1", "bat", "fish")
 
-    /** Linux and macOS run the pack through bash, with the script named relatively so the cwd decides. */
-    @Test
-    fun posixRunsStartShThroughBash(@TempDir packDir: File) {
-        val selection = StartScriptSelector.selectFor(packWithAllScripts(packDir), Platform.POSIX)
-        Assertions.assertTrue(selection is StartScriptSelection.Available, "A pack with start.sh must be launchable.")
-        val available = selection as StartScriptSelection.Available
-        Assertions.assertEquals(listOf("bash", "start.sh"), available.command)
-        Assertions.assertEquals(File(packDir, "start.sh"), available.script)
-    }
+    private fun packAt(directory: File) = LaunchablePack(
+        directory = directory,
+        name = directory.name,
+        minecraftVersion = "1.21",
+        modloader = "NeoForge",
+        modloaderVersion = "21.0.18",
+        scriptKeysPresent = StartScriptSelector.scriptKeysIn(directory)
+    )
 
     /**
-     * Windows runs the batch shim, not PowerShell directly. `start.bat` exists precisely so a user does not
-     * have to change their system's ExecutionPolicy, and the pack's own HOW-TO-RUN.md says to prefer it.
+     * A key becomes the file ServerPackCreator generates for it.
+     *
+     * `ServerPackProvisioner.startScriptName` is `"start.$key"`, and this plugin has to agree with it or
+     * every row reports a missing script that is sitting right there.
      */
     @Test
-    fun windowsRunsStartBatThroughCmd(@TempDir packDir: File) {
-        val selection = StartScriptSelector.selectFor(packWithAllScripts(packDir), Platform.WINDOWS)
-        val available = Assertions.assertInstanceOf(StartScriptSelection.Available::class.java, selection)
-        Assertions.assertEquals(listOf("cmd", "/c", "start.bat"), available.command)
+    fun aTemplateKeyNamesTheGeneratedScript() {
+        Assertions.assertEquals("start.sh", StartScripts.forKey("sh").fileName)
+        Assertions.assertEquals("start.bat", StartScripts.forKey("bat").fileName)
+        Assertions.assertEquals("start.zsh", StartScripts.forKey("zsh").fileName)
     }
 
-    /**
-     * A pack generated with `bat` removed from the start-script templates still has `start.ps1`, so Windows
-     * falls back to invoking PowerShell the way the shim would have. `-NoProfile` because a user profile that
-     * writes to the console would land in the server log, `-ExecutionPolicy Bypass` because that is the whole
-     * reason the shim exists.
-     */
+    /** The scripts ServerPackCreator ships templates for run through the interpreter each one needs. */
     @Test
-    fun windowsFallsBackToPowerShellWhenTheShimIsAbsent(@TempDir packDir: File) {
-        packWithAllScripts(packDir)
-        File(packDir, "start.bat").delete()
-        val selection = StartScriptSelector.selectFor(packDir, Platform.WINDOWS)
-        val available = Assertions.assertInstanceOf(StartScriptSelection.Available::class.java, selection)
+    fun theShippedScriptTypesRunThroughTheirInterpreter() {
+        Assertions.assertEquals(listOf("bash", "start.sh"), StartScripts.forKey("sh").command)
+        Assertions.assertEquals(listOf("cmd", "/c", "start.bat"), StartScripts.forKey("bat").command)
         Assertions.assertEquals(
             listOf("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "start.ps1"),
-            available.command
+            StartScripts.forKey("ps1").command
+        )
+        Assertions.assertEquals(listOf("fish", "start.fish"), StartScripts.forKey("fish").command)
+    }
+
+    /**
+     * A template an operator added is offered and executed **directly**, not guessed at.
+     *
+     * ServerPackCreator marks every generated start script executable, so a custom template carrying a
+     * shebang runs on its own. Inventing an interpreter for a key nobody documented would repeat the very
+     * mistake the fixed platform fallback made.
+     */
+    @Test
+    fun anOperatorsOwnTemplateIsOfferedAndRunDirectly() {
+        val custom = StartScripts.forKey("zsh")
+
+        Assertions.assertEquals(listOf("./start.zsh"), custom.command)
+        Assertions.assertTrue(custom.label.contains("start.zsh"), "The label must name the file: ${custom.label}")
+    }
+
+    /** The dropdown's entries come from the configured templates, one per key, in a stable order. */
+    @Test
+    fun theChoicesAreBuiltFromTheConfiguredTemplateKeys() {
+        val offered = StartScripts.forTemplateKeys(shippedKeys.shuffled())
+
+        Assertions.assertEquals(shippedKeys.toSet(), offered.map { it.key }.toSet())
+        Assertions.assertEquals(
+            StartScripts.forTemplateKeys(shippedKeys.shuffled()).map { it.key },
+            offered.map { it.key },
+            "A HashMap's keys have no order, so the dropdown must impose one or it reshuffles between reads."
+        )
+    }
+
+    /** An operator who removes a template stops it being offered — the whole point of reading the setting. */
+    @Test
+    fun aRemovedTemplateIsNotOffered() {
+        val offered = StartScripts.forTemplateKeys(listOf("sh", "bat"))
+
+        Assertions.assertEquals(listOf("sh", "bat"), offered.map { it.key })
+        Assertions.assertTrue(offered.none { it.key == "fish" }, "fish is not configured, so it must not be offered.")
+    }
+
+    /** The pre-selection follows the host, but only among what is actually configured. */
+    @Test
+    fun theDefaultFollowsThePlatformAmongTheConfiguredScripts() {
+        val all = StartScripts.forTemplateKeys(shippedKeys)
+
+        Assertions.assertEquals("bat", StartScripts.defaultFor(all, Platform.WINDOWS)?.key)
+        Assertions.assertEquals("sh", StartScripts.defaultFor(all, Platform.POSIX)?.key)
+
+        val noBat = StartScripts.forTemplateKeys(listOf("sh", "ps1"))
+        Assertions.assertNotNull(
+            StartScripts.defaultFor(noBat, Platform.WINDOWS),
+            "With no batch template configured, Windows must still start somewhere."
+        )
+    }
+
+    /** No templates configured means nothing to pre-select, and the caller has to cope rather than crash. */
+    @Test
+    fun noConfiguredTemplatesMeansNoDefault() {
+        Assertions.assertTrue(StartScripts.forTemplateKeys(emptyList()).isEmpty())
+        Assertions.assertNull(StartScripts.defaultFor(emptyList(), Platform.POSIX))
+    }
+
+    /** The keys this plugin knows interpreters for are the ones ServerPackCreator actually ships. */
+    @Test
+    fun theShippedTemplateKeysAreTheOnesThisPluginKnows() {
+        val shipped = ScriptTemplatesConfig::class.java.declaredMethods
+            .any { it.name == "defaultStartScriptTemplates" }
+        Assertions.assertTrue(shipped, "ScriptTemplatesConfig must still be where the defaults live.")
+
+        for (key in shippedKeys) {
+            Assertions.assertFalse(
+                StartScripts.forKey(key).command == listOf("./start.$key"),
+                "'$key' is a script type ServerPackCreator ships, so this plugin must know how to run it " +
+                        "rather than falling back to executing it directly."
+            )
+        }
+    }
+
+    /** A pack carrying the chosen script can be launched with it, and the argv is that script's. */
+    @Test
+    fun aPackCarryingTheChosenScriptCanBeLaunchedWithIt(@TempDir packDir: File) {
+        for (key in shippedKeys) {
+            File(packDir, "start.$key").writeText("#placeholder\n")
+        }
+        val pack = packAt(packDir)
+
+        for (script in StartScripts.forTemplateKeys(shippedKeys)) {
+            val available = Assertions.assertInstanceOf(
+                StartScriptSelection.Available::class.java,
+                StartScriptSelector.selectFor(pack, script),
+                "${script.fileName} is in the pack, so it must be launchable."
+            )
+            Assertions.assertEquals(script.command, available.command)
+            Assertions.assertEquals(File(packDir, script.fileName), available.script)
+        }
+    }
+
+    /**
+     * A pack missing the chosen script is refused **by name** — never silently launched with another.
+     *
+     * Substituting is what the old platform fallback did, and it hid that the user asked for `start.bat`
+     * and got `start.ps1`.
+     */
+    @Test
+    fun aMissingScriptIsRefusedByNameRatherThanSubstituted(@TempDir packDir: File) {
+        File(packDir, "start.sh").writeText("#placeholder\n")
+        val pack = packAt(packDir)
+
+        val missing = Assertions.assertInstanceOf(
+            StartScriptSelection.Missing::class.java,
+            StartScriptSelector.selectFor(pack, StartScripts.forKey("bat"))
+        )
+        Assertions.assertTrue(
+            missing.reason.contains("start.bat"),
+            "The reason must name the file the user asked for, but was: ${missing.reason}"
+        )
+        Assertions.assertInstanceOf(
+            StartScriptSelection.Available::class.java,
+            StartScriptSelector.selectFor(pack, StartScripts.forKey("sh"))
         )
     }
 
     /**
-     * POSIX does **not** fall back to `start.fish`. bash is on every Linux and macOS install; fish is a
-     * deliberate user choice, so invoking it would swap a clear "no script" message for `fish: command not
-     * found` at launch time — a failure that reads as the pack being broken rather than the shell missing.
+     * What a pack carries is every `start.*` it has, independent of what is configured now.
+     *
+     * Deliberate: a pack generated under a different template set still reports itself honestly, and the
+     * dropdown — not the catalog — is where the current configuration is applied.
      */
     @Test
-    fun posixDoesNotFallBackToFish(@TempDir packDir: File) {
-        packWithAllScripts(packDir)
-        File(packDir, "start.sh").delete()
-        val selection = StartScriptSelector.selectFor(packDir, Platform.POSIX)
-        val missing = Assertions.assertInstanceOf(StartScriptSelection.Missing::class.java, selection)
-        Assertions.assertTrue(
-            missing.reason.contains("start.sh"),
-            "The reason must name the file that is missing, but was: ${missing.reason}"
+    fun readsEveryStartScriptAPackCarries(@TempDir packDir: File) {
+        File(packDir, "start.sh").writeText("#placeholder\n")
+        File(packDir, "start.zsh").writeText("#placeholder\n")
+        File(packDir, "start.ps1").mkdirs()
+        File(packDir, "install_java.sh").writeText("#not a start script\n")
+        File(packDir, "variables.txt").writeText("#not a start script\n")
+
+        Assertions.assertEquals(
+            setOf("sh", "zsh"),
+            StartScriptSelector.scriptKeysIn(packDir),
+            "A directory named start.ps1 is not a script, and install_java.sh is not a start script."
         )
     }
 
-    /** An empty directory is not launchable on either platform, and says which script it wanted. */
+    /** An empty directory carries nothing, and every choice is refused rather than throwing. */
     @Test
-    fun aPackWithNoScriptsIsNotLaunchable(@TempDir packDir: File) {
-        for (platform in Platform.entries) {
-            val missing = Assertions.assertInstanceOf(
+    fun aPackWithNoScriptsCarriesNoneAndRefusesAll(@TempDir packDir: File) {
+        Assertions.assertTrue(StartScriptSelector.scriptKeysIn(packDir).isEmpty())
+
+        val pack = packAt(packDir)
+        for (script in StartScripts.forTemplateKeys(shippedKeys)) {
+            Assertions.assertInstanceOf(
                 StartScriptSelection.Missing::class.java,
-                StartScriptSelector.selectFor(packDir, platform),
-                "A pack with no start scripts must not be launchable on $platform."
+                StartScriptSelector.selectFor(pack, script)
             )
-            Assertions.assertTrue(missing.reason.isNotBlank(), "A blocked pack must say why.")
         }
-    }
-
-    /** A directory entry with the right name but the wrong kind is not a script. */
-    @Test
-    fun aDirectoryNamedLikeAScriptIsNotAScript(@TempDir packDir: File) {
-        File(packDir, "start.sh").mkdirs()
-        Assertions.assertInstanceOf(
-            StartScriptSelection.Missing::class.java,
-            StartScriptSelector.selectFor(packDir, Platform.POSIX)
-        )
     }
 
     /** The host's own family is read from `os.name`, the only thing that distinguishes the two branches. */

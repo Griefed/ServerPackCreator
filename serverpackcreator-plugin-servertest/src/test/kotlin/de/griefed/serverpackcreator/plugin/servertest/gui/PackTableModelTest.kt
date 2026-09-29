@@ -21,7 +21,8 @@ package de.griefed.serverpackcreator.plugin.servertest.gui
 
 import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelection
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -37,13 +38,21 @@ internal class PackTableModelTest {
 
     private fun pack(
         name: String = "NeoForge-1.21",
-        selection: StartScriptSelection = StartScriptSelection.Available(File("start.sh"), listOf("bash", "start.sh"))
-    ) = LaunchablePack(File("/packs/$name"), name, "1.21", "NeoForge", "21.0.18", selection)
+        scripts: Set<String> = setOf("sh")
+    ) = LaunchablePack(File("/packs/$name"), name, "1.21", "NeoForge", "21.0.18", scripts)
+
+    /** A row for [pack] under the script the user has chosen; SH unless a test says otherwise. */
+    private fun row(
+        pack: LaunchablePack,
+        state: SessionState? = null,
+        running: Boolean = false,
+        script: StartScript? = StartScripts.forKey("sh")
+    ) = PackRow(pack, state, running, script)
 
     /** The columns carry the manifest's facts, in the documented order. */
     @Test
     fun eachColumnShowsItsOwnFact() {
-        val model = PackTableModel().apply { rows = listOf(PackRow(pack(), state = null, running = false)) }
+        val model = PackTableModel().apply { rows = listOf(row(pack())) }
 
         Assertions.assertEquals("NeoForge-1.21", model.getValueAt(0, PackTableModel.NAME_COLUMN))
         Assertions.assertEquals("1.21", model.getValueAt(0, PackTableModel.MINECRAFT_COLUMN))
@@ -59,12 +68,15 @@ internal class PackTableModelTest {
      */
     @Test
     fun aBlockedPackShowsItsReasonAndCannotBeStarted() {
-        val reason = "No start.sh in this server pack, so it cannot be launched here."
+        val reason = "start.sh"
         val model = PackTableModel().apply {
-            rows = listOf(PackRow(pack(selection = StartScriptSelection.Missing(reason)), null, running = false))
+            rows = listOf(row(pack(scripts = emptySet())))
         }
 
-        Assertions.assertEquals(reason, model.getValueAt(0, PackTableModel.STATUS_COLUMN))
+        Assertions.assertTrue(
+            (model.getValueAt(0, PackTableModel.STATUS_COLUMN) as String).contains(reason),
+            "A blocked row must name the script the user chose and the pack lacks."
+        )
         Assertions.assertFalse(model.startableAt(0))
     }
 
@@ -72,7 +84,7 @@ internal class PackTableModelTest {
     @Test
     fun aRunningPackCannotBeStartedAgain() {
         val model = PackTableModel().apply {
-            rows = listOf(PackRow(pack(), SessionState.Ready, running = true))
+            rows = listOf(row(pack(), SessionState.Ready, running = true))
         }
 
         Assertions.assertEquals("Running", model.getValueAt(0, PackTableModel.STATUS_COLUMN))
@@ -88,7 +100,7 @@ internal class PackTableModelTest {
     @Test
     fun aStoppedPackKeepsItsExitStatusAndBecomesStartableAgain() {
         val model = PackTableModel().apply {
-            rows = listOf(PackRow(pack(), SessionState.Exited(0), running = false))
+            rows = listOf(row(pack(), SessionState.Exited(0), running = false))
         }
 
         Assertions.assertEquals("Stopped (exit 0)", model.getValueAt(0, PackTableModel.STATUS_COLUMN))
@@ -99,7 +111,7 @@ internal class PackTableModelTest {
     @Test
     fun aForceKilledSessionReportsAnUnknownStatus() {
         val model = PackTableModel().apply {
-            rows = listOf(PackRow(pack(), SessionState.Exited(null), running = false))
+            rows = listOf(row(pack(), SessionState.Exited(null), running = false))
         }
 
         Assertions.assertEquals("Stopped (exit unknown)", model.getValueAt(0, PackTableModel.STATUS_COLUMN))
@@ -110,8 +122,8 @@ internal class PackTableModelTest {
     fun theTransientStatesAreNamed() {
         val model = PackTableModel().apply {
             rows = listOf(
-                PackRow(pack("starting"), SessionState.Starting, running = true),
-                PackRow(pack("stopping"), SessionState.Stopping, running = true)
+                row(pack("starting"), SessionState.Starting, running = true),
+                row(pack("stopping"), SessionState.Stopping, running = true)
             )
         }
 
@@ -119,13 +131,30 @@ internal class PackTableModelTest {
         Assertions.assertEquals("Stopping…", model.getValueAt(1, PackTableModel.STATUS_COLUMN))
     }
 
+    /**
+     * With no start-script templates configured there is nothing to run, and the row says so.
+     *
+     * Reachable: the templates are a user-editable setting and can be emptied, which makes generations
+     * produce no start scripts at all.
+     */
+    @Test
+    fun aRowWithNoConfiguredScriptSaysSoAndCannotBeStarted() {
+        val model = PackTableModel().apply { rows = listOf(row(pack(), script = null)) }
+
+        Assertions.assertEquals(
+            StartScripts.NO_SCRIPTS_CONFIGURED,
+            model.getValueAt(0, PackTableModel.STATUS_COLUMN)
+        )
+        Assertions.assertFalse(model.startableAt(0))
+    }
+
     /** The pane acts on the pack behind a row, so the mapping must survive a rows assignment. */
     @Test
     fun rowsMapBackToTheirPacks() {
         val model = PackTableModel().apply {
             rows = listOf(
-                PackRow(pack("first"), null, running = false),
-                PackRow(pack("second"), null, running = false)
+                row(pack("first")),
+                row(pack("second"))
             )
         }
 

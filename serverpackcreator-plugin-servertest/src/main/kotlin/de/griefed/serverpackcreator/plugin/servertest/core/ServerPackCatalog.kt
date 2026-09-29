@@ -42,8 +42,14 @@ data class LaunchablePack(
     val modloader: String,
     /** Modloader version from the manifest, or blank when the manifest could not be read. */
     val modloaderVersion: String,
-    /** Whether this pack can be launched on this host, and with what — or why it cannot. */
-    val selection: StartScriptSelection
+    /**
+     * The template keys this pack carries a `start.<key>` for, read once when it was discovered.
+     *
+     * Keys rather than one resolved choice, because the choice belongs to the user and changing it must not
+     * send every row back to the disk. `StartScriptSelector.selectFor` turns this plus a choice into an
+     * answer.
+     */
+    val scriptKeysPresent: Set<String>
 )
 
 /**
@@ -59,13 +65,9 @@ data class LaunchablePack(
  * outside its own try-block — an exception would take the whole GUI's tab assembly with it.
  *
  * @param objectMapper SPC's mapper, used only to read manifests.
- * @param platform     Which host family to select start scripts for; injectable so the rules can be tested.
  * @author Griefed
  */
-class ServerPackCatalog(
-    objectMapper: ObjectMapper,
-    private val platform: Platform = Platform.of()
-) {
+class ServerPackCatalog(objectMapper: ObjectMapper) {
 
     /**
      * Reads manifests without binding this plugin to the exact field set of the ServerPackCreator that wrote
@@ -100,7 +102,7 @@ class ServerPackCatalog(
             minecraftVersion = manifest?.minecraftVersion.orEmpty(),
             modloader = manifest?.modloader.orEmpty(),
             modloaderVersion = manifest?.modloaderVersion.orEmpty(),
-            selection = StartScriptSelector.selectFor(directory, platform)
+            scriptKeysPresent = StartScriptSelector.scriptKeysIn(directory)
         )
     }
 
