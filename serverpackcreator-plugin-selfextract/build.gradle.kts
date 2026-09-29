@@ -4,19 +4,8 @@ import java.util.*
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
+    id("serverpackcreator.plugin-conventions")
     kotlin("kapt")
-}
-
-// A consumable view of just this module's plugin jar, for the root build's copy task. Same shape as
-// the example plugin's: explicit rather than the legacy `archives` configuration Gradle 9 removes,
-// and it carries the task dependency so the jar is built on demand.
-val pluginArtifact: Configuration = configurations.create("pluginArtifact") {
-    isCanBeConsumed = true
-    isCanBeResolved = false
-}
-
-artifacts {
-    add(pluginArtifact.name, tasks.jar)
 }
 
 // The identity pf4j loads this plugin under. `pluginId` is the key its configuration would be stored
