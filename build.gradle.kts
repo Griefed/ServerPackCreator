@@ -89,17 +89,27 @@ val serverTestPlugin: Configuration = configurations.create("serverTestPlugin") 
     isCanBeResolved = true
 }
 
+// The self-extracting-packs plugin's jar. Same reasoning as the grinder's: its own configuration, and
+// the app's plugins directory as its only destination — it provides one extension point, where
+// `copyPluginsApiUnitTests` below needs a plugin that provides all six.
+val selfExtractPlugin: Configuration = configurations.create("selfExtractPlugin") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     examplePlugin(project(path = ":serverpackcreator-plugin-example", configuration = "pluginArtifact"))
     grinderPlugin(project(path = ":serverpackcreator-plugin-grinder", configuration = "pluginArtifact"))
     serverTestPlugin(project(path = ":serverpackcreator-plugin-servertest", configuration = "pluginArtifact"))
+    selfExtractPlugin(project(path = ":serverpackcreator-plugin-selfextract", configuration = "pluginArtifact"))
 }
 
 // Every plugin that belongs in the app's plugins directory, listed ONCE. Both the copy and the build
-// below read this, so they cannot diverge — a fourth plugin added here is staged *and* built, where two
+// below read this, so they cannot diverge — a plugin added here is staged *and* built, where two
 // separate lists would let it be staged unbuilt, which is precisely the drift this list exists to stop.
 // `copyPluginsApiUnitTests` deliberately does not read it; see the comment there.
-val appPluginConfigurations: List<Configuration> = listOf(examplePlugin, grinderPlugin, serverTestPlugin)
+val appPluginConfigurations: List<Configuration> =
+    listOf(examplePlugin, grinderPlugin, serverTestPlugin, selfExtractPlugin)
 
 val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
 val apiPlugins = layout.projectDirectory.dir("serverpackcreator-api/src/test/resources/testresources/plugins")
@@ -116,8 +126,8 @@ tasks.register<Copy>("copyPluginsToApp") {
 }
 
 // The `build` task of every plugin the app stages, derived from the same list `copyPluginsToApp` reads.
-// An audit caught the first version listing those three configurations a second time right here, which
-// left exactly the drift the comment claimed to prevent: a fourth plugin could be staged and never built.
+// An audit caught the first version listing the configurations a second time right here, which left
+// exactly the drift the comment claimed to prevent: a plugin could be staged and never built.
 // `ProjectDependency.path` rather than `dependencyProject` deliberately — a path is a lazy string, while
 // reaching for the project object is the cross-project access this build spent a sprint removing.
 val pluginBuildTasks: List<String> = appPluginConfigurations
