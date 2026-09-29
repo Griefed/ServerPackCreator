@@ -1,0 +1,15 @@
+# Settings for the Server Test tab. Keys here are the on-disk format: ServerPackCreator extracts this
+# file to <home>/plugins/config/servertest.toml only if that file does not exist yet, so renaming a key
+# orphans a user's saved settings rather than migrating them.
+
+# Lowest port the plugin will hand a server, inclusive. Kept at or above 1024 so no launch needs
+# privileges, and clear of the well-known range. 25565 is Minecraft's own registered port.
+portRangeStart = 25565
+
+# Highest port the plugin will hand a server, inclusive. Every port in the range is bind-tested before
+# it is used, and no two running servers are given the same one.
+portRangeEnd = 25999
+
+# How many console lines each running server keeps in memory. Older lines scroll out of the pane.
+# Raising this costs memory per running server, not per pack.
+consoleScrollback = 2000

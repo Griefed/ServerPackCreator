@@ -16,6 +16,46 @@ per-line axis made the shim cost a whole Minecraft line and the placeholder was 
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
 
+## 2026-09-25 — from the server-test plugin branch
+
+> Both defects this branch found were **fixed** on it, so they are not listed here. What is listed is
+> the residue each fix deliberately left behind.
+
+### B43 — `ExtensionTab.log` still names `AddonsLogger`, not `PluginsLogger`
+
+`log4j2.xml` now declares an `AddonsLogger` routed to the plugins appender, so a plugin's output finally
+lands in `plugins.log` where the example plugin's KDoc always claimed it did. The *name* was left alone
+on purpose: `AddonsLogger` is baked into every third-party plugin already compiled against the published
+API, so renaming it would move their output a second time and break anything filtering on the logger
+name. Two names for one appender is the cost.
+
+**Why it waited:** collapsing them is a behaviour change on published API and belongs in a major, beside
+whatever else moves then. **To pick it up cold:** change `ExtensionTab.log` and
+`ExtensionConfigPanel.pluginsLog` to `LogManager.getLogger("PluginsLogger")`, drop the `AddonsLogger`
+block from both `log4j2.xml` copies, and update `PluginLoggingRoutingTest` — which asserts the *resolved
+appenders*, so it keeps its teeth either way. Add a row to `API-BEHAVIOUR-CHANGES.md`; there is already
+one for the addition.
+
+**Second half, easy to miss:** `ApiProperties.init` rewrites the home's `log4j2.xml` only
+`if (!log4jXml.isFile || devBuild || preRelease)`. An existing *stable* installation keeps its own copy
+and never sees either change until that file is deleted. If this is ever worth migrating, the app's
+`MigrationManager` is where it belongs.
+
+### B44 — `ApiPlugins.addTabExtensionTabs` calls `getTab` outside its own try-block
+
+`ApiPlugins.kt:452` builds the tab, and only the `tabbedPane.addTab` beneath it is guarded. An exception
+in any plugin's tab constructor therefore escapes into GUI assembly instead of being logged like every
+other extension failure — taking the rest of that plugin's tabs, and every later plugin's, with it.
+
+**Why it waited:** it is an `-api` robustness fix with no bearing on the server-test plugin, which was
+kept strictly to the plugin plus its two adjacent fixes. The plugin works around it: everything
+reachable from `ServerTestTab`'s constructor reports rather than throws, which is the *right* shape for
+a plugin but should not be the only thing standing between a typo and a GUI with no tabs.
+
+**To pick it up cold:** move the `getTab` call inside the existing `try`, keeping the same three catch
+clauses and the same `extensionError` message. Pin it with a plugin whose `getTab` throws, asserting the
+other plugins' tabs still arrive — `ExtensionScopingTest` is the nearest existing shape to copy.
+
 ## 2026-09-23 — from the modpack upload/check/storage pass
 
 ### B41 — the web service's extracted modpacks share a parent, and `checkManifests` reads it

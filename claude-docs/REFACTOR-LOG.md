@@ -4836,3 +4836,67 @@ leaving a migrated one alone. Final: app 147.6 s → **28.2 s**, 220 tests.
   Whether those still materialise is not answerable by reasoning about Kotlin nullability; seeded into a
   real mongod, they do. That is also what made it safe to delete the two now-redundant filters rather
   than widen the field to nullable.
+
+## 2026-09-25 — the server-test plugin (`servertest` branch)
+
+**What it is.** A third pf4j plugin, `serverpackcreator-plugin-servertest`, adding a GUI tab that lists
+every generated server pack and launches the selected one **through the pack's own start scripts**,
+streaming that server's console into the window and giving the user a line into its standard input.
+Griefed's framing: testing a pack should cost one click plus connecting a client.
+
+**The constraint, and that it held.** No changes to `serverpackcreator-api`'s published surface — the
+beta is feature-complete and plugins compile against it. Checked before any code was written, and it was
+already all there: `TabExtension`/`ExtensionTab`, `ApiProperties.serverPacksDirectory`,
+`ServerPackManifest.inside`, `utilities.jsonUtilities.objectMapper`. Zero API changes shipped.
+
+**The one thing that could not be done the obvious way.** Several packs run at once, and every generated
+pack ships the same `server-port=25565`. There is no way to pass a port through the start scripts:
+`ADDITIONAL_ARGS` is interpolated *before* `-jar`, in JVM-argument position, and `SERVER_RUN_COMMAND`
+always ends in `nogui` with no hook for a program argument, so Minecraft's `--port` is unreachable
+without abandoning the scripts. That leaves `server.properties` — which is on SPC's own protected-paths
+list precisely because it is the user's. So the plugin *borrows* it: back it up byte-for-byte, rewrite
+only the port lines, restore on the way out, including restoring to *absent*. The backup's presence is
+the crash marker, the same shape as `manifest.json` being SPC's "did I produce this?" marker.
+
+**Two adjacent defects, found and fixed rather than deferred.**
+
+- `log4j2.xml` declared only `PluginsLogger`, while `ExtensionTab.log` hands every plugin
+  `LogManager.getLogger("AddonsLogger")`. The name fell through to Root, so **every plugin's output had
+  been landing in `serverpackcreator.log` rather than `plugins.log`** — and the example plugin's KDoc
+  stated the opposite as fact. Measured before the fix: the logger resolved to
+  `[Console, ApplicationLogger]`. Added rather than renamed, because the name is baked into every
+  third-party plugin already compiled against the published API.
+- `HostProcessServerRunner.destroyForcibly()` killed the `bash` it spawned and **not the server that
+  bash started** — reparented to init, still holding the world directory, the port and its heap. Nothing
+  in the repository called `ProcessHandle.descendants()`. Reproduced before the fix ("Process 71941
+  outlived the boot that spawned it") and pinned.
+
+**Lessons worth carrying past this branch.**
+
+- **A settings guard whose shipped default equals the code's fallback asserts nothing.** The first
+  `ServerTestSettingsTest` read each key back and compared it to the default — and stayed green with
+  `portRangeStart` renamed to `portRangeStartMUTATED`, because a missing key returns the fallback and
+  looks exactly like a present one. Only asserting key *presence* can tell a live key from a dead one.
+  Found by mutation, run precisely because those three units had been written before their guards.
+- **`lastOrNull()` masks a missing regex anchor.** `PackVariables` read the last match of a key, so an
+  unanchored pattern still answered correctly in every fixture where the impostor came first. The guard
+  only grew teeth once the impostor followed the real setting — `AUTO_RESTART` after `RESTART`. This is
+  the prefix/suffix-fixture trap this project already recorded, in a new costume.
+- **A green suite says nothing about a prompt nobody can see.** A real NeoForge boot reached ready, took
+  `stop`, saved every dimension, printed `Exiting...` — and hung for three minutes.
+  `WAIT_FOR_USER_INPUT=true` ends the script on `read -n 1 -s -r -p`, and **bash writes a `read -p`
+  prompt only when standard input is a terminal**. Over a pipe there is no prompt at all, so a finished
+  server is indistinguishable from a hung one. The console now says so at that exact line.
+- **Rendering a pane and looking at it found what every guard missed.** The notes the console writes are
+  prose, and at the pane's width the second one ended "You will be a" behind a horizontal scrollbar
+  nobody would drag. Nothing the model held was wrong, so nothing could have gone red. Same class as the
+  grinder plugin's clipped table columns, which were also found one screenshot at a time.
+- **A bare `-D` reaches the Gradle daemon, not the forked test JVM.** The first run of the end-to-end
+  boot reported BUILD SUCCESSFUL having SKIPped and booted nothing — a green run that verified nothing,
+  which is worse than a red one. The test task now forwards the switches explicitly.
+
+**Verified end to end** against `serverpackcreator-app/tests/server-packs/NeoForge-1.21`: real
+ServerStarterJar download, real NeoForge install, the EULA answered over stdin and `eula.txt` written by
+the *script*, `Done (4.772s)! For help, type "help"`, a clean `stop`, and afterwards a byte-identical
+`server.properties` with no orphaned server JVM. Full detail and landmines:
+**`serverpackcreator-plugin-servertest/CLAUDE.md`**.
