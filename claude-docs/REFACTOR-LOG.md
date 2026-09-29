@@ -4900,3 +4900,45 @@ ServerStarterJar download, real NeoForge install, the EULA answered over stdin a
 the *script*, `Done (4.772s)! For help, type "help"`, a clean `stop`, and afterwards a byte-identical
 `server.properties` with no orphaned server JVM. Full detail and landmines:
 **`serverpackcreator-plugin-servertest/CLAUDE.md`**.
+
+## 2026-09-26 — the boot teardown guard that only the CI container could fail (`-clientside`)
+
+CI run 629 on `servertest` was red on exactly one of 672 tests:
+`HostProcessDescendantTeardownTest > tearingDownABootKillsTheProcessesTheScriptSpawned`, reporting
+`Process 1778 outlived the boot that spawned it`. The same commit was green on macOS. The guard and its
+subject were both correct — the pin (*pin that a boot's teardown kills the server, not only bash*) and its
+fix (*destroy the boot process's descendants before the process*) had landed in the right order, and
+`destroyTree` really does kill the tree.
+
+The question was wrong. `ProcessHandle.isAlive` is true for a process that has exited and not yet been
+reaped: the PID is still in the table, the process is gone. An orphan is reparented to PID 1, and the act job
+container's PID 1 is not an init, so nothing ever reaps it. Two containers differing only in that — same
+program, same script — separated the layers: with `tail -f /dev/null`, `/proc/<pid>` state `Z` and
+`isAlive=true`; with `docker-init`, gone.
+
+The same confusion was costing the production path its whole teardown budget. `ProcessHandle.onExit()` never
+completes for a process nobody will reap, so one unreaped descendant burned all five seconds of
+`GRACEFUL_TEARDOWN_SECONDS` waiting for an exit that had already happened, then force-killed a zombie for
+nothing. Measured in that container: **5000+ ms before, 3 ms after.**
+
+Landed in three commits, in the order the conventions ask for:
+
+- *name the liveness test destroyTree makes* — behaviour-preserving seam, `isStillRunning = handle.isAlive`,
+  so the guard that follows can compile and fail on logic rather than on a missing symbol.
+- *pin that a descendant awaiting reaping is not still running* — red, and red for the logic: the fixture
+  staged, the running-process direction passed, only the zombie assertion failed. `HostProcessLivenessTest`
+  stages a zombie without touching PID 1 (bash backgrounds a child, then `exec`s itself into `sleep`, so the
+  child's parent can never call `wait()`), deterministic on macOS 27 and eclipse-temurin:21 alike. The same
+  commit points `HostProcessDescendantTeardownTest` at the shared predicate, so "still running" has one
+  definition instead of two that can drift.
+- *stop counting an unreaped descendant as a live process* — predicate becomes alive **and** still carrying a
+  command line; the graceful wait polls it instead of awaiting `onExit()`. 673 tests, 0 failures, 0 skipped.
+
+Teeth re-checked by mutation rather than assumed: with `destroyTree` reverted to killing only the shell, the
+corrected teardown guard goes red again with its original message, so pointing it at the new predicate did not
+blunt it.
+
+**Lessons.** *When a guard is green on one host and red on another, suspect the question before the hosts* —
+an environment-shaped failure is evidence that an assertion asks something narrower or wider than it means.
+And *a predicate that two call-sites spell out will eventually disagree with itself*: the fix was cheap here
+only because there was one place to change.

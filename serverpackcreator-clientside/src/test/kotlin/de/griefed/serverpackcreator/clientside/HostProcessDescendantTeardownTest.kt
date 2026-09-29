@@ -39,6 +39,12 @@ import java.time.Duration
  * force-kill produces whether or not the server died with it. The only way to see it is to ask the operating
  * system afterwards, which is what this does: a stand-in start script records its child's PID, and the
  * assertion is made against that PID once the run has returned.
+ *
+ * The question asked of that PID is whether the process is still **running**, not whether the PID is still
+ * present. `ProcessHandle.isAlive` answers the second, and the two differ for a process that has exited and
+ * not yet been reaped — permanently so under a PID 1 that is not an init. Asking the wrong one is what failed
+ * this guard in CI run 629 against a `sleep` the runner had killed correctly; [HostProcessLivenessTest] pins
+ * the distinction itself.
  */
 internal class HostProcessDescendantTeardownTest {
 
@@ -80,7 +86,7 @@ internal class HostProcessDescendantTeardownTest {
         Assertions.assertTrue(pidFile.isFile, "The stand-in script never reported a child PID.")
         val childPid = pidFile.readText().trim().toLong().also { spawnedChildPid = it }
         Assertions.assertFalse(
-            ProcessHandle.of(childPid).map { it.isAlive }.orElse(false),
+            ProcessHandle.of(childPid).map { HostProcessServerRunner.isStillRunning(it) }.orElse(false),
             "Process $childPid outlived the boot that spawned it. Killing the launcher shell does not kill " +
                     "the server it started; the descendants have to be destroyed too."
         )

@@ -161,6 +161,10 @@ class HostProcessServerRunner : ServerRunner {
      * to exit first and forced only after one shared budget has elapsed, so a server still able to flush its
      * world gets the chance; the budget is shared rather than per-process so a deep tree cannot multiply it.
      *
+     * "Has exited" is [isStillRunning], not `isAlive`: a descendant left unreaped is finished as far as this
+     * teardown is concerned, and treating it otherwise burned the entire budget waiting for an exit that had
+     * already happened.
+     *
      * Exit-code note: the shell now reports 143 (SIGTERM) where it used to report 137 (SIGKILL).
      * [BootLogClassifier] treats both as "terminated from outside" and neither as a crash, so no verdict moves.
      */
@@ -169,21 +173,18 @@ class HostProcessServerRunner : ServerRunner {
         descendants.forEach { it.destroy() }
         process.destroy()
 
+        // Polled rather than awaited: ProcessHandle.onExit never completes for a process nobody will reap,
+        // so a single such descendant used to spend the whole budget on something that had already stopped.
+        // One shared deadline for the tree, so a pack whose script nests several shells cannot multiply it.
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(GRACEFUL_TEARDOWN_SECONDS)
-        for (descendant in descendants) {
-            val remainingNanos = deadline - System.nanoTime()
-            if (remainingNanos <= 0) {
-                break
-            }
-            // Failure here is not exceptional: a process that has already exited, or one this JVM may not
-            // observe, simply means there is nothing left to wait for. Either way the force-pass below decides.
-            runCatching { descendant.onExit().get(remainingNanos, TimeUnit.NANOSECONDS) }
+        while (System.nanoTime() < deadline && descendants.any { isStillRunning(it) }) {
+            Thread.sleep(TEARDOWN_POLL_MILLIS)
         }
 
         if (process.isAlive) {
             process.destroyForcibly()
         }
-        descendants.filter { it.isAlive }.forEach { it.destroyForcibly() }
+        descendants.filter { isStillRunning(it) }.forEach { it.destroyForcibly() }
     }
 
     /** The host runner's poll cadence, shared with the suspend-gap threshold it feeds. */
@@ -196,5 +197,22 @@ class HostProcessServerRunner : ServerRunner {
          * one per process: a pack whose script nests several shells would otherwise multiply the teardown wait.
          */
         internal const val GRACEFUL_TEARDOWN_SECONDS = 5L
+
+        /** How often the tree is re-checked while it is being given its chance to exit on SIGTERM. */
+        internal const val TEARDOWN_POLL_MILLIS = 25L
+
+        /**
+         * Whether [handle] names a process teardown must still deal with — one that is *running*, not merely
+         * one whose PID is still in the table.
+         *
+         * `isAlive` answers the second question: it stays true for a process that has exited and not yet been
+         * reaped, and an orphan reparented to a PID 1 that is not an init is never reaped at all. Such a
+         * process holds no port, no world directory and no heap, so waiting on it or force-killing it
+         * achieves nothing. The command line is what separates the two states — the kernel drops it on exit
+         * while the PID lingers — and it is readable here because every handle teardown sees belongs to a
+         * process this JVM started, under the same user.
+         */
+        internal fun isStillRunning(handle: ProcessHandle): Boolean =
+            handle.isAlive && handle.info().command().isPresent
     }
 }
