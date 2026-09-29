@@ -98,8 +98,10 @@ jobs:
             serverpackcreator-app/build/test-results/test/TEST-*.xml
             serverpackcreator-clientside/build/test-results/test/TEST-*.xml
             serverpackcreator-grinder/build/test-results/test/TEST-*.xml
-            serverpackcreator-plugin-example/build/test-results/test/TEST-*.xml
-            serverpackcreator-plugin-grinder/build/test-results/test/TEST-*.xml
+            # Globbed, so a new plugin module reports its results the day it lands. Named one by one,
+            # this list stopped at example and grinder while servertest and selfextract were added --
+            # 128 tests whose XML nobody could read after a failure.
+            serverpackcreator-plugin-*/build/test-results/test/TEST-*.xml
           if-no-files-found: warn
           # Deletion is automatic and server-side: the artifact carries this expiry, and Forgejo's
           # `cron.cleanup_actions` job (ENABLED true, SCHEDULE @midnight by default) removes what has
