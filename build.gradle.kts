@@ -95,6 +95,12 @@ dependencies {
     serverTestPlugin(project(path = ":serverpackcreator-plugin-servertest", configuration = "pluginArtifact"))
 }
 
+// Every plugin that belongs in the app's plugins directory, listed ONCE. Both the copy and the build
+// below read this, so they cannot diverge — a fourth plugin added here is staged *and* built, where two
+// separate lists would let it be staged unbuilt, which is precisely the drift this list exists to stop.
+// `copyPluginsApiUnitTests` deliberately does not read it; see the comment there.
+val appPluginConfigurations: List<Configuration> = listOf(examplePlugin, grinderPlugin, serverTestPlugin)
+
 val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
 val apiPlugins = layout.projectDirectory.dir("serverpackcreator-api/src/test/resources/testresources/plugins")
 
@@ -103,12 +109,40 @@ tasks.register<Delete>("cleanAppPlugins") {
 }
 
 tasks.register<Copy>("copyPluginsToApp") {
-    description = "Refreshes the example, grinder and server-test plugins in the app's manual-test plugins directory."
+    description = "Refreshes every plugin in the app's manual-test plugins directory."
     dependsOn("cleanAppPlugins")
-    from(examplePlugin)
-    from(grinderPlugin)
-    from(serverTestPlugin)
+    appPluginConfigurations.forEach { from(it) }
     into(appPlugins)
+}
+
+// The `build` task of every plugin the app stages, derived from the same list `copyPluginsToApp` reads.
+// An audit caught the first version listing those three configurations a second time right here, which
+// left exactly the drift the comment claimed to prevent: a fourth plugin could be staged and never built.
+// `ProjectDependency.path` rather than `dependencyProject` deliberately — a path is a lazy string, while
+// reaching for the project object is the cross-project access this build spent a sprint removing.
+val pluginBuildTasks: List<String> = appPluginConfigurations
+    .flatMap { configuration -> configuration.dependencies.withType(ProjectDependency::class.java) }
+    .map { dependency -> "${dependency.path}:build" }
+    .distinct()
+
+// `copyPluginsToApp` already builds the jars it copies — the `pluginArtifact` configurations carry that
+// task dependency — so without this the copy is free to run before the builds that verify them, and the
+// staged jars would be the ones from before the tests that were about to fail. Only ordering: it adds no
+// dependency, so `copyPluginsToApp` on its own is unchanged and still skips the tests.
+tasks.named("copyPluginsToApp") {
+    group = "help"
+    description = "Copy the plugins to the app's manual-test plugins directory."
+    mustRunAfter(pluginBuildTasks)
+}
+
+tasks.register("buildPlugins") {
+    group = "build"
+    description = "Builds every plugin module, tests included, then refreshes them in the app's manual-test plugins directory."
+    // Both, not just the copy: `copyPluginsToApp` builds the jars but runs none of the plugins' tests,
+    // measured at 0 of them, so a jar staged that way is unverified. The `mustRunAfter` above is what
+    // makes "then" mean anything.
+    dependsOn(pluginBuildTasks)
+    dependsOn("copyPluginsToApp")
 }
 
 tasks.register<Delete>("cleanApiUnitTestPlugins") {

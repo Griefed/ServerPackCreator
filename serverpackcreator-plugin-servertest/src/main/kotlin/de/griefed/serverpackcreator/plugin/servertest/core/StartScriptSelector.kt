@@ -81,13 +81,6 @@ data class StartScript(
 object StartScripts {
 
     /**
-     * How to run each script type ServerPackCreator ships a template for, and what to call it.
-     *
-     * Keyed on the same strings `ScriptTemplatesConfig.defaultStartScriptTemplates` uses. A key that is not
-     * here is still offered — see [forKey] — because an operator may add a template for a shell this map
-     * has never heard of, and refusing to list it would be the plugin overruling their configuration.
-     */
-    /**
      * Shown when ServerPackCreator has no start-script templates configured at all.
      *
      * Reachable rather than defensive: the templates are a user-editable setting, and emptying it means
@@ -97,6 +90,13 @@ object StartScripts {
         "No start-script templates are configured in ServerPackCreator's settings, so no server pack has " +
                 "a script to run."
 
+    /**
+     * How to run each script type ServerPackCreator ships a template for, and what to call it.
+     *
+     * Keyed on the same strings `ScriptTemplatesConfig.defaultStartScriptTemplates` uses. A key that is not
+     * here is still offered — see [forKey] — because an operator may add a template for a shell this map
+     * has never heard of, and refusing to list it would be the plugin overruling their configuration.
+     */
     private val known: Map<String, Pair<String, List<String>>> = mapOf(
         "sh" to ("Linux / macOS (bash)" to listOf("bash")),
         "bat" to ("Windows (recommended)" to listOf("cmd", "/c")),

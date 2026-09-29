@@ -69,6 +69,37 @@ internal class PackListPaneSelectionTest {
         return null
     }
 
+    /** The script dropdown inside [pane], found the same way the table is. */
+    private fun findCombo(container: Container): javax.swing.JComboBox<*>? {
+        for (child in container.components) {
+            if (child is javax.swing.JComboBox<*>) return child
+            if (child is Container) findCombo(child)?.let { return it }
+        }
+        return null
+    }
+
+    /**
+     * Choosing a script actually notifies somebody.
+     *
+     * Every other guard here drives `show(...)` directly, which is what the notification eventually
+     * causes — but not the notification itself. Measured: deleting
+     * `scriptChoice.addActionListener { onScriptChanged() }` left the entire suite green while making the
+     * dropdown inert, so choosing a script changed no row's Status and no Start button until something
+     * else happened to refresh. A callback is not wired until something fires the control.
+     */
+    @Test
+    fun choosingAScriptNotifiesTheTab() {
+        var notified = 0
+        val pane = PackListPane(listOf(sh, bat), {}, {}, onScriptChanged = { notified++ })
+        pane.show(rows(sh, pack("Alpha")))
+        val combo = requireNotNull(findCombo(pane)) { "PackListPane must contain the script dropdown." }
+
+        combo.selectedItem = bat
+
+        Assertions.assertEquals(1, notified, "Choosing a start script must tell the tab to redraw the list.")
+        Assertions.assertEquals(bat, pane.selectedScript, "…and the pane must report the new choice.")
+    }
+
     /** The pack selected in the table right now, by name, or `null` when nothing is selected. */
     private fun selectedName(pane: PackListPane, table: JTable): String? {
         val view = table.selectedRow
