@@ -264,7 +264,9 @@ internal class ServerSessionTest {
         session.kill()
 
         awaitUntil("the spawned child to be gone", TimeUnit.SECONDS.toMillis(20)) {
-            !ProcessHandle.of(childPid).map { it.isAlive }.orElse(false)
+            // See `SessionLivenessTest`: `isAlive` is true for an unreaped corpse, so asking it here
+            // would read a correctly-killed descendant as a survivor under a PID 1 that never reaps.
+            !ProcessHandle.of(childPid).map { ServerSession.isStillRunning(it) }.orElse(false)
         }
     }
 

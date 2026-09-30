@@ -131,16 +131,26 @@ internal class SessionRegistryTest {
 
         registry.killAll()
 
+        // `isStillRunning`, not `isAlive`: a killed descendant that PID 1 has not reaped keeps its PID and
+        // would be read as a survivor. That is what turned this guard red in CI against a process the
+        // runner had killed correctly, while it stayed green here. See `SessionLivenessTest`.
         val gone = System.currentTimeMillis() + 20_000
-        while (System.currentTimeMillis() < gone && ProcessHandle.of(childPid).map { it.isAlive }.orElse(false)) {
+        while (System.currentTimeMillis() < gone && isChildStillRunning(childPid)) {
             Thread.sleep(25)
         }
         Assertions.assertFalse(
-            ProcessHandle.of(childPid).map { it.isAlive }.orElse(false),
+            isChildStillRunning(childPid),
             "Process $childPid outlived ServerPackCreator's shutdown."
         )
         Assertions.assertEquals(0, registry.runningCount())
     }
+
+    /**
+     * Whether the PID names a process that is still *running*, as opposed to one merely still in the
+     * process table awaiting reaping. Delegates to the same predicate teardown itself uses.
+     */
+    private fun isChildStillRunning(pid: Long): Boolean =
+        ProcessHandle.of(pid).map { ServerSession.isStillRunning(it) }.orElse(false)
 
     /** A second tab construction — a theme change rebuilds the tree — must not add a second hook. */
     @Test

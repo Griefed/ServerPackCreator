@@ -181,14 +181,13 @@ class ServerSession(
         descendants.forEach { it.destroy() }
         spawned.destroy()
 
+        // Polled rather than `onExit().get(...)`: that future NEVER completes for a descendant nobody
+        // will reap, so under a container PID 1 that is not an init the old loop spent the entire shared
+        // budget waiting on processes that had already exited. `-clientside` measured the same change at
+        // 5000+ ms -> 3 ms on a process that had already stopped.
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(GRACEFUL_TEARDOWN_SECONDS)
-        for (descendant in descendants) {
-            val remainingNanos = deadline - System.nanoTime()
-            if (remainingNanos <= 0) {
-                break
-            }
-            // A process that has already exited is the expected case, not an error.
-            runCatching { descendant.onExit().get(remainingNanos, TimeUnit.NANOSECONDS) }
+        while (descendants.any { isStillRunning(it) } && System.nanoTime() < deadline) {
+            Thread.sleep(TEARDOWN_POLL_MILLIS)
         }
 
         if (spawned.isAlive) {
@@ -237,17 +236,24 @@ class ServerSession(
         /** How long the process tree gets to exit on SIGTERM before it is forced. */
         const val GRACEFUL_TEARDOWN_SECONDS = 5L
 
+        /** How often the descendants are re-checked while they are given their chance to exit on SIGTERM. */
+        const val TEARDOWN_POLL_MILLIS = 25L
+
         /** What a console operator types to shut a Minecraft server down cleanly, world saved. */
         const val STOP_COMMAND = "stop"
 
         /**
-         * Whether [handle] names a process teardown must still deal with.
+         * Whether [handle] names a process teardown must still deal with — one that is *running*, not
+         * merely one whose PID is still in the table.
          *
-         * A seam, introduced with the behaviour it already had so the call sites below read through one
-         * predicate instead of asking `isAlive` in four places. What it *should* answer is argued, and
-         * corrected, in the commit that follows this one.
+         * `isAlive` answers the second question: it stays true for a process that has exited and not yet
+         * been reaped, and an orphan reparented to a PID 1 that is not an init is never reaped at all.
+         * Such a process holds no port, no world directory and no heap, so waiting on it or force-killing
+         * it achieves nothing. The command line is what separates the two states — the kernel drops it on
+         * exit while the PID lingers — and it is readable here because every handle teardown sees belongs
+         * to a process this JVM started, under the same user.
          */
         internal fun isStillRunning(handle: ProcessHandle): Boolean =
-            handle.isAlive
+            handle.isAlive && handle.info().command().isPresent
     }
 }
