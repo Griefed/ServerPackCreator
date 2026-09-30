@@ -194,7 +194,7 @@ class ServerSession(
         if (spawned.isAlive) {
             spawned.destroyForcibly()
         }
-        descendants.filter { it.isAlive }.forEach { it.destroyForcibly() }
+        descendants.filter { isStillRunning(it) }.forEach { it.destroyForcibly() }
     }
 
     /**
@@ -239,5 +239,15 @@ class ServerSession(
 
         /** What a console operator types to shut a Minecraft server down cleanly, world saved. */
         const val STOP_COMMAND = "stop"
+
+        /**
+         * Whether [handle] names a process teardown must still deal with.
+         *
+         * A seam, introduced with the behaviour it already had so the call sites below read through one
+         * predicate instead of asking `isAlive` in four places. What it *should* answer is argued, and
+         * corrected, in the commit that follows this one.
+         */
+        internal fun isStillRunning(handle: ProcessHandle): Boolean =
+            handle.isAlive
     }
 }
