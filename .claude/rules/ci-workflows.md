@@ -24,12 +24,31 @@ every session. Operator-facing secret detail lives in `claude-docs/CI-SECRETS.md
 every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
 it exists, Forgejo ignores `.github/workflows` entirely
 ([forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203)), so anything Forgejo must do belongs
-there and nowhere else. `.github/workflows` keeps a **smoke test** plus the four
+there and nowhere else. `.github/workflows` keeps a **smoke test**, the four
 `clientside-*` workflows, which are GitHub-native (three `issues:`-triggered, one `workflow_call:`
-helper); releases are created on Forgejo and mirrored outward
+helper), and **`pages.yml`**; releases are created on Forgejo and mirrored outward
 by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
 **GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
 as current as the repository it mirrors into* below.
+
+**The criterion for `.github/workflows` is "GitHub is the only place this CAN happen", not "this is
+convenient here".** `pages.yml` stretches it the furthest and still passes: it runs the Writerside builder
+*and* a Gradle Dokka build, which looks exactly like the second CI `test.yml`'s header warns against — but
+GitHub Pages can only be deployed from GitHub, Forgejo has no Pages, and hosting the rendered help site
+stopped being possible when GitLab Pages went away. It also takes no secrets and gates nothing, so a red run
+costs a stale docs site. The `clientside-*` four pass for the same reason (GitHub Issues are the trigger).
+Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can actually see it.
+
+**`pages.yml` and `docs.yml` build the same bundle for two different hosts, and four things must move
+together:** the `INSTANCE`/`ARTIFACT` pair, the pinned `jetbrains/writerside-builder` version, the
+*Stage documents and images* step (the seven root documents are generated into `Writerside/topics/` and a
+fresh checkout has none of them), and the `api/` path that `spch.tree`'s **relative** `api/index.html` link
+resolves against. That link is relative rather than root-absolute because the container serves the site at
+`/` and Pages serves it at `/ServerPackCreator/`; every Writerside topic is emitted at the site root
+(verified against the published image, despite `web-path="topics"`), so one relative href serves both.
+**`pages.yml` needs Settings → Pages → Source set to "GitHub Actions"**; while it is still "Deploy from a
+branch" the workflow goes green and publishes nothing.
+
 Two GitLab capabilities were **deliberately not carried over**: `Build Release` uploaded the app jar to
 GitLab's *generic package registry* and then created a release asset *link* to it (Forgejo attaches
 assets to the release directly, so a consumer with a hard-coded `/packages/generic/...` URL loses it),
