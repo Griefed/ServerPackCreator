@@ -360,10 +360,39 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
 
+      # The registry cache is HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this workflow
+      # must not assume it is up -- that assumption is what broke run 797. `driver-opts: network=<name>`
+      # makes buildx create its builder CONTAINER on that network, so a name the daemon does not know is a
+      # hard failure before a single layer is pulled:
+      #   ERROR: Error response from daemon: failed to set up container networking:
+      #          network runners_default not found
+      # (reproduced locally 2026-09-30 with `docker buildx create --driver-opt network=runners_default`).
+      #
+      # So probe for it. Present -> the builder joins it and the mirrors below resolve by service name.
+      # Absent -> `driver-opts` is empty, which `getInputList` turns into NO `--driver-opt` flag at all
+      # (read from the action's `src/context.ts` at the pinned sha), and the build runs against upstream
+      # exactly as it did before any of this. The mirror stanzas stay either way: with no cache network
+      # the mirror hostnames simply do not resolve, and buildkit appends the upstream host LAST in its
+      # host list, so a mirror that cannot be reached costs a failed attempt and not a failed build.
+      #
+      # This is what makes the ordering landmine harmless: the host half can land whenever, and this
+      # workflow starts using it with no edit.
+      - name: Use the host's registry cache when it is present
+        id: regcache
+        run: |
+          set -eu
+          if docker network inspect registry-cache >/dev/null 2>&1; then
+            echo "driver_opts=network=registry-cache" >> "$GITHUB_OUTPUT"
+            echo "Found the 'registry-cache' network; the builder will pull through it."
+          else
+            echo "driver_opts=" >> "$GITHUB_OUTPUT"
+            echo "::notice::No 'registry-cache' network on this host - pulling from upstream registries. See claude-docs/RUNNER-REGISTRY-CACHE.md to set it up."
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
         with:
-          driver-opts: network=registry-cache
+          driver-opts: ${{ steps.regcache.outputs.driver_opts }}
           buildkitd-config-inline: |
             [registry."ghcr.io"]
               mirrors = ["registry-cache-ghcr:5000"]
