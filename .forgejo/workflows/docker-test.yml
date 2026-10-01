@@ -50,12 +50,12 @@ jobs:
         id: regcache
         run: |
           set -eu
-          if docker network inspect registry-cache >/dev/null 2>&1; then
-            echo "driver_opts=network=registry-cache" >> "$GITHUB_OUTPUT"
-            echo "Found the 'registry-cache' network; the builder will pull through it."
+          if docker network inspect runners_default >/dev/null 2>&1; then
+            echo "driver_opts=network=runners_default" >> "$GITHUB_OUTPUT"
+            echo "Found the 'runners_default' network; the builder will pull through it."
           else
             echo "driver_opts=" >> "$GITHUB_OUTPUT"
-            echo "::notice::No 'registry-cache' network on this host - pulling from upstream registries. See claude-docs/RUNNER-REGISTRY-CACHE.md to set it up."
+            echo "::notice::No 'runners_default' network on this host - pulling from upstream registries. See claude-docs/RUNNER-REGISTRY-CACHE.md to set it up."
           fi
 
       - name: Set up Docker Buildx
