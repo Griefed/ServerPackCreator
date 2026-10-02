@@ -43,17 +43,28 @@ internal class DockerJavaContainerEngineIT {
         mounts = emptyList()
     )
 
+    /**
+     * A container that ran, printed and exited hands back all three: its console, its status, and the fact
+     * that it was not given up on.
+     *
+     * The budget is generous because it is not the subject. This container exits in milliseconds; the time
+     * goes on the daemon's create, start and log-attach calls, and on a host doing other work those alone
+     * can outlast a tight budget.
+     */
     @Test
     fun capturesConsoleAndNonZeroExitFromARealContainer() {
         val output = engine.run(
             busyboxSpec("echo hello-from-container; echo crashing-now; exit 3"),
             readyPattern = Regex("this-never-appears"),
-            timeout = Duration.ofSeconds(30)
+            timeout = Duration.ofMinutes(2)
         )
 
         Assertions.assertTrue(output.lines.any { it.contains("hello-from-container") }, "stdout must be captured: ${output.lines}")
         Assertions.assertEquals(3, output.exitCode, "the container's non-zero exit must be read back")
-        Assertions.assertFalse(output.timedOut)
+        Assertions.assertFalse(
+            output.timedOut,
+            "the container exited on its own with ${output.exitCode}, so nothing was given up on: ${output.lines}"
+        )
     }
 
     /**
