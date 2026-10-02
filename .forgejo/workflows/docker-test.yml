@@ -41,90 +41,73 @@ jobs:
 
       - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
 
-      # The registry cache is HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this workflow
-      # must not assume it is up -- that assumption is what broke run 797. `driver-opts: network=<name>`
-      # makes buildx create its builder CONTAINER on that network, so a name the daemon does not know is a
-      # hard failure before a single layer is pulled:
+      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md) and this
+      # workflow must not assume they are up -- that assumption is what broke run 797.
+      #
+      # THEY ARE ADDRESSED BY IP, AND THAT IS NOT A SHORTCUT. Jobs here run inside a `docker:dind`
+      # daemon (the runner's `docker_host` is dind's socket over a shared volume), while the caches are
+      # containers of the HOST daemon. dind's embedded DNS does not know the host daemon's containers,
+      # so a service name cannot work; routing between them does, because `docker_dind` is attached to
+      # the cache network and its children egress through that interface. Measured on a faithful
+      # reproduction of the topology on 2026-10-02 -- from a container created by the dind daemon,
+      # `wget http://registry-cache-ghcr:5000/v2/` fails with `bad address` while the same request to
+      # the cache's IP returns 200, and a buildx build through these stanzas was served 4 of its
+      # Docker Hub requests and 3 of its ghcr requests by the caches.
+      #
+      # `driver-opts: network=...` is therefore GONE, and its removal is the point rather than a
+      # side effect: the builder needs no network to join, which also removes the one way this step
+      # could kill a build outright --
       #   ERROR: Error response from daemon: failed to set up container networking:
       #          network runners_default not found
-      # (reproduced locally 2026-09-30 with `docker buildx create --driver-opt network=runners_default`).
       #
-      # So probe for it. Present -> the builder joins it and the mirrors below resolve by service name.
-      # Absent -> `driver-opts` is empty, which `getInputList` turns into NO `--driver-opt` flag at all
-      # (read from the action's `src/context.ts` at the pinned sha), and the build runs against upstream
-      # exactly as it did before any of this. The mirror stanzas stay either way: with no cache network
-      # the mirror hostnames simply do not resolve, and buildkit appends the upstream host LAST in its
-      # host list, so a mirror that cannot be reached costs a failed attempt and not a failed build.
-      #
-      # This is what makes the ordering landmine harmless: the host half can land whenever, and this
-      # workflow starts using it with no edit.
-      #
-      # THE PROBE REPORTS WHY, because the first version did not and that cost a round trip. `docker
-      # network inspect <name>` exits non-zero for three unrelated reasons -- no docker CLI, a CLI whose
-      # daemon cannot be reached, and a reachable daemon that has no such network -- and the notice
-      # asserted the third ("No 'runners_default' network on this host") while the step could not tell
-      # them apart. On 2026-10-01 it printed that on a host whose runner and registry caches ARE on
-      # `runners_default`. The runner's own config settles it: `docker_host: unix:///sockets/docker.sock`
-      # over a volume shared with a `docker:dind` service, so a job talks to DIND, whose networks are not
-      # the compose project's -- the network is absent from the daemon that was asked, and present on the
-      # one that was not. The step therefore names which of the three it hit, and on the third prints the
-      # daemon that answered and that daemon's networks, so the two readings are separable in the log.
-      # This repository has already paid once for a negative read as the wrong negative -- `ufw status`
-      # showing no rule for a port that `INPUT policy DROP` was dropping anyway (CLAUDE.md, "the symptom
-      # shared by two layers"). claude-docs/RUNNER-REGISTRY-CACHE.md section 3a has the two shapes that
-      # can fix it; both are host work, and neither needs an edit here.
-      - name: Use the host's registry cache when it is present
+      # The probe asks the question that matters, which the previous one did not. "Does this network
+      # exist" was a proxy for "can the builder reach the cache", and it answered about the wrong
+      # daemon; a GET /v2/ from this job is the same path the builder takes, since both are children of
+      # the same dind daemon. A cache that does not answer is simply left out of the config, so the
+      # build runs against upstream exactly as it did before any of this.
+      - name: Point BuildKit at the host's registry caches when they answer
         id: regcache
         env:
-          # One spelling. It appears in the probe, in the driver-opt and in every message below, and the
-          # commit that last changed it (ci: Use actual network name) had to edit two files to do it.
-          CACHE_NETWORK: runners_default
+          # Pinned by the runner host's compose file -- see claude-docs/RUNNER-REGISTRY-CACHE.md section
+          # 3. If these drift from the host, nothing breaks: the probe finds nothing and the build goes
+          # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
+          GHCR_CACHE: "172.31.77.6:5000"
+          DOCKERHUB_CACHE: "172.31.77.5:5000"
         run: |
           set -eu
+          toml="${RUNNER_TEMP:-/tmp}/buildkitd.toml"
+          : > "$toml"
 
-          emit() { echo "driver_opts=$1" >> "$GITHUB_OUTPUT"; }
+          # The second stanza per registry is not optional and is not obvious: `newMirrorRegistryHost`
+          # defaults a mirror to https, and `fillInsecureOpts` looks the mirror's own scheme up under a
+          # top-level [registry."<host:port>"] section. Without it buildkit dials https, fails the
+          # handshake, falls back to upstream -- and silently does nothing at all.
+          add_mirror() {
+            upstream="$1"
+            cache="$2"
+            if curl -fsS --max-time 5 "http://${cache}/v2/" >/dev/null 2>&1; then
+              printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' \
+                "$upstream" "$cache" "$cache" >> "$toml"
+              echo "${upstream}: the cache at ${cache} answered /v2/ - BuildKit will pull through it."
+            else
+              echo "::notice::${upstream}: nothing answered /v2/ at ${cache} - pulling from upstream. See claude-docs/RUNNER-REGISTRY-CACHE.md."
+            fi
+          }
 
-          if ! command -v docker >/dev/null 2>&1; then
-            emit ""
-            echo "::notice::No docker CLI in this job, so the registry cache could not even be looked for - pulling from upstream registries."
-            exit 0
-          fi
+          add_mirror ghcr.io "$GHCR_CACHE"
+          add_mirror docker.io "$DOCKERHUB_CACHE"
 
-          # Ask the daemon something trivial first. A failure here means the step learns nothing about
-          # networks at all, which must not be reported as "the network is absent".
-          if ! daemon="$(docker info --format '{{.Name}} ({{.ServerVersion}}, {{.Driver}})' 2>&1)"; then
-            emit ""
-            echo "::notice::The docker CLI cannot reach a daemon, so the registry cache could not be looked for - pulling from upstream registries."
-            echo "docker info said: ${daemon}"
-            exit 0
-          fi
-          echo "Daemon answering this job: ${daemon}"
+          # An empty file is valid TOML and means "no mirrors", but a comment says so in the log.
+          [ -s "$toml" ] || echo '# no registry cache answered; BuildKit pulls from upstream' > "$toml"
 
-          if docker network inspect "$CACHE_NETWORK" >/dev/null 2>&1; then
-            emit "network=$CACHE_NETWORK"
-            echo "Found the '$CACHE_NETWORK' network on that daemon; the builder will pull through it."
-            exit 0
-          fi
-
-          emit ""
-          echo "::notice::The daemon above has no '$CACHE_NETWORK' network - pulling from upstream registries. See claude-docs/RUNNER-REGISTRY-CACHE.md."
-          echo "Networks that daemon does have:"
-          docker network ls --format '  {{.Name}}  (driver {{.Driver}}, scope {{.Scope}})' || true
-          echo "If '$CACHE_NETWORK' exists on the host but not in that list, this job is not talking to the host's daemon."
+          echo "config=$toml" >> "$GITHUB_OUTPUT"
+          echo "BuildKit config for this run:"
+          sed 's/^/  /' "$toml"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
         with:
-          driver-opts: ${{ steps.regcache.outputs.driver_opts }}
-          buildkitd-config-inline: |
-            [registry."ghcr.io"]
-              mirrors = ["registry-cache-ghcr:5000"]
-            [registry."registry-cache-ghcr:5000"]
-              http = true
-            [registry."docker.io"]
-              mirrors = ["registry-cache-dockerhub:5000"]
-            [registry."registry-cache-dockerhub:5000"]
-              http = true
+          buildkitd-config: ${{ steps.regcache.outputs.config }}
 
       # The Dockerfile's runtime stage is `ghcr.io/linuxserver/baseimage-ubuntu:noble`, and ghcr throttles
       # pulls. Three runs have died on it -- 676 and 680 anonymously, 739 *while authenticated*:

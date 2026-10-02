@@ -97,194 +97,194 @@ Costs to accept before taking it:
 CNCF Distribution proxies **one upstream per instance** (*"it's currently possible to mirror only one
 upstream registry at a time"*), so two upstreams means two containers. That is fine; they are tiny.
 
-### 1. The caches
+### 0. The topology, because it decides everything below
 
-`/opt/registry-cache/compose.yaml` on the runner host:
-
-```yaml
-name: registry-cache
-
-networks:
-  registry-cache:
-    name: registry-cache          # explicit, so the buildx builder can join it by this exact name
-
-volumes:
-  ghcr-data:
-  dockerhub-data:
-
-services:
-  ghcr:
-    image: registry:3
-    container_name: registry-cache-ghcr
-    restart: unless-stopped
-    environment:
-      REGISTRY_PROXY_REMOTEURL: "https://ghcr.io"
-      REGISTRY_PROXY_TTL: "168h"
-      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
-    volumes:
-      - ghcr-data:/var/lib/registry
-    networks: [registry-cache]
-    ports:
-      - "127.0.0.1:5002:5000"     # loopback only -- an open proxy cache is not something to publish
-
-  dockerhub:
-    image: registry:3
-    container_name: registry-cache-dockerhub
-    restart: unless-stopped
-    environment:
-      REGISTRY_PROXY_REMOTEURL: "https://registry-1.docker.io"
-      REGISTRY_PROXY_TTL: "168h"
-      # Optional but worth it: an authenticated upstream turns Docker Hub's anonymous 100-pulls/6h into
-      # the account's allowance. If you set these, the cache serves whatever that account can see --
-      # keep it bound to loopback and to the runner network.
-      # REGISTRY_PROXY_USERNAME: "…"
-      # REGISTRY_PROXY_PASSWORD: "…"
-    volumes:
-      - dockerhub-data:/var/lib/registry
-    networks: [registry-cache]
-    ports:
-      - "127.0.0.1:5001:5000"
-```
-
-`REGISTRY_<SECTION>_<KEY>` is Distribution's documented environment override for `config.yml`, so the
-four `REGISTRY_PROXY_*` names above are the `proxy:` block. **Prove it before wiring CI to it** — a
-misspelled override is ignored silently and the registry comes up as an empty *writable* registry
-rather than a cache, which then 404s every pull and looks like a network fault:
-
-```
-docker compose -f /opt/registry-cache/compose.yaml up -d
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5002/v2/                     # 200
-curl -s -o /dev/null -w '%{http_code}\n' \
-  -H 'Accept: application/vnd.oci.image.index.v1+json' \
-  http://127.0.0.1:5002/v2/linuxserver/baseimage-ubuntu/manifests/noble                # 200, and
-docker logs registry-cache-ghcr | grep -c 'GET /v2/'                                   # non-zero
-```
-
-A `200` on the second line is the whole test: it can only have come from ghcr through the proxy.
-
-### 2. The daemon (Docker Hub only — this is the constraint above, not an oversight)
-
-**Which daemon is not obvious on this host — see 3a before editing a file here.** Jobs talk to a
-`docker:dind` service over a shared socket volume, so the daemon that pulls `busybox`, `alpine` and the
-PowerShell image is dind's, and `/etc/docker/daemon.json` on the host configures a daemon that never
-sees those pulls. The content below is right; the location is dind's `dockerd` command line or a
-`daemon.json` mounted into `docker_dind`.
-
-`/etc/docker/daemon.json`:
-
-```json
-{
-  "registry-mirrors": ["http://127.0.0.1:5001"]
-}
-```
-
-`127.0.0.0/8` is in Docker's default insecure-registry list, so plain HTTP on loopback needs no
-`insecure-registries` entry. `systemctl reload docker`, then confirm with `docker info | grep -A2 'Registry Mirrors'`.
-This covers `busybox`, `alpine` and the grinder's Docker Hub pulls. **It does nothing for
-`ghcr.io/catthehacker/ubuntu:runner-latest`** — see Option 3 if that turns out to matter.
-
-### 3. BuildKit (this is the one that fixes the observed failure)
-
-**The network name in the workflows is `runners_default`, not `registry-cache`** — changed by *ci: Use
-actual network name* on 2026-10-01, because the caches were put in the runner's own compose project
-rather than the standalone one above, and a compose project named `runners` names its default network
-`runners_default`. Section 1's compose file still describes the standalone shape; if you take that
-route, the two have to be made to agree, and the workflows are the copy that decides. The name is an
-`env:` on the probe step so each workflow spells it once.
-
-In `docker-test.yml` and `release-build.yml`, on the `Set up Docker Buildx` step:
-
-```yaml
-        with:
-          driver-opts: network=runners_default
-          buildkitd-config-inline: |
-            [registry."ghcr.io"]
-              mirrors = ["registry-cache-ghcr:5000"]
-            [registry."registry-cache-ghcr:5000"]
-              http = true
-            [registry."docker.io"]
-              mirrors = ["registry-cache-dockerhub:5000"]
-            [registry."registry-cache-dockerhub:5000"]
-              http = true
-```
-
-The second and fourth stanzas are not optional and are not obvious: `newMirrorRegistryHost` defaults a
-mirror to `https`, and `fillInsecureOpts` looks the mirror's own scheme up under a **top-level
-`[registry."<mirror host:port>"]` section**. Without it, buildkit dials `https://registry-cache-ghcr:5000`,
-fails the handshake, and falls back to upstream — i.e. it silently does nothing at all.
-
-**`driver-opts: network=<the cache network>` is load-bearing, and the reason is written into this
-repo's history.** The builder is a container; without joining the cache's network its only route to a
-host-published port is the Docker bridge gateway, and this host's `iptables` `INPUT` chain has
-`policy DROP`. That configuration has already cost this project a 131-second outage diagnosed three
-different wrong ways (see the *symptom shared by two layers* entry in `CLAUDE.md`), and it fails the
-same silent way here: the SYN is dropped, buildkit waits out `tcp_syn_retries`, then falls back to
-upstream and the mirror appears to be "not working". Joining the network sidesteps the host stack
-entirely and gets DNS on the service name for free.
-
-### 3a. There are two daemons here, and the caches are on the wrong one
-
-**This is why `runners_default` is not found, and it is settled by the runner's own configuration
-rather than by a hypothesis.** Griefed's stack, 2026-10-02:
+**Jobs do not talk to the host's Docker daemon.** The runner's `docker_host` is
+`unix:///sockets/docker.sock`, and that socket comes from a `docker:dind` service over a shared
+volume — which makes it *look* like a host socket mount and is not one:
 
 ```yaml
   docker-in-docker:
     image: docker:dind
     container_name: 'docker_dind'
     privileged: 'true'
-    environment: { DOCKER_TLS_CERTDIR: '' }
-    volumes:
-      - dind-storage:/var/lib/docker
-      - dind-socket:/sockets
+    volumes: [ dind-storage:/var/lib/docker, dind-socket:/sockets ]
     command: ['dockerd', '-H', 'unix:///sockets/docker.sock', '--tls=false', '-G', '1001', ...]
 ```
 
-with the runner configured `docker_host: 'unix:///sockets/docker.sock'` and the same `dind-socket`
-volume mounted. **That socket is dind's, not the host's** — the shared volume makes it look like a
-host socket mount, and it is not one. So:
-
-| container | created by | network namespace |
+| container | created by | sees |
 |---|---|---|
-| `docker_dind`, the runner, `registry-cache-*` | the **host** daemon | the host's, `runners_default` among them |
-| every job container, the buildx builder, every container a test starts | the **dind** daemon | dind's own, inside `docker_dind` |
+| `docker_dind`, the runner, the caches | the **host** daemon | the host's networks |
+| every job container, every buildx builder, every container a test starts | the **dind** daemon | dind's own bridge |
 
-A job asking `docker network inspect runners_default` is asking dind, which has never heard of it. The
-notice was right that the network was absent and wrong about which host it was absent from, which is
-the distinction the rewritten probe now prints: it names the daemon that answered (`docker info`) and
-lists that daemon's networks, so the two readings are separable in the log instead of in a guess.
+So `docker network inspect runners_default` from a job asks dind, which has never heard of it — the
+notice that started this was right about the network being absent and wrong about whose. **Service
+names cannot work across that boundary; routing can.** Both halves measured 2026-10-02 against a
+reproduction of this exact shape (`docker:dind` on a user-defined network, a `registry:3` beside it):
 
-**Consequences before choosing a fix:**
+```
+from a container created by the dind daemon:
+  wget http://registry-cache-ghcr:5000/v2/   ->  bad address          (DNS: no)
+  wget http://172.31.77.6:5000/v2/           ->  200 {}               (routing: yes)
+```
 
-- `driver-opts: network=runners_default` cannot work from a job, now or ever, while this topology
-  stands. Keep the probe — it costs a second and it correctly declines.
-- **Name resolution fails; routing does not.** `docker_dind` has an interface on `runners_default`, and
-  containers inside it egress through its namespace, so a cache container's *IP* on that bridge is
-  reachable from a job while its *name* is not. That is what makes a static-IP mirror plausible, and it
-  is a claim to verify on the host (`docker exec` into a job-like container and `wget -qO- http://<ip>:5000/v2/`)
-  rather than to build on.
-- **The daemon doing the test-image pulls is dind's**, not the host's, so `/etc/docker/daemon.json` in
-  step 2 above is the wrong file. Docker Hub mirroring for `busybox`/`alpine`/`powershell` belongs in
-  dind's `dockerd` command line (`--registry-mirror http://…`) or in a `daemon.json` mounted into
-  `docker_dind`.
+That is the whole argument for addressing the caches by **fixed IP**.
 
-**Two shapes that can work. Neither has been tried here; pick against the host, not against this list.**
+### 1. The caches, on their own network with pinned addresses
 
-1. **Move the caches inside dind.** Start them with `DOCKER_HOST=unix:///sockets/docker.sock` on a
-   dind-side network (`registry-cache`), and the workflows' `driver-opts: network=registry-cache` plus
-   the existing `registry-cache-ghcr:5000` mirror stanzas work by name, unchanged in shape. Costs: the
-   cache's storage lives in `dind-storage`, it restarts with dind, and nothing on the host can use it.
-2. **Keep them on the host and address them by a fixed IP.** Pin their addresses on `runners_default`
-   with an `ipam` block, put those `IP:5000` in the buildkitd mirror stanzas, drop `driver-opts`
-   entirely (no network to join — routing already reaches them), and give dind's `dockerd`
-   `--registry-mirror http://<dockerhub-cache-ip>:5000`. Costs: an IP in a config file, and it depends
-   on the routing claim above being true.
+Pick a subnet nothing else on the host uses — check first, because a collision is a confusing outage:
 
-Option 2 is the one that also covers the daemon-level pulls the container ITs make, which is the larger
-share of this host's traffic; option 1 is the one that needs no IP and no verification. Whichever is
-taken, **the workflow half is already in place** — the probe finds the network or it does not, and the
-mirror stanzas are inert when the hostnames do not resolve.
+```
+docker network inspect $(docker network ls -q) \
+  --format '{{.Name}} {{range .IPAM.Config}}{{.Subnet}}{{end}}'
+```
+
+Then add to the **runner's own compose file**, so the caches and dind come up together:
+
+```yaml
+networks:
+  registry-cache:
+    name: registry-cache
+    ipam:
+      config:
+        - subnet: 172.31.77.0/24
+
+volumes:
+  ghcr-data:
+  dockerhub-data:
+
+services:
+  docker-in-docker:
+    # ... everything already there, plus:
+    networks:
+      - default            # LANDMINE: naming any network drops the implicit `default`, and
+      - registry-cache     # dind off `runners_default` is a runner that cannot reach its daemon.
+    command: ['dockerd', '-H', 'unix:///sockets/docker.sock', '--tls=false', '-G', '1001',
+              '--registry-mirror', 'http://172.31.77.5:5000',
+              '--dns', '127.0.0.1', '--dns', '185.12.64.2', '--dns', '185.12.64.1']
+
+  registry-cache-dockerhub:
+    image: registry:3
+    container_name: registry-cache-dockerhub
+    restart: unless-stopped
+    environment:
+      REGISTRY_PROXY_REMOTEURL: "https://registry-1.docker.io"
+      REGISTRY_PROXY_TTL: "168h"
+      # Optional: an authenticated upstream turns Docker Hub's anonymous 100-pulls/6h into the
+      # account's allowance. The cache then serves whatever that account can see, so keep it on this
+      # network and unpublished.
+      # REGISTRY_PROXY_USERNAME: "…"
+      # REGISTRY_PROXY_PASSWORD: "…"
+    volumes: [ dockerhub-data:/var/lib/registry ]
+    networks:
+      registry-cache:
+        ipv4_address: 172.31.77.5
+
+  registry-cache-ghcr:
+    image: registry:3
+    container_name: registry-cache-ghcr
+    restart: unless-stopped
+    environment:
+      REGISTRY_PROXY_REMOTEURL: "https://ghcr.io"
+      REGISTRY_PROXY_TTL: "168h"
+    volumes: [ ghcr-data:/var/lib/registry ]
+    networks:
+      registry-cache:
+        ipv4_address: 172.31.77.6
+```
+
+**No published ports.** Nothing needs them, and an open proxy cache is not something to publish. This
+also sidesteps the `INPUT policy DROP` trap that cost this project a 131-second outage diagnosed three
+wrong ways (see *the symptom shared by two layers* in `CLAUDE.md`): there is no host-published port to
+dial, so the host's filter table never enters the picture.
+
+**`docker compose up -d` will recreate `docker_dind`**, because its networks and command change. That
+kills whatever jobs are in flight; do it when the runner is idle. `dind-storage` is a named volume, so
+dind's image cache survives the restart.
+
+### 2. Attaching dind to the cache network is load-bearing — verified by removing it
+
+Without it, a job's packets leave dind through its `runners_default` gateway and Docker's
+`DOCKER-ISOLATION-STAGE` chains drop them between bridges. The failure is a **timeout**, not a refusal,
+which is the shape that reads as "the cache does not work":
+
+```
+dind attached to the cache network:    wget http://172.31.77.5:5000/v2/  ->  200
+dind detached (nothing else changed):  wget http://172.31.77.5:5000/v2/  ->  download timed out
+```
+
+So if the caches ever appear dead, check `docker network inspect registry-cache` for `docker_dind`
+before suspecting the registries.
+
+### 3. What this covers, and what it does not
+
+`--registry-mirror` on dind's `dockerd` is **Docker Hub only** — not an oversight, a Docker Engine
+limitation: *"it's currently not possible to mirror another private registry; only the central Hub can
+be mirrored"*, and a pull of `ghcr.io/anything` never consults the mirror list. BuildKit has no such
+limit, which is why ghcr is handled there instead.
+
+| puller | what it pulls | cached by | covered |
+|---|---|---|---|
+| dind's daemon | `busybox`, `alpine` (the container ITs, `test.yml`'s pre-pull) | `--registry-mirror` | **yes** |
+| BuildKit, in the builder | `ghcr.io/linuxserver/baseimage-ubuntu:noble`, `docker.io/library/eclipse-temurin` | the workflows' mirror stanzas | **yes** |
+| dind's daemon | `mcr.microsoft.com/powershell` | nothing — not Hub, not BuildKit | **no** |
+| dind's daemon | `ghcr.io/catthehacker/ubuntu:runner-latest` (job containers) | nothing — daemon-level ghcr | **no** |
+
+The two uncovered rows need Option 3's MITM proxy, and are worth it only if measurement says they are a
+real share. The row that was actually failing — BuildKit's ghcr pulls, three runs lost to 429 — is
+covered.
+
+### 3a. The workflow half, which is already in place
+
+`docker-test.yml` and `release-build.yml` probe each cache with `GET /v2/` and emit a
+`buildkitd.toml` containing stanzas only for the ones that answered, then pass it as
+`buildkitd-config`. Three things about it are deliberate:
+
+- **`driver-opts: network=…` is gone.** With fixed IPs the builder has no network to join, and its
+  removal also removes the only way this step could kill a build outright
+  (`network runners_default not found`, which is what broke run 797).
+- **The probe asks what matters.** "Does this network exist" was a proxy for "can the builder reach the
+  cache", and it answered about the wrong daemon. A `GET /v2/` from the job takes the same path the
+  builder takes, both being children of the same dind daemon.
+- **It fails soft, per registry.** A cache that does not answer is left out; the build goes upstream for
+  that registry and through the cache for the other. Measured with one of the two stopped.
+
+The second stanza per registry (`[registry."<host:port>"] http = true`) is not optional and not
+obvious: `newMirrorRegistryHost` defaults a mirror to `https`, and `fillInsecureOpts` looks the
+mirror's scheme up under a **top-level** section of that name. Without it buildkit dials `https`, fails
+the handshake, falls back to upstream — and silently does nothing at all.
+
+**Fallback is verified from source rather than from the docs**, which do not state it: `NewRegistryConfig`
+in `util/resolver/resolver.go` appends each mirror first and the upstream host **last**, and containerd's
+resolver walks that list in order. The mirror entries carry `HostCapabilityPull | HostCapabilityResolve`
+only, so **pushes always go upstream** — `release-build.yml`'s push to ghcr and Docker Hub is untouched.
 
 ### 4. Prove it worked, then record the numbers
+
+**First prove each container is a *cache* and not an empty registry.** `REGISTRY_<SECTION>_<KEY>` is
+Distribution's documented environment override for `config.yml`, and a **misspelled override is ignored
+silently**: the registry comes up as an empty *writable* registry instead of a proxy, then 404s every
+pull, which looks exactly like a network fault. A `200` on the second line below can only have come from
+upstream through the proxy, so it is the whole test:
+
+```
+curl -s -o /dev/null -w '%{http_code}\n' http://172.31.77.6:5000/v2/                      # 200
+curl -s -o /dev/null -w '%{http_code}\n' \
+  -H 'Accept: application/vnd.oci.image.index.v1+json' \
+  http://172.31.77.6:5000/v2/linuxserver/baseimage-ubuntu/manifests/noble                 # 200
+docker logs registry-cache-ghcr | grep -c 'GET /v2/'                                      # non-zero
+```
+
+Run those from the **host**, which is on the `registry-cache` bridge. From a job they are the probe the
+workflow already performs.
+
+**Then prove dind is actually using the Hub mirror**, which is a separate claim:
+
+```
+docker -H unix:///var/lib/docker/volumes/.../docker.sock info | grep -A2 'Registry Mirrors'
+# or simply, after a job has run:
+docker logs --since 10m registry-cache-dockerhub | grep -c 'GET /v2/'
+```
 
 Per this repo's convention that build and CI changes are verified by measurement rather than by tests,
 put before/after in the commit message:
@@ -305,7 +305,8 @@ the host at all.
 Harbor's proxy-cache projects front many upstreams behind one service, which removes the
 one-container-per-registry sprawl. BuildKit takes it directly, because it accepts a path in a mirror
 (`mirrors = ["harbor.example/proxy.ghcr.io"]`). **Docker Engine does not** — a daemon mirror URL must be
-a domain root with no path — so Harbor replaces step 1 and step 3 above but not step 2. It is the right
+a domain root with no path — so Harbor replaces the two `registry:3` containers and the workflows'
+mirror stanzas, but *not* dind's `--registry-mirror`, which still needs a path-free root. It is the right
 answer if the host is going to cache for more than this repository; it is a lot of machinery for two
 base images.
 
@@ -314,8 +315,11 @@ base images.
 The only way to cache `ghcr.io` for **dockerd** is to stop asking dockerd to do it: run a caching proxy
 (`rpardini/docker-registry-proxy` is the usual one) and give the daemon `HTTPS_PROXY` in a systemd
 drop-in. It caches every registry, including the runner image, and needs its CA trusted by the daemon.
-Only worth it if measurement shows the runner-image pulls are a real share of the traffic — which they
-are not by default:
+**This is what would close the two uncovered rows in section 3** — `mcr.microsoft.com/powershell` and the
+`ghcr.io/catthehacker/ubuntu:runner-latest` job image. Worth it only once measurement says those are a
+real share of the traffic; by default they are not, because `container.force_pull` is `false` and
+dind's `dind-storage` volume keeps the runner image across restarts. Check that setting (below) before
+building any of this.
 
 ## Runner hygiene worth checking first, because it is free
 

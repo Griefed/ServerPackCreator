@@ -484,5 +484,13 @@ rather than absorbing it — **`claude-docs/RUNNER-REGISTRY-CACHE.md`** has the 
 constraints that decide its shape (Docker Engine's `registry-mirrors` is Docker-Hub-only; BuildKit's is
 not, and falls back to upstream — verified from `util/resolver/resolver.go`, which the buildkitd
 reference does not state), and the bridge-gateway/`INPUT policy DROP` trap that makes a mirror look like
-it simply does not work. It is host configuration, not a repository change, so the workflow half of it
-must not land before the host half.
+it simply does not work.
+
+**The workflow half has landed and no longer has to wait for the host half.** `docker-test.yml` and
+`release-build.yml` probe each cache with `GET /v2/` and mirror only what answered, so a host with no
+caches builds against upstream exactly as before. The caches are reached by **fixed IP, not by name**,
+because jobs run inside a `docker:dind` daemon whose embedded DNS does not know the host daemon's
+containers — measured both ways on 2026-10-02 against a reproduction of the topology. `driver-opts:
+network=…` went with it, which also removes the only way that step could kill a build outright
+(`network runners_default not found`, run 797). Section 0 of that file has the topology; do not re-add
+a service name here.

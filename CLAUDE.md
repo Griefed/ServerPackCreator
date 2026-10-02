@@ -11,8 +11,10 @@
 >   `claude-docs/CI-SECRETS.md`. Read it before touching a `secrets.*` reference: Forgejo rejects the
 >   `FORGEJO_`/`GITEA_`/`GITHUB_` prefixes, so the credentials are `FJ_*`/`GH_*` on purpose.
 > - **Runner-host registry caching — how to stop CI meeting ghcr's per-host burst limiter** →
->   `claude-docs/RUNNER-REGISTRY-CACHE.md`. Host configuration rather than a repository change, so the
->   workflow half must not land before the host half.
+>   `claude-docs/RUNNER-REGISTRY-CACHE.md`. Mostly host configuration; the workflow half has landed and is
+>   fail-soft, probing each cache and going upstream for any that does not answer, so the two halves can
+>   land in either order. Read section 0 before touching it: jobs run inside a `docker:dind` daemon, so
+>   the caches are addressed by **fixed IP** — service names do not cross that boundary.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
