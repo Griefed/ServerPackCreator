@@ -40,7 +40,7 @@ internal class CurseForgePartitionTest {
     private val categories = listOf(406, 426, 4485) // as returned by /categories?classId=6, ascending by id
     /**
      * `totalCount` as the live API actually reports it: its **true size** while a slice fits under the cap, and
-     * **clamped to exactly the cap** for anything at or above it (measured 2026-07-29 — a 200 000-mod slice and
+     * **clamped to exactly the cap** for anything at or above it (measured — a 200 000-mod slice and
      * a 10 000-mod slice both report 10 000). A count above the cap is therefore not a value any test may use:
      * it cannot occur, and pinning the plan against it is what made the splits unreachable in the first place.
      */

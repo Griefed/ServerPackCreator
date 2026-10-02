@@ -42,9 +42,7 @@ import java.time.Instant
  * The unasserted fields were the ones that matter most: **`verdict`** is what `/as-properties` gates
  * publication on, `declared`, `firedRule` and `decidedBy` are what make a published exclusion auditable, and
  * `fileName` and `detail` are report columns. Writing `fileName = verdict.suggestedEntry`, or swapping
- * `declared` for `declaredServerSide`, would have left the whole suite green — and the first of those is not
- * hypothetical: until 2026-09-10 that field was called `filenamePattern` and *was* fed `suggestedEntry` for
- * two thirds of the store's rows.
+ * `declared` for `declaredServerSide`, would leave the whole suite green.
  *
  * Every field gets a **distinct** sentinel, which is the point: equal values cannot detect a swap. The two
  * `DeclaredSupport` fields take different constants for exactly that reason, and the enums are chosen so no
@@ -65,9 +63,9 @@ internal class RecordedVerdictMappingTest {
         declaredServerSide = DeclaredSupport.UNSUPPORTED,
         jarScan = JarScan.CLIENT,
         bootedLoader = "SENTINEL_BOOTED",
-        // Sentinelled here since 2026-09-10. This guard exists to prove every field the mapping copies
-        // arrives, and it used to sentinel the *derived stem* instead -- which round-tripped fine while
-        // `sampleFile`, the field the report actually needs, was dropped and left `null` in the fixture.
+        // Sentinelled deliberately: this guard exists to prove every field the mapping copies arrives, and
+        // sentinelling a *derived* value instead round-trips fine while `sampleFile`, the field the report
+        // actually needs, is dropped and left `null` in the fixture.
         sampleFile = "SENTINEL_FILENAME"
     ).copy(
         declared = Declaration.SERVER,

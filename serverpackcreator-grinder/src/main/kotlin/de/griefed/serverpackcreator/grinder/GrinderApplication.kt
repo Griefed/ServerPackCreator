@@ -145,8 +145,8 @@ object GrinderApplication {
         // ApiWrapper.api()'s relative default, see resolveSpcPropertiesFile.
         val apiWrapper = ApiWrapper.api(resolveSpcPropertiesFile(config.spcProperties, base))
         val engine = DockerJavaContainerEngine()
-        // Before ANY candidate, because the alternative was measured: with the runtime image gone from the
-        // daemon (2026-09-03), every install throws, every tuple goes on cooldown, and every candidate is
+        // Before ANY candidate, because the alternative is measured: with the runtime image gone from the
+        // daemon, every install throws, every tuple goes on cooldown, and every candidate is
         // published INCONCLUSIVE about a boot that never happened -- overwriting decisive verdicts that the
         // 30-day re-verify TTL then leaves wrong. Exits non-zero so `Restart=on-failure` retries every 30s and
         // the unit sits visibly in `failed` meanwhile, instead of the service looking healthy while it
@@ -221,7 +221,7 @@ object GrinderApplication {
         }
         // Coalesced, not write-through: persist() serialises the whole store and is @Synchronized on the
         // grind worker's thread, so per-verdict writes serialised every worker behind a multi-megabyte
-        // rewrite (B35 -- 787-1050 ms per verdict at 100k rows). The shutdown hook flushes, so only a hard
+        // rewrite -- 787-1050 ms per verdict at 100k rows. The shutdown hook flushes, so only a hard
         // kill can lose verdicts, bounded to one interval and re-derived by the re-verify TTL.
         val store = JsonVerdictStore(storeFile, flushInterval = config.storeFlush)
         // Live activity record, so `/status` can answer "what is it doing right now?" (the verdict table only
@@ -444,9 +444,9 @@ object GrinderApplication {
      * Three selectors, because three things actually happen. `--requeue <url>…` is a named handful — a report
      * a user disputed, a project whose verdict looks wrong. `--requeue-before <instant>` is for a defect found
      * in the engine, where *everything verified before the fix* is suspect. `--requeue-since <instant>` is for
-     * a window in which the daemon or its host was broken — the 2026-09-03 outage, where a missing runtime
-     * image meant every candidate ground during it was published INCONCLUSIVE about a boot that never
-     * happened; `-before` selects the exact complement of that population and would queue the whole store.
+     * a window in which the daemon or its host was broken — a missing runtime image, say, where every
+     * candidate ground during the outage is published INCONCLUSIVE about a boot that never happened;
+     * `-before` selects the exact complement of that population and would queue the whole store.
      * None of them should have to be listed by hand. All are additive and idempotent — queueing an entry that
      * is already waiting changes nothing.
      *

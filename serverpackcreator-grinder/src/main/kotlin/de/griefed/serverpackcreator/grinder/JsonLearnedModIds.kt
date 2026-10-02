@@ -78,9 +78,9 @@ class JsonLearnedModIds(private val file: File) {
     /**
      * One platform's `id -> refs`, accepting both shapes the file has ever had.
      *
-     * `LearnedModIds` kept one ref per id until 2026-09-09 and this document therefore held a bare string
-     * there; it now holds a list, because one mod id is genuinely served by several projects. Reading the
-     * old shape is two lines and keeps a deployed daemon's accumulated map, where refusing it would silently
+     * The current shape is a list, because one mod id is genuinely served by several projects; an older
+     * document holds a bare string there instead. Reading both is two lines and keeps a deployed daemon's
+     * accumulated map, where refusing the older one would silently
      * re-pay every probe download the host has ever made. Anything else is dropped rather than guessed at.
      */
     private fun refsOf(byId: Map<String, Any>): Map<String, List<String>> = byId.mapValues { (_, refs) ->

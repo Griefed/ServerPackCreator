@@ -54,8 +54,8 @@ class ApiVanillaPackGenerator(
 
     override fun generate(loader: String, loaderVersion: String, minecraftVersion: String): File? {
         val tupleDir = File(workDirectory, sanitize("$minecraftVersion-$loader-$loaderVersion"))
-        // The wipe below is what destroyed the previous attempt's install console, which is the only record of why
-        // that attempt failed. Carry one generation across it before the directory goes.
+        // The wipe below destroys the preceding attempt's install console, which is the only record of why that
+        // attempt failed. Carry one generation across it before the directory goes.
         val previousInstallConsole = InstallLogRetention.preserve(tupleDir)
         tupleDir.deleteRecursively()
         val modpack = File(tupleDir, "modpack").apply { File(this, "mods").mkdirs() }

@@ -28,9 +28,10 @@ import java.io.File
  *
  * Staging leaves a full server pack (with the overlaid loader libraries) plus the mod jars it downloaded under
  * `<work>/boot/<slug>-<loader>` and `<work>/verify/<slug>-<loader>`. Those directories were only ever deleted when
- * the *same* `(slug, loader)` pair was attempted again, which for a catalog sweep is never — every attempt was a
- * new pair, so the work tree grew without bound: **98 GB across 1750 attempt directories, ~23 GB/h**, measured
- * live on 2026-07-30. The packs are fully reproducible from the cache and the source; the `boot.log` is not, and a
+ * the *same* `(slug, loader)` pair is attempted again, which for a catalog sweep is never — every attempt is a new
+ * pair, so without this the work tree grows without bound, measured live at **98 GB across 1750 attempt
+ * directories, ~23 GB/h**. The packs are fully reproducible from the cache and the source; the `boot.log` is not,
+ * and a
  * verdict's detail is read from it, so that one file stays.
  *
  * @param workDirectory The grinder's scratch root — the same one [ContainerCandidateVerifier] stages under.
@@ -46,9 +47,8 @@ class BootWorkspaceReaper(private val workDirectory: File) {
      *
      * **The platform is half of the scope, not decoration.** The same slug on Modrinth and on CurseForge is two
      * candidates — verdict freshness is keyed that way for the same reason — and they are ground concurrently.
-     * Reaping by slug alone deleted the other platform's pack mid-boot, which is what produced `creativecore`'s
-     * exit-127 Fabric boot and its NeoForge 26.2 run reading SURVIVED on one platform and CRASHED on the other
-     * (2026-08-23).
+     * Reaping by slug alone deletes the other platform's pack mid-boot, which surfaces as an exit-127 boot, or as
+     * the same project reading SURVIVED on one platform and CRASHED on the other.
      *
      * @return Bytes freed, for the caller to log.
      */

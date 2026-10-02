@@ -51,8 +51,8 @@ import java.util.concurrent.Future
  * whose loader has no build for the Minecraft version (or whose JDK the image lacks) are reported as
  * skipped, not failed.
  *
- * Every PowerShell check that used to live here has moved to `-api`, where it runs on every push against
- * a stock `mcr.microsoft.com/powershell` image: `ShellTemplateSyntaxTest` parses the shipped templates and
+ * The PowerShell checks live in `-api`, where they run on every push against a stock
+ * `mcr.microsoft.com/powershell` image: `ShellTemplateSyntaxTest` parses the shipped templates and
  * `PowerShellInstallerJavaTest` executes `RunInstallerJavaCommand` for the `JAVA_INSTALLER` override and
  * its fallback. Neither needed this image or this matrix, and behind this gate neither ever ran. What is
  * left here is the one thing that genuinely does need them: booting a cell.

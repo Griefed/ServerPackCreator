@@ -32,10 +32,10 @@ import java.time.Instant
  * Coalesced persistence: `record()` buffers, and the file is written on an interval instead of once per
  * verdict.
  *
- * Measured 2026-08-29 (`StoreWriteBenchTest`, B35): `persist()` serialises the whole store, so a `record()`
- * costs 18–25 ms at 1 k rows, 74–83 ms at 10 k and 787–1050 ms at 100 k. It is `@Synchronized` on the grind
- * worker's thread, and the deployed store held 38 258 verdicts at ~4.3 verdicts/second — so every worker was
- * serialising behind a multi-megabyte rewrite per verdict. Dropping the pretty-printer was measured and is
+ * Measured by `StoreWriteBenchmark`: `persist()` serialises the whole store, so a `record()` costs 18–25 ms at
+ * 1 k rows, 74–83 ms at 10 k and 787–1050 ms at 100 k. It is `@Synchronized` on the grind worker's thread, and
+ * a deployed store holds tens of thousands of verdicts at ~4.3 verdicts/second — so write-through serialises
+ * every worker behind a multi-megabyte rewrite per verdict. Dropping the pretty-printer is measured and is
  * *not* enough (707 ms → 361 ms at 100 k); only writing less often is.
  *
  * The durability trade is deliberate and bounded: at most one interval of verdicts can be lost to a hard

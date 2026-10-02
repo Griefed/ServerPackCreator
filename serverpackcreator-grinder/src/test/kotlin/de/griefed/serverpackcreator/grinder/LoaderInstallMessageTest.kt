@@ -25,11 +25,11 @@ import org.junit.jupiter.api.Test
 /**
  * What the operator is told when a loader install is unavailable.
  *
- * The old message was `No cached loader install for Forge 61.2.1 / Minecraft 1.21.11`, and it described the
- * one thing that had **not** happened. `LoaderCache.ensureInstalled` installs on a miss; it returns `null`
- * only when the install *failed*, or when the tuple is on cooldown after failing recently. So a reader
- * reasonably concluded the grinder was refusing to install something it could have installed, and went
- * looking for a missing feature that was already there. Reported by Griefed 2026-08-30.
+ * `No cached loader install for Forge 61.2.1 / Minecraft 1.21.11` would describe the one thing that has **not**
+ * happened. `LoaderCache.ensureInstalled` installs on a miss; it returns `null` only when the install *failed*,
+ * or when the tuple is on cooldown after failing recently. A message naming the cache therefore reads as the
+ * grinder refusing to install something it could have installed, and sends a reader looking for a feature that
+ * is already there.
  *
  * The reason matters twice over: this string becomes the verdict's detail, so it is what the report shows
  * for every candidate that wanted the tuple — and the cooldown path logs at DEBUG, so at default levels the

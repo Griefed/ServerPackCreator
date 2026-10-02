@@ -40,8 +40,8 @@ import java.util.concurrent.TimeUnit
  *
  * Extracted as a pure helper rather than pinned through the engine: [DockerJavaContainerEngine] needs a live
  * daemon and this module carries no mocking library, so the alternative was a hand-written stub of an
- * 80-method interface. The decision — *wait for these, but not past here* — is the part that was wrong, and
- * it needs no Docker at all.
+ * 80-method interface. The decision — *wait for these, but not past here* — is the part worth pinning, and it
+ * needs no Docker at all.
  *
  * Timing assertions are deliberately loose. What is asserted is the **outcome** (did it give up?) and that it
  * returned nowhere near the blocked task's own duration; a tight margin here would only buy flakiness on a

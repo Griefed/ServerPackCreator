@@ -55,7 +55,7 @@ internal object StoreWriteBenchmark {
         }
     }
 
-    /** Write-through cost: milliseconds per `record()` as the file grows, the number B35 started from. */
+    /** Write-through cost: milliseconds per `record()` as the file grows. */
     fun measureWriteThroughCostPerRecord(dir: File) {
         for (size in listOf(1_000, 10_000, 100_000)) {
             val file = File(dir, "verdicts-$size.json")
@@ -70,7 +70,7 @@ internal object StoreWriteBenchmark {
         }
     }
 
-    /** The same measurement with writes coalesced — B35's fix, against the write-through number above. */
+    /** The same measurement with writes coalesced, against the write-through number above. */
     fun measureCoalescedCostPerRecord(dir: File) {
         for (size in listOf(1_000, 10_000, 100_000)) {
             val file = File(dir, "coalesced-$size.json")
@@ -87,8 +87,8 @@ internal object StoreWriteBenchmark {
     }
 
     /**
-     * Splits `persist()`'s cost three ways, to answer B35's actual question: is dropping the pretty-printer
-     * enough on its own, or does the store need an append-log?
+     * Splits `persist()`'s cost three ways, to answer whether dropping the pretty-printer is enough on its
+     * own or the store needs an append-log.
      */
     fun measurePersistComponents(dir: File) {
         val mapper = jacksonObjectMapper().findAndRegisterModules()

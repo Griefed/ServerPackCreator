@@ -132,8 +132,8 @@ class DockerJavaContainerEngine(
                 })
 
             // The budget must not be spent while the host is asleep. A suspend freezes the container mid-boot, and a
-            // wall-clock deadline then expires on a server that never got the time — measured 2026-07-31, a laptop
-            // idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
+            // wall-clock deadline then expires on a server that never got the time — measured on a laptop
+            // idle-sleeping in ~16-minute cycles, 19 of 153 verdicts read `timed out`, several of them
             // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. Each
             // suspended interval is added back to the deadline, so the timeout means "the boot had this long and did
             // not make it" rather than "this much clock passed".

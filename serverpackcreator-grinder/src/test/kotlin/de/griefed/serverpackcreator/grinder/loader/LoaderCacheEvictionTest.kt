@@ -79,7 +79,7 @@ internal class LoaderCacheEvictionTest {
         Assertions.assertTrue(cache.isInstalled("Forge", "50.2.10", "1.20.6"))
     }
 
-    /** Retention off (zero or negative) must keep everything — the previous behaviour, opt-in eviction. */
+    /** Retention off (zero or negative) must keep everything: eviction is opt-in. */
     @Test
     fun zeroRetentionDisablesEvictionEntirely() {
         val cache = LoaderCache(tempDir.toFile(), installer)

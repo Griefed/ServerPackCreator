@@ -97,8 +97,8 @@ interface VerdictStore {
  *
  * **The loader is deliberately not part of it.** A project is ground once per line under whichever loader
  * that line publishes for, so one loader routinely holds several of a project's rows — and a line whose
- * loader *changes* between grinds (an era that gains a NeoForge build) must replace its row rather than
- * strand the old one for ever.
+ * loader *changes* between grinds (an era that gains a NeoForge build) must replace its row rather than strand
+ * the superseded one for ever.
  *
  * The line is spelled `mc:` so a key can be told apart from a legacy, loader-built one by prefix, which is
  * what [supersededLoaderKeys] needs.

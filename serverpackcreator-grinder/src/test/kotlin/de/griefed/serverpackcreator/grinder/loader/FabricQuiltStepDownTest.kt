@@ -35,11 +35,10 @@ import java.nio.file.Path
  * `emptyList()` for Fabric, Quilt and LegacyFabric, so there was nothing to walk and the tuple stayed dead
  * for every candidate that wanted it.
  *
- * **The premise behind that empty list was wrong.** It read: they "ship a single Minecraft-independent
- * loader line, so there is no sibling build to fall back to". True of *per-Minecraft* builds — Quilt does
- * not publish a 1.20.6-specific loader the way Forge does — but the loader **line** is versioned, and
- * measured against the live metadata on 2026-09-04 Quilt publishes **306** builds and Fabric **253**, with
- * Quilt's `/v3/versions/loader/1.20.6` listing all 306 as valid for that Minecraft. There are 305 siblings.
+ * **"A single Minecraft-independent loader line, so no sibling build to fall back to" is the wrong reading.**
+ * It is true of *per-Minecraft* builds — Quilt does not publish a 1.20.6-specific loader the way Forge does —
+ * but the loader **line** is versioned: Quilt publishes **306** builds and Fabric **253**, and Quilt's
+ * `/v3/versions/loader/1.20.6` lists all 306 as valid for that Minecraft. There are 305 siblings.
  *
  * **Prevention was ruled out first, and this is the remaining lever.** Every published source says the
  * failing combination is fine: it is in the per-Minecraft list, the intermediary exists, and

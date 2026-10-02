@@ -35,8 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * These assert a *count of scans*, not a duration, deliberately: a timing assertion is flaky on CI and says
  * nothing about why it got slow, whereas "this endpoint copied every verdict" is the defect itself and is
- * exactly reproducible. At the deployed scale the difference is not academic — selection was measured at
- * 251 ms for 38,258 verdicts, and the store has since passed the high six figures.
+ * exactly reproducible. At the deployed scale the difference is not academic — selection is measured at 251 ms
+ * for 38,258 verdicts, against a store in the high six figures.
  *
  * @author Griefed
  */

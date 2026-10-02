@@ -40,7 +40,7 @@ import java.io.File
  * platform that resolves it, and a slug is a mutable display name a rename can move out from under a
  * queued candidate. Staging directories are named from `ProjectFiles.platform`/`slug`, so reaping on the
  * candidate's copy of either silently matches nothing and leaks a full server pack per attempt — the
- * disk-growth class `BootWorkspaceReaper` exists for (98 GB across 1750 directories, measured 2026-07-30).
+ * disk-growth class `BootWorkspaceReaper` exists for (measured at 98 GB across 1750 directories).
  *
  * The decision is pinned here rather than through `verify`, which needs an `ApiWrapper`, a loader cache and
  * a container engine — the same split the boot verifier's own pure decisions follow.

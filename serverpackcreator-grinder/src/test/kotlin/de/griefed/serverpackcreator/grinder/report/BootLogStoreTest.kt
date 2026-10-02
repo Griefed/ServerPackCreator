@@ -185,8 +185,8 @@ internal class BootLogStoreTest {
 
     /**
      * **The consoles behind verdicts that are still published must stay reachable from their rows.** The
-     * owner gained the Minecraft version-line on 2026-09-11, so every artifact written before then is filed
-     * under a three-part owner that `namesFor` — which rebuilds a four-part prefix — can never find. Left
+     * owner carries the Minecraft version-line, so an artifact written before it did is filed under a
+     * three-part owner that `namesFor` — which rebuilds a four-part prefix — can never find. Left
      * alone they would be reclaimed by the budget while the CONFIRMED exclusions they evidence kept serving.
      *
      * The line is not guessed: the attempt segment beside the owner already records `_mc<version>`.

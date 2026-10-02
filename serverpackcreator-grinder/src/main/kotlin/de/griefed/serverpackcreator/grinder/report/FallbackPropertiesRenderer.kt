@@ -74,9 +74,9 @@ object FallbackPropertiesRenderer {
         verdicts: Collection<GrindVerdict>
     ): String {
         val proven = verdicts
-            // One condition, where there used to be two. `Confidence.HIGH` was also reachable from the bare
-            // exit-code rung -- "exited non-zero, nothing recognised why" -- so a separate decisive-rung check
-            // had to be bolted alongside it; measured on the live daemon, 27 of 43 published HIGHs rested on no
+            // One condition, not two. `Confidence.HIGH` alone is not enough while it is reachable from the bare
+            // exit-code rung -- "exited non-zero, nothing recognised why" -- which on the live daemon accounted
+            // for 27 of 43 published HIGHs resting on no
             // decisive evidence. `verdictOf` now only ever reaches CONFIRMED from a decisive rung, so CONFIRMED
             // *means* decisive and asking twice would only invite the two to drift apart.
             .filter { it.verdict == Verdict.CONFIRMED }

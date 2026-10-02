@@ -147,7 +147,7 @@ internal class ModrinthCandidateSourceTest {
     /**
      * Pins the offset-ceiling boundary that decides whether a truncated crawl can be told apart from a finished one.
      *
-     * Measured 2026-07-29: Modrinth serves deep offsets (40 000 returns real hits) but clamps at 99 999, answering
+     * Measured: Modrinth serves deep offsets (40 000 returns real hits) but clamps at 99 999, answering
      * with **zero hits** past it rather than an error — which `page` cannot distinguish from an exhausted catalog. At
      * ~71 000 `project_type:mod` projects there is headroom today, so this is a guard against a future silent
      * truncation: if the catalog outgrows the ceiling, the sweep would wrap early and report itself complete.

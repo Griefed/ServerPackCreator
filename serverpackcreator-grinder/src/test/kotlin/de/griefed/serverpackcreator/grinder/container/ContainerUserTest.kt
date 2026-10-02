@@ -30,8 +30,8 @@ import java.nio.file.Files
  * Pins [ContainerUser] — the resolution that decides which uid:gid the boot and install containers run
  * as. The image bakes in `USER 1000:1000`, and every container bind-mounts a directory the *host*
  * process created; when the two identities differ, every write inside the pack is refused and the boot
- * fails in a way that points nowhere near permissions (observed live 2026-08-23: `start.sh` ran to
- * completion and died on `Error: could not open 'user_jvm_args.txt'`).
+ * fails in a way that points nowhere near permissions — `start.sh` runs to completion and dies on
+ * `Error: could not open 'user_jvm_args.txt'`.
  */
 internal class ContainerUserTest {
 

@@ -32,8 +32,8 @@ import java.io.File
  *
  * A rule is decisive evidence — `BootDecision.OPERATOR_RULE` is one of only two decisions allowed to publish
  * a clientside entry — so an example file that ships wrong or over-broad rules is worse than one that ships
- * none. These excerpts are verbatim from `grinder.serverpackcreator.de`, sampled 2026-08-31, and they pin
- * both directions: what the rules must catch, and what they must leave alone.
+ * none. These excerpts are verbatim consoles from `grinder.serverpackcreator.de`, and they pin both
+ * directions: what the rules must catch, and what they must leave alone.
  */
 internal class ShippedBootRulesTest {
 

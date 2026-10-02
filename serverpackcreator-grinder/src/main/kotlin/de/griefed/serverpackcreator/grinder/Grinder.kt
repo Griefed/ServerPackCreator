@@ -109,7 +109,7 @@ class Grinder(
         // One readable line per candidate actually being ground, so `tail -f` answers "what is it doing?"
         // without decoding pack paths. The thread name in the log pattern says which worker.
         // Say when a grind jumped the queue: it is the difference between "the crawl reached this" and
-        // "somebody decided the stored verdict was wrong", which is the first question asked of a re-grind.
+        // "somebody asked for this again", which is the first question asked of a re-grind.
         val why = if (force) " (re-grind requested)" else ""
         log.info("Grinding ${candidate.platform}/${candidate.slug}$why — ${candidate.projectUrl}")
         status?.beginCandidate(candidate)
@@ -298,9 +298,9 @@ class GrindPool(
         val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
         val verified = AtomicInteger(0)
         val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
-        // Constructed, published, and only then started. Starting inside the `map` left a window in which a
-        // worker was running before `workers` had been assigned -- and a shutdown landing there would have
-        // interrupted nobody and reported a clean stop, because an empty list satisfies "none alive".
+        // Constructed, published, and only then started. Starting inside the `map` leaves a window in which
+        // a worker is running before `workers` has been assigned -- a shutdown landing there interrupts
+        // nobody and reports a clean stop, because an empty list satisfies "none alive".
         val running = (1..workerCount).map { worker ->
             Thread {
                 while (!stopRequested.get()) {
@@ -335,8 +335,9 @@ class GrindPool(
      * Order a batch **round-robin across platforms**, each platform most-downloaded first — one CurseForge, one
      * Modrinth, one CurseForge, and so on, with a platform that runs out simply dropping out of the rotation.
      *
-     * Sorting the whole batch by `popularity` instead starves a platform. Measured live on 2026-07-30:
-     * CurseForge's counts run several times Modrinth's for equivalent mods (`jei` 602 M vs `fabric-api` 218 M),
+     * Sorting the whole batch by `popularity` instead starves a platform, because the two publish download
+     * counts on different scales: CurseForge's run several times Modrinth's for equivalent mods (`jei` 602 M
+     * vs `fabric-api` 218 M),
      * so every CurseForge candidate outranked every Modrinth one and a two-hour pass produced 108 CurseForge
      * verdicts and **zero** Modrinth ones — indefinitely, for any interruption shorter than a full pass.
      *

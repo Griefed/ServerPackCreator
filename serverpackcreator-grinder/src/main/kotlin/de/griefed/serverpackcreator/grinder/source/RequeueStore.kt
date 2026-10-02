@@ -37,9 +37,8 @@ import java.time.Instant
  *
  * **Why the crawl and the TTL are not enough.** Together they answer "when does a project come round again?"
  * with *eventually, at the re-verify TTL* — the right answer when a mod changes, and the wrong one when the
- * defect is in this engine. Three landed on 2026-08-23 alone (a source jar becoming a list-entry, a crash
- * re-check that never left the crashing combination's neighbourhood, two platform runs of one slug sharing a
- * staging directory), and each invalidated verdicts that were already published. Waiting out a 30-day TTL
+ * defect is in this engine. An engine defect invalidates verdicts that are already published, and waiting out a
+ * 30-day TTL
  * means publishing a known-wrong clientside entry for a month.
  *
  * A queued grind is **forced** past the freshness check by the caller — see `Grinder.grind`'s `force`. That
@@ -192,10 +191,9 @@ object RequeueSelection {
      *
      * The two are not interchangeable. A defect *found* in the engine invalidates the past, which is
      * [verifiedBefore]; a host or engine that was **broken for a window** invalidates that window, and asking
-     * for it with [verifiedBefore] selects precisely the verdicts the outage did not touch. Measured
-     * 2026-09-03: the runtime image was absent from the container daemon, so until it was noticed every
-     * candidate was published INCONCLUSIVE about a boot that never happened, overwriting decisive verdicts
-     * that the 30-day re-verify TTL would then have left standing.
+     * for it with [verifiedBefore] selects precisely the verdicts the outage did not touch. The shape to picture
+     * is a missing runtime image: until it is noticed, every candidate is published INCONCLUSIVE about a boot
+     * that never happened, overwriting decisive verdicts the 30-day re-verify TTL would then leave standing.
      *
      * Inclusive of [instant] itself, because the operator passes the moment it broke and a verdict stamped
      * exactly then is damage rather than history — which also makes the two selectors a partition.

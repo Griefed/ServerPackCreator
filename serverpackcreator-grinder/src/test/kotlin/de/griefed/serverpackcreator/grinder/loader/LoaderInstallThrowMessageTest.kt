@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 /**
  * **An exception's `message` is not a diagnosis, and sometimes it is not even a string.**
  *
- * From the live daemon, 2026-09-03, two consecutive lines of the same outage:
+ * Two consecutive lines from one real outage:
  *
  * ```
  * Loader install threw for NeoForge 26.2.0.26-beta / Minecraft 26.2: Status 404: {"message":"No such image: …"}

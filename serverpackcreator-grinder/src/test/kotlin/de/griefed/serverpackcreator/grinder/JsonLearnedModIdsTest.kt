@@ -52,10 +52,10 @@ internal class JsonLearnedModIdsTest {
     }
 
     /**
-     * **The document written before 2026-09-09 held one bare ref per id, and must still load.**
+     * **A document holding one bare ref per id must still load.**
      *
-     * `LearnedModIds` kept a single prover then; it now keeps every project that proves an id, so the value
-     * is a list. Rejecting the old shape would be silent and expensive in exactly the way this file exists
+     * `LearnedModIds` keeps every project that proves an id, so the current value is a list; an older document
+     * holds a bare string. Rejecting that shape would be silent and expensive in exactly the way this file exists
      * to prevent: the deployed daemon's accumulated map would read as empty and every probe download it has
      * ever made would be re-paid.
      */

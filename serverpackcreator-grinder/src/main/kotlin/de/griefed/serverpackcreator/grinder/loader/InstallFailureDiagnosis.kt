@@ -49,8 +49,8 @@ object InstallFailureDiagnosis {
 
     /**
      * The container could not write into the bind-mounted pack — the uid it runs as does not own the
-     * directory the host created for it. Observed live 2026-08-23 across every loader at once, which is
-     * the tell: a permission wall is indifferent to which loader is being installed.
+     * directory the host created for it. It shows up across every loader at once, which is the tell: a
+     * permission wall is indifferent to which loader is being installed.
      */
     private fun unwritableMount(consoleLines: List<String>): String? {
         val refusals = consoleLines.filter { it.contains("Permission denied", ignoreCase = true) }

@@ -47,8 +47,8 @@ object InstallLogRetention {
 
     /**
      * Write [previousConsole] back as `install.log.previous` in the freshly recreated [tupleDirectory]. A `null`
-     * writes nothing at all: an empty `.previous` would imply a console had been captured and then lost. Only this
-     * one generation is kept, so a repeatedly failing tuple does not accumulate consoles.
+     * writes nothing at all: an empty `.previous` would imply a console was captured and then lost. Only this one
+     * generation is kept, so a repeatedly failing tuple does not accumulate consoles.
      */
     fun writePrevious(tupleDirectory: File, previousConsole: String?) {
         val console = previousConsole ?: return

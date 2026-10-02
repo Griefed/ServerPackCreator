@@ -168,9 +168,9 @@ data class GrindVerdict(
      * [suggestedEntry] is what gets published and stays broad; this is the artifact a maintainer opens the
      * platform page to check the finding against, so it has to be the name they will see there.
      *
-     * It carried a *derived stem* until 2026-09-10, which made it useless for exactly that: over 400 live
-     * rows not one value ended in `.jar` and 270 were byte-identical to [suggestedEntry]. The real name
-     * keeps the loader token a project's rename history erases *and* the version that identifies the build.
+     * A *derived stem* here would be useless for exactly that — it drops the `.jar` and collapses into
+     * [suggestedEntry]. The real name keeps the loader token a project's rename history erases *and* the
+     * version that identifies the build.
      */
     val fileName: String? = null,
     /**
@@ -193,12 +193,11 @@ data class GrindVerdict(
      * The loader whose build proved this mod reaches client-only code, when this verdict **inherited** that
      * proof rather than producing it — `null` otherwise, including for the proving row itself.
      *
-     * **This is the row's evidence, and without it the row has none to show.** An inherited proof used to
-     * live only in [detail]'s prose, so [decidedBy] stayed the row's own boot rung — `READY_LINE` for a clean
-     * one — and `GrinderAuditIT`, which re-derives evidence from the kept consoles, read such a row as a
-     * published CONFIRMED resting on nothing. Measured 2026-09-12 against the live store: **86 of 140**
-     * published rows, i.e. the guard built to catch wrong publications failing wholesale on a design working
-     * as intended. An audit that cries wolf gets ignored.
+     * **This is the row's evidence, and without it the row has none to show.** An inherited proof recorded
+     * only in [detail]'s prose leaves [decidedBy] holding the row's own boot rung — `READY_LINE` for a clean
+     * one — and `GrinderAuditIT`, which re-derives evidence from the kept consoles, then reads the row as a
+     * published CONFIRMED resting on nothing. That is the guard built to catch wrong publications failing
+     * wholesale on a design working as intended, and an audit that cries wolf gets ignored.
      */
     val inheritedProofFrom: String? = null,
     /** The rule id of the rung that proved it, for the same reason [inheritedProofFrom] exists. */

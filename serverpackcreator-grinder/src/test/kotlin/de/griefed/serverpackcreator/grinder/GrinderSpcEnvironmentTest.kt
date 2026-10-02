@@ -33,9 +33,9 @@ import java.io.File
  *
  * Both halves cost a real outage. The daemon pinned its `Preferences` node but never its home directory, so SPC
  * resolved one on its own — and for a source build (every locally built artifact: `version=dev`) that fallback is
- * the process working directory, which `systemd` sets to `/` unless the unit file says otherwise. Reproduced
- * 2026-08-22 by running the installed distribution from `/`: `log4j2.xml` could not be written and the daemon died
- * on `java.io.FileNotFoundException: /log4j2.xml`, having reached neither Docker nor a single verdict.
+ * the process working directory, which `systemd` sets to `/` unless the unit file says otherwise. Run the installed
+ * distribution from `/` and `log4j2.xml` cannot be written: the daemon dies on
+ * `java.io.FileNotFoundException: /log4j2.xml`, having reached neither Docker nor a single verdict.
  *
  * Ordering is the other half, and it is why the claim cannot simply live somewhere in `main`: `ApiProperties` is
  * registered as log4j's own `ConfigurationFactory` (`@Plugin`), so the *first log statement in the process*

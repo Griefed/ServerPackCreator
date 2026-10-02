@@ -36,9 +36,9 @@ import java.util.zip.ZipFile
  *
  * **What it is for.** `fabricloader` is environment-provided, so staging never downloads it and
  * `DependencyBacktrack` had nothing to compare a demand against — a requirement naming it looked like a
- * requirement naming something absent, which that judge skips by design. Measured on the public grinder
- * 2026-09-11: **twelve** published `DEPENDENCY_FAILURE` rows are `fabric-language-kotlin` demanding
- * `fabricloader [0.19.5, ∞)` against the `0.19.3` quilt-loader 0.30.1 provides. With the pair in hand the
+ * requirement naming something absent, which that judge skips by design. On the public grinder that shows up as
+ * published `DEPENDENCY_FAILURE` rows for `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)` against
+ * the `0.19.3` quilt-loader 0.30.1 provides. With the pair in hand the
  * demanding jar is demoted to a build the installed loader can satisfy, exactly as any other version
  * conflict is.
  *

@@ -27,9 +27,9 @@ import java.io.File
 
 /**
  * Pins reclamation of the per-attempt scratch space. Staging keeps one full server pack (plus the mod jars it
- * downloaded) per `(slug, loader)` attempted, and only ever deleted it when that *same* pair was retried — so a
- * catalog sweep grew the work tree without bound. Measured live on 2026-07-30: **98 GB across 1750 attempt
- * directories**, ~23 GB/h, which fills any host long before a sweep finishes. The logs are the part worth keeping
+ * downloaded) per `(slug, loader)` attempted, and deleting it only when that *same* pair is retried grows the work
+ * tree without bound across a catalog sweep — measured live at **98 GB across 1750 attempt directories**,
+ * ~23 GB/h, which fills any host long before a sweep finishes. The logs are the part worth keeping
  * (a verdict's detail is read from them); the packs are reproducible and must go.
  */
 internal class BootWorkspaceReaperTest {
@@ -143,9 +143,9 @@ internal class BootWorkspaceReaperTest {
      * freshness is already keyed on `(platform, slug)` for exactly that reason, so reaping one platform's
      * finished candidate must leave the other platform's in-flight staging completely alone.
      *
-     * Observed 2026-08-23 on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge
-     * 26.2.0.66 on Minecraft 26.2 SURVIVED for one and CRASHED (exit 1) for the other — same loader build,
-     * same Minecraft, same mod — a Fabric boot exited **127** (a shell that could not find the command it was
+     * Observed on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge 26.2.0.66 on
+     * Minecraft 26.2 SURVIVED for one and CRASHED (exit 1) for the other — same loader build, same Minecraft,
+     * same mod — a Fabric boot exited **127** (a shell that could not find the command it was
      * given), and two re-checks came back INCONCLUSIVE on files another run had booted to a ready-line.
      */
     @Test
