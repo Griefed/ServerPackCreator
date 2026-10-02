@@ -88,7 +88,7 @@ internal class ContainerOwnershipIT {
      * (nothing running) instead of the one it does not (nothing left at all).
      */
     private fun awaitNothingRunning(engine: DockerJavaContainerEngine): List<String> {
-        val until = System.currentTimeMillis() + 60_000
+        val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         var running = runningContainersOf(engine)
         while (running.isNotEmpty() && System.currentTimeMillis() < until) {
             Thread.sleep(250)
@@ -109,9 +109,11 @@ internal class ContainerOwnershipIT {
      * running for an engine nothing had touched, and the release failed on it. The fixture was wrong, not
      * the engine — `close()` had correctly logged "Stopping 1 container(s)", its own and no other.
      *
-     * 90s, not 60: the budget now covers starting as well as creating, sized against that same run. Expiry
-     * **fails here**, naming what it waited for. A fixture that gives up quietly is the "timing out
-     * disguised as a verdict" this file already warned about in prose while doing it anyway.
+     * [FIXTURE_DAEMON_BUDGET_MILLIS], not a number sized against the last slow run: the budget covers
+     * starting as well as creating, and 90s was already the second such number before runs 831 and 834
+     * expired it too. Expiry **fails here**, naming what it waited for. A fixture that gives up quietly is
+     * the "timing out disguised as a verdict" this file already warned about in prose while doing it
+     * anyway.
      */
     private fun startSleeper(engine: DockerJavaContainerEngine): Thread {
         val booting = Thread {
@@ -119,14 +121,15 @@ internal class ContainerOwnershipIT {
                 engine.run(sleeperSpec(), Regex("this-never-appears"), Duration.ofMinutes(2)) { }
             }
         }.apply { isDaemon = true; start() }
-        val until = System.currentTimeMillis() + 90_000
+        val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         while (System.currentTimeMillis() < until && runningContainersOf(engine).isEmpty()) {
             Thread.sleep(200)
         }
         Assertions.assertFalse(
             runningContainersOf(engine).isEmpty(),
-            "the fixture never got a container of this engine running within 90s; the daemon was too slow " +
-                "or the boot failed, and neither is the thing this test is about"
+            "the fixture never got a container of this engine running within " +
+                "${FIXTURE_DAEMON_BUDGET_MILLIS / 1000}s; the daemon was too slow or the boot failed, and " +
+                "neither is the thing this test is about"
         )
         return booting
     }
