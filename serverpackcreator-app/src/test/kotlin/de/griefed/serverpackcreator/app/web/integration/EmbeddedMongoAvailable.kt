@@ -77,33 +77,23 @@ class EmbeddedMongoAvailable : ExecutionCondition {
         /**
          * How long `mongod` may take to announce itself before flapdoodle gives up, in milliseconds.
          *
-         * flapdoodle's default is 30 s (`ProcessDefaults.startTimeout`), and that is not a budget a shared
-         * CI host can be relied on to meet. Measured on Forgejo run 836, where the whole runner was
-         * running three Gradle/npm builds at once: the probe below reached `Opening WiredTiger` and
-         * emitted its next line **14.6 s** later, and the Spring context's `mongod`, started 34 s after
-         * it on the same host, produced nothing at all inside the 30 s and took all fourteen
-         * database-backed tests down with `Could not start process: Hmm.. no failure or success message
-         * after 30000ms`. Nothing was wrong with `mongod`, with the context or with the tests — the
-         * deadline was simply shorter than a starved host's disk.
+         * Three minutes, against flapdoodle's own default of 30 s, because a CI host shared with other
+         * builds can take far longer than a developer machine to get WiredTiger open — and a deadline
+         * that expires takes every database-backed test down with it, reporting a slow disk as a broken
+         * application.
          *
-         * Three minutes, because what this budget trades is a slow machine's green run against a broken
-         * machine's time-to-red, and only the first of those happens routinely. It is deliberately the
-         * same number on both sides: without it the probe answers "mongod starts here" with one deadline
-         * while the context fails against another, which is exactly how a guard written to turn this into
-         * a SKIP let it through as fourteen failures instead.
+         * Used on both sides, deliberately: the probe below and the `@SpringBootTest` classes must give
+         * `mongod` the same budget, or the probe approves a start the contexts then fail on.
          */
         const val START_TIMEOUT_MILLIS = 180_000L
 
         /**
          * The property flapdoodle's Spring autoconfiguration reads for [START_TIMEOUT_MILLIS].
          *
-         * Spelled as `EmbeddedMongoProperties` spells it — the field reaches Spring through
-         * `getStarttimeout`/`setStarttimeout`, so the JavaBean property is all one word. Verified that
-         * this spelling is actually consumed rather than ignored, which is the failure mode this module
-         * has already paid for twice (`spring.data.mongodb.uri`): setting it to `1` fails every test in
-         * both classes with flapdoodle's own `no failure or success message after 1ms`. The hyphenated
-         * `start-timeout` binds too — Spring's relaxed binding strips the hyphen — but the one-word form
-         * is what the class declares, so it is the one that cannot drift.
+         * One word, as `EmbeddedMongoProperties` spells it: the field reaches Spring through
+         * `getStarttimeout`/`setStarttimeout`, so that is the JavaBean property name. Spring's relaxed
+         * binding accepts `start-timeout` as well, but the one-word form is the one the class declares
+         * and so the one that cannot drift from it.
          */
         const val START_TIMEOUT_PROPERTY = "de.flapdoodle.mongodb.embedded.starttimeout=$START_TIMEOUT_MILLIS"
 
@@ -113,9 +103,7 @@ class EmbeddedMongoAvailable : ExecutionCondition {
                 var running: TransitionWalker.ReachedState<RunningMongodProcess>? = null
                 try {
                     running = Mongod.instance()
-                        // The same deadline the Spring contexts get. A probe that is more patient than
-                        // the thing it vouches for reports "mongod starts here" and then watches the
-                        // context fail on the start it just approved.
+                        // The same deadline the Spring contexts get, per START_TIMEOUT_MILLIS.
                         .withStartTimeout(
                             Start.to(StartTimeout::class.java)
                                 .initializedWith(StartTimeout.of(START_TIMEOUT_MILLIS))

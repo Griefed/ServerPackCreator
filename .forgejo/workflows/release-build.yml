@@ -360,35 +360,28 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
 
-      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md) and this
-      # workflow must not assume they are up -- that assumption is what broke run 797.
+      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
+      # must work whether or not they are up.
       #
-      # THEY ARE ADDRESSED BY IP, AND THAT IS NOT A SHORTCUT. Jobs here run inside a `docker:dind`
-      # daemon (the runner's `docker_host` is dind's socket over a shared volume), while the caches are
-      # containers of the HOST daemon. dind's embedded DNS does not know the host daemon's containers,
-      # so a service name cannot work; routing between them does, because `docker_dind` is attached to
-      # the cache network and its children egress through that interface. Measured on a faithful
-      # reproduction of the topology on 2026-10-02 -- from a container created by the dind daemon,
-      # `wget http://registry-cache-ghcr:5000/v2/` fails with `bad address` while the same request to
-      # the cache's IP returns 200, and a buildx build through these stanzas was served 4 of its
-      # Docker Hub requests and 3 of its ghcr requests by the caches.
+      # They are addressed by IP because jobs here run inside a `docker:dind` daemon while the caches are
+      # containers of the host daemon. dind's embedded DNS does not know them, so a service name cannot
+      # resolve; routing does reach them, because `docker_dind` is attached to the cache network and its
+      # children egress through that interface.
       #
-      # `driver-opts: network=...` is therefore GONE, and its removal is the point rather than a
-      # side effect: the builder needs no network to join, which also removes the one way this step
-      # could kill a build outright --
+      # The probe asks the question that decides the outcome -- can this job reach the cache -- rather
+      # than a proxy for it. A job container and the buildx builder are both children of the same dind
+      # daemon, so a `GET /v2/` from here takes the path the builder will take. A registry whose cache
+      # does not answer is simply left out of the config and pulled from upstream.
+      #
+      # No `driver-opts: network=...`: with fixed IPs the builder has no network to join, and naming one
+      # the daemon does not know is a hard failure before a single layer is pulled --
       #   ERROR: Error response from daemon: failed to set up container networking:
-      #          network runners_default not found
-      #
-      # The probe asks the question that matters, which the previous one did not. "Does this network
-      # exist" was a proxy for "can the builder reach the cache", and it answered about the wrong
-      # daemon; a GET /v2/ from this job is the same path the builder takes, since both are children of
-      # the same dind daemon. A cache that does not answer is simply left out of the config, so the
-      # build runs against upstream exactly as it did before any of this.
+      #          network <name> not found
       - name: Point BuildKit at the host's registry caches when they answer
         id: regcache
         env:
-          # Pinned by the runner host's compose file -- see claude-docs/RUNNER-REGISTRY-CACHE.md section
-          # 3. If these drift from the host, nothing breaks: the probe finds nothing and the build goes
+          # Pinned by the runner host's compose file -- claude-docs/RUNNER-REGISTRY-CACHE.md section 1.
+          # If these drift from the host, nothing breaks: the probe finds nothing and the build goes
           # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
           GHCR_CACHE: "172.31.77.6:5000"
           DOCKERHUB_CACHE: "172.31.77.5:5000"
@@ -455,14 +448,14 @@ jobs:
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
       # Retried for the same reason `docker-test.yml` retries: ghcr answers a pull with
-      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips its
-      # per-source burst limiter, and buildkit does not wait. Being logged in does not help -- run 739's job
-      # logged `Login Succeeded` and still died on a blob GET. That workflow has lost three runs to it; here
-      # the same minute would cost the release its images and take the `mirror` job (`needs: docker`) with it.
+      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips
+      # its per-source burst limiter, and buildkit will not wait. The limiter is keyed on the host, so
+      # being logged in does not lift it. Here a single such minute would cost the release its images and
+      # take the `mirror` job (`needs: docker`) with it.
       #
       # The retry is expensive and deliberately so: `no-cache: true` means attempt two rebuilds the whole
-      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a needless
-      # retry is time, and the cost of not having one is a release with no image.
+      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a
+      # needless retry is time, and the cost of not having one is a release with no image.
       - name: Build and push
         id: buildpush
         continue-on-error: true

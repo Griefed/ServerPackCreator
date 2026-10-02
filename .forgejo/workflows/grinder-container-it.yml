@@ -2,13 +2,10 @@
 #
 # They are not in `test.yml` for one reason: `reapsALabelledOrphanLeftByAPreviousProcess` removes every
 # grinder-labelled container on the daemon, because an orphan is a container whose maker is gone and the
-# daemon cannot say who is gone. That side effect is not scopeable, so the only defence is exclusivity —
-# and `test.yml` cannot provide it. Its concurrency group is per-ref, deliberately, so a new push cancels
-# its own outdated run but not a run of another ref; two branches pushed close together share the runner
-# and its daemon. On 2026-09-27 runs 954 and 956 reached the container suite seven seconds apart and each
-# failed a *different* test of it. That pair came from the `push:`-plus-`pull_request:` doubling, which is
-# gone as of 2026-10-02 — so the routine collision is gone, and the one that remains (two real branches)
-# is rarer, not impossible. The lock stays: what it defends against is a side effect no scope can bound.
+# daemon cannot say who is gone. That side effect is not scopeable, so the only defence is exclusivity --
+# and `test.yml` cannot provide it. Its concurrency group is per-ref, so a new push cancels its own
+# outdated run but not a run of another ref, and two branches pushed close together share the runner and
+# its daemon.
 #
 # Making `test.yml` itself repo-wide-exclusive would fix that and cost every push a second full 35-minute
 # run in series. This file leaves `test.yml`'s cancellation alone and holds its lock for one job instead.
@@ -18,19 +15,13 @@
 # the lever is this job's scope, not the lock.
 name: Grinder Container IT
 
-# PULL_REQUEST IS DELIBERATELY ABSENT. Every PR on this instance is opened from a branch of this
-# repository (the standing develop -> beta one, #682, and the `claude-` fix branches), and `push:`
-# already builds exactly those commits -- so carrying both triggers ran this workflow twice per push
-# for a second verdict on the same tree, in parallel, on one runner. Measured 2026-10-01: one push
-# queued nine runs at 17:03:00 and the batch ran 2-5x its previous day's time (docker-test 13-15 ->
-# 41.6 min, devbuild ~20 -> 96.6, docs ~25-31 -> 63.4, the container ITs 5.3-8.8 -> 18.1 and 23.3),
-# and every red in it was a deadline expiring. Halving the batch is the cheapest lever there is.
+# NO `pull_request:` TRIGGER. Every PR on this instance is opened from a branch of this repository, and
+# `push:` already builds those commits, so adding it would run this workflow twice per push for a second
+# verdict on the same tree, in parallel, on one runner.
 #
-# What it costs, stated rather than discovered later: the *merge* result is no longer built on its
-# own -- only the head commit -- so a PR that is green can still conflict semantically with its base
-# until the merge lands on `develop` and is built there. And a fork PR gets no Forgejo CI; the GitHub
-# mirror's own test.yml keeps `pull_request:` and covers that case, which is the one place a fork
-# actually arrives. Restoring this is one line.
+# Two things that costs: the *merge* result is not built on its own, so a PR green on its head can still
+# conflict semantically with its base until the merge lands and is built there; and a fork PR gets no
+# Forgejo CI, which `.github/workflows/test.yml` covers instead -- GitHub is where a fork arrives.
 on:
   push:
   workflow_dispatch:

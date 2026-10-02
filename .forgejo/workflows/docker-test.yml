@@ -7,19 +7,13 @@
 # Restoring the old behaviour is a two-line change: add `push: true` and the two SHA tags below.
 name: Docker Test
 
-# PULL_REQUEST IS DELIBERATELY ABSENT. Every PR on this instance is opened from a branch of this
-# repository (the standing develop -> beta one, #682, and the `claude-` fix branches), and `push:`
-# already builds exactly those commits -- so carrying both triggers ran this workflow twice per push
-# for a second verdict on the same tree, in parallel, on one runner. Measured 2026-10-01: one push
-# queued nine runs at 17:03:00 and the batch ran 2-5x its previous day's time (docker-test 13-15 ->
-# 41.6 min, devbuild ~20 -> 96.6, docs ~25-31 -> 63.4, the container ITs 5.3-8.8 -> 18.1 and 23.3),
-# and every red in it was a deadline expiring. Halving the batch is the cheapest lever there is.
+# NO `pull_request:` TRIGGER. Every PR on this instance is opened from a branch of this repository, and
+# `push:` already builds those commits, so adding it would run this workflow twice per push for a second
+# verdict on the same tree, in parallel, on one runner.
 #
-# What it costs, stated rather than discovered later: the *merge* result is no longer built on its
-# own -- only the head commit -- so a PR that is green can still conflict semantically with its base
-# until the merge lands on `develop` and is built there. And a fork PR gets no Forgejo CI; the GitHub
-# mirror's own test.yml keeps `pull_request:` and covers that case, which is the one place a fork
-# actually arrives. Restoring this is one line.
+# Two things that costs: the *merge* result is not built on its own, so a PR green on its head can still
+# conflict semantically with its base until the merge lands and is built there; and a fork PR gets no
+# Forgejo CI, which `.github/workflows/test.yml` covers instead -- GitHub is where a fork arrives.
 on:
   push:
   workflow_dispatch:
@@ -41,35 +35,28 @@ jobs:
 
       - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
 
-      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md) and this
-      # workflow must not assume they are up -- that assumption is what broke run 797.
+      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
+      # must work whether or not they are up.
       #
-      # THEY ARE ADDRESSED BY IP, AND THAT IS NOT A SHORTCUT. Jobs here run inside a `docker:dind`
-      # daemon (the runner's `docker_host` is dind's socket over a shared volume), while the caches are
-      # containers of the HOST daemon. dind's embedded DNS does not know the host daemon's containers,
-      # so a service name cannot work; routing between them does, because `docker_dind` is attached to
-      # the cache network and its children egress through that interface. Measured on a faithful
-      # reproduction of the topology on 2026-10-02 -- from a container created by the dind daemon,
-      # `wget http://registry-cache-ghcr:5000/v2/` fails with `bad address` while the same request to
-      # the cache's IP returns 200, and a buildx build through these stanzas was served 4 of its
-      # Docker Hub requests and 3 of its ghcr requests by the caches.
+      # They are addressed by IP because jobs here run inside a `docker:dind` daemon while the caches are
+      # containers of the host daemon. dind's embedded DNS does not know them, so a service name cannot
+      # resolve; routing does reach them, because `docker_dind` is attached to the cache network and its
+      # children egress through that interface.
       #
-      # `driver-opts: network=...` is therefore GONE, and its removal is the point rather than a
-      # side effect: the builder needs no network to join, which also removes the one way this step
-      # could kill a build outright --
+      # The probe asks the question that decides the outcome -- can this job reach the cache -- rather
+      # than a proxy for it. A job container and the buildx builder are both children of the same dind
+      # daemon, so a `GET /v2/` from here takes the path the builder will take. A registry whose cache
+      # does not answer is simply left out of the config and pulled from upstream.
+      #
+      # No `driver-opts: network=...`: with fixed IPs the builder has no network to join, and naming one
+      # the daemon does not know is a hard failure before a single layer is pulled --
       #   ERROR: Error response from daemon: failed to set up container networking:
-      #          network runners_default not found
-      #
-      # The probe asks the question that matters, which the previous one did not. "Does this network
-      # exist" was a proxy for "can the builder reach the cache", and it answered about the wrong
-      # daemon; a GET /v2/ from this job is the same path the builder takes, since both are children of
-      # the same dind daemon. A cache that does not answer is simply left out of the config, so the
-      # build runs against upstream exactly as it did before any of this.
+      #          network <name> not found
       - name: Point BuildKit at the host's registry caches when they answer
         id: regcache
         env:
-          # Pinned by the runner host's compose file -- see claude-docs/RUNNER-REGISTRY-CACHE.md section
-          # 3. If these drift from the host, nothing breaks: the probe finds nothing and the build goes
+          # Pinned by the runner host's compose file -- claude-docs/RUNNER-REGISTRY-CACHE.md section 1.
+          # If these drift from the host, nothing breaks: the probe finds nothing and the build goes
           # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
           GHCR_CACHE: "172.31.77.6:5000"
           DOCKERHUB_CACHE: "172.31.77.5:5000"
@@ -109,24 +96,22 @@ jobs:
         with:
           buildkitd-config: ${{ steps.regcache.outputs.config }}
 
-      # The Dockerfile's runtime stage is `ghcr.io/linuxserver/baseimage-ubuntu:noble`, and ghcr throttles
-      # pulls. Three runs have died on it -- 676 and 680 anonymously, 739 *while authenticated*:
+      # The Dockerfile's runtime stage is `ghcr.io/linuxserver/baseimage-ubuntu:noble`, and ghcr applies a
+      # per-source burst limiter to pulls:
       #   ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET
       #   https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:5d9a14c0... 429 Too Many Requests
       #   toomanyrequests: retry-after: 933.17us, allowed: 44000/minute
       #
-      # This login is kept, but it is NOT the fix, and the comment that once said so was wrong. Job 1821
-      # (run 739) logged `Login Succeeded` and `Authenticated to ghcr.io as ***`, buildkit emitted its
-      # `#3 [auth] linuxserver/baseimage-ubuntu:pull token for ghcr.io` vertex -- and the blob GET still
-      # came back 429. An allowance of 44000/minute is not something one build can exhaust, and the
-      # retry-after is under a millisecond: this is a per-source burst limiter on the runner host, not an
-      # account quota, so an account-scoped credential cannot lift it. What lifts it is waiting, which
-      # buildkit does not do -- hence the retry on the build step below.
+      # The limiter is keyed on the requesting host, not the account -- 44000/minute is not an allowance
+      # one build can exhaust, and the retry-after is under a millisecond -- so this login does not lift
+      # it. What lifts it is waiting, which buildkit will not do; that is the retry on the build step
+      # below, and the registry cache above is what removes the requests in the first place. The login
+      # still earns its second: Docker Hub's per-account quota is real.
       #
-      # Deliberately a `run:` rather than `docker/login-action`, and deliberately tolerant: this job asked
-      # for no secrets before, so a fork or an instance without them must keep building. Missing credentials
-      # log one line and fall back to the anonymous pull that has always been used. `docker/build-push-action`
-      # forwards whatever is in the daemon's credential store to the builder.
+      # Deliberately a `run:` rather than `docker/login-action`, and deliberately tolerant: this job
+      # requires no secrets, so a fork or an instance without them must keep building. Missing credentials
+      # log one line and fall back to an anonymous pull. `docker/build-push-action` forwards whatever is in
+      # the daemon's credential store to the builder.
       - name: Log in to ghcr.io when credentials are available
         env:
           GHCR_USER: ${{ secrets.DOCKERHUB_USER }}

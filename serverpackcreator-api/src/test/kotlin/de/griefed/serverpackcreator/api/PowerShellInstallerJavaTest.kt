@@ -38,10 +38,10 @@ import org.junit.jupiter.api.Test
  * the branch every existing pack takes**, because nothing writes `JAVA_INSTALLER` into a hand-made pack,
  * so a quoting slip there breaks installs for everyone while a syntax check stays green.
  *
- * Promoted out of the grinder's `ScriptTemplateMatrixIT` on 2026-09-26. It was gated behind
- * `GRINDER_TEMPLATE_IT=1` and the built `spc-grinder-templates` image, and no workflow sets that gate —
- * yet the probe needs nothing but `pwsh` and the template, both of which a stock image supplies. Its
- * siblings stay behind that gate because they download a Minecraft server per cell.
+ * Needs nothing but the shipped template and a PowerShell interpreter, which
+ * [TemplateInterpreterRunner] finds locally or in a container — so unlike the grinder's
+ * `ScriptTemplateMatrixIT`, which downloads a Minecraft server per cell and stays behind
+ * `GRINDER_TEMPLATE_IT=1`, this one runs unconditionally.
  *
  * The template is never *run*: it shells out to Windows `CMD /C`, which does not exist on Linux. Instead
  * the one function is lifted out of the parsed AST, defined on its own, and `CMD` is stubbed to record
@@ -96,15 +96,13 @@ internal class PowerShellInstallerJavaTest {
      * The probe: lift `RunInstallerJavaCommand` out of the parsed template, define it, and record what it
      * hands `CMD` under each setting.
      *
-     * The template is found through `${'$'}PSScriptRoot` — the directory of the probe itself — because one
-     * body serves two layouts. [TemplateInterpreterRunner.runInContainer] copies the staged directory to
-     * `/templates`, while [TemplateInterpreterRunner.runLocally] runs the probe where it was staged, under
-     * the JVM's temp directory. This probe named `/templates` outright, so it was correct only in the
-     * container and asked a non-existent file to parse everywhere `pwsh` is installed — which GitHub's
-     * `ubuntu-latest` is and this project's Forgejo runner is not, so the defect was reachable from
-     * exactly one of the two CIs and red there on 2026-10-02. `ParseFile` on a missing path fills
-     * `${'$'}errors`, so it surfaced as `the template does not parse`: a verdict against the template,
-     * from a run that never read one.
+     * The template is found through `${'$'}PSScriptRoot` — the directory of the probe itself — so one body
+     * serves both layouts [TemplateInterpreterRunner] can produce: the container copies the staged directory
+     * to `/templates`, while a local run executes the probe where it was staged, under the JVM's temp
+     * directory. A fixed path would be correct in only one of them.
+     *
+     * `Test-Path` runs before the parse because `ParseFile` fills `${'$'}errors` for a missing file exactly
+     * as it does for a broken one, and a path fault must not read as a verdict against the template.
      *
      * The AST is walked with a `Where-Object` pipeline rather than `Ast.FindAll`, which takes a
      * ScriptBlock as a .NET delegate — under Rosetta that call site is mistranslated and the process dies

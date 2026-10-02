@@ -299,6 +299,23 @@ evidence consulted occasionally, not context every session needs.
   restatement of the signature. One or two sentences is the target; needing more is a sign the unit
   is doing too much (KISS). Keep comments truthful as code changes — a stale comment is worse than
   none.
+- **Documentation describes the present tense — Griefed's call, 2026-10-02.** A doc comment says what the
+  code is and does, for a reader who has never seen any other version of it. It does not say what the code
+  *used to* be, which CI run made it change, what an earlier comment got wrong, or why today's shape is
+  better than yesterday's. "This was 60 s, failed run 716, and was raised to 90 s" is four facts a reader
+  cannot act on; "five minutes, because a loaded CI host must never be able to decide a verdict" is one
+  they can. Same for code: no commented-out code, no "kept for the old call-site", no parallel
+  explanation of a removed branch.
+  - **Constraints stay, history goes.** "BuildKit defaults a mirror to `https`, so the second stanza is
+    required or it silently falls back" is current mechanism and belongs in the file. "Three runs died
+    before we learned that" does not. The test is whether the sentence changes what a reader *does*.
+  - **The history is not lost, it moves to where it is looked up.** Incidents, measurements, run numbers
+    and dates go in the **commit message** (which is what `git log -S` and `git blame` are for),
+    `claude-docs/REFACTOR-LOG.md`, or a landmine in the relevant `CLAUDE.md`. Those files exist to be
+    consulted occasionally; a doc comment is read every time someone opens the function.
+  - **One statement, one place.** If a fact is in the module's `CLAUDE.md` and in a doc comment and in the
+    workflow that depends on it, two of those will go stale. Keep it where it is enforced and reference it
+    from the others by name.
 - **Documenting a single-line constructor means reshaping it, and that reshape is in scope.** Per-parameter KDoc
   cannot attach to a parameter sharing a line with others, so `data class X(val a: A, val b: B)` has to become one
   parameter per line before each can be documented. Four declarations were reshaped that way on 2026-07-31

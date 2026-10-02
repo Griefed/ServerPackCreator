@@ -59,16 +59,13 @@ internal class DockerJavaContainerEngineIT {
     /**
      * Seeing the ready line must end the run, rather than letting the container live out its sleep.
      *
-     * "Did not wait out the sleep" is asserted by what the container *printed*, not by how long the test
-     * took. The clock answers a different question on every host: this bound was 30s, failed run 726 at
-     * 38s, was raised to 90s, and failed run 834 at 101s — three reds, no defect, because what it actually
-     * measured was how loaded the daemon was. [SLEPT_THROUGH] can only appear if the shell got past
-     * `sleep`, so the marker's absence discriminates between the two *outcomes* where the clock
-     * discriminated between two machines.
+     * "Did not wait out the sleep" is asserted by what the container *printed*: [SLEPT_THROUGH] can only
+     * appear if the shell got past `sleep`, so its absence proves the run was cut short. A wall clock
+     * cannot answer this — elapsed time measures how loaded the daemon is, not whether the engine stopped
+     * on ready.
      *
-     * Worth stating what that gives up, because it is not nothing: a daemon that honoured the stop but took
-     * a minute to do it now passes. That was never this test's subject — [closeSignalsAContainerBeforeKillingIt]
-     * owns the stop path — and it is the only thing the old bound caught that `timedOut` did not.
+     * How promptly the stop itself completes is [closeSignalsAContainerBeforeKillingIt]'s subject, not
+     * this one's.
      */
     @Test
     fun detectsReadyLineAndStopsALongRunningContainerPromptly() {
@@ -161,10 +158,9 @@ internal class DockerJavaContainerEngineIT {
             .exec().size
 
     /**
-     * `systemctl stop` must *signal* a container, not shoot it. `close` therefore issues a `docker stop` with a
-     * bounded grace window before force-removing, so a Minecraft server gets its chance to save and exit — the
-     * previous behaviour went straight to `remove --force`, which is a SIGKILL to PID 1 and loses the world save
-     * of an in-flight boot.
+     * `systemctl stop` must *signal* a container, not shoot it. `close` issues a `docker stop` with a bounded
+     * grace window before force-removing, so a Minecraft server gets its chance to save and exit; a bare
+     * `remove --force` is a SIGKILL to PID 1 and loses the world save of an in-flight boot.
      *
      * Asserted on the container's own exit: a shell trapping TERM writes its marker and exits 0 only if the
      * signal actually arrived.
@@ -189,13 +185,10 @@ internal class DockerJavaContainerEngineIT {
         booting.join(FIXTURE_DAEMON_BUDGET_MILLIS)
 
         Assertions.assertTrue(sawSignal.get(), "the container must receive SIGTERM and get to run its handler before removal")
-        // What `close` promises is that nothing of this engine's is left *running*, not that nothing is left at
-        // all: when the grace window expires it logs "abandoning them so shutdown can finish ... reaped on the
-        // next start" and returns with the container still listed. `containersOf` is withShowAll(true), so the
-        // old form asserted removal -- a promise close does not make -- and sampled it instantly. Run 719 is
-        // what that costs: close hit its 5s window, logged the documented abandonment, and this failed
-        // "nothing may be left running after close ==> expected: <true> but was: <false>" on a daemon doing
-        // exactly what it was told.
+        // `close` promises that nothing of this engine's is left *running*, not that nothing is left at all:
+        // when the grace window expires it logs "abandoning them so shutdown can finish ... reaped on the next
+        // start" and returns with the container still listed. Asserting removal here would demand a promise
+        // `close` does not make.
         Assertions.assertEquals(0, awaitNothingRunning(signalEngine), "nothing may be left running after close")
     }
 
@@ -329,9 +322,9 @@ internal class DockerJavaContainerEngineIT {
     /**
      * The containers [engine] has on the daemon — **its own**, by instance label.
      *
-     * Scoped deliberately. Asking for every container with the owner label asks about the whole machine, and
-     * on 2026-09-27 the whole machine had a second `test.yml` job on it: runs 954 and 956 reached this class
-     * seven seconds apart and each failed a *different* test of it. A test may only assert about what it did.
+     * Scoped by instance label deliberately: asking for every container with the *owner* label asks about the
+     * whole machine, and CI routinely has a second job sharing the daemon. A test may only assert about what
+     * it did itself.
      */
     private fun containersOf(engine: DockerJavaContainerEngine): List<String> =
         DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(true)
@@ -341,21 +334,18 @@ internal class DockerJavaContainerEngineIT {
     /**
      * Block until [engine]'s own container is actually up, so a test never pulls the rug before there is one.
      *
-     * Budgeted by [FIXTURE_DAEMON_BUDGET_MILLIS], which is deliberately far larger than any healthy
-     * daemon needs: this runs on a runner that shares its Docker daemon with whatever else CI is doing, and
-     * when the wait expires the failure surfaces as the *next* assertion — "test setup: the orphan must be
-     * running ==> expected 1 but was 0" (run 681) — which reads as a verdict about reaping rather than as a
-     * slow daemon. A fixture that gives up too early does not fail, it misattributes.
+     * Budgeted by [FIXTURE_DAEMON_BUDGET_MILLIS] and **fails here** on expiry, naming the daemon as the thing
+     * it waited for. Letting the wait fall through instead surfaces as whichever assertion comes next, which
+     * reads as a verdict about the engine; a fixture that gives up too early does not fail, it misattributes.
      */
     private fun waitForContainerOf(engine: DockerJavaContainerEngine) {
         val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         while (System.currentTimeMillis() < until && runningContainersOf(engine) == 0) {
             Thread.sleep(200)
         }
-        // Loudly, because the doc above is right about what silence costs: an expiry used to surface as the
-        // *next* assertion and read as a verdict about reaping. `runningContainersOf`, not `containersOf`:
-        // the latter is withShowAll(true) and so answers the moment `run` has *created* the container,
-        // several statements before `startContainerCmd`, which is a state no assertion here is about.
+        // `runningContainersOf`, not `containersOf`: the latter is withShowAll(true) and so answers the moment
+        // `run` has *created* the container, several statements before `startContainerCmd`, which is a state no
+        // assertion here is about.
         Assertions.assertNotEquals(
             0,
             runningContainersOf(engine),
@@ -385,9 +375,9 @@ internal class DockerJavaContainerEngineIT {
     /**
      * Wait for [engine]'s containers to be gone entirely, for the one assertion that really is about removal.
      *
-     * `removeContainerCmd` returns before the daemon has finished: run 719 logged
-     * `409: removal of container ... is already in progress` against a container a reap had just taken, so a
-     * removal that succeeded can still be listed for a moment afterwards.
+     * `removeContainerCmd` returns before the daemon has finished — a removal that succeeded can still be
+     * listed for a moment afterwards, and a concurrent reap of the same container answers
+     * `409: removal of container ... is already in progress`.
      */
     private fun awaitGone(engine: DockerJavaContainerEngine): List<String> {
         val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
