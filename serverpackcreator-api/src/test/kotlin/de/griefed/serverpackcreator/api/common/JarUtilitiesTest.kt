@@ -12,11 +12,10 @@ class JarUtilitiesTest internal constructor() {
     /**
      * Copying a resource this module really ships must produce the resource, byte for byte.
      *
-     * It used to ask for `banner.txt`, which lives in `serverpackcreator-app` and has never been on
-     * this module's classpath, and then asserted only that the destination `isFile`. That was true
-     * because the broken `copyFileFromJar` created the file before it went looking for the resource -
-     * so the test passed against the defect, on an empty file, for as long as the defect existed.
-     * Asserting the *content* is what makes it a copy test rather than a file-exists test.
+     * Two things are deliberate. The resource named is one **this module** ships, so the test cannot pass
+     * against a classpath that never had it; and the assertion is on the *content*, which is what makes this
+     * a copy test rather than a file-exists test - `copyFileFromJar` creates the destination before it
+     * resolves the stream, so `isFile` is true even when nothing was copied.
      */
     @Test
     fun copyFileFromJarTest() {
@@ -35,11 +34,10 @@ class JarUtilitiesTest internal constructor() {
     /**
      * A resource that is not in the jar must fail loudly and leave nothing behind.
      *
-     * It used to do neither. `copyFileFromJar` created the destination *before* resolving the stream
-     * and then wrote it with `it?.transferTo(out)`, so a missing resource was swallowed by the safe
-     * call, the file existed, and the function reported success. `ApiWrapper.stageOne()` staged
-     * `default_java_template.bat` that way - a resource that has never existed - and recreated a
-     * 0-byte file on every single launch, in every test home, with nothing logged.
+     * Both halves matter. Creating the destination *before* resolving the stream, and writing it with
+     * `it?.transferTo(out)`, swallows a missing resource through the safe call: the file exists, the
+     * function reports success, and `ApiWrapper.stageOne()` recreates a 0-byte file on every launch, in
+     * every home, with nothing logged.
      */
     @Test
     fun copyingAResourceThatIsNotInTheJarFailsAndLeavesNoFileBehind() {

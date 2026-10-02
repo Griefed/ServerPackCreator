@@ -38,8 +38,7 @@ import java.util.concurrent.TimeUnit
  * the rule would expose every module's generated `tests/server_files` instead.
  *
  * **Measurement landmine:** `git check-ignore` skips paths that contain tracked files unless `--no-index` is
- * passed, and will report a still-ignored directory as clean. The first reading of this very finding was wrong
- * for that reason. Always `--no-index` here.
+ * passed, and will report a still-ignored directory as clean. Always `--no-index` here.
  */
 internal class ShippedResourceTrackingTest {
 

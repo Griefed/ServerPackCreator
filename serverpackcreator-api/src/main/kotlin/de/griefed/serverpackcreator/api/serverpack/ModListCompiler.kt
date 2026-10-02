@@ -77,8 +77,8 @@ class ModListCompiler(
      *
      * Built once per [compileModList] and reused for every comparison, which is the point: the loop runs
      * mods x list-entries times — of the order of 165,000 for a 300-mod pack against the ~550-entry
-     * default list — and both things this used to do per comparison are invariant across it. Reading
-     * `apiProperties.exclusionFilter` costs two synchronized `Hashtable` lookups (via
+     * default list — and two of the things a naive comparison would redo each time are invariant across
+     * it. Reading `apiProperties.exclusionFilter` costs two synchronized `Hashtable` lookups (via
      * `PropertyStore.acquire`), and `entry.toRegex()` costs a `Pattern.compile`.
      *
      * The same comparison decides both the clientside-mod list and the whitelist, so it is defined once
@@ -95,9 +95,9 @@ class ModListCompiler(
          * The compiled pattern per entry, for the two filters that need one. An entry whose pattern does
          * not compile is absent, and never matches.
          *
-         * Compiling up front is what turns a malformed entry from a thrown `PatternSyntaxException` —
-         * which used to escape `compileModList` and abort the whole generation — into one logged, skipped
-         * entry, reported once instead of once per mod.
+         * Compiling up front is what keeps a malformed entry from throwing `PatternSyntaxException` out of
+         * `compileModList` and aborting the whole generation. It becomes one logged, skipped entry,
+         * reported once instead of once per mod.
          */
         private val patterns: Map<String, Regex> =
             if (filter == ExclusionFilter.REGEX || filter == ExclusionFilter.EITHER) {

@@ -21,8 +21,8 @@ internal class WebserviceConfigTest {
         val webserviceConfig = WebserviceConfig(store)
         store.define(WebserviceConfig.LEGACY_DATABASE_URI_KEY, "jdbc:sqlite:serverpackcreator.db")
         Assertions.assertEquals(WebserviceConfig.FALLBACK_DATABASE_URI, webserviceConfig.databaseUri)
-        // Written under the live key, which is no longer the key it was read from: Spring Boot 4 retired
-        // the legacy one, so leaving the result there would leave it unbound.
+        // Written under the live key, not the one it was read from: Spring Boot 4 does not bind the legacy
+        // key at all, so leaving the result there would leave it unbound.
         Assertions.assertEquals(
             WebserviceConfig.FALLBACK_DATABASE_URI,
             store.properties.getProperty(WebserviceConfig.DATABASE_URI_KEY)
@@ -113,9 +113,9 @@ internal class WebserviceConfigTest {
     /**
      * Pins that the degenerate `mongodb:` value is rejected rather than passed to the driver.
      *
-     * The old check was `!startsWith("mongodb")`, which `mongodb:` satisfies — so a partially-configured
-     * container (one missing `SPC_DATABASE_*` variable used to produce exactly that string) got a URI the
-     * driver rejects much later, with a far less obvious message.
+     * `!startsWith("mongodb")` is not enough, because `mongodb:` satisfies it — and that is exactly what a
+     * partially-configured container produces when one `SPC_DATABASE_*` variable is missing. The driver then
+     * rejects the URI much later, with a far less obvious message.
      */
     @Test
     fun theDegenerateMongoSchemeIsRejected() {

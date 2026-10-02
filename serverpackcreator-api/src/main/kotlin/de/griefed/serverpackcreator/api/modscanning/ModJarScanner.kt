@@ -51,7 +51,7 @@ interface ModJarScanner {
  *
  * Subclasses implement [read] for one jar and may simply throw — which is why [scan] is `final`. The
  * total-result contract of [ModJarScanner] is the one thing no scanner may get wrong, and putting it
- * here means it cannot drift between the five implementations that used to each hold a copy.
+ * here means it cannot drift between the five implementations.
  */
 abstract class DescriptorScanner : ModJarScanner {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

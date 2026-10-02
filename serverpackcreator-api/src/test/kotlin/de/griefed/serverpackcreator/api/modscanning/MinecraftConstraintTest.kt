@@ -36,8 +36,8 @@ import java.util.jar.JarOutputStream
  * clientside crash from a jar booted on the wrong Minecraft.
  *
  * Why it is needed: the grinder boots the **newest** Minecraft a platform declares for a file, without ever
- * asking what the jar was built for. Measured 2026-08-31, that put `create_ltab` on 1.20.6 with 1.20.5-era
- * mappings and `debugify` on 1.19.1 with another 1.19.x's, and both mixin failures were scored CRASHED.
+ * asking what the jar was built for. That puts a jar built for 1.20.5 on 1.20.6 with the wrong mappings, and
+ * the resulting mixin failure is scored CRASHED against the mod.
  */
 internal class MinecraftConstraintTest {
 

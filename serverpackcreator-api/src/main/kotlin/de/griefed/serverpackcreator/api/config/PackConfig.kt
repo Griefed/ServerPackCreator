@@ -321,8 +321,8 @@ open class PackConfig() {
      * The modloader, always stored in SPC's canonical spelling (`Forge`, `NeoForge`, `Fabric`, `Quilt`,
      * `LegacyFabric`).
      *
-     * **Landmine:** the setter *silently ignores* an unrecognised value, leaving the previous one in place — a typo
-     * does not fail, it does nothing. Check order matters for the same reason: `neoforge` also matches Forge's
+     * **Landmine:** the setter *silently ignores* an unrecognised value, leaving whatever the field already held
+     * in place — a typo does not fail, it does nothing. Check order matters for the same reason: `neoforge` also matches Forge's
      * pattern and `legacyfabric` matches Fabric's, so the specific names are tested first.
      */
     var modloader = ""

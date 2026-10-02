@@ -83,9 +83,9 @@ class FileUtilities {
         fun unzipArchive(zipFile: String, destinationDirectory: String) {
             log.info("Extracting ZIP-file: $zipFile")
             // Deliberately not caught. A failure here leaves the destination empty or half-written, and
-            // swallowing it let the caller carry on as though the modpack had been extracted. zip4j
-            // reports a rejected zip-slip entry as a ZipException, which is an IOException, so the old
-            // catch silently absorbed a hostile archive along with a truncated one.
+            // swallowing it lets the caller carry on as though the modpack had been extracted. zip4j
+            // reports a rejected zip-slip entry as a ZipException, which is an IOException, so a catch
+            // here would absorb a hostile archive along with a truncated one.
             ZipFile(zipFile).use { zip -> zip.extractAll(destinationDirectory) }
         }
 

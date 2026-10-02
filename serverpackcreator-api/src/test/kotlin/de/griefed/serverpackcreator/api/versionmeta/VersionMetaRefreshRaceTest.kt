@@ -46,8 +46,8 @@ import java.util.concurrent.atomic.AtomicReference
  * The second is the dangerous one because it does not throw. `BootVerifier.bootableCombination()` builds its
  * release set from `serverReleases()` on every staging call, so an empty read makes every candidate fail the
  * gate and the boot is refused with *"No bootable file/Minecraft/loader combination for <loader>"* — a
- * verdict about the engine's own timing, wearing the shape of a statement about the mod. Both failures were
- * observed on 2026-09-04 in `BootVerifierSelectionTest`, one as the CME and one as exactly that message.
+ * verdict about the engine's own timing, wearing the shape of a statement about the mod. Both failures have
+ * been observed in practice, one as the CME and one as exactly that message.
  *
  * The fix is a snapshot swap rather than a lock: `update()` builds new collections and publishes them to a
  * `@Volatile` reference, so a reader sees either the whole previous state or the whole next one.

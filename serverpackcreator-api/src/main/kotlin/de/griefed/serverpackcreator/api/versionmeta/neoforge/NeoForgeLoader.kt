@@ -199,8 +199,8 @@ internal class NeoForgeLoader(
             }
         }
 
-        // Reversed on the builder, before publication -- the old code walked the published map's entries
-        // while writing back into it, which is a mutation a concurrent reader could observe half-applied.
+        // Reversed on the builder, before publication: walking the published map's entries while writing
+        // back into it is a mutation a concurrent reader could observe half-applied.
         for (key in nextVersionMeta.keys.toList()) {
             nextVersionMeta[key] = nextVersionMeta.getValue(key).reversed()
         }

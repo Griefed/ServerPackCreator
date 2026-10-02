@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test
  *
  * **Why this needs pinning:** the mapping fails *silently*. A wrong pattern does not throw — it produces an empty or
  * mis-assigned NeoForge version list, and everything downstream then behaves as though NeoForge simply has no builds
- * for that Minecraft version. The grinder made the cost visible on 2026-07-30: `LoaderVersionResolver` drops a
- * Minecraft/loader combination whose loader reports no version, so a broken mapping quietly erases NeoForge coverage
- * for whole Minecraft versions rather than failing anywhere a human would notice.
+ * for that Minecraft version. `LoaderVersionResolver` drops a Minecraft/loader combination whose loader reports no
+ * version, so a broken mapping quietly erases NeoForge coverage for whole Minecraft versions rather than failing
+ * anywhere a human would notice.
  *
  * The version pairs below are **real**, taken from NeoForge's published manifests, because the whole risk here is a
  * pattern that looks plausible and does not match reality.
@@ -85,8 +85,8 @@ internal class NeoForgeVersionMappingTest {
 
     /**
      * The newer `YY.x` Minecraft scheme is kept as-is rather than having a leading component stripped — Minecraft
-     * `26.1.2` is NeoForge `26.1.2.x`, and Minecraft `26.2` is `26.2.0.x`. Both were verified against live boots on
-     * 2026-07-30 (`NeoForge 26.1.2.93`, `NeoForge 26.2.0.40-beta`).
+     * `26.1.2` is NeoForge `26.1.2.x`, and Minecraft `26.2` is `26.2.0.x`. Both pairs are verified against live
+     * boots (`NeoForge 26.1.2.93`, `NeoForge 26.2.0.40-beta`).
      */
     @Test
     fun theNewMinecraftVersioningSchemeKeepsItsMajor() {

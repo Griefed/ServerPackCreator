@@ -40,8 +40,8 @@ import java.io.File
  * `StackOverflowError`, with the plugin's own log lines repeated once per level — which is exactly how
  * Griefed reported it: "the log-output for the example plugin a gazillion times".
  *
- * **Why the api suite never caught it.** Tests share a JVM, and the first test class to call
- * `ApiWrapper.api()` did so before anything copied a plugin jar into `tests/plugins`. By the time
+ * **Why ordering matters in this class.** Tests share a JVM, so whichever class calls `ApiWrapper.api()`
+ * first does so before anything has copied a plugin jar into `tests/plugins`. By the time
  * `ExtensionScopingTest` installs one and loads it by hand, the singleton is long since published, so the
  * re-entrant call returns it and the recursion never starts. The defect needs a populated plugins
  * directory at *first* startup, which is every real CLI run and no test.

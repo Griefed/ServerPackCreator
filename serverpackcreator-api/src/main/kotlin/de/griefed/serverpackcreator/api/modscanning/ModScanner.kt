@@ -59,8 +59,8 @@ class ModScanner(
         "LegacyFabric", "Fabric" -> fabricScanner
         "Quilt" -> quiltPackScanner
         // The era boundaries are `LoaderDescriptors`' to state, not this class's: the clientside engine's
-        // pre-boot gate has to answer the same question about the same jars, and it used to hold a second,
-        // version-blind copy that read every `mods.toml` as Forge's.
+        // pre-boot gate has to answer the same question about the same jars, and a second copy of the
+        // answer drifts.
         "Forge" ->
             if (LoaderDescriptors.forgeUsesToml(minecraftVersion)) forgeTomlScanner else forgeAnnotationScanner
 

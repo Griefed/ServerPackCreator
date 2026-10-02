@@ -45,9 +45,9 @@ class QuiltPackScanner(
 
     override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
         val quiltScan = quiltScanner.scan(jarFiles).toMutableList()
-        // Indexed by jar rather than searched per entry: this used to be a nested `find`, i.e. one
-        // linear scan of the Fabric results for every Quilt result. Measured at 500 mods that is 4.71 ms
-        // of File.equals against 0.14 ms for the lookup -- small, but there is no reason to pay it.
+        // Indexed by jar rather than searched per entry: a nested `find` is one linear scan of the
+        // Fabric results per Quilt result, which at 500 mods is 4.71 ms of File.equals against 0.14 ms
+        // for the lookup -- small, but there is no reason to pay it.
         //
         // putIfAbsent, not associateBy: `find` returned the *first* match, and associateBy keeps the
         // last. The scanner contract promises one entry per input jar so it cannot differ today, but
@@ -65,9 +65,9 @@ class QuiltPackScanner(
             // descriptor. Preferring it is not a sideness judgement: everything the jar declared, its id,
             // its dependencies and its Minecraft range, exists only in the Fabric result.
             //
-            // Reported 2026-08-31: `bookshelf` on Quilt died with "requires any version of fabric-api,
-            // which is missing!" because this merge returned the empty entry, so nothing downstream ever
-            // saw the dependency. Sideness alone could not catch it -- both verdicts read SERVER and agreed.
+            // Getting this wrong is silent: returning the empty entry means nothing downstream ever sees
+            // the jar's dependencies, and a Quilt pack then boots missing them. Sideness cannot catch it --
+            // both verdicts read SERVER and agree.
             if (!quiltVerdict.descriptorRead && fabricVerdict.descriptorRead) {
                 log.debug("${fabricVerdict.file.name} carries no Quilt descriptor; using its Fabric one.")
                 quiltScan[index] = fabricVerdict

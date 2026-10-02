@@ -30,8 +30,7 @@ import java.io.File
  * image, so it never runs in CI — these assertions do, and they pin the fixes that IT paid to discover.
  *
  * Whether the fish and PowerShell templates *parse at all* lives in [ShellTemplateSyntaxTest], which asks
- * the real interpreters rather than reading the source. The fish check used to sit here and skipped itself
- * on every machine without fish, the CI runner included.
+ * the real interpreters rather than reading the source.
  *
  * Kept deliberately narrow: it asserts *specific, load-bearing constructs*, not whole-file snapshots,
  * so ordinary template edits don't churn it.
@@ -126,9 +125,9 @@ internal class ScriptTemplateContentTest {
 
     /**
      * **Executes** the bash template's `setupFabric` on an offline pack that already has its launcher jar, and
-     * asserts the function still produces a runnable command. Ordering alone is not enough: the first version of
-     * the offline short-circuit above `return`ed as soon as it found the jar — jumping over the
-     * `SERVER_RUN_COMMAND=...` assignment at the end of the function. The pack then launched
+     * asserts the function still produces a runnable command. Ordering alone is not enough: an offline
+     * short-circuit that `return`s as soon as it finds the jar jumps over the `SERVER_RUN_COMMAND=...`
+     * assignment at the end of the function, and the pack then launches
      * `java -Dlog4j2... do_not_manually_edit` (the placeholder) and died with "Could not find or load main class",
      * *past* every ordering assertion. Only running the function catches that, so this test runs it.
      *
@@ -183,13 +182,12 @@ internal class ScriptTemplateContentTest {
     /**
      * **Executes** the bash template's run-loop and asserts it exits with the *server's* status.
      *
-     * The loop used to end in an unconditional `exit 0`, throwing the server's exit status away — so a modded server
-     * that crashed on startup looked, to anything reading the script's exit code, exactly like a clean shutdown.
-     * For the grinder that erased the single decisive signal in its whole confidence model: `BootLogClassifier` maps
-     * a `0` exit without a ready-line to INCONCLUSIVE, so **CRASHED could never be observed and no verdict could
-     * ever reach HIGH**. Measured 2026-07-30: 517 verdicts over 3.5 h, zero HIGH, while a boot log sat there with
-     * `NoClassDefFoundError: net/minecraft/client/Minecraft` in it. It matters for ordinary users too — `systemd`,
-     * Docker restart policies and CI all read the exit code to decide whether the server failed.
+     * The loop must propagate the server's exit status. An unconditional `exit 0` at the end throws it away, and a
+     * modded server that crashed on startup then looks, to anything reading the script's exit code, exactly like a
+     * clean shutdown. For the grinder that erases the single decisive signal in its whole confidence model:
+     * `BootLogClassifier` maps a `0` exit without a ready-line to INCONCLUSIVE, so **CRASHED can never be observed
+     * and no verdict can reach HIGH**. It matters for ordinary users too — `systemd`, Docker restart policies and
+     * CI all read the exit code to decide whether the server failed.
      */
     @Test
     fun theBashTemplatesRunLoopExitsWithTheServersStatus() {
@@ -234,8 +232,8 @@ internal class ScriptTemplateContentTest {
      *
      * **The versions below are the point.** The era test may not read the Minecraft *minor* component in isolation,
      * because that is only meaningful under the `1.x` scheme: `26.2` has minor `2`, which looks like the 1.2 era.
-     * Measured 2026-07-30 in the grinder: **24 boot logs, every one of them Forge**, never started the server for
-     * exactly this reason, making Forge coverage on current Minecraft effectively zero.
+     * Reading it in isolation sends every Forge boot on current Minecraft down the legacy launcher path, where the
+     * server never starts at all.
      */
     @Test
     fun theBashTemplateChoosesTheForgeLauncherEraForBothVersioningSchemes() {
@@ -379,7 +377,7 @@ internal class ScriptTemplateContentTest {
      * | **1.20.2** | `-p <module path>`, Forge `securemodules` | **dies** — `Could not find parent layer for module` |
      * | 1.20.3 onwards | `-jar forge-<ver>-shim.jar` | works — the starter jar takes its own "jar mode" |
      *
-     * Measured 2026-08-23 against real installs: Forge `1.20.2-48.1.0` on Temurin 17 dies at
+     * Measured against real installs: Forge `1.20.2-48.1.0` on Temurin 17 dies at
      * `SecureModuleClassLoader.<init>` under the starter jar and reaches `Done (5.183s)! For help` from its
      * argfile, while `1.21.1-52.1.0` reaches `Done (6.593s)!` *through* the starter jar. 1.20.2's install carries
      * no shim jar and its argfile opens `-p … --add-modules ALL-MODULE-PATH`; 1.20.3's and 1.21.1's do carry one.
@@ -602,9 +600,8 @@ internal class ScriptTemplateContentTest {
      * java.lang.Error: A command line option has attempted to allow or enable the Security Manager.
      * ```
      *
-     * Minecraft 26.x requires Java 25, so **every modern Forge pack SPC generates dies before Forge loads** on
-     * current Minecraft — measured in the grinder on 2026-07-31, and the reason Forge coverage stayed at zero even
-     * after the launcher-era fix. NeoForge, Fabric and Quilt never pass the flag, which is exactly why they boot.
+     * Minecraft 26.x requires Java 25, so passing the flag there means **every modern Forge pack SPC generates dies
+     * before Forge loads**. NeoForge, Fabric and Quilt never pass it, which is exactly why they boot.
      */
     @Test
     fun theBashTemplateDropsTheSecurityManagerFlagOnJavaThatRejectsIt() {
@@ -949,7 +946,7 @@ internal class ScriptTemplateContentTest {
      * **Executes** `setupQuilt` on a pack that kept its launcher but lost the Minecraft server jar, and
      * asserts it does not quietly carry on.
      *
-     * Observed live 2026-08-30: `Modrinth/architectury-api` at Minecraft 1.20.4 died with "Missing game jar
+     * Observed live: `Modrinth/architectury-api` at Minecraft 1.20.4 died with "Missing game jar
      * at /srv/pack/server.jar" and was scored against the mod. The vanilla jar is fetched only as a side
      * effect of installing the launcher — `--download-server` lives inside the branch that runs when
      * `quilt-server-launch.jar` is absent — so a pack that already has the launcher and not the jar never

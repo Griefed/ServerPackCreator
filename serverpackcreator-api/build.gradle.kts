@@ -52,10 +52,9 @@ tasks.processResources {
 // The root-level documents SPC ships inside its own jar and reads back at runtime (ApiWrapper.setup()
 // writes them into the user's home), plus the copies Writerside builds the help site from.
 //
-// These used to be fifteen bare `copy { }` calls inside the `processResources` CONFIGURATION block, so
-// they ran whenever that task was configured -- including on runs where processResources itself was
-// UP-TO-DATE and did nothing. Measured before this change: a second, fully up-to-date
-// `:serverpackcreator-api:processResources` still rewrote both destinations. As real Copy tasks they
+// Real Copy tasks, not bare `copy { }` calls inside the `processResources` CONFIGURATION block: those
+// run whenever the task is configured -- including on runs where processResources itself is UP-TO-DATE
+// and does nothing -- and rewrite both destinations every time. As tasks they
 // have declared inputs and outputs, so they are up-to-date checked, cacheable, and do not write into
 // two source trees on every build that happens to touch this project.
 val shippedDocuments = listOf(

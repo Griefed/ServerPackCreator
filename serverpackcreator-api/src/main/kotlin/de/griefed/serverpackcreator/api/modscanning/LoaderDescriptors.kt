@@ -38,12 +38,10 @@ import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparat
  * | NeoForge | `< 1.20.5` | `META-INF/mods.toml` (shared with Forge, so it distinguishes neither) |
  * | NeoForge | `>= 1.20.5` | `META-INF/neoforge.mods.toml` |
  *
- * **Why this exists as its own object.** [ModScanner.scannerFor] already owned the era boundaries, and
- * `serverpackcreator-clientside`'s pre-boot gate held a *second, version-blind* copy of the same knowledge —
- * a flat descriptor→loader map. It therefore read every `META-INF/mods.toml` as Forge's, and refused 13
- * genuine NeoForge jars on Minecraft 1.20.2–1.20.4 as "not a NeoForge mod" (measured on the live grinder,
- * 2026-09-10). That is the `MetadataScanner`/`ModListCompiler` drift this codebase has already paid for
- * twice: two copies of one fact, only one of them maintained. Both callers now ask here.
+ * **Why this exists as its own object.** Two callers need the era boundaries: [ModScanner.scannerFor] and
+ * `serverpackcreator-clientside`'s pre-boot gate. A version-blind copy of this — a flat descriptor→loader
+ * map — reads every `META-INF/mods.toml` as Forge's and refuses genuine NeoForge jars on Minecraft
+ * 1.20.2–1.20.4 as "not a NeoForge mod". Both callers ask here instead.
  *
  * **The two boundaries are different facts about NeoForge and must not be merged.** The *package* rename
  * (`net.minecraftforge` → `net.neoforged`) landed with Minecraft 1.20.2 and is what ends binary jar parity —
@@ -130,9 +128,9 @@ object LoaderDescriptors {
      * Whether NeoForge on [minecraftVersion] uses `neoforge.mods.toml` rather than Forge's `mods.toml`.
      *
      * Falls back to the **modern** descriptor for an unparseable version, for the same reason and by the same
-     * route as [forgeUsesToml]. It used to throw instead: the comparison was unwrapped while Forge's was
-     * wrapped, so `scannerFor("NeoForge", "26")` propagated an `ArrayIndexOutOfBoundsException` out of
-     * `ModScanner` — and `"26"` is a legitimate shape under the newer scheme.
+     * route as [forgeUsesToml]. An unwrapped comparison would propagate an `ArrayIndexOutOfBoundsException`
+     * out of `ModScanner` for `scannerFor("NeoForge", "26")` — and `"26"` is a legitimate shape under the
+     * newer scheme.
      */
     fun neoForgeUsesNeoToml(minecraftVersion: String): Boolean =
         atLeast(NEOFORGE_TOML_MINIMUM_MINECRAFT, minecraftVersion)

@@ -34,8 +34,8 @@ import java.io.File
  * home inside a `try`/`catch` that only *prints* the failure, and then reads that same file unguarded to stamp the
  * log level in — so an unwritable home surfaced as `java.io.FileNotFoundException: /log4j2.xml (No such file or
  * directory)` out of `setLoggingLevel`, an exception that names a file nobody configured, blames the wrong
- * operation, and killed the process. Reproduced 2026-08-22 by running the installed grinder distribution from `/`,
- * as `systemd` does for a unit without `WorkingDirectory=`.
+ * operation, and kills the process. A `systemd` unit without `WorkingDirectory=` runs from `/`, which is exactly
+ * that case.
  *
  * The home here is an existing *regular file*: the resolver cannot turn that into a directory, and neither can
  * root, so the pin means the same thing for every user id the suite might run as.

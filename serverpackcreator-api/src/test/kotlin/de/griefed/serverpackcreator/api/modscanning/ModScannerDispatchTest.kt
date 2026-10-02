@@ -113,7 +113,7 @@ internal class ModScannerDispatchTest {
     }
 
     /**
-     * **And so does NeoForge, which used to throw instead.**
+     * **And so does NeoForge.**
      *
      * `forgeUsesToml` wrapped its comparison in `runCatching { … }.getOrDefault(true)` and
      * `neoForgeUsesNeoToml` did not, while `SemanticVersionComparator` indexes `versionNumbers[1]`
@@ -131,9 +131,9 @@ internal class ModScannerDispatchTest {
     @Test
     fun anUnparseableMinecraftVersionAlsoFallsBackForNeoForge() {
         for (minecraftVersion in listOf("", "26", "not-a-version", "1.x.y")) {
-            // The explicit type argument picks JUnit's value-returning overload; without it Kotlin
+            // The explicit type argument picks JUnit's value-returning overload. Without it Kotlin
             // resolves the `Executable` one and the assertion below compares against `kotlin.Unit`,
-            // which is how the first draft of this guard failed against correct code.
+            // which fails against correct code.
             val scanner = Assertions.assertDoesNotThrow<ModJarScanner?> {
                 modScanner.scannerFor("NeoForge", minecraftVersion)
             }

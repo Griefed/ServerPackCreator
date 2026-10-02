@@ -488,9 +488,9 @@ internal class ModListCompilerTest {
      * get the verdict from the Fabric scan — the Quilt scan cannot read it and falls back to SERVER —
      * and must still appear exactly once.
      *
-     * Guards the removal of the copy-loop that used to sit at the end of the Quilt arm. That loop
-     * cannot fire (both scanners return one entry per input file, so the lookup always matches), and
-     * the case it looks like it handles is this one, which the sideness-merge above it covers.
+     * It is also why the Quilt arm needs no copy-loop at the end: such a loop cannot fire, because both
+     * scanners return one entry per input file and the lookup always matches, and the case it looks like it
+     * would handle is this one, which the sideness-merge covers.
      */
     @Test
     fun theQuiltArmTakesTheFabricVerdictForAFabricOnlyJar(@TempDir tempDir: File) {

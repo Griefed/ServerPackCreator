@@ -186,11 +186,11 @@ internal class ModScannerSidenessTest {
      * platform, but `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, and just as much a mod the
      * server needs.
      *
-     * **`quilt_base` is a mod too, and used to be excluded as though it were the platform.** It is QSL's
-     * base module, shipped by QFAPI: `library/core/qsl_base` in `QuiltMC/quilt-standard-libraries`, whose
-     * own `quilt_base_testmod` declares `["quilt_loader", "quilt_base"]` (read 2026-09-01, branch 1.21.5).
-     * Excluding it was the exact mistake this test's Fabric counterpart exists to prevent — `fabric` (the
-     * API) is not excluded there, only `fabricloader` — so Quilt now matches: loader out, modules in.
+     * **`quilt_base` is a mod too, despite reading like a platform id.** It is QSL's base module, shipped by
+     * QFAPI: `library/core/qsl_base` in `QuiltMC/quilt-standard-libraries`, whose own `quilt_base_testmod`
+     * declares `["quilt_loader", "quilt_base"]`. Excluding it is the exact mistake this test's Fabric
+     * counterpart exists to prevent — `fabric` (the API) is not excluded there, only `fabricloader` — so
+     * Quilt matches it: loader out, modules in.
      */
     @Test
     fun quiltedFabricApiIsADependencyRatherThanThePlatform(@TempDir tempDir: File) {
@@ -428,11 +428,11 @@ internal class ModScannerSidenessTest {
      * A `mods.toml` may legitimately declare no `[[dependencies]]` block at all, and such a mod must
      * still be read normally — its declared id kept, its verdict SERVER.
      *
-     * The absent block used to be raised as a `ScanningException` from the middle of the read, which
-     * aborted the whole thing and fell back to the unreadable-jar defaults: the *filename* as the id.
-     * The verdict was unaffected (a mod with no dependencies has no clientside signal, so SERVER is
-     * the only possible answer either way), which is why nothing broke — but it discarded a mod id
-     * that had been read successfully, and it logged an ERROR for an entirely ordinary descriptor.
+     * Raising the absent block as an exception from the middle of the read aborts the whole thing and falls
+     * back to the unreadable-jar defaults, which means the *filename* as the id. The verdict is unaffected —
+     * a mod with no dependencies has no clientside signal, so SERVER is the only possible answer either way
+     * — so the loss is silent: a mod id that was read successfully is discarded, and an entirely ordinary
+     * descriptor is logged as an ERROR.
      */
     @Test
     fun aForgeModWithoutADependenciesBlockKeepsItsDeclaredId(@TempDir tempDir: File) {
@@ -517,10 +517,10 @@ internal class ModScannerSidenessTest {
      * about *sideness*. Two SERVER verdicts agree, so the empty entry wins and everything the Fabric manifest
      * declared is discarded.
      *
-     * Reported 2026-08-31 from the live grinder: `bookshelf` on Quilt 0.31.0-beta.3 / Minecraft 1.21.1 died
-     * with `Bookshelf requires any version of fabric-api, which is missing!` — the dependency was never
-     * resolved because the scan never reported it. The same loss reaches real generation, where
-     * `ModListCompiler`'s dependency rescue would fail to keep Fabric API in a Quilt pack that needs it.
+     * What that costs is a boot dying on `requires any version of fabric-api, which is missing!` — the
+     * dependency is never resolved because the scan never reported it. The same loss reaches real
+     * generation, where `ModListCompiler`'s dependency rescue then fails to keep Fabric API in a Quilt pack
+     * that needs it.
      */
     @Test
     fun aFabricOnlyJarKeepsItsDependenciesWhenScannedForQuilt(@TempDir tempDir: File) {

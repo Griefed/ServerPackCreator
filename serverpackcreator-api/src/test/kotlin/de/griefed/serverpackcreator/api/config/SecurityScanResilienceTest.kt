@@ -28,10 +28,9 @@ import java.io.File
  * Pins that the malware scan cannot take generation down with it.
  *
  * Nekodetector is a third-party scanner resolved from **jitpack**, and it is an *optional safety net*, not
- * a precondition for building a server pack. Reported 2026-08-29: a host whose runtime classpath lacked
- * `SecurityScans` died with an unhandled `NoClassDefFoundError` straight out of `checkConfiguration`,
- * killing the generation coroutine (`Exception in thread "pool-5-thread-1"`). The user's modpack was fine;
- * the scanner was not there.
+ * a precondition for building a server pack. A host whose runtime classpath lacks `SecurityScans` otherwise
+ * dies with an unhandled `NoClassDefFoundError` straight out of `checkConfiguration`, killing the generation
+ * coroutine (`Exception in thread "pool-5-thread-1"`) over a modpack that is perfectly fine.
  *
  * Two things made it fatal, and both are pinned here:
  *  - `scanUsingNekodetector` caught `Exception`, and `NoClassDefFoundError` is an **`Error`**.

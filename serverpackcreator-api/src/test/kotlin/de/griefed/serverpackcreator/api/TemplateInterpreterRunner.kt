@@ -98,7 +98,7 @@ internal class TemplateInterpreterRunner {
      * resolves the source on the **daemon's** filesystem, so wherever the daemon is not the machine
      * running these tests — Forgejo's runner, whose job container talks to a sibling daemon — Docker
      * creates the missing source directory and mounts an empty one. Nothing fails; the probe simply sees
-     * no templates, which CI reported as a rejected template (run 646). `docker cp` streams the files
+     * no templates, and CI reports that as a rejected template. `docker cp` streams the files
      * through the daemon API, so it works in both topologies and, unlike the bind, says so when it
      * cannot. The read-only flag goes with the bind: these are throwaway copies of copies, and a
      * container that writes to them reaches nothing outside itself.

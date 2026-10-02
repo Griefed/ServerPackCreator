@@ -25,13 +25,13 @@ import org.junit.jupiter.api.Test
 /**
  * Pins which `Preferences` node ServerPackCreator stores its home directory in.
  *
- * The node used to be the hard-coded `ServerPackCreator`, i.e. **one machine-wide, per-user node shared by every
- * SPC process on the account** — GUI, web backend, every module's test suite and the grinder daemon. Since
+ * A hard-coded `ServerPackCreator` node is **one machine-wide, per-user node shared by every SPC process on the
+ * account** — GUI, web backend, every module's test suite and the grinder daemon. Since
  * `PathsConfig.homeDirectory` re-reads that preference on *every* access and writes back what it resolved, a test
  * suite starting up relocated a *running* daemon's home into its own scratch directory and then deleted it. What an
  * operator saw was every boot failing on a missing `server_files/server-icon.png`, recorded as metadata-only
- * verdicts — indistinguishable from "these mods were never bootable" (measured 2026-07-30: 30+ polluted verdicts).
- * The same collision runs the other way: running the suites moved a developer's own GUI installation's home.
+ * verdicts — indistinguishable from "these mods were never bootable". The same collision runs the other way:
+ * running the suites would move a developer's own GUI installation's home.
  *
  * An overridable node name lets each of those live in its own node, which is what makes the collision impossible
  * rather than merely unlikely.
