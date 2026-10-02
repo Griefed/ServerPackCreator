@@ -10,6 +10,11 @@
 > - **CI secrets — what each one is, its scopes, and which job dies without it** →
 >   `claude-docs/CI-SECRETS.md`. Read it before touching a `secrets.*` reference: Forgejo rejects the
 >   `FORGEJO_`/`GITEA_`/`GITHUB_` prefixes, so the credentials are `FJ_*`/`GH_*` on purpose.
+> - **Runner-host registry caching — how to stop CI meeting ghcr's per-host burst limiter** →
+>   `claude-docs/RUNNER-REGISTRY-CACHE.md`. Mostly host configuration; the workflow half has landed and is
+>   fail-soft, probing each cache and going upstream for any that does not answer, so the two halves can
+>   land in either order. Read section 0 before touching it: jobs run inside a `docker:dind` daemon, so
+>   the caches are addressed by **fixed IP** — service names do not cross that boundary.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
@@ -30,7 +35,7 @@ constraints.
 - **`serverpackcreator-api` is published to Maven Central, so its public surface is a compatibility
   constraint** — plugins compile against it. Governed by the **API compatibility policy** below.
 - **Every other module is unpublished and therefore churns freely** (`-clientside`, `-app`,
-  `-grinder`, both plugin modules, the frontend). `-clientside` in particular is free to change shape;
+  `-grinder`, every plugin module, the frontend). `-clientside` in particular is free to change shape;
   `-plugin-example` is the exception that must always reflect *current* API idiom, because it is
   documentation by example.
 - **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
@@ -323,18 +328,20 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-26).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-10-02).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 491           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 671           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| api            | 503           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 673           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 232           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
+| plugin-selfextract | 17            | Wraps every generated pack in a self-extracting `.bsx` and `.cmd`; the `.cmd` is pinned but has never been run. → `serverpackcreator-plugin-selfextract/CLAUDE.md` |
+| plugin-servertest | 112 (1 skip)  | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
 | web-frontend   | 37 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 539 (15 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 542 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -369,8 +376,16 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   report's wording is part of the evidence, which is the argument for it being precise.
 - **A test can pass against unfixed code because one fixture value is a prefix of another.** Ask why a
   guard *passed*, not only why it failed, whenever fixture values could contain one another.
-- **A guard that cannot compile is not a red pin.** Land the seam first as its own behaviour-preserving
-  commit, or say in the message that the boundary is missing and quote the mutation that reproduces the red.
+- **A guard that cannot compile is not a red pin.** It fails on a missing symbol, which says nothing about
+  the logic. Three sanctioned ways out, all of which make the red a *wrong answer*: land the seam first as
+  its own behaviour-preserving commit; say in the message that the boundary is missing and quote the
+  mutation that reproduces the red; or — **for new code, where there is no behaviour to preserve and so no
+  honest "behaviour-preserving" seam commit exists** — land the seam *with* the guard in the `test(...)`
+  commit, with the implementation stubbed, and state in the message which assertions are vacuous against
+  that stub. **Griefed's call, 2026-09-25**, after the `servertest` branch took the third route nine times
+  and an audit flagged it: the branch is not being re-split, and the route is sanctioned rather than merely
+  tolerated. It costs one thing — no commit is a pure "add tests" commit — so name the vacuous guards
+  explicitly, because they are the ones that will otherwise be mistaken for pins.
 - **An expression statement reads exactly like an assertion and asserts nothing.** `suggestInclusionsTest`
   called `dirs.any { it.source == "config" }` six times and discarded every result — valid Kotlin, no
   warning, and indistinguishable from a guard at a glance. It passed against *any* return value, proven by
@@ -411,6 +426,14 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   daemon *is* its filesystem. `docker run -d --privileged -e DOCKER_TLS_CERTDIR= -p 12375:2375
   docker:dind` plus `DOCKER_HOST=tcp://127.0.0.1:12375` reproduces the runner's topology in about a
   minute, and is what turned an argument into a measurement.
+- **When a guard is green on one host and red on another, suspect the question before the hosts.** CI run 629
+  failed `HostProcessDescendantTeardownTest` against a process the runner had killed correctly. `ProcessHandle.isAlive`
+  answers *"is this PID in the table"*; the guard meant *"is this process running"*, and the two differ only for a
+  process that has exited and not been reaped — which is permanent under a container PID 1 that is not an init, and
+  invisible on a developer machine where launchd reaps. Both the fix and the guard were right; the *predicate* was the
+  wrong predicate. Two containers differing only in PID 1 separated them in minutes, and the same difference was
+  costing the production teardown its whole 5 s budget (5000+ ms → 3 ms) on a process that had already stopped. An
+  environment-shaped failure is evidence that an assertion is asking something narrower or wider than it means.
 - **Duplicated knowledge drifts toward whichever copy is easier to reach** — three instances so far. Delete
   the duplicate rather than correcting it, and ask of any new lookup table which existing one already
   answers it.
@@ -469,6 +492,23 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   - **The second trap:** that same policy was the only access control on an unauthenticated report bound to
     `0.0.0.0`, so the obvious `ufw allow <port>` would have ended the outage and published the verdict table
     and full CSV export in one command. Ask what a guard rail is load-bearing for before removing it.
+- **A green run and a red run of the same commit can be the same failure, and the green one is the one
+  to worry about.** `921d46938` ran `test.yml` twice on 2026-10-01. Run 836 failed fourteen
+  database-backed tests; run 833 was **green** — having *skipped* the same fourteen. One cause:
+  flapdoodle's 30 s `mongod` start budget on a runner then doing three Gradle/npm builds at once. What
+  differed was only which `mongod` lost the race — the Spring context's (a failure) or the
+  `EmbeddedMongoAvailable` probe's (a skip, which the guard exists to produce). The guard worked exactly
+  as designed and converted a red build into a green one that verified nothing about the database.
+  **A skip-on-unavailable guard turns an environment problem into an invisible one**, so the pair to
+  check after a red CI run is not "did the other run pass" but "did it *run*" — and a probe must never
+  be more patient than the thing it vouches for, or it approves a start its subject then fails on.
+- **The whole batch is the measurement, not the job that went red.** Reading run 836 alone says
+  "mongod is flaky". Reading every run of that push says the host was 2–5x slower than the day before
+  (`docker-test` 13–15 → 41.6 min, `devbuild` ~20 → 96.6, `docs` ~25–31 → 63.4, the container ITs
+  5.3–8.8 → 18.1 and 23.3), and that nine runs had been queued at one instant. Every red in that batch
+  was a deadline expiring, in four different places, for one reason. **When several unrelated guards go
+  red at once, compare durations across the whole run list before diagnosing any of them** — it costs a
+  single API call and it is the difference between fixing four tests and understanding one host.
 - **A tool that detects a defect through a side effect can only see the share of it that has that side
   effect.** Qodana's `KDocUnresolvedReference` reports a doc block that has come loose from its declaration
   *only* when the stranded block happens to contain a `[link]` that no longer resolves — so it named **4 of

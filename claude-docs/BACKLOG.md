@@ -16,6 +16,43 @@ per-line axis made the shim cost a whole Minecraft line and the placeholder was 
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
 
+## 2026-09-25 — from the server-test plugin branch
+
+> Both defects this branch found were **fixed** on it, so they are not listed here. What is listed is
+> the residue each fix deliberately left behind. **B44 was then fixed too**, on the same branch, and is
+> kept below as a closed entry rather than deleted — the reason the fix went wider than the entry
+> proposed is worth more than the entry was.
+
+### B43 — `ExtensionTab.log` still names `AddonsLogger`, not `PluginsLogger`
+
+`log4j2.xml` now declares an `AddonsLogger` routed to the plugins appender, so a plugin's output finally
+lands in `plugins.log` where the example plugin's KDoc always claimed it did. The *name* was left alone
+on purpose: `AddonsLogger` is baked into every third-party plugin already compiled against the published
+API, so renaming it would move their output a second time and break anything filtering on the logger
+name. Two names for one appender is the cost.
+
+**Why it waited:** collapsing them is a behaviour change on published API and belongs in a major, beside
+whatever else moves then. **To pick it up cold:** change `ExtensionTab.log` and
+`ExtensionConfigPanel.pluginsLog` to `LogManager.getLogger("PluginsLogger")`, drop the `AddonsLogger`
+block from both `log4j2.xml` copies, and update `PluginLoggingRoutingTest` — which asserts the *resolved
+appenders*, so it keeps its teeth either way. Add a row to `API-BEHAVIOUR-CHANGES.md`; there is already
+one for the addition.
+
+**Second half, easy to miss:** `ApiProperties.init` rewrites the home's `log4j2.xml` only
+`if (!log4jXml.isFile || devBuild || preRelease)`. An existing *stable* installation keeps its own copy
+and never sees either change until that file is deleted. If this is ever worth migrating, the app's
+`MigrationManager` is where it belongs.
+
+### B44 — `ApiPlugins.addTabExtensionTabs` calls `getTab` outside its own try-block — **ISSUED AND GONE**
+
+Closed 2026-09-25 on the same branch that filed it, at Griefed's request. The fix went wider than the
+entry proposed: `name`, `title`, `icon` and `tooltip` are third-party code on that path too, and were
+outside the guard alongside `getTab`. The whole registration is now inside it, the body lives in an
+**internal** `addTabExtensionTab` so the containment could be pinned without a fixture jar, and the
+failure message reads the extension's `name` through a guard of its own — building it eagerly is what
+put a `name` call outside the try in the first place. See `TabExtensionFailureContainmentTest` and the
+row in `API-BEHAVIOUR-CHANGES.md`.
+
 ## 2026-09-23 — from the modpack upload/check/storage pass
 
 ### B41 — the web service's extracted modpacks share a parent, and `checkManifests` reads it

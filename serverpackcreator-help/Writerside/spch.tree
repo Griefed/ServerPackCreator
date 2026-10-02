@@ -11,6 +11,20 @@
         <toc-element topic="Settings.md"/>
         <toc-element topic="Versions.md"/>
     </toc-element>
+    <!-- The Dokka HTML for `serverpackcreator-api` is NOT a Writerside topic and cannot be one. Writerside
+         has no way to host a generated file tree: `cfg/static` takes individually *referenced* files only
+         (see build-profiles.xsd), and JetBrains' own WRS-1772 "Integration with Dokka" is still open. The two
+         outputs are therefore merged at PACKAGING time, in two places that must stay in step.
+         `docker/Dockerfile.help` copies Dokka to `/config/www/api/`, and `.github/workflows/pages.yml`
+         assembles the same layout for GitHub Pages.
+         The href is RELATIVE on purpose. Every Writerside topic is served from the site ROOT, verified
+         against the published image, where `index.html`, `api-reference.html` and friends sit directly in
+         `/config/www` despite `web-path="topics"`. So `api/index.html` resolves under nginx at `/api/` AND
+         under GitHub Pages at `/ServerPackCreator/api/`. An absolute `/api/index.html` would work in the
+         container and 404 on Pages, which is served from a project subpath.
+         (Note for editors: an XML comment may not contain a double hyphen anywhere, which is why this block
+         uses none.) -->
+    <toc-element toc-title="Kotlin API (Dokka)" href="api/index.html"/>
     <toc-element topic="Help-Topic.md">
         <toc-element topic="Keeping-Data.md"/>
         <toc-element topic="Multiple-Javas.md"/>

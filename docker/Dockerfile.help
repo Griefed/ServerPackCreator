@@ -19,4 +19,14 @@ RUN \
     /root/.cache \
     /tmp/*
 
+# The Kotlin API reference (Dokka HTML for `serverpackcreator-api`), merged in here because Writerside cannot
+# host a generated file tree itself -- see the comment in `Writerside/spch.tree`, which links to `api/index.html`
+# relative to the site root and therefore depends on this exact path.
+#
+# AFTER the RUN above, never before: that RUN opens with `rm -rf /config/www/*`, which would delete this.
+# The source is NOT optional -- a missing `public/api/` fails the build here rather than silently shipping a
+# help site whose "Kotlin API (Dokka)" entry 404s. `.forgejo/workflows/docs.yml` populates it from the `dokka`
+# job's artifact; `.github/workflows/pages.yml` builds the same layout for GitHub Pages.
+COPY public/api/ /config/www/api/
+
 EXPOSE 80 443

@@ -24,12 +24,31 @@ every session. Operator-facing secret detail lives in `claude-docs/CI-SECRETS.md
 every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
 it exists, Forgejo ignores `.github/workflows` entirely
 ([forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203)), so anything Forgejo must do belongs
-there and nowhere else. `.github/workflows` keeps a **smoke test** plus the four
+there and nowhere else. `.github/workflows` keeps a **smoke test**, the four
 `clientside-*` workflows, which are GitHub-native (three `issues:`-triggered, one `workflow_call:`
-helper); releases are created on Forgejo and mirrored outward
+helper), and **`pages.yml`**; releases are created on Forgejo and mirrored outward
 by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
 **GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
 as current as the repository it mirrors into* below.
+
+**The criterion for `.github/workflows` is "GitHub is the only place this CAN happen", not "this is
+convenient here".** `pages.yml` stretches it the furthest and still passes: it runs the Writerside builder
+*and* a Gradle Dokka build, which looks exactly like the second CI `test.yml`'s header warns against — but
+GitHub Pages can only be deployed from GitHub, Forgejo has no Pages, and hosting the rendered help site
+stopped being possible when GitLab Pages went away. It also takes no secrets and gates nothing, so a red run
+costs a stale docs site. The `clientside-*` four pass for the same reason (GitHub Issues are the trigger).
+Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can actually see it.
+
+**`pages.yml` and `docs.yml` build the same bundle for two different hosts, and four things must move
+together:** the `INSTANCE`/`ARTIFACT` pair, the pinned `jetbrains/writerside-builder` version, the
+*Stage documents and images* step (the seven root documents are generated into `Writerside/topics/` and a
+fresh checkout has none of them), and the `api/` path that `spch.tree`'s **relative** `api/index.html` link
+resolves against. That link is relative rather than root-absolute because the container serves the site at
+`/` and Pages serves it at `/ServerPackCreator/`; every Writerside topic is emitted at the site root
+(verified against the published image, despite `web-path="topics"`), so one relative href serves both.
+**`pages.yml` needs Settings → Pages → Source set to "GitHub Actions"**; while it is still "Deploy from a
+branch" the workflow goes green and publishes nothing.
+
 Two GitLab capabilities were **deliberately not carried over**: `Build Release` uploaded the app jar to
 GitLab's *generic package registry* and then created a release asset *link* to it (Forgejo attaches
 assets to the release directly, so a consumer with a hard-coded `/packages/generic/...` URL loses it),
@@ -147,13 +166,42 @@ Worth stating because a search summary of the same feature says the opposite ("n
 will occur"), and because GitHub and Forgejo do not describe it identically. Read the
 [reference](https://forgejo.org/docs/v15.0/user/actions/reference/), not a summary.
 
-**The group in this directory is `<workflow>-${{ github.ref }}`, which is deliberate and has a cost worth
-knowing: a push to `develop` also builds PR #678 (`develop` → `beta`) at the same commit, in parallel, on
-the same runner.** Two jobs, one Docker daemon, one filesystem. That is fine for everything that only reads
+**The group in this directory is `<workflow>-${{ github.ref }}`, which is deliberate and used to have a
+cost worth knowing: a push to `develop` also built PR #678 (`develop` → `beta`) at the same commit, in
+parallel, on the same runner.** That particular doubling is gone — `pull_request:` was dropped from
+`test.yml`, `docker-test.yml` and `grinder-container-it.yml` on 2026-10-02, because every PR here is
+opened from a branch `push:` already builds — but the per-ref key still lets **two different branches**
+run side by side, which is the same collision with a rarer trigger. Two jobs, one Docker daemon, one
+filesystem. That is fine for everything that only reads
 — and it is not fine for anything that asks the daemon a global question or performs a global side effect.
 It cost `DockerJavaContainerEngineIT` three red runs in a row on 2026-09-27 (947, 954, 956), each failing a
 *different* test of the same class, which is the signature of interference rather than of a defect: a defect
 fails the same test in both jobs.
+
+**The same push also saturates the host, and that breaks every time-boxed wait in the suite at once.**
+On 2026-10-01 one push to `develop` queued **nine** runs at `17:03:00`; the runner started three heavy
+Gradle/npm builds together and the whole batch ran 2–5x its own previous day's time:
+
+| workflow | typical | 2026-10-01 |
+|---|---|---|
+| `docker-test.yml` | 13–15 min | **41.6 min** (829, 830 — buildkit's Gradle stage 616s → 1913s, npm 447s → 817s) |
+| `devbuild.yml` | ~20 min | **96.6 min** (828) |
+| `docs.yml` | ~25–31 min | **63.4 min** (832) |
+| `grinder-container-it.yml` | 5.3–8.8 min | **18.1, 23.3 min** (831, 834 — both red) |
+| `test.yml` | 12–22 min | 836 red |
+
+Nothing in the repository changed to cause it — `921d46938` touched two workflow files — and the slow
+stages are CPU-bound, not registry-bound, so this is capacity, not network. **What it breaks is
+anything with a deadline in it**: `grinder-container-it` lost four tests to 90-second fixture waits and
+one to a wall-clock assertion, and `test.yml` lost all fourteen database-backed tests because
+flapdoodle's embedded `mongod` default is a 30-second start budget. All of those budgets have since
+been raised or replaced with host-independent assertions, which is the right repository-side answer —
+a CI deadline must be sized against the pathological host, not the healthy one — but it treats the
+symptom. The cause is how much this runner is asked to do at once. **One of the two levers has been
+pulled**: `pull_request:` is gone from the three workflows that carried it, halving the batch, at the
+cost of no longer building the merge result separately and of fork PRs getting no Forgejo CI. The other
+is the runner's own job concurrency, which is host configuration; see
+`claude-docs/RUNNER-REGISTRY-CACHE.md`'s *Runner hygiene* section.
 
 `grinder-container-it.yml` is the answer where exclusivity is genuinely required — a group with **no ref in
 it**, so one run at a time repository-wide, and `cancel-in-progress: false` so a second one queues. It holds
@@ -385,3 +433,64 @@ how five tags ended up 300-odd commits away from the code they name. Note the mi
 this right for the GitHub side — it passes `target_commitish: ${{ github.sha }}` precisely because the
 tag has usually not mirrored across yet. That covers an absent **tag** only: the commit it names still has
 to be present, which is why the job now probes for it first (see above).
+
+## ghcr's 429 is a burst limiter on the *host*, and authenticating does not lift it
+
+**LANDMINE — a registry 429 that asks for a sub-millisecond wait is not a quota you can buy your way out
+of, and buildkit will not wait for it.** `docker-test.yml` has lost three runs to the pull of
+`ghcr.io/linuxserver/baseimage-ubuntu:noble` — 676 and 680 on 2026-09-27, 739 on 2026-09-28 — and all
+three end the same way:
+
+```
+#9 ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET request to
+https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:5d9a14c0…: 429 Too Many Requests
+::error::buildx failed with: toomanyrequests: retry-after: 933.17µs, allowed: 44000/minute
+```
+
+The phase varies — 676 died resolving the *manifest*, 680 and 739 fetching a *blob* — so anything that
+touches the registry is exposed, not one request.
+
+**The first fix was wrong, and the evidence that it was wrong is in the run it shipped in.** The `Log in
+to ghcr.io when credentials are available` step was added on the premise that ghcr throttles *anonymous*
+pulls per source address and an authenticated pull is counted against the account instead. Run 739 carried
+that step, logged `Login Succeeded` and `Authenticated to ghcr.io as ***`, buildkit emitted its `[auth]
+… token for ghcr.io` vertex (absent from job 1712, which had no credentials) — and the blob GET came back
+429 anyway. Two numbers in the error say why: **44,000/minute is not an allowance one build can exhaust**,
+and **the retry-after is 933 µs**. That is a token bucket keyed on the requesting host, refilling in under
+a millisecond; an account-scoped credential is the wrong axis entirely. The login is kept — it costs one
+second and is the right thing for Docker Hub's genuine per-account quota — but it is not why the job is
+green.
+
+**What works is waiting, and the only retry a `uses:` step admits is `continue-on-error` plus a second
+copy of it.** `nick-fields/retry` and its kin run shell commands, not JavaScript actions. Verified against
+the runner's own engine rather than assumed: `pkg/runner/step.go` in `code.forgejo.org/forgejo/act` sets
+`stepResult.Outcome` to `failure` while `isContinueOnError` turns `Conclusion` back to `success`, and
+`StepResult` (`pkg/model/step_result.go`) marshals `outcome` as exactly the string an
+`if: steps.<id>.outcome == 'failure'` compares against. Both `docker-test.yml` and `release-build.yml`
+now do this; the second is the one that matters, because a 429 there costs the release its images and
+takes the `mirror` job (`needs: docker`) down with it.
+
+**One retry, not a loop.** The limiter resets in under a millisecond, so a host still limiting a minute
+later is a condition worth failing loudly on rather than grinding against. In `docker-test.yml` the retry
+is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
+In `release-build.yml` it is not: `no-cache: true` means attempt two rebuilds the whole Gradle stage,
+about fifteen minutes. Pushing the same tags twice is idempotent, so that is the price of the insurance.
+
+**The standing exposure the retry does not remove:** every job on this instance pulls
+`ghcr.io/catthehacker/ubuntu:runner-latest`, the grinder pulls its own images, and `concurrency` is keyed
+per-ref, so one push routinely runs two builds of the same commit side by side against one registry from
+one address. Caching in front of the registries on the runner host is the fix that removes the cause
+rather than absorbing it — **`claude-docs/RUNNER-REGISTRY-CACHE.md`** has the configuration, the two
+constraints that decide its shape (Docker Engine's `registry-mirrors` is Docker-Hub-only; BuildKit's is
+not, and falls back to upstream — verified from `util/resolver/resolver.go`, which the buildkitd
+reference does not state), and the bridge-gateway/`INPUT policy DROP` trap that makes a mirror look like
+it simply does not work.
+
+**The workflow half has landed and no longer has to wait for the host half.** `docker-test.yml` and
+`release-build.yml` probe each cache with `GET /v2/` and mirror only what answered, so a host with no
+caches builds against upstream exactly as before. The caches are reached by **fixed IP, not by name**,
+because jobs run inside a `docker:dind` daemon whose embedded DNS does not know the host daemon's
+containers — measured both ways on 2026-10-02 against a reproduction of the topology. `driver-opts:
+network=…` went with it, which also removes the only way that step could kill a build outright
+(`network runners_default not found`, run 797). Section 0 of that file has the topology; do not re-add
+a service name here.

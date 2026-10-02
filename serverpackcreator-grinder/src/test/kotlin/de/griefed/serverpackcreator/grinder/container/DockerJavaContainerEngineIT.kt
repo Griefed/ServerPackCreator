@@ -56,26 +56,35 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertFalse(output.timedOut)
     }
 
+    /**
+     * Seeing the ready line must end the run, rather than letting the container live out its sleep.
+     *
+     * "Did not wait out the sleep" is asserted by what the container *printed*, not by how long the test
+     * took. The clock answers a different question on every host: this bound was 30s, failed run 726 at
+     * 38s, was raised to 90s, and failed run 834 at 101s — three reds, no defect, because what it actually
+     * measured was how loaded the daemon was. [SLEPT_THROUGH] can only appear if the shell got past
+     * `sleep`, so the marker's absence discriminates between the two *outcomes* where the clock
+     * discriminated between two machines.
+     *
+     * Worth stating what that gives up, because it is not nothing: a daemon that honoured the stop but took
+     * a minute to do it now passes. That was never this test's subject — [closeSignalsAContainerBeforeKillingIt]
+     * owns the stop path — and it is the only thing the old bound caught that `timedOut` did not.
+     */
     @Test
     fun detectsReadyLineAndStopsALongRunningContainerPromptly() {
-        val startedAt = System.currentTimeMillis()
         val output = engine.run(
-            busyboxSpec("echo 'Done (2.5s)! For help, type help'; sleep 120"),
+            busyboxSpec("echo 'Done (2.5s)! For help, type help'; sleep 120; echo $SLEPT_THROUGH"),
             readyPattern = Regex("""Done \([^)]*\)! For help"""),
             timeout = Duration.ofSeconds(60)
         )
-        val elapsedSeconds = (System.currentTimeMillis() - startedAt) / 1000
 
         Assertions.assertTrue(output.lines.any { it.contains("For help") }, "ready line must be captured: ${output.lines}")
         Assertions.assertFalse(output.timedOut, "ready was seen, so this is not a timeout")
-        // Below the container's 120s sleep, not an arbitrary 30. What pins the behaviour is the assertion
-        // above: `run`'s budget here is 60s, so a ready line that was *missed* ends at that deadline with
-        // `timedOut = true`, and waiting out the sleep is already impossible. This bound therefore catches
-        // nothing about the engine that `timedOut` does not, and everything about how loaded the daemon is
-        // -- run 726 took 38s and failed on a run where the engine had behaved correctly. It stays as a
-        // backstop for the day someone raises the timeout past the sleep, at a threshold that discriminates
-        // between the two outcomes instead of between two daemons.
-        Assertions.assertTrue(elapsedSeconds < 90, "must stop on ready, not wait out the 120s sleep (took ${elapsedSeconds}s)")
+        Assertions.assertTrue(
+            output.lines.none { it.contains(SLEPT_THROUGH) },
+            "the run must end on the ready line; reaching '$SLEPT_THROUGH' means it waited out the " +
+                "container's 120s sleep instead: ${output.lines}"
+        )
     }
 
     /**
@@ -94,7 +103,7 @@ internal class DockerJavaContainerEngineIT {
         }.apply { isDaemon = true; start() }
 
         // Wait for the container to actually exist before pulling the rug out.
-        val deadline = System.currentTimeMillis() + 60_000
+        val deadline = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         var running = runningContainersOf(drainEngine)
         while (running == 0 && System.currentTimeMillis() < deadline) {
             Thread.sleep(500)
@@ -106,7 +115,7 @@ internal class DockerJavaContainerEngineIT {
         booting.interrupt()
 
         // close() force-removes, so the sleeper must be gone almost immediately.
-        val goneBy = System.currentTimeMillis() + 60_000
+        val goneBy = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         while (runningContainersOf(drainEngine) > 0 && System.currentTimeMillis() < goneBy) {
             Thread.sleep(500)
         }
@@ -177,7 +186,7 @@ internal class DockerJavaContainerEngineIT {
 
         waitForContainerOf(signalEngine)
         signalEngine.close()
-        booting.join(60_000)
+        booting.join(FIXTURE_DAEMON_BUDGET_MILLIS)
 
         Assertions.assertTrue(sawSignal.get(), "the container must receive SIGTERM and get to run its handler before removal")
         // What `close` promises is that nothing of this engine's is left *running*, not that nothing is left at
@@ -332,13 +341,14 @@ internal class DockerJavaContainerEngineIT {
     /**
      * Block until [engine]'s own container is actually up, so a test never pulls the rug before there is one.
      *
-     * 60s, not 30: this runs on a runner that shares its Docker daemon with whatever else CI is doing, and
+     * Budgeted by [FIXTURE_DAEMON_BUDGET_MILLIS], which is deliberately far larger than any healthy
+     * daemon needs: this runs on a runner that shares its Docker daemon with whatever else CI is doing, and
      * when the wait expires the failure surfaces as the *next* assertion — "test setup: the orphan must be
      * running ==> expected 1 but was 0" (run 681) — which reads as a verdict about reaping rather than as a
      * slow daemon. A fixture that gives up too early does not fail, it misattributes.
      */
     private fun waitForContainerOf(engine: DockerJavaContainerEngine) {
-        val until = System.currentTimeMillis() + 90_000
+        val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         while (System.currentTimeMillis() < until && runningContainersOf(engine) == 0) {
             Thread.sleep(200)
         }
@@ -349,8 +359,9 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertNotEquals(
             0,
             runningContainersOf(engine),
-            "the fixture never got this engine's container running within 90s; the daemon was too slow, " +
-                "which is not what any test in this class is about"
+            "the fixture never got this engine's container running within " +
+                "${FIXTURE_DAEMON_BUDGET_MILLIS / 1000}s; the daemon was too slow, which is not what any " +
+                "test in this class is about"
         )
     }
 
@@ -362,7 +373,7 @@ internal class DockerJavaContainerEngineIT {
      * window routinely, and the container is stopped a moment later. Mirrors `ContainerOwnershipIT`.
      */
     private fun awaitNothingRunning(engine: DockerJavaContainerEngine): Int {
-        val until = System.currentTimeMillis() + 60_000
+        val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         var running = runningContainersOf(engine)
         while (running > 0 && System.currentTimeMillis() < until) {
             Thread.sleep(250)
@@ -379,7 +390,7 @@ internal class DockerJavaContainerEngineIT {
      * removal that succeeded can still be listed for a moment afterwards.
      */
     private fun awaitGone(engine: DockerJavaContainerEngine): List<String> {
-        val until = System.currentTimeMillis() + 60_000
+        val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         var present = containersOf(engine)
         while (present.isNotEmpty() && System.currentTimeMillis() < until) {
             Thread.sleep(250)
@@ -388,4 +399,12 @@ internal class DockerJavaContainerEngineIT {
         return present
     }
 
+    private companion object {
+        /**
+         * Printed by the sleeper only if its `sleep` ran to completion, which a run that stopped on ready
+         * can never reach. Shares no substring with any other line the container emits, so
+         * `lines.none { it.contains(...) }` cannot match something else and quietly pass.
+         */
+        const val SLEPT_THROUGH = "SLEPT-THROUGH-THE-READY-LINE"
+    }
 }

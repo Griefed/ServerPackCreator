@@ -7,9 +7,21 @@
 # Restoring the old behaviour is a two-line change: add `push: true` and the two SHA tags below.
 name: Docker Test
 
+# PULL_REQUEST IS DELIBERATELY ABSENT. Every PR on this instance is opened from a branch of this
+# repository (the standing develop -> beta one, #682, and the `claude-` fix branches), and `push:`
+# already builds exactly those commits -- so carrying both triggers ran this workflow twice per push
+# for a second verdict on the same tree, in parallel, on one runner. Measured 2026-10-01: one push
+# queued nine runs at 17:03:00 and the batch ran 2-5x its previous day's time (docker-test 13-15 ->
+# 41.6 min, devbuild ~20 -> 96.6, docs ~25-31 -> 63.4, the container ITs 5.3-8.8 -> 18.1 and 23.3),
+# and every red in it was a deadline expiring. Halving the batch is the cheapest lever there is.
+#
+# What it costs, stated rather than discovered later: the *merge* result is no longer built on its
+# own -- only the head commit -- so a PR that is green can still conflict semantically with its base
+# until the merge lands on `develop` and is built there. And a fork PR gets no Forgejo CI; the GitHub
+# mirror's own test.yml keeps `pull_request:` and covers that case, which is the one place a fork
+# actually arrives. Restoring this is one line.
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 concurrency:
@@ -29,17 +41,87 @@ jobs:
 
       - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
 
+      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md) and this
+      # workflow must not assume they are up -- that assumption is what broke run 797.
+      #
+      # THEY ARE ADDRESSED BY IP, AND THAT IS NOT A SHORTCUT. Jobs here run inside a `docker:dind`
+      # daemon (the runner's `docker_host` is dind's socket over a shared volume), while the caches are
+      # containers of the HOST daemon. dind's embedded DNS does not know the host daemon's containers,
+      # so a service name cannot work; routing between them does, because `docker_dind` is attached to
+      # the cache network and its children egress through that interface. Measured on a faithful
+      # reproduction of the topology on 2026-10-02 -- from a container created by the dind daemon,
+      # `wget http://registry-cache-ghcr:5000/v2/` fails with `bad address` while the same request to
+      # the cache's IP returns 200, and a buildx build through these stanzas was served 4 of its
+      # Docker Hub requests and 3 of its ghcr requests by the caches.
+      #
+      # `driver-opts: network=...` is therefore GONE, and its removal is the point rather than a
+      # side effect: the builder needs no network to join, which also removes the one way this step
+      # could kill a build outright --
+      #   ERROR: Error response from daemon: failed to set up container networking:
+      #          network runners_default not found
+      #
+      # The probe asks the question that matters, which the previous one did not. "Does this network
+      # exist" was a proxy for "can the builder reach the cache", and it answered about the wrong
+      # daemon; a GET /v2/ from this job is the same path the builder takes, since both are children of
+      # the same dind daemon. A cache that does not answer is simply left out of the config, so the
+      # build runs against upstream exactly as it did before any of this.
+      - name: Point BuildKit at the host's registry caches when they answer
+        id: regcache
+        env:
+          # Pinned by the runner host's compose file -- see claude-docs/RUNNER-REGISTRY-CACHE.md section
+          # 3. If these drift from the host, nothing breaks: the probe finds nothing and the build goes
+          # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
+          GHCR_CACHE: "172.31.77.6:5000"
+          DOCKERHUB_CACHE: "172.31.77.5:5000"
+        run: |
+          set -eu
+          toml="${RUNNER_TEMP:-/tmp}/buildkitd.toml"
+          : > "$toml"
+
+          # The second stanza per registry is not optional and is not obvious: `newMirrorRegistryHost`
+          # defaults a mirror to https, and `fillInsecureOpts` looks the mirror's own scheme up under a
+          # top-level [registry."<host:port>"] section. Without it buildkit dials https, fails the
+          # handshake, falls back to upstream -- and silently does nothing at all.
+          add_mirror() {
+            upstream="$1"
+            cache="$2"
+            if curl -fsS --max-time 5 "http://${cache}/v2/" >/dev/null 2>&1; then
+              printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' \
+                "$upstream" "$cache" "$cache" >> "$toml"
+              echo "${upstream}: the cache at ${cache} answered /v2/ - BuildKit will pull through it."
+            else
+              echo "::notice::${upstream}: nothing answered /v2/ at ${cache} - pulling from upstream. See claude-docs/RUNNER-REGISTRY-CACHE.md."
+            fi
+          }
+
+          add_mirror ghcr.io "$GHCR_CACHE"
+          add_mirror docker.io "$DOCKERHUB_CACHE"
+
+          # An empty file is valid TOML and means "no mirrors", but a comment says so in the log.
+          [ -s "$toml" ] || echo '# no registry cache answered; BuildKit pulls from upstream' > "$toml"
+
+          echo "config=$toml" >> "$GITHUB_OUTPUT"
+          echo "BuildKit config for this run:"
+          sed 's/^/  /' "$toml"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        with:
+          buildkitd-config: ${{ steps.regcache.outputs.config }}
 
       # The Dockerfile's runtime stage is `ghcr.io/linuxserver/baseimage-ubuntu:noble`, and ghcr throttles
-      # ANONYMOUS pulls per source address. Runs 676 and 680 died an hour apart on the same thing, so it is
-      # a state of the host rather than a blip:
+      # pulls. Three runs have died on it -- 676 and 680 anonymously, 739 *while authenticated*:
       #   ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET
-      #   https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:4ead6a81… 429 Too Many Requests
-      # An authenticated pull is counted against the account instead, which is a far larger allowance. The
-      # credentials are the pair `docs.yml` and `release-build.yml` already use for ghcr; `GH_TOKEN` carries
-      # `write:packages`, which covers the login (claude-docs/CI-SECRETS.md).
+      #   https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:5d9a14c0... 429 Too Many Requests
+      #   toomanyrequests: retry-after: 933.17us, allowed: 44000/minute
+      #
+      # This login is kept, but it is NOT the fix, and the comment that once said so was wrong. Job 1821
+      # (run 739) logged `Login Succeeded` and `Authenticated to ghcr.io as ***`, buildkit emitted its
+      # `#3 [auth] linuxserver/baseimage-ubuntu:pull token for ghcr.io` vertex -- and the blob GET still
+      # came back 429. An allowance of 44000/minute is not something one build can exhaust, and the
+      # retry-after is under a millisecond: this is a per-source burst limiter on the runner host, not an
+      # account quota, so an account-scoped credential cannot lift it. What lifts it is waiting, which
+      # buildkit does not do -- hence the retry on the build step below.
       #
       # Deliberately a `run:` rather than `docker/login-action`, and deliberately tolerant: this job asked
       # for no secrets before, so a fork or an instance without them must keep building. Missing credentials
@@ -58,7 +140,33 @@ jobs:
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
           echo "Authenticated to ghcr.io as $GHCR_USER."
 
+      # `continue-on-error` plus a second, identical build is the only retry a JavaScript action admits:
+      # `nick-fields/retry` and friends run shell commands, not `uses:` steps. Verified against the runner's
+      # own engine rather than assumed -- `pkg/runner/step.go` in code.forgejo.org/forgejo/act sets
+      # `stepResult.Outcome` to failure while `isContinueOnError` turns `Conclusion` back to success, which
+      # is exactly what `steps.build.outcome` below reads.
+      #
+      # One retry, not a loop: the registry asks for under a millisecond, so a burst that is still limiting
+      # a minute later is a state of the host worth failing loudly on. The retry is also cheap -- the builder
+      # container outlives the step, so whatever buildkit already fetched or built is reused.
       - name: Build image
+        id: build
+        continue-on-error: true
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: serverpackcreator:${{ github.sha }}
+
+      - name: Wait out the registry's burst limiter
+        if: ${{ steps.build.outcome == 'failure' }}
+        run: |
+          echo "The first build failed. If it was ghcr's 429 the limiter has long since reset; retrying once."
+          sleep 30
+
+      - name: Build image (retry)
+        if: ${{ steps.build.outcome == 'failure' }}
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .

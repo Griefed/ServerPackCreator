@@ -61,7 +61,7 @@ internal class PowerShellInstallerJavaTest {
      */
     @Test
     fun theInstallerJavaOverrideWinsAndFallsBackToTheServersJava() {
-        val staged = runner.stageTemplates(listOf("default_template.ps1"))
+        val staged = runner.stageTemplates(listOf(TEMPLATE_NAME))
         val probeScript = runner.stageScript(staged, PROBE_NAME, probe())
 
         val outcome = runner.runLocally("pwsh", mapOf(PROBE_NAME to listOf("pwsh", "-NoProfile", "-File", probeScript.absolutePath)))
@@ -96,6 +96,16 @@ internal class PowerShellInstallerJavaTest {
      * The probe: lift `RunInstallerJavaCommand` out of the parsed template, define it, and record what it
      * hands `CMD` under each setting.
      *
+     * The template is found through `${'$'}PSScriptRoot` — the directory of the probe itself — because one
+     * body serves two layouts. [TemplateInterpreterRunner.runInContainer] copies the staged directory to
+     * `/templates`, while [TemplateInterpreterRunner.runLocally] runs the probe where it was staged, under
+     * the JVM's temp directory. This probe named `/templates` outright, so it was correct only in the
+     * container and asked a non-existent file to parse everywhere `pwsh` is installed — which GitHub's
+     * `ubuntu-latest` is and this project's Forgejo runner is not, so the defect was reachable from
+     * exactly one of the two CIs and red there on 2026-10-02. `ParseFile` on a missing path fills
+     * `${'$'}errors`, so it surfaced as `the template does not parse`: a verdict against the template,
+     * from a run that never read one.
+     *
      * The AST is walked with a `Where-Object` pipeline rather than `Ast.FindAll`, which takes a
      * ScriptBlock as a .NET delegate — under Rosetta that call site is mistranslated and the process dies
      * with `System.NullReferenceException` at `CallSite.Target` before printing anything. The pipeline
@@ -106,8 +116,12 @@ internal class PowerShellInstallerJavaTest {
         return """
             ${d}ErrorActionPreference = 'Stop'
             Write-Output '$SETUP_MARKER'
+            ${d}template = Join-Path ${d}PSScriptRoot '$TEMPLATE_NAME'
+            # Said separately from the parse result, because a path fault and a broken template are
+            # different findings and ParseFile reports both as ${d}errors.
+            if (-not (Test-Path -LiteralPath ${d}template)) { throw "no template at ${d}template" }
             ${d}errors = ${d}null
-            ${d}ast = [System.Management.Automation.Language.Parser]::ParseFile('/templates/default_template.ps1', [ref]${d}null, [ref]${d}errors)
+            ${d}ast = [System.Management.Automation.Language.Parser]::ParseFile(${d}template, [ref]${d}null, [ref]${d}errors)
             if (${d}errors) { throw 'the template does not parse' }
             ${d}fn = @(${d}ast.EndBlock.Statements | Where-Object {
               ${d}_ -is [System.Management.Automation.Language.FunctionDefinitionAst] -and ${d}_.Name -like '*RunInstallerJavaCommand'
@@ -131,6 +145,9 @@ internal class PowerShellInstallerJavaTest {
     }
 
     private companion object {
+        /** The shipped template the probe lifts its function out of, named once for both sides. */
+        const val TEMPLATE_NAME = "default_template.ps1"
+
         /** Written beside the staged template so one read-only mount serves both. */
         const val PROBE_NAME = "installer-java-probe.ps1"
 

@@ -4,24 +4,11 @@ import java.util.*
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
+    id("serverpackcreator.plugin-conventions")
     alias(libs.plugins.i18n4k)
     kotlin("kapt")
 }
 
-
-// A consumable view of just this module's plugin jar, for the root build's copy tasks. Explicit
-// rather than the legacy `archives` configuration, which Gradle 9 removes, and it carries the task
-// dependency so the jar is built on demand.
-// `create(name) { }` rather than the `creating` delegate, which Gradle 9.7 deprecates (9.6 upgrading
-// guide). Same configuration, same name — the delegate only ever supplied the name from the property.
-val pluginArtifact: Configuration = configurations.create("pluginArtifact") {
-    isCanBeConsumed = true
-    isCanBeResolved = false
-}
-
-artifacts {
-    add(pluginArtifact.name, tasks.jar)
-}
 
 i18n4k {
     generationTargetPlatform = de.comahe.i18n4k.generator.GenerationTargetPlatform.JVM

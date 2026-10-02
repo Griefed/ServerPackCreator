@@ -32,6 +32,18 @@ downloads its own Node.js into `serverpackcreator-web-frontend/node/`.
 | `./gradlew :serverpackcreator-app:bootRun` | Run the app. GUI by default; pass `--args="-cli"` etc. **Not `run`** — `-app` is a Spring Boot module, not an `application` one. (`:serverpackcreator-grinder:run` *does* exist; the grinder applies `application`.) |
 | `./gradlew :serverpackcreator-api:koverHtmlReport` | Coverage, written to `<module>/build/reports/kover/`. |
 | `./gradlew test --configuration-cache` | Same tests, ~2× faster configuration. See [below](#configuration-cache). |
+| `./gradlew buildPlugins` | Builds every plugin module **with its tests**, then refreshes the jars in `serverpackcreator-app/tests/plugins` so the next `bootRun` picks them up. |
+
+`copyPluginsToApp` exists alongside `buildPlugins` and stages the same jars — one per plugin module,
+four of them today — but it builds only what it copies: measured, it runs **zero** of the plugins'
+tests. Reach for it when you want the jars refreshed quickly and for `buildPlugins` when you want them
+verified.
+
+Every plugin jar is named `<module>-<version>_experimental.jar`. That is decided once, in
+`buildSrc/src/main/kotlin/serverpackcreator.plugin-conventions.gradle.kts`, for the same reason
+`misc/build-appimage.sh` owns the AppImages' `_experimental`: a user picking a download should be able
+to see from the filename alone that these are newer and less travelled than the application they plug
+into. The workflows glob the suffix rather than repeating it, so the name stays a single decision.
 
 Two tasks exist that you almost certainly do not want:
 

@@ -82,10 +82,34 @@ val grinderPlugin: Configuration = configurations.create("grinderPlugin") {
     isCanBeResolved = true
 }
 
+// The server-test plugin's jar. Same reasoning as the grinder's: its own configuration, and the app's
+// plugins directory as its only destination.
+val serverTestPlugin: Configuration = configurations.create("serverTestPlugin") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+// The self-extracting-packs plugin's jar. Same reasoning as the grinder's: its own configuration, and
+// the app's plugins directory as its only destination — it provides one extension point, where
+// `copyPluginsApiUnitTests` below needs a plugin that provides all six.
+val selfExtractPlugin: Configuration = configurations.create("selfExtractPlugin") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     examplePlugin(project(path = ":serverpackcreator-plugin-example", configuration = "pluginArtifact"))
     grinderPlugin(project(path = ":serverpackcreator-plugin-grinder", configuration = "pluginArtifact"))
+    serverTestPlugin(project(path = ":serverpackcreator-plugin-servertest", configuration = "pluginArtifact"))
+    selfExtractPlugin(project(path = ":serverpackcreator-plugin-selfextract", configuration = "pluginArtifact"))
 }
+
+// Every plugin that belongs in the app's plugins directory, listed ONCE. Both the copy and the build
+// below read this, so they cannot diverge — a plugin added here is staged *and* built, where two
+// separate lists would let it be staged unbuilt, which is precisely the drift this list exists to stop.
+// `copyPluginsApiUnitTests` deliberately does not read it; see the comment there.
+val appPluginConfigurations: List<Configuration> =
+    listOf(examplePlugin, grinderPlugin, serverTestPlugin, selfExtractPlugin)
 
 val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
 val apiPlugins = layout.projectDirectory.dir("serverpackcreator-api/src/test/resources/testresources/plugins")
@@ -95,11 +119,40 @@ tasks.register<Delete>("cleanAppPlugins") {
 }
 
 tasks.register<Copy>("copyPluginsToApp") {
-    description = "Refreshes the example and grinder plugins in the app's manual-test plugins directory."
+    description = "Refreshes every plugin in the app's manual-test plugins directory."
     dependsOn("cleanAppPlugins")
-    from(examplePlugin)
-    from(grinderPlugin)
+    appPluginConfigurations.forEach { from(it) }
     into(appPlugins)
+}
+
+// The `build` task of every plugin the app stages, derived from the same list `copyPluginsToApp` reads.
+// An audit caught the first version listing the configurations a second time right here, which left
+// exactly the drift the comment claimed to prevent: a plugin could be staged and never built.
+// `ProjectDependency.path` rather than `dependencyProject` deliberately — a path is a lazy string, while
+// reaching for the project object is the cross-project access this build spent a sprint removing.
+val pluginBuildTasks: List<String> = appPluginConfigurations
+    .flatMap { configuration -> configuration.dependencies.withType(ProjectDependency::class.java) }
+    .map { dependency -> "${dependency.path}:build" }
+    .distinct()
+
+// `copyPluginsToApp` already builds the jars it copies — the `pluginArtifact` configurations carry that
+// task dependency — so without this the copy is free to run before the builds that verify them, and the
+// staged jars would be the ones from before the tests that were about to fail. Only ordering: it adds no
+// dependency, so `copyPluginsToApp` on its own is unchanged and still skips the tests.
+tasks.named("copyPluginsToApp") {
+    group = "help"
+    description = "Copy the plugins to the app's manual-test plugins directory."
+    mustRunAfter(pluginBuildTasks)
+}
+
+tasks.register("buildPlugins") {
+    group = "build"
+    description = "Builds every plugin module, tests included, then refreshes them in the app's manual-test plugins directory."
+    // Both, not just the copy: `copyPluginsToApp` builds the jars but runs none of the plugins' tests,
+    // measured at 0 of them, so a jar staged that way is unverified. The `mustRunAfter` above is what
+    // makes "then" mean anything.
+    dependsOn(pluginBuildTasks)
+    dependsOn("copyPluginsToApp")
 }
 
 tasks.register<Delete>("cleanApiUnitTestPlugins") {
@@ -108,8 +161,9 @@ tasks.register<Delete>("cleanApiUnitTestPlugins") {
 
 // DELIBERATELY the example plugin alone. ApiPluginsTest loops over every plugin jar it finds here and
 // asserts each one provides ALL SIX extension types; the grinder plugin provides two (TabExtension and
-// PreGenExtension), so adding it to this copy turns that suite red. The example is the only plugin that
-// exercises every extension point, which is exactly why it is the one this test loads.
+// PreGenExtension) and the server-test plugin provides one (TabExtension), so adding either to this copy
+// turns that suite red. The example is the only plugin that exercises every extension point, which is
+// exactly why it is the one this test loads.
 tasks.register<Copy>("copyPluginsApiUnitTests") {
     description = "Refreshes the example plugin ApiPluginsTest loads through pf4j."
     dependsOn("cleanApiUnitTestPlugins")

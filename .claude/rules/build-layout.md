@@ -50,6 +50,25 @@ the "do not tidy that away, here is what it cost last time".
     the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it. A
     non-test source set wants its configurations extending `implementation`/`runtimeOnly`, not the test
     ones — otherwise it compiles without the module's own dependencies.
+- **A plugin module's jar name is decided in `serverpackcreator.plugin-conventions`, and nowhere else.**
+  Every plugin jar is `<module>-<version>_experimental.jar`; the convention plugin also owns the
+  `pluginArtifact` consumable configuration and its `artifacts { add }`, which stood verbatim in all four
+  module build scripts before it existed. The per-plugin **manifest** deliberately stays in each module —
+  a plugin's id, class and description are data, not a shared choice, and pulling them in would mean
+  passing four properties into a convention plugin to get nothing back.
+  - **The name is computed eagerly, not through a provider.** `val experimentalJarName = "${project.name}-${project.version}_experimental.jar"`
+    is evaluated at configuration time on purpose: a provider that reads `project` at execution time
+    captures a `Project`, which the configuration cache cannot serialize — the same trap the
+    `processResources` expansions in each plugin module already carry a comment about. `version` comes
+    from `gradle.properties` (`dev`) or `-Pversion=<release>`, so it is never blank and the name never
+    degenerates to a bare module name.
+  - **Do not move the `_experimental` decision into a workflow.** `release-build.yml` and `devbuild.yml`
+    glob `*_experimental.jar` precisely so the artifact has ONE name everywhere — plain in a developer's
+    `build/libs` and flagged in the release is the drift this file exists to prevent. Same arrangement,
+    same reason, as `misc/build-appimage.sh` owning the AppImages' `_experimental`.
+  - **Nothing reads a plugin jar by name.** `ApiPluginsTest` loads whatever jar is in its fixture
+    directory and `copyPluginsToApp` copies a configuration, so the rename reached no test and no runtime
+    lookup — checked by grepping the repository for the module names before it landed.
 - **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
   with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
   failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps

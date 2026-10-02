@@ -26,9 +26,21 @@ name: Test
 # scoping on Forgejo is done per job with Authorized Integrations, configured on the instance rather
 # than in the workflow. `.github/workflows` keeps its permissions blocks: GitHub honours them.
 
+# PULL_REQUEST IS DELIBERATELY ABSENT. Every PR on this instance is opened from a branch of this
+# repository (the standing develop -> beta one, #682, and the `claude-` fix branches), and `push:`
+# already builds exactly those commits -- so carrying both triggers ran this workflow twice per push
+# for a second verdict on the same tree, in parallel, on one runner. Measured 2026-10-01: one push
+# queued nine runs at 17:03:00 and the batch ran 2-5x its previous day's time (docker-test 13-15 ->
+# 41.6 min, devbuild ~20 -> 96.6, docs ~25-31 -> 63.4, the container ITs 5.3-8.8 -> 18.1 and 23.3),
+# and every red in it was a deadline expiring. Halving the batch is the cheapest lever there is.
+#
+# What it costs, stated rather than discovered later: the *merge* result is no longer built on its
+# own -- only the head commit -- so a PR that is green can still conflict semantically with its base
+# until the merge lands on `develop` and is built there. And a fork PR gets no Forgejo CI; the GitHub
+# mirror's own test.yml keeps `pull_request:` and covers that case, which is the one place a fork
+# actually arrives. Restoring this is one line.
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 concurrency:
@@ -78,9 +90,11 @@ jobs:
 
       # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests moved to
       # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them
-      # reaps every grinder-labelled container on the daemon and this workflow's per-ref group lets two
-      # of its jobs -- a push to `develop` and PR #678 at the same commit -- share the runner. Setting it
-      # again here puts that collision straight back. The other GRINDER_*_IT gates stay unset because
+      # reaps every grinder-labelled container on the daemon and this workflow's per-ref group does not
+      # stop two of its jobs sharing the runner. Dropping `pull_request:` above removed the *routine*
+      # case -- one push no longer builds `develop` and its PR at the same commit -- but not the general
+      # one: two branches pushed close together still run side by side, and that is all the reap needs.
+      # Setting it again here puts the collision back. The other GRINDER_*_IT gates stay unset because
       # they need a live Modrinth/CurseForge API, a built image, or a deployed grinder.
       - name: Build with Gradle
         run: ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace
@@ -98,8 +112,10 @@ jobs:
             serverpackcreator-app/build/test-results/test/TEST-*.xml
             serverpackcreator-clientside/build/test-results/test/TEST-*.xml
             serverpackcreator-grinder/build/test-results/test/TEST-*.xml
-            serverpackcreator-plugin-example/build/test-results/test/TEST-*.xml
-            serverpackcreator-plugin-grinder/build/test-results/test/TEST-*.xml
+            # Globbed, so a new plugin module reports its results the day it lands. Named one by one,
+            # this list stopped at example and grinder while servertest and selfextract were added --
+            # 128 tests whose XML nobody could read after a failure.
+            serverpackcreator-plugin-*/build/test-results/test/TEST-*.xml
           if-no-files-found: warn
           # Deletion is automatic and server-side: the artifact carries this expiry, and Forgejo's
           # `cron.cleanup_actions` job (ENABLED true, SCHEDULE @midnight by default) removes what has

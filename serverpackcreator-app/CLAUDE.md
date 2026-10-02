@@ -184,6 +184,23 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `ubuntu-latest` and the kernel is not ours to pin. Verified by mutation: forcing the probe to throw
   reports 11 skipped and a green build. **A skipped guard proves nothing** — a CI run that skips these has
   no database coverage at all, and the skip message is the only thing that will say so.
+- **LANDMINE — the start budget is 180 s, set by `EmbeddedMongoAvailable.START_TIMEOUT_PROPERTY`, and
+  flapdoodle's own default of 30 s is not survivable on this CI.** On 2026-10-01 commit `921d46938` ran
+  `test.yml` twice on a saturated Forgejo runner, and **both runs lost all fourteen database-backed
+  tests to the same cause** — `mongod` reached `Opening WiredTiger` and said nothing more inside 30 s.
+  Only *which* `mongod` lost the race differed, and that decided the colour of the build:
+
+  | run | which `mongod` timed out | result | build |
+  |---|---|---|---|
+  | 836 (`develop`) | the Spring context's | 14 **FAILED** | red |
+  | 833 (PR #682) | `EmbeddedMongoAvailable`'s probe | 14 **SKIPPED** | **green** |
+
+  So the green one is the dangerous one: it reported success having verified nothing about the database,
+  which is exactly what the bullet above says a skip costs — here with the receipts. Note the probe and
+  the contexts must therefore carry the **same** budget; a probe that is more patient than what it
+  vouches for approves a start the context then fails on. Verified the property is consumed rather than
+  silently ignored (set it to `1`, every test in both classes fails with `no failure or success message
+  after 1ms`), because a silently-ignored key is this module's recurring failure mode.
 
 ## The web module's mod-lists are embedded, not referenced (2026-08-17)
 

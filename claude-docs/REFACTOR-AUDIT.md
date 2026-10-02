@@ -6787,3 +6787,229 @@ unmeasured until a real run.
   which half a label fixes and which half it cannot, with the pid-namespace reason. Nobody is left
   believing two grinders can now share a daemon safely.
 - **No module boundary crossed, no published API touched** — everything is inside the unpublished grinder.
+
+---
+
+# 2026-09-25 — audit of the `servertest` branch (24 commits, `develop..HEAD`)
+
+Range: `7d057b136` *(test(api): pin that AddonsLogger reaches the plugins appender)* …
+`0e46afa61` *(fix(api): contain a misbehaving tab extension instead of losing every tab)*.
+Read-only pass. Subjects, not hashes, are load-bearing here — this branch has not been rebased, but
+the file's own standing lesson is that hashes do not survive one.
+
+## HIGH
+
+### H1 — the pack table's HTML mitigation is inert, so the landmine the module documents is live
+
+`serverpackcreator-plugin-servertest/.../gui/PackListPane.kt`, in `c0e61a00e`, registers
+`setDefaultRenderer(String::class.java, PlainTextRendering.tableCellRenderer())`. `PackTableModel`
+never overrides `getColumnClass`, so `AbstractTableModel` answers `Object` for every column and
+`JTable` never consults that registration.
+
+**Measured, not argued** (throwaway probe, removed after):
+
+```
+columnClass(0)        = class java.lang.Object
+resolved renderer     = javax.swing.table.DefaultTableCellRenderer$UIResource
+html.disable on it    = null
+rendered view is HTML = true
+```
+
+So a pack whose *directory name* is `<html><img src="http://…">` makes ServerPackCreator issue that
+request. The module's own `CLAUDE.md` states this surface is protected; it is not. This is the same
+shape as the grinder plugin's `getColumnClass` landmine (`Boolean::class.javaObjectType`, not
+`.java`) arriving from the other direction — there the wrong class broke *rendering*, here it breaks
+*protection*, and only the second kind is silent.
+
+**Rule broken:** the module's stated invariant, and "fix bugs when you find them" — the guard was
+written and never checked to be reached. **Severity HIGH:** a security mitigation that does nothing.
+
+### H2 — `ServerTestTab.warn()` hands `JOptionPane` a String, so the same injection reaches a dialog
+
+`gui/ServerTestTab.kt` (`c0e61a00e`) calls `JOptionPane.showMessageDialog(this, message, …)` where
+`message` interpolates `pack.name` — the user-controlled directory name — and, on the borrow-failure
+path, `ex.message`.
+
+**Measured:**
+
+```
+JOptionPane message=String labels=2 htmlViews=1
+JOptionPane message=JLabel labels=2 htmlViews=0
+```
+
+A String message gets an HTML view installed; the same text passed as a `PlainTextRendering.label`
+does not. Second surface, same class as H1, missed for the same reason: the landmine was written
+down as being about tables and labels, so the dialog was not checked against it.
+
+**Severity HIGH**, same reasoning as H1.
+
+### H3 — console sub-tab titles are user-controlled text on a third renderer
+
+`ServerTestTab.launch` calls `panes.addTab(pack.name, console)`. `BasicTabbedPaneUI` maintains
+`htmlViews` for tab titles, so this is a third instance of the same input reaching a third renderer.
+**Not confirmed by measurement** — reflection into that private field failed and was abandoned rather
+than pursued — so this is **PLAUSIBLE**, listed here because the mitigation costs nothing
+(`setTabComponentAt` with an HTML-disabled label, which is already `MainPanel`'s own idiom) and the
+other two in this family were both confirmed live.
+
+## MEDIUM
+
+### M1 — `ServerTestTab.consoles` is an unsynchronised `HashMap` shared across threads
+
+Written on the event dispatch thread in `launch` (`consoles[pack.directory] = console`) and **read on
+each session's reader thread** in the `onLine` and `onState` lambdas. `ServerSession` documents that
+its callbacks arrive on that thread, so this is by design on one side and unguarded on the other. A
+concurrent structural write during a read is undefined; the classic failure is a resize seen
+mid-flight. `lastStates` is EDT-confined and fine, but nothing says so or enforces it.
+
+### M2 — console sub-tabs cannot be closed, and nothing is ever released
+
+One `ConsolePane` per pack ever launched, each retaining up to `consoleScrollback` lines, kept for the
+life of the application: `panes` only ever gains tabs, and `consoles`/`lastStates` only ever gain
+entries. The approved plan said the sub-tab "has a close (X)"; it was not implemented and the gap was
+not flagged. **Scope shortfall against the stated plan**, and an unbounded retention.
+
+### M3 — `c63ca42d6` bundles three unrelated units, all written before their guards
+
+`ServerTestSettings`, `PackVariables` and `SessionRegistry` share one commit, and none had a guard
+land red first. The message says so, and mutation testing was run instead — which earned its keep by
+finding the settings guard vacuous. Recorded anyway: the mitigation does not make it one concern, and
+"pin first means commit first" is explicit in the root `CLAUDE.md`.
+
+### M4 — `05a2053a7` is a `feat:` that also rewrites an existing test's expectation
+
+The CRLF fixture in `ServerPropertiesPatchTest` was corrected inside the implementation commit. The
+message explains it and the red had been valid, but correcting a guard is its own concern and belongs
+in its own commit.
+
+### M5 — `30fdbdd56` mixes an end-to-end test, a build change and a new feature
+
+`RealPackBootTest` + the `tasks.test` switch forwarding (test infrastructure), `ConsoleHints` + its
+guard (a new feature), and a `ConsolePane` change (behaviour) in one commit. Three concerns.
+
+### M6 — no commit on this branch is a pure "add tests" commit
+
+Every `test(servertest): …` commit also adds production seam files, because a guard that cannot
+compile is not a red pin. The root `CLAUDE.md` offers two ways out — land the seam as its own
+behaviour-preserving commit, *or* say in the message that the boundary is missing and quote the
+mutation. This branch consistently took a third: seam-plus-guard in one commit, stating the stub and
+naming which assertions were vacuous against it. Defensible and uniformly documented, but it is a
+deviation and should be a deliberate choice next time rather than a habit.
+
+## LOW
+
+### L1 — a late `Stopping` can overwrite a terminal `Exited`
+
+`ServerSession.stop()`/`kill()` check liveness, then `transitionTo(Stopping)`. If the process exits
+between the two, `pump` has already published `Exited` and the late transition overwrites it, leaving
+the row reading "Stopping…" for good. Cosmetic only: `startable` keys on the registry, which
+`onClosed` clears, so the pack can still be relaunched.
+
+### L2 — `296a82b45` changes behaviour with no guard
+
+Console wrapping. Covered by the standing "pane rendering untested by design" stance, but
+`lineWrap`/`wrapStyleWord` are two trivially assertable properties, and the defect they fix was real.
+
+## Verified clean — do not re-litigate
+
+- **`00724058a` is a genuine pure refactor.** Statement order preserved, try-block scope unchanged,
+  `internal` rather than public so nothing is added to the published surface, and all four
+  `ExtensionScopingTest` guards plus `ApiPluginsTest` stayed green with **no assertion edited**.
+- **Both `-api` behaviour changes carry an `API-BEHAVIOUR-CHANGES.md` row** (AddonsLogger routing;
+  tab-extension containment), each stating what an embedder actually sees.
+- **Module boundaries hold.** `serverpackcreator-plugin-servertest` depends on `-api` only; the
+  temptation to reach for `-clientside`'s `HostProcessServerRunner` is recorded in the build file with
+  the reason it was refused.
+- **Zero changes to the published API surface for the plugin itself**, which was the branch's stated
+  constraint.
+- **The two adjacent defects were fixed, not deferred**, each with a guard that was observed red for
+  the right reason (`[Console, ApplicationLogger]`; "Process 71941 outlived the boot that spawned it").
+- **`copyPluginsApiUnitTests` still takes the example plugin alone**, and the comment naming why now
+  names both excluded plugins.
+
+## 2026-09-25 (later the same day) — disposition of the findings above
+
+All source findings fixed on the branch. Commit subjects, not hashes.
+
+| Finding | Disposition |
+|---|---|
+| H1 pack table's HTML mitigation inert | Fixed — `PackTableModel.getColumnClass` returns `String`; `HtmlProofingTest` asserts what Swing *resolved* |
+| H2 `warn()` hands `JOptionPane` a String | Fixed — all dialogs go through `Dialogs`, plus a structural guard that no view reaches for `JOptionPane` |
+| H3 tab titles (PLAUSIBLE) | Fixed anyway — `setTabComponentAt` with an HTML-disabled label |
+| M1 `consoles` unsynchronised across threads | Fixed — `ConcurrentHashMap`, with the reason in the field's doc |
+| M2 consoles never released | Fixed — closable tabs; closing a *running* server's tab is refused, since it is the only place it can be stopped from |
+| L1 late `Stopping` overwrites `Exited` | Fixed — `transitionTo` refuses to leave a terminal state |
+| L2 wrapping unguarded | Fixed — pinned, teeth confirmed by mutation |
+
+**M3–M6 are commit-hygiene findings about commits already made. DECIDED — do not re-open.** Griefed's
+call, same day: **the seam-plus-guard approach stands and history is not being rewritten.** Re-splitting
+24 commits to separate a seam from its guard would churn the whole branch to change only how it reads,
+and the record here is the more useful artifact.
+
+M6 is therefore **not a violation to be corrected but a third sanctioned route**, now written into the
+root `CLAUDE.md` beside the two that were already there — for new code there is no behaviour to preserve,
+so no honest "behaviour-preserving seam commit" exists, and the alternative is a guard that fails on a
+missing symbol and proves nothing. The one cost stays real and stays the obligation: no commit is a pure
+"add tests" commit, so each such message must name which assertions are vacuous against the stub. This
+branch did that every time; that is what makes the route defensible rather than merely convenient.
+
+M3 (three units in one commit, written before their guards) and M4/M5 (mixed concerns) remain genuine
+lapses rather than sanctioned practice — they are recorded, not re-litigated, and mutation covered M3's
+missing red.
+
+**One new finding, from fixing H2.** The structural guard's first version flagged `ServerTestTab` for the
+*sentence in a doc comment* explaining why it does not call `JOptionPane`. A guard that fires on an
+explanation of its own rule invites deleting the explanation, so it now strips comments and reads code.
+Generalises: **ask what a structural guard is actually matching against before trusting its verdict** —
+the same lesson as Qodana seeing only the 22% of stranded KDoc blocks that happened to contain a link.
+
+---
+
+# 2026-09-25 (third pass) — audit of the `servertest` branch delta
+
+Range: `0e46afa61..HEAD`, the 19 commits added after the first audit — the HTML fixes, the launcher
+extraction, the generation hook, the two start-script passes, the selection fix and `buildPlugins`.
+
+## MEDIUM
+
+### D1 — `buildPlugins` names the plugin configurations a fourth time, and its commit message said otherwise
+
+`build.gradle.kts:119` reads
+`val pluginBuildTasks = listOf(examplePlugin, grinderPlugin, serverTestPlugin)`. Its commit message
+claims *"The plugin list is NOT spelled again"*, which is true only of the project **paths** — the
+*configurations* are listed again, right after `copyPluginsToApp` lists the same three with `from(...)`.
+
+So the drift the change set out to prevent is only half prevented: a fourth plugin wired into a
+configuration, a dependency and `copyPluginsToApp` would still be silently absent from `buildPlugins`,
+which is the exact failure the comment above it warns about.
+
+**Rule broken:** *"Duplicated knowledge drifts toward whichever copy is easier to reach"*, and — worse —
+a commit message asserting the opposite. **The message cannot be corrected** without rewriting history,
+which Griefed ruled out on this branch, so the correction lives here. Fix applied: one
+`pluginConfigurations` list, read by both `copyPluginsToApp` and `pluginBuildTasks`, so the copy and the
+build cannot diverge.
+
+### D2 — "full build green" was claimed twice while a guard for the changed code had not run
+
+See `ANALYSIS-AUDIT.md` B4. `KDocAttachmentTest` lives in `-api` and covers the whole repository; the
+work was in the plugin module, so `-api`'s test task stayed UP-TO-DATE and the guard did not execute.
+Neither claim was false, and neither was worth as much as it sounded. **When reporting a build green
+after work in one module, say which suites actually ran** rather than which task succeeded.
+
+## Verified clean — do not re-litigate
+
+- **No unused imports** across the module, checked mechanically after all the churn.
+- **The newest guards have teeth**, confirmed by mutation rather than assumed: removing the imposed
+  dropdown ordering reddens `theChoicesAreBuiltFromTheConfiguredTemplateKeys`; making an unknown
+  template key guess `bash` instead of running the script directly reddens
+  `anOperatorsOwnTemplateIsOfferedAndRunDirectly`; restoring a row *index* instead of a pack reddens
+  exactly the two selection guards that should catch it.
+- **`buildPlugins`' `mustRunAfter` is load-bearing**, and measured to be: without it `copyPluginsToApp`
+  runs *first*, before all three plugin builds.
+- **`ProjectDependency.path`, not `dependencyProject`** — the lazy string, not the cross-project access
+  `build-layout.md` records this build removing.
+- **The three `test(...)` / `feat(...)` pairs in this delta each landed the guard red first**, with the
+  vacuous assertions named in the message, per the seam-plus-guard route Griefed sanctioned.
+- **`./gradlew tasks` failing with "Could not read PGP secret key" is PRE-EXISTING** and not this
+  branch's: it comes from `-api`'s signing configuration, which nothing here touched. Do not attribute
+  it to `buildPlugins`.

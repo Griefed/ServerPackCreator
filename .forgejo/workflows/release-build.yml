@@ -130,8 +130,26 @@ jobs:
              "serverpackcreator-app/build/libs/ServerPackCreator-$V.jar"
           cp serverpackcreator-api/build/libs/*.jar            "release/$V/"
           cp serverpackcreator-app/build/libs/*.jar            "release/$V/"
-          cp serverpackcreator-plugin-example/build/libs/*.jar "release/$V/"
           cp media/*                                          "release/$V/"
+          # Every plugin module, by glob rather than by name: the modules are already listed in
+          # settings.gradle.kts and in the root build's `appPluginConfigurations`, and a third list here
+          # is the one that silently stops growing -- which is exactly what happened while this line
+          # named `-plugin-example` alone and three more plugins existed. `_experimental` is decided by
+          # `serverpackcreator.plugin-conventions` and nothing here repeats it, the same arrangement the
+          # AppImages have below.
+          #
+          # The count is derived, not written down, so it cannot go stale either: one jar per plugin
+          # module, no more and no fewer. Fewer means a module whose jar did not build or did not get
+          # the name; more means a stale jar from an earlier build, which a release workspace should
+          # never have and which would ship twice if it did.
+          PLUGIN_MODULES="$(ls -d serverpackcreator-plugin-*/ | wc -l)"
+          PLUGIN_JARS="$(ls -1 serverpackcreator-plugin-*/build/libs/*_experimental.jar 2>/dev/null | wc -l)"
+          if [ "$PLUGIN_JARS" -ne "$PLUGIN_MODULES" ]; then
+            echo "::error::Expected one _experimental jar per plugin module ($PLUGIN_MODULES), found $PLUGIN_JARS"
+            ls -la serverpackcreator-plugin-*/build/libs/ 2>/dev/null || echo "no plugin build directories at all"
+            exit 1
+          fi
+          cp serverpackcreator-plugin-*/build/libs/*_experimental.jar "release/$V/"
           # The AppImages carry `_experimental` in their names -- `misc/build-appimage.sh` decides that,
           # and nothing here repeats it. They land in the release directory before checksum.txt is
           # generated below, so they are covered by it like every other asset.
@@ -342,8 +360,73 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
 
+      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md) and this
+      # workflow must not assume they are up -- that assumption is what broke run 797.
+      #
+      # THEY ARE ADDRESSED BY IP, AND THAT IS NOT A SHORTCUT. Jobs here run inside a `docker:dind`
+      # daemon (the runner's `docker_host` is dind's socket over a shared volume), while the caches are
+      # containers of the HOST daemon. dind's embedded DNS does not know the host daemon's containers,
+      # so a service name cannot work; routing between them does, because `docker_dind` is attached to
+      # the cache network and its children egress through that interface. Measured on a faithful
+      # reproduction of the topology on 2026-10-02 -- from a container created by the dind daemon,
+      # `wget http://registry-cache-ghcr:5000/v2/` fails with `bad address` while the same request to
+      # the cache's IP returns 200, and a buildx build through these stanzas was served 4 of its
+      # Docker Hub requests and 3 of its ghcr requests by the caches.
+      #
+      # `driver-opts: network=...` is therefore GONE, and its removal is the point rather than a
+      # side effect: the builder needs no network to join, which also removes the one way this step
+      # could kill a build outright --
+      #   ERROR: Error response from daemon: failed to set up container networking:
+      #          network runners_default not found
+      #
+      # The probe asks the question that matters, which the previous one did not. "Does this network
+      # exist" was a proxy for "can the builder reach the cache", and it answered about the wrong
+      # daemon; a GET /v2/ from this job is the same path the builder takes, since both are children of
+      # the same dind daemon. A cache that does not answer is simply left out of the config, so the
+      # build runs against upstream exactly as it did before any of this.
+      - name: Point BuildKit at the host's registry caches when they answer
+        id: regcache
+        env:
+          # Pinned by the runner host's compose file -- see claude-docs/RUNNER-REGISTRY-CACHE.md section
+          # 3. If these drift from the host, nothing breaks: the probe finds nothing and the build goes
+          # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
+          GHCR_CACHE: "172.31.77.6:5000"
+          DOCKERHUB_CACHE: "172.31.77.5:5000"
+        run: |
+          set -eu
+          toml="${RUNNER_TEMP:-/tmp}/buildkitd.toml"
+          : > "$toml"
+
+          # The second stanza per registry is not optional and is not obvious: `newMirrorRegistryHost`
+          # defaults a mirror to https, and `fillInsecureOpts` looks the mirror's own scheme up under a
+          # top-level [registry."<host:port>"] section. Without it buildkit dials https, fails the
+          # handshake, falls back to upstream -- and silently does nothing at all.
+          add_mirror() {
+            upstream="$1"
+            cache="$2"
+            if curl -fsS --max-time 5 "http://${cache}/v2/" >/dev/null 2>&1; then
+              printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' \
+                "$upstream" "$cache" "$cache" >> "$toml"
+              echo "${upstream}: the cache at ${cache} answered /v2/ - BuildKit will pull through it."
+            else
+              echo "::notice::${upstream}: nothing answered /v2/ at ${cache} - pulling from upstream. See claude-docs/RUNNER-REGISTRY-CACHE.md."
+            fi
+          }
+
+          add_mirror ghcr.io "$GHCR_CACHE"
+          add_mirror docker.io "$DOCKERHUB_CACHE"
+
+          # An empty file is valid TOML and means "no mirrors", but a comment says so in the log.
+          [ -s "$toml" ] || echo '# no registry cache answered; BuildKit pulls from upstream' > "$toml"
+
+          echo "config=$toml" >> "$GITHUB_OUTPUT"
+          echo "BuildKit config for this run:"
+          sed 's/^/  /' "$toml"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        with:
+          buildkitd-config: ${{ steps.regcache.outputs.config }}
 
       - name: Log in to ghcr.io
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
@@ -371,7 +454,36 @@ jobs:
           fi
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
+      # Retried for the same reason `docker-test.yml` retries: ghcr answers a pull with
+      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips its
+      # per-source burst limiter, and buildkit does not wait. Being logged in does not help -- run 739's job
+      # logged `Login Succeeded` and still died on a blob GET. That workflow has lost three runs to it; here
+      # the same minute would cost the release its images and take the `mirror` job (`needs: docker`) with it.
+      #
+      # The retry is expensive and deliberately so: `no-cache: true` means attempt two rebuilds the whole
+      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a needless
+      # retry is time, and the cost of not having one is a release with no image.
       - name: Build and push
+        id: buildpush
+        continue-on-error: true
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          build-args: VERSION=${{ needs.prepare.outputs.version }}
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Wait out the registry's burst limiter
+        if: ${{ steps.buildpush.outcome == 'failure' }}
+        run: |
+          echo "The first build-and-push failed. If it was a registry 429 the limiter has long since reset; retrying once."
+          sleep 30
+
+      - name: Build and push (retry)
+        if: ${{ steps.buildpush.outcome == 'failure' }}
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .
