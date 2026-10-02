@@ -1,3 +1,58 @@
+## [9.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0...9.1.0) (2026-10-02)
+
+### :scissors: Refactor
+
+* **servertest:** route descendant liveness through one predicate ([d70628a](https://git.griefed.de/Griefed/ServerPackCreator/commit/d70628aa658e0ebdb71d8318f41be0e8986b53b1))
+
+### 📔 Docs
+
+* re-derive the module test counts from a full run ([de428ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/de428bac7272facfea0ec6401e2161dcaa7a88e9))
+* record where a plugin jar's name is decided, and stop counting plugin modules ([4a42b16](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a42b16f162226faddd37b501953da267d230204))
+* the registry cache is on the wrong daemon, and what the 2026-10-01 batch showed ([75d22fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/75d22fd4fd1224e1e7852e9bfb78a8e0db247ca7))
+* Update branding for OS license sponsores ([62361f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/62361f8e62736634dfc1e89e1af6a2c5755ea9c2))
+* **ci:** name all three conditions behind the doubled build, not just the per-ref key ([1846932](https://git.griefed.de/Griefed/ServerPackCreator/commit/18469323b2dc24e9e4599e956d709b52ca72109a)), closes [#678](https://git.griefed.de/Griefed/ServerPackCreator/issues/678)
+* **ci:** the runner-host registry cache, and the two constraints that shape it ([99edb33](https://git.griefed.de/Griefed/ServerPackCreator/commit/99edb332152f85f9a0a2f559620a8c5b936e7687))
+
+### 🦊 CI/CD
+
+* one command that builds every plugin, tests included, and stages them ([971006c](https://git.griefed.de/Griefed/ServerPackCreator/commit/971006cc12ce00c2555a8bcb0f343e61ed312808))
+* run test JVMs headless, so a suite stops stealing the developer's focus ([045addf](https://git.griefed.de/Griefed/ServerPackCreator/commit/045addfde85dc38bdd440324dded148d3f54418f))
+* make the registry-cache probe say which of three things it hit ([bafeb86](https://git.griefed.de/Griefed/ServerPackCreator/commit/bafeb86a5a158f276d842dc78171bd0d8f2a3118))
+* reach the registry caches by fixed IP, and probe what actually matters ([ad3fa03](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad3fa0376d06b9202ba6bb98475d6648ee6b59d4))
+* report the two new plugin modules' test results ([49c8be4](https://git.griefed.de/Griefed/ServerPackCreator/commit/49c8be49745291f46224108d279be67a930d604f))
+* Try and use conditional driver_opts ([6a58d32](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a58d32c46bf5ee734db5e038994de6b8cf5338a))
+* Try with runners_default ([5f7f43a](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f7f43acfccf3332a6ecf8547d3997629e2926bf))
+* Use actual network name ([921d469](https://git.griefed.de/Griefed/ServerPackCreator/commit/921d4693828218922bf06f50d41ffcb937a490ab))
+* Use registry cache to reduce hub pulls ([96d7e2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/96d7e2c71e2b81985d6cb765fd21b0a2459a12f0))
+* **forgejo:** stop building every commit twice ([e407506](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4075067815ede64707b9723d6d991bfbccfadde)), closes [#678](https://git.griefed.de/Griefed/ServerPackCreator/issues/678)
+
+### 🧪 Tests
+
+* **api:** rename the example-plugin fixture to the name the build now produces ([092d1e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/092d1e0bfa03e43ff1e9042d86ff431801959df8))
+* **servertest:** pin that an unreaped descendant is not still running ([15ba8d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/15ba8d93953baa701220540421ef952695bb0457))
+
+### 🚀 Features
+
+* **build:** every plugin jar says `_experimental`, decided in one place ([d8cec53](https://git.griefed.de/Griefed/ServerPackCreator/commit/d8cec53475dde9fd8038d79ae3ec0336db1d728f))
+* **ci:** publish the help site and its API reference to GitHub Pages ([6f080f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/6f080f8c71b777a261646f120b3c02efb65554fb))
+* **ci:** ship every plugin with the release, not only the example ([ac7a970](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac7a970c6251faadde2148863c6aeb867b952a68))
+* **docs:** serve the Kotlin API reference inside the help site at /api/ ([b12ac7c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b12ac7c7d4ffcd4bb7871599704ec8bd4d2c8a3d))
+* **selfextract:** a plugin that wraps every server pack in a self-extractor ([c38660a](https://git.griefed.de/Griefed/ServerPackCreator/commit/c38660a8b534f027959a71d682269358199ce863))
+* **servertest:** a plugin that boots a generated pack through its own start scripts ([332d5d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/332d5d8edb17cfbc59e362c5ba98e3cbd7b26bcf))
+* **servertest:** the script the user picks, a list that keeps its selection, and three audit passes ([fb95cb7](https://git.griefed.de/Griefed/ServerPackCreator/commit/fb95cb7d2f816b7b604a235b4b00c5aa193fc846))
+
+### 🛠 Fixes
+
+* **api:** contain a misbehaving tab extension instead of losing every tab ([ff55964](https://git.griefed.de/Griefed/ServerPackCreator/commit/ff55964a117ecca66c5bb6dc4e52d412f05ac079))
+* **api:** reach the plugins appender, so a plugin's logging lands in plugins.log ([429da41](https://git.griefed.de/Griefed/ServerPackCreator/commit/429da416c2e8a4ed1eeb005555606dd81985901c))
+* **api:** resolve the installer-Java probe's template relative to the probe ([759eb3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/759eb3fa24854d34e52d2ab8a90762a728b3ad9c))
+* **app:** give the embedded mongod a start budget a loaded CI host can meet ([cac064b](https://git.griefed.de/Griefed/ServerPackCreator/commit/cac064bac147badc2c5917bfce298a2d2f53d1b2))
+* **ci:** retry the image build when ghcr's burst limiter answers 429 ([4ea1ae6](https://git.griefed.de/Griefed/ServerPackCreator/commit/4ea1ae627d73e224a7146ba601cfac722776d7ec))
+* **clientside:** an unreaped descendant is not a running process ([e66d12f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e66d12fc06428c3d84dd96466b67800e87976864))
+* **clientside:** destroy a boot's descendants before the process that started them ([a4a0411](https://git.griefed.de/Griefed/ServerPackCreator/commit/a4a041134cb247534ab773643d0822b127e47d13))
+* **grinder:** stop the container ITs reporting on the daemon's load ([c6ec992](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6ec992cd4d6e74f6e46b83090e92f95c1f11ecd))
+* **servertest:** ask whether a descendant is running, not whether its PID exists ([716fb01](https://git.griefed.de/Griefed/ServerPackCreator/commit/716fb01e18a414aa95614a7abffd45a98df3997a))
+
 ## [9.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.2...9.0.0) (2026-09-28)
 
 ### ⚠ BREAKING CHANGES
