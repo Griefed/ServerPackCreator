@@ -37,8 +37,8 @@ import java.util.concurrent.TimeUnit
  * `SessionRegistryTest.killAllEndsTheServersAndWhatTheySpawned` read a correctly-killed `sleep` as a
  * survivor in CI while the same code stayed green on a developer machine, where launchd reaps.
  *
- * This is the second time the distinction has cost this project a CI failure: `-clientside` learned it as
- * run 629 and pinned it in `HostProcessLivenessTest`. The knowledge is duplicated here rather than shared
+ * `-clientside` pins the same distinction in `HostProcessLivenessTest`. The knowledge is duplicated rather
+ * than shared
  * because `-plugin-servertest` depends on `-api` **only, deliberately** — a plugin compiles against the
  * published API surface, and reaching into `-clientside` for a two-line predicate would buy a module
  * dependency this project has chosen not to have. If a third module needs it, that is the point at which

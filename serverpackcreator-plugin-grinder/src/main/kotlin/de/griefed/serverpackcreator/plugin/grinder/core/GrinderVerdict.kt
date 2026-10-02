@@ -43,7 +43,7 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  *                release, since only `CONFIRMED` is compared against by name.
  * @param suggestedEntry The name-pattern the grinder proposes for the clientside-mod list.
  * @param fileName The published file name of the artifact the grinder sampled, verbatim — shown for
- *                 context, never used for exclusion. It carried a derived *stem* until 2026-09-10.
+ *                 context, never used for exclusion.
  * @param detail Why the grinder decided what it did — the column that makes a verdict auditable.
  * @param scannedAt When it was verified, as the ISO-8601 string the feed carries.
  *

@@ -26,8 +26,9 @@ import org.springframework.stereotype.Component
 /**
  * Rewrites a stored run-configuration from the `@DBRef` list shape to embedded strings.
  *
- * `RunConfiguration.startArgs`, `clientMods` and `whitelistedMods` used to be `@DBRef` arrays pointing
- * at collections whose documents held nothing but their own `@MongoId`. So the rewrite is **join-free**:
+ * In the legacy shape `RunConfiguration.startArgs`, `clientMods` and `whitelistedMods` are `@DBRef`
+ * arrays pointing at collections whose documents hold nothing but their own `@MongoId`. So the rewrite
+ * is **join-free**:
  * a `DBRef`'s `$id` *is* the value, and `{$ref: "clientMod", $id: "OptiFine"}` becomes `"OptiFine"`
  * without the referenced collection being read at all. That is what makes this migration cheap, and
  * what makes it safe to run against a database whose `clientMod` collection has already been dropped.

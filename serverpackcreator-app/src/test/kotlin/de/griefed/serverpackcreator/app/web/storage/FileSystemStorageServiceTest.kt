@@ -86,9 +86,9 @@ class FileSystemStorageServiceTest {
 
     @Test
     fun storeReportsSizeInBytesAsItsNameAndDocsSay() {
-        // It used to divide by 1048576 and truncate to an Int, so everything under a mebibyte reported
-        // 0 -- and both SPA tables hide the download button when size is 0, which made small packs
-        // undownloadable. Bytes also need a Long: the shipped 5000MB upload limit overflows an Int.
+        // Bytes, not mebibytes: both SPA tables hide the download button when size is 0, so truncating
+        // to an Int number of MiB makes every pack under a mebibyte undownloadable. The type must be a
+        // Long as well -- the shipped 5000MB upload limit overflows an Int.
         val underOneMebibyte = service().store(sourceFile("small.zip", bytes = 1_048_575), "small").get()
         val overTwoMebibytes = service().store(sourceFile("big.zip", bytes = 2_200_000), "big").get()
 

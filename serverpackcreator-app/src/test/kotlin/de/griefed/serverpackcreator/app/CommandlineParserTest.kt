@@ -49,9 +49,9 @@ internal class CommandlineParserTest {
      * Pins that -config selects CONFIG mode and captures the config-file it was given, whether or not
      * that file exists.
      *
-     * The non-existent case used to be dropped on the floor here, which left the CONFIG dispatch in
-     * [ServerPackCreator.run] calling `get()` on an empty Optional — a bare NoSuchElementException
-     * instead of a message naming the path the user mistyped. Parsing records what was typed;
+     * Dropping the non-existent case here would leave the CONFIG dispatch in [ServerPackCreator.run]
+     * calling `get()` on an empty Optional — a bare NoSuchElementException instead of a message naming
+     * the path the user mistyped. Parsing records what was typed;
      * deciding whether it is usable belongs to the command that runs it.
      */
     @Test
@@ -77,9 +77,8 @@ internal class CommandlineParserTest {
      * Pins that a path-taking argument given as the very last word on the commandline is reported as
      * a missing value rather than read past the end of the argument list.
      *
-     * Every one of these used to index `argsList[indexOf(flag) + 1]` unguarded, so `-config` with no
-     * path aborted the whole application with an IndexOutOfBoundsException before it had printed
-     * anything a user could act on.
+     * An unguarded `argsList[indexOf(flag) + 1]` aborts the whole application with an
+     * IndexOutOfBoundsException before it has printed anything a user could act on.
      */
     @Test
     fun pathArgumentsWithoutAValueAreReportedNotThrown() {

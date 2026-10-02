@@ -39,9 +39,10 @@ data class AttributedSelection(
  * every arrangement here produces the same server pack. It decides whether the user's record of what they
  * accepted **at their own risk** survives, which is the only reason the interface has two lists.
  *
- * It lives here rather than in the tab because it is pure, and because it was wrong while it was not:
- * filing by "is it shown in the Other pane?" alone sends everything the panes are not currently showing
- * to [SelectionPane.CONFIRMED], and the module's deliberate never-prune rule guarantees such entries
+ * It lives here rather than in the tab because it is pure, and so can be pinned. The rule is easy to get
+ * subtly wrong: filing by "is it shown in the Other pane?" alone sends everything the panes are not
+ * currently showing to [SelectionPane.CONFIRMED], and the module's deliberate never-prune rule guarantees
+ * such entries
  * exist.
  *
  * @author Griefed

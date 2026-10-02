@@ -28,9 +28,9 @@ import java.util.Random
 /**
  * Pins the order things are taken in, and that everything taken is given back exactly once.
  *
- * This sequence used to live inside the Swing tab, where an audit found it entirely uncovered — and it is
- * not rendering: it decides whether a pack may run at all, how many ports it costs, and whether a user's
- * `server.properties` comes back. The give-back is reachable from two directions, which is why it carries
+ * None of this is rendering: it decides whether a pack may run at all, how many ports it costs, and
+ * whether a user's `server.properties` comes back. The give-back is reachable from two directions, which
+ * is why it carries
  * an atomic guard, and nothing asserted that guard held.
  */
 internal class ServerLauncherTest {

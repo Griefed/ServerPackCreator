@@ -39,9 +39,9 @@ import javax.swing.JTable
  * a request nobody asked for. The input here is a server-pack **directory name**, which the user creates
  * and which an imported modpack can influence, plus the version strings in a hand-editable `manifest.json`.
  *
- * Written after an audit found the module's existing mitigation **inert**: the table registered an
- * HTML-disabled renderer under `String::class.java` while `AbstractTableModel` answered `Object` for every
- * column, so `JTable` never consulted it. That is exactly why these guards assert on what Swing
+ * A mitigation here is easy to make **inert**: registering an HTML-disabled renderer under
+ * `String::class.java` does nothing while `AbstractTableModel` answers `Object` for every column, because
+ * `JTable` then never consults it. That is exactly why these guards assert on what Swing
  * *resolved* — the client property on the component it actually rendered — rather than on the
  * registration having been made. A guard that checks the call was issued would have stayed green through
  * the entire defect.
@@ -170,9 +170,9 @@ internal class HtmlProofingTest {
     /**
      * [source] with its comments removed, so the guard above reads code rather than prose.
      *
-     * Needed because the first version flagged `ServerTestTab` for the sentence in a doc comment
-     * explaining why it does *not* call `JOptionPane` — a guard that fires on an explanation of its own
-     * rule is worse than none, because the obvious way to silence it is to delete the explanation.
+     * Without this the guard fires on any doc comment that merely *names* the thing it forbids — and a
+     * guard that flags an explanation of its own rule is worse than none, because the obvious way to
+     * silence it is to delete the explanation.
      */
     private fun withoutComments(source: String): String = source
         .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")

@@ -41,22 +41,16 @@ import org.springframework.context.event.EventListener
 /**
  * Boots the **real** web application context and asserts it wires up.
  *
- * Replaces the old `WebServiceTest`, which was `@SpringBootTest(classes = [WebServiceTest::class])` —
- * a context of exactly one class, itself — with an empty `contextLoads()` body. It could not fail for
- * any reason involving ServerPackCreator, which is why this module's `CLAUDE.md` said to replace
- * rather than extend it.
+ * The context is the whole application, not a stand-in: `@SpringBootTest(classes = [WebService::class])`
+ * over a one-class configuration would construct nothing that could fail for a ServerPackCreator reason.
+ * What this covers is bean wiring across all nine controllers, the services, the repositories and the
+ * scheduling — the half that breaks when someone adds a constructor parameter or misplaces an annotation.
  *
- * **It now boots against a real MongoDB, started in-process by flapdoodle.** It used to boot with no
- * database at all — the driver connects lazily, so every bean was constructed and every injection point
- * resolved anyway — and that was genuinely the coverage worth having: bean wiring across all nine
- * controllers, the services, the repositories and the scheduling, which is the half that breaks when
- * someone adds a constructor parameter or misplaces an annotation.
- *
- * Two things changed the trade. The `ApplicationReadyEvent` listeners (`DeclaredIndexCreator` and the
- * migration runner) each perform one operation against Mongo, so with no server every boot waited out
- * the driver's server-selection timeout twice — measured at **60.37 s** for this class alone. And a
- * database that is really there means those listeners are actually exercised rather than merely
- * constructed. The bean-wiring coverage is unchanged; what is added is that startup now has to work.
+ * **It boots against a real MongoDB, started in-process by flapdoodle**, for two reasons. The
+ * `ApplicationReadyEvent` listeners (`DeclaredIndexCreator` and the migration runner) each perform one
+ * operation against Mongo, and with no server every boot waits out the driver's server-selection timeout
+ * twice — around 60 s for this class alone. And a database that is really there means those listeners are
+ * exercised rather than merely constructed, so startup itself has to work.
  *
  * Shares its property set with [de.griefed.serverpackcreator.app.web.integration.WebPersistenceIT] on
  * purpose, so Spring's context cache serves both from one boot.

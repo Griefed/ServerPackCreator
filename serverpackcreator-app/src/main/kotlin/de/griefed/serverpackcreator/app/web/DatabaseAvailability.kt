@@ -27,10 +27,10 @@ import com.mongodb.MongoTimeoutException
  *
  * Both of the application's `ApplicationReadyEvent` listeners — the declared-index creator and the
  * run-configuration migration — catch broadly and carry on, because an unreachable database must never stop
- * the application from starting. That is right. What was wrong is that both then logged the *full stack
- * trace* for the one case they were written to tolerate: `docker/docker-compose.yml` starts the app
- * alongside its `db` service, so losing that race is the normal first boot, and it produced two stack
- * traces every time.
+ * the application from starting. What they must not do is log a *full stack trace* for the one case they
+ * were written to tolerate: `docker/docker-compose.yml` starts the app alongside its `db` service, so
+ * losing that race is the normal first boot, and two stack traces on every one of them is noise that
+ * buries the failures worth reading.
  *
  * Defined by the **cause**, not by the consequence. A category defined by its consequence — "the listener
  * failed" — accumulates everything with that consequence, including the malformed index definition or the

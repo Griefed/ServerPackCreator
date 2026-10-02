@@ -117,8 +117,7 @@ internal class ClientsideEntryInjectorTest {
     }
 
     /**
-     * The de-duplication key must not depend on the host's locale, and **this guard was green the day it
-     * was written** — recorded because an audit flagged the opposite and was wrong.
+     * The de-duplication key must not depend on the host's locale.
      *
      * The hazard is real for Java: measured under a Turkish default locale, `"Iceberg-".toLowerCase()`
      * returns `"ıceberg-"` with a dotless i, which would hash `Iceberg-` and `iceberg-` apart and let both

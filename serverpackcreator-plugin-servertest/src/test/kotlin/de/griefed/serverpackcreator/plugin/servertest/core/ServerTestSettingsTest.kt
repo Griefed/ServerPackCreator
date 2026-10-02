@@ -46,10 +46,10 @@ internal class ServerTestSettingsTest {
      * Every key the code reads is actually present in the shipped file.
      *
      * Asserted by **presence**, not by the value that comes back, and that distinction is the whole point.
-     * Each shipped default deliberately equals the code's own fallback, so reading a renamed key returns the
-     * fallback and looks exactly like reading the right one — a first version of this guard asserted only
-     * the values and stayed green with `portRangeStart` renamed to `portRangeStartMUTATED`. Presence is the
-     * only assertion that can tell a live key from a dead one.
+     * Each shipped default deliberately equals the code's own fallback, so reading a renamed key returns
+     * the fallback and looks exactly like reading the right one: a value assertion stays green with
+     * `portRangeStart` renamed to `portRangeStartMUTATED`. Presence is the only assertion that can tell a
+     * live key from a dead one.
      */
     @Test
     fun theShippedConfigCarriesEveryKeyTheCodeReads() {
