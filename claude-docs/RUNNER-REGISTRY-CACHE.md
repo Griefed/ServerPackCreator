@@ -289,21 +289,22 @@ are not by default:
   docker-compose examples for `forgejo-runner` set it to `true`, and several jobs run per push. If it is
   `true` here, the host is pulling `ghcr.io/catthehacker/ubuntu:runner-latest` **once per job** for no
   benefit, and that alone could be the burst. Check it before building anything.
-- **One push can build the same commit twice, which doubles every pull below.** Three conditions have to
-  coincide, and all three are normal here: a workflow triggers on **both** `push:` and `pull_request:`; a
-  long-lived PR is open whose head is the branch being pushed (the standing `develop` → `beta` one); and
-  the concurrency group carries `${{ github.ref }}`, which differs between `refs/heads/develop` and the
-  PR's ref, so nothing deduplicates them. The per-ref key is the *enabling* condition, not the cause — it
-  is what stops the second run being queued behind the first.
+- **One push used to build the same commit twice, which doubled every pull below — fixed 2026-10-02.**
+  Three conditions had to coincide, and all three were normal here: a workflow triggering on **both**
+  `push:` and `pull_request:`; a long-lived PR open whose head is the branch being pushed (the standing
+  `develop` → `beta` one); and a concurrency group carrying `${{ github.ref }}`, which differs between
+  `refs/heads/develop` and the PR's ref, so nothing deduplicated them. The per-ref key was the *enabling*
+  condition, not the cause — it is what stopped the second run being queued behind the first.
 
-  Of the nine workflows, `docker-test.yml` and `test.yml` meet all three and run in parallel;
-  `grinder-container-it.yml` also fires twice but its group carries **no ref**, so the two runs queue.
-  `docs.yml`, `qodana.yml` and the release workflows trigger on `push:` only and never double. Clearest
-  evidence in the run list: indices **665 (#678)** and **666 (develop)**, same commit, both started
-  `2026-09-27T15:10:11`. The trade is deliberate and recorded in `.claude/rules/ci-workflows.md` — a
-  ref-less group would serialise `test.yml` and cost every push a second 35-minute run in series — but it
-  is still a x2 on every pull this file is trying to reduce, and it is what made
-  `DockerJavaContainerEngineIT` fail three runs in a row on 2026-09-27.
+  `test.yml`, `docker-test.yml` and `grinder-container-it.yml` were the three that fired twice, and
+  `pull_request:` has been removed from all three: every PR on this instance comes from a branch of this
+  repository, which `push:` already builds. `docs.yml`, `qodana.yml` and the release workflows trigger on
+  `push:` only and never doubled. Clearest evidence of the old behaviour in the run list: indices **665
+  (#678)** and **666 (develop)**, same commit, both started `2026-09-27T15:10:11`; and the batch of nine
+  runs queued at `2026-10-01T17:03:00`, which is what made `DockerJavaContainerEngineIT` fail three runs
+  in a row on 2026-09-27 and took `test.yml` and `grinder-container-it.yml` down on 2026-10-01. What it
+  costs is in each workflow's own header comment: the merge result is no longer built separately, and a
+  fork PR gets no Forgejo CI (GitHub's mirrored `test.yml` keeps `pull_request:` and covers that).
 
 ## What none of this fixes
 

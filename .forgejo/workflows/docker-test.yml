@@ -7,9 +7,21 @@
 # Restoring the old behaviour is a two-line change: add `push: true` and the two SHA tags below.
 name: Docker Test
 
+# PULL_REQUEST IS DELIBERATELY ABSENT. Every PR on this instance is opened from a branch of this
+# repository (the standing develop -> beta one, #682, and the `claude-` fix branches), and `push:`
+# already builds exactly those commits -- so carrying both triggers ran this workflow twice per push
+# for a second verdict on the same tree, in parallel, on one runner. Measured 2026-10-01: one push
+# queued nine runs at 17:03:00 and the batch ran 2-5x its previous day's time (docker-test 13-15 ->
+# 41.6 min, devbuild ~20 -> 96.6, docs ~25-31 -> 63.4, the container ITs 5.3-8.8 -> 18.1 and 23.3),
+# and every red in it was a deadline expiring. Halving the batch is the cheapest lever there is.
+#
+# What it costs, stated rather than discovered later: the *merge* result is no longer built on its
+# own -- only the head commit -- so a PR that is green can still conflict semantically with its base
+# until the merge lands on `develop` and is built there. And a fork PR gets no Forgejo CI; the GitHub
+# mirror's own test.yml keeps `pull_request:` and covers that case, which is the one place a fork
+# actually arrives. Restoring this is one line.
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 concurrency:

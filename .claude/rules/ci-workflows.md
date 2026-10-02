@@ -166,9 +166,13 @@ Worth stating because a search summary of the same feature says the opposite ("n
 will occur"), and because GitHub and Forgejo do not describe it identically. Read the
 [reference](https://forgejo.org/docs/v15.0/user/actions/reference/), not a summary.
 
-**The group in this directory is `<workflow>-${{ github.ref }}`, which is deliberate and has a cost worth
-knowing: a push to `develop` also builds PR #678 (`develop` → `beta`) at the same commit, in parallel, on
-the same runner.** Two jobs, one Docker daemon, one filesystem. That is fine for everything that only reads
+**The group in this directory is `<workflow>-${{ github.ref }}`, which is deliberate and used to have a
+cost worth knowing: a push to `develop` also built PR #678 (`develop` → `beta`) at the same commit, in
+parallel, on the same runner.** That particular doubling is gone — `pull_request:` was dropped from
+`test.yml`, `docker-test.yml` and `grinder-container-it.yml` on 2026-10-02, because every PR here is
+opened from a branch `push:` already builds — but the per-ref key still lets **two different branches**
+run side by side, which is the same collision with a rarer trigger. Two jobs, one Docker daemon, one
+filesystem. That is fine for everything that only reads
 — and it is not fine for anything that asks the daemon a global question or performs a global side effect.
 It cost `DockerJavaContainerEngineIT` three red runs in a row on 2026-09-27 (947, 954, 956), each failing a
 *different* test of the same class, which is the signature of interference rather than of a defect: a defect
@@ -193,10 +197,11 @@ one to a wall-clock assertion, and `test.yml` lost all fourteen database-backed 
 flapdoodle's embedded `mongod` default is a 30-second start budget. All of those budgets have since
 been raised or replaced with host-independent assertions, which is the right repository-side answer —
 a CI deadline must be sized against the pathological host, not the healthy one — but it treats the
-symptom. The cause is how much this runner is asked to do at once, and the two levers on it are the
-runner's job concurrency (host configuration) and the `push:`-plus-`pull_request:` doubling described
-above (one line per workflow). Neither is free; see `claude-docs/RUNNER-REGISTRY-CACHE.md`'s *Runner
-hygiene* section.
+symptom. The cause is how much this runner is asked to do at once. **One of the two levers has been
+pulled**: `pull_request:` is gone from the three workflows that carried it, halving the batch, at the
+cost of no longer building the merge result separately and of fork PRs getting no Forgejo CI. The other
+is the runner's own job concurrency, which is host configuration; see
+`claude-docs/RUNNER-REGISTRY-CACHE.md`'s *Runner hygiene* section.
 
 `grinder-container-it.yml` is the answer where exclusivity is genuinely required — a group with **no ref in
 it**, so one run at a time repository-wide, and `cancel-in-progress: false` so a second one queues. It holds
