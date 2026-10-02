@@ -326,7 +326,7 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-09-27).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-10-02).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
@@ -337,9 +337,9 @@ evidence consulted occasionally, not context every session needs.
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | plugin-selfextract | 17            | Wraps every generated pack in a self-extracting `.bsx` and `.cmd`; the `.cmd` is pinned but has never been run. → `serverpackcreator-plugin-selfextract/CLAUDE.md` |
-| plugin-servertest | 111 (1 skip)  | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
+| plugin-servertest | 112 (1 skip)  | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
 | web-frontend   | 37 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 539 (24 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 542 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
