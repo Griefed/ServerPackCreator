@@ -63,13 +63,16 @@ jobs:
       # network inspect <name>` exits non-zero for three unrelated reasons -- no docker CLI, a CLI whose
       # daemon cannot be reached, and a reachable daemon that has no such network -- and the notice
       # asserted the third ("No 'runners_default' network on this host") while the step could not tell
-      # them apart. On 2026-10-01 that notice was printed on a host whose runner and registry caches
-      # ARE on `runners_default`, which makes the third reading the least likely of the three: a job
-      # container talking to a dind sidecar sees that sidecar's networks, not the ones the compose
-      # project created beside it. So the step now names which of the three it hit and prints the
-      # networks the daemon it asked actually has. This repository has already paid once for a negative
-      # that was read as the wrong negative -- `ufw status` showing no rule for a port that `INPUT
-      # policy DROP` was dropping anyway (see CLAUDE.md, "the symptom shared by two layers").
+      # them apart. On 2026-10-01 it printed that on a host whose runner and registry caches ARE on
+      # `runners_default`. The runner's own config settles it: `docker_host: unix:///sockets/docker.sock`
+      # over a volume shared with a `docker:dind` service, so a job talks to DIND, whose networks are not
+      # the compose project's -- the network is absent from the daemon that was asked, and present on the
+      # one that was not. The step therefore names which of the three it hit, and on the third prints the
+      # daemon that answered and that daemon's networks, so the two readings are separable in the log.
+      # This repository has already paid once for a negative read as the wrong negative -- `ufw status`
+      # showing no rule for a port that `INPUT policy DROP` was dropping anyway (CLAUDE.md, "the symptom
+      # shared by two layers"). claude-docs/RUNNER-REGISTRY-CACHE.md section 3a has the two shapes that
+      # can fix it; both are host work, and neither needs an edit here.
       - name: Use the host's registry cache when it is present
         id: regcache
         env:

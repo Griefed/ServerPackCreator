@@ -164,6 +164,12 @@ A `200` on the second line is the whole test: it can only have come from ghcr th
 
 ### 2. The daemon (Docker Hub only — this is the constraint above, not an oversight)
 
+**Which daemon is not obvious on this host — see 3a before editing a file here.** Jobs talk to a
+`docker:dind` service over a shared socket volume, so the daemon that pulls `busybox`, `alpine` and the
+PowerShell image is dind's, and `/etc/docker/daemon.json` on the host configures a daemon that never
+sees those pulls. The content below is right; the location is dind's `dockerd` command line or a
+`daemon.json` mounted into `docker_dind`.
+
 `/etc/docker/daemon.json`:
 
 ```json
@@ -216,39 +222,67 @@ same silent way here: the SYN is dropped, buildkit waits out `tcp_syn_retries`, 
 upstream and the mirror appears to be "not working". Joining the network sidesteps the host stack
 entirely and gets DNS on the service name for free.
 
-### 3a. Which daemon the job is asking — the open question as of 2026-10-01
+### 3a. There are two daemons here, and the caches are on the wrong one
 
-**OPEN.** Run 830's probe printed
+**This is why `runners_default` is not found, and it is settled by the runner's own configuration
+rather than by a hypothesis.** Griefed's stack, 2026-10-02:
 
+```yaml
+  docker-in-docker:
+    image: docker:dind
+    container_name: 'docker_dind'
+    privileged: 'true'
+    environment: { DOCKER_TLS_CERTDIR: '' }
+    volumes:
+      - dind-storage:/var/lib/docker
+      - dind-socket:/sockets
+    command: ['dockerd', '-H', 'unix:///sockets/docker.sock', '--tls=false', '-G', '1001', ...]
 ```
-::notice::No 'runners_default' network on this host - pulling from upstream registries.
-```
 
-on a host whose runner *and* registry caches are on `runners_default`. The probe has since been
-rewritten to say which of three things it hit and to list the networks the daemon it asked actually
-has (`.forgejo/workflows/docker-test.yml`, step `regcache`), because the old one asserted the third
-reading while being unable to tell it from the other two:
+with the runner configured `docker_host: 'unix:///sockets/docker.sock'` and the same `dind-socket`
+volume mounted. **That socket is dind's, not the host's** — the shared volume makes it look like a
+host socket mount, and it is not one. So:
 
-| what happened | what the old notice said |
-|---|---|
-| no `docker` CLI in the job | "No 'runners_default' network on this host" |
-| CLI present, daemon unreachable | "No 'runners_default' network on this host" |
-| daemon reachable, no such network | "No 'runners_default' network on this host" |
+| container | created by | network namespace |
+|---|---|---|
+| `docker_dind`, the runner, `registry-cache-*` | the **host** daemon | the host's, `runners_default` among them |
+| every job container, the buildx builder, every container a test starts | the **dind** daemon | dind's own, inside `docker_dind` |
 
-The next run of either workflow answers it. **The likeliest reading, and the one to check first, is
-that the job is not talking to the daemon that holds that network.** `forgejo-runner`'s common
-compose shape runs a `docker:dind` sidecar and points the runner at it with
-`DOCKER_HOST=tcp://docker-in-docker:2376`; job containers are then created *inside* dind, so `docker`
-in a job sees dind's own `bridge`/`host`/`none` and none of the networks the compose project created
-beside it. `runners_default` and the two cache containers would be on the **host** daemon, one layer
-up and unreachable by service name. The daemon answering the job is now printed in the step, so the
-line to compare is that one against `docker network ls` on the host.
+A job asking `docker network inspect runners_default` is asking dind, which has never heard of it. The
+notice was right that the network was absent and wrong about which host it was absent from, which is
+the distinction the rewritten probe now prints: it names the daemon that answered (`docker info`) and
+lists that daemon's networks, so the two readings are separable in the log instead of in a guess.
 
-If that is what it turns out to be, the options are: put the caches on a network the *dind* daemon
-has (i.e. start them from inside dind, or give dind a `--network` the caches also join), or drop the
-`docker:dind` sidecar and mount the host socket into the runner instead, or give buildkit a route to
-a host-published cache port — which is the one this host's `INPUT policy DROP` silently breaks, per
-the warning below. Decide it against the real topology rather than from this list.
+**Consequences before choosing a fix:**
+
+- `driver-opts: network=runners_default` cannot work from a job, now or ever, while this topology
+  stands. Keep the probe — it costs a second and it correctly declines.
+- **Name resolution fails; routing does not.** `docker_dind` has an interface on `runners_default`, and
+  containers inside it egress through its namespace, so a cache container's *IP* on that bridge is
+  reachable from a job while its *name* is not. That is what makes a static-IP mirror plausible, and it
+  is a claim to verify on the host (`docker exec` into a job-like container and `wget -qO- http://<ip>:5000/v2/`)
+  rather than to build on.
+- **The daemon doing the test-image pulls is dind's**, not the host's, so `/etc/docker/daemon.json` in
+  step 2 above is the wrong file. Docker Hub mirroring for `busybox`/`alpine`/`powershell` belongs in
+  dind's `dockerd` command line (`--registry-mirror http://…`) or in a `daemon.json` mounted into
+  `docker_dind`.
+
+**Two shapes that can work. Neither has been tried here; pick against the host, not against this list.**
+
+1. **Move the caches inside dind.** Start them with `DOCKER_HOST=unix:///sockets/docker.sock` on a
+   dind-side network (`registry-cache`), and the workflows' `driver-opts: network=registry-cache` plus
+   the existing `registry-cache-ghcr:5000` mirror stanzas work by name, unchanged in shape. Costs: the
+   cache's storage lives in `dind-storage`, it restarts with dind, and nothing on the host can use it.
+2. **Keep them on the host and address them by a fixed IP.** Pin their addresses on `runners_default`
+   with an `ipam` block, put those `IP:5000` in the buildkitd mirror stanzas, drop `driver-opts`
+   entirely (no network to join — routing already reaches them), and give dind's `dockerd`
+   `--registry-mirror http://<dockerhub-cache-ip>:5000`. Costs: an IP in a config file, and it depends
+   on the routing claim above being true.
+
+Option 2 is the one that also covers the daemon-level pulls the container ITs make, which is the larger
+share of this host's traffic; option 1 is the one that needs no IP and no verification. Whichever is
+taken, **the workflow half is already in place** — the probe finds the network or it does not, and the
+mirror stanzas are inert when the hostnames do not resolve.
 
 ### 4. Prove it worked, then record the numbers
 

@@ -490,6 +490,23 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   - **The second trap:** that same policy was the only access control on an unauthenticated report bound to
     `0.0.0.0`, so the obvious `ufw allow <port>` would have ended the outage and published the verdict table
     and full CSV export in one command. Ask what a guard rail is load-bearing for before removing it.
+- **A green run and a red run of the same commit can be the same failure, and the green one is the one
+  to worry about.** `921d46938` ran `test.yml` twice on 2026-10-01. Run 836 failed fourteen
+  database-backed tests; run 833 was **green** — having *skipped* the same fourteen. One cause:
+  flapdoodle's 30 s `mongod` start budget on a runner then doing three Gradle/npm builds at once. What
+  differed was only which `mongod` lost the race — the Spring context's (a failure) or the
+  `EmbeddedMongoAvailable` probe's (a skip, which the guard exists to produce). The guard worked exactly
+  as designed and converted a red build into a green one that verified nothing about the database.
+  **A skip-on-unavailable guard turns an environment problem into an invisible one**, so the pair to
+  check after a red CI run is not "did the other run pass" but "did it *run*" — and a probe must never
+  be more patient than the thing it vouches for, or it approves a start its subject then fails on.
+- **The whole batch is the measurement, not the job that went red.** Reading run 836 alone says
+  "mongod is flaky". Reading every run of that push says the host was 2–5x slower than the day before
+  (`docker-test` 13–15 → 41.6 min, `devbuild` ~20 → 96.6, `docs` ~25–31 → 63.4, the container ITs
+  5.3–8.8 → 18.1 and 23.3), and that nine runs had been queued at one instant. Every red in that batch
+  was a deadline expiring, in four different places, for one reason. **When several unrelated guards go
+  red at once, compare durations across the whole run list before diagnosing any of them** — it costs a
+  single API call and it is the difference between fixing four tests and understanding one host.
 - **A tool that detects a defect through a side effect can only see the share of it that has that side
   effect.** Qodana's `KDocUnresolvedReference` reports a doc block that has come loose from its declaration
   *only* when the stranded block happens to contain a `[link]` that no longer resolves — so it named **4 of
