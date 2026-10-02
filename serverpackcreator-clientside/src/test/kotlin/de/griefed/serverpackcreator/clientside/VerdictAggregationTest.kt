@@ -45,7 +45,7 @@ internal class VerdictAggregationTest {
             detail = "",
             firedRule = firedRule,
             decidedBy = decidedBy,
-            // `BootOutcome` carries the prevention *cause* since 2026-09-09; HOST is the reading every
+ // `BootOutcome` carries the prevention *cause* since; HOST is the reading every
             // prevented grind had before the causes were told apart, which is what these guards mean.
             prevention = if (stagingPrevented) PreventionCause.HOST else null
         )

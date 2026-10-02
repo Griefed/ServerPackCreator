@@ -32,7 +32,7 @@ import java.util.jar.JarOutputStream
  * Pins that a jar whose platform page ticked the **wrong loader** is verified under the loader its own
  * descriptor names, instead of being refused.
  *
- * **The measured rows, read from the public grinder on 2026-09-10.** Ten `UNVERIFIABLE` verdicts are a
+ * **The measured rows, read from the public grinder.** Ten `UNVERIFIABLE` verdicts are a
  * platform mis-tick and nothing else: `bellsandwhistles-0.4.5-1.21.1.jar` carries only
  * `META-INF/neoforge.mods.toml` and is ticked **Forge**; `Highlighter-1.19.4-forge-1.1.5.jar` is ticked
  * **Fabric**. The jars are fine, they run on a client and a server, and every launcher installs them under
@@ -257,7 +257,7 @@ internal class LoaderReselectionTest {
      *
      * The shape is `continuity-3.0.0+1.20.1.forge.jar`'s: a `META-INF/mods.toml` whose only content of
      * consequence is `[properties] "connector:placeholder" = true`, beside the `fabric.mod.json` that holds
-     * the mod. Measured live 2026-09-12, booting the stub under the loader the platform ticked spent the
+ * the mod. Measured live, booting the stub under the loader the platform ticked spent the
      * whole 1.20 line on Forge refusing the stub's own version-less dependency entries.
      */
     @Test
@@ -397,9 +397,9 @@ internal class LoaderReselectionTest {
      * **Both disagreements are recorded, because only one of them can be answered here.**
      *
      * `refuseForSelfDeclaration` reports the loader mismatch first — correctly, since no other Minecraft
-     * version makes a jar into a mod for a loader whose descriptor it does not carry — and it used to *null*
-     * the Minecraft channel to enforce "exactly one retry" through the data. It no longer does: each channel
-     * says what the jar said, and `prepareBootPack`'s control flow decides which retry to spend.
+     * version makes a jar into a mod for a loader whose descriptor it does not carry. It does **not** null the
+     * Minecraft channel to enforce "exactly one retry" through the data: each channel says what the jar said,
+     * and `prepareBootPack`'s control flow decides which retry to spend.
      *
      * **This is a behaviour-neutral simplification, not a rescued boot.** A real scan cannot hand this
      * function both, because the range is read by the *mismatching* loader's own scanner —

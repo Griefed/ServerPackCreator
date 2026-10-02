@@ -25,7 +25,7 @@ package de.griefed.serverpackcreator.clientside
  * That is a statement about the harness, not about the mod. The grinder deliberately boots a *cached* loader
  * build rather than installing every release (`CachedLoaderVersions`, ~150 MB per tuple), so this is the
  * failure that choice produces — and until it is re-checked on the newest build, the candidate wears an
- * INCONCLUSIVE for a decision the harness made. Measured 2026-09-08: 17 of 42 dependency failures on the
+ * INCONCLUSIVE for a decision the harness made. Measured: 17 of 42 dependency failures on the
  * live daemon, all 511 Fabric boots pinned to loader 0.19.3 while 0.19.5 was current.
  *
  * **Not a `BootRule`, deliberately.** The rules in `boot-rules.default.json` map a console onto a *verdict*;

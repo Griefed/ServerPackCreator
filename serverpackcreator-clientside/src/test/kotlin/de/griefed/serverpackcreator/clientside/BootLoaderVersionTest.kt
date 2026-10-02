@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 /**
  * Pins [BootLoaderVersion] — which modloader build a console says actually started.
  *
- * **Every line below is verbatim from a kept console on the public grinder**, read 2026-09-11, because the
+ * **Every line below is verbatim from a kept console on the public grinder**, read, because the
  * whole value of this reader is that it matches what the loaders really print rather than what a pattern
  * written from memory expects.
  *

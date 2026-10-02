@@ -36,7 +36,7 @@ import java.util.jar.JarOutputStream
  * paid for three times in two days: a correct unit no caller reaches changes nothing, and a marker-based
  * assertion passes against the broken code. Only "did it download the library?" separates the two.
  *
- * **The live failure**, read off the public grinder on 2026-09-11 and verified by opening the published jar:
+ * **The live failure**, read off the public grinder and verified by opening the published jar:
  * `Modrinth/highlight` declares `depends: { "resourcefullib": "*" }` and ships
  * `META-INF/jars/resourcefullib-fabric-26.2-5.0.3.jar`, so the requirement was rightly dropped — the library
  * is already inside. The bundled jar then declares `depends: { "fabric-api": "*" }`, which nothing read, so

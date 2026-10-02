@@ -27,9 +27,9 @@ import java.io.File
  * Pins that there is exactly **one** download route, and that a distribution-locked file is reported rather
  * than worked around.
  *
- * Until 2026-09-02 a locked CurseForge file (`allowModDistribution=false`, so the API returns no
- * `downloadUrl`) was routed to a headless-browser downloader that drove the website instead. That existed
- * only to get around the author's opt-out of third-party distribution, it cost **192.9 MB** of bundled node
+ * A locked CurseForge file (`allowModDistribution=false`, so the API returns no `downloadUrl`) is **not**
+ * routed to a headless-browser downloader that drives the website instead. Such a route exists only to get
+ * around the author's opt-out of third-party distribution, it costs **192.9 MB** of bundled node
  * binaries in every shipped artifact — ~70% of the 274.7 MB app jar — and by the end it did not work at all,
  * because CurseForge is behind a Cloudflare challenge the browser does not clear. Griefed's call: remove it.
  *
@@ -50,9 +50,9 @@ internal class JarDownloaderRoutingTest {
     }
 
     /**
-     * **A locked file is still *recognised*, and there is no longer anywhere to route it.** The flag stays
-     * useful — it is what lets a refusal explain itself — but the browser that used to consume it is gone,
-     * asserted by its absence from the classpath rather than by trusting the deletion.
+     * **A locked file is *recognised*, and there is nowhere to route it.** The flag is what lets a refusal
+     * explain itself; that no browser downloader consumes it is asserted by the absence of such a class from
+     * the classpath, rather than taken on trust.
      */
     @Test
     fun aLockedFileIsRecognisedAndHasNoBrowserFallback() {

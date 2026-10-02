@@ -29,10 +29,10 @@ import java.net.http.HttpClient
  * Not a style preference — the JDK's own documentation names the alternative as the anti-pattern:
  * *"Creating a new client for each operation, though possible, will usually prevent reusing such
  * connections."* Each client carries its own connection pool and its own `SelectorManager` thread, so one
- * per fetcher means every candidate re-does the TLS handshake to Modrinth/CurseForge that the previous one
- * had already paid for, and leaves a thread behind until the client is collected.
+ * per fetcher means every candidate re-does a TLS handshake to Modrinth/CurseForge that an earlier one has
+ * already paid for, and leaves a thread behind until the client is collected.
  *
- * Measured on the live daemon on 2026-09-21: **384 clients created in 2.9 hours, 28 still alive** — because
+ * Measured on the live daemon: **384 clients created in 2.9 hours, 28 still alive** — because
  * `ContainerCandidateVerifier.verifyStaged` calls `supportedPlatforms()` per candidate, and each call builds
  * a `ModrinthPlatform` and a `CurseForgePlatform` that each default-construct a fetcher.
  *

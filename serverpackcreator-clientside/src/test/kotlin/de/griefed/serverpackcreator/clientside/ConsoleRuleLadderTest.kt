@@ -47,7 +47,7 @@ internal class ConsoleRuleLadderTest {
     @Test
     fun aRuleCrashesAConsoleThatAZeroExitWouldHaveExcused() {
         // Deliberately a synthetic signature. This test used FML's "for invalid dist DEDICATED_SERVER"
-        // until 2026-09-04, when that became a *built-in* rule — which closed the very gap the test was
+ // until, when that became a *built-in* rule — which closed the very gap the test was
         // demonstrating and broke it. The mechanism is what is being pinned, not any one string, so the
         // example is one that can never be promoted into the defaults and take this guard with it.
         val console = listOf(

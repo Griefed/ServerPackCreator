@@ -38,7 +38,7 @@ import java.util.jar.JarOutputStream
  * `LearnedModIds`/`KnownModIds` maps the manifest id to — and when those differ the same id is looked up a
  * second time, against a *different project*.
  *
- * **Measured on `grinder.serverpackcreator.de`, 2026-09-09.** Ten published `ERROR` verdicts are this:
+ * **Measured on `grinder.serverpackcreator.de`.** Ten published `ERROR` verdicts are this:
  *
  * | Candidate | Loader / Minecraft | Refused for |
  * |---|---|---|

@@ -39,7 +39,7 @@ import java.util.jar.JarOutputStream
  * deliberately skips a requirement naming something not staged, because that case belongs to
  * `refuseForMissingDependencies`. So the pack's real incoherence was invisible and the boot went ahead.
  *
- * **Measured live, `CurseForge/createaddition` on NeoForge 21.1.250 / Minecraft 1.21.1, 2026-09-07:**
+ * **Measured live, `CurseForge/createaddition` on NeoForge 21.1.250 / Minecraft 1.21.1:**
  *
  * ```
  * Missing or unsupported mandatory dependencies:

@@ -102,9 +102,9 @@ class ClientsideVerifier(
      * `startsWith` and would strip both.
      *
      * **Why the entry and not the loader:** what gets published is a loader-agnostic file-name stem, matched
-     * with `startsWith`. Measured 2026-08-23 — `iron-chests` produced `Forge → CRASHED` and
-     * `NeoForge → SURVIVED` in one run, both deriving `ironchest-`, and the crash was published, which strips
-     * the very NeoForge build that had just booted a server. Where the stems differ, the published entry
+     * with `startsWith`. `iron-chests` is the shape: `Forge → CRASHED` and `NeoForge → SURVIVED` in one run,
+     * both deriving `ironchest-`, so publishing the crash strips the very NeoForge build that had just booted
+     * a server. Where the stems differ, the published entry
      * cannot strip the surviving build and the two verdicts do not contradict each other at all — a mod may
      * genuinely be client-only on one loader.
      *
@@ -211,9 +211,9 @@ class ClientsideVerifier(
      * [JarScan.ERROR] on failure.
      *
      * The version comes from the target rather than from the file: the scanner is chosen per Minecraft
-     * version, and this used to ask `sample.minecraftVersions.maxOrNull()` — a *lexicographic* maximum,
-     * which answers `1.9` for a file tagged `1.9` and `1.20.1`. It also stages into the target's own
-     * directory, since one loader may now own several of them.
+     * version, and `sample.minecraftVersions.maxOrNull()` is a *lexicographic* maximum, which answers `1.9`
+     * for a file tagged `1.9` and `1.20.1`. It also stages into the target's own directory, since one loader
+     * may own several of them.
      */
     private fun scanSample(sample: ModFile, target: BootCandidateSelector.GrindTarget, project: ProjectFiles): JarScan {
         val loader = target.loader
@@ -354,7 +354,7 @@ class ClientsideVerifier(
          * loader*, and that is invalid precisely when the reaching is one build's defect. A sibling that ran a
          * dedicated server to the ready line, for a mod whose metadata claims the server, is what says so.
          *
-         * Measured on the public grinder 2026-09-12: 27 rows across 16 projects were published this way.
+         * It is not a rare shape — on the public grinder it accounts for rows across a dozen-plus projects.
          * `CurseForge/agricraft` — a crop-breeding mod declaring SERVER and scanning SERVER_OR_BOTH — failed
          * to register one `@SubscribeEvent` class touching `net/minecraft/client/gui/Gui` on NeoForge, while
          * its Fabric and Forge builds each reached the ready line. All three rows published.
@@ -365,9 +365,9 @@ class ClientsideVerifier(
          * [declaresServerSupport], which this module uses to arm the crash re-check. That predicate accepts
          * `JarScan.SERVER_OR_BOTH`, and `SERVER_OR_BOTH` is also what a scan that read *nothing* returns
          * ("nothing was read, so nothing declared the mod client-only"); reading an absent answer as a claim
-         * would open this gate on most of the catalogue. Measured on the live store 2026-09-12: the weak
-         * reading matches 27 rows, this one 22, and the five it drops are `CONTRADICTORY` — where the two
-         * sources disagree, so by this module's own rule neither is evidence.
+         * would open this gate on most of the catalogue. Measured on the live store, the weak reading matches
+         * 27 rows against this one's 22, and the five it adds are `CONTRADICTORY` — where the two sources
+         * disagree, so by this module's own rule neither is evidence.
          *
          * `sodium` declares `client_side: required`, so the gate never opens for it and its Fabric entry is
          * still excluded — which is the whole reason this propagation was written.
@@ -416,9 +416,8 @@ class ClientsideVerifier(
                         // The evidence, as a field rather than only as prose. Without it the row's own
                         // `decidedBy` is its own boot's rung -- `READY_LINE` for a clean one -- so anything
                         // re-deriving evidence from the consoles reads a published CONFIRMED as resting on
-                        // none. Measured 2026-09-12: that is 86 of 140 published rows, i.e. `GrinderAuditIT`
-                        // failing wholesale on a deliberate design. A verdict must be able to name its own
-                        // evidence.
+                        // none -- the majority of published rows, i.e. `GrinderAuditIT` failing wholesale
+                        // on a deliberate design. A verdict must be able to name its own evidence.
                         inheritedProofFrom = proof.loader,
                         inheritedProofRule = proof.decidedBy?.ruleId,
                         note = listOfNotNull(
@@ -492,8 +491,9 @@ class ClientsideVerifier(
          * confidence ladder and not a second one written here — and the note is **rebuilt** from the metadata
          * caveat, the [bootDetail] and why the crash no longer counts.
          *
-         * Rebuilt rather than appended to, because the old note ends in "a strong clientside signal", which is
-         * exactly what is no longer true; bolting a correction onto a false sentence is how prose goes stale.
+         * Rebuilt rather than appended to: the note being replaced ends in "a strong clientside signal", which
+         * is exactly what has stopped being true, and bolting a correction onto a false sentence is how prose
+         * goes stale.
          * `bootResult` and the crash excerpt are kept untouched: the server did crash, and that is worth
          * diagnosing even though it says nothing about which side the mod belongs on.
          */

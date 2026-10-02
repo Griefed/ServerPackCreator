@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test
  * `nativeRef` into the `slug` parameter positionally, so the label resolved the project, read back the ref
  * it started from, and printed it. The fix to the labeller was a no-op for the case that actually fires.
  *
- * Measured on the live daemon, 2026-09-04, both rows `ERROR` on CurseForge:
+ * Measured on the live daemon, both rows `ERROR` on CurseForge:
  *
  *  - `architectury-api` — *"Required dependency unavailable for Quilt / Minecraft 1.20.4: **306612**"*
  *    (Fabric API)

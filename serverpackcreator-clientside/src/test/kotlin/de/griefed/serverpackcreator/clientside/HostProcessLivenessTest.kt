@@ -33,10 +33,10 @@ import java.util.concurrent.TimeUnit
  *
  * `ProcessHandle.isAlive` is true for a zombie: the process is gone, its parent has merely not called
  * `wait()` yet. An orphan is reparented to PID 1, and a container whose PID 1 is `tail -f /dev/null`
- * instead of an init never reaps it — so the zombie is permanent there. That is the CI job container,
- * and it is why `HostProcessDescendantTeardownTest` read a correctly-killed `sleep` as a survivor and
- * turned run 629 red while the same code was green on a developer machine. Measured in two containers
- * differing only in PID 1: with `tail`, `/proc/<pid>` state `Z` and `isAlive=true`; with `docker-init`,
+ * instead of an init never reaps it — so the zombie is permanent there. That is the CI job container, which
+ * is why `HostProcessDescendantTeardownTest` reads a correctly-killed `sleep` as a survivor there while the
+ * same code is green on a developer machine, where launchd reaps. Measured in two containers differing only
+ * in PID 1: with `tail`, `/proc/<pid>` state `Z` and `isAlive=true`; with `docker-init`,
  * gone. A zombie holds no port, no world directory and no heap, so teardown is finished with it.
  *
  * The zombie is staged without touching PID 1: `bash` backgrounds a child and then `exec`s itself into

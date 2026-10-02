@@ -129,9 +129,9 @@ internal class ManifestDependencyTest {
     /**
      * **`quilt_base` is a QSL module, so it must be staged rather than excused as the runtime.**
      *
-     * It sat in `environmentProvidedIds` beside `quilt_loader` until 2026-09-01, which meant a mod whose
-     * only QSL dependency was `quilt_base` had nothing staged and then failed to boot on the very
-     * dependency the harness had chosen not to supply. `quilt_loader` genuinely is the runtime and stays
+     * Listing it in `environmentProvidedIds` beside `quilt_loader` means a mod whose only QSL dependency is
+     * `quilt_base` has nothing staged, and then fails to boot on the very dependency the harness chose not to
+     * supply. `quilt_loader` genuinely is the runtime and stays
      * excused; QSL's modules are jars a pack has to carry.
      */
     @Test
@@ -206,8 +206,8 @@ internal class ManifestDependencyTest {
      * `ModIdRegistry` to the slug `fabric-api`). `stageableRequirements` dedupes by *ref*, so it cannot
      * see that those two resolve to one file; only the file name can.
      *
-     * Observed in B6's merge gate 2026-08-30: `amblekit/Fabric` recorded
-     * `fabric-api-0.100.8+1.20.6.jar` twice. Cosmetic in the report, but not against the cap — double
+     * It shows up as `amblekit/Fabric` recording `fabric-api-0.100.8+1.20.6.jar` twice. Cosmetic in the
+     * report, but not against the cap — double
      * counting refuses a pack that is within it, and `refuseForTooManyDependencies` scores a refusal
      * INCONCLUSIVE, so the mod silently stops being verified.
      */
@@ -247,7 +247,7 @@ internal class ManifestDependencyTest {
      * **The bug this exists for.** A manifest id the registry mapped, whose project resolved, and which
      * then had no usable file, must REFUSE the boot — not be filed as a guess that missed.
      *
-     * Observed live 2026-08-30 on `CurseForge/attributefix` at Minecraft 1.21.11: its manifest declares
+     * Observed live on `CurseForge/attributefix` at Minecraft 1.21.11: its manifest declares
      * `Depends on 'fabric-api' (-∞, ∞)`, nothing was staged for it, and the boot ran anyway. Quilt Loader
      * then refused the pack with "AttributeFix requires any version of fabric-api, which is missing!" and
      * the *candidate* wore the verdict — the exact failure the refusal path exists to prevent.
@@ -335,10 +335,9 @@ internal class ManifestDependencyTest {
     }
 
     /**
-     * **The refusal split now keys on how the ref was arrived at, not on how far it got**
-     * (Griefed's call, 2026-09-06).
+     * **The refusal split keys on how the ref was arrived at, not on how far it got** (Griefed's call).
      *
-     * The old rule was "mapped and then failed to stage refuses; unmappable does not", which made *being
+     * "Mapped and then failed to stage refuses; unmappable does not" makes *being
      * almost resolvable worse than being unknown* — this file's own `xaerolib` case, where a real Modrinth
      * project of that name exists but publishes nothing for the pack's loader and Minecraft version, so a
      * guess that happened to hit refused a boot that an outright miss would have allowed.

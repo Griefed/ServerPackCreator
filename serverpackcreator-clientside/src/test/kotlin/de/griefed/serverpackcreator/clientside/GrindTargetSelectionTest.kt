@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
  * Pins [BootCandidateSelector.pickGrindTargets] — one grind per Minecraft version-line, each under a single
  * loader chosen by [BootCandidateSelector.LOADER_PRIORITY].
  *
- * The fixture is `CurseForge/aether`, read from the live API on 2026-09-11, because every property worth
+ * The fixture is `CurseForge/aether`, read from the live API, because every property worth
  * guarding is visible in that one project: a file tagged for two loaders at once, a stable old build
  * alongside beta newer ones, and three Minecraft lines that were previously ground as three *loaders* all
  * landing on the newest two.

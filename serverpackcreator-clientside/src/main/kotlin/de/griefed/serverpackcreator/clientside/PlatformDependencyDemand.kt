@@ -72,7 +72,7 @@ object PlatformDependencyDemand {
      * **The platform route had no constraint to pass.** `ModFile.requiredDependencies` is a list of *refs*
      * and carries no range, so `pickDependencyFile` was called without one and took the newest build for the
      * Minecraft version; where the jar had actually demanded a *specific* one, the pack was then refused by
-     * the loader and the candidate wore the verdict. Measured on the public grinder 2026-09-11:
+ * the loader and the candidate wore the verdict. Measured on the public grinder:
      * `cobblemon-additions` demands `cobblemon >=1.7.1` and was staged `Cobblemon-fabric-1.6.1+1.21.1`, and
      * `create-enchantment-industry` pins `create_dragons_plus 1.11.4-p1` and was staged `1.11.8`.
      *

@@ -30,10 +30,10 @@ import org.junit.jupiter.api.Test
  * own doc states the hazard: *"a mod needing a newer loader than the cached build fails to load, the server
  * exits non-zero, `BootLogClassifier` reads that as CRASHED"* — and `shouldRecheckCrash` re-boots a CRASHED
  * outcome on the newest build before letting it stand. Then `dependencyFailureMarkers` was widened
- * (2026-08-29) and that console became **INCONCLUSIVE** instead, which the re-check does not look at. The
+ * and that console became **INCONCLUSIVE** instead, which the re-check does not look at. The
  * premise moved out from under the guard.
  *
- * **Measured on the live daemon 2026-09-08**, ten hours after a full clear: **all 511** Fabric boots ran
+ * **Measured on the live daemon**, ten hours after a full clear: **all 511** Fabric boots ran
  * loader `0.19.3` while Fabric's current stable is `0.19.5`, and **17 of 42** `DEPENDENCY_FAILURE` rows are
  * this and nothing else — `fabric-language-kotlin`, a dependency of a great many mods, demands
  * `fabricloader >=0.19.5`. Each one is an INCONCLUSIVE charged to a candidate over the harness's choice of

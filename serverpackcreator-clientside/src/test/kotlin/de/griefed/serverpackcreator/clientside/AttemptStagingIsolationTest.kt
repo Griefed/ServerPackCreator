@@ -34,7 +34,7 @@ import java.io.File
  * run them in parallel. Sharing one directory therefore lets one candidate delete the server pack out from
  * under a container the other is still booting.
  *
- * Observed 2026-08-23 on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge 26.2.0.66
+ * Observed on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge 26.2.0.66
  * on Minecraft 26.2 SURVIVED for one platform and CRASHED (exit 1) for the other, same loader build, same
  * Minecraft, same mod; a Fabric boot exited **127** (a shell that could not find the command it was told to
  * run); and two re-checks came back INCONCLUSIVE on files another run had booted to a ready-line.

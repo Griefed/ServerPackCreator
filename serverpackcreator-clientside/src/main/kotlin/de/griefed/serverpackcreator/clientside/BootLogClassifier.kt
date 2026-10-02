@@ -31,10 +31,9 @@ import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarke
  *
  * Why this is needed at all: `CRASHED` is reachable from [CLIENT_ONLY_CLASS], which no environment failure
  * can fabricate, and from [EXIT_CODE], which means only *"the process exited non-zero and nothing recognised
- * why"*. Both produced an identical `HIGH`, so the published fallback list could not tell a mod reaching for
- * `net/minecraft/client` from one whose mixins failed to apply. Sampled against the deployed grinder on
- * 2026-08-31, four of five published boot logs were the latter — and one of those mods was already being
- * served to every instance polling the list.
+ * why"*. Treating both as an identical `HIGH` leaves the published fallback list unable to tell a mod
+ * reaching for `net/minecraft/client` from one whose mixins failed to apply — and the second kind is the
+ * majority, so the list fills with mods that were never shown to be clientside at all.
  *
  * @author Griefed
  */
@@ -217,9 +216,9 @@ object BootLogClassifier {
      * The compiled pattern of a bundled rule, by id — the single source of truth for every signature this
      * ladder tests.
      *
-     * The patterns used to be duplicated here as `Regex` literals; they now live in
-     * `boot-rules.default.json`, where an operator can read and edit them, and this reads them back so the
-     * ladder's *order* stays in code while its *content* does not. The KDoc above each field is kept
+     * The patterns live in `boot-rules.default.json`, where an operator can read and edit them, rather than
+     * as `Regex` literals here: this reads them back so the ladder's *order* stays in code while its
+     * *content* does not. The KDoc above each field is kept
      * deliberately: it is the rationale and the measured evidence for the pattern, which the file's `note`
      * mirrors but which belongs beside the rung that uses it.
      *
@@ -268,9 +267,9 @@ object BootLogClassifier {
      * out-of-memory reports and the shell's message when the kernel's OOM killer takes the server.
      *
      * A mod *can* be memory-hungry, but running out of memory is not evidence that it needs a client, and the
-     * confidence model only claims [BootResult.CRASHED] when it is sure. Measured 2026-07-30: the grinder caps a boot
-     * at 3 GiB while the host's Docker VM held 1.93 GiB, so the cap could not be honoured and fat mods were killed by
-     * the VM — which, without this, scored as a HIGH-confidence clientside crash.
+     * confidence model only claims [BootResult.CRASHED] when it is sure. The shape to picture is a boot capped at
+     * 3 GiB on a Docker VM holding 1.93 GiB: the cap cannot be honoured, fat mods are killed by the VM, and without
+     * this they score as a HIGH-confidence clientside crash.
      */
     private val outOfMemoryMarkers = bundledPattern("out-of-memory")
 
@@ -278,9 +277,9 @@ object BootLogClassifier {
      * The JVM never started: it could not open or identify the jar it was told to run. The server therefore never
      * loaded the mod, so the run says nothing about sideness.
      *
-     * Found live on 2026-07-30 immediately after exit-status propagation began working: consoles consisting of
-     * `Error: Unable to access jarfile forge.jar` (an incomplete cached Forge install layer) exited non-zero and were
-     * promoted to HIGH-confidence clientside — ten of the sweep's first fifteen HIGH verdicts, including the
+     * A console consisting of `Error: Unable to access jarfile forge.jar` — an incomplete cached Forge install
+     * layer — exits non-zero, and without this rung is promoted to HIGH-confidence clientside. It can dominate a
+     * sweep's HIGH verdicts outright, including the
      * definitely-server-side libraries `balm`, `collective` and `geckolib`. Trusting the exit status is what made this
      * class visible, which is why it needs the same pre-launch treatment as [setupAbortMarkers].
      *
@@ -305,9 +304,9 @@ object BootLogClassifier {
      * loaded and the run says nothing about sideness. One rung below [launchFailureMarkers] — there the JVM could
      * not open the jar, here it opened it and the loader fell over on its own module wiring.
      *
-     * Found live on 2026-08-23 in `CurseForge-ars-nouveau-Forge.log`, which was scored CRASHED and therefore
-     * headed for a clientside HIGH for a mod whose code never ran. The cause is upstream and deterministic, not a
-     * flaky boot: the NeoForge ServerStarterJar synthesises a boot layer for the module path named in Forge's
+     * Without it such a console is scored CRASHED and heads for a clientside HIGH for a mod whose code never
+     * ran. The cause is upstream and deterministic, not a flaky boot: the NeoForge ServerStarterJar synthesises
+     * a boot layer for the module path named in Forge's
      * `unix_args.txt`, and Forge's `SecureModuleClassLoader` looks a read module's configuration up among its
      * **direct** parents only — so `java.base`, one level further up in the real boot configuration, is not found
      * and it throws. cpw's original, which NeoForge itself runs, falls back to the platform classloader there,
@@ -327,7 +326,7 @@ object BootLogClassifier {
      *
      * Staging force-includes the mod plus its recursively-resolved required deps, but resolution is imperfect —
      * transitive requirements, version ranges and distribution-locked CurseForge files leak through. Measured
-     * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
+     * across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
      * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
      */
     private val dependencyFailureMarkers = bundledPattern("dependency-failure")
@@ -337,7 +336,7 @@ object BootLogClassifier {
      * guarantee — so a mod whose loader reaches for the internet at startup is certain to die here and nowhere
      * else, which makes the crash a property of the harness rather than of the mod.
      *
-     * Measured 2026-08-29 across 200 published crash logs: **15 (8%)**. The clearest is OneConfig, which fetches
+     * Measured across 200 published crash logs: **15 (8%)**. The clearest is OneConfig, which fetches
      * its own stage1 from `api.polyfrost.org`, falls back to a Swing error dialog when it cannot — the
      * `Fontconfig error: No writable cache directories` tail those logs all share, in a headless container — and
      * then calls `System.exit`.
@@ -351,7 +350,7 @@ object BootLogClassifier {
      * A mixin that could not be applied or injected. **Not sideness evidence**: the jar and the Minecraft it
      * was booted on disagree about what exists, so the mod's own server code never ran.
      *
-     * Two of five real logs sampled 2026-08-31 died exactly this way and reached the bare exit-code rung —
+     * Real logs die exactly this way and would otherwise reach the bare exit-code rung —
      * `create_ltab` on Minecraft 1.20.6 (`@Inject … could not find any targets matching
      * 'Lnet/minecraft/class_4317;method_20807'`) and `debugify` on 1.19.1 (`@Shadow field f_25782_ was not
      * located in the target class`). The existing mixin coverage in [dependencyFailureMarkers] is only
@@ -366,7 +365,7 @@ object BootLogClassifier {
      *
      * Quilt's phrasing shares **nothing** with Fabric's: no `requires`, no `Incompatible mods found`, so
      * [dependencyFailureMarkers] does not reach it. Its `requires version .{1,80} of ` alternative was
-     * written for a *different* Quilt shape. Observed 2026-08-31 on `create_ltab` / Quilt 0.31.0-beta.1:
+     * written for a *different* Quilt shape. The one meant here, from `create_ltab` on Quilt 0.31.0-beta.1, is:
      * `Unhandled solver error involving the following rules:` with
      * `quilt_resource_loader versions [*] (0 valid options, 0 invalid options)`.
      */
@@ -376,16 +375,16 @@ object BootLogClassifier {
      * The staged jar and the runtime disagree about the loader itself — the wrong jar was staged, so the run
      * says nothing about the mod.
      *
-     * Observed 2026-08-31: `DamageVignette-2.0.2-**forge**+mc1.20.jar` staged for a **NeoForge** boot, dying
+     * The shape it catches: `DamageVignette-2.0.2-**forge**+mc1.20.jar` staged for a **NeoForge** boot, dying
      * on `Missing language javafml version [46,)` (Forge's language provider, not NeoForge's) and a
      * `java.lang.module.ResolutionException` from the jar's bundled MixinExtras colliding with NeoForge's.
      * One platform file claiming two loaders is what put it there; see `BootCandidateSelector`.
      *
      * **log4j-core belongs here for the opposite reason, and it is the most valuable member.** Its absence is
      * not the mod's doing at all — the server is supposed to *have* a logging framework — so a console
-     * reaching for `org.apache.logging.log4j` means the runtime we assembled is broken. Measured 2026-08-31:
-     * every one of the 90 boots against the cached `NeoForge 21.11.45 / Minecraft 1.21.11` install died this
-     * way, `corgilib` (a library) and `chisels-bits` (a building mod that runs on servers) included, and the
+     * reaching for `org.apache.logging.log4j` means the runtime we assembled is broken. One poisoned install
+     * layer takes every boot against it the same way — all 90 against a cached `NeoForge 21.11.45 / Minecraft
+     * 1.21.11`, `corgilib` (a library) and `chisels-bits` (a building mod that runs on servers) included, and the
      * ones that reached a non-zero exit were published as clientside. **One poisoned cache entry produced
      * false positives across an entire tuple**, which is exactly the failure a bare exit-code verdict cannot
      * distinguish from a mod crashing on its own merits.
@@ -489,9 +488,9 @@ object BootLogClassifier {
         val annotating = fired
 
         // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
-        // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
-        // in full and then exits **0**, so `modelfix` -- textbook `NoClassDefFoundError: net/minecraft/client/
-        // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
+        // the exit status cannot be trusted here: NeoForge's ServerStarterJar reports the crash in full and then
+        // exits **0**, so a textbook `NoClassDefFoundError: net/minecraft/client/Minecraft` scores INCONCLUSIVE and
+        // no verdict in the whole store ever reaches HIGH. Environment
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
             return Classification(BootResult.CRASHED, annotating, BootDecision.CLIENT_ONLY_CLASS)
@@ -522,7 +521,7 @@ object BootLogClassifier {
         }
         // The jar and the runtime disagree -- a mixin that cannot apply, a solver that gave up, a language
         // provider from the wrong loader. Each means the pack we assembled was wrong, not that the mod is
-        // clientside, and each reached the bare exit code before these rungs existed.
+        // clientside, and without a rung of its own each falls through to the bare exit code.
         if (consoleLines.any { mixinApplyFailureMarkers.containsMatchIn(it) }) {
             return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.MIXIN_APPLY_FAILURE)
         }

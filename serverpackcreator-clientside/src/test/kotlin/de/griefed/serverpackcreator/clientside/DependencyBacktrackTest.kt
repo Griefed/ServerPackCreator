@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
  * Pins the decision that answers *"do the jars in this pack satisfy each other?"* — pure, so the whole
  * behaviour is testable without a platform, a download or a container.
  *
- * The live case throughout is `Modrinth/zoomify` on Quilt / Minecraft 1.20.5, 2026-09-06:
+ * The live case throughout is `Modrinth/zoomify` on Quilt / Minecraft 1.20.5:
  * `yet_another_config_lib_v3-3.6.6+1.20.6-fabric.jar` is tagged for 1.20.5, declares `"minecraft": "~1.20.5"`
  * — so neither selection nor the descriptor gate objects — and demands `"fabric-api": ">=0.100.0+1.20.6"`
  * while the newest Fabric API published for 1.20.5 is `0.97.8+1.20.5`.

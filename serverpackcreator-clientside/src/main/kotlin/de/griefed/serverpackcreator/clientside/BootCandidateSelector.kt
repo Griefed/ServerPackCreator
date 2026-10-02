@@ -46,8 +46,8 @@ object BootCandidateSelector {
      *
      * **A file declaring no loader at all is a fallback, not a match.** CurseForge had no modloader facet
      * before Minecraft 1.13, so a pre-1.13 file carries an empty loader set — and a project whose files are
-     * *all* untagged was therefore never selected under any loader, i.e. never ground. Measured against the
-     * live API 2026-09-06: all 15 of mtlib's files are untagged and it returned no candidate at all.
+     * *all* untagged would therefore never be selected under any loader, i.e. never ground. Measured against
+     * the live API: all 15 of mtlib's files are untagged.
      *
      * **Why that is safe here, which is a different argument than for a dependency.** Picking an untagged
      * file for the wrong loader could stage a jar that loader ignores, boot cleanly and publish a false
@@ -60,9 +60,9 @@ object BootCandidateSelector {
      *
      * [untaggedFallback] turns that last arm off. [pickGrindTargets] needs it: it asks several loaders about
      * one Minecraft line in priority order, and an untagged file matches *every* loader — so with the arm on,
-     * the highest-priority loader would claim an untagged file while a loader further down had a file its
-     * author actually tagged. Off for the first pass, on for the second, which keeps "a file whose author did
-     * state a loader always wins" true across loaders as well as within one.
+     * the highest-priority loader claims an untagged file while a loader further down has one its author
+     * actually tagged. Off for the first pass, on for the second, which keeps "a file whose author did state a
+     * loader always wins" true across loaders as well as within one.
      */
     fun pickBootableCandidate(
         files: List<ModFile>,
@@ -297,9 +297,9 @@ object BootCandidateSelector {
      * near-identical code. That relies on [files] arriving newest-first, which both platforms do and the
      * stable sort preserves.
      *
-     * **Why diverse and not simply newest.** Measured 2026-08-23 on `creativecore`: a Fabric crash on
-     * Minecraft 26.2 was re-checked on Fabric 26.1.2 and Fabric 26.1 — same loader, same loader version
-     * `0.19.3`, and the two Minecraft versions either side of the crashing one. Both were INCONCLUSIVE and
+     * **Why diverse and not simply newest.** Taking the newest spends both re-checks next door: a Fabric
+     * crash on Minecraft 26.2 is re-checked on Fabric 26.1.2 and Fabric 26.1 — same loader, same loader
+     * version `0.19.3`, the two Minecraft versions either side of the crashing one. Both come back INCONCLUSIVE and
      * the crash was published HIGH, while NeoForge had booted a server for the same project in the same
      * run. Two boots that close to the crashing combination re-test its environment, not the mod.
      *
@@ -365,7 +365,7 @@ object BootCandidateSelector {
      *
      * A line is the granularity at which mod code actually differs: builds within one are ports of the same
      * source across a patch release, which is why re-checking a crash on the version next to it learns so
-     * little — and, since 2026-09-11, why it is the axis a project is ground on.
+     * little — and why it is the axis a project is ground on.
      *
      * Public because the grinder needs it too: `BootLogStore` reads a kept artifact's recorded Minecraft
      * version back to the line its owner is filed under. A second copy of this rule in that module is
@@ -386,8 +386,8 @@ object BootCandidateSelector {
      *
      * **Inside a line, that strictness cost boots it had no reason to.** 1.20.1, 1.20.2 and 1.20.3 run each
      * other's mods in practice, and a library that skipped a patch release is not a missing dependency.
-     * Measured against the live Modrinth API on 2026-09-09, six published `ERROR` verdicts named a
-     * dependency that exists one patch away — `playeranimator` for Forge 1.20.2, `yacl` and
+     * Measured against the live Modrinth API, six published `ERROR` verdicts named a dependency that exists
+     * one patch away — `playeranimator` for Forge 1.20.2, `yacl` and
      * `forgified-fabric-api` for Forge 1.20.6, `cobblemon` for Fabric 1.21.11, and QSL for Quilt 1.21.1 and
      * 1.21.11. QSL shows why the line is the right width rather than a wider band: its newest release is
      * Minecraft 1.21 and the project is discontinued, so every Quilt mod declaring a `quilt_*` module on
@@ -403,7 +403,7 @@ object BootCandidateSelector {
         versionConstraint: String? = null
     ): ModFile? {
         // A constraint is a PREFERENCE, never a filter. Preferring a satisfying file is an improvement;
-        // returning null where this used to return a file would turn a bootable candidate into a refusal,
+        // returning null where an unconstrained pick finds one turns a bootable candidate into a refusal,
         // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
         // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
         val ordered = plainBuildsFirst(files)
@@ -554,7 +554,7 @@ object BootCandidateSelector {
      *
      * **The assumption this guards was empirically false.** [pickUntagged]'s safety argument is that
      * untagged files are pre-1.13, from before CurseForge had a modloader facet, so only Forge is reachable
-     * anyway. Measured against the live API on 2026-09-11, `TerraBlender (Forge)` publishes
+     * anyway. Measured against the live API, `TerraBlender (Forge)` publishes
      * `TerraBlender-forge-26.2-26.2.0.0.2.jar` with `gameVersions=['26.2']` — **untagged, for Minecraft
      * 26.2, in 2026**. So an untagged file matched a *Fabric* and a *NeoForge* boot alike, and
      * `biomes-o-plenty` was staged the Forge build of its own dependency on both: the loaders could not see
@@ -586,9 +586,9 @@ object BootCandidateSelector {
      *
      * CurseForge had no modloader facet before Minecraft 1.13, so a pre-1.13 file carries an empty loader
      * set and `pickForLoader` — which asks `loader in it.loaders` — can never match one. Measured against
-     * the live API 2026-09-06: all 15 of mtlib's files are untagged, and 106 of iron-chests' 138. That made
-     * every such dependency unpickable and refused the boot, which is what
-     * *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* was.
+     * the live API: all 15 of mtlib's files are untagged, and 106 of iron-chests' 138. Without this arm every
+     * such dependency is unpickable and refuses the boot, which is what
+     * *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* is.
      *
      * **Untagged is unknown, not incompatible**, and it is the *last* arm on purpose: the exact loader and
      * the cross-loader fallback are both tried first, so a file whose author did state a loader always wins

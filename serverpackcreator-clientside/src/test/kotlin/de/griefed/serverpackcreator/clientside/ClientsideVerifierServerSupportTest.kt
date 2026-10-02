@@ -78,7 +78,7 @@ internal class ClientsideVerifierServerSupportTest {
 }
 
 /**
- * Pins the two INCONCLUSIVE populations the live store surfaced on 2026-09-01, both of which threw away
+ * Pins the two INCONCLUSIVE populations the live store surfaced, both of which threw away
  * something the engine had actually learned.
  */
 internal class SurvivedBootConfidenceTest {

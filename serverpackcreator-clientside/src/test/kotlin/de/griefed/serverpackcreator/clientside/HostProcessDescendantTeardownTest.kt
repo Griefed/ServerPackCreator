@@ -42,9 +42,9 @@ import java.time.Duration
  *
  * The question asked of that PID is whether the process is still **running**, not whether the PID is still
  * present. `ProcessHandle.isAlive` answers the second, and the two differ for a process that has exited and
- * not yet been reaped — permanently so under a PID 1 that is not an init. Asking the wrong one is what failed
- * this guard in CI run 629 against a `sleep` the runner had killed correctly; [HostProcessLivenessTest] pins
- * the distinction itself.
+ * not yet been reaped — permanently so under a PID 1 that is not an init. Asking the wrong one fails this
+ * guard against a `sleep` the runner killed correctly; [HostProcessLivenessTest] pins the distinction
+ * itself.
  */
 internal class HostProcessDescendantTeardownTest {
 

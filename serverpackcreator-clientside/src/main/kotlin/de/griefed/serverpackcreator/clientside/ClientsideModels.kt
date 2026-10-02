@@ -73,7 +73,7 @@ enum class DeclaredSupport {
  * **Declaration order is the preference order**, and `BootCandidateSelector.pickBootableCandidate` walks it:
  * a release is what a user's pack installs, so it is what a verdict should be about.
  *
- * Measured on `hybrid-aquatic`, 2026-09-10: 16 stable Forge releases on Minecraft 1.20.1 beside 10
+ * Measured on `hybrid-aquatic`: 16 stable Forge releases on Minecraft 1.20.1 beside 10
  * `[Sinytra]` betas on 1.20.1–1.20.4. Newest-Minecraft-first picked a beta, because authors publish their
  * experimental *newer*-Minecraft ports on that channel while the stable line sits on an older version — so
  * the ordering preferred a beta for exactly the projects that had a stable alternative.

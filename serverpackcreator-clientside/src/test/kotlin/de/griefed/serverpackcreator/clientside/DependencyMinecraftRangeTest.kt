@@ -37,9 +37,9 @@ import java.util.jar.JarOutputStream
  * *mod-id → version* requirements and never looks at `ScannedMod.minecraftConstraint`, even though
  * `dependencyToDemote` already holds a `ScannedMod` for every staged jar and that field is on it.
  *
- * **Why it matters now.** Until 2026-09-09 the *exact-Minecraft* rule in `pickDependencyFile` was the
- * protection in this dimension: a dependency was never staged for another version, so its descriptor could
- * not disagree about one. The patch-version fallback deliberately relaxed that, which leaves the dimension
+ * **Why it matters.** The *exact-Minecraft* rule in `pickDependencyFile` is no longer the protection in
+ * this dimension: it staged a dependency for one version only, so its descriptor could not disagree about
+ * one. The patch-version fallback deliberately relaxes that, which leaves the dimension
  * ungated — a `cobblemon` Fabric 1.21.1 build now stages into a 1.21.11 pack, the loader refuses the pack at
  * runtime, and the **candidate** wears the `INCONCLUSIVE`, which overwrites a decisive verdict in the store.
  * It cannot reach a false `CONFIRMED` (a wrong-Minecraft library produces none of the four decisive rungs),
@@ -193,7 +193,7 @@ internal class DependencyMinecraftRangeTest {
      * **A bundled jar's pin counts as the jar that carries it**, because a jar-in-jar library is on the
      * classpath exactly like a staged one — while the host's own descriptor may say nothing at all.
      *
-     * Measured live 2026-09-11, four published rows:
+ * Measured live, four published rows:
      * `quilted-fabric-api-11.0.0-alpha.3+0.102.0-1.21.jar` bundles `qsl_base-10.0.0-alpha.1+1.21.jar`, which
      * pins `minecraft [1.21, 1.21]` exactly. Staged into a Minecraft 1.21.1 pack it refused the whole pack
      * with *"Quilt Base API requires version [1.21, 1.21] of minecraft"*, and the candidate wore the

@@ -39,7 +39,7 @@ import org.junit.jupiter.api.TestFactory
  *  2. the decisive client-only evidence
  *  3. the excuses — dependency failure, sandbox network, mixin apply, loader solver, runtime mismatch
  *
- * Getting 2 and 3 the wrong way round is the inversion this project has warned about since 2026-08-29: *an
+ * Getting 2 and 3 the wrong way round is the inversion this project has warned about since: *an
  * excuse may never outrank decisive client-only evidence*, because a clientside mod may perfectly well phone
  * home **and** die on a client class, and the marker must still win. Getting 1 wrong is worse still — it lets
  * host trouble be published as a mod's fault, which is the missing-runtime-image and poisoned-loader-cache
@@ -147,7 +147,7 @@ internal class DefaultBootRulesTest {
             .filter { it.source == RuleSource.CONSOLE && it.verdict == Verdict.CONFIRMED }
 
         Assertions.assertEquals(
-            // `client-only-dependency` joined on 2026-09-13. It is the same bar as the other three: the
+ // `client-only-dependency` joined. It is the same bar as the other three: the
             // loader read the jar and refused a MANDATORY dependency as one it will not load on a server,
             // which a broken harness cannot fabricate. Its position matters as much as its presence —
             // `theClientOnlyDependencyRungOutranksTheExcuseOnTheLineAbove` is what pins that.
@@ -196,8 +196,8 @@ internal class DefaultBootRulesTest {
 
     /**
      * **A mixin subsystem exception is a mixin failure, whatever it was reaching for.**
-     * `ClassMetadataNotFoundException` sat in `dependency-failure`, and on the public grinder 2026-09-11 it
-     * caught two rows that are nothing of the kind: `CurseForge/ars-nouveau` reaching
+     * `ClassMetadataNotFoundException` in `dependency-failure` catches rows that are nothing of the kind,
+     * as the public grinder shows: `CurseForge/ars-nouveau` reaching
      * `net.minecraft.core.BlockSourceImpl` (a class its Minecraft no longer has) and
      * `CurseForge/yungs-better-caves` reaching `com.llamalad7.mixinextras.injector.wrapoperation.Operation`.
      *
@@ -236,7 +236,7 @@ internal class DefaultBootRulesTest {
 
     /**
      * **`com.mojang.blaze3d` is a client-only class exactly as `net.minecraft.client` is**, and it was not in
-     * the marker. Measured on the public grinder 2026-09-12: `Modrinth/vulkanmod` — a Vulkan *renderer*,
+ * the marker. Measured on the public grinder: `Modrinth/vulkanmod` — a Vulkan *renderer*,
      * whose metadata reads CONTRADICTORY — crashed with
      *
      *     Caused by: java.lang.NoClassDefFoundError: com/mojang/blaze3d/systems/RenderSystem

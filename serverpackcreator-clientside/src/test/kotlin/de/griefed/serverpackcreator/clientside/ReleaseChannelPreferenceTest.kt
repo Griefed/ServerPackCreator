@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
  * Pins that the boot picks the newest **release**, and reaches for a beta or an alpha only when the project
  * publishes no release for the loader.
  *
- * **The reported case, read from the live Modrinth API on 2026-09-10.** `hybrid-aquatic` publishes **16
+ * **The reported case, read from the live Modrinth API.** `hybrid-aquatic` publishes **16
  * stable Forge releases** — `1.5.0-forge` … `1.6.9-forge`, every one on Minecraft 1.20.1 and carrying a real
  * `META-INF/mods.toml` — beside **10 `[Sinytra]` betas** on 1.20.1/1.20.2/1.20.4. The grinder booted the
  * beta `[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar`, whose only descriptor is a `fabric.mod.json`, and

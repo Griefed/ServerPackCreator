@@ -35,7 +35,7 @@ import java.io.File
  * are permanent, actionable by nobody, and mixed into the one bucket an operator is expected to read and
  * fix, which is what makes the bucket unreadable.
  *
- * **Measured on `grinder.serverpackcreator.de`, 2026-09-09**, over its 53 `ERROR` rows:
+ * **Measured on `grinder.serverpackcreator.de`**, over its 53 `ERROR` rows:
  *
  * | Cause | Rows |
  * |---|---|

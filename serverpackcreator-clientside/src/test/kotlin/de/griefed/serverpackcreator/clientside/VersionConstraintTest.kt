@@ -94,7 +94,7 @@ internal class VersionConstraintTest {
      * NeoForge therefore accept in a `versionRange`. Every element is an alternative: the constraint holds
      * if any one of them does.
      *
-     * Found on the public grinder 2026-09-06, in the ERROR rows. `distanthorizons` declares
+ * Found on the public grinder, in the ERROR rows. `distanthorizons` declares
      * `[1.20.3],[1.20.4]` and was refused for a **1.20.4** pack; `mru` declares `26.2,26.3` and was refused
      * for a **26.2** pack. Executed against the parser, both constraints refused *every* version they list,
      * and Maven's own documented example `(,1.0],[1.2,)` refused everything — the union was never
@@ -186,7 +186,7 @@ internal class VersionConstraintTest {
      * which *accepts*, by the rule above. Both sides of the comparison then accepted, the constraint
      * narrowed nothing, and the newest build won.
      *
-     * Measured on the public grinder 2026-09-13: `createaddition` 1.2.3 declares `create [0.5.1.e,0.5.2)`
+ * Measured on the public grinder: `createaddition` 1.2.3 declares `create [0.5.1.e,0.5.2)`
      * and was staged `create-1.20.1-6.0.8.jar` — five major versions above its own upper bound — after which
      * NeoForge refused the pack and the candidate wore the INCONCLUSIVE.
      */

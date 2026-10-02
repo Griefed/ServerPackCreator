@@ -165,8 +165,8 @@ class HostProcessServerRunner : ServerRunner {
      * teardown is concerned, and treating it otherwise burned the entire budget waiting for an exit that had
      * already happened.
      *
-     * Exit-code note: the shell now reports 143 (SIGTERM) where it used to report 137 (SIGKILL).
-     * [BootLogClassifier] treats both as "terminated from outside" and neither as a crash, so no verdict moves.
+     * Exit-code note: a descendant signalled this way makes the shell report 143 (SIGTERM) rather than 137
+     * (SIGKILL). [BootLogClassifier] treats both as "terminated from outside" and neither as a crash.
      */
     private fun destroyTree(process: Process) {
         val descendants = process.toHandle().descendants().toList()

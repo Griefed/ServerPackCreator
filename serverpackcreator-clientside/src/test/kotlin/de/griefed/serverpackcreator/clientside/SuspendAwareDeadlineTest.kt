@@ -26,7 +26,7 @@ import java.time.Duration
 /**
  * Pins the boot budget against a host that goes to sleep mid-boot.
  *
- * A boot deadline measured on the wall clock expires on a server that never got the time. Measured 2026-07-31: a
+ * A boot deadline measured on the wall clock expires on a server that never got the time. Measured: a
  * laptop idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
  * `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch — i.e. the verdict was
  * about the host's sleep, not about the mod. So a suspended interval is added back: the timeout must mean "the boot

@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test
  * problem. The other two are permanent, actionable by nobody, and mixed into the one bucket an operator is
  * expected to read and fix — so the bucket cannot be read.
  *
- * **Measured on `grinder.serverpackcreator.de`, 2026-09-09**, over its 53 `ERROR` rows:
+ * **Measured on `grinder.serverpackcreator.de`**, over its 53 `ERROR` rows:
  *
  * | Cause | Rows | Belongs in |
  * |---|---|---|
@@ -164,9 +164,9 @@ internal class PreventionCauseVerdictTest {
     }
 
     /**
-     * **An exhausted backtrack is nobody's failure, not ours.** It was `HOST` until 2026-09-12 on the
-     * reasoning that "staging dropped those builds itself" — which describes the mechanism, where this
-     * property is about blame. Staging only ever drops a build because something upstream *declared* an
+     * **An exhausted backtrack is nobody's failure, not ours.** Calling it `HOST` on the reasoning that
+     * "staging dropped those builds itself" describes the mechanism, where this property is about blame.
+     * Staging only ever drops a build because something upstream *declared* an
      * incompatibility: a version range one jar states about another, or a Minecraft range a jar states about
      * itself. No operator can act on either, and running out of backtracks is not this case at all —
      * `dependencyToDemote` then logs and boots anyway rather than refusing.

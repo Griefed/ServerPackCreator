@@ -92,18 +92,18 @@ object KnownModIds {
         "fabric" to PlatformRef("fabric-api", "306612"),
         "fabric-api" to PlatformRef("fabric-api", "306612"),
         // QFAPI is the reason a registry is needed at all rather than a slug guess: neither platform
-        // addresses it by anything resembling its mod id. Verified against both live APIs on 2026-08-29 —
+        // addresses it by anything resembling its mod id. Verified against both live APIs --
         // Modrinth `qsl` (qvIfYCYJ) and CurseForge `634179`, both titled "Quilted Fabric API (QFAPI) /
         // Quilt Standard Libraries (QSL)".
         "quilted_fabric_api" to PlatformRef("qsl", "634179"),
         "qsl" to PlatformRef("qsl", "634179"),
-        // A renamed project: the mod id matches no slug on either platform. Verified 2026-09-11 --
+        // A renamed project: the mod id matches no slug on either platform. Verified --
         // `https://api.modrinth.com/v2/project/tacz` answers 404, `timeless-and-classics-guns` answers
         // 200. Guessing `tacz` is a request that can only miss, and a refusal nobody can act on.
         // CurseForge is deliberately left to its own slug guess: the numeric id could not be verified
         // here, and inventing one would send every lookup to whatever project happens to hold it.
         "tacz" to PlatformRef("timeless-and-classics-guns", null),
-        // --- observed unresolved on the public grinder, 2026-09-11 --------------------------------------
+        // --- observed unresolved on the public grinder ---------------------------------------------------
         // Each of the six below was a published `DEPENDENCY_FAILURE` whose named library exists on both
         // platforms under a slug the id does not spell, so the slug guess found nothing and the boot went
         // ahead without it. A *search* was tested and rejected before adding these: CurseForge answers
@@ -126,8 +126,8 @@ object KnownModIds {
         "kotlinforforge" to PlatformRef("kotlin-for-forge", "351264"),
         "rhino" to PlatformRef("rhino", "416294"),
         "wover" to PlatformRef("worldweaver", "1037172"),
-        // Three more ids observed going unresolved on 2026-09-13, each verified against the live
-        // CurseForge API by the VERSIONS in its published file names rather than by its id alone.
+        // Three more ids observed going unresolved, each verified against the live CurseForge API by the
+        // VERSIONS in its published file names rather than by its id alone.
         //
         // `botanytrees` needed `botanypots`, which is `botany-pots` on both platforms and 404 as the bare
         // id: `botanypots-neoforge-1.21.1-21.1.44.jar` is what its `[21.1.34,21.2)` names.
@@ -151,8 +151,8 @@ object KnownModIds {
      *
      * Cross-loader ports deliberately keep the original's mod id — that is what makes them drop-in — so one
      * id legitimately names two projects, of which only one publishes for the loader being booted. Measured
-     * against the live Modrinth API on 2026-09-11: `create` publishes `[forge, neoforge]`, `create-fabric`
-     * publishes `[fabric, quilt]`, and a Fabric mod declaring `create` reached the first and was refused.
+     * against the live Modrinth API: `create` publishes `[forge, neoforge]` and `create-fabric` publishes
+     * `[fabric, quilt]`, so a Fabric mod declaring `create` reaches the first and is refused.
      *
      * **An alternative, never a replacement, and the table must not grow a loader dimension.** Mapping
      * `create` onto `create-fabric` outright would send every Forge and NeoForge boot to a project with no
@@ -194,7 +194,7 @@ object KnownModIds {
      * lucko's permissions library declares `fabric-permissions-api-v0` — plural, where Fabric API's own
      * module is the singular `fabric-permission-api-v1`. One character apart, two different projects.
      * Claiming it would stage Fabric API in place of the library the mod actually asked for and report a
-     * dependency it never declared. Verified against lucko's own `fabric.mod.json`, 2026-09-01.
+     * dependency it never declared. Verified against lucko's own `fabric.mod.json`.
      *
      * Keep this list to ids **observed** colliding; guessing at more would re-create the un-pinned table
      * this class exists to avoid.
@@ -214,7 +214,7 @@ object KnownModIds {
      *
      * **The shape is deliberately not Fabric's.** QSL ids are underscored and carry no API-version suffix,
      * so `fabric-<x>-v<digits>` matches none of them — which is why the Fabric rule left this open instead
-     * of closing it by coincidence. Verified 2026-09-01 across all 47 `quilt.mod.json` files in
+     * of closing it by coincidence. Verified across all 47 `quilt.mod.json` files in
      * `QuiltMC/quilt-standard-libraries` (branch 1.21.5): every module id they declare or depend on is
      * `quilt_` followed by lowercase words and underscores.
      */
@@ -295,10 +295,10 @@ object KnownModIds {
      * The slug guess is offered on **both** platforms: Modrinth addresses projects by slug directly, and
      * CurseForge's search endpoint resolves one to the numeric id its other routes need. It is worth making
      * because it costs one lookup that may simply miss, which is far cheaper than never resolving the
-     * dependency at all — and an id that maps nowhere is *reported*, never fabricated. CurseForge got no
-     * guess at all until 2026-09-06, because a guess that mapped and then failed to stage used to refuse the
-     * boot — so guessing risked converting working boots into refusals. The refusal split now keys on this
-     * type instead, and a [ModIdMapping.Guess] never refuses, which is what makes the guess safe to offer.
+     * dependency at all — and an id that maps nowhere is *reported*, never fabricated. It is only safe to
+     * offer on CurseForge because the refusal split keys on the mapping *type*: a guess that mapped and then
+     * failed to stage would otherwise refuse the boot, converting working boots into refusals. A
+     * [ModIdMapping.Guess] never refuses, which is what makes guessing worth doing at all.
      * Before that, every manifest-declared dependency of a CurseForge candidate was unresolvable unless it
      * was one of the four aliases: `modtweaker` never staged `mtlib`, a project CurseForge publishes under
      * exactly that slug.

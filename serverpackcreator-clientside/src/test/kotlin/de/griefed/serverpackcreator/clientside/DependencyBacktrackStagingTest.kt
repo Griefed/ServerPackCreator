@@ -32,7 +32,7 @@ import java.util.jar.JarOutputStream
  * fake platform and a downloader that writes real jars, so the decision `DependencyBacktrackTest` pins in
  * isolation is proven to be wired to something.
  *
- * **The case is `Modrinth/zoomify` on Quilt / Minecraft 1.20.5, 2026-09-06**, reproduced in miniature:
+ * **The case is `Modrinth/zoomify` on Quilt / Minecraft 1.20.5**, reproduced in miniature:
  * a dependency whose newest build demands a version of Fabric API that does not exist for the pack's
  * Minecraft, and an older build of the same dependency that demands nothing.
  *
@@ -159,7 +159,7 @@ internal class DependencyBacktrackStagingTest {
      * provides. `fabricloader` is environment-provided, so staging never downloads it and the judge saw a
      * requirement naming something absent — which it skips by design.
      *
-     * Measured on the public grinder 2026-09-11: **twelve** published `DEPENDENCY_FAILURE` rows are
+ * Measured on the public grinder: **twelve** published `DEPENDENCY_FAILURE` rows are
      * `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)` against the `0.19.3` that quilt-loader
      * 0.30.1 provides. Every one of them could have staged an older `fabric-language-kotlin` instead.
      */

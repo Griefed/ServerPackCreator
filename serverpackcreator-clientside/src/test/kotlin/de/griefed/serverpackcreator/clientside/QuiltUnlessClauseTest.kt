@@ -34,7 +34,7 @@ import java.util.jar.JarOutputStream
  *
  * **This is Quilt's own mechanism and the loader implements it.** A `quilt.mod.json` entry may carry
  * `unless`, and Quilt Loader then treats the requirement as met when the named id is present. Read from the
- * live jars on 2026-09-10, four of the five refused Quilt rows declare exactly this:
+ * live jars, four of the five refused Quilt rows declare exactly this:
  *
  * ```json
  * { "id": "quilt_resource_loader", "versions": "*", "unless": "fabric-resource-loader-v0" }

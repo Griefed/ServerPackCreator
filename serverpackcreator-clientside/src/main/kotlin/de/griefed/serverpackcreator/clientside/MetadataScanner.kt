@@ -75,7 +75,7 @@ class MetadataScanner(private val modScanner: ModScanner) {
      * through `ModScanner.scannerFor`, so this class and `ModListCompiler` cannot drift the way they once
      * did; what changes is the question asked, because a placeholder is not the loader it is tagged for.
      *
-     * Measured live 2026-09-06: `Modrinth/continuity`'s Forge row read `SERVER_OR_BOTH` off the stub and
+ * Measured live: `Modrinth/continuity`'s Forge row read `SERVER_OR_BOTH` off the stub and
      * came out `CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the same
      * project's Fabric row read `CLIENT` off the identical `fabric.mod.json`. That false contradiction is
      * what arms `ClientsideVerifier`'s other-version crash re-check.

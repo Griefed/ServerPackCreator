@@ -32,7 +32,7 @@ import java.util.zip.ZipFile
  * **Why the platform cannot be trusted for this.** A platform's loader and Minecraft sets are what an author
  * ticked, and `BootCandidateSelector` trusts them absolutely: it boots the *newest* Minecraft in the set,
  * and where one file claims two loaders it takes whichever the platform listed first. Measured against the
- * live grinder on 2026-08-31, that booted `DamageVignette-2.0.2-forge+mc1.20.jar` under **NeoForge**
+ * live grinder, that booted `DamageVignette-2.0.2-forge+mc1.20.jar` under **NeoForge**
  * (`Missing language javafml version [46,)`) and `create_ltab` on **Minecraft 1.20.6** against older
  * mappings (`@Inject … could not find any targets`). Both died, both were scored as sideness evidence, and
  * neither run had anything to do with the mod being client-only.

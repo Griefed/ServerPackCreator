@@ -61,11 +61,11 @@ internal class ModIdRegistryTest {
     }
 
     /**
-     * **CurseForge gets a guess too, now that a guess cannot refuse a boot** (Griefed's call, 2026-09-06).
+     * **CurseForge gets a guess too, because a guess cannot refuse a boot** (Griefed's call).
      *
-     * It used to get none, and the reasoning was sound at the time: CurseForge addresses projects by numeric
-     * id, so a mod id is never a valid ref, and a mapped-then-unstageable id refused the boot — which made
-     * *being almost resolvable worse than being unknown*, the `xaerolib` trap. The cost was that every
+     * Withholding one is defensible on its face: CurseForge addresses projects by numeric id, so a mod id is
+     * never a valid ref, and a mapped-then-unstageable id that refused the boot would make *being almost
+     * resolvable worse than being unknown* — the `xaerolib` trap. The cost is that every
      * manifest-declared dependency of a CurseForge candidate was unresolvable unless it was one of four
      * hardcoded aliases: `modtweaker` never staged `mtlib`, which CurseForge publishes under that exact slug.
      *
@@ -119,7 +119,7 @@ internal class ModIdRegistryTest {
      * **QFAPI is why this registry exists rather than a slug guess.** Neither platform addresses it by
      * anything resembling `quilted_fabric_api`: Modrinth calls it `qsl` and CurseForge `634179`. The
      * Modrinth slug-fallback would miss it outright, so without the alias a Quilt mod's core dependency is
-     * unresolvable. Verified against both live APIs on 2026-08-29.
+     * unresolvable. Verified against both live APIs.
      */
     @Test
     fun quiltedFabricApiMapsToQslOnBothPlatforms() {
@@ -150,7 +150,7 @@ internal class ModIdRegistryTest {
      * ecosystem went unstaged — the mod then booted without it, its loader refused the pack, and the
      * *candidate* wore an INCONCLUSIVE for a dependency the harness never supplied.
      *
-     * Reported live 2026-09-01 for `fabric-resource-loader-v*`, `fabric-block-getter-api-v*` and
+     * Reported live for `fabric-resource-loader-v*`, `fabric-block-getter-api-v*` and
      * `fabric-rendering-fluids-v*`, and it is the same shape as the Quilt solver failure recorded earlier:
      * `fabric-resource-loader-v0 versions [*] (0 valid options, 0 invalid options)`.
      */
@@ -194,7 +194,7 @@ internal class ModIdRegistryTest {
     /**
      * **The collision that makes a bare pattern wrong.** lucko's permissions library declares
      * `fabric-permissions-api-v0` (plural), which matches the module shape exactly while being a separate
-     * project — verified against its `fabric.mod.json` on 2026-09-01. Fabric API's own module is
+     * project — verified against its `fabric.mod.json`. Fabric API's own module is
      * `fabric-permission-api-v1` (singular), one character apart, and must still resolve. Claiming lucko's
      * for Fabric API would stage the wrong jar and report a dependency the mod never declared.
      */
@@ -226,7 +226,7 @@ internal class ModIdRegistryTest {
      * them, so each fell through to a Modrinth slug guess that 404s and to nothing at all on CurseForge —
      * the same unstaged-dependency failure `fabric-resource-loader-v0` produced.
      *
-     * Verified 2026-09-01 by reading all 47 `quilt.mod.json` files in `QuiltMC/quilt-standard-libraries`
+     * Verified by reading all 47 `quilt.mod.json` files in `QuiltMC/quilt-standard-libraries`
      * (branch 1.21.5) and collecting what they declare in `depends`: 33 distinct `quilt_*` ids, e.g.
      * `quilt_resource_loader_testmod` depends on `["quilt_loader", "quilt_resource_loader"]`.
      *
@@ -321,7 +321,7 @@ internal class ModIdRegistryTest {
     }
 
     /**
-     * **Six ids observed going unresolved on the public grinder, 2026-09-11**, each a published
+     * **Six ids observed going unresolved on the public grinder**, each a published
      * `DEPENDENCY_FAILURE` whose named library exists under a slug the id does not spell — so the optimistic
      * slug guess found nothing, the boot went ahead without the library, and the loader refused the pack.
      *
@@ -359,7 +359,7 @@ internal class ModIdRegistryTest {
      * the wrong one.** `310830` is published under the slug `sewingkit` and its newest file is
      * `SewingKit-1.0.2.jar` for Minecraft **1.14.2** — abandoned. `411896` is `sewing-kit`, publishes
      * `SewingKit-1.20.1-1.8.1.jar` and `SewingKit-26.1.2-2.8.1.jar`, and its 2.x versions are what
-     * `toolbelt`'s declared `[2.0.0,)` is asking for. Verified against the live API 2026-09-13.
+     * `toolbelt`'s declared `[2.0.0,)` is asking for. Verified against the live API.
      *
      * This is why the registry carries numeric ids rather than letting the slug guess run: the guess would
      * have picked the dead project by name and staged a Minecraft 1.14 jar.
@@ -388,7 +388,7 @@ internal class ModIdRegistryTest {
     /**
      * **A mod id that is the slug minus its hyphens resolves to nothing, and the guess cannot find it.**
      * `botanypots` is what `botanytrees` declares; Modrinth publishes the project as `botany-pots` and
-     * answers 404 for the bare id. Verified against the live API 2026-09-13, both directions.
+     * answers 404 for the bare id. Verified against the live API, both directions.
      *
      * Measured on the public grinder the same day: `CurseForge/botany-trees` on NeoForge 1.21 was published
      * INCONCLUSIVE with `Mod ID: 'botanypots' … Actual version: '[MISSING]'`.
@@ -423,9 +423,9 @@ internal class ModIdRegistryTest {
                 "kotlinforforge" to "351264",
                 "rhino" to "416294",
                 "wover" to "1037172",
-                // Added 2026-09-13, each verified against the live CurseForge API by the versions in its
-                // published file names — the ids alone prove nothing, the versions are what identify the
-                // project a dependant is asking for.
+                // Each verified against the live CurseForge API by the versions in its published file
+                // names -- the ids alone prove nothing, the versions are what identify the project a
+                // dependant is asking for.
                 "botanypots" to "353928",
                 "betterquesting" to "238856",
                 "sewingkit" to "411896"

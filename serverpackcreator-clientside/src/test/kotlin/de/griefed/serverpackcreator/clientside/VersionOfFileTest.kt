@@ -26,7 +26,7 @@ import kotlin.test.Test
  * A published version string routinely leads with the **Minecraft** version, and comparing that against a
  * dependant's range compares the wrong number entirely.
  *
- * Measured against the live Modrinth API on 2026-09-13, Create publishes both spellings within one
+ * Measured against the live Modrinth API, Create publishes both spellings within one
  * loader/Minecraft pair — `mc1.20.1-6.0.8` and `1.20.1-6.0.6` — so the set is judged inconsistently: the
  * `mc`-prefixed one is unreadable and *accepts*, the bare one reads as `1.20.1` and is compared as though
  * the mod were at version 1.20. Neither answer is about Create's version.
@@ -79,7 +79,7 @@ internal class VersionOfFileTest {
      * `1.20-2.16.35-forge`, so matching only the declared version left the whole string intact and
      * moonlight 2.16.35 compared as version **1.20** — below every range its dependants state.
      *
-     * Measured against the live Modrinth API 2026-09-13: with `[2.16,)` the selector preferred
+ * Measured against the live Modrinth API: with `[2.16,)` the selector preferred
      * `moonlight-1.20-2.13.82-forge.jar` over four 2.16.x builds sitting beside it, because none of them
      * could be read as satisfying anything.
      */

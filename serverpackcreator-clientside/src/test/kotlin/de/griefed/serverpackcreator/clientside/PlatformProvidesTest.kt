@@ -34,7 +34,7 @@ import kotlin.test.Test
  * Mod ID: 'forge', Requested by: 'iceberg', Expected range: '[47.2,)', Actual version: '47.1.106'
  * ```
  *
- * Measured on the public grinder 2026-09-13: `advancement-plaques` and `item-highlighter` (on both
+ * Measured on the public grinder: `advancement-plaques` and `item-highlighter` (on both
  * platforms) were each staged `Iceberg-1.20.1-forge-1.1.25.jar`, which demands `forge [47.2,)`, into a
  * NeoForge `47.1.106` pack — the 1.20.1 fork froze there — and all three were published INCONCLUSIVE.
  * With the pair in hand the judge can demote Iceberg and backtrack to a build that fits.

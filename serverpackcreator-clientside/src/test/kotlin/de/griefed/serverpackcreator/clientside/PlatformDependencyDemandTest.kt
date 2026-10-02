@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
  * `boot-rules.default.json` already encodes one layer up, where the console decides and the metadata only
  * declares.
  *
- * **The live case, `CurseForge/aether` on Forge / Minecraft 1.20.2, 2026-09-08.** The grinder published
+ * **The live case, `CurseForge/aether` on Forge / Minecraft 1.20.2.** The grinder published
  * *"Required dependency unavailable … owo-lib (nothing published for this loader and Minecraft version)"*.
  * Both halves of that are true — owo-lib publishes no Forge build at all — and the conclusion is still
  * wrong, because **the Forge/NeoForge jar's `mods.toml` does not list owo-lib**; only the Fabric and Quilt
@@ -140,7 +140,7 @@ internal class PlatformDependencyDemandTest {
     /**
      * **The range lives in the jar, not in the ref.** `ModFile.requiredDependencies` carries opaque platform
      * ids and no version, so the platform route picked the newest build for the Minecraft version even where
-     * the candidate had demanded a specific one. Measured on the public grinder 2026-09-11:
+ * the candidate had demanded a specific one. Measured on the public grinder:
      * `cobblemon-additions` demands `cobblemon >=1.7.1` and was staged `Cobblemon-fabric-1.6.1+1.21.1`.
      */
     @Test

@@ -28,7 +28,7 @@ import kotlin.test.Test
  * (client/server only)"* — and a mod that cannot load without a dependency the server will never have
  * cannot run on a server either. That is exactly what the fallback list is for.
  *
- * Measured on the public grinder 2026-09-13: `Modrinth/voxy` and `Modrinth/cull-less-leaves` both name
+ * Measured on the public grinder: `Modrinth/voxy` and `Modrinth/cull-less-leaves` both name
  * `sodium` this way and were published `INCONCLUSIVE / DEPENDENCY_FAILURE` — the boot was paid for and its
  * strongest finding discarded, because `Incompatible mods found` on the line above matches the
  * dependency-failure rung first.

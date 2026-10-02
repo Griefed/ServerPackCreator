@@ -141,7 +141,7 @@ internal class BootVerifierCrashRecheckTest {
         BootVerifier.OtherVersionAttempt(label, outcome(result, detail, excerpt))
 
     /**
-     * The false positive this exists for, reported live on 2026-08-23: `iron-chests` — a mod that is
+ * The false positive this exists for, reported live: `iron-chests` — a mod that is
      * unarguably server-safe — came out `HIGH` on `Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)`, with
      * the note "Declared server/both but the server crashed". Exactly one build of the mod was ever booted,
      * so "this build crashes" and "this mod is clientside" were indistinguishable. When the metadata says
@@ -176,11 +176,11 @@ internal class BootVerifierCrashRecheckTest {
      * reaches `CONFIRMED`, which strips the mod from every server pack built against the fallback list, and
      * that is worth one boot.
      *
-     * This arm exists because the axis moved. A project used to be ground under every loader it publishes
-     * for, so a wrong crash routinely met a clean boot from a sibling loader *in the same run* and
-     * `ClientsideVerifier.targetDisprovingTheCrash` threw it out for free — that is the `iron-chests` story.
+     * This arm exists because of the grinding axis. Grinding a project under every loader it publishes for
+     * lets a wrong crash meet a clean boot from a sibling loader *in the same run*, and
+     * `ClientsideVerifier.targetDisprovingTheCrash` throws it out for free — that is the `iron-chests` story.
      * One loader per Minecraft line means nobody boots that sibling unless something asks, and
-     * `pickRecheckCandidates` now spends the first attempt on exactly it.
+     * `pickRecheckCandidates` spends the first attempt on exactly it.
      */
     @Test
     fun aCrashThatIsAboutToBePublishedIsReCheckedEvenIfTheMetadataAgrees() {
