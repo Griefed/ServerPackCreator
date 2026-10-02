@@ -4,8 +4,7 @@
 # CI is `.forgejo/workflows` (see .claude/rules/ci-workflows.md), and `.forgejo/workflows` existing means
 # Forgejo ignores `.github/workflows` ENTIRELY -- so nothing here can ever run on Forgejo, and nothing
 # Forgejo must do may live here. GitHub Pages can only be deployed from GitHub, and Forgejo has no Pages
-# equivalent at all, which is why hosting the rendered site had to stop when GitLab Pages went away. This
-# brings it back, restoring what `8.x.x`'s `.github/workflows/github_release.yml` `pages` job used to do.
+# equivalent at all, so this is the only place the rendered site can be hosted from.
 #
 # It is NOT a second CI, the line `.github/workflows/test.yml` draws in its own header. It needs no secrets
 # (`GITHUB_TOKEN` is injected, and Pages authenticates by OIDC), it tests nothing, and it gates nothing --
@@ -54,9 +53,8 @@ env:
   # breaks without a commit to blame. Bump it here and in docs.yml together.
   # NOTE the two pull the SAME tag from DIFFERENT registries -- docs.yml runs `jetbrains/writerside-builder`
   # from Docker Hub by hand, while this action hard-codes
-  # `registry.jetbrains.team/p/writerside/builder/writerside-builder`. Verified 2026-09-30 that this tag
-  # resolves in the JetBrains registry (`docker manifest inspect`), so a Docker Hub tag is not automatically
-  # a valid value here -- check both before bumping.
+  # `registry.jetbrains.team/p/writerside/builder/writerside-builder`. A Docker Hub tag is not automatically
+  # a valid value here, so check both with `docker manifest inspect` before bumping.
   DOCKER_VERSION: 2026.02.8644
 
 jobs:
@@ -87,8 +85,8 @@ jobs:
 
       # JetBrains' own action, rather than docs.yml's hand-rolled `docker run`. docs.yml needs the hand-rolled
       # form because its Forgejo runner puts the job in a container talking to a SIBLING daemon, where a
-      # `-v "$PWD:..."` bind resolves on the daemon's filesystem and silently mounts an empty directory
-      # (measured 2026-08-22; the build exited 0 having produced nothing). GitHub's hosted runners have no job
+      # `-v "$PWD:..."` bind resolves on the daemon's filesystem and silently mounts an empty directory --
+      # the build then exits 0 having produced nothing. GitHub's hosted runners have no job
       # container -- the daemon and the workspace are the same machine -- so an ordinary bind is correct here
       # and the supported action can be used. `location` points the builder at the help module.
       - name: Build the Writerside webhelp

@@ -41,7 +41,7 @@ jobs:
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     # NO `container:` HERE -- same reason as qodana.yml. act runs JavaScript actions by exec'ing `node`
     # INSIDE the job container, so checkout and upload-artifact fail with exit 127 in any tool image that
-    # lacks node. This job DID fail that way (run 133) before the builder moved into a `docker run`.
+    # lacks node. The builder therefore runs as a `docker run` from an ordinary runner image.
     env:
       ARTIFACT: webHelpSPCH2-all.zip
       INSTANCE: Writerside/spch
@@ -64,12 +64,11 @@ jobs:
           cp -f README.md            serverpackcreator-help/Writerside/topics/README.md
           cp -f SECURITY.md          serverpackcreator-help/Writerside/topics/SECURITY.md
 
-      # `--runner gitlab` became wrong with the forge change; the flag only labels the environment in the
-      # report, so `other` is accurate and avoids claiming a runner that no longer exists.
+      # `--runner other`: the flag only labels the environment in the report, and `other` is what this is.
       # The builder runs in its own container rather than as the job's container. Under docker-in-docker a
       # `-v "$PWD:/workspace"` bind is resolved by the DIND daemon, whose filesystem holds no copy of the
-      # job's workspace -- verified 2026-08-22 against docker:dind, the sibling saw an EMPTY directory and
-      # still exited 0, so the build would have silently produced nothing. `--volumes-from` inherits the
+      # job's workspace -- the sibling sees an EMPTY directory and still exits 0, so the build silently
+      # produces nothing. `--volumes-from` inherits the
       # job container's own workspace volume instead, which makes $PWD name the same files on both sides.
       # THIS REQUIRES the runner's `container.options` to mount a volume at the workspace parent
       # (`-v /workspace`); without it the workspace is ordinary container filesystem and nothing
@@ -132,9 +131,9 @@ jobs:
       - name: Set Permissions
         run: chmod +x gradlew
 
-      # `dokkaGenerateHtml`, not `dokkaJavadocJar`: the HTML publication is what the site serves, and it is
-      # what the old GitLab `pages` job published (the live github.io site is Dokka HTML, not the Javadoc
-      # format). Measured locally: 1411 files / 20 MB. Note the task WIPES `build/dokka` before writing, so
+      # `dokkaGenerateHtml`, not `dokkaJavadocJar`: the HTML publication is what the site serves -- the
+      # published site is Dokka HTML, not the Javadoc format. Around 1411 files / 20 MB.
+      # Note the task WIPES `build/dokka` before writing, so
       # the Javadoc publication's `build/dokka/javadoc` does not survive alongside it -- which is why the
       # upload below can take the whole directory without picking up a second, differently-shaped tree.
       - name: Build the Kotlin API reference

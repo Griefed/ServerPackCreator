@@ -5,14 +5,12 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
-// `dokkaSourceSets.includes` below names `module.md` as a FILE, which Dokka opens unconditionally -- so a
-// module applying this plugin without one cannot run any Dokka task at all. Nothing in the normal loop
-// notices: only `-api` has `build { finalizedBy(dokkaGeneratePublicationJavadoc) }`, so `./gradlew build`
-// exercises no other module's Dokka. `serverpackcreator-plugin-grinder` therefore shipped without a
-// module.md until the release pipeline's `Publish Maven` job ran `dokkaJavadocJar` over every project and
-// died on `.../serverpackcreator-plugin-grinder/module.md (No such file or directory)` (Forgejo run 472,
-// tag 9.0.0-alpha.8). Asserting it at configuration time turns that into a failure on the next `./gradlew`
-// anybody runs, in the module that caused it, instead of one that only a release reaches.
+// `dokkaSourceSets.includes` below names `module.md` as a FILE, which Dokka opens unconditionally, so a
+// module applying this plugin without one cannot run any Dokka task at all. The normal loop does not
+// notice: only `-api` has `build { finalizedBy(dokkaGeneratePublicationJavadoc) }`, so `./gradlew build`
+// exercises no other module's Dokka, and a missing module.md surfaces first in whatever release job runs
+// Dokka across every project. Asserting it at configuration time fails the next `./gradlew` anybody runs,
+// in the module that is actually missing the file.
 require(projectDir.resolve("module.md").exists()) {
     "${project.path} applies serverpackcreator.dokka-conventions but has no module.md. Dokka includes " +
         "${projectDir.resolve("module.md")} in every source set, so every Dokka task in this module " +
@@ -66,10 +64,8 @@ dokka {
 // BOTH publications read `build/generated` — `suppressedFiles` above points at it — so both must
 // declare the Java compilations that also write there, or Gradle fails the build with
 // "uses this output of task ':…:compileJava' without declaring an explicit or implicit dependency".
-// Only the Javadoc half was declared until 2026-08-16; the HTML half had the identical need and was
-// missing it. The gap stayed invisible because `build` runs only the Javadoc publication (via
-// `finalizedBy` in -api), so nothing in the normal loop ever put HTML in a graph with the compile
-// tasks. Keep the two in step — fixing one and not the other is exactly how this arose.
+// Keep the two in step. A gap here stays invisible, because `build` runs only the Javadoc publication
+// (via `finalizedBy` in -api) and so never puts the HTML one in a graph with the compile tasks.
 listOf(tasks.dokkaGeneratePublicationJavadoc, tasks.dokkaGeneratePublicationHtml).forEach { publication ->
     publication.configure {
         dependsOn(tasks.named("compileJava"), tasks.named("compileTestJava"))
@@ -93,9 +89,9 @@ tasks.register<Jar>("dokkaJavadocJar") {
     from(dokka.dokkaPublications.html.flatMap { it.outputDirectory })
 }
 
-// The javadoc jar a publication ships is Dokka's, not Gradle's stock one -- see the landmine in
-// `publishing-conventions`, which no longer calls `withJavadocJar()` precisely so the two cannot
-// collide on the `javadoc` classifier. The wiring lives HERE rather than there because this is the
+// The javadoc jar a publication ships is Dokka's, not Gradle's stock one -- `publishing-conventions`
+// deliberately does not call `withJavadocJar()`, so the two cannot collide on the `javadoc`
+// classifier. The wiring lives HERE rather than there because this is the
 // plugin that owns `dokkaJavadocJar`: `publishing-conventions` is applied first, so a
 // `tasks.named("dokkaJavadocJar")` over there would resolve a task that does not exist yet.
 // `withType(...).configureEach` is lazy, so the order the two plugins are applied in does not matter.

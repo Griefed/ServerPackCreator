@@ -1,10 +1,8 @@
-# Docker image build check, replacing GitLab's `Docker Test`.
+# Docker image build check.
 #
-# DELIBERATE DIFFERENCE FROM THE GITLAB JOB: this does not push. The GitLab job built with
-# `--push` and tagged every commit's image `:$CI_COMMIT_SHORT_SHA` on both ghcr.io and Docker Hub,
-# so every branch push published a public image nobody consumed. Here the build proves the
-# Dockerfile still builds and stops there; release images are `release-build.yml`'s job.
-# Restoring the old behaviour is a two-line change: add `push: true` and the two SHA tags below.
+# DELIBERATELY DOES NOT PUSH: the build proves the Dockerfile still builds and stops there, so no branch
+# push publishes a public image nobody consumes. Release images are `release-build.yml`'s job. Pushing
+# from here would be a two-line change -- `push: true` and a pair of SHA tags -- and is not wanted.
 name: Docker Test
 
 # NO `pull_request:` TRIGGER. Every PR on this instance is opened from a branch of this repository, and
@@ -104,9 +102,9 @@ jobs:
       #
       # The limiter is keyed on the requesting host, not the account -- 44000/minute is not an allowance
       # one build can exhaust, and the retry-after is under a millisecond -- so this login does not lift
-      # it. What lifts it is waiting, which buildkit will not do; that is the retry on the build step
-      # below, and the registry cache above is what removes the requests in the first place. The login
-      # still earns its second: Docker Hub's per-account quota is real.
+      # it. What lifts it is waiting, which buildkit will not do -- hence the retry on the build step
+      # below -- while the registry cache above removes the requests entirely. The login still earns its
+      # second: Docker Hub's per-account quota is real and is per-account.
       #
       # Deliberately a `run:` rather than `docker/login-action`, and deliberately tolerant: this job
       # requires no secrets, so a fork or an instance without them must keep building. Missing credentials

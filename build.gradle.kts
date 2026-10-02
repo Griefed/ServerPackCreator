@@ -125,11 +125,10 @@ tasks.register<Copy>("copyPluginsToApp") {
     into(appPlugins)
 }
 
-// The `build` task of every plugin the app stages, derived from the same list `copyPluginsToApp` reads.
-// An audit caught the first version listing the configurations a second time right here, which left
-// exactly the drift the comment claimed to prevent: a plugin could be staged and never built.
-// `ProjectDependency.path` rather than `dependencyProject` deliberately — a path is a lazy string, while
-// reaching for the project object is the cross-project access this build spent a sprint removing.
+// The `build` task of every plugin the app stages, derived from the same list `copyPluginsToApp` reads --
+// naming the configurations a second time here is how a plugin comes to be staged but never built.
+// `ProjectDependency.path` rather than `dependencyProject` deliberately: a path is a lazy string, while
+// reaching for the project object is cross-project access, which this build does not do.
 val pluginBuildTasks: List<String> = appPluginConfigurations
     .flatMap { configuration -> configuration.dependencies.withType(ProjectDependency::class.java) }
     .map { dependency -> "${dependency.path}:build" }
@@ -189,10 +188,9 @@ install4j {
     //Set the install4jHomeDir-property for building on your own machine, or use the paths listed below according
     //to your operating system family.
     // `providers.gradleProperty` instead of the `properties` map, which Gradle 9.7 deprecates. It also
-    // removes a trap: `properties["x"]` on an ABSENT key returns null, whose `.toString()` is the string
-    // "null" — which is not blank, so the old guard passed and installDir became a directory named
-    // `null`. That never fired only because gradle.properties declares `install4jHomeDir=` empty, making
-    // that empty declaration load-bearing. It no longer is.
+    // avoids a trap: `properties["x"]` on an ABSENT key returns null, whose `.toString()` is the string
+    // "null" — not blank, so a `isNotBlank` guard passes it and installDir becomes a directory named
+    // `null`. `orNull` plus `takeIf { it.isNotBlank() }` handles the absent and the empty case alike.
     installDir = providers.gradleProperty("install4jHomeDir").orNull
         ?.takeIf { it.isNotBlank() }
         ?.let { file(it) }

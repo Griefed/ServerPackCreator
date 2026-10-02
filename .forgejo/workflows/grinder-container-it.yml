@@ -83,10 +83,10 @@ jobs:
       # these tests SKIPS and the job goes green having verified nothing. So the job reads its own results
       # and fails on a skip, or on results that are not there at all.
       #
-      # Python rather than grep: the first version of this step counted matching *lines* with `grep -c`
-      # across a glob, and reported `ran=1 skipped=0` and exit 0 while both of its greps were failing with
-      # "No such file or directory" — a verification step that passed having verified nothing, which is
-      # precisely the bug it was written to prevent. The suite attributes are exact and an absent file
+      # Python rather than grep: `grep -c` over a glob counts matching *lines* and exits 0 even when the
+      # files it was pointed at do not exist, which is a verification step that passes having verified
+      # nothing -- precisely the bug this one exists to prevent. The suite attributes are exact and an
+      # absent file
       # raises instead of vanishing.
       - name: Prove the tests ran rather than skipped
         if: ${{ always() }}

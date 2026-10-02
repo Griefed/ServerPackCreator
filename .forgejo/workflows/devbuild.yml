@@ -1,8 +1,5 @@
-# The rolling dev build -- effectively the nightly. Ported from .github/workflows/devbuild.yml, which
-# Forgejo had been running as a fallback until .forgejo/workflows existed.
-#
-# The JAR, AppImage and install4j media jobs are unchanged from that file on purpose: they work, and this
-# port is about *where* the release lands, not how the artifacts are made.
+# The rolling dev build -- effectively the nightly. Produces the JAR, the AppImages and the install4j
+# media, and publishes them as the `continuous` release.
 name: Continuous
 
 on:
@@ -360,10 +357,9 @@ jobs:
         id: build_time
         run: echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
-      # The rolling release now lives on FORGEJO. `ncipollo/release-action` talked to GitHub's API, which
-      # is the wrong direction under the new arrangement. Delete-then-recreate rather than update: that is
-      # the only way to be certain the previous build's assets are gone, which is what `removeArtifacts`
-      # and `replacesArtifacts` were doing before.
+      # The rolling release lives on FORGEJO, so the API calls below are hand-rolled rather than an
+      # action aimed at GitHub. Delete-then-recreate rather than update: that is the only way to be
+      # certain the preceding build's assets are gone.
       #
       # The JSON payload is built by python from environment variables, not by shell interpolation -- the
       # body contains backticks, emoji and newlines, and quoting that by hand in YAML is a trap.

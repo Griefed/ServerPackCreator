@@ -1,10 +1,9 @@
 name: Update README with blog posts and sponsors
 
-# Ported from .github/workflows/update_readme.yml. GitLab used to invoke that GitHub workflow through
-# `act` on a schedule -- a bridge that disappears with GitLab, so the schedule lives here directly.
+# Runs on a schedule from here, and pushes to this repository's origin.
 #
-# The sponsor and contributor actions read GitHub's API, so they stay GitHub-hosted and need a GitHub
-# token; only the push target changes, from a hand-built GitLab URL to this repository's origin.
+# The sponsor and contributor actions read GitHub's API, so they need a GitHub token even though the
+# push target is Forgejo.
 on:
   schedule:
     - cron: '0 4 * * 1'

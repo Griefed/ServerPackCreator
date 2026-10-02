@@ -1,9 +1,7 @@
-# Phase 2 of releasing: everything a tag implies. Replaces GitLab's `Build Release`,
-# `Sign Java Publication`, the four `Publish *` jobs and `Build Docker Release`/`PreRelease`, plus the
-# install4j media that used to be built on GitHub by github_release.yml.
+# Phase 2 of releasing: everything a tag implies -- the jars, the AppImages, the install4j media, the
+# signed Maven publication, the Docker images, the release itself and its announcement.
 #
-# Forgejo is the origin of the release; the mirror job at the end pushes it outward. Nothing here depends
-# on GitHub or GitLab having run anything first.
+# Forgejo is the origin of the release; the mirror job at the end pushes it outward.
 name: Build Release
 
 on:
@@ -106,14 +104,13 @@ jobs:
           # Anchored on the product name: appimagetool-<arch>.AppImage is downloaded into this same
           # directory, so a bare *.AppImage would count it. Two, no more and no fewer, or stop.
           #
-          # Measured 2026-09-20, both invocations in one debian:bookworm-slim workspace (on an aarch64
-          # host, which mirrors this amd64 runner -- native first, then the other architecture):
-          #   produced   ServerPackCreator-9.9.9-test-aarch64_experimental.AppImage  -> ELF 64-bit, ARM aarch64
-          #              ServerPackCreator-9.9.9-test-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
-          #              appimagetool-aarch64.AppImage
-          #   ServerPackCreator-* glob matches 2; a bare *.AppImage glob matches 3.
-          #   JDK directories after both runs: jdk-21-aarch64, jdk-21-x86_64 -- per architecture, so the
-          #   second run cannot inherit the first one's runtime.
+          # Both invocations share one workspace, native architecture first:
+          #   produced   ServerPackCreator-<version>-aarch64_experimental.AppImage  -> ELF 64-bit, ARM aarch64
+          #              ServerPackCreator-<version>-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
+          #              appimagetool-aarch64.AppImage                              <- the tool itself
+          #   ServerPackCreator-* matches 2; a bare *.AppImage matches 3.
+          # The JDK is unpacked per architecture (jdk-21-aarch64, jdk-21-x86_64), so the second run cannot
+          # inherit the first one's runtime.
           COUNT="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | wc -l)"
           if [ "$COUNT" -ne 2 ]; then
             echo "::error::Expected 2 AppImages, found $COUNT"
@@ -155,7 +152,7 @@ jobs:
           # generated below, so they are covered by it like every other asset.
           cp ServerPackCreator-*.AppImage                     "release/$V/"
           rm -f "release/$V/output.txt" "release/$V/"*plain.jar
-          # Dokka HTML replaces what GitLab Pages used to host: it ships as a release asset now.
+          # The Dokka HTML reference ships as a release asset.
           if [ -d serverpackcreator-api/build/dokka ]; then
             (cd serverpackcreator-api/build/dokka && zip -qr "$GITHUB_WORKSPACE/release/$V/serverpackcreator-api-$V-dokka-html.zip" .)
           fi
@@ -227,11 +224,9 @@ jobs:
           # entry at MAX_ARG_STRLEN (32 * PAGE_SIZE = 131,072 bytes) independently of ARG_MAX, so
           # `-d "{...,\"body\":$BODY,...}"` dies at execve with `/usr/bin/curl: Argument list too long`
           # once the notes get big -- and they do: a beta or final release aggregates every prerelease
-          # section since the last stable one. Measured on 9.0.0-beta.1 (run 536, the failure this
-          # comment exists for): notes.md 200,185 bytes, assembled -d argument 201,610, job dead before
-          # curl ran; 9.0.0-alpha.8 had released fine at 75,918. Reproduced both shapes in alpine:3.20 --
-          # inlined: exit 126 "Argument list too long"; `-d @file`: curl execs and reaches the network.
-          # The PATCH branch below has always written a file; this is the POST branch catching up.
+          # section since the last stable one, which takes the payload past 200 kB where a prerelease sits
+          # around 75 kB. Inlined, that is exit 126 "Argument list too long" before curl is ever exec'd;
+          # `-d @file` runs and reaches the network. Both branches below therefore write a file.
           RELEASE_VERSION="$V" RELEASE_PRERELEASE="$PRE" python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['RELEASE_VERSION'],'name':os.environ['RELEASE_VERSION'],'body':open('notes.md').read(),'draft':False,'prerelease':os.environ['RELEASE_PRERELEASE']=='true'}))" > create.json
           # Reuse an existing release for this tag instead of failing. Re-running this workflow is the
           # ordinary way to repair a release whose `maven` or `docker` job failed, and with `set -eu` an
@@ -328,21 +323,18 @@ jobs:
           # The signing key travels as an ORG_GRADLE_PROJECT_ variable, NOT as `-PsigningKey=...`.
           # `findProperty("signingKey")` in publishing-conventions reads either, and an armoured PGP key is
           # multi-line: spliced into a shell variable and word-split into gradle arguments, it is truncated
-          # at the first newline, so `useInMemoryPgpKeys` gets a fragment. This is also how GitLab supplied
-          # it, and it keeps the private key out of the process argument list where anything able to read
-          # /proc/<pid>/cmdline could see it.
+          # at the first newline, so `useInMemoryPgpKeys` gets a fragment. It also keeps the private key out
+          # of the process argument list, where anything able to read /proc/<pid>/cmdline could see it.
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           V="${{ needs.prepare.outputs.version }}"
           COMMON="-Pversion=$V"
           SKIP="-x :serverpackcreator-api:test -x :serverpackcreator-app:test"
-          # `dokkaJavadocJar` WITHOUT a project path runs in all seven projects, so the docs of six
-          # modules that are never published gated the one publish that matters -- and on 9.0.0-alpha.8
-          # that is exactly what happened: `serverpackcreator-plugin-grinder` had no `module.md`, its
-          # Dokka task died, and the Maven publish never ran (run 472). Only `-api` is published, and
-          # its own `signMavenJavaPublication` already `dependsOn(dokkaJavadocJar)`, so the path here is
-          # explicit rather than load-bearing -- but it keeps an unpublished module out of the release.
+          # NAME THE PROJECT. `dokkaJavadocJar` without a path runs in all seven, so the docs of six modules
+          # that are never published would gate the one publish that matters -- a module missing its
+          # `module.md` is enough to kill the release. Only `-api` is published, and its own
+          # `signMavenJavaPublication` already `dependsOn(dokkaJavadocJar)`.
           ./gradlew :serverpackcreator-api:dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository    $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitHubPackagesRepository $COMMON $SKIP --info --stacktrace
@@ -508,22 +500,18 @@ jobs:
       # It runs only after the Forgejo release exists, so no downstream forge ever advertises a release
       # this one does not have. The tag itself arrives by ordinary git mirroring.
       #
-      # GitHub is the only outward mirror. gitlab.com WAS mirrored here too, until 2026-08-23: that step
-      # could never have succeeded, and reported a bare `exitcode '22'`, because gitlab.com's copy of the
-      # repository stopped receiving commits on 2024-04-28 (newest commit there: RELEASE: 5.2.1, 1397
-      # commits behind main) when the git push-mirror died with the GitLab->Forgejo migration. Both
-      # branches of GitLab's release API need something that repository does not have -- the tag, or the
-      # `ref` commit to mint it from -- so no amount of release-API work could have fixed it. Do not
-      # re-add it without first restoring the push-mirror and confirming gitlab.com has the tag.
+      # GitHub is the only outward mirror. Before adding another, confirm the git push-mirror to it is
+      # alive and that it already has the tag: a release API needs either an existing tag or a `ref`
+      # commit to mint one from, and a mirror that has stopped receiving commits has neither. That is a
+      # precondition no release-API work can substitute for.
       - name: Fetch release notes from Forgejo
         env:
           TOKEN: ${{ secrets.FJ_TOKEN }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -eu
-          # -o/-w rather than -f: `curl -sf` prints nothing on an HTTP error, which is how the GitLab step
-          # that used to follow this one reported five failed releases as `exitcode '22': failure` and
-          # nothing else. The body is where every one of these APIs says what is actually wrong.
+          # -o/-w rather than -f: `curl -sf` sets exit 22 and discards the body, so a failure reports
+          # `exitcode '22'` and nothing else. The body is where every one of these APIs says what is wrong.
           STATUS="$(curl -sS -o release.json -w '%{http_code}' \
             "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
             -H "Authorization: token $TOKEN")"
@@ -676,10 +664,9 @@ jobs:
           name: release-assets
           path: assets
 
-      # A job here rather than the old release-triggered .github/workflows/virustotal.yml, for two
-      # reasons: the assets already exist as an artifact, and `crazy-max/ghaction-virustotal` updates a
-      # *GitHub* release body, which is the wrong forge now. Submitting through VirusTotal's API directly
-      # removes both problems, and the permalinks are appended to the Forgejo release notes.
+      # Submits through VirusTotal's API directly rather than through `crazy-max/ghaction-virustotal`,
+      # which updates a *GitHub* release body: the assets are already here as an artifact, and the
+      # permalinks belong on the Forgejo release notes.
       #
       # Files over 32 MB need a one-time upload URL; that is what the branch below is for. Failures are
       # tolerated: a scan that does not come back must not fail a release that is already published.
@@ -743,26 +730,21 @@ jobs:
 
   news:
     name: "News on Discord"
-    # Recreated from `main`'s `github_release.yml` and `github-prerelease.yml`, which carried a `news` job
-    # each, differing only in the words "release" and "Pre-Release". `prepare.outputs.prerelease` chooses
-    # between them here, so this is one job rather than two near-identical workflows.
+    # One job for both channels: `prepare.outputs.prerelease` chooses the wording.
     #
     # It announces the FORGEJO release -- the canonical one -- and therefore deliberately does NOT need
     # `mirror`: a stalled push-mirror must not silence the announcement of a release that is complete
-    # here, and `mirror` is the job that failed on BOTH releases of 2026-08-23. It does wait for `maven`
-    # and `docker`, on the same reasoning `mirror` gives for its own `needs`: nobody should be pointed at
-    # a release whose artifacts and images do not exist yet. `virustotal` is left out because its own
-    # failures are explicitly tolerated and this announcement does not reproduce the release notes.
+    # here. It does wait for `maven` and `docker`, on the same reasoning `mirror` gives for its own
+    # `needs`: nobody should be pointed at a release whose artifacts and images do not exist yet.
+    # `virustotal` is left out because its own failures are explicitly tolerated and this announcement
+    # does not reproduce the release notes.
     needs: [prepare, release, maven, docker]
     runs-on: ubuntu-latest
     steps:
 
-      # Two findings against the original are fixed by construction rather than carried across.
-      # WORKFLOW-AUDIT.md M6: it `curl`ed ChaoticWeg/discord.sh's *master* and executed it, which is
-      # remote-code-execution-by-trust for what is only a JSON builder -- so the payload is built the way
-      # qodana.yml already builds its own. M4: the deprecated `::set-output` disappears along with the
-      # separate date step that fed it. Every value reaches python through `env:` rather than being
-      # interpolated into the shell, per WORKFLOW-AUDIT.md L2.
+      # The payload is built by python, the way qodana.yml builds its own: fetching and executing a
+      # third-party shell script for what is only a JSON builder is remote code execution by trust.
+      # Every value reaches python through `env:` rather than being interpolated into the shell.
       - name: Post to Discord
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}

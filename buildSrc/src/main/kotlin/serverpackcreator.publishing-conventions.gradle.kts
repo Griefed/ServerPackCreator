@@ -1,11 +1,10 @@
 /**
  * Publishing for the ONE module that is published: `serverpackcreator-api`.
  *
- * This used to live in `java-conventions`, so all six modules got `maven-publish`, `signing`, a
- * `mavenJava` publication, three remote repositories, a sources jar and a javadoc jar — while CI
- * publishes `:serverpackcreator-api` and nothing else (`.gitlab-ci.yml`: four
- * `:serverpackcreator-api:publish...` invocations). Applying it only where it is used removes the
- * apparent complexity from the other five and makes the published surface obvious.
+ * Applied by that module alone rather than by `java-conventions`, so `maven-publish`, `signing`, the
+ * `mavenJava` publication, the remote repositories and the sources jar exist only where something is
+ * actually published — which matches CI, where `.forgejo/workflows/release-build.yml`'s `maven` job
+ * runs `:serverpackcreator-api:publish...` and nothing else.
  */
 
 plugins {
@@ -41,10 +40,9 @@ publishing {
             }
         }
         maven {
-            // git.griefed.de is FORGEJO now, not GitLab. The old URL was a GitLab path
-            // (/api/v4/projects/63/packages/maven) authenticated with a `Private-Token` header, and
-            // neither exists on Forgejo: its package registry is /api/packages/{owner}/maven and it
-            // authenticates with ordinary HTTP Basic. The repository keeps the name `GitGriefed` so the
+            // git.griefed.de is FORGEJO: its package registry is /api/packages/{owner}/maven and it
+            // authenticates with ordinary HTTP Basic, not a `Private-Token` header. The repository keeps
+            // the name `GitGriefed` so the
             // generated task name -- publishMavenJavaPublicationToGitGriefedRepository, which CI calls --
             // does not change.
             name = "GitGriefed"

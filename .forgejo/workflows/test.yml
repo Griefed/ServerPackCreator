@@ -12,7 +12,7 @@
 # github.com, so every upload in this directory died -- test.yml, docs.yml and devbuild.yml all failed
 # that way, after the step had already found and staged the files. It is a client-side refusal, not a
 # missing API on the instance, and no runner or instance setting turns it off. Forgejo maintains patched
-# forks whose `isGhes()` is `return false` -- verified 2026-08-22 by reading `dist/upload/index.js` and
+# forks whose `isGhes()` is `return false` -- confirmed by reading `dist/upload/index.js` and
 # `dist/index.js` at the pinned commits -- so those two references point at code.forgejo.org, pinned by
 # commit like every other action here. `.github/workflows` keeps the upstream actions: on GitHub the
 # check is correct and the forks are unnecessary. The forks lag upstream (upload v5 vs v7, download v7

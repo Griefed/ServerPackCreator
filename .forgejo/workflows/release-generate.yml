@@ -51,8 +51,7 @@ jobs:
       # authenticated before it runs. The credential goes in a per-host Authorization header, NOT in
       # the remote URL: a URL credential is written into .git/config and then echoed back by
       # `git remote -v`, by git's own error messages on a failed push, and by anything later in the
-      # job that prints the remote. That is the same finding claude-docs/WORKFLOW-AUDIT.md raised as
-      # H-class against the old workflows, and update-readme.yml already does it this way.
+      # job that prints the remote. `update-readme.yml` authenticates the same way, for the same reason.
       - name: Authenticate origin for semantic-release
         env:
           FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
