@@ -179,11 +179,18 @@ This covers `busybox`, `alpine` and the grinder's Docker Hub pulls. **It does no
 
 ### 3. BuildKit (this is the one that fixes the observed failure)
 
+**The network name in the workflows is `runners_default`, not `registry-cache`** — changed by *ci: Use
+actual network name* on 2026-10-01, because the caches were put in the runner's own compose project
+rather than the standalone one above, and a compose project named `runners` names its default network
+`runners_default`. Section 1's compose file still describes the standalone shape; if you take that
+route, the two have to be made to agree, and the workflows are the copy that decides. The name is an
+`env:` on the probe step so each workflow spells it once.
+
 In `docker-test.yml` and `release-build.yml`, on the `Set up Docker Buildx` step:
 
 ```yaml
         with:
-          driver-opts: network=registry-cache
+          driver-opts: network=runners_default
           buildkitd-config-inline: |
             [registry."ghcr.io"]
               mirrors = ["registry-cache-ghcr:5000"]
@@ -200,14 +207,48 @@ mirror to `https`, and `fillInsecureOpts` looks the mirror's own scheme up under
 `[registry."<mirror host:port>"]` section**. Without it, buildkit dials `https://registry-cache-ghcr:5000`,
 fails the handshake, and falls back to upstream — i.e. it silently does nothing at all.
 
-**`driver-opts: network=registry-cache` is load-bearing, and the reason is written into this repo's
-history.** The builder is a container; without joining the cache's network its only route to a
+**`driver-opts: network=<the cache network>` is load-bearing, and the reason is written into this
+repo's history.** The builder is a container; without joining the cache's network its only route to a
 host-published port is the Docker bridge gateway, and this host's `iptables` `INPUT` chain has
 `policy DROP`. That configuration has already cost this project a 131-second outage diagnosed three
 different wrong ways (see the *symptom shared by two layers* entry in `CLAUDE.md`), and it fails the
 same silent way here: the SYN is dropped, buildkit waits out `tcp_syn_retries`, then falls back to
 upstream and the mirror appears to be "not working". Joining the network sidesteps the host stack
 entirely and gets DNS on the service name for free.
+
+### 3a. Which daemon the job is asking — the open question as of 2026-10-01
+
+**OPEN.** Run 830's probe printed
+
+```
+::notice::No 'runners_default' network on this host - pulling from upstream registries.
+```
+
+on a host whose runner *and* registry caches are on `runners_default`. The probe has since been
+rewritten to say which of three things it hit and to list the networks the daemon it asked actually
+has (`.forgejo/workflows/docker-test.yml`, step `regcache`), because the old one asserted the third
+reading while being unable to tell it from the other two:
+
+| what happened | what the old notice said |
+|---|---|
+| no `docker` CLI in the job | "No 'runners_default' network on this host" |
+| CLI present, daemon unreachable | "No 'runners_default' network on this host" |
+| daemon reachable, no such network | "No 'runners_default' network on this host" |
+
+The next run of either workflow answers it. **The likeliest reading, and the one to check first, is
+that the job is not talking to the daemon that holds that network.** `forgejo-runner`'s common
+compose shape runs a `docker:dind` sidecar and points the runner at it with
+`DOCKER_HOST=tcp://docker-in-docker:2376`; job containers are then created *inside* dind, so `docker`
+in a job sees dind's own `bridge`/`host`/`none` and none of the networks the compose project created
+beside it. `runners_default` and the two cache containers would be on the **host** daemon, one layer
+up and unreachable by service name. The daemon answering the job is now printed in the step, so the
+line to compare is that one against `docker network ls` on the host.
+
+If that is what it turns out to be, the options are: put the caches on a network the *dind* daemon
+has (i.e. start them from inside dind, or give dind a `--network` the caches also join), or drop the
+`docker:dind` sidecar and mount the host socket into the runner instead, or give buildkit a route to
+a host-published cache port — which is the one this host's `INPUT policy DROP` silently breaks, per
+the warning below. Decide it against the real topology rather than from this list.
 
 ### 4. Prove it worked, then record the numbers
 

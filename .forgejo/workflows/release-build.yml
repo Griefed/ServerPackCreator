@@ -377,17 +377,56 @@ jobs:
       #
       # This is what makes the ordering landmine harmless: the host half can land whenever, and this
       # workflow starts using it with no edit.
+      #
+      # THE PROBE REPORTS WHY, because the first version did not and that cost a round trip. `docker
+      # network inspect <name>` exits non-zero for three unrelated reasons -- no docker CLI, a CLI whose
+      # daemon cannot be reached, and a reachable daemon that has no such network -- and the notice
+      # asserted the third ("No 'runners_default' network on this host") while the step could not tell
+      # them apart. On 2026-10-01 that notice was printed on a host whose runner and registry caches
+      # ARE on `runners_default`, which makes the third reading the least likely of the three: a job
+      # container talking to a dind sidecar sees that sidecar's networks, not the ones the compose
+      # project created beside it. So the step now names which of the three it hit and prints the
+      # networks the daemon it asked actually has. This repository has already paid once for a negative
+      # that was read as the wrong negative -- `ufw status` showing no rule for a port that `INPUT
+      # policy DROP` was dropping anyway (see CLAUDE.md, "the symptom shared by two layers").
       - name: Use the host's registry cache when it is present
         id: regcache
+        env:
+          # One spelling. It appears in the probe, in the driver-opt and in every message below, and the
+          # commit that last changed it (ci: Use actual network name) had to edit two files to do it.
+          CACHE_NETWORK: runners_default
         run: |
           set -eu
-          if docker network inspect runners_default >/dev/null 2>&1; then
-            echo "driver_opts=network=runners_default" >> "$GITHUB_OUTPUT"
-            echo "Found the 'runners_default' network; the builder will pull through it."
-          else
-            echo "driver_opts=" >> "$GITHUB_OUTPUT"
-            echo "::notice::No 'runners_default' network on this host - pulling from upstream registries. See claude-docs/RUNNER-REGISTRY-CACHE.md to set it up."
+
+          emit() { echo "driver_opts=$1" >> "$GITHUB_OUTPUT"; }
+
+          if ! command -v docker >/dev/null 2>&1; then
+            emit ""
+            echo "::notice::No docker CLI in this job, so the registry cache could not even be looked for - pulling from upstream registries."
+            exit 0
           fi
+
+          # Ask the daemon something trivial first. A failure here means the step learns nothing about
+          # networks at all, which must not be reported as "the network is absent".
+          if ! daemon="$(docker info --format '{{.Name}} ({{.ServerVersion}}, {{.Driver}})' 2>&1)"; then
+            emit ""
+            echo "::notice::The docker CLI cannot reach a daemon, so the registry cache could not be looked for - pulling from upstream registries."
+            echo "docker info said: ${daemon}"
+            exit 0
+          fi
+          echo "Daemon answering this job: ${daemon}"
+
+          if docker network inspect "$CACHE_NETWORK" >/dev/null 2>&1; then
+            emit "network=$CACHE_NETWORK"
+            echo "Found the '$CACHE_NETWORK' network on that daemon; the builder will pull through it."
+            exit 0
+          fi
+
+          emit ""
+          echo "::notice::The daemon above has no '$CACHE_NETWORK' network - pulling from upstream registries. See claude-docs/RUNNER-REGISTRY-CACHE.md."
+          echo "Networks that daemon does have:"
+          docker network ls --format '  {{.Name}}  (driver {{.Driver}}, scope {{.Scope}})' || true
+          echo "If '$CACHE_NETWORK' exists on the host but not in that list, this job is not talking to the host's daemon."
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1

@@ -174,6 +174,30 @@ It cost `DockerJavaContainerEngineIT` three red runs in a row on 2026-09-27 (947
 *different* test of the same class, which is the signature of interference rather than of a defect: a defect
 fails the same test in both jobs.
 
+**The same push also saturates the host, and that breaks every time-boxed wait in the suite at once.**
+On 2026-10-01 one push to `develop` queued **nine** runs at `17:03:00`; the runner started three heavy
+Gradle/npm builds together and the whole batch ran 2–5x its own previous day's time:
+
+| workflow | typical | 2026-10-01 |
+|---|---|---|
+| `docker-test.yml` | 13–15 min | **41.6 min** (829, 830 — buildkit's Gradle stage 616s → 1913s, npm 447s → 817s) |
+| `devbuild.yml` | ~20 min | **96.6 min** (828) |
+| `docs.yml` | ~25–31 min | **63.4 min** (832) |
+| `grinder-container-it.yml` | 5.3–8.8 min | **18.1, 23.3 min** (831, 834 — both red) |
+| `test.yml` | 12–22 min | 836 red |
+
+Nothing in the repository changed to cause it — `921d46938` touched two workflow files — and the slow
+stages are CPU-bound, not registry-bound, so this is capacity, not network. **What it breaks is
+anything with a deadline in it**: `grinder-container-it` lost four tests to 90-second fixture waits and
+one to a wall-clock assertion, and `test.yml` lost all fourteen database-backed tests because
+flapdoodle's embedded `mongod` default is a 30-second start budget. All of those budgets have since
+been raised or replaced with host-independent assertions, which is the right repository-side answer —
+a CI deadline must be sized against the pathological host, not the healthy one — but it treats the
+symptom. The cause is how much this runner is asked to do at once, and the two levers on it are the
+runner's job concurrency (host configuration) and the `push:`-plus-`pull_request:` doubling described
+above (one line per workflow). Neither is free; see `claude-docs/RUNNER-REGISTRY-CACHE.md`'s *Runner
+hygiene* section.
+
 `grinder-container-it.yml` is the answer where exclusivity is genuinely required — a group with **no ref in
 it**, so one run at a time repository-wide, and `cancel-in-progress: false` so a second one queues. It holds
 only the two classes that need it, because the lock is only cheap while the job is short; serialising
