@@ -25,6 +25,7 @@ import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
+import de.griefed.serverpackcreator.clientside.BootDeadline
 import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
@@ -144,11 +145,15 @@ class DockerJavaContainerEngine(
                         "(e.g. `caffeinate -ims`) — a boot interrupted this way learns nothing either way."
                 )
             }
-            while (isRunning(containerId) && !ready.get() && deadline.hasTimeLeft()) {
+            // The loop's own last answer, reused rather than asked again: the daemon is round-tripped once
+            // per poll as it is, and a second inspect here would be a different moment in time.
+            var stillRunning = isRunning(containerId)
+            while (stillRunning && !ready.get() && deadline.hasTimeLeft()) {
                 Thread.sleep(POLL_INTERVAL_MILLIS)
                 deadline.tick()
+                stillRunning = isRunning(containerId)
             }
-            val timedOut = !ready.get() && !deadline.hasTimeLeft()
+            val timedOut = BootDeadline.timedOut(ready = ready.get(), stillRunning = stillRunning)
 
             // A server that became ready stays up by design, so stop it; classification keys on the
             // captured lines + exit code, never on liveness. Kill if a graceful stop fails.

@@ -51,5 +51,5 @@ object BootDeadline {
      * @param ready Whether the console produced the ready line.
      * @param stillRunning Whether the process or container was still running when the wait ended.
      */
-    fun timedOut(ready: Boolean, stillRunning: Boolean): Boolean = !ready
+    fun timedOut(ready: Boolean, stillRunning: Boolean): Boolean = !ready && stillRunning
 }

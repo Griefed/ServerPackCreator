@@ -137,7 +137,8 @@ class HostProcessServerRunner : ServerRunner {
             Thread.sleep(POLL_INTERVAL_MILLIS)
             deadline.tick()
         }
-        val timedOut = !ready.get() && !deadline.hasTimeLeft()
+        // Read before the teardown below kills it, which would make every run look finished.
+        val timedOut = BootDeadline.timedOut(ready = ready.get(), stillRunning = process.isAlive)
 
         if (process.isAlive) {
             destroyTree(process)

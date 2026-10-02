@@ -1430,6 +1430,24 @@ so the threshold is testable at all: both real callers are integration-shaped an
 **Landmine:** any new poll/park loop that bounds a boot must use it rather than `System.currentTimeMillis()`, or that
 path silently reacquires the bug.
 
+**LANDMINE — "did it time out?" is a question about the run, never about the clock** (`BootDeadline.timedOut`).
+A poll loop ends for three reasons — the ready line appeared, the thing being waited on finished, or the budget was
+spent — and only the third is a timeout. Computing it as `!ready && !deadline.hasTimeLeft()` cannot tell the second
+from the third, because `hasTimeLeft()` is a wall-clock reading taken after create, start and log-attach have all
+been paid for: on a host where those calls outlast the budget, a container that exited on its own is reported as
+having been given up on. Ask the state the wait ended in — **still running and never ready** — which needs no clock
+at all.
+
+It is not a mislabelled field. `BootLogClassifier.classify` branches on the timeout **second**, immediately after
+the ready line and before every evidence rung it has, and returns INCONCLUSIVE — so a boot wrongly called a timeout
+throws away its exit code, its crash, and the client-only class marker. On a loaded host that converts decisive
+verdicts into "nothing was learned", silently and at scale.
+
+Both runners go through the one predicate, because this was two identical expressions —
+`HostProcessServerRunner.run` and the grinder's `DockerJavaContainerEngine.run` — and only one of them would ever
+have been fixed. It is pure, so `BootDeadlineTest` pins it without a daemon or a server pack; the end-to-end case
+cannot be staged without controlling the clock of a running boot, which is why the decision is what is pinned.
+
 ## Boot teardown kills the tree, and "alive" is not "running" (2026-09-25/26)
 
 `start.sh` is a launcher: the Minecraft server is a `java` child of the `bash` the runner spawned, so
