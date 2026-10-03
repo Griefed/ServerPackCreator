@@ -42,10 +42,15 @@ Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can
 **`pages.yml` and `docs.yml` build the same bundle for two different hosts, and four things must move
 together:** the `INSTANCE`/`ARTIFACT` pair, the pinned `jetbrains/writerside-builder` version, the
 *Stage documents and images* step (the seven root documents are generated into `Writerside/topics/` and a
-fresh checkout has none of them), and the `api/` path that `spch.tree`'s **relative** `api/index.html` link
-resolves against. That link is relative rather than root-absolute because the container serves the site at
-`/` and Pages serves it at `/ServerPackCreator/`; every Writerside topic is emitted at the site root
-(verified against the published image, despite `web-path="topics"`), so one relative href serves both.
+fresh checkout has none of them), and the `api/` path the Dokka tree is merged into.
+
+**`spch.tree`'s Dokka entry is an ABSOLUTE URL, and it has to be.** The published help is a single-page
+app whose viewer navigates for real only when the href carries a scheme — `isExternal || /^(?:[a-z]+:)?\/\//`
+— so a relative `api/index.html` is client-side routed instead: the app pushes the URL to `/api/` and
+re-bootstraps there, asking for `api/config.json`, `api/HelpTOC.json` and `api/api-object-digest.json`,
+which exist only at the site root. All three 404 and the page dies on *"TOC data error"*. A root-absolute
+`/ServerPackCreator/api/index.html` fails the same test. The cost is that the link leaves a self-hosted
+container for the public site; `/api/` is still served in both layouts for anyone addressing it directly.
 **`pages.yml` needs Settings → Pages → Source set to "GitHub Actions"**; while it is still "Deploy from a
 branch" the workflow goes green and publishes nothing.
 

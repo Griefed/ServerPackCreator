@@ -181,8 +181,8 @@ jobs:
           name: dokka-html
           path: .
 
-      # `public/api` is exactly what `docker/Dockerfile.help` copies to `/config/www/api/` and what
-      # `spch.tree`'s relative `api/index.html` resolves to. Changing this path means changing both.
+      # `public/api` is exactly what `docker/Dockerfile.help` copies to `/config/www/api/`, and the path a
+      # reader reaches by URL. Changing it means changing both, and the absolute href in `spch.tree`.
       # The `test -s` is the guard that matters: `COPY public/api/` would still succeed against a
       # directory that unpacked empty, and the help site would ship with a 404 behind its API entry.
       - name: Unpack the reference
