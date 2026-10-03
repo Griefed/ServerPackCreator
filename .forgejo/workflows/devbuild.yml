@@ -105,16 +105,30 @@ jobs:
           name: gradle-jars
           path: .
 
+      # `misc/build-appimage.sh` owns both values; a copy here is a copy that goes stale. The cache KEY
+      # carries the pinned release while the PATH is only the directory the script unpacks into
+      # (`jdk-<major>-<arch>`) -- the script skips the download when that directory already exists, so a
+      # key naming the major alone would serve a superseded JDK for ever after a JDK_RELEASE bump.
+      - name: Resolve the AppImage JDK
+        id: jdk
+        run: |
+          set -e
+          MAJOR="$(sed -n 's/^JDK_VERSION="\(.*\)"$/\1/p' misc/build-appimage.sh)"
+          RELEASE="$(sed -n 's/^JDK_RELEASE="\(.*\)"$/\1/p' misc/build-appimage.sh)"
+          test -n "$MAJOR" && test -n "$RELEASE" || { echo "::error::could not read JDK_VERSION/JDK_RELEASE from misc/build-appimage.sh"; exit 1; }
+          echo "dir=jdk-$MAJOR-x86_64" >> "$GITHUB_OUTPUT"
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+
       - name: Cache JDK download
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: jdk-21-x86_64
-          key: jdk-21-x86_64
+          path: ${{ steps.jdk.outputs.dir }}
+          key: ${{ steps.jdk.outputs.dir }}-${{ steps.jdk.outputs.release }}
 
       - name: Build AppImage for x86_64 (native)
         run: |
           chmod +x misc/build-appimage.sh
-          misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
+          misc/build-appimage.sh --update-channel continuous "${{ needs.build-jar.outputs.version }}"
 
       # Resolved by glob, never spelled out: `misc/build-appimage.sh` owns the filename (it appends
       # `_experimental`), and a copy here is a copy that goes stale the next time it changes. The glob is
@@ -144,7 +158,11 @@ jobs:
         uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-x86_64
-          path: ServerPackCreator-*.AppImage
+          # The `.zsync` too: an AppImage advertising `gh-releases-zsync` whose `.zsync` is not in the
+          # same release cannot update, and nothing says so until a user tries.
+          path: |
+            ServerPackCreator-*.AppImage
+            ServerPackCreator-*.AppImage.zsync
           if-no-files-found: error
           retention-days: 1
 
@@ -179,16 +197,30 @@ jobs:
           name: gradle-jars
           path: .
 
+      # `misc/build-appimage.sh` owns both values; a copy here is a copy that goes stale. The cache KEY
+      # carries the pinned release while the PATH is only the directory the script unpacks into
+      # (`jdk-<major>-<arch>`) -- the script skips the download when that directory already exists, so a
+      # key naming the major alone would serve a superseded JDK for ever after a JDK_RELEASE bump.
+      - name: Resolve the AppImage JDK
+        id: jdk
+        run: |
+          set -e
+          MAJOR="$(sed -n 's/^JDK_VERSION="\(.*\)"$/\1/p' misc/build-appimage.sh)"
+          RELEASE="$(sed -n 's/^JDK_RELEASE="\(.*\)"$/\1/p' misc/build-appimage.sh)"
+          test -n "$MAJOR" && test -n "$RELEASE" || { echo "::error::could not read JDK_VERSION/JDK_RELEASE from misc/build-appimage.sh"; exit 1; }
+          echo "dir=jdk-$MAJOR-aarch64" >> "$GITHUB_OUTPUT"
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+
       - name: Cache JDK download
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: jdk-21-aarch64
-          key: jdk-21-aarch64
+          path: ${{ steps.jdk.outputs.dir }}
+          key: ${{ steps.jdk.outputs.dir }}-${{ steps.jdk.outputs.release }}
 
       - name: Build AppImage for aarch64 (cross-packaged)
         run: |
           chmod +x misc/build-appimage.sh
-          misc/build-appimage.sh --arch aarch64 "${{ needs.build-jar.outputs.version }}"
+          misc/build-appimage.sh --arch aarch64 --update-channel continuous "${{ needs.build-jar.outputs.version }}"
 
       # Resolved by glob, never spelled out: `misc/build-appimage.sh` owns the filename (it appends
       # `_experimental`), and a copy here is a copy that goes stale the next time it changes. The glob is
@@ -218,7 +250,11 @@ jobs:
         uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-aarch64
-          path: ServerPackCreator-*.AppImage
+          # The `.zsync` too: an AppImage advertising `gh-releases-zsync` whose `.zsync` is not in the
+          # same release cannot update, and nothing says so until a user tries.
+          path: |
+            ServerPackCreator-*.AppImage
+            ServerPackCreator-*.AppImage.zsync
           if-no-files-found: error
           retention-days: 1
 
@@ -306,6 +342,14 @@ jobs:
           echo "=== Collecting AppImages ==="
           find artifacts/appimage-x86_64  -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 AppImages"
           find artifacts/appimage-aarch64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No aarch64 AppImages"
+          # The update route the AppImages advertise is `gh-releases-zsync|...|continuous|...`, which
+          # resolves the `.zsync` out of THIS release -- so they are assets, not build leftovers.
+          find artifacts -name "*.AppImage.zsync" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No zsync files"
+          ZSYNCS="$(ls -1 continuous/*.AppImage.zsync 2>/dev/null | wc -l)"
+          if [ "$ZSYNCS" -ne 2 ]; then
+            echo "::error::Expected 2 .zsync files beside the AppImages, found $ZSYNCS"
+            exit 1
+          fi
 
           echo ""
           echo "=== Collecting Checksums ==="

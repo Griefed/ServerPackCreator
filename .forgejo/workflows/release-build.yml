@@ -93,14 +93,14 @@ jobs:
       # does not need an arm runner label, which no registered runner offers.
       #
       # Two sequential runs in one workspace are safe: the script `rm -rf`s its AppDir before each build
-      # and keeps per-architecture JDK directories (`jdk-21-x86_64`, `jdk-21-aarch64`), so the second
+      # and keeps per-architecture JDK directories (`jdk-<major>-<arch>`, from its own JDK_VERSION), so the second
       # cannot inherit the first's runtime. Run before `Collect files`, which renames the app jar.
       - name: Build AppImages
         run: |
           V="${{ needs.prepare.outputs.version }}"
           chmod +x misc/build-appimage.sh
-          misc/build-appimage.sh "$V"
-          misc/build-appimage.sh --arch aarch64 "$V"
+          misc/build-appimage.sh --update-channel latest "$V"
+          misc/build-appimage.sh --arch aarch64 --update-channel latest "$V"
           # Anchored on the product name: appimagetool-<arch>.AppImage is downloaded into this same
           # directory, so a bare *.AppImage would count it. Two, no more and no fewer, or stop.
           #
@@ -109,7 +109,7 @@ jobs:
           #              ServerPackCreator-<version>-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
           #              appimagetool-aarch64.AppImage                              <- the tool itself
           #   ServerPackCreator-* matches 2; a bare *.AppImage matches 3.
-          # The JDK is unpacked per architecture (jdk-21-aarch64, jdk-21-x86_64), so the second run cannot
+          # The JDK is unpacked per architecture (jdk-<major>-<arch>), so the second run cannot
           # inherit the first one's runtime.
           COUNT="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | wc -l)"
           if [ "$COUNT" -ne 2 ]; then
@@ -151,6 +151,17 @@ jobs:
           # and nothing here repeats it. They land in the release directory before checksum.txt is
           # generated below, so they are covered by it like every other asset.
           cp ServerPackCreator-*.AppImage                     "release/$V/"
+          # The `.zsync` files the AppImages advertise. `gh-releases-zsync` resolves them out of the
+          # release the AppImage came from, so an AppImage published without its `.zsync` carries an
+          # update route that is dead on arrival -- and says nothing about it until a user tries.
+          # Counted like the AppImages, and for the same reason: one per architecture or stop.
+          ZSYNCS="$(ls -1 ServerPackCreator-*.AppImage.zsync 2>/dev/null | wc -l)"
+          if [ "$ZSYNCS" -ne 2 ]; then
+            echo "::error::Expected 2 .zsync files beside the AppImages, found $ZSYNCS"
+            ls -la ServerPackCreator-*.AppImage* 2>/dev/null || echo "none at all"
+            exit 1
+          fi
+          cp ServerPackCreator-*.AppImage.zsync               "release/$V/"
           rm -f "release/$V/output.txt" "release/$V/"*plain.jar
           # The Dokka HTML reference ships as a release asset.
           if [ -d serverpackcreator-api/build/dokka ]; then
