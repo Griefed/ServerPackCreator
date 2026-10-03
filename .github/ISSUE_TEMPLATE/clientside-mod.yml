@@ -34,6 +34,15 @@ body:
       options:
         - label: I have informed the developer
           required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link to prove you reported this to the dev
+      description: Provide the link to the comment/issue/post/notification of you letting the mod-dev know that their mod is crashing a server.
+      placeholder: https://www.example.com
+      value: "Provide the link to the comment/issue/post/notification of you letting the mod-dev know that their mod is crashing a server."
+    validations:
+      required: true
   - type: checkboxes
     id: terms
     attributes:
