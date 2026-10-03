@@ -475,6 +475,18 @@ positive strips a working mod out of every pack built against the list.
   - `Prepared.Ready.attemptName` derives the `(platform, slug, loader)` tuple from the log file's parent
     rather than carrying three more fields — and stays correct for the other-version re-check, which
     deliberately stages into the *crashing* loader's directory.
+  - **Both callers supply a sink now, and the CLI's writes to `<work>/boot-evidence`, a SIBLING of `boot/`.**
+    `BootArtifactWriter` files each attempt as `<attemptName>/<n>-<loader>-<loaderVersion>`; the grinder keeps
+    using its budgeted `BootLogStore`. The ordinal is what makes it unique, not the tuple — a newest-build
+    re-check differs from the boot it re-checks in the loader *version* alone, and an other-version re-check
+    can repeat a tuple outright. **The sibling is the load-bearing part:** `stageBootPack` deletes and
+    re-creates `boot/<attemptName>` before every attempt, so evidence written inside the tree it was
+    collected from survives exactly until the next boot, which is the defect, one directory deeper.
+  - **Until 2026-10-03 the CLI verb supplied no sink at all, so `BootArtifacts.collect` was dead code on the
+    whole GitHub path** — `clientside-boot.yml` could upload nothing but `boot.log`, the one file every
+    re-check overwrites. Nothing was red for it, which is why `VerifyClientsideArtifactSinkTest` pins the
+    wiring by reading the source: there is no behavioural test that can reach it without an `ApiWrapper`, a
+    real generation and a booting server.
 - **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
   `<work>/boot/<platform>-<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
   overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's

@@ -33,6 +33,14 @@ jobs:
     # Static ceiling sized for the boot case (per-loader install + boot); job-level timeout-minutes
     # cannot take an `inputs` expression. The cheap metadata-only run finishes well under this.
     timeout-minutes: 90
+
+    # The sticky-comment marker, declared ONCE for this file. It is also `ClientsideReportRenderer.MARKER`
+    # in serverpackcreator-clientside, which is what actually writes it into a report -- a boundary no
+    # shared constant crosses, so changing it means changing both. Two copies IN ONE FILE is what this
+    # removes, and the drift it prevented is silent: a stale copy stops matching, so every run posts a
+    # NEW comment instead of updating the existing one.
+    env:
+      REPORT_MARKER: "<!-- serverpackcreator-clientside-report -->"
     steps:
       - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
 
@@ -55,13 +63,23 @@ jobs:
             }
             core.setOutput('found', 'true')
             core.setOutput('url', match[0])
+            // The reporter's "I told the mod developer" proof, so the verification comment can show it
+            // and the claim becomes auditable instead of a tick-box. Taken as the first URL that is not
+            // the project link, rather than by locating the field's heading: a heading match is coupled
+            // to the template's wording, and when it silently stopped matching this would accuse an
+            // honest reporter of supplying nothing. An issue form's body carries only the fields'
+            // values -- `type: markdown` blocks and `description:` text are not part of it -- so the
+            // only URLs in it are the ones the reporter typed.
+            const proof = (issue.body || '')
+              .match(/https?:\/\/[^\s)<>]+/gi)?.find(url => url !== match[0])
+            core.setOutput('proof', proof || '')
 
       - name: Comment that no link was found
         if: steps.link.outputs.found != 'true'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
-            const marker = '<!-- serverpackcreator-clientside-report -->'
+            const marker = process.env.REPORT_MARKER
             const body = marker + '\n## 🤖 Clientside-mod verification\n\n'
               + 'I could not find a CurseForge or Modrinth project-link in this issue. '
               + 'Please edit the issue and add the link so I can assess the mod.'
@@ -117,21 +135,37 @@ jobs:
             "$VERB" "$PROJECT_URL" \
             --output "$GITHUB_WORKSPACE/clientside-report.md"
 
+      # `boot-evidence/` holds one directory per ATTEMPT -- console, the server's own logs and any crash
+      # report -- while `boot/<attempt>/boot.log` is one file per attempt DIRECTORY, which staging wipes
+      # before every boot and `restoreDecisiveConsole` rewrites at the end. Both are uploaded because
+      # they answer different questions: the first is what each boot did, the second is the console the
+      # published verdict actually rests on.
       - name: Upload boot logs
+        id: boot-logs
         if: ${{ always() && steps.link.outputs.found == 'true' && inputs.boot }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: clientside-boot-logs
-          path: spc-home/work/clientside-verify/boot/**/boot.log
+          path: |
+            spc-home/work/clientside-verify/boot-evidence/**
+            spc-home/work/clientside-verify/boot/**/boot.log
           if-no-files-found: ignore
 
+      # The evidence block is assembled HERE and not in `ClientsideReportRenderer`, deliberately: a run
+      # URL and an artifact URL are facts about a CI host, and `serverpackcreator-clientside` depends on
+      # `serverpackcreator-api` alone and must not learn what GitHub is. The artifact URL also does not
+      # exist until the upload above has run, which is after the report was rendered.
       - name: Post report comment
         if: steps.link.outputs.found == 'true'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          ARTIFACT_URL: ${{ steps.boot-logs.outputs.artifact-url }}
+          PROOF_URL: ${{ steps.link.outputs.proof }}
+          DID_BOOT: ${{ inputs.boot }}
         with:
           script: |
             const fs = require('fs')
-            const marker = '<!-- serverpackcreator-clientside-report -->'
+            const marker = process.env.REPORT_MARKER
             const issueNumber = Number('${{ steps.link.outputs.number }}')
             let body
             try {
@@ -140,6 +174,28 @@ jobs:
               body = marker + '\n## 🤖 Clientside-mod verification failed\n\n'
                 + 'No report was produced. See the workflow logs for details.'
             }
+
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`
+              + `/actions/runs/${context.runId}`
+            const lines = ['### 🔎 Evidence', '', `- [Workflow run](${runUrl})`]
+            if (process.env.DID_BOOT === 'true') {
+              lines.push(process.env.ARTIFACT_URL
+                ? `- [Boot logs](${process.env.ARTIFACT_URL}) — one directory per boot attempt`
+                : '- Boot logs: none were produced; every attempt either survived or never started')
+            } else {
+              lines.push('- Boot logs: none — this pass read metadata and jars only, no server was booted')
+            }
+            lines.push(process.env.PROOF_URL
+              ? `- Reporter's proof they told the mod developer: ${process.env.PROOF_URL}`
+              : "- Reporter's proof they told the mod developer: **none supplied**")
+            const evidence = '\n---\n\n' + lines.join('\n') + '\n'
+
+            // Before the hidden JSON block, which `clientside-accept.yml` reads back and which stays last
+            // so the comment ends where a reader stops rather than in a wall of serialised report.
+            const dataBlock = body.indexOf('<!-- clientside-report-data')
+            body = dataBlock === -1
+              ? body + evidence
+              : body.slice(0, dataBlock) + evidence + '\n' + body.slice(dataBlock)
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
             const existing = comments.find(c => c.body && c.body.includes(marker))
