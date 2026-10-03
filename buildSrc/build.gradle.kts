@@ -36,16 +36,22 @@ dependencies {
     implementation(libs.plugins.frontend.marker())
 }
 
+// buildSrc is a SEPARATE build with its own toolchain and target, so these are not inherited from the
+// root — but `buildSrc/settings.gradle.kts` points at the same catalog file, so they read the same
+// entry. Keep them reading it: a bump that moved the modules and left build logic behind would compile
+// the convention plugins against one JDK and the code they configure against another.
+val javaVersion = libs.versions.java.get()
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
+        jvmTarget = JvmTarget.fromTarget(javaVersion)
     }
 }
 
 kotlin {
     jvmToolchain {
         languageVersion.set(
-            JavaLanguageVersion.of(21)
+            JavaLanguageVersion.of(javaVersion.toInt())
         )
     }
 }

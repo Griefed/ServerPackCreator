@@ -89,6 +89,13 @@ constraints.
 
 ### Build layout
 
+**ServerPackCreator targets Java 21, from ONE place: the `java` entry in `gradle/libs.versions.toml`.**
+The Gradle toolchain, the Kotlin `jvmTarget`, Dokka's JDK and the IDEA language level all read it.
+Everything Gradle cannot reach — twelve CI `setup-java` steps, Qodana's linter, install4j, two Dockerfile
+stages, the AppImage script — is mapped in **`misc/Java-References.md`**, which is the file to open before
+bumping, not after. It also names what must NOT move with it: the server-pack script templates track
+Mojang's per-Minecraft `requiredJavaVersion`, which is a different number that happens to share values.
+
 **Where every build declaration lives, and the landmines protecting them, are in
 `.claude/rules/build-layout.md`** — it loads whenever you touch `build.gradle.kts`,
 `settings.gradle.kts`, `buildSrc/`, or the version catalog. Read it before changing any of those:

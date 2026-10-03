@@ -13,13 +13,17 @@ plugins {
     alias(libs.plugins.install4j)
 }
 
+// A real build script, so the type-safe accessor works here; the precompiled script plugins in
+// buildSrc have to read the same entry the long way round. One value either way.
+val javaLanguageLevel = IdeaLanguageLevel(libs.versions.java.get())
+
 idea {
     project {
-        languageLevel = IdeaLanguageLevel(21)
+        languageLevel = javaLanguageLevel
         modules.forEach {
             it.isDownloadJavadoc = true
             it.isDownloadSources = true
-            it.languageLevel = IdeaLanguageLevel(21)
+            it.languageLevel = javaLanguageLevel
         }
     }
 }

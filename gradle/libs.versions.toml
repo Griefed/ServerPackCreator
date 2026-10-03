@@ -1,5 +1,14 @@
 [versions]
 
+# https://adoptium.net/support/  (LTS cadence)
+# THE Java version for this project: the Gradle toolchain, the Kotlin jvmTarget, Dokka's JDK link base
+# and the IDEA language level all read this one entry, so a bump is a one-line change for everything
+# Gradle can reach. Everything Gradle CANNOT reach — the CI runner JDKs, install4j, the Dockerfiles,
+# the AppImage script, Qodana's linter — is enumerated in `misc/Java-References.md`, which is the file
+# to open before bumping this. It is deliberately NOT read by the server-pack script templates: those
+# track Mojang's per-Minecraft requiredJavaVersion and have nothing to do with what SPC compiles to.
+java = "21"
+
 # https://kotlinlang.org/docs/releases.html#release-details
 # ONE version for everything JetBrains ships out of the Kotlin release train: the compiler plugin,
 # the allopen/jpa/spring compiler plugins, and the stdlib/reflect/test libraries. JetBrains versions

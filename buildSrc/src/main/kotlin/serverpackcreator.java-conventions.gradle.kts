@@ -13,10 +13,14 @@ plugins {
     idea
 }
 
+// The one Java version, from `gradle/libs.versions.toml`; see `JavaVersion` for why it is read
+// this way rather than through the type-safe `libs` accessor.
+val javaVersion: String = de.griefed.common.gradle.JavaVersion.of(project)
+
 java {
     // Auto JDK setup
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(javaVersion.toInt()))
     }
 }
 

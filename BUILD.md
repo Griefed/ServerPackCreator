@@ -56,7 +56,9 @@ Two tasks exist that you almost certainly do not want:
 
 ## Prerequisites
 
-**A JDK 21**, or nothing at all. Every module targets Java 21 through a Gradle toolchain.
+**A JDK 21**, or nothing at all. Every module targets Java 21 through a Gradle toolchain, and the
+version itself is the `java` entry in `gradle/libs.versions.toml` — see `misc/Java-References.md`
+before changing it.
 
 Gradle downloads one for you if you have none: the
 [foojay toolchain resolver](https://github.com/gradle/foojay-toolchains) is registered in
@@ -141,7 +143,7 @@ break this build subtly, so each is enforced or documented:
 |---|---|---|
 | **Repositories** | `settings.gradle.kts` | `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` fails the build. |
 | **Dependency versions** | `gradle/libs.versions.toml` | Convention. Use `libs.someLibrary`, never a hardcoded `"group:artifact:version"`. |
-| **Java/Kotlin version** | `java-conventions` (toolchain) + `kotlin-conventions` (jvmTarget) | — |
+| **Java version** | `gradle/libs.versions.toml`, the `java` entry | Convention. The toolchain, the Kotlin `jvmTarget`, Dokka's JDK and the IDEA language level all read it; no Gradle file carries its own. Everything OUTSIDE Gradle is mapped in `misc/Java-References.md`. |
 | **Publishing** | `publishing-conventions`, applied by `-api` alone | CI publishes only `:serverpackcreator-api`. |
 
 `buildSrc` is a **separate build** and cannot see the root settings, so it declares its own

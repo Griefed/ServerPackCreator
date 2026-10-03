@@ -5,6 +5,10 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
+// The one Java version, from `gradle/libs.versions.toml`; see `JavaVersion` for why it is read
+// this way rather than through the type-safe `libs` accessor.
+val javaVersion: String = de.griefed.common.gradle.JavaVersion.of(project)
+
 // `dokkaSourceSets.includes` below names `module.md` as a FILE, which Dokka opens unconditionally, so a
 // module applying this plugin without one cannot run any Dokka task at all. The normal loop does not
 // notice: only `-api` has `build { finalizedBy(dokkaGeneratePublicationJavadoc) }`, so `./gradlew build`
@@ -46,7 +50,7 @@ dokka {
             skipDeprecated.set(false)
             reportUndocumented.set(true)
             skipEmptyPackages.set(true)
-            jdkVersion.set(21)
+            jdkVersion.set(javaVersion.toInt())
             // Generated sources (e.g. the i18n4k `Translations` object) carry no hand-written
             // KDoc, so documenting them is neither possible nor meaningful — exclude them to keep
             // the docs (and the reportUndocumented output) focused on first-party code.

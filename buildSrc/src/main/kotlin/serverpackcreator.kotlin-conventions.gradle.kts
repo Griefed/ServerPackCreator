@@ -15,11 +15,17 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
-// One block for main and test compilation; they only ever held identical settings.
-// The JVM target follows the toolchain that java-conventions already pins, so it is not repeated here.
+// The one Java version, from `gradle/libs.versions.toml`; see `JavaVersion` for why it is read
+// this way rather than through the type-safe `libs` accessor.
+val javaVersion: String = de.griefed.common.gradle.JavaVersion.of(project)
+
+// One block for main and test compilation; they only ever held identical settings. The JVM target IS
+// repeated here rather than inherited from java-conventions' toolchain — the comment that used to sit
+// here said otherwise while the next line contradicted it — but both now read the same catalog entry,
+// so there is one value and two uses of it rather than two values.
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
+        jvmTarget = JvmTarget.fromTarget(javaVersion)
     }
 }
 
