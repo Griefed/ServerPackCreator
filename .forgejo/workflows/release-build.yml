@@ -129,24 +129,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
       # The one action deliberately fetched from GitHub rather than a Forgejo mirror: install4j has no
       # equivalent there. Requires the instance to permit github.com actions; if it does not, install4j
       # must be pre-installed on the runner and this step replaced by nothing.
-      - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
+      - uses: https://github.com/luangong/setup-install4j@v1
         with:
           version: '13.1'
           license: ${{ secrets.INSTALL4J_LICENSE }}
@@ -258,7 +258,7 @@ jobs:
           ls -lh "release/$V"
 
       - name: Upload release assets
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: release-assets
           path: release/${{ needs.prepare.outputs.version }}/*
@@ -272,9 +272,9 @@ jobs:
       release_id: ${{ steps.create.outputs.release_id }}
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
-      - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: release-assets
           path: assets
@@ -390,17 +390,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -452,10 +452,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+        uses: docker/setup-qemu-action@v3
 
       # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
       # must work whether or not they are up.
@@ -514,19 +514,19 @@ jobs:
           sed 's/^/  /' "$toml"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-config: ${{ steps.regcache.outputs.config }}
 
       - name: Log in to ghcr.io
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.GH_TOKEN }}
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -556,7 +556,7 @@ jobs:
       - name: Build and push
         id: buildpush
         continue-on-error: true
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
@@ -574,7 +574,7 @@ jobs:
 
       - name: Build and push (retry)
         if: ${{ steps.buildpush.outcome == 'failure' }}
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
@@ -596,7 +596,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: release-assets
           path: assets
@@ -773,7 +773,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: release-assets
           path: assets

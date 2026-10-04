@@ -31,7 +31,7 @@ jobs:
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
       # must work whether or not they are up.
@@ -90,7 +90,7 @@ jobs:
           sed 's/^/  /' "$toml"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-config: ${{ steps.regcache.outputs.config }}
 
@@ -135,7 +135,7 @@ jobs:
       - name: Build image
         id: build
         continue-on-error: true
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
@@ -150,7 +150,7 @@ jobs:
 
       - name: Build image (retry)
         if: ${{ steps.build.outcome == 'failure' }}
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile

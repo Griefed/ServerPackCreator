@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       # The seven root-level documents are the source of truth and the copies under `Writerside/topics/` are
       # generated and gitignored, so a fresh checkout does NOT have them -- without this step the Changelog,
@@ -90,7 +90,7 @@ jobs:
       # container -- the daemon and the workspace are the same machine -- so an ordinary bind is correct here
       # and the supported action can be used. `location` points the builder at the help module.
       - name: Build the Writerside webhelp
-        uses: JetBrains/writerside-github-action@738910d7cf197d67188300d0e0f84b2e708db3cf # v4
+        uses: JetBrains/writerside-github-action@v4
         with:
           instance: ${{ env.INSTANCE }}
           docker-version: ${{ env.DOCKER_VERSION }}
@@ -98,14 +98,14 @@ jobs:
           artifact: ${{ env.ARTIFACT }}
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -146,7 +146,7 @@ jobs:
           test -s public/api/index.html
           echo "webhelp: $(find public -maxdepth 1 -type f | wc -l) files at root; dokka: $(find public/api -type f | wc -l) files"
 
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: public
 
@@ -161,7 +161,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
 
-      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/configure-pages@v6
 
       - id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        uses: actions/deploy-pages@v5

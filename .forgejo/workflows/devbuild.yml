@@ -36,12 +36,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -79,7 +79,7 @@ jobs:
             -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
       - name: Upload JARs
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: |
@@ -95,12 +95,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: .
@@ -120,7 +120,7 @@ jobs:
           echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Cache JDK download
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@v5
         with:
           path: ${{ steps.jdk.outputs.dir }}
           key: ${{ steps.jdk.outputs.dir }}-${{ steps.jdk.outputs.release }}
@@ -155,7 +155,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: appimage-x86_64
           # The `.zsync` too: an AppImage advertising `gh-releases-zsync` whose `.zsync` is not in the
@@ -167,7 +167,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: appimage-x86_64-checksum
           path: "*.sha256"
@@ -187,12 +187,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: .
@@ -212,7 +212,7 @@ jobs:
           echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Cache JDK download
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@v5
         with:
           path: ${{ steps.jdk.outputs.dir }}
           key: ${{ steps.jdk.outputs.dir }}-${{ steps.jdk.outputs.release }}
@@ -247,7 +247,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: appimage-aarch64
           # The `.zsync` too: an AppImage advertising `gh-releases-zsync` whose `.zsync` is not in the
@@ -259,7 +259,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: appimage-aarch64-checksum
           path: "*.sha256"
@@ -335,23 +335,23 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
-      - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
+      - uses: https://github.com/luangong/setup-install4j@v1
         with:
           version: '13.1'
           license: ${{ secrets.INSTALL4J_LICENSE }}
@@ -360,7 +360,7 @@ jobs:
         run: rm install4j_linux-x64_*.sh
 
       - name: Download JARs
-        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: .
@@ -372,7 +372,7 @@ jobs:
         run: ./gradlew media --info --full-stacktrace
 
       - name: Upload Media
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: install4j-media
           path: media/*
@@ -396,12 +396,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout latest code
-        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Download all artifacts
-        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           path: artifacts
 
@@ -444,7 +444,7 @@ jobs:
           ls -lh continuous/
 
       - name: Generate checksum
-        uses: https://github.com/jmgilman/actions-generate-checksum@238073f4c02f2810adb91c96bdd1e276a5ae9ed6 # v1
+        uses: https://github.com/jmgilman/actions-generate-checksum@v1
         with:
           patterns: |
             continuous/*
@@ -562,7 +562,7 @@ jobs:
           wget -O continuous/source.tar.gz https://git.griefed.de/Griefed/ServerPackCreator/archive/continuous.tar.gz
 
       - name: Cleanup continuous on server
-        uses: https://github.com/tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1
+        uses: https://github.com/tiyee/action-ssh@v1.0.1
         with:
           host: ${{ secrets.SPCUPLOAD_HOST }}
           username: ${{ secrets.SPCUPLOAD_USERNAME }}
@@ -570,7 +570,7 @@ jobs:
           command: 'rm -rf ~/spc/continuous'
 
       - name: Upload to server
-        uses: https://github.com/nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
+        uses: https://github.com/nogsantos/scp-deploy@v1.3.0
         with:
           src: ./continuous
           host: ${{ secrets.SPCUPLOAD_HOST }}

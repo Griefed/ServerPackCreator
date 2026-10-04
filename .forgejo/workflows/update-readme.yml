@@ -20,12 +20,12 @@ jobs:
     name: "Fetch and Generate Blog Posts"
     steps:
       - name: Checkout
-        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        uses: actions/checkout@v6
         with:
           repository: Griefed/ServerPackCreator
           ref: main
 
-      - uses: https://github.com/release-kit/hash-files@6437070e108606dfe7614a3ee4caabbb9168268d # v1
+      - uses: https://github.com/release-kit/hash-files@v1
         id: get-current-hash
         with:
           patterns: |
@@ -37,13 +37,13 @@ jobs:
       # and both actions below query GitHub's API for sponsors and contributors. Handing them the wrong
       # forge's credential fails quietly -- an empty list committed over a populated one.
       - name: Add GitHub Sponsors to Readme
-        uses: https://github.com/JamesIves/github-sponsors-readme-action@2fd9142e765f755780202122261dc85e78459405 # v1
+        uses: https://github.com/JamesIves/github-sponsors-readme-action@v1
         with:
           token: ${{ secrets.GH_TOKEN }}
           active-only: false
           file: 'README.md'
 
-      - uses: https://github.com/actions-cool/contributor-helper@4ae4f034d624fc63c70cc89af686a0fb80168e1d # v1.2.1
+      - uses: https://github.com/actions-cool/contributor-helper@v1
         with:
           token: ${{ secrets.GH_TOKEN }}
           update-files: 'README.md'
@@ -53,7 +53,7 @@ jobs:
           style: 'base'
           avatar-width: '70'
 
-      - uses: https://github.com/release-kit/hash-files@6437070e108606dfe7614a3ee4caabbb9168268d # v1
+      - uses: https://github.com/release-kit/hash-files@v1
         id: get-new-hash
         with:
           patterns: |
