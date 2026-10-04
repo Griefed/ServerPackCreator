@@ -15,6 +15,10 @@
 >   fail-soft, probing each cache and going upstream for any that does not answer, so the two halves can
 >   land in either order. Read section 0 before touching it: jobs run inside a `docker:dind` daemon, so
 >   the caches are addressed by **fixed IP** — service names do not cross that boundary.
+> - **A Windows runner, for the self-contained Windows artifact** → `claude-docs/WINDOWS-RUNNER.md`.
+>   Host configuration, and unlike the registry cache it is **not** fail-soft: jpackage cannot
+>   cross-compile, so the app-image job needs a `:host`-scheme Windows runner and QUEUES rather than fails
+>   without one. The host half comes first. x86_64 only — an ARM64 guest would have to be emulated.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
@@ -91,7 +95,7 @@ constraints.
 
 **ServerPackCreator targets Java 21, from ONE place: the `java` entry in `gradle/libs.versions.toml`.**
 The Gradle toolchain, the Kotlin `jvmTarget`, Dokka's JDK and the IDEA language level all read it.
-Everything Gradle cannot reach — twelve CI `setup-java` steps, Qodana's linter, install4j, two Dockerfile
+Everything Gradle cannot reach — fourteen CI `setup-java` steps, Qodana's linter, install4j, two Dockerfile
 stages, the AppImage script — is mapped in **`misc/Java-References.md`**, which is the file to open before
 bumping, not after. It also names what must NOT move with it: the server-pack script templates track
 Mojang's per-Minecraft `requiredJavaVersion`, which is a different number that happens to share values.

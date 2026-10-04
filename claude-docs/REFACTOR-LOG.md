@@ -4942,3 +4942,66 @@ blunt it.
 an environment-shaped failure is evidence that an assertion asks something narrower or wider than it means.
 And *a predicate that two call-sites spell out will eventually disagree with itself*: the fix was cheap here
 only because there was one place to change.
+
+---
+
+## 2026-10-03 — five field-reported asks, and what measuring them changed
+
+Five independent tracks, five branches off `develop`. Three of them ended somewhere other than where the
+request pointed, and in each case the measurement is why.
+
+**Clientside reports carry their own evidence now** (`claude-clientside-evidence`). The ask was to boot a
+mod *and its dependencies* because reporters tick "I have informed the developer" without having done so.
+That part already existed — `-verifyclientside` stages the candidate with its transitive required
+dependencies and boots a real server — so the work was reachability, not capability. The boot runs on
+`issues: [opened]` now rather than only on a label; `BootArtifacts.collect` had **no caller outside the
+grinder**, so on the GitHub path it was dead code and the only file reaching disk was the one `boot.log`
+every re-check overwrites; and the sticky comment links the run, the artifact and the reporter's own proof
+link. Two defects fell out of reading the form: Griefed's own proof field reused `id: link`, and **both
+inputs carried a `value:` equal to their description** — pre-filled content that satisfies
+`required: true`, so the form could be submitted untouched and pass.
+
+**The AppImage report was accurate and the fix was elsewhere** (`claude-appimage-portability`). Measured
+against the JDK the build downloads: highest symbol `GLIBC_2.15`, raised by `libjava.so` and `libjvm.so`,
+with no libc shipped and libstdc++/libgcc statically linked — a March 2012 floor. Bundling glibc was
+declined (B45) because it would leave X11 and ALSA on the host anyway and put `getaddrinfo`'s NSS lookups
+on the known failure path for such builds. What was actually wrong: the JDK was fetched from
+`latest/21/ga`, so the floor moved on Adoptium's schedule; and the launcher **silently fell back to system
+Java**, printing a warning to a stdout a `.desktop` launch has nowhere to show — almost certainly how the
+report was produced. Running the generated launcher found two more bugs in the fix itself, both of the
+silent-plausible-value class: a probe run in a command substitution so its output never reached the
+caller, and an unanchored version regex that read **501** out of `/tmp/claude-501/...` and accepted a
+broken JDK as version 501.
+
+**One Java version** (`claude-java-version`). `21` stood as six literals across five files, with
+`kotlin-conventions` carrying a comment saying the target "is not repeated here" directly above the line
+that repeated it. It is one catalog entry now, read type-safely by the two real build scripts and through
+`VersionCatalogsExtension` by the three convention plugins that cannot use `libs`. Mutation-proven: `17`
+fails on buildSrc's own plugin dependencies, `25` fails with *"Dependency requires at least JVM runtime
+version 25. This build uses a Java 21 JVM."* — which is the LTS bump's real prerequisite and was written
+down nowhere: the daemon loads buildSrc's output, so the CI JDKs move **before** the catalog. Everything
+Gradle cannot reach is mapped in `misc/Java-References.md`, whose most valuable section is the one listing
+what must NOT move: the server-pack templates track Mojang's per-Minecraft requirement, not SPC's target.
+
+**Tags instead of SHAs** (`claude-workflow-tags`, Griefed's call). Sixty-three of the 72 `uses:` lines;
+the nine others were already tags. The measurement
+that decided it: every major tag was already **ahead** of the commit it replaced, so the pins had frozen
+eight actions at older releases — immutability nobody revisits is staleness. Resolving every ref first
+found four that cannot take a bare major, two of which have no `v1` tag at all and resolve to a *branch*
+of that name, which the old `# v1` comments described as a tag.
+
+**A self-contained Windows artifact** (`claude-windows-appimage`). The chosen route was jpackage, and
+JEP 392 makes cross-compilation an explicit non-goal — so unlike the AppImages, which cross-package from
+an amd64 runner because nothing architecture-specific executes, this needs a real Windows runner. Host half
+first (`claude-docs/WINDOWS-RUNNER.md`), repo half behind it. x86_64 only: an ARM64 guest on an x86_64 host
+falls back to TCG, and emulated throughput is not something to gate a release on. The release job runs *after* `assets` and
+takes the jar already built, so the jar inside the image is the jar the release ships.
+
+**Lessons.** *A pre-filled required field is not a required field* — `value:` is content, and a validator
+cannot tell it from an answer. *An unanchored numeric parse will find a number somewhere* — twice now in
+shell, and both times the wrong number was plausible. *Immutability and staleness are the same fact seen
+from two sides*; a pin is only a safety property while somebody still reads it. And the one that recurred
+across three of the five: **the thing the request names is often not the thing that is broken** — the boot
+existed, the glibc number was right, and the jpackage choice was sound; what was wrong was reachability,
+a silent fallback, and a missing runner.
+

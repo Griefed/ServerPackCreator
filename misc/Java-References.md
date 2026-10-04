@@ -51,8 +51,8 @@ It does not move on a bump, and the `-jdk21` variant runs fine on newer JDKs.
 
 ## B — CI runner JDKs — **bump these first**
 
-Twelve `setup-java` steps, every one `distribution: 'zulu'` and `java-version: '21'`. The daemon runs on
-whatever these install, so section A cannot move until these have.
+Fourteen `setup-java` steps, every one `distribution: 'zulu'` and `java-version: '21'`. The daemon runs
+on whatever these install, so section A cannot move until these have.
 
 - [`.github/workflows/test.yml`](../.github/workflows/test.yml),
   [`pages.yml`](../.github/workflows/pages.yml),
@@ -62,13 +62,17 @@ whatever these install, so section A cannot move until these have.
   [`docs.yml`](../.forgejo/workflows/docs.yml),
   [`qodana.yml`](../.forgejo/workflows/qodana.yml),
   [`grinder-container-it.yml`](../.forgejo/workflows/grinder-container-it.yml) — one each
-- [`.forgejo/workflows/devbuild.yml`](../.forgejo/workflows/devbuild.yml) and
-  [`release-build.yml`](../.forgejo/workflows/release-build.yml) — **two each**
+- [`.forgejo/workflows/devbuild.yml`](../.forgejo/workflows/devbuild.yml) — **three**
+  (`build-jar`, `build-winimage-x86_64`, `build-media`)
+- [`release-build.yml`](../.forgejo/workflows/release-build.yml) — **three**
+  (`winimage`, `assets`, `maven`)
 
 The step names say `Set up JDK 21`, so grep for the name as well as the value.
 
-**Zulu is the right distribution to stay on.** Adoptium publishes no `windows/aarch64` JDK 25 GA (only
-`-ea-beta`); Zulu and the Microsoft build publish it for both 21 and 25. Measured 2026-10-03.
+**Zulu is a free choice on these platforms, not a constraint.** Adoptium, Zulu and the Microsoft build
+all publish JDK 21 and JDK 25 GA for linux/x64, linux/aarch64, mac and windows/x64, which is every
+platform these runners use. Measured 2026-10-03. Keeping them all on one distribution is consistency;
+the one place a distribution genuinely binds is install4j's JRE bundles, in section D.
 
 ---
 

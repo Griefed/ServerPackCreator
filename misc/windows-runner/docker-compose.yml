@@ -1,0 +1,109 @@
+# A Windows Forgejo runner as a container on a Linux x86_64 host.
+#
+# One guest, because jpackage cannot cross-compile (JEP 392) and so the Windows app-image has to be
+# built on Windows:
+#
+#   windows-x64     Windows 11 x86_64, KVM-accelerated          -> label windows-latest:host
+#
+# x86_64 ONLY, and that is a decision rather than an omission. An ARM64 guest on an x86_64 host gets no
+# hardware acceleration -- KVM virtualises, it does not translate instruction sets, so
+# qemu-system-aarch64 falls back to TCG and every guest instruction is translated in software. The
+# throughput that leaves is not fit to gate a release on. Windows on ARM64 runs x86_64 binaries, so
+# that audience is served by the x86_64 artifact.
+#
+# READ claude-docs/WINDOWS-RUNNER.md FIRST: there is no published Forgejo runner binary for Windows,
+# so it has to be cross-compiled -- one command, and the README beside this file has it.
+#
+# Requires: Docker on a Linux host with /dev/kvm, ~128 GB free disk.
+# Docker Desktop does not expose /dev/kvm and cannot run this guest.
+
+services:
+
+  # ---------------------------------------------------------------------------------------------
+  # Windows 11 x86_64 — hardware-accelerated, the one that behaves like a normal machine.
+  # ---------------------------------------------------------------------------------------------
+  windows-x64:
+    image: dockurr/windows
+    container_name: spc-windows-x64
+    environment:
+      # Windows 11 Pro, and deliberately NOT `11l` (LTSC), which reads as the obvious choice for a
+      # build machine and is a trap. Every "lean" alias dockur offers -- `11l`, `11e`, `11i` -- maps to
+      # an id ending `-eval` and is fetched from the Evaluation Center, and Evaluation Windows expires
+      # 90 days after install and cannot be activated by any key. The dispatch is visible in dockur's
+      # own source: `define.sh` turns `11l` into `win11x64-enterprise-ltsc-eval`, which `mido.sh` sends
+      # to `downloadWindowsEval` -> microsoft.com/en-us/evalcenter/download-..., where `11` becomes
+      # `win11x64` and goes to `downloadWindows` -> microsoft.com/en-us/software-download/windows11.
+      # Only the second is retail media.
+      #
+      # Retail media left unactivated does not expire: a desktop watermark and a locked
+      # Settings > Personalization, no shutdowns and no deadline. A headless build runner has no
+      # opinion about either, which is what makes this the right trade.
+      #
+      # What it costs: Pro ships the consumer app set LTSC omits, and the download is 7.9 GB against
+      # LTSC's 4.7 GB. Stripping those apps is precisely what `oem/optimise.ps1` exists for, so only
+      # the download and the install time are actually paid.
+      #
+      # Two escape hatches, both dockur-native. To license it, set `KEY` to a 25-character product key
+      # -- `answer.sh:updateProductKey` runs `slmgr /ipk` with it during setup. To install media you
+      # already hold, a volume-licensed LTSC ISO included, bind it at /custom.iso below; that bypasses
+      # VERSION entirely and is the only route to a non-evaluation LTSC.
+      VERSION: "11"
+      # KEEP THE DOWNLOADED ISO. dockur defaults `REMOVE` to `Y` and deletes it once the install
+      # finishes, so the 7.9 GB is re-fetched for every reinstall and once more for every additional
+      # guest. Kept, it lands in this service's storage under the RESOLVED version rather than the
+      # alias -- `win11x64.iso`, not `11.iso` (`install.sh`: `file="${VERSION//\//}.iso"`, run after
+      # the alias has been rewritten) -- and can be copied out and shared; see "Reusing the ISO" in
+      # the README.
+      REMOVE: "N"
+      RAM_SIZE: "8G"
+      CPU_CORES: "4"
+      DISK_SIZE: "128G"
+      USERNAME: "runner"
+      PASSWORD: "${WINDOWS_PASSWORD:?set WINDOWS_PASSWORD in .env}"
+      # NO `COMMAND` HERE, and it is not an omission. dockur APPENDS the variable to the `install.bat`
+      # it finds in /oem rather than running it separately -- `printf '%s\n' "$COMMAND" >> "$file"` --
+      # so the two are one mechanism, and anything in COMMAND lands after that file's `exit /b 0`
+      # where it can never run. dockur's own linter reports it as a critical error on every boot:
+      # "Unreachable code after EXIT or GOTO (E008)". oem/install.bat is the whole provisioning entry
+      # point; see the README.
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      # LOOPBACK ONLY, and that is the whole point of the `127.0.0.1:` prefix. A bare `8006:8006`
+      # publishes on 0.0.0.0, and port 8006 is an UNAUTHENTICATED console to a Windows VM -- on a
+      # remote host that is a desktop session handed to anything that can route to it. Reach it over
+      # an SSH tunnel instead; the README has the command.
+      #
+      # The UDP line is here for a host that deliberately binds these to a LAN address. It does
+      # nothing through an SSH tunnel, which forwards TCP only -- RDP negotiates TCP and is fine.
+      - "127.0.0.1:8006:8006"
+      - "127.0.0.1:3389:3389/tcp"
+      - "127.0.0.1:3389:3389/udp"
+    volumes:
+      # PERSISTENCE. This is the guest's whole existence: the installed Windows disk image, the
+      # downloaded ISO, `setup.img` and `windows.base`. Because it is a bind mount, `docker compose
+      # down && up`, an image update and a host reboot all keep the installed, registered runner --
+      # only the container is recreated, never the machine inside it.
+      #
+      # COMMENT THIS LINE OUT to deliberately throw the guest away and reinstall from scratch on the
+      # next `up`, which is what you want when the image update is the point rather than the
+      # accident. Expect the full unattended install again, and a new runner registration with it:
+      # the old one stays listed on Forgejo as an offline runner until you delete it there.
+      - ./storage-x64:/storage
+      # Reuse an ISO you already have, instead of downloading one. Uncomment AFTER the file exists:
+      # Docker creates a DIRECTORY at a bind source that is missing, and a directory at /custom.iso is
+      # a confusing failure rather than a clear one. With this bound, `VERSION` is ignored entirely and
+      # clearing ./storage-x64 costs no bandwidth at all.
+      # - ./iso/win11-x64.iso:/custom.iso
+      # Becomes drive Z: in the guest. The cross-compiled runner binary and the registration token
+      # go here; see the README beside this file.
+      - ./shared:/shared
+      # Run during the final step of the unattended install.
+      - ./oem:/oem
+    restart: unless-stopped
+    # Windows needs time to flush and shut down; killing it mid-write corrupts the disk image.
+    stop_grace_period: 2m
+

@@ -265,6 +265,69 @@ jobs:
           path: "*.sha256"
           retention-days: 1
 
+  # jpackage CANNOT CROSS-COMPILE (JEP 392, explicit non-goal), which is the whole reason this job exists
+  # separately and needs a runner the Linux ones cannot stand in for. An AppImage is a tarball plus a
+  # prebuilt runtime stub, so build-appimage.sh cross-packages aarch64 from an amd64 runner; a jpackage
+  # app-image carries a native launcher built with the HOST's toolchain.
+  #
+  # A `:host`-scheme Windows runner is a HOST prerequisite -- see claude-docs/WINDOWS-RUNNER.md. Until one
+  # is registered this job does not fail, it sits queued on "No matching online runner with label",
+  # exactly as the `ubuntu-24.04-arm` label does and for the same reason.
+  #
+  # x86_64 ONLY, deliberately. A Windows ARM64 artifact needs a native ARM64 Windows runner, and the only
+  # way to host one here is an emulated guest, whose throughput is not fit to gate a release on. Windows
+  # on ARM64 runs x86_64 binaries, so that audience is served by this artifact.
+  build-winimage-x86_64:
+    name: Build Windows app-image (x86_64)
+    needs: build-jar
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      # Resolved by glob, never spelled out: `misc/build-winimage.ps1` owns the filename (it appends
+      # `_experimental`), and a copy here is a copy that goes stale the next time it changes.
+      - name: Build the Windows app-image for x86_64
+        shell: pwsh
+        run: |
+          misc/build-winimage.ps1 -Version "${{ needs.build-jar.outputs.version }}" -Arch x86_64
+          $image = Get-ChildItem "ServerPackCreator-*-Windows-x86_64_experimental.zip"
+          if (-not $image) { Write-Output "::error::no Windows app-image was produced"; exit 1 }
+          (Get-FileHash $image[0].FullName -Algorithm SHA256).Hash.ToLower() + "  " + $image[0].Name `
+            | Set-Content -NoNewline "$($image[0].Name).sha256"
+
+      - name: Upload Windows app-image
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: winimage-x86_64
+          path: ServerPackCreator-*-Windows-x86_64_experimental.zip
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload checksums
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: winimage-x86_64-checksum
+          path: "*.sha256"
+          retention-days: 1
+
+
   build-media:
     name: Build Install4J Media
     needs: build-jar
@@ -317,10 +380,17 @@ jobs:
 
   continuous:
     name: "Continuous Pre-Release"
+    # LANDMINE -- `build-winimage-x86_64` needs a Windows runner that is a HOST prerequisite
+    # (claude-docs/WINDOWS-RUNNER.md). Until one is registered that job does not fail, it QUEUES on
+    # "No matching online runner with label", and this job waits on it, so the continuous pre-release
+    # stops being published rather than being published short an artifact. That is the intended
+    # direction -- a stalled release is diagnosable and a quietly incomplete one is not -- but it means
+    # the host half really does have to come first.
     needs: [
       build-jar,
       build-appimage-x86_64,
       build-appimage-aarch64,
+      build-winimage-x86_64,
       build-media
     ]
     runs-on: ubuntu-latest
@@ -350,6 +420,10 @@ jobs:
             echo "::error::Expected 2 .zsync files beside the AppImages, found $ZSYNCS"
             exit 1
           fi
+
+          echo ""
+          echo "=== Collecting Windows app-images ==="
+          find artifacts/winimage-x86_64 -name "*_experimental.zip" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 Windows app-image"
 
           echo ""
           echo "=== Collecting Checksums ==="

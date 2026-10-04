@@ -38,6 +38,91 @@ jobs:
           fi
           echo "Releasing ${VERSION}"
 
+  # The one artifact that cannot be produced on any runner already in this pool. jpackage CANNOT
+  # CROSS-COMPILE (JEP 392, explicit non-goal), so a Windows app-image is built on Windows -- unlike the
+  # AppImages, which `assets` cross-packages from its amd64 runner because an AppImage is a tarball plus
+  # a prebuilt runtime stub and nothing arch-specific executes.
+  #
+  # LANDMINE -- a `:host`-scheme Windows runner is a HOST prerequisite; see claude-docs/WINDOWS-RUNNER.md.
+  # Without one this job does not fail, it QUEUES on "No matching online runner with label", and
+  # `release` needs it, so the release would hang rather than go red. Register the runner first.
+  #
+  # x86_64 ONLY, deliberately. A Windows ARM64 artifact needs a native ARM64 Windows runner, and the only
+  # way to host one here is an emulated guest, whose throughput is not fit to gate a release on. Windows
+  # on ARM64 runs x86_64 binaries, so that audience is served by this artifact.
+  winimage:
+    name: "Windows app-image"
+    # AFTER `assets`, not beside it, so the jar INSIDE the image is byte-identical to the jar the
+    # release ships. Building it again here would be a second build of the same tag -- functionally the
+    # same jar and not the same bytes, and "the Windows artifact contains a different build" is exactly
+    # the kind of claim nobody can check later. It also keeps the frontend's npm build off a Windows
+    # runner, which is a failure surface this repository has never exercised.
+    needs: [prepare, assets]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+
+      # The JDK jpackage comes from, and whose runtime it embeds into the image. No Gradle here: the jar
+      # arrives from `assets` below.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: release-assets
+          path: assets
+
+      # `Collect files` renamed it to `ServerPackCreator-<version>.jar`, and the release directory also
+      # holds the api jar, the plugin jars and the dokka zip -- so the name is spelled out rather than
+      # globbed, and checked, because picking the wrong jar produces an image that launches nothing.
+      - name: Locate the released app jar
+        id: jar
+        shell: pwsh
+        run: |
+          $jar = "assets/ServerPackCreator-${{ needs.prepare.outputs.version }}.jar"
+          if (-not (Test-Path $jar)) {
+            Write-Output "::error::$jar is not among the release assets"
+            Get-ChildItem assets | ForEach-Object { Write-Output "  $($_.Name)" }
+            exit 1
+          }
+          "path=$jar" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      # Resolved by glob, never spelled out: `misc/build-winimage.ps1` owns the filename including
+      # `_experimental`, the same arrangement `misc/build-appimage.sh` has, and a copy here is a copy
+      # that goes stale the next time it changes.
+      - name: Build the Windows app-image
+        shell: pwsh
+        run: |
+          misc/build-winimage.ps1 -Version "${{ needs.prepare.outputs.version }}" -Arch ${{ matrix.arch }} -JarPath "${{ steps.jar.outputs.path }}"
+          $image = Get-ChildItem "ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip"
+          if ($image.Count -ne 1) { Write-Output "::error::expected 1 Windows app-image, found $($image.Count)"; exit 1 }
+          Write-Output "Produced $($image[0].Name) ($([math]::Round($image[0].Length / 1MB, 1)) MB)"
+          # A per-artifact `.sha256` beside the zip, the same way devbuild.yml's jobs publish theirs.
+          # `assets` has already written checksum.txt by the time this job runs -- that is the price of
+          # taking the RELEASED jar rather than building a second one here -- so these two artifacts
+          # carry their own, and nothing claims a coverage it does not have.
+          $hash = (Get-FileHash $image[0].FullName -Algorithm SHA256).Hash.ToLower()
+          Set-Content -NoNewline "$($image[0].Name).sha256" "$hash  $($image[0].Name)"
+
+      - name: Upload the Windows app-image
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: winimage-${{ matrix.arch }}
+          path: |
+            ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip
+            ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip.sha256
+          if-no-files-found: error
+
   assets:
     name: "JARs, media and checksums"
     needs: prepare
@@ -181,7 +266,7 @@ jobs:
 
   release:
     name: "Forgejo release"
-    needs: [prepare, assets]
+    needs: [prepare, assets, winimage]
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.create.outputs.release_id }}
@@ -192,6 +277,15 @@ jobs:
       - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
         with:
           name: release-assets
+          path: assets
+
+      # Beside the `release-assets` above, not inside it: `winimage` runs AFTER `assets` so the jar it
+      # packages is the released one, which means its output cannot be part of that artifact. Every
+      # consumer of the asset set therefore merges it in the same way; see claude-docs/WINDOWS-RUNNER.md.
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          pattern: winimage-*
+          merge-multiple: true
           path: assets
 
       # Extracted from CHANGELOG.md rather than through a marketplace action: semantic-release has just
@@ -498,13 +592,22 @@ jobs:
     # PATCHes the Forgejo release body with the scan permalinks, and the mirror copies that body; without
     # the dependency the GitHub release would never carry the section, which the workflow this replaced
     # added via `update_release_body`.
-    needs: [prepare, assets, release, maven, docker, virustotal]
+    needs: [prepare, assets, release, maven, docker, virustotal, winimage]
     runs-on: ubuntu-latest
     steps:
 
       - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
         with:
           name: release-assets
+          path: assets
+
+      # Beside the `release-assets` above, not inside it: `winimage` runs AFTER `assets` so the jar it
+      # packages is the released one, which means its output cannot be part of that artifact. Every
+      # consumer of the asset set therefore merges it in the same way; see claude-docs/WINDOWS-RUNNER.md.
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          pattern: winimage-*
+          merge-multiple: true
           path: assets
 
       # Forgejo push-mirrors replicate refs but NOT releases, so this is explicit rather than a setting.
@@ -681,6 +784,9 @@ jobs:
       #
       # Files over 32 MB need a one-time upload URL; that is what the branch below is for. Failures are
       # tolerated: a scan that does not come back must not fail a release that is already published.
+      # The Windows app-images are deliberately NOT downloaded here, unlike in `release` and `mirror`:
+      # the loop below scans `*.jar *.sh *.dmg *.exe`, which already excludes the AppImages. A portable
+      # archive is not an installer, and scanning a zip of a zip of a JRE tells a reader nothing.
       - name: Submit assets to VirusTotal
         env:
           VT_API_KEY: ${{ secrets.VT_API_KEY }}
