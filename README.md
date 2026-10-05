@@ -842,7 +842,7 @@ Huge shoutout and thank you!**
 
 ### Sponsors
 
-<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https:&#x2F;&#x2F;github.com&#x2F;kreezxil.png" width="60px" alt="User avatar: kreezxil" /></a><a href="https://github.com/thrasos-dev"><img src="https:&#x2F;&#x2F;github.com&#x2F;thrasos-dev.png" width="60px" alt="User avatar: Thrasos" /></a><a href="https://github.com/Calmingstorm"><img src="https:&#x2F;&#x2F;github.com&#x2F;Calmingstorm.png" width="60px" alt="User avatar: Aaron Charpentier" /></a><a href="https://github.com/kiinbi"><img src="https:&#x2F;&#x2F;github.com&#x2F;kiinbi.png" width="60px" alt="User avatar: kiinbi" /></a><!-- sponsors -->
+<!-- sponsors --><!-- sponsors -->
 
 ### Contributors
 
@@ -923,6 +923,13 @@ Huge shoutout and thank you!**
     </td>
   </tr><tr>
     <td width="150" align="center">
+      <a href="https://github.com/SirQuestion" title="SirQuestion">
+        <img src="https://avatars.githubusercontent.com/u/100452677?v=4" width="70" />
+        <br />
+        SirQuestion
+      </a>
+    </td>
+    <td width="150" align="center">
       <a href="https://github.com/apps/github-actions" title="github-actions[bot]">
         <img src="https://avatars.githubusercontent.com/in/15368?v=4" width="70" />
         <br />
@@ -942,8 +949,6 @@ Huge shoutout and thank you!**
         <br />
         xkmxz2503
       </a>
-    </td>
-    <td width="150" align="center">
     </td>
     <td width="150" align="center">
     </td>
