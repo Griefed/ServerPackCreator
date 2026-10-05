@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -62,6 +63,45 @@ internal class BootWorkspaceReaperTest {
     }
 
     private fun reaper() = BootWorkspaceReaper(work)
+
+    /**
+     * An entry that cannot be fully removed contributes NOTHING to the reported total, even though some of its
+     * files may well have gone. The figure is "bytes this sweep is known to have freed", so a partial delete is
+     * counted as zero rather than guessed at, and the entry is left for the next sweep to retry.
+     *
+     * Pinned because the accounting is the subtle half of [BootWorkspaceReaper]: sizing and deleting are two
+     * traversals of the same tree, and any change that fuses them has to keep the all-or-nothing rule or it
+     * starts reporting bytes for packs that are still on disk.
+     *
+     * The failure is manufactured by clearing write permission on a directory, which root ignores — so the
+     * precondition is *asserted* after the sweep, and the test skips rather than passes where it did not hold.
+     */
+    @Test
+    fun anEntryThatCannotBeFullyDeletedContributesNothingToTheTotal() {
+        stageAttempt("jei", "Forge", packBytes = 1024)
+        val libraries = File(work, "boot/${attempt("jei", "Forge")}/serverpack/libraries")
+        val pinnedJar = File(libraries, "loader.jar")
+        Assertions.assertTrue(libraries.setWritable(false), "could not clear write permission on the fixture")
+        try {
+            val reclaimed = reaper().reap(ModPlatforms.MODRINTH, "jei")
+
+            Assumptions.assumeTrue(
+                pinnedJar.isFile,
+                "the fixture's unwritable directory was deleted anyway (running as root?), so there is no " +
+                    "partial failure to characterise"
+            )
+            Assertions.assertEquals(
+                2048, reclaimed,
+                "only the modpack and the downloaded-jar scratch were fully removed; the serverpack must not be counted"
+            )
+            Assertions.assertTrue(
+                File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists(),
+                "what could not be reclaimed must stay, for the next sweep to retry"
+            )
+        } finally {
+            libraries.setWritable(true)
+        }
+    }
 
     /** The whole point: the pack goes, the diagnosis stays. */
     @Test

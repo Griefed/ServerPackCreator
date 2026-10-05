@@ -155,6 +155,32 @@ store rather than by running it:
 
 ## Cross-cutting landmines (do not let these load lazily)
 
+- **LANDMINE — a slow restart is neither the verdict store nor the reaper's second traversal, and both were
+  measured rather than reasoned about.** `ReportServer.start()` is the last thing `GrinderApplication` does, so
+  everything above it is dead time before the report answers: `ApiWrapper.api(...)`, the image preflight,
+  `versionMeta`, `JsonLearnedModIds`, `BootWorkspaceReaper.reapAll()`, then `JsonVerdictStore`'s constructor.
+  Two of those were chased on 2026-10-05 against a live 164 MB / ~215,000-row store and 354K inodes of leftover
+  staging, and **both came back negative**:
+  - **The store load is ~0.44–0.6 s.** `StoreWriteBenchmark.measureLoadCost` times the tree-then-convert pass
+    against a streaming `MappingIterator`: at 215,000 fully-populated rows / 227.6 MiB it is 605.6 ms versus
+    427.7 ms. The fixture is 1,110 B/row against the live store's ~800, so it overstates a real load by ~39%.
+    The saving is a **ratio of ~30%, not a constant**, and scaling is near-linear (21.5x the rows gives 26x the
+    time), so a full second of saving needs ~1.2M rows. Not worth the change; re-run the benchmark before
+    re-arguing it.
+  - **Fusing the reaper's sizing and deleting traversals saves ~4%.** `stripToLogs` sizes each entry
+    (`walkTopDown`) and then deletes it (`deleteRecursively`, itself a `walkBottomUp`), so it walks every tree
+    twice. Replacing both with one bottom-up walk that reads `length()` immediately before each unlink was
+    implemented, proven behaviour-identical — all 11 guards green with no assertion changed, and an identical
+    19,200,000 bytes reclaimed across five runs — and **measured at 306,300 inodes: 17,219 ms before
+    (2 runs), 16,510 ms after (3 runs)**. The unlinks dominate utterly and the stat pass is nearly free once the
+    dentry cache is warm from the walk that created the tree. Reverted rather than landed: 4% is not worth
+    churning this file for, which is the same verdict B30 earned.
+  - **So the number that matters is ~17 s per 300K inodes of staging on a warm local SSD**, and that is the
+    scale a sweep of leftovers costs — seconds to a couple of minutes on slower storage, not hours. If a
+    restart takes longer than that, read the journal rather than guessing: the `Reclaimed N MiB of staging left
+    behind by a previous run.` line is INFO and is written *after* the sweep, so the gap between it and the
+    preceding line is the reaper's whole cost.
+
 - **LANDMINE — "every endpoint 502s" does NOT mean the report is wedged, and this cost two wrong diagnoses.**
   The JDK `HttpServer` hands every request to `SPC_GRINDER_HTTP_THREADS` threads (default 4, hardcoded 2
   until 2026-09-19), so a pool with nothing free *would* stop answering everything. **No outage has ever
