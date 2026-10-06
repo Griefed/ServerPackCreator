@@ -118,14 +118,6 @@ internal object StoreWriteBenchmark {
     }
 
     /**
-     * What a restart pays before the report server can bind, measured two ways: the tree-then-convert pass
-     * `JsonVerdictStore.load` performs today, and a streaming `MappingIterator` over the same bytes.
-     *
-     * The report is started *after* the store is constructed, so this number is dead time on every restart --
-     * which is the question the write measurements above do not answer. Both forms keep per-row failure
-     * isolation; they differ only in whether the whole file is materialised as a tree first.
-     */
-    /**
      * A verdict with every field carrying a value, unlike the seven-field [verdict] the write measurements
      * use. A real store's rows are bound field by field, so a fixture that leaves two thirds of them null
      * under-reports what a load costs -- and the bytes/row it produces is what makes the file size
@@ -158,6 +150,14 @@ internal object StoreWriteBenchmark {
         inheritedProofRule = null
     )
 
+    /**
+     * What a restart pays before the report server can bind, measured two ways: the tree-then-convert pass
+     * `JsonVerdictStore.load` performs today, and a streaming `MappingIterator` over the same bytes.
+     *
+     * The report is started *after* the store is constructed, so this number is dead time on every restart --
+     * which is the question the write measurements above do not answer. Both forms keep per-row failure
+     * isolation; they differ only in whether the whole file is materialised as a tree first.
+     */
     fun measureLoadCost(dir: File) {
         val mapper = jacksonObjectMapper().findAndRegisterModules()
         for (size in listOf(10_000, 100_000, 215_000)) {
