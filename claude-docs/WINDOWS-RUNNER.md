@@ -121,5 +121,21 @@ already excludes the AppImages for the same reason.
 
 Then, on a real machine of each architecture, extract the zip and start all three launchers — the GUI,
 `ServerPackCreator-CLI.exe` and `ServerPackCreator-WebService.exe`. The script already fails the build
-if jpackage did not emit all three plus `runtime\bin\java.exe`, but "the files exist" and "the
-application starts" are different claims and only the second one is the point of the artifact.
+if jpackage did not emit all three, their `.cfg` files, the jar, the VM at
+`runtime\bin\server\jvm.dll`, the module image at `runtime\lib\modules` and the runtime's own
+`runtime\bin\java.exe`. But "the files exist" and "the application starts" are different claims and
+only the second one is the point of the artifact.
+
+**`runtime\bin\java.exe` exists only because the script passes its own `--jlink-options`.** That
+argument replaces jpackage's four defaults wholesale, and the script leaves two of them out so this
+artifact diagnoses a user's problem as well as the AppImage and the install4j build do — both of
+those bundle a whole Adoptium JDK. `--strip-native-commands` goes because it deletes every launcher
+from the runtime, and SPC fills its Java-for-modloader-server setting from `java.home\bin\java`
+(`SystemUtilities.acquireJavaPathFromSystem`), which a stripped runtime answers with a file that does
+not exist. `--strip-debug` goes because it costs every JDK frame in every stack trace its file and
+line — `(Unknown Source)` — and a bug report's trace is mostly JDK frames.
+
+Measured on Temurin 21.0.5, one jpackage run per variant: the launchers are 1,108,928 bytes across 22
+stubs, the debug attributes 16.4 MiB, and `lib/modules` is byte-identical whichever way the two
+exclusion flags fall. `--no-man-pages` and `--no-header-files` stay: the 8 JNI/JVMTI headers they
+exclude total 211,615 bytes of build-time material that the JVM never opens.

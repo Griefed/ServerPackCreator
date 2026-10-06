@@ -98,11 +98,13 @@ if ($versionMatch.Success) {
     Write-Warning "No numeric version in '$Version'; the Windows file-version resource will say $numericVersion. The artifact name keeps '$Version'."
 }
 
-$staging = Join-Path ([System.IO.Path]::GetTempPath()) "spc-winimage-$([guid]::NewGuid())"
-$input   = Join-Path $staging 'input'
-$dest    = Join-Path $staging 'image'
-New-Item -ItemType Directory -Path $input -Force | Out-Null
-Copy-Item $JarPath (Join-Path $input "$AppName.jar")
+# `$inputDir` rather than `$input`: `$input` is PowerShell's automatic pipeline-input enumerator, and a
+# name that is only safe while nothing here reads a pipeline is a name that breaks the day something does.
+$staging  = Join-Path ([System.IO.Path]::GetTempPath()) "spc-winimage-$([guid]::NewGuid())"
+$inputDir = Join-Path $staging 'input'
+$dest     = Join-Path $staging 'image'
+New-Item -ItemType Directory -Path $inputDir -Force | Out-Null
+Copy-Item $JarPath (Join-Path $inputDir "$AppName.jar")
 
 # --- the two extra launchers, mirroring spc.install4j's -cli and -web --------------------------------
 # `win-console=true` on both: the CLI is interactive and the web service logs to stdout, and without a
@@ -117,7 +119,7 @@ $jpackageArgs = @(
     '--type', 'app-image'
     '--name', $AppName
     '--app-version', $numericVersion
-    '--input', $input
+    '--input', $inputDir
     '--main-jar', "$AppName.jar"
     '--main-class', $MainClass
     '--dest', $dest
@@ -125,6 +127,25 @@ $jpackageArgs = @(
     '--description', 'Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks.'
     '--add-launcher', "$AppName-CLI=$cliProps"
     '--add-launcher', "$AppName-WebService=$webProps"
+    # --- THE BUNDLED RUNTIME IS A COMPLETE ONE ------------------------------------------------------
+    # This REPLACES jpackage's default jlink options wholesale -- they are
+    # `--strip-native-commands --strip-debug --no-man-pages --no-header-files` -- so naming any of them
+    # means naming all the ones that are still wanted. Two are deliberately left out, both so that this
+    # artifact diagnoses a user's problem as well as the AppImage and the install4j build do, each of
+    # which bundles a whole Adoptium JDK:
+    #
+    #   --strip-native-commands  deletes every launcher from the runtime. SPC reads its own
+    #                            `java.home\bin\java` to fill the Java-for-modloader-server setting
+    #                            (`SystemUtilities.acquireJavaPathFromSystem`), and a stripped runtime
+    #                            answers that with a path that does not exist.
+    #   --strip-debug            drops LineNumberTable and friends from the JDK's own classes, so every
+    #                            JDK frame in a stack trace reads `(Unknown Source)` instead of a file
+    #                            and line. SPC's own frames are unaffected -- its classes live in
+    #                            `app\`, not in the jimage -- but a bug report's trace is mostly JDK.
+    #
+    # The two that stay exclude man pages and the JNI/JVMTI C headers: build-time material for
+    # compiling native code against a JVM, which the JVM itself never opens.
+    '--jlink-options', '--no-man-pages --no-header-files'
 )
 foreach ($option in $JavaOptions) { $jpackageArgs += @('--java-options', $option) }
 if (Test-Path 'img/icon.ico') { $jpackageArgs += @('--icon', (Resolve-Path 'img/icon.ico').Path) }
@@ -133,8 +154,30 @@ Write-Host "Building $AppName $Version ($Arch) with jpackage..." -ForegroundColo
 & jpackage @jpackageArgs
 if ($LASTEXITCODE -ne 0) { throw "jpackage exited $LASTEXITCODE" }
 
+# --- the image has to be self-contained -------------------------------------------------------------
+# `runtime\bin\java.exe` is here only because `--jlink-options` above leaves `--strip-native-commands`
+# out; under jpackage's defaults jlink's StripNativeCommandsPlugin drops every NATIVE_CMD entry and no
+# app-image has a `java` launcher at all. It is checked so that losing that option is a failed build
+# rather than a setting that silently points at nothing.
+#
+# The rest is what the launchers load. jlink routes every `.dll` into `bin` on Windows
+# (DefaultImageBuilder.nativeDir), so the VM is `runtime\bin\server\jvm.dll`, while the jimage is
+# `runtime\lib\modules` on every platform. jpackage writes one `.cfg` per launcher beside the jar,
+# and a launcher without its cfg cannot find the main class, so each is checked.
 $imageDir = Join-Path $dest $AppName
-foreach ($required in @("$AppName.exe", "$AppName-CLI.exe", "$AppName-WebService.exe", 'runtime\bin\java.exe')) {
+$requiredEntries = @(
+    "$AppName.exe"
+    "$AppName-CLI.exe"
+    "$AppName-WebService.exe"
+    "app\$AppName.jar"
+    "app\$AppName.cfg"
+    "app\$AppName-CLI.cfg"
+    "app\$AppName-WebService.cfg"
+    'runtime\bin\java.exe'
+    'runtime\bin\server\jvm.dll'
+    'runtime\lib\modules'
+)
+foreach ($required in $requiredEntries) {
     $path = Join-Path $imageDir $required
     if (-not (Test-Path $path)) { throw "jpackage reported success but produced no $required -- the image is not self-contained." }
 }
