@@ -494,12 +494,20 @@ jobs:
           TIMESTAMP: ${{ steps.build_time.outputs.timestamp }}
           COMMIT: ${{ github.sha }}
         run: |
-          set -eu
+          # pipefail matters here: every API call below is `curl | python3`, and without it the pipeline
+          # reports PYTHON's status, so a curl that failed is invisible and surfaces as a parse error.
+          set -eu -o pipefail
           OLD=$(curl -s "$API/releases/tags/continuous" -H "Authorization: token $TOKEN" \
                 | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)
           if [ -n "$OLD" ]; then
             echo "Deleting previous Forgejo continuous release $OLD (the tag is kept)"
-            curl -sf -X DELETE "$API/releases/$OLD" -H "Authorization: token $TOKEN"
+            HTTP=$(curl -s -o delete.out -w '%{http_code}' -X DELETE "$API/releases/$OLD" \
+                     -H "Authorization: token $TOKEN")
+            if [ "$HTTP" != "204" ]; then
+              echo "::error::deleting release $OLD answered HTTP $HTTP"
+              cat delete.out || true
+              exit 1
+            fi
           fi
           python3 - > payload.json <<'PY'
           import json, os
@@ -516,9 +524,18 @@ jobs:
                             "name": "continuous", "body": body,
                             "draft": False, "prerelease": True}))
           PY
-          ID=$(curl -sf -X POST "$API/releases" -H "Authorization: token $TOKEN" \
-                 -H 'Content-Type: application/json' -d @payload.json \
-               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          # NOT `curl -sf | python3`. `-f` makes curl print NOTHING on an HTTP error, so the API's own
+          # explanation is discarded and json.load reports `Expecting value: line 1 column 1` -- a
+          # traceback that names neither the status nor the reason. Capture both instead.
+          HTTP=$(curl -s -o release.json -w '%{http_code}' -X POST "$API/releases" \
+                   -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
+                   -d @payload.json)
+          if [ "$HTTP" != "201" ]; then
+            echo "::error::creating the continuous release answered HTTP $HTTP"
+            cat release.json || true
+            exit 1
+          fi
+          ID=$(python3 -c 'import json;print(json.load(open("release.json"))["id"])')
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
           for f in continuous/*; do
             curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
