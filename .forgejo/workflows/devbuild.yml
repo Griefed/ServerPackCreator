@@ -304,11 +304,16 @@ jobs:
       # Resolved by glob, never spelled out: `misc/build-winimage.ps1` owns the filename (it appends
       # `_experimental`), and a copy here is a copy that goes stale the next time it changes.
       - name: Build the Windows app-image for x86_64
-        shell: pwsh
+        # `powershell`, NOT `pwsh`. PowerShell 7 is a separate install that Windows does not ship and the
+        # runner guest does not have, so `shell: pwsh` fails before the step runs with
+        # `Cannot find: pwsh in PATH`. `powershell` is Windows PowerShell 5.1, present on every Windows
+        # host, and everything below plus build-winimage.ps1 is written to its dialect.
+        shell: powershell
         run: |
           misc/build-winimage.ps1 -Version "${{ needs.build-jar.outputs.version }}" -Arch x86_64
-          $image = Get-ChildItem "ServerPackCreator-*-Windows-x86_64_experimental.zip"
-          if (-not $image) { Write-Output "::error::no Windows app-image was produced"; exit 1 }
+          # @() so a single match is still an array: unwrapped, 5.1 hands back a bare FileInfo.
+          $image = @(Get-ChildItem "ServerPackCreator-*-Windows-x86_64_experimental.zip")
+          if ($image.Count -ne 1) { Write-Output "::error::expected 1 Windows app-image, found $($image.Count)"; exit 1 }
           (Get-FileHash $image[0].FullName -Algorithm SHA256).Hash.ToLower() + "  " + $image[0].Name `
             | Set-Content -NoNewline "$($image[0].Name).sha256"
 

@@ -87,7 +87,11 @@ jobs:
       # globbed, and checked, because picking the wrong jar produces an image that launches nothing.
       - name: Locate the released app jar
         id: jar
-        shell: pwsh
+        # `powershell`, NOT `pwsh`. PowerShell 7 is a separate install that Windows does not ship and the
+        # runner guest does not have, so `shell: pwsh` fails before the step runs with
+        # `Cannot find: pwsh in PATH`. `powershell` is Windows PowerShell 5.1, present on every Windows
+        # host, and everything below plus build-winimage.ps1 is written to its dialect.
+        shell: powershell
         run: |
           $jar = "assets/ServerPackCreator-${{ needs.prepare.outputs.version }}.jar"
           if (-not (Test-Path $jar)) {
@@ -101,10 +105,11 @@ jobs:
       # `_experimental`, the same arrangement `misc/build-appimage.sh` has, and a copy here is a copy
       # that goes stale the next time it changes.
       - name: Build the Windows app-image
-        shell: pwsh
+        shell: powershell
         run: |
           misc/build-winimage.ps1 -Version "${{ needs.prepare.outputs.version }}" -Arch ${{ matrix.arch }} -JarPath "${{ steps.jar.outputs.path }}"
-          $image = Get-ChildItem "ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip"
+          # @() so a single match is still an array: unwrapped, 5.1 hands back a bare FileInfo.
+          $image = @(Get-ChildItem "ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip")
           if ($image.Count -ne 1) { Write-Output "::error::expected 1 Windows app-image, found $($image.Count)"; exit 1 }
           Write-Output "Produced $($image[0].Name) ($([math]::Round($image[0].Length / 1MB, 1)) MB)"
           # A per-artifact `.sha256` beside the zip, the same way devbuild.yml's jobs publish theirs.

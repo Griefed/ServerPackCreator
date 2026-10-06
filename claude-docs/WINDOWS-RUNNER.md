@@ -69,7 +69,7 @@ later step is skipped — byte-identical to the symptom
 [`.claude/rules/ci-workflows.md`](../.claude/rules/ci-workflows.md) documents for giving a job a
 `container:` of a tool image, from a completely different cause.
 
-So: install Node on both hosts and confirm `node --version` answers from the account the runner service
+So: install Node on the host and confirm `node --version` answers from the account the runner service
 runs as, not just from an interactive shell.
 
 **Do not reach for `winget` to install it from an unattended or service context.** It ships inside the
@@ -77,6 +77,12 @@ App Installer MSIX, which is registered per *user*, so anything running as SYSTE
 script, an OEM provisioning step — gets `The term 'winget' is not recognized`, which reads like a PATH
 problem and is not one. `misc/windows-runner/oem/provision.ps1` downloads the official installers
 instead.
+
+**PowerShell 7 is NOT required, and the workflows must not ask for it.** Windows ships `powershell.exe`
+(Windows PowerShell 5.1) and nothing else; `pwsh` is a separate install. A step declaring `shell: pwsh`
+fails before it runs a line, with `Cannot find: pwsh in PATH`, and act skips the rest of the job — which
+reads as the build failing rather than as a missing interpreter. The Windows jobs use
+`shell: powershell`, and `misc/build-winimage.ps1` is written in the 5.1 dialect for the same reason.
 
 Three more worth confirming before blaming a workflow:
 

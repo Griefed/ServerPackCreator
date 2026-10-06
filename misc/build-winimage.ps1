@@ -13,6 +13,11 @@
     owns the AppImages'. The workflows resolve it by glob. A copy of the name in a workflow is a copy
     that goes stale the next time this changes.
 
+    WINDOWS POWERSHELL 5.1, not PowerShell 7. Windows ships no `pwsh`, and the runner guest installs
+    none, so nothing here may use a 7-only construct -- no ternary, no `??`, no `&&`/`||` chains, and
+    every `Get-ChildItem` whose result is indexed gets wrapped in `@()`, because 5.1 unwraps a
+    single-element result to a bare object.
+
     LANDMINE -- jpackage CANNOT CROSS-COMPILE. JEP 392 makes it an explicit non-goal, so a Windows
     app-image has to be produced on Windows. That is why this is a PowerShell script rather than
     another arm of build-appimage.sh, and why the job calling it needs a runner that
@@ -30,7 +35,7 @@
     The Spring Boot fat jar. Defaults to the one `./gradlew build` leaves in the app module.
 
 .EXAMPLE
-    pwsh misc/build-winimage.ps1 -Version 9.1.0 -Arch x86_64
+    powershell -File misc/build-winimage.ps1 -Version 9.1.0 -Arch x86_64
 #>
 [CmdletBinding()]
 param(
