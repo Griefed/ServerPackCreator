@@ -119,14 +119,24 @@ esac
 if [ -z "$TARGET_ARCH" ]; then
     TARGET_ARCH="$HOST_APPIMAGE_ARCH"
 fi
+# The glibc floor is decided HERE, with the architecture it belongs to, because it is not one number:
+# a JDK's floor is a property of the build, and the two builds do not have the same one. Keeping them in
+# one case means a new architecture cannot be added without stating its floor.
 case "${TARGET_ARCH}" in
     x86_64|amd64)
         BUILD_ARCH=x86_64
         JDK_ARCH=x64
+        # Measured for jdk-21.0.12.1+1/x64: GLIBC_2.15, set by lib/libjava.so and lib/server/libjvm.so.
+        # A March 2012 floor.
+        JDK_MAX_GLIBC="2.15"
         ;;
     aarch64|arm64)
         BUILD_ARCH=aarch64
         JDK_ARCH=aarch64
+        # Measured for jdk-21.0.12.1+1/aarch64: GLIBC_2.17. That is not Temurin being careless -- 2.17 is
+        # the FIRST glibc with an AArch64 port at all (released 2012-12-25), so no aarch64 glibc binary can
+        # have a lower floor and 2.15 is unreachable on this architecture by construction.
+        JDK_MAX_GLIBC="2.17"
         ;;
     *)
         echo -e "${RED}Unsupported target architecture: ${TARGET_ARCH}${NC}"
@@ -179,15 +189,14 @@ JDK_VERSION="21"
 # the host C library, so it alone decides which systems the artifact runs on -- and an unpinned URL moves
 # that floor on somebody else's release schedule, with no commit here to blame when it does. The release
 # name is URL-encoded: Adoptium's `+` build separator has to arrive as %2B.
-# Bump this and JDK_MAX_GLIBC together, and read what the guard below says before accepting the new value.
+# Bump this and both JDK_MAX_GLIBC values together, and read what the guard below says before accepting them.
 JDK_RELEASE="jdk-21.0.12.1+1"
 JDK_URL="https://api.adoptium.net/v3/binary/version/${JDK_RELEASE//+/%2B}/linux/${JDK_ARCH}/jdk/hotspot/normal/eclipse"
 JDK_DIR="jdk-${JDK_VERSION}-${BUILD_ARCH}"
-# The highest glibc symbol version the bundled JDK may reference, i.e. the oldest system this AppImage
-# runs on. Measured for jdk-21.0.12.1+1: GLIBC_2.15, set by lib/libjava.so and lib/server/libjvm.so,
-# which is a March 2012 floor. The AppImage runtime itself contributes nothing -- it is static-pie -- and
-# the JDK ships no libc, libstdc++ or libgcc of its own, so this one number IS the artifact's floor.
-JDK_MAX_GLIBC="2.15"
+# JDK_MAX_GLIBC -- the highest glibc symbol version the bundled JDK may reference, i.e. the oldest system
+# this AppImage runs on -- is set per architecture in the TARGET_ARCH case above, where the measurement
+# for each build sits beside it. The AppImage runtime itself contributes nothing (it is static-pie) and
+# the JDK ships no libc, libstdc++ or libgcc of its own, so that one number IS the artifact's floor.
 # Where AppImageUpdate looks. GitHub rather than git.griefed.de because the AppImage spec's only
 # release-aware transport is `gh-releases-zsync`: a plain `zsync|<url>` needs a URL that stays stable
 # across versions, and Forgejo serves no such route -- `/releases/latest/download/<asset>` answers 404,

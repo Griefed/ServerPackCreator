@@ -11,12 +11,18 @@ The build script is [`build-appimage.sh`](build-appimage.sh); the jobs that run 
 
 ## The requirement, measured
 
-Measured 2026-10-03 against Temurin `jdk-21.0.12.1+1`, the build `JDK_RELEASE` pins — every ELF in the
-JDK scanned for versioned symbol references and for `DT_NEEDED` entries.
+Measured against Temurin `jdk-21.0.12.1+1`, the build `JDK_RELEASE` pins — every ELF in the JDK scanned
+for versioned symbol references and for `DT_NEEDED` entries. The x86_64 column was measured 2026-10-03
+by hand; the aarch64 floor was measured 2026-10-06 by the build's own guard, in CI.
+
+**The floor is per architecture, and the two builds do not share one.** `build-appimage.sh` therefore
+sets `JDK_MAX_GLIBC` in the same `case` that picks the architecture, so a new one cannot be added
+without stating its floor.
 
 | | |
 |---|---|
-| **glibc floor** | **`GLIBC_2.15`**, raised by `lib/libjava.so` and `lib/server/libjvm.so` |
+| **glibc floor, x86_64** | **`GLIBC_2.15`**, raised by `lib/libjava.so` and `lib/server/libjvm.so` |
+| **glibc floor, aarch64** | **`GLIBC_2.17`** — and it can be no lower: 2.17 is the first glibc with an AArch64 port at all |
 | other glibc versions referenced | 2.2.5, 2.3, 2.3.2, 2.3.3, 2.3.4, 2.4, 2.6, 2.7, 2.9, 2.14 |
 | glibc libraries needed | `ld-linux-x86-64.so.2`, `libc.so.6`, `libdl.so.2`, `libm.so.6`, `libpthread.so.0`, `librt.so.1` |
 | X11, for the Swing GUI | `libX11.so.6`, `libXext.so.6`, `libXi.so.6`, `libXrender.so.1`, `libXtst.so.6` |
@@ -24,9 +30,13 @@ JDK scanned for versioned symbol references and for `DT_NEEDED` entries.
 | `libstdc++` / `libgcc_s` | **not needed** — Temurin links them statically |
 | C library shipped inside the AppImage | **none** |
 
-glibc 2.15 was released in March 2012, so in practice every glibc distribution still in use satisfies
-it. What does *not* satisfy it is a **musl** system (Alpine, Void-musl) or a non-FHS one (NixOS, GUIX)
-without an FHS shim, because there is no glibc there at all.
+glibc 2.15 was released in March 2012 and 2.17 in December 2012, so in practice every glibc
+distribution still in use satisfies either. What does *not* satisfy them is a **musl** system (Alpine,
+Void-musl) or a non-FHS one (NixOS, GUIX) without an FHS shim, because there is no glibc there at all.
+
+**2.17 on aarch64 is a floor nobody can undercut**, so it is not a regression against the x86_64 number
+and no JDK choice would improve it: the AArch64 port landed *in* 2.17, which means no aarch64 glibc
+binary has ever referenced an older version.
 
 **The AppImage runtime contributes nothing to this.** It is AppImage `type2-runtime`, static-pie, with
 libfuse linked in and no versioned glibc references of its own. It needs `fusermount` on `PATH`, or
@@ -48,7 +58,7 @@ Bumping `JDK_RELEASE` therefore shows up as a red build rather than as a user re
 ```sh
 # The floor, and what raises it
 grep -rhao 'GLIBC_[0-9][0-9.]*' <jdk-dir> | sed 's/^GLIBC_//' | sort -V -u | tail -n 1
-grep -rlao 'GLIBC_2.15'         <jdk-dir>
+grep -rlao 'GLIBC_2.15'         <jdk-dir>   # or GLIBC_2.17 on aarch64
 
 # Everything the JDK expects from the host, bundled or not
 find <jdk-dir> -name '*.so' -exec sh -c 'readelf -d "$1" | grep NEEDED' _ {} \;
