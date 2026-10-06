@@ -36,6 +36,48 @@ jobs:
       # GH_TOKEN, not GITHUB_TOKEN: on Forgejo the latter is the automatically provided *Forgejo* token,
       # and both actions below query GitHub's API for sponsors and contributors. Handing them the wrong
       # forge's credential fails quietly -- an empty list committed over a populated one.
+      #
+      # The sponsors action cannot tell a rejected query from "this account has no sponsors": it returns
+      # the GraphQL body unparsed, finds no `viewer` key under either outcome, writes its empty fallback
+      # between the markers and exits 0. Asking the API here first is what turns a credential problem
+      # into a red job rather than an empty sponsor block committed over a populated one.
+      #
+      # Sponsorship is an account-level relationship -- there is no per-repository sponsor list to ask
+      # for -- so `viewer` resolves to whoever owns GH_TOKEN, and that account must be the one the
+      # sponsors belong to.
+      - name: Verify GH_TOKEN can read sponsorships
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -euo pipefail
+          PROBE="$(mktemp)"
+          # NOT `curl -sf`: -f prints nothing on an HTTP error, and GraphQL answers 200 with an `errors`
+          # array for a scope rejection anyway, so the body is the only place the cause ever appears.
+          curl -sS -X POST https://api.github.com/graphql \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d '{"query":"query { viewer { login sponsorshipsAsMaintainer(first: 1, activeOnly: false) { totalCount } } }"}' \
+            > "$PROBE"
+          PROBE="$PROBE" python3 - <<'PROBE_PY'
+          import json
+          import os
+          import sys
+
+          response = json.load(open(os.environ['PROBE']))
+          for error in response.get('errors', []):
+              print(f"::error::GitHub GraphQL: {error.get('message')}")
+
+          maintainer = (response.get('data') or {}).get('viewer') or {}
+          sponsorships = maintainer.get('sponsorshipsAsMaintainer')
+          if sponsorships is None:
+              print('::error::GH_TOKEN cannot read sponsorships. A classic PAT needs the read:user '
+                    'scope, plus read:org for an organization account.')
+              sys.exit(1)
+
+          print(f"{maintainer.get('login')} has {sponsorships['totalCount']} sponsorships "
+                'visible to this token.')
+          PROBE_PY
+
       - name: Add GitHub Sponsors to Readme
         uses: https://github.com/JamesIves/github-sponsors-readme-action@v1
         with:
