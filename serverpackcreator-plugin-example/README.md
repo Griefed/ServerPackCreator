@@ -84,7 +84,7 @@ and
 override fun setServerPackExtensionConfig(serverPackExtensionConfig: ArrayList<CommentedConfig>) {...}
 ```
 
-in the [ConfigurationPanel](src/main/kotlin/de/griefed/example/gui/panel/ConfigurationPanel.kt)- and [Panel](src/main/kotlin/de/griefed/example/gui/panel/Panel.kt)-classes.
+in the [ConfigurationPanel](src/main/kotlin/de/griefed/example/kotlin/gui/panel/ConfigurationPanel.kt)- and [Panel](src/main/kotlin/de/griefed/example/kotlin/gui/panel/Panel.kt)-classes.
 
 Docs: [Configuration Panel Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/plugins/swinggui/ConfigPanelExtension.html)
 
@@ -106,7 +106,7 @@ your tab.
 
 Below the big button are some textfields which allow you to change some values of the global plugin-wide configuration.
 Global plugin-configurations are handed to you by ServerPackCreator when the tab is instantiated. The only thing
-you need to take care of is to call `saveConfiguration()` (see [Tab](src/main/kotlin/de/griefed/example/gui/tab/TetrisTab.kt) )from within your tab to save the configuration.
+you need to take care of is to call `saveConfiguration()` (see [Tab](src/main/kotlin/de/griefed/example/kotlin/gui/tab/TetrisTab.kt) )from within your tab to save the configuration.
 The example above simply adds a button `Set values` which does just that. 
 
 Global plugin-configurations are passed to every extension, along with any available extension-specific configuration,
@@ -114,7 +114,7 @@ automatically, so you don't have to worry about anything other than actually sav
 
 Maybe have a timer auto-save every few seconds? Your tab, your choice! 😁
 
-See [TetrisTab](src/main/kotlin/de/griefed/example/gui/tab/TetrisTab.kt) and [Tab](src/main/kotlin/de/griefed/example/gui/tab/Tab.kt)
+See [TetrisTab](src/main/kotlin/de/griefed/example/kotlin/gui/tab/TetrisTab.kt) and [Tab](src/main/kotlin/de/griefed/example/kotlin/gui/tab/Tab.kt)
 
 Docs: [Tab Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/plugins/swinggui/TabExtension.html)
 
@@ -133,7 +133,7 @@ of passed configs contains text. If it does, then we add a custom error message 
 during configuration checks.
 That list is then displayed to the user after the configurations checks have all run.
 
-For details see `runCheck(...) {...}` in the [ConfigurationCheck](src/main/kotlin/de/griefed/example/configcheck/ConfigurationCheck.kt)-class.
+For details see `runCheck(...) {...}` in the [ConfigurationCheck](src/main/kotlin/de/griefed/example/kotlin/configcheck/ConfigurationCheck.kt)-class.
 
 Keep in mind that the method must return `true` in order to trigger a config check failure on ServerPackCreators part.
 Only if any one configuration check, be that ServerPackCreator native or from plugins, returns `true` will the
@@ -142,7 +142,7 @@ error messages be displayed to the user.
 Make use of this extension point in combination with the **Configuration Panel Extension** and/or **Tab Extension** in order to
 check user input for any errors!
 
-See [ConfigurationCheck](src/main/kotlin/de/griefed/example/configcheck/ConfigurationCheck.kt)
+See [ConfigurationCheck](src/main/kotlin/de/griefed/example/kotlin/configcheck/ConfigurationCheck.kt)
 
 Docs: [ConfigurationCheck Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/plugins/configurationhandler/ConfigCheckExtension.html)
 
@@ -158,7 +158,7 @@ You may use this to prepare the environment for any of the tailing extensions.
 The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
 
-See [PreGeneration](src/main/kotlin/de/griefed/example/serverpack/PreGeneration.kt)
+See [PreGeneration](src/main/kotlin/de/griefed/example/kotlin/serverpack/PreGeneration.kt)
 
 Docs: [Pre Generation Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/plugins/serverpackhandler/PreGenExtension.html)
 
@@ -174,7 +174,7 @@ started. Want to add any files to the ZIP-archive? Or make sure some file doesn'
 The above example shows the run of a PreZip extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
 
-See [PreZipArchive](src/main/kotlin/de/griefed/example/serverpack/PreZipArchive.kt)
+See [PreZipArchive](src/main/kotlin/de/griefed/example/kotlin/serverpack/PreZipArchive.kt)
 
 Docs: [Pre Zip Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/plugins/serverpackhandler/PreZipExtension.html)
 
@@ -191,7 +191,7 @@ install and configure DynMap with some renderdata? This would be the place to do
 The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
 
-See [PostGeneration](src/main/kotlin/de/griefed/example/serverpack/PostGeneration.kt)
+See [PostGeneration](src/main/kotlin/de/griefed/example/kotlin/serverpack/PostGeneration.kt)
 
 Docs: [Post Generation Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/plugins/serverpackhandler/PostGenExtension.html)
 
