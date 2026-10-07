@@ -1,3 +1,53 @@
+## [9.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.1.0...9.2.0) (2026-10-07)
+
+### 📔 Docs
+
+* audit main..develop, and correct two counts that were never true ([f3e1bc2](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3e1bc25460ee3c7b34e10992d3cd0d5736c3156))
+* Have reporters provide proof of them letting the mod-dev know about crashes ([1439b13](https://git.griefed.de/Griefed/ServerPackCreator/commit/1439b133668c8bb3494a45de0eac02721edc9905))
+* record the timedOut contract change, and widen this file's scope to say so ([8cce500](https://git.griefed.de/Griefed/ServerPackCreator/commit/8cce5007ecfaec536d51ea7244ae0e9b71c08aa4))
+* Remove stale comment ([818fc3e](https://git.griefed.de/Griefed/ServerPackCreator/commit/818fc3e5ee5238424922cbd479fcde32d13ebe44))
+* say what the code does, not what it used to do ([2ff0312](https://git.griefed.de/Griefed/ServerPackCreator/commit/2ff0312c636a1b915e33c6b3d9aa789db5c0c503))
+* **api:** present-tense comments in -api ([396bf5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/396bf5ee0cb73ad23d56e4ddbefbc473b4119d5a))
+* **app,plugins:** present-tense comments in -app and the plugin modules ([a2ed49c](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2ed49c5d8c863e174d292c40b9d736189a1a0ca))
+* **ci:** present-tense comments in the workflows and build logic ([333601a](https://git.griefed.de/Griefed/ServerPackCreator/commit/333601abcf1d97beef2d67e6b988c450fe107bf8))
+* **clientside:** present-tense comments in -clientside ([d1abd0b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d1abd0b1a54e7614163e85af7d8a267679d358d2))
+* **example-plugin:** point the README's source links at the package they actually live in ([2602ec3](https://git.griefed.de/Griefed/ServerPackCreator/commit/2602ec344d71f085a73ba20f39599ad8bf21c566))
+* **grinder:** present-tense comments in -grinder ([3e69c60](https://git.griefed.de/Griefed/ServerPackCreator/commit/3e69c6021c188e1c0bf17c7db31483446ce12ecc))
+* **readme:** a chapter for the four experimental plugins ([022574a](https://git.griefed.de/Griefed/ServerPackCreator/commit/022574a8a56156d0256bd6490b7fccd1a12ce587))
+
+### 📦 Other
+
+* Update sponsors and contributors ([4b84d5b](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b84d5b5e193b615da1405c126af47e9c22851a3))
+
+### 🦊 CI/CD
+
+* set the Java version in one place, and map everywhere else it appears ([1ec9830](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ec983029a89f99aad1f14dab605fcb34fe28854))
+* **grinder:** measure what a restart pays to load the verdict store ([646db9d](https://git.griefed.de/Griefed/ServerPackCreator/commit/646db9d92318cd022c683e2b604ae9d64bd6050f))
+* reference actions by version tag instead of commit SHA ([e033728](https://git.griefed.de/Griefed/ServerPackCreator/commit/e03372819f5dd78408eeccb7a67482902abae277))
+* **News:** use different URL for release news webhook ([81adb1b](https://git.griefed.de/Griefed/ServerPackCreator/commit/81adb1b3db837a0f621269aa55416aacd00992e7))
+
+### 🧪 Tests
+
+* **clientside:** pin that a boot which finished is not a timeout ([6d91929](https://git.griefed.de/Griefed/ServerPackCreator/commit/6d91929058ba790d36f317cb91edf7f9e1dd5062))
+
+### 🚀 Features
+
+* **appimage:** self-updating AppImages, and a bundled Java that fails loudly instead of silently ([8a907d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a907d911f564827b922b5972f3948c9817416af))
+* **clientside:** boot a server for every clientside-mod request, and link the proof in the issue ([5a74a74](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a74a74d2f0dc02e6f72394c09f5aec639cf7498))
+* **windows:** a portable Windows build that runs without an installer ([509e8b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/509e8b69350ef2ed86f15e1b4690e4eee5e882f0))
+
+### 🛠 Fixes
+
+* **api:** forward a stop signal to the server in the bash start script ([8f2ac90](https://git.griefed.de/Griefed/ServerPackCreator/commit/8f2ac90ce16303a3a98878c3fa3e8bd5a8064208))
+* **appimage:** the glibc floor is a property of the build, so it is set per architecture ([b38ea66](https://git.griefed.de/Griefed/ServerPackCreator/commit/b38ea66c30a669941456353bed8f677b64899f8c))
+* **ci:** make the continuous release say why it failed instead of printing a traceback ([de86ca6](https://git.griefed.de/Griefed/ServerPackCreator/commit/de86ca6a46571206eceebfaa52155f9645e12b45))
+* **ci:** the sponsors list is emptied by a token scope, not by Forgejo ([8493dd7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8493dd757887d985be8347bfc7402dafae06ed7a))
+* **ci:** the Windows jobs ask for a PowerShell that Windows does not ship ([8b268ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/8b268ed253c3970cc329ed6ece75fb96ca173244))
+* **clientside,grinder:** a boot that finished is not a boot that timed out ([9964e48](https://git.griefed.de/Griefed/ServerPackCreator/commit/9964e485a4fc43fab58eadb85767bc7ce401689f))
+* **docs:** the help site's Dokka link must be absolute, or it never navigates ([132ceed](https://git.griefed.de/Griefed/ServerPackCreator/commit/132ceed3a9453f41b5bc9832077935118986bd91))
+* **grinder:** reattach the benchmark KDoc block that an insertion stranded ([8e49a27](https://git.griefed.de/Griefed/ServerPackCreator/commit/8e49a27b69979941698b0556769866f8fe475532))
+* **winimage:** the self-containment guard asks for a file jpackage never emits ([95a09ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/95a09edd0347f59cc71e4567fad6def6198cf31c))
+
 ## [9.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0...9.1.0) (2026-10-02)
 
 ### :scissors: Refactor
