@@ -1,0 +1,58 @@
+# TEMPORARY -- Phase 0 of the shared-base work, deleted once it has answered. The questions it answers
+# and why they matter are in `probe-reusable.yml`.
+#
+# HOW TO READ A RUN:
+#   fail = false  ->  the run must be GREEN and `verdict` must pass. A red `verdict` means the output
+#                     did not cross back out of the called workflow.
+#                 ->  a run that sits forever on "probe: windows runner reachable" means no Windows
+#                     runner is online, which is a host problem, not a reference problem.
+#   fail = true   ->  the run must be RED. Run it at least three times. **If it is ever green, stop:**
+#                     this instance's runner predates forgejo/runner#1081, a failing inner job does not
+#                     fail the caller, and nothing may be moved into a reusable workflow until the
+#                     runners are upgraded past v12.1.2.
+name: Probe
+
+# Dispatch only. Nothing here should ever run off a push.
+on:
+  workflow_dispatch:
+    inputs:
+      fail:
+        description: "Make an inner job fail on purpose, to check the caller goes red"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # NO `runs-on:` -- Forgejo disables workflow expansion for a calling job that declares one, and
+  # expansion is the behaviour under test.
+  call:
+    name: "Call the reusable workflow"
+    uses: ./.forgejo/workflows/probe-reusable.yml
+    with:
+      echo: probe-${{ github.sha }}
+      fail: ${{ inputs.fail }}
+    # Passed although the probe reads no secret: the point is to confirm the keyword parses here, since
+    # the real callers need it and the callee cannot declare its secrets on Forgejo.
+    secrets: inherit
+
+  verdict:
+    name: "Check the output crossed back out"
+    needs: call
+    runs-on: ubuntu-latest
+    steps:
+      - name: The caller must see what an inner job produced
+        env:
+          GOT: ${{ needs.call.outputs.echoed }}
+          WANT: probe-${{ github.sha }}
+        run: |
+          echo "want: $WANT"
+          echo "got : $GOT"
+          if [ "$GOT" != "$WANT" ]; then
+            echo "::error::a called workflow's output did not reach the caller"
+            exit 1
+          fi
+          echo "Output round-trip works."
