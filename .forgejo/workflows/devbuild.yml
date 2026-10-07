@@ -361,8 +361,11 @@ jobs:
           version: '13.1'
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
+      # `-f`, matching release-build.yml:168: the installer is only present because `setup-install4j`
+      # left it there, so a version of that action which cleans up after itself would fail this job on
+      # a glob that matched nothing.
       - name: Remove install4j script
-        run: rm install4j_linux-x64_*.sh
+        run: rm -f install4j_linux-x64_*.sh
 
       - name: Download JARs
         uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
