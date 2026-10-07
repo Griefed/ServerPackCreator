@@ -40,13 +40,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
+      - uses: ./.forgejo/actions/setup-build
 
       - name: Determine version
         id: version
@@ -68,9 +62,6 @@ jobs:
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Building version: ${VERSION}"
-
-      - name: Set Permissions
-        run: chmod +x gradlew
 
       - name: Build with Gradle
         run: |
