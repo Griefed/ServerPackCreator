@@ -70,12 +70,11 @@ jobs:
 
       # The JDK jpackage comes from, and whose runtime it embeds into the image. No Gradle here: the jar
       # arrives from `assets` below.
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
+      # `gradle: false` -- jpackage comes from the JDK and nothing here runs Gradle, so the dependency
+      # cache would be restored and saved for a job that never resolves a dependency.
+      - uses: ./.forgejo/actions/setup-build
         with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
+          gradle: "false"
 
       - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
