@@ -1,0 +1,90 @@
+# The one place that decides what a build calls itself.
+#
+# Two callers with genuinely different questions: `release-build.yml` is handed a tag and must decide
+# whether it is a release at all, while `devbuild.yml` has to derive a name from whatever ref it is
+# on. Keeping them apart meant the prerelease classification and the tag-shape rejection existed in
+# only one of the two, so a malformed tag was caught and a malformed anything else was not.
+#
+# REQUIRES `fetch-depth: 0` ON THE CHECKOUT in `branch` mode: `git describe` needs the tags, and a
+# shallow clone has none. The step below says so rather than producing a plausible wrong answer.
+name: "Resolve the build version"
+description: "Decide the version this build publishes under, and whether it is a prerelease."
+
+inputs:
+  mode:
+    description: >-
+      `tag` takes `github.ref_name` as the version and REFUSES anything that is neither `X.Y.Z` nor
+      `X.Y.Z-(alpha|beta).N`, so a stray tag cannot half-release. `branch` derives a name from the ref:
+      an explicit override, else a `v`-prefixed tag, else `git describe` on `main`, else
+      `<branch>-<short sha>`.
+    required: true
+  override:
+    description: >-
+      `branch` mode only: a version supplied by a `workflow_dispatch` input, which wins over everything
+      else. Empty means "derive it". Ignored in `tag` mode, where the tag is the version by definition.
+    required: false
+    default: ""
+
+outputs:
+  version:
+    description: "The version this build publishes under, used verbatim in artifact names."
+    value: ${{ steps.resolve.outputs.version }}
+  prerelease:
+    description: >-
+      Whether the forge should mark this a prerelease. Always `true` in `branch` mode -- a build off a
+      branch is never a stable release, whatever it is named.
+    value: ${{ steps.resolve.outputs.prerelease }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve the version
+      id: resolve
+      shell: bash
+      # The dispatch input is untrusted-ish and reaches the script through the environment, never
+      # through interpolation into the shell. The `github.*` values below are the runner's own.
+      env:
+        MODE: ${{ inputs.mode }}
+        OVERRIDE: ${{ inputs.override }}
+        REF_NAME: ${{ github.ref_name }}
+      run: |
+        set -eu
+        case "$MODE" in
+          tag)
+            # The tag IS the version: .releaserc.yml uses `tagFormat: '${version}'`, with no `v` prefix.
+            VERSION="$REF_NAME"
+            if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              PRERELEASE=false
+            elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta)\.[0-9]+$ ]]; then
+              PRERELEASE=true
+            else
+              echo "::error::Tag '$VERSION' is neither X.Y.Z nor X.Y.Z-(alpha|beta).N - refusing to release."
+              exit 1
+            fi
+            ;;
+          branch)
+            PRERELEASE=true
+            if [ -n "$OVERRIDE" ]; then
+              VERSION="$OVERRIDE"
+            elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+              VERSION="${GITHUB_REF#refs/tags/v}"
+            elif [ "$REF_NAME" = "main" ]; then
+              # Needs the tags. A shallow checkout makes `git describe` answer with a bare sha, which
+              # looks like a version and is not one, so the absence is reported rather than absorbed.
+              if ! git describe --tags --always >/dev/null 2>&1; then
+                echo "::error::git describe failed - check out with fetch-depth: 0 before this action."
+                exit 1
+              fi
+              VERSION="$(git describe --tags --always)"
+            else
+              VERSION="${REF_NAME}-$(git rev-parse --short HEAD)"
+            fi
+            ;;
+          *)
+            echo "::error::mode must be 'tag' or 'branch', got '$MODE'."
+            exit 1
+            ;;
+        esac
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+        echo "prerelease=${PRERELEASE}" >> "$GITHUB_OUTPUT"
+        echo "Building version: ${VERSION} (prerelease: ${PRERELEASE})"

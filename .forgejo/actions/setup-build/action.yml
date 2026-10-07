@@ -1,0 +1,61 @@
+# The JDK-and-Gradle preamble every build job in this repository opens with.
+#
+# It replaced four separately-drifting copies: `actions/setup-java` appeared eight times with the
+# Gradle cache and twice without, `gradle/actions/setup-gradle` seven times, and `chmod +x gradlew`
+# seven times -- and `devbuild.yml`'s `build-jar` was the one job that had the cache but not
+# `setup-gradle`, for no reason anybody recorded.
+#
+# THE JAVA VERSION IS NOT DECLARED HERE TWICE OVER. `misc/Java-References.md` is the map of every
+# place the target version appears outside Gradle's reach, and this file is one of them -- change it
+# there and here together, never here alone.
+#
+# A CALLER MUST CHECK OUT FIRST. A local action's own files arrive with the checkout, so
+# `actions/checkout` can never move inside one; that is why the checkout steps stay written out in
+# every job and are allowlisted in `misc/ci-duplication-allowlist.yml` rather than shared.
+name: "Set up the build toolchain"
+description: "Install the project's JDK, and optionally Gradle and the wrapper's executable bit."
+
+inputs:
+  gradle:
+    description: >-
+      Whether this job runs Gradle. When true the JDK is installed with the Gradle dependency cache,
+      `gradle/actions/setup-gradle` runs against the wrapper, and `gradlew` is made executable. Set it
+      false for a job that needs a JDK but no build -- the Windows app-image jobs run `jpackage` and
+      never touch Gradle, so a Gradle cache there would be saved and restored for nothing.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    # Two spellings of one step rather than an expression computing `cache:`. `setup-java` treats an
+    # empty `cache` as "no caching", so a ternary would work -- but a mis-evaluated expression here
+    # fails as a cache miss, which is invisible, and this is the preamble to every build in the repo.
+    - name: Set up JDK 21 with the Gradle cache
+      if: ${{ inputs.gradle == 'true' }}
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: '21'
+        check-latest: true
+        cache: 'gradle'
+
+    - name: Set up JDK 21
+      if: ${{ inputs.gradle != 'true' }}
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: '21'
+        check-latest: true
+
+    - name: Set up Gradle
+      if: ${{ inputs.gradle == 'true' }}
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        gradle-version: wrapper
+
+    # `shell:` is mandatory on a composite `run:` step, where a job step defaults to bash.
+    - name: Set Permissions
+      if: ${{ inputs.gradle == 'true' }}
+      shell: bash
+      run: chmod +x gradlew
