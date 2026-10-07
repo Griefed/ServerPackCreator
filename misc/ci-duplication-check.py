@@ -56,6 +56,12 @@ def step_body(step: dict) -> Optional[str]:
         shell = step.get("shell", "")
         return f"run[{shell}]\n{normalise_run(str(step['run']))}"
     if "uses" in step:
+        # A `uses: ./...` is a call to a composite action in this repository. Several jobs calling one
+        # shared action is the outcome this check exists to produce, so counting it as duplication
+        # would report the fix as the problem -- and would push a caller towards copying the steps back
+        # out to silence it.
+        if str(step["uses"]).startswith("./"):
+            return None
         with_block = step.get("with") or {}
         if SKIP_BARE_USES and not with_block:
             return None
