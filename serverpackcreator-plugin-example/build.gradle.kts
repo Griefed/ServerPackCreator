@@ -61,15 +61,13 @@ tasks.processResources {
     }
 }
 
-// The documents this plugin ships inside its own jar. Previously three bare `copy { }` calls inside
-// the processResources CONFIGURATION block, so they ran whenever that task was configured — including
-// on runs where processResources itself was UP-TO-DATE and did nothing — with no inputs, no outputs
-// and no caching, writing into the source tree each time. Same fix as -api's shipRootDocuments.
+// The documents this plugin ships inside its own jar, as a Copy task with declared inputs and outputs.
+// A bare `copy { }` inside the processResources CONFIGURATION block would run whenever that task is
+// configured — including on runs where processResources is UP-TO-DATE and does nothing — uncached and
+// writing into the source tree each time. Same arrangement as -api's shipRootDocuments.
 //
-// CHANGELOG.md is deliberately still listed even though this module has no such file at its root: the
-// old copy silently did nothing for it, and `include` behaves the same way, so the shipped
-// src/main/resources/CHANGELOG.md (which is tracked, and predates this) keeps whatever it holds. See
-// the commit message — that stale file is worth a separate look, not a silent deletion here.
+// CHANGELOG.md is listed even though this module has no such file at its root: `include` simply matches
+// nothing, and the tracked src/main/resources/CHANGELOG.md keeps whatever it holds.
 tasks.register<Copy>("shipPluginDocuments") {
     description = "Copies this plugin's own LICENSE, README and CHANGELOG into its resources."
     from(layout.projectDirectory) {

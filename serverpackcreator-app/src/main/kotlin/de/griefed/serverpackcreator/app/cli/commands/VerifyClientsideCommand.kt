@@ -35,9 +35,8 @@ import java.io.File
  * `BootCandidateSelector.pickGrindTargets`, not one boot per loader: sideness is a property of a build,
  * and builds differ far more across Minecraft eras than across loaders of one era.
  *
- * A distribution-locked CurseForge file (`allowModDistribution=false`) is **not** fetched -- the headless
- * browser route that used to do so was removed in 9.0.0, having stopped working against CurseForge's bot
- * challenge. Such a project reports `LOCKED` and is verified from Modrinth instead.
+ * A distribution-locked CurseForge file (`allowModDistribution=false`) is **not** fetched: such a file
+ * publishes no download URL. Those projects report `LOCKED` and are verified from Modrinth instead.
  *
  * The CurseForge API-key is read from the `CURSEFORGE_API_KEY` environment-variable (CurseForge
  * links only). Heavier and slower than `clientsidereport` — it installs and boots a server per
@@ -83,12 +82,14 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
      * `null`). Failures render as a short Markdown note rather than throwing, so the workflow always
      * has a comment to post.
      *
-     * **Distribution-locked CurseForge files cannot be verified here.** They publish no download URL, and
-     * the headless-browser workaround that used to fetch them anyway was removed on 2026-09-02 — see
-     * `HttpJarDownloader`. Such a project is verified from Modrinth instead.
+     * **Distribution-locked CurseForge files cannot be verified here**, because they publish no download
+     * URL — see `HttpJarDownloader`. Such a project is verified from Modrinth instead.
      */
     fun verify(projectUrl: String, outputFile: File? = null) {
         val workDirectory = File(apiWrapper.apiProperties.homeDirectory, "work/clientside-verify")
+        // Beside `boot/`, never inside it: `stageBootPack` deletes and re-creates `boot/<attemptName>`
+        // before every attempt, so evidence kept in there lives until the next boot and no longer.
+        val artifactWriter = BootArtifactWriter(File(workDirectory, "boot-evidence"))
         val markdown = try {
             run {
                 val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
@@ -107,7 +108,11 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                             workDirectory = File(workDirectory, "boot"),
                             // A dependency this platform cannot supply may exist on the other one, and the
                             // staged file is just a jar. Empty when no CurseForge key is configured.
-                            alternatePlatforms = platforms.filter { it !== platform }
+                            alternatePlatforms = platforms.filter { it !== platform },
+                            // Per attempt, because this is the only moment a re-check's pack still exists.
+                            // A thrown sink is logged and ignored by `BootVerifier`, so a full disk cannot
+                            // cost a verdict that already ran.
+                            bootArtifactSink = { staged, outcome -> artifactWriter.keep(staged, outcome) }
                         )
                     }
                 )

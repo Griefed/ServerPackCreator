@@ -31,6 +31,46 @@ by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate re
 **GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
 as current as the repository it mirrors into* below.
 
+## Actions are referenced by VERSION TAG, not by commit SHA (Griefed's call, 2026-10-03)
+
+**`uses: actions/checkout@v6`, in both directories.** Of the **72** `uses:` lines in the two workflow
+directories, **63** were a 40-character SHA with a `# vX.Y.Z` comment beside it and are now the tag, the
+comment gone with them because the ref says what the comment said. The other nine were never SHAs: seven
+in the Windows app-image jobs, written as tags from the start, and two local
+`./.github/workflows/...` reusable-workflow references, which take no version at all. Re-derive the
+total with `grep -rhE '^[[:space:]]*uses:' .forgejo/workflows/ .github/workflows/ | wc -l`.
+
+**The cost is real and was accepted rather than overlooked:** a tag is mutable, so upstream can repoint
+`v6` and the next push runs different code with no commit here to blame — and in `.forgejo/workflows` a
+bare `owner/repo` resolves through the runner's default action URL, `https://data.forgejo.org`, so it also
+trusts a *mirror* to stay in step. The measurement that decided it points the other way: **every major tag
+was already AHEAD of the SHA it replaced**, so the pins had silently frozen eight actions at older releases
+— `checkout` v6 at `d23441a4` against a pin of `9f698171`, and the same for `setup-java`, `gradle/actions`,
+`cache`, `setup-node` and all three `docker/*`. Immutability nobody re-visits is staleness.
+
+**Where the resolution host comes from, since it is in no file here:** the runners' own logs, which print
+`☁️ git fetch 'https://data.forgejo.org/actions/checkout'`. The major tags were then confirmed present
+there with `git ls-remote --tags` before anything was converted — do that again before adding a *new* bare
+reference, because `data.forgejo.org` mirrors common actions and not arbitrary GitHub repositories
+(`actions/github-script` and `JetBrains/writerside-github-action`, for instance, are absent from it; both
+are used only in `.github/workflows`, where GitHub resolves them).
+
+**Four references are not a bare major, each checked:**
+
+| Reference | Why |
+|---|---|
+| `tiyee/action-ssh@v1.0.1` | publishes no `v1` tag *or* branch; `v1.0.1` is the only tag, and it is the commit that was pinned |
+| `nogsantos/scp-deploy@v1.3.0` | same shape — tags are `v1.0.0`…`v1.3.0`, no `v1` |
+| `luangong/setup-install4j@v1` | `v1` is a **branch**, not a tag, currently at exactly the pinned commit |
+| `jmgilman/actions-generate-checksum@v1` | same — `refs/heads/v1`, no `v1` tag |
+
+The last two are more mutable than a tag and are still what each action's README tells you to use. If one
+of them ever matters more, the fix is a fork, not a SHA — a SHA there means nobody ever updates it.
+
+**Dependabot watches `github-actions` at `/`, which on GitHub means `.github/workflows` only.** That
+reaches 15 of the 72 `uses:` lines; the **57** under `.forgejo/workflows` are watched by nothing, before
+and after this change. With tags they at least pick up patch releases on their own.
+
 **The criterion for `.github/workflows` is "GitHub is the only place this CAN happen", not "this is
 convenient here".** `pages.yml` stretches it the furthest and still passes: it runs the Writerside builder
 *and* a Gradle Dokka build, which looks exactly like the second CI `test.yml`'s header warns against — but
@@ -42,10 +82,15 @@ Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can
 **`pages.yml` and `docs.yml` build the same bundle for two different hosts, and four things must move
 together:** the `INSTANCE`/`ARTIFACT` pair, the pinned `jetbrains/writerside-builder` version, the
 *Stage documents and images* step (the seven root documents are generated into `Writerside/topics/` and a
-fresh checkout has none of them), and the `api/` path that `spch.tree`'s **relative** `api/index.html` link
-resolves against. That link is relative rather than root-absolute because the container serves the site at
-`/` and Pages serves it at `/ServerPackCreator/`; every Writerside topic is emitted at the site root
-(verified against the published image, despite `web-path="topics"`), so one relative href serves both.
+fresh checkout has none of them), and the `api/` path the Dokka tree is merged into.
+
+**`spch.tree`'s Dokka entry is an ABSOLUTE URL, and it has to be.** The published help is a single-page
+app whose viewer navigates for real only when the href carries a scheme — `isExternal || /^(?:[a-z]+:)?\/\//`
+— so a relative `api/index.html` is client-side routed instead: the app pushes the URL to `/api/` and
+re-bootstraps there, asking for `api/config.json`, `api/HelpTOC.json` and `api/api-object-digest.json`,
+which exist only at the site root. All three 404 and the page dies on *"TOC data error"*. A root-absolute
+`/ServerPackCreator/api/index.html` fails the same test. The cost is that the link leaves a self-hosted
+container for the public site; `/api/` is still served in both layouts for anyone addressing it directly.
 **`pages.yml` needs Settings → Pages → Source set to "GitHub Actions"**; while it is still "Deploy from a
 branch" the workflow goes green and publishes nothing.
 

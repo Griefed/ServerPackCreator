@@ -25,6 +25,7 @@ import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
+import de.griefed.serverpackcreator.clientside.BootDeadline
 import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
@@ -132,8 +133,8 @@ class DockerJavaContainerEngine(
                 })
 
             // The budget must not be spent while the host is asleep. A suspend freezes the container mid-boot, and a
-            // wall-clock deadline then expires on a server that never got the time — measured 2026-07-31, a laptop
-            // idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
+            // wall-clock deadline then expires on a server that never got the time — measured on a laptop
+            // idle-sleeping in ~16-minute cycles, 19 of 153 verdicts read `timed out`, several of them
             // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. Each
             // suspended interval is added back to the deadline, so the timeout means "the boot had this long and did
             // not make it" rather than "this much clock passed".
@@ -144,11 +145,15 @@ class DockerJavaContainerEngine(
                         "(e.g. `caffeinate -ims`) — a boot interrupted this way learns nothing either way."
                 )
             }
-            while (isRunning(containerId) && !ready.get() && deadline.hasTimeLeft()) {
+            // The loop's own last answer, reused rather than asked again: the daemon is round-tripped once
+            // per poll as it is, and a second inspect here would be a different moment in time.
+            var stillRunning = isRunning(containerId)
+            while (stillRunning && !ready.get() && deadline.hasTimeLeft()) {
                 Thread.sleep(POLL_INTERVAL_MILLIS)
                 deadline.tick()
+                stillRunning = isRunning(containerId)
             }
-            val timedOut = !ready.get() && !deadline.hasTimeLeft()
+            val timedOut = BootDeadline.timedOut(ready = ready.get(), stillRunning = stillRunning)
 
             // A server that became ready stays up by design, so stop it; classification keys on the
             // captured lines + exit code, never on liveness. Kill if a graceful stop fails.
@@ -208,9 +213,14 @@ class DockerJavaContainerEngine(
     }
 
     /**
-     * Ask one container to exit, then remove it. `docker stop` with a timeout is SIGTERM followed by the
-     * daemon's own SIGKILL once the window passes, which is what gives a Minecraft server the chance to save
-     * its world — going straight to `remove --force`, as this used to, is a SIGKILL to PID 1 with no warning.
+     * Ask one container to exit, then remove it. `docker stop` with a timeout is SIGTERM to PID 1 followed by
+     * the daemon's own SIGKILL once [shutdownGrace] passes, where `remove --force` is that SIGKILL with no
+     * warning at all.
+     *
+     * **Sending the signal is this engine's half of the contract; honouring it is the container's.** The kernel
+     * discards a default-action signal aimed at PID 1, so a container whose PID 1 installs no handler cannot
+     * act on it and is killed when the window expires — which is what a boot's `bash start.sh` does. The
+     * landmine in this package's `CLAUDE.md` has the measurement and what it costs.
      */
     private fun stopThenRemove(containerId: String) {
         runCatching { client.stopContainerCmd(containerId).withTimeout(shutdownGrace.seconds.toInt()).exec() }
@@ -313,8 +323,7 @@ class DockerJavaContainerEngine(
     private fun exitCodeOf(containerId: String): Int? =
         runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
 
-    /** Poll interval, the suspend-gap threshold and the ambient-environment Docker client factory. */
-
+    /** The poll interval, the ownership labels, the bounded shutdown wait and the Docker client factory. */
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L

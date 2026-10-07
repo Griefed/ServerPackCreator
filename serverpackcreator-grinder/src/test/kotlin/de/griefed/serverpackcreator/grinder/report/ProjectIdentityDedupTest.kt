@@ -28,9 +28,10 @@ import java.time.Instant
 /**
  * Pins that a verdict's identity is the *project*, not its current slug.
  *
- * The store keyed on `platform + slug + loader`, and a slug is a mutable display name: a project that renames
- * itself is a new row, its old verdicts linger under the old name, and the catalogue crawl grinds it again as if
- * unseen. Harmless while the store is scratch data; not harmless once it is a dataset anyone reads, since the same
+ * A slug is a mutable display name, so keying on `platform + slug + loader` alone means a project that renames
+ * itself becomes a new row, its earlier verdicts linger under the former name, and the catalogue crawl grinds it
+ * again as if unseen. Harmless while the store is scratch data; not harmless once it is a dataset anyone reads,
+ * since the same
  * mod then appears twice with possibly opposite confidences and nothing says which is current.
  *
  * Platform stays part of the identity — `jei` exists on Modrinth *and* CurseForge, and those are different projects.
@@ -109,7 +110,7 @@ internal class ProjectIdentityDedupTest {
         Assertions.assertEquals("MQ4RtcVI", store.all().single().projectId, "the identified verdict is the one kept")
     }
 
-    /** Without ids on either side the old behaviour must hold exactly — 860 stored verdicts depend on it. */
+    /** Without ids on either side the slug-keyed behaviour must hold exactly: stored verdicts depend on it. */
     @Test
     fun verdictsWithoutIdsStillDedupBySlug() {
         val store = InMemoryVerdictStore()

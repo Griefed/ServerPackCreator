@@ -33,9 +33,9 @@ import java.io.File
  * `Optional`, which consumers read as "this version declares no required Java". Downstream that became a
  * benign-looking `[N/A] SKIPPED` and quietly dropped the newest Minecraft versions from the template matrix.
  *
- * The set was internally inconsistent until 2026-07-31: `minecraft-manifest.json` listed **26.2** as the newest
- * release while `mcserver/` had neither it nor any 1.21.x — 16 releases advertised and not cached. This guard is
- * what stops that drifting back, because the symptom is invisible on a machine whose home already has the files.
+ * The set drifts out of step easily: `minecraft-manifest.json` can advertise a newest release that `mcserver/`
+ * does not carry, and every release between them. This guard is what catches that, because the symptom is
+ * invisible on a machine whose home already has the files.
  *
  * **Releases only, deliberately.** Snapshots are advertised in the same manifest and hundreds are absent; caching
  * them all would multiply the shipped resources for versions the grinder's release gate never selects. If snapshot

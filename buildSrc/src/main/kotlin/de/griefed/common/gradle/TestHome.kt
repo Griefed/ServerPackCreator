@@ -18,18 +18,14 @@ object TestHome {
      * Everything in the test home is disposable **except** `manifests/`. Those are a cache of immutable
      * upstream data — SPC seeds them from the jar and fetches a per-version `mcserver/<version>.json` on
      * demand — so deleting them makes every run re-download, which contradicts the API module's
-     * documented "no live network needed" and quietly eats any newly-fetched version. Measured
-     * 2026-07-31: a single test task took that cache from 643 files to 0, which is what kept deleting
-     * the hand-seeded Minecraft 26.2 metadata during the Forge work and left the newest versions
-     * resolving as "required Java unknown" in the template matrix. `updateManifests` benefits too — it
-     * copies this directory into the shipped resources, so preserving it lets the snapshot accumulate
-     * releases instead of being capped at the seeded set.
+     * documented "no live network needed" and discards any version fetched since the last seed.
+     * `updateManifests` benefits too: it copies this directory into the shipped resources, so preserving
+     * it lets the snapshot accumulate releases instead of being capped at the seeded set.
      *
-     * Deliberately does **not** touch the Preferences store. It used to `removeNode()` the shared,
-     * machine-wide `ServerPackCreator` node and write the module's test directory in as the home, so
-     * every `test` or `clean` relocated the home of the developer's own GUI — and of any running
-     * grinder daemon — into the repository. The isolated per-module node and the injected
-     * `-Dde.griefed.serverpackcreator.home` replace it entirely.
+     * Deliberately does **not** touch the Preferences store. Removing the shared, machine-wide
+     * `ServerPackCreator` node would relocate the home of the developer's own GUI — and of any running
+     * grinder daemon — into the repository on every `test` or `clean`. Test isolation comes from the
+     * per-module Preferences node and the injected `-Dde.griefed.serverpackcreator.home` instead.
      *
      * @param testHome The module's `tests` directory.
      */

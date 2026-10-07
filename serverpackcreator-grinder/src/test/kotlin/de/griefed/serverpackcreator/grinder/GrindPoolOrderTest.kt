@@ -29,13 +29,12 @@ import java.util.*
  * Pins the order the pool grinds a batch in: **round-robin across platforms**, each platform in its own
  * most-downloaded-first order.
  *
- * The old behaviour sorted the whole batch by `popularity`, which starved a platform outright. Observed live on
- * 2026-07-30: CurseForge download counts run several times Modrinth's for equivalent mods (`jei` 602 M vs
- * `fabric-api` 218 M), so *every* CurseForge candidate outranked *every* Modrinth one and a ~2-hour pass ground
- * 108 CurseForge projects and **zero** Modrinth ones. Any interruption shorter than a full pass meant Modrinth
- * made no progress at all, indefinitely.
+ * Sorting the whole batch by `popularity` starves a platform outright: CurseForge download counts run several
+ * times Modrinth's for equivalent mods (`jei` 602 M vs `fabric-api` 218 M), so *every* CurseForge candidate
+ * outranks *every* Modrinth one, and a ~2-hour pass grinds 108 CurseForge projects and **zero** Modrinth ones.
+ * Any interruption shorter than a full pass then leaves Modrinth with no progress at all, indefinitely.
  *
- * The deeper reason a global sort was wrong: the two counts are not comparable. CurseForge counts file downloads
+ * The deeper reason a global sort is wrong: the two counts are not comparable. CurseForge counts file downloads
  * across every version, Modrinth counts differently — ranking them against each other silently promoted one
  * platform for the whole run. Interleaving keeps the meaningful comparison (within a platform) and drops the
  * meaningless one (between platforms).

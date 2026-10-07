@@ -79,8 +79,8 @@ internal class ModListCompilerHotLoopTest {
      * Pins that the exclusion-filter setting is consulted **once per generation**, not once per
      * comparison.
      *
-     * With three mods and two non-matching clientside entries every entry is compared against every
-     * mod, so the old code read the property six times over plus once for its log line.
+     * With three mods and two non-matching clientside entries every entry is compared against every mod, so
+     * reading it per comparison would be six reads plus one for the log line.
      */
     @Test
     fun theExclusionFilterIsReadOncePerGeneration(@TempDir tempDir: File) {

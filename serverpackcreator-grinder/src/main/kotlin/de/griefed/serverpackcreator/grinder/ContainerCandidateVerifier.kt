@@ -160,9 +160,9 @@ class ContainerCandidateVerifier(
          * The installed base for a tuple, or a throw whose message says **which** of the two things happened.
          *
          * The cooldown is read *before* [LoaderCache.ensureInstalled], because that call records the cooldown on
-         * its way out of a failed install: asking afterwards, as this did until 2026-09-03, answers "on cooldown"
-         * for the candidate that just paid for the attempt as well as for the cheap skips behind it, and the
-         * failure branch of [installUnavailableMessage] becomes unreachable. During an outage that difference is
+         * its way out of a failed install: asking afterwards answers "on cooldown" for the candidate that just
+         * paid for the attempt as well as for the cheap skips behind it, and the failure branch of
+         * [installUnavailableMessage] becomes unreachable. During an outage that difference is
          * the diagnosis — an install still being attempted every hour is a live cause, a skip is its echo.
          */
         internal fun installedBase(
@@ -219,8 +219,8 @@ class ContainerCandidateVerifier(
          * resolved report says 'Y'"` when a source labels a project differently from the platform that
          * resolves it, and a slug is a mutable display name a rename can move out from under a queued
          * candidate. Asking for the candidate's copy of either matches no directory and leaks a full server
-         * pack per attempt — the disk-growth class `BootWorkspaceReaper` exists for (98 GB across 1750
-         * directories, measured 2026-07-30).
+         * pack per attempt — the disk-growth class `BootWorkspaceReaper` exists for (measured at 98 GB across
+         * 1750 directories).
          */
         internal fun reapTarget(candidate: GrindCandidate, report: ClientsideReport?): Pair<String, String> =
             report?.let { it.platform to it.slug } ?: (candidate.platform to candidate.slug)
@@ -253,7 +253,7 @@ class ContainerCandidateVerifier(
                         // What the installed loader answers to, read out of the install layer itself, so a
                         // staged jar demanding `fabricloader` is judged rather than skipped as naming
                         // something absent. The Minecraft version is the pack's; a tuple that is not
-                        // installed yet answers nothing, which is the old behaviour.
+                        // installed yet answers nothing.
                         loaderProvides = LoaderProvidedIds(loaderCache)::of,
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources, containerUser),
                         packPostProcessor = ::overlayLoaderInstall,
@@ -306,8 +306,9 @@ class ContainerCandidateVerifier(
         )
 
         // Fabric, Quilt and LegacyFabric publish one Minecraft-independent loader *line* rather than
-        // per-Minecraft builds, which is why this used to return nothing -- read as "no sibling build to
-        // fall back to". The line itself is versioned: Quilt ships 306 builds and Fabric 253, and Quilt's
+        // per-Minecraft builds, so a per-Minecraft lookup returns nothing here and reads as "no sibling
+        // build to fall back to". The line itself is versioned: Quilt ships 306 builds and Fabric 253, and
+        // Quilt's
         // own `/v3/versions/loader/<mc>` lists all 306 as valid for a given Minecraft, so there are 305
         // siblings. Quilt 0.31.0-beta.3 / Minecraft 1.20.6 failed to install with no fallback available.
         //

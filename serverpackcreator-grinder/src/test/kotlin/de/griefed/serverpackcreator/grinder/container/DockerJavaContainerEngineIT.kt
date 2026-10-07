@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * Integration test for the one piece no unit test can cover: [DockerJavaContainerEngine] against a
@@ -43,32 +45,40 @@ internal class DockerJavaContainerEngineIT {
         mounts = emptyList()
     )
 
+    /**
+     * A container that ran, printed and exited hands back all three: its console, its status, and the fact
+     * that it was not given up on.
+     *
+     * The budget is generous because it is not the subject. This container exits in milliseconds; the time
+     * goes on the daemon's create, start and log-attach calls, and on a host doing other work those alone
+     * can outlast a tight budget.
+     */
     @Test
     fun capturesConsoleAndNonZeroExitFromARealContainer() {
         val output = engine.run(
             busyboxSpec("echo hello-from-container; echo crashing-now; exit 3"),
             readyPattern = Regex("this-never-appears"),
-            timeout = Duration.ofSeconds(30)
+            timeout = Duration.ofMinutes(2)
         )
 
         Assertions.assertTrue(output.lines.any { it.contains("hello-from-container") }, "stdout must be captured: ${output.lines}")
         Assertions.assertEquals(3, output.exitCode, "the container's non-zero exit must be read back")
-        Assertions.assertFalse(output.timedOut)
+        Assertions.assertFalse(
+            output.timedOut,
+            "the container exited on its own with ${output.exitCode}, so nothing was given up on: ${output.lines}"
+        )
     }
 
     /**
      * Seeing the ready line must end the run, rather than letting the container live out its sleep.
      *
-     * "Did not wait out the sleep" is asserted by what the container *printed*, not by how long the test
-     * took. The clock answers a different question on every host: this bound was 30s, failed run 726 at
-     * 38s, was raised to 90s, and failed run 834 at 101s — three reds, no defect, because what it actually
-     * measured was how loaded the daemon was. [SLEPT_THROUGH] can only appear if the shell got past
-     * `sleep`, so the marker's absence discriminates between the two *outcomes* where the clock
-     * discriminated between two machines.
+     * "Did not wait out the sleep" is asserted by what the container *printed*: [SLEPT_THROUGH] can only
+     * appear if the shell got past `sleep`, so its absence proves the run was cut short. A wall clock
+     * cannot answer this — elapsed time measures how loaded the daemon is, not whether the engine stopped
+     * on ready.
      *
-     * Worth stating what that gives up, because it is not nothing: a daemon that honoured the stop but took
-     * a minute to do it now passes. That was never this test's subject — [closeSignalsAContainerBeforeKillingIt]
-     * owns the stop path — and it is the only thing the old bound caught that `timedOut` did not.
+     * How promptly the stop itself completes is [closeSignalsAContainerBeforeKillingIt]'s subject, not
+     * this one's.
      */
     @Test
     fun detectsReadyLineAndStopsALongRunningContainerPromptly() {
@@ -161,41 +171,63 @@ internal class DockerJavaContainerEngineIT {
             .exec().size
 
     /**
-     * `systemctl stop` must *signal* a container, not shoot it. `close` therefore issues a `docker stop` with a
-     * bounded grace window before force-removing, so a Minecraft server gets its chance to save and exit — the
-     * previous behaviour went straight to `remove --force`, which is a SIGKILL to PID 1 and loses the world save
-     * of an in-flight boot.
+     * `systemctl stop` must *signal* a container, not shoot it. `close` issues a `docker stop` with a bounded
+     * grace window before force-removing, so a container that handles the signal gets to finish what it is
+     * doing; a bare `remove --force` is a SIGKILL to PID 1 with no warning at all.
      *
-     * Asserted on the container's own exit: a shell trapping TERM writes its marker and exits 0 only if the
-     * signal actually arrived.
+     * Asserted on the container's own exit: a shell trapping TERM writes [GRACEFUL_TERM] and exits 0 only if
+     * the signal actually arrived.
+     *
+     * **This asserts what the engine sends, not what a boot does with it.** The fixture installs a trap;
+     * `bash start.sh` — what a real boot runs as PID 1 — does not, and the kernel discards a default-action
+     * signal sent to PID 1. See the landmine in this package's `CLAUDE.md`.
      */
     @Test
     fun closeSignalsAContainerBeforeKillingIt() {
         // A short window: this asserts that the signal is *sent and honoured*, not how long production waits.
         val signalEngine = DockerJavaContainerEngine(shutdownGrace = Duration.ofSeconds(5))
         val sawSignal = java.util.concurrent.atomic.AtomicBoolean(false)
+        val trapInstalled = CountDownLatch(1)
         val booting = Thread {
             runCatching {
                 signalEngine.run(
-                    busyboxSpec("trap 'echo GRACEFUL-TERM; exit 0' TERM; echo ready-to-be-stopped; while true; do sleep 1; done"),
+                    // `sleep & wait` rather than a loop of foreground sleeps: a trap runs only once the current
+                    // foreground command returns, so looping `sleep 1` spends up to a second of the grace window
+                    // on shell granularity before the handler is even entered. Measured against docker 29.7.2,
+                    // `docker stop -t 5` on an identical trap: 1037 ms looping, 72 ms waiting.
+                    busyboxSpec(
+                        "trap 'echo $GRACEFUL_TERM; exit 0' TERM; echo $TRAP_INSTALLED; sleep 600 & wait"
+                    ),
                     Regex("this-never-appears"),
                     Duration.ofMinutes(5)
-                ) { line -> if (line.contains("GRACEFUL-TERM")) sawSignal.set(true) }
+                ) { line ->
+                    if (line.contains(TRAP_INSTALLED)) trapInstalled.countDown()
+                    if (line.contains(GRACEFUL_TERM)) sawSignal.set(true)
+                }
             }
         }.apply { isDaemon = true; start() }
 
-        waitForContainerOf(signalEngine)
+        // Wait for the container to say its handler is installed, NOT merely for the daemon to call it running.
+        // Those are different events and this test depends on the later one: a container is "running" from the
+        // moment its process exists, several shell statements before `trap` has been executed, and a SIGTERM
+        // arriving in that window is **discarded** rather than honoured -- the kernel drops a default-action
+        // signal aimed at PID 1. The run then survives its own stop, the grace window expires, and the engine
+        // kills it, which reads as "the engine never signalled". Reproduced by delaying the trap behind a
+        // `sleep 2`: 3 of 3 runs failed on this assertion with the container exiting 137.
+        Assertions.assertTrue(
+            trapInstalled.await(FIXTURE_DAEMON_BUDGET_MILLIS, TimeUnit.MILLISECONDS),
+            "the fixture never saw the container install its TERM handler within " +
+                "${FIXTURE_DAEMON_BUDGET_MILLIS / 1000}s; the daemon was too slow, which is not what this " +
+                "test is about"
+        )
         signalEngine.close()
         booting.join(FIXTURE_DAEMON_BUDGET_MILLIS)
 
         Assertions.assertTrue(sawSignal.get(), "the container must receive SIGTERM and get to run its handler before removal")
-        // What `close` promises is that nothing of this engine's is left *running*, not that nothing is left at
-        // all: when the grace window expires it logs "abandoning them so shutdown can finish ... reaped on the
-        // next start" and returns with the container still listed. `containersOf` is withShowAll(true), so the
-        // old form asserted removal -- a promise close does not make -- and sampled it instantly. Run 719 is
-        // what that costs: close hit its 5s window, logged the documented abandonment, and this failed
-        // "nothing may be left running after close ==> expected: <true> but was: <false>" on a daemon doing
-        // exactly what it was told.
+        // `close` promises that nothing of this engine's is left *running*, not that nothing is left at all:
+        // when the grace window expires it logs "abandoning them so shutdown can finish ... reaped on the next
+        // start" and returns with the container still listed. Asserting removal here would demand a promise
+        // `close` does not make.
         Assertions.assertEquals(0, awaitNothingRunning(signalEngine), "nothing may be left running after close")
     }
 
@@ -329,9 +361,9 @@ internal class DockerJavaContainerEngineIT {
     /**
      * The containers [engine] has on the daemon — **its own**, by instance label.
      *
-     * Scoped deliberately. Asking for every container with the owner label asks about the whole machine, and
-     * on 2026-09-27 the whole machine had a second `test.yml` job on it: runs 954 and 956 reached this class
-     * seven seconds apart and each failed a *different* test of it. A test may only assert about what it did.
+     * Scoped by instance label deliberately: asking for every container with the *owner* label asks about the
+     * whole machine, and CI routinely has a second job sharing the daemon. A test may only assert about what
+     * it did itself.
      */
     private fun containersOf(engine: DockerJavaContainerEngine): List<String> =
         DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(true)
@@ -341,21 +373,18 @@ internal class DockerJavaContainerEngineIT {
     /**
      * Block until [engine]'s own container is actually up, so a test never pulls the rug before there is one.
      *
-     * Budgeted by [FIXTURE_DAEMON_BUDGET_MILLIS], which is deliberately far larger than any healthy
-     * daemon needs: this runs on a runner that shares its Docker daemon with whatever else CI is doing, and
-     * when the wait expires the failure surfaces as the *next* assertion — "test setup: the orphan must be
-     * running ==> expected 1 but was 0" (run 681) — which reads as a verdict about reaping rather than as a
-     * slow daemon. A fixture that gives up too early does not fail, it misattributes.
+     * Budgeted by [FIXTURE_DAEMON_BUDGET_MILLIS] and **fails here** on expiry, naming the daemon as the thing
+     * it waited for. Letting the wait fall through instead surfaces as whichever assertion comes next, which
+     * reads as a verdict about the engine; a fixture that gives up too early does not fail, it misattributes.
      */
     private fun waitForContainerOf(engine: DockerJavaContainerEngine) {
         val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
         while (System.currentTimeMillis() < until && runningContainersOf(engine) == 0) {
             Thread.sleep(200)
         }
-        // Loudly, because the doc above is right about what silence costs: an expiry used to surface as the
-        // *next* assertion and read as a verdict about reaping. `runningContainersOf`, not `containersOf`:
-        // the latter is withShowAll(true) and so answers the moment `run` has *created* the container,
-        // several statements before `startContainerCmd`, which is a state no assertion here is about.
+        // `runningContainersOf`, not `containersOf`: the latter is withShowAll(true) and so answers the moment
+        // `run` has *created* the container, several statements before `startContainerCmd`, which is a state no
+        // assertion here is about.
         Assertions.assertNotEquals(
             0,
             runningContainersOf(engine),
@@ -385,9 +414,9 @@ internal class DockerJavaContainerEngineIT {
     /**
      * Wait for [engine]'s containers to be gone entirely, for the one assertion that really is about removal.
      *
-     * `removeContainerCmd` returns before the daemon has finished: run 719 logged
-     * `409: removal of container ... is already in progress` against a container a reap had just taken, so a
-     * removal that succeeded can still be listed for a moment afterwards.
+     * `removeContainerCmd` returns before the daemon has finished — a removal that succeeded can still be
+     * listed for a moment afterwards, and a concurrent reap of the same container answers
+     * `409: removal of container ... is already in progress`.
      */
     private fun awaitGone(engine: DockerJavaContainerEngine): List<String> {
         val until = System.currentTimeMillis() + FIXTURE_DAEMON_BUDGET_MILLIS
@@ -406,5 +435,15 @@ internal class DockerJavaContainerEngineIT {
          * `lines.none { it.contains(...) }` cannot match something else and quietly pass.
          */
         const val SLEPT_THROUGH = "SLEPT-THROUGH-THE-READY-LINE"
+
+        /**
+         * Printed by the signal fixture once its TERM trap is installed, which is the moment it becomes able
+         * to honour a stop. One constant for the shell that writes it and the sink that waits on it, so the
+         * two cannot drift into a wait for a line nothing prints.
+         */
+        const val TRAP_INSTALLED = "TRAP-INSTALLED"
+
+        /** Written by the signal fixture's TERM handler, so its presence proves the signal arrived. */
+        const val GRACEFUL_TERM = "GRACEFUL-TERM"
     }
 }

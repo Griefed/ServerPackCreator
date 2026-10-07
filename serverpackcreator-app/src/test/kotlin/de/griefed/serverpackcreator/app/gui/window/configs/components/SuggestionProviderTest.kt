@@ -113,8 +113,8 @@ internal class SuggestionProviderTest {
     }
 
     /**
-     * Pins that an absent property yields no suggestions rather than the literal string "null" —
-     * the source reads the property as a nullable and the old code compared its `toString()`.
+     * Pins that an absent property yields no suggestions rather than the literal string "null": the
+     * source reads the property as a nullable, and `toString()` on it would produce exactly that.
      */
     @Test
     fun anAbsentPropertyYieldsNoSuggestions() {

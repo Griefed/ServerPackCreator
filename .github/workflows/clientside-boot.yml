@@ -1,13 +1,21 @@
 name: Clientside-mod verification (server-boot)
 
-# Phase 2 goal: the expensive, production-near signal — boot a server per loader with the candidate
-# mod force-included and watch for a crash. Gated behind the `verify-boot` label (or a manual
-# dispatch) so it does not run on every issue edit. The pipeline lives in the reusable
-# clientside-report workflow; this just selects the boot verb and a longer timeout.
+# The expensive, production-near signal — generate a server pack with the candidate mod and its
+# transitive required dependencies force-included, boot it, and watch for a crash. The pipeline lives
+# in the reusable clientside-report workflow; this just selects the boot verb and a longer timeout.
+#
+# It runs on EVERY addition request, unasked, because the form's "I have informed the developer"
+# checkbox is self-attestation and reporters tick it without having done so. The point of booting a
+# server here is that the answer does not depend on the reporter being honest. The `verify-boot` label
+# survives as the way to re-run one by hand after an edit.
+#
+# `edited` is deliberately NOT a trigger. A reporter fixing a typo must not spend another 90 minutes of
+# runner, and `cancel-in-progress` would make a quick succession of edits cancel the boot that was
+# about to answer the question.
 
 on:
   issues:
-    types: [labeled]
+    types: [opened, labeled]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -25,7 +33,14 @@ concurrency:
 jobs:
   boot:
     name: Boot-verify clientside-mod request
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'verify-boot'
+    # A manual dispatch always runs (the operator picked the issue on purpose) and so does the label,
+    # which is only ever applied deliberately. A newly-opened issue is gated on the addition-request
+    # title, the same predicate clientside-verify.yml uses, so unrelated issues don't boot a server.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'verify-boot' ||
+      (github.event.action == 'opened' &&
+       contains(github.event.issue.title, '[Clientside-mod Addition Request]'))
     uses: ./.github/workflows/clientside-report-reusable.yml
     with:
       issue_number: ${{ github.event.issue.number || github.event.inputs.issue_number }}

@@ -41,8 +41,8 @@ import javax.swing.JTabbedPane
  * plugin installed — which is all this repository shipped until the grinder plugin — the defect is
  * invisible, which is why it survived: one plugin times one plugin is one.
  *
- * Reproduced 2026-09-06 by running ServerPackCreator with the example and grinder plugins side by side:
- * the tab strip read `Grinder | Tetris | Grinder | Tetris`.
+ * With two plugins installed it is immediately visible: the tab strip reads
+ * `Grinder | Tetris | Grinder | Tetris`.
  *
  * A second plugin is therefore the whole point of this test, and it is built here rather than checked in
  * — a second *fixture* jar would have to be maintained, and the example plugin is already the one that

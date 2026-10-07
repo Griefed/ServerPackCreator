@@ -29,11 +29,11 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Pins the failed-install cooldown. Observed live on 2026-07-30: NeoForge `21.1.247` is listed in NeoForge's
- * version metadata but its `-installer.jar` 404s, so the install could never succeed — and because
- * `1.21.1 + NeoForge` is one of the most common combinations in the catalogue, *every* candidate wanting it paid
- * a full download-and-boot (~46 s of container time) before failing, all sweep long, silently turning decisive
- * boots into INCONCLUSIVE.
+ * Pins the failed-install cooldown. NeoForge `21.1.247` is the shape to picture: listed in NeoForge's version
+ * metadata while its `-installer.jar` 404s, so the install can never succeed — and because `1.21.1 + NeoForge`
+ * is one of the most common combinations in the catalogue, *every* candidate wanting it would pay a full
+ * download-and-boot (~46 s of container time) before failing, all sweep long, silently turning decisive boots
+ * into INCONCLUSIVE.
  *
  * A tuple that just failed is therefore left alone for a cooldown: candidates fail fast, and the reason is
  * logged once rather than once per candidate.
@@ -117,7 +117,7 @@ internal class LoaderCacheFailureCooldownTest {
         Assertions.assertEquals(2, attempts.get(), "the successful install is cached; nothing re-attempted")
     }
 
-    /** Zero cooldown keeps the old behaviour for anyone who wants every candidate to retry. */
+    /** Zero cooldown disables the memory entirely, so every candidate retries. */
     @Test
     fun aZeroCooldownRetriesEveryTime() {
         val cache = cache(brokenInstaller, cooldown = Duration.ZERO)

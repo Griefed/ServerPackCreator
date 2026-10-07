@@ -162,7 +162,7 @@ internal class MetadataScannerTest {
      * that declares no sideness at all, so the Forge scanner reads nothing and answers SERVER_OR_BOTH —
      * while the `fabric.mod.json` in the very same jar says `"environment": "client"`.
      *
-     * Measured live 2026-09-06: `Modrinth/continuity`'s Forge row came back `jarScan=SERVER_OR_BOTH` and
+ * Measured live: `Modrinth/continuity`'s Forge row came back `jarScan=SERVER_OR_BOTH` and
      * `declared=CONTRADICTORY` against a platform declaring `client_side=REQUIRED`, while the *same
      * project's* Fabric row read `CLIENT` off the same descriptor. That false contradiction is not
      * cosmetic: `ClientsideVerifier.declaresServerSupport` is what arms the other-version crash re-check,

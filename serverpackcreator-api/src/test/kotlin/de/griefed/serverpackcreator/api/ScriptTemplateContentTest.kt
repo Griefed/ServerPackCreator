@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 /**
  * Guards the **shipped** start-script templates at the source level, without a container. The grinder's
@@ -30,8 +31,7 @@ import java.io.File
  * image, so it never runs in CI — these assertions do, and they pin the fixes that IT paid to discover.
  *
  * Whether the fish and PowerShell templates *parse at all* lives in [ShellTemplateSyntaxTest], which asks
- * the real interpreters rather than reading the source. The fish check used to sit here and skipped itself
- * on every machine without fish, the CI runner included.
+ * the real interpreters rather than reading the source.
  *
  * Kept deliberately narrow: it asserts *specific, load-bearing constructs*, not whole-file snapshots,
  * so ordinary template edits don't churn it.
@@ -126,9 +126,9 @@ internal class ScriptTemplateContentTest {
 
     /**
      * **Executes** the bash template's `setupFabric` on an offline pack that already has its launcher jar, and
-     * asserts the function still produces a runnable command. Ordering alone is not enough: the first version of
-     * the offline short-circuit above `return`ed as soon as it found the jar — jumping over the
-     * `SERVER_RUN_COMMAND=...` assignment at the end of the function. The pack then launched
+     * asserts the function still produces a runnable command. Ordering alone is not enough: an offline
+     * short-circuit that `return`s as soon as it finds the jar jumps over the `SERVER_RUN_COMMAND=...`
+     * assignment at the end of the function, and the pack then launches
      * `java -Dlog4j2... do_not_manually_edit` (the placeholder) and died with "Could not find or load main class",
      * *past* every ordering assertion. Only running the function catches that, so this test runs it.
      *
@@ -183,13 +183,12 @@ internal class ScriptTemplateContentTest {
     /**
      * **Executes** the bash template's run-loop and asserts it exits with the *server's* status.
      *
-     * The loop used to end in an unconditional `exit 0`, throwing the server's exit status away — so a modded server
-     * that crashed on startup looked, to anything reading the script's exit code, exactly like a clean shutdown.
-     * For the grinder that erased the single decisive signal in its whole confidence model: `BootLogClassifier` maps
-     * a `0` exit without a ready-line to INCONCLUSIVE, so **CRASHED could never be observed and no verdict could
-     * ever reach HIGH**. Measured 2026-07-30: 517 verdicts over 3.5 h, zero HIGH, while a boot log sat there with
-     * `NoClassDefFoundError: net/minecraft/client/Minecraft` in it. It matters for ordinary users too — `systemd`,
-     * Docker restart policies and CI all read the exit code to decide whether the server failed.
+     * The loop must propagate the server's exit status. An unconditional `exit 0` at the end throws it away, and a
+     * modded server that crashed on startup then looks, to anything reading the script's exit code, exactly like a
+     * clean shutdown. For the grinder that erases the single decisive signal in its whole confidence model:
+     * `BootLogClassifier` maps a `0` exit without a ready-line to INCONCLUSIVE, so **CRASHED can never be observed
+     * and no verdict can reach HIGH**. It matters for ordinary users too — `systemd`, Docker restart policies and
+     * CI all read the exit code to decide whether the server failed.
      */
     @Test
     fun theBashTemplatesRunLoopExitsWithTheServersStatus() {
@@ -234,8 +233,8 @@ internal class ScriptTemplateContentTest {
      *
      * **The versions below are the point.** The era test may not read the Minecraft *minor* component in isolation,
      * because that is only meaningful under the `1.x` scheme: `26.2` has minor `2`, which looks like the 1.2 era.
-     * Measured 2026-07-30 in the grinder: **24 boot logs, every one of them Forge**, never started the server for
-     * exactly this reason, making Forge coverage on current Minecraft effectively zero.
+     * Reading it in isolation sends every Forge boot on current Minecraft down the legacy launcher path, where the
+     * server never starts at all.
      */
     @Test
     fun theBashTemplateChoosesTheForgeLauncherEraForBothVersioningSchemes() {
@@ -379,7 +378,7 @@ internal class ScriptTemplateContentTest {
      * | **1.20.2** | `-p <module path>`, Forge `securemodules` | **dies** — `Could not find parent layer for module` |
      * | 1.20.3 onwards | `-jar forge-<ver>-shim.jar` | works — the starter jar takes its own "jar mode" |
      *
-     * Measured 2026-08-23 against real installs: Forge `1.20.2-48.1.0` on Temurin 17 dies at
+     * Measured against real installs: Forge `1.20.2-48.1.0` on Temurin 17 dies at
      * `SecureModuleClassLoader.<init>` under the starter jar and reaches `Done (5.183s)! For help` from its
      * argfile, while `1.21.1-52.1.0` reaches `Done (6.593s)!` *through* the starter jar. 1.20.2's install carries
      * no shim jar and its argfile opens `-p … --add-modules ALL-MODULE-PATH`; 1.20.3's and 1.21.1's do carry one.
@@ -602,9 +601,8 @@ internal class ScriptTemplateContentTest {
      * java.lang.Error: A command line option has attempted to allow or enable the Security Manager.
      * ```
      *
-     * Minecraft 26.x requires Java 25, so **every modern Forge pack SPC generates dies before Forge loads** on
-     * current Minecraft — measured in the grinder on 2026-07-31, and the reason Forge coverage stayed at zero even
-     * after the launcher-era fix. NeoForge, Fabric and Quilt never pass the flag, which is exactly why they boot.
+     * Minecraft 26.x requires Java 25, so passing the flag there means **every modern Forge pack SPC generates dies
+     * before Forge loads**. NeoForge, Fabric and Quilt never pass it, which is exactly why they boot.
      */
     @Test
     fun theBashTemplateDropsTheSecurityManagerFlagOnJavaThatRejectsIt() {
@@ -949,7 +947,7 @@ internal class ScriptTemplateContentTest {
      * **Executes** `setupQuilt` on a pack that kept its launcher but lost the Minecraft server jar, and
      * asserts it does not quietly carry on.
      *
-     * Observed live 2026-08-30: `Modrinth/architectury-api` at Minecraft 1.20.4 died with "Missing game jar
+     * Observed live: `Modrinth/architectury-api` at Minecraft 1.20.4 died with "Missing game jar
      * at /srv/pack/server.jar" and was scored against the mod. The vanilla jar is fetched only as a side
      * effect of installing the launcher — `--download-server` lives inside the branch that runs when
      * `quilt-server-launch.jar` is absent — so a pack that already has the launcher and not the jar never
@@ -1037,4 +1035,90 @@ internal class ScriptTemplateContentTest {
             "the offline path must still assemble the run command, was:\n$output"
         )
     }
+
+    /**
+     * **Executes** the bash template's signal handling: a `SIGTERM` to the script must reach the *server*, and
+     * the server console must keep working while it can.
+     *
+     * A pack's PID 1 under docker or systemd is this script, and the kernel **discards** a default-action signal
+     * aimed at PID 1 — so a script that neither traps `TERM` nor `exec`s the server swallows every stop request
+     * and the server is SIGKILLed when the window expires, losing the world save. Measured with `docker stop -t 5`
+     * against the two shapes: no trap, 5096 ms and exit 137; trap plus `wait`, 72 ms and exit 0.
+     *
+     * The stdin half is the trap this fix sets for itself, and it fails silently: a shell with job control off
+     * redirects an asynchronous command's stdin from `/dev/null` unless a redirection says otherwise, so
+     * backgrounding the server to make it signallable also disconnects the console every operator types `stop`
+     * into. Verified under `bash:latest`: `cat & wait` reads nothing, `cat 0<&0 & wait` reads its input.
+     */
+    @Test
+    fun theBashTemplateForwardsATerminationSignalToTheServerAndKeepsItsConsole() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — signal-forwarding execution check skipped")
+
+        // Stands in for the server: announces what it read from stdin, then waits to be signalled. `sleep & wait`
+        // rather than a foreground sleep, so the handler is entered at once instead of after the sleep returns.
+        val fakeServer = File.createTempFile("spc-fake-server-", ".sh").apply {
+            writeText(
+                """
+                #!/bin/sh
+                trap 'echo CHILD-GOT-TERM; exit 0' TERM
+                if read -r line; then echo "CHILD-STDIN:${'$'}line"; else echo "CHILD-STDIN-CLOSED"; fi
+                sleep 30 & wait
+                """.trimIndent()
+            )
+            setExecutable(true)
+            deleteOnExit()
+        }
+
+        val harness = File.createTempFile("spc-signal-", ".sh").apply { deleteOnExit() }
+        harness.writeText(
+            """
+            JAVA="${fakeServer.absolutePath}"
+            ${extractShellFunction("default_template.sh", "stopServer")}
+            ${extractShellLine("default_template.sh", "trap stopServer")}
+            ${extractShellFunction("default_template.sh", "runJavaCommand")}
+            runJavaCommand ""
+            """.trimIndent()
+        )
+
+        // The console goes to a file rather than a pipe. A pipe loses the very lines this test is about: the JDK
+        // closes it as the process exits, so the reader throws `Stream closed` on output the handler had already
+        // written. The file keeps everything and can be read after the exit.
+        val console = File.createTempFile("spc-signal-console-", ".log").apply { deleteOnExit() }
+        val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+            .redirectOutput(console).redirectErrorStream(true).start()
+        process.outputStream.use { it.write("say hello\n".toByteArray()) }
+
+        // Wait for the stand-in to have read stdin before signalling, so this asserts the handler and never the
+        // race of a signal arriving before the child exists.
+        val until = System.currentTimeMillis() + FIXTURE_BUDGET_MILLIS
+        while (!console.readText().contains("CHILD-STDIN") && System.currentTimeMillis() < until) {
+            Thread.sleep(50)
+        }
+        Assertions.assertTrue(
+            console.readText().contains("CHILD-STDIN:say hello"),
+            "the server must still receive its console on stdin; backgrounding it without re-attaching fd 0 " +
+                "sends the console to /dev/null. Saw:\n${console.readText()}"
+        )
+
+        process.destroy() // SIGTERM on Unix, which is what `docker stop` and `systemctl stop` send.
+        val finished = process.waitFor(FIXTURE_BUDGET_MILLIS, TimeUnit.MILLISECONDS)
+
+        Assertions.assertTrue(finished, "the script must act on SIGTERM rather than ignore it. Saw:\n${console.readText()}")
+        Assertions.assertTrue(
+            console.readText().contains("CHILD-GOT-TERM"),
+            "SIGTERM to the script must be forwarded to the server so it can save and exit. " +
+                "Saw:\n${console.readText()}"
+        )
+    }
+
+    /** How long the signal check waits on a child process before calling the host, not the template, the problem. */
+    private val FIXTURE_BUDGET_MILLIS = 30_000L
+
+    /**
+     * Cut one top-level line out of a shell template, so a harness can execute the real registration rather than
+     * a copy of it. Pins the line's existence as a side effect: a template that stops containing it fails here.
+     */
+    private fun extractShellLine(template: String, startsWith: String): String =
+        template(template).lines().firstOrNull { it.trimStart().startsWith(startsWith) }
+            ?: Assertions.fail("template $template has no line starting `$startsWith` — update this test")
 }

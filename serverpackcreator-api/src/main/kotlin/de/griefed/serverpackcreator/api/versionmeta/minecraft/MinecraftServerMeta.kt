@@ -33,9 +33,9 @@ internal class MinecraftServerMeta(private val minecraftClientMeta: MinecraftCli
     /**
      * Published as **immutable snapshots behind `@Volatile`**, not as collections [update] mutates in place.
      *
-     * `VersionMeta` refreshes on a background coroutine while callers read, and the previous shape —
-     * `clear()` then re-`add()` on a shared `ArrayList` handed straight to callers — let a reader either
-     * throw `ConcurrentModificationException` or, worse, silently observe the empty window between the two.
+     * `VersionMeta` refreshes on a background coroutine while callers read. `clear()` then re-`add()` on a
+     * shared `ArrayList` handed straight to callers lets a reader either throw
+     * `ConcurrentModificationException` or, worse, silently observe the empty window between the two.
      * An empty release list makes `BootVerifier.bootableCombination()` refuse every candidate. Swapping a
      * finished list into a volatile field means a reader sees the whole previous state or the whole next
      * one, with no lock on the hot read path.

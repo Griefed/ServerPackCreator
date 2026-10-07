@@ -159,7 +159,7 @@ class JdkHttpFetcher(
          *
          * It was an operation: `ContainerCandidateVerifier.verifyStaged` calls `supportedPlatforms()` per
          * candidate, and each call built two platforms, each default-constructing a fetcher. Measured on the
-         * live daemon on 2026-09-21: **384 clients created in 2.9 hours, 28 still alive**.
+ * live daemon: **384 clients created in 2.9 hours, 28 still alive**.
          *
          * Deliberately never closed. It is process-wide and has no lifecycle shorter than the JVM's; closing
          * it would only race whatever is mid-request, and there is exactly one of it to leak.

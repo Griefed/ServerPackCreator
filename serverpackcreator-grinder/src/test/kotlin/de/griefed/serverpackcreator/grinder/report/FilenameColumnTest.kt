@@ -33,18 +33,17 @@ import org.junit.jupiter.api.Test
  * project's whole history and must stay broad, because the fallback list matches it with `startsWith`. This
  * column is the other half a maintainer needs: the artifact to go and look at on the project page.
  *
- * **It used to carry a derived *stem* rather than a filename**, and that was the defect Griefed reported on
- * 2026-09-10: `FilenameStemDeriver.deriveStem` was run over the sampled file, so the column titled
- * "Filename" held `iris-fabric-` instead of `iris-fabric-1.7.5+mc1.21.1.jar`. Measured over 400 live rows:
- * **not one** value ended in `.jar`, and **270 (67%)** were byte-identical to `NamePattern`, so the column
- * was redundant two thirds of the time and never once answered the question it is named for.
+ * **A derived *stem* here is not a filename.** Running `FilenameStemDeriver.deriveStem` over the sampled file
+ * puts `iris-fabric-` in a column titled "Filename" instead of `iris-fabric-1.7.5+mc1.21.1.jar`: measured over
+ * 400 live rows, **not one** such value ended in `.jar` and **270 (67%)** were byte-identical to `NamePattern`,
+ * leaving the column redundant two thirds of the time and never once answering the question it is named for.
  *
  * The real name serves the stem's documented purpose strictly better — it keeps the loader token history
  * erases *and* the version, which is what identifies the artifact on the platform.
  *
- * `GrindTargetVerdict.sampleFile` had the right value all along; `Grinder.grind`'s hand-written 18-field copy
- * simply never carried it. That is the same mapping `claude-docs/ANALYSIS-AUDIT.md` flagged on 2026-09-05 as
- * asserted only five fields deep.
+ * `GrindTargetVerdict.sampleFile` carries the right value; the risk is `Grinder.grind`'s hand-written 18-field
+ * copy dropping it, which is why `RecordedVerdictMappingTest` asserts every field of that mapping rather than a
+ * handful.
  */
 internal class FilenameColumnTest {
 

@@ -118,7 +118,7 @@ data class CurseForgePartition(
  *    20 000 mods in it, and a *category* slice still saturated after both directions is narrowed by modloader
  *    as a last resort.
  *
- * **What `totalCount` can and cannot say (measured, 2026-07-29).** The API clamps it at the cap: a slice
+ * **What `totalCount` can and cannot say (measured).** The API clamps it at the cap: a slice
  * holding 200 000 mods and one holding exactly 10 000 both report `10 000`, while anything smaller reports its
  * true size. So the only question it answers is "is this slice saturated?", which is why every split condition
  * here is `>= CAP` and not `> CAP` — the latter can never be true, and with it the whole plan would collapse to

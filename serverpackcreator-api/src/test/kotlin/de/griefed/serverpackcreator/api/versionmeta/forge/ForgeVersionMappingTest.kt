@@ -80,9 +80,9 @@ internal class ForgeVersionMappingTest {
 
     /**
      * Characterises the cut's behaviour on input the real manifest does not produce — kept as a boundary record, not
-     * as a claim that this happens. Measured 2026-07-31: **all 5025 entries across 77 Minecraft keys carry their own
-     * key as a prefix**, and `minecraftVersion` is always derived from that key, so the wrong-offset case below
-     * cannot arise in practice; it is pinned only to show that the function cannot detect it.
+     * as a claim that this happens. **Every entry in the manifest carries its own Minecraft key as a prefix**, and
+     * `minecraftVersion` is always derived from that key, so the wrong-offset case below cannot arise in practice;
+     * it is pinned only to show that the function cannot detect it.
      *
      * An entry with nothing after its key **is** handled: it yields `null`, and `ForgeLoader.update` logs and skips it,
      * so one malformed entry costs one version instead of aborting the whole Forge load — `update` catches only

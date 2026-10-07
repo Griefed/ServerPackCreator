@@ -32,10 +32,8 @@ import java.util.Optional
 /**
  * Tests for [RunConfigurationService.createRunConfig], which the controller test mocks away.
  *
- * What is pinned is the *outcome* — which entries the built configuration ends up holding. The three
- * look-up-or-store loops these tests were originally written for no longer exist: the lists are plain
- * strings embedded in the document, so there is nothing to resolve and nothing to store separately.
- * The tests that described that resolution were removed with it; see the commit that flattened them.
+ * What is pinned is the *outcome* — which entries the built configuration ends up holding. The lists are
+ * plain strings embedded in the document, so there is nothing to resolve and nothing to store separately.
  *
  * One count *is* pinned now — [buildingAConfigurationCostsTwoRepositoryCalls] — because "one query per
  * mod" is exactly the defect the flattening removed, and a silent return to it is the regression worth
@@ -98,8 +96,8 @@ internal class RunConfigurationServiceTest {
      * Pins that building a configuration costs **two** repository calls regardless of list size: the
      * duplicate lookup and the save.
      *
-     * Each list used to be resolved entry by entry — one `findBy` per entry plus a `save` per miss — so
-     * with the default clientside list this was ~550 sequential round-trips to create one configuration.
+     * Resolving each list entry by entry — one `findBy` per entry plus a `save` per miss — would cost
+     * ~550 sequential round-trips per configuration with the default clientside list.
      */
     @Test
     fun buildingAConfigurationCostsTwoRepositoryCalls() {

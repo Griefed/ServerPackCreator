@@ -27,9 +27,9 @@ import java.time.Duration
 /**
  * **A host defect must not be published as thousands of verdicts about mods.**
  *
- * Measured on the live daemon 2026-09-03: `spc-grinder-runtime:latest` had been removed from the Docker
- * daemon (nothing in `install-grinder.sh` removes it — a `docker system prune -a` does, because the image is
- * only in use *during* a boot). Every install then threw `Status 404: {"message":"No such image:
+ * `spc-grinder-runtime:latest` can go missing from the Docker daemon without anything saying so — nothing in
+ * `install-grinder.sh` removes it, but a `docker system prune -a` does, because the image is only in use
+ * *during* a boot. Every install then throws `Status 404: {"message":"No such image:
  * spc-grinder-runtime:latest"}`, every tuple went on install cooldown, and every candidate wanting one was
  * scored INCONCLUSIVE — thousands of them, each carrying a sentence about a loader tuple. Since
  * `JsonVerdictStore.record` replaces by identity and the re-verify TTL is 30 days, projects that had held a

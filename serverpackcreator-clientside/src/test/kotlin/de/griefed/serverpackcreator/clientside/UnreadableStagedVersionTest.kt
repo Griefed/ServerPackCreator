@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test
  * CurseForge has no version field — `CurseForgePlatform.toModFile` fills it with `displayName`, which is
  * whatever the author typed as the release name and is documented there as "often decorated".
  *
- * **Measured on the live daemon, 2026-09-07**, one day after `DependencyBacktrack` went in: `1014`
+ * **Measured on the live daemon**, over a single day: `1014`
  * re-stagings (`re-staging … without it`) and `146` `publishes no … file for Minecraft` lines in a single
  * day, ending in **47 published `ERROR` verdicts** reading *"Required dependency unavailable"* — for files
  * that exist. The CurseForge API, asked directly for the four worst (`misc/cf-dependency-probe.sh`),
@@ -118,7 +118,7 @@ internal class UnreadableStagedVersionTest {
     }
 
     /**
-     * **The same defect, one door along** (A-1, `claude-docs/ANALYSIS-AUDIT.md`, 2026-09-08). `numbersOf`
+ * **The same defect, one door along** (A-1, `claude-docs/ANALYSIS-AUDIT.md`). `numbersOf`
      * ends in `toIntOrNull() ?: 0`, and `toIntOrNull` returns `null` above `Int.MAX_VALUE` — so a component
      * of ten-plus digits, which is what a date or a CI counter looks like, becomes **zero** and drops the
      * version below almost any bound. `readableVersion` waves it through because it is all digits.

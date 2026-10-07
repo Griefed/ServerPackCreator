@@ -601,9 +601,9 @@ class MigrationManager(
          * a lambda — `$0lambda$1`, or a bare `$lambda$` — so a migration method's declared name still
          * reads as the version it migrates to.
          *
-         * A single source of truth on purpose: the literal used to be written out twice, in method
-         * discovery and in version parsing, where the two escaping-heavy copies could silently drift
-         * apart and leave a migration undiscovered rather than failing.
+         * A single source of truth on purpose: method discovery and version parsing both need it, and two
+         * escaping-heavy copies would drift apart silently, leaving a migration undiscovered rather than
+         * failing.
          */
         internal val LAMBDA_SUFFIX = $$"\\$[0-9]*lambda\\$[0-9]*".toRegex()
     }

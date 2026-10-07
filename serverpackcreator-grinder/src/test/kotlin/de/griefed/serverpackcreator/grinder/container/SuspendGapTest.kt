@@ -29,8 +29,8 @@ import java.time.Duration
  * Pins the host-suspend detection that keeps a boot's time budget honest.
  *
  * The boot deadline is wall-clock, so a host that suspends mid-boot spends the budget on a frozen container and the
- * run is written off as a timeout even though the server never got the time. Measured 2026-07-31: a laptop
- * idle-sleeping in ~16-minute cycles produced **19 of 153 verdicts** reading `timed out`, several of them
+ * run is written off as a timeout even though the server never got the time. Measured on a laptop
+ * idle-sleeping in ~16-minute cycles: **19 of 153 verdicts** read `timed out`, several of them
  * `SURVIVED (timed out)` — the console showed the server reaching its ready line seconds after launch, and the wake
  * times in `pmset -g log` lined up with the grinder's log gaps to the second.
  *

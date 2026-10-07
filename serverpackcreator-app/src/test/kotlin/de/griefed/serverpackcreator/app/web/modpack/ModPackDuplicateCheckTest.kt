@@ -34,9 +34,10 @@ import java.util.*
 /**
  * Guards how a modpack upload checks for duplicates.
  *
- * `existingUploadOf` runs on every upload. It used to load **every** modpack and compare in memory —
- * and because `ModPack.serverPacks` is an eager `@DBRef` whose targets eagerly resolve their own
- * run-configuration and that config's three `@DBRef` lists, one upload read a four-collection graph to
+ * `existingUploadOf` runs on every upload, so it must stay a single indexed lookup. Loading every modpack
+ * and comparing in memory would be far worse than it looks: `ModPack.serverPacks` is an eager `@DBRef`
+ * whose targets eagerly resolve their own run-configuration and that config's three `@DBRef` lists, so one
+ * upload would read a four-collection graph to
  * compare a single hash. `sha256` is indexed, so one document lookup answers it.
  */
 internal class ModPackDuplicateCheckTest {

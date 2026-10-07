@@ -134,11 +134,10 @@ internal class ManifestUpdaterTest {
     /**
      * Pins that checking one manifest costs **one** request.
      *
-     * It used to cost two: a reachability pre-check whose response body was discarded, immediately
-     * followed by the real fetch. Worse than merely doubling the count — the pre-check calls
-     * `disconnect()` without draining the body, so the connection cannot be pooled and the real
-     * request pays a fresh TCP and TLS handshake. Twelve manifests therefore meant 24 requests and 24
-     * handshakes across seven hosts before the splash screen moved.
+     * A reachability pre-check before the real fetch costs two, and worse than merely doubling the count:
+     * such a check calls `disconnect()` without draining the body, so the connection cannot be pooled and
+     * the real request pays a fresh TCP and TLS handshake. Across twelve manifests that is 24 requests and
+     * 24 handshakes on seven hosts before the splash screen moves.
      */
     @Test
     fun aManifestCheckCostsOneRequest(@TempDir tempDir: File) {
@@ -269,7 +268,7 @@ internal class ManifestUpdaterTest {
      *
      * `files.minecraftforge.net` **ignores** `If-Modified-Since` but honours `If-None-Match` against its
      * weak nginx ETag, and it is the largest manifest still transferred in full on every startup. Sending
-     * the header requires remembering it across runs, which is the whole of B30.
+     * the header requires remembering it across runs.
      */
     @Test
     fun anEtagIsOfferedOnceTheServerHasProvidedOne(@TempDir tempDir: File) {

@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test
  * enough: Fabric API has well over a thousand files on CurseForge, so its newest 50 are all current
  * Minecraft, and a boot on 1.20.4 finds nothing.
  *
- * Measured on the live daemon, 2026-09-04: `architectury-api` scored **ERROR** on Quilt / Minecraft 1.20.4
+ * Measured on the live daemon: `architectury-api` scored **ERROR** on Quilt / Minecraft 1.20.4
  * with *"Required dependency unavailable … 306612"*. Fabric API has published for 1.20.4 since December
  * 2023 — the file exists, it was simply outside the window we asked for.
  *

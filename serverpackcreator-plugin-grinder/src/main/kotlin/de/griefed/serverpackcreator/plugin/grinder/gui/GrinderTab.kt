@@ -207,8 +207,8 @@ class GrinderTab(
      * Persist a user's tick.
      *
      * The panes share one selection set, so which key an entry is written under has to be worked out
-     * rather than known. [SelectionAttribution] owns that rule and is pinned separately — it is pure, and
-     * it was wrong for as long as it lived here untested.
+     * rather than known. [SelectionAttribution] owns that rule and is pinned separately, because it is
+     * pure and this method is not.
      */
     private fun onSelectionChanged(selected: Set<String>) {
         val attributed = SelectionAttribution.split(

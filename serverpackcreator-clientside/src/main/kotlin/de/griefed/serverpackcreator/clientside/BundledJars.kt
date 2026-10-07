@@ -46,7 +46,7 @@ import java.util.zip.ZipInputStream
  *
  * **The version half exists for a different question.** [idsIn] keeps staging from re-downloading
  * something already bundled; [versionsIn] lets `DependencyBacktrack` see that bundled copy as part of the
- * pack, so a requirement contradicting *it* is a conflict rather than a silence. Measured live 2026-09-07:
+ * pack, so a requirement contradicting *it* is a conflict rather than a silence. Measured live:
  * `create` demanding `ponder [1.0.82,)` against the `1.0.64` nested in another jar booted anyway, and the
  * candidate wore the resulting INCONCLUSIVE.
  *
@@ -183,7 +183,7 @@ object BundledJars {
      * not mods to stage, and reporting them would have `ModListCompiler` try to *rescue* a loader into a
      * pack. But a demand on one of them is still a demand, and the loader enforces it.
      *
-     * Measured on the public grinder 2026-09-11: **twelve** published `DEPENDENCY_FAILURE` rows are
+ * Measured on the public grinder: **twelve** published `DEPENDENCY_FAILURE` rows are
      * `fabric-language-kotlin` demanding `fabricloader [0.19.5, ∞)` against the `0.19.3` that quilt-loader
      * 0.30.1 provides. The demand was invisible at every layer — stripped by the scanner, and unjudgeable
      * anyway because nothing knew what the loader provides.
@@ -213,7 +213,7 @@ object BundledJars {
      * **One rule, one implementation.** It applies at two levels — within a jar bundling the same id twice,
      * and across the staged jars of a pack — and `BootVerifier.nestedVersions` reaches this rather than
      * writing the fold a second time. Two copies of one rule is the drift shape this module's own context
-     * file opens with, and an audit flagged it here the day the second copy appeared.
+     * file opens with.
      */
     fun unambiguous(claims: List<Pair<String, String>>): Map<String, String> = claims
         .groupBy({ it.first }, { it.second })

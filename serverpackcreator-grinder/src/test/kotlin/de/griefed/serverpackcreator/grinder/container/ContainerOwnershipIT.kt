@@ -28,11 +28,8 @@ import java.time.Duration
  * Pins that a container says *which* engine made it, not merely that a grinder did.
  *
  * `OWNER_LABEL` answers "a grinder made this" and nothing more, so every question asked of the daemon —
- * what is still running, what may be reaped — is a question about the whole machine. That is fine for the
- * shipped singleton service and false everywhere else, and CI is everywhere else: two `test.yml` jobs share
- * one runner and one daemon, and on 2026-09-27 they ran this module's container suite seven seconds apart
- * (runs 954 and 956) and each failed a *different* test of it. A defect fails the same test in both; that
- * pattern is interference.
+ * what is still running, what may be reaped — is a question about the whole machine. That is true for the
+ * shipped singleton service and false wherever two engines share a daemon, which is the normal case in CI.
  *
  * The identifying label is what makes a scoped question possible at all, which is why it is pinned here and
  * used by `DockerJavaContainerEngineIT` rather than the other way round.
@@ -101,19 +98,13 @@ internal class ContainerOwnershipIT {
      * Start a container in the background and block until the daemon reports it **running**, so the test
      * never races.
      *
-     * Not `containersOf`: that asks with `withShowAll(true)`, so it answers the moment `run` has *created*
-     * the container — which is several statements before `startContainerCmd`. Every assertion in this class
-     * is about what is *running*, and on a contended daemon the gap between the two states is seconds.
-     * Measured on the release run for PR #679 (run index 716, 2026-09-27): this test's two sleepers took
-     * ~41s just to reach `created`, `closingOneEngineLeavesAnotherEnginesContainerRunning` then read **0**
-     * running for an engine nothing had touched, and the release failed on it. The fixture was wrong, not
-     * the engine — `close()` had correctly logged "Stopping 1 container(s)", its own and no other.
+     * Asks `runningContainersOf`, not `containersOf`: the latter uses `withShowAll(true)` and so answers
+     * the moment `run` has *created* the container, several statements before `startContainerCmd`. Every
+     * assertion in this class is about what is *running*, and on a contended daemon the gap between the
+     * two states is seconds.
      *
-     * [FIXTURE_DAEMON_BUDGET_MILLIS], not a number sized against the last slow run: the budget covers
-     * starting as well as creating, and 90s was already the second such number before runs 831 and 834
-     * expired it too. Expiry **fails here**, naming what it waited for. A fixture that gives up quietly is
-     * the "timing out disguised as a verdict" this file already warned about in prose while doing it
-     * anyway.
+     * Waits [FIXTURE_DAEMON_BUDGET_MILLIS] for both create and start, and **fails here** on expiry,
+     * naming what it waited for — a fixture that gives up quietly reads as a verdict about the engine.
      */
     private fun startSleeper(engine: DockerJavaContainerEngine): Thread {
         val booting = Thread {

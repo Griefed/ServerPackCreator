@@ -132,8 +132,8 @@ abstract class VersionChecker {
         }
         val latestAlpha = latestAlpha()
 
-        // A beta is never offered an alpha of the same version. That used to need an explicit guard
-        // here; the channel ordering in isPreReleaseNewer now rules it out on its own.
+        // A beta is never offered an alpha of the same version: the channel ordering in
+        // isPreReleaseNewer rules it out without a guard here.
 
         // Check if the given version is older than the latest alpha version by checking semantically. (1.2.3, 2.3.4, 6.6.6)
         return SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.NEW)

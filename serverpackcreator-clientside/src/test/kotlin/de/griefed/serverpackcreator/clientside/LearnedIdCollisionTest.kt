@@ -39,7 +39,7 @@ import java.util.jar.JarOutputStream
  * mapping is an `Alias` rather than a `Guess`, the wrong project's "publishes nothing for this loader and
  * Minecraft version" carries the right to **refuse the boot**.
  *
- * **Measured on `grinder.serverpackcreator.de`, 2026-09-09.** `chefs-delight` on Forge / Minecraft 1.20.1 is
+ * **Measured on `grinder.serverpackcreator.de`.** `chefs-delight` on Forge / Minecraft 1.20.1 is
  * published `ERROR` for `farmersdelight`. That refusal can only have come from the manifest route — the
  * platform route labels an unmet dependency with the resolved project's *slug*, and Farmer's Delight's
  * Modrinth slug is `farmers-delight`, not `farmersdelight` — and the manifest route refuses only on a
@@ -166,9 +166,9 @@ internal class LearnedIdCollisionTest {
     /**
      * **The class doc's thread-safety claim, asserted.**
      *
-     * `GrindPool` shares one instance across N grind workers, and until 2026-09-09 the value behind an id
-     * was an immutable `String` written once by `putIfAbsent`. It is now a `CopyOnWriteArrayList` mutated by
-     * `addIfAbsent` *after* a `computeIfAbsent` — a composition that is correct (the map's compute is atomic,
+     * `GrindPool` shares one instance across N grind workers, and the value behind an id is a
+     * `CopyOnWriteArrayList` mutated by `addIfAbsent` *after* a `computeIfAbsent`, rather than an immutable
+     * `String` written once by `putIfAbsent`. That composition is correct (the map's compute is atomic,
      * the list's add is synchronised) and that nothing in either module had a second thread to prove.
      *
      * Every worker is released from one latch so the writes genuinely overlap, and each proves a distinct

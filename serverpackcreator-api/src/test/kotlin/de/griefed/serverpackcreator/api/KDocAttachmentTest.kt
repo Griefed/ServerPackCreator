@@ -31,9 +31,9 @@ import java.io.File
  * above an existing one instead of replacing it, or a declaration is inserted between a doc and its
  * target -- both of which are invisible in review, because the diff shows only added lines.
  *
- * Eighteen instances had accrued by 2026-09-20, among them the rationale for `BootLogClassifier`'s
- * largest single failure class and the entire case for `ClientsideVerifier.propagateClientOnlyProof`.
- * Qodana reports this only when a stranded block happens to contain a `[link]` that no longer resolves,
+ * It accrues silently and at scale, taking whole paragraphs of rationale out of the documentation without
+ * removing a line of text. Qodana reports it only when a stranded block happens to contain a `[link]` that
+ * no longer resolves,
  * which was **4 of the 18** -- so the tool that found the defect cannot be the thing that guards it.
  *
  * Lives in `-api`, and scans every module rather than its own, because the rule is a repository-wide

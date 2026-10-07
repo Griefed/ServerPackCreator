@@ -1,0 +1,6 @@
+# Everything a running guest creates. None of it belongs in the repository: disk images and installation
+# media are tens of gigabytes, and `shared/` and `.env` hold credentials.
+storage-x64/
+iso/
+shared/
+.env

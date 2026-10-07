@@ -46,7 +46,7 @@ const val CONTAINER_HOST_NAME = "spc-grinder"
 
 /**
  * Mount options for every boot container's tmpfs. **`exec` is a deliberate, owner-approved weakening of the
- * sandbox** (2026-08-24); the rest of the posture in [ContainerSpec] is untouched.
+ * sandbox**; the rest of the posture in [ContainerSpec] is untouched.
  *
  * **Why it is needed.** Docker mounts a `--tmpfs` `nosuid,nodev,noexec` and the rootfs is read-only, so nothing
  * inside can write a shared object and map it executable — which is exactly what JNA does when it unpacks its
@@ -325,8 +325,8 @@ interface ContainerEngine : AutoCloseable {
      *
      * Exists because the answer is knowable in one call and the alternative is discovering it thousands of
      * verdicts later: with the runtime image absent, every loader install throws, every tuple goes on
-     * cooldown, and every candidate wanting one is scored INCONCLUSIVE about a mod that was never booted
-     * (measured 2026-09-03). `false` also covers a daemon that cannot be reached at all, which is the same
+     * cooldown, and every candidate wanting one is scored INCONCLUSIVE about a mod that was never booted.
+     * `false` also covers a daemon that cannot be reached at all, which is the same
      * conclusion for the caller — no container is going to run — and implementations log which it was.
      */
     fun hasImage(image: String): Boolean = true

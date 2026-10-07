@@ -1,9 +1,7 @@
-# Phase 2 of releasing: everything a tag implies. Replaces GitLab's `Build Release`,
-# `Sign Java Publication`, the four `Publish *` jobs and `Build Docker Release`/`PreRelease`, plus the
-# install4j media that used to be built on GitHub by github_release.yml.
+# Phase 2 of releasing: everything a tag implies -- the jars, the AppImages, the install4j media, the
+# signed Maven publication, the Docker images, the release itself and its announcement.
 #
-# Forgejo is the origin of the release; the mirror job at the end pushes it outward. Nothing here depends
-# on GitHub or GitLab having run anything first.
+# Forgejo is the origin of the release; the mirror job at the end pushes it outward.
 name: Build Release
 
 on:
@@ -40,30 +38,120 @@ jobs:
           fi
           echo "Releasing ${VERSION}"
 
+  # The one artifact that cannot be produced on any runner already in this pool. jpackage CANNOT
+  # CROSS-COMPILE (JEP 392, explicit non-goal), so a Windows app-image is built on Windows -- unlike the
+  # AppImages, which `assets` cross-packages from its amd64 runner because an AppImage is a tarball plus
+  # a prebuilt runtime stub and nothing arch-specific executes.
+  #
+  # LANDMINE -- a `:host`-scheme Windows runner is a HOST prerequisite; see claude-docs/WINDOWS-RUNNER.md.
+  # Without one this job does not fail, it QUEUES on "No matching online runner with label", and
+  # `release` needs it, so the release would hang rather than go red. Register the runner first.
+  #
+  # x86_64 ONLY, deliberately. A Windows ARM64 artifact needs a native ARM64 Windows runner, and the only
+  # way to host one here is an emulated guest, whose throughput is not fit to gate a release on. Windows
+  # on ARM64 runs x86_64 binaries, so that audience is served by this artifact.
+  winimage:
+    name: "Windows app-image"
+    # AFTER `assets`, not beside it, so the jar INSIDE the image is byte-identical to the jar the
+    # release ships. Building it again here would be a second build of the same tag -- functionally the
+    # same jar and not the same bytes, and "the Windows artifact contains a different build" is exactly
+    # the kind of claim nobody can check later. It also keeps the frontend's npm build off a Windows
+    # runner, which is a failure surface this repository has never exercised.
+    needs: [prepare, assets]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+
+      # The JDK jpackage comes from, and whose runtime it embeds into the image. No Gradle here: the jar
+      # arrives from `assets` below.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: release-assets
+          path: assets
+
+      # `Collect files` renamed it to `ServerPackCreator-<version>.jar`, and the release directory also
+      # holds the api jar, the plugin jars and the dokka zip -- so the name is spelled out rather than
+      # globbed, and checked, because picking the wrong jar produces an image that launches nothing.
+      - name: Locate the released app jar
+        id: jar
+        # `powershell`, NOT `pwsh`. PowerShell 7 is a separate install that Windows does not ship and the
+        # runner guest does not have, so `shell: pwsh` fails before the step runs with
+        # `Cannot find: pwsh in PATH`. `powershell` is Windows PowerShell 5.1, present on every Windows
+        # host, and everything below plus build-winimage.ps1 is written to its dialect.
+        shell: powershell
+        run: |
+          $jar = "assets/ServerPackCreator-${{ needs.prepare.outputs.version }}.jar"
+          if (-not (Test-Path $jar)) {
+            Write-Output "::error::$jar is not among the release assets"
+            Get-ChildItem assets | ForEach-Object { Write-Output "  $($_.Name)" }
+            exit 1
+          }
+          "path=$jar" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      # Resolved by glob, never spelled out: `misc/build-winimage.ps1` owns the filename including
+      # `_experimental`, the same arrangement `misc/build-appimage.sh` has, and a copy here is a copy
+      # that goes stale the next time it changes.
+      - name: Build the Windows app-image
+        shell: powershell
+        run: |
+          misc/build-winimage.ps1 -Version "${{ needs.prepare.outputs.version }}" -Arch ${{ matrix.arch }} -JarPath "${{ steps.jar.outputs.path }}"
+          # @() so a single match is still an array: unwrapped, 5.1 hands back a bare FileInfo.
+          $image = @(Get-ChildItem "ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip")
+          if ($image.Count -ne 1) { Write-Output "::error::expected 1 Windows app-image, found $($image.Count)"; exit 1 }
+          Write-Output "Produced $($image[0].Name) ($([math]::Round($image[0].Length / 1MB, 1)) MB)"
+          # A per-artifact `.sha256` beside the zip, the same way devbuild.yml's jobs publish theirs.
+          # `assets` has already written checksum.txt by the time this job runs -- that is the price of
+          # taking the RELEASED jar rather than building a second one here -- so these two artifacts
+          # carry their own, and nothing claims a coverage it does not have.
+          $hash = (Get-FileHash $image[0].FullName -Algorithm SHA256).Hash.ToLower()
+          Set-Content -NoNewline "$($image[0].Name).sha256" "$hash  $($image[0].Name)"
+
+      - name: Upload the Windows app-image
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: winimage-${{ matrix.arch }}
+          path: |
+            ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip
+            ServerPackCreator-*-Windows-${{ matrix.arch }}_experimental.zip.sha256
+          if-no-files-found: error
+
   assets:
     name: "JARs, media and checksums"
     needs: prepare
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
       # The one action deliberately fetched from GitHub rather than a Forgejo mirror: install4j has no
       # equivalent there. Requires the instance to permit github.com actions; if it does not, install4j
       # must be pre-installed on the runner and this step replaced by nothing.
-      - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
+      - uses: https://github.com/luangong/setup-install4j@v1
         with:
           version: '13.1'
           license: ${{ secrets.INSTALL4J_LICENSE }}
@@ -95,25 +183,24 @@ jobs:
       # does not need an arm runner label, which no registered runner offers.
       #
       # Two sequential runs in one workspace are safe: the script `rm -rf`s its AppDir before each build
-      # and keeps per-architecture JDK directories (`jdk-21-x86_64`, `jdk-21-aarch64`), so the second
+      # and keeps per-architecture JDK directories (`jdk-<major>-<arch>`, from its own JDK_VERSION), so the second
       # cannot inherit the first's runtime. Run before `Collect files`, which renames the app jar.
       - name: Build AppImages
         run: |
           V="${{ needs.prepare.outputs.version }}"
           chmod +x misc/build-appimage.sh
-          misc/build-appimage.sh "$V"
-          misc/build-appimage.sh --arch aarch64 "$V"
+          misc/build-appimage.sh --update-channel latest "$V"
+          misc/build-appimage.sh --arch aarch64 --update-channel latest "$V"
           # Anchored on the product name: appimagetool-<arch>.AppImage is downloaded into this same
           # directory, so a bare *.AppImage would count it. Two, no more and no fewer, or stop.
           #
-          # Measured 2026-09-20, both invocations in one debian:bookworm-slim workspace (on an aarch64
-          # host, which mirrors this amd64 runner -- native first, then the other architecture):
-          #   produced   ServerPackCreator-9.9.9-test-aarch64_experimental.AppImage  -> ELF 64-bit, ARM aarch64
-          #              ServerPackCreator-9.9.9-test-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
-          #              appimagetool-aarch64.AppImage
-          #   ServerPackCreator-* glob matches 2; a bare *.AppImage glob matches 3.
-          #   JDK directories after both runs: jdk-21-aarch64, jdk-21-x86_64 -- per architecture, so the
-          #   second run cannot inherit the first one's runtime.
+          # Both invocations share one workspace, native architecture first:
+          #   produced   ServerPackCreator-<version>-aarch64_experimental.AppImage  -> ELF 64-bit, ARM aarch64
+          #              ServerPackCreator-<version>-x86_64_experimental.AppImage   -> ELF 64-bit, x86-64
+          #              appimagetool-aarch64.AppImage                              <- the tool itself
+          #   ServerPackCreator-* matches 2; a bare *.AppImage matches 3.
+          # The JDK is unpacked per architecture (jdk-<major>-<arch>), so the second run cannot
+          # inherit the first one's runtime.
           COUNT="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | wc -l)"
           if [ "$COUNT" -ne 2 ]; then
             echo "::error::Expected 2 AppImages, found $COUNT"
@@ -154,8 +241,19 @@ jobs:
           # and nothing here repeats it. They land in the release directory before checksum.txt is
           # generated below, so they are covered by it like every other asset.
           cp ServerPackCreator-*.AppImage                     "release/$V/"
+          # The `.zsync` files the AppImages advertise. `gh-releases-zsync` resolves them out of the
+          # release the AppImage came from, so an AppImage published without its `.zsync` carries an
+          # update route that is dead on arrival -- and says nothing about it until a user tries.
+          # Counted like the AppImages, and for the same reason: one per architecture or stop.
+          ZSYNCS="$(ls -1 ServerPackCreator-*.AppImage.zsync 2>/dev/null | wc -l)"
+          if [ "$ZSYNCS" -ne 2 ]; then
+            echo "::error::Expected 2 .zsync files beside the AppImages, found $ZSYNCS"
+            ls -la ServerPackCreator-*.AppImage* 2>/dev/null || echo "none at all"
+            exit 1
+          fi
+          cp ServerPackCreator-*.AppImage.zsync               "release/$V/"
           rm -f "release/$V/output.txt" "release/$V/"*plain.jar
-          # Dokka HTML replaces what GitLab Pages used to host: it ships as a release asset now.
+          # The Dokka HTML reference ships as a release asset.
           if [ -d serverpackcreator-api/build/dokka ]; then
             (cd serverpackcreator-api/build/dokka && zip -qr "$GITHUB_WORKSPACE/release/$V/serverpackcreator-api-$V-dokka-html.zip" .)
           fi
@@ -165,7 +263,7 @@ jobs:
           ls -lh "release/$V"
 
       - name: Upload release assets
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         with:
           name: release-assets
           path: release/${{ needs.prepare.outputs.version }}/*
@@ -173,17 +271,26 @@ jobs:
 
   release:
     name: "Forgejo release"
-    needs: [prepare, assets]
+    needs: [prepare, assets, winimage]
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.create.outputs.release_id }}
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
-      - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: release-assets
+          path: assets
+
+      # Beside the `release-assets` above, not inside it: `winimage` runs AFTER `assets` so the jar it
+      # packages is the released one, which means its output cannot be part of that artifact. Every
+      # consumer of the asset set therefore merges it in the same way; see claude-docs/WINDOWS-RUNNER.md.
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          pattern: winimage-*
+          merge-multiple: true
           path: assets
 
       # Extracted from CHANGELOG.md rather than through a marketplace action: semantic-release has just
@@ -227,11 +334,9 @@ jobs:
           # entry at MAX_ARG_STRLEN (32 * PAGE_SIZE = 131,072 bytes) independently of ARG_MAX, so
           # `-d "{...,\"body\":$BODY,...}"` dies at execve with `/usr/bin/curl: Argument list too long`
           # once the notes get big -- and they do: a beta or final release aggregates every prerelease
-          # section since the last stable one. Measured on 9.0.0-beta.1 (run 536, the failure this
-          # comment exists for): notes.md 200,185 bytes, assembled -d argument 201,610, job dead before
-          # curl ran; 9.0.0-alpha.8 had released fine at 75,918. Reproduced both shapes in alpine:3.20 --
-          # inlined: exit 126 "Argument list too long"; `-d @file`: curl execs and reaches the network.
-          # The PATCH branch below has always written a file; this is the POST branch catching up.
+          # section since the last stable one, which takes the payload past 200 kB where a prerelease sits
+          # around 75 kB. Inlined, that is exit 126 "Argument list too long" before curl is ever exec'd;
+          # `-d @file` runs and reaches the network. Both branches below therefore write a file.
           RELEASE_VERSION="$V" RELEASE_PRERELEASE="$PRE" python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['RELEASE_VERSION'],'name':os.environ['RELEASE_VERSION'],'body':open('notes.md').read(),'draft':False,'prerelease':os.environ['RELEASE_PRERELEASE']=='true'}))" > create.json
           # Reuse an existing release for this tag instead of failing. Re-running this workflow is the
           # ordinary way to repair a release whose `maven` or `docker` job failed, and with `set -eu` an
@@ -290,17 +395,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -328,21 +433,18 @@ jobs:
           # The signing key travels as an ORG_GRADLE_PROJECT_ variable, NOT as `-PsigningKey=...`.
           # `findProperty("signingKey")` in publishing-conventions reads either, and an armoured PGP key is
           # multi-line: spliced into a shell variable and word-split into gradle arguments, it is truncated
-          # at the first newline, so `useInMemoryPgpKeys` gets a fragment. This is also how GitLab supplied
-          # it, and it keeps the private key out of the process argument list where anything able to read
-          # /proc/<pid>/cmdline could see it.
+          # at the first newline, so `useInMemoryPgpKeys` gets a fragment. It also keeps the private key out
+          # of the process argument list, where anything able to read /proc/<pid>/cmdline could see it.
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           V="${{ needs.prepare.outputs.version }}"
           COMMON="-Pversion=$V"
           SKIP="-x :serverpackcreator-api:test -x :serverpackcreator-app:test"
-          # `dokkaJavadocJar` WITHOUT a project path runs in all seven projects, so the docs of six
-          # modules that are never published gated the one publish that matters -- and on 9.0.0-alpha.8
-          # that is exactly what happened: `serverpackcreator-plugin-grinder` had no `module.md`, its
-          # Dokka task died, and the Maven publish never ran (run 472). Only `-api` is published, and
-          # its own `signMavenJavaPublication` already `dependsOn(dokkaJavadocJar)`, so the path here is
-          # explicit rather than load-bearing -- but it keeps an unpublished module out of the release.
+          # NAME THE PROJECT. `dokkaJavadocJar` without a path runs in all seven, so the docs of six modules
+          # that are never published would gate the one publish that matters -- a module missing its
+          # `module.md` is enough to kill the release. Only `-api` is published, and its own
+          # `signMavenJavaPublication` already `dependsOn(dokkaJavadocJar)`.
           ./gradlew :serverpackcreator-api:dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository    $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitHubPackagesRepository $COMMON $SKIP --info --stacktrace
@@ -355,40 +457,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+        uses: docker/setup-qemu-action@v3
 
-      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md) and this
-      # workflow must not assume they are up -- that assumption is what broke run 797.
+      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
+      # must work whether or not they are up.
       #
-      # THEY ARE ADDRESSED BY IP, AND THAT IS NOT A SHORTCUT. Jobs here run inside a `docker:dind`
-      # daemon (the runner's `docker_host` is dind's socket over a shared volume), while the caches are
-      # containers of the HOST daemon. dind's embedded DNS does not know the host daemon's containers,
-      # so a service name cannot work; routing between them does, because `docker_dind` is attached to
-      # the cache network and its children egress through that interface. Measured on a faithful
-      # reproduction of the topology on 2026-10-02 -- from a container created by the dind daemon,
-      # `wget http://registry-cache-ghcr:5000/v2/` fails with `bad address` while the same request to
-      # the cache's IP returns 200, and a buildx build through these stanzas was served 4 of its
-      # Docker Hub requests and 3 of its ghcr requests by the caches.
+      # They are addressed by IP because jobs here run inside a `docker:dind` daemon while the caches are
+      # containers of the host daemon. dind's embedded DNS does not know them, so a service name cannot
+      # resolve; routing does reach them, because `docker_dind` is attached to the cache network and its
+      # children egress through that interface.
       #
-      # `driver-opts: network=...` is therefore GONE, and its removal is the point rather than a
-      # side effect: the builder needs no network to join, which also removes the one way this step
-      # could kill a build outright --
+      # The probe asks the question that decides the outcome -- can this job reach the cache -- rather
+      # than a proxy for it. A job container and the buildx builder are both children of the same dind
+      # daemon, so a `GET /v2/` from here takes the path the builder will take. A registry whose cache
+      # does not answer is simply left out of the config and pulled from upstream.
+      #
+      # No `driver-opts: network=...`: with fixed IPs the builder has no network to join, and naming one
+      # the daemon does not know is a hard failure before a single layer is pulled --
       #   ERROR: Error response from daemon: failed to set up container networking:
-      #          network runners_default not found
-      #
-      # The probe asks the question that matters, which the previous one did not. "Does this network
-      # exist" was a proxy for "can the builder reach the cache", and it answered about the wrong
-      # daemon; a GET /v2/ from this job is the same path the builder takes, since both are children of
-      # the same dind daemon. A cache that does not answer is simply left out of the config, so the
-      # build runs against upstream exactly as it did before any of this.
+      #          network <name> not found
       - name: Point BuildKit at the host's registry caches when they answer
         id: regcache
         env:
-          # Pinned by the runner host's compose file -- see claude-docs/RUNNER-REGISTRY-CACHE.md section
-          # 3. If these drift from the host, nothing breaks: the probe finds nothing and the build goes
+          # Pinned by the runner host's compose file -- claude-docs/RUNNER-REGISTRY-CACHE.md section 1.
+          # If these drift from the host, nothing breaks: the probe finds nothing and the build goes
           # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
           GHCR_CACHE: "172.31.77.6:5000"
           DOCKERHUB_CACHE: "172.31.77.5:5000"
@@ -424,19 +519,19 @@ jobs:
           sed 's/^/  /' "$toml"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-config: ${{ steps.regcache.outputs.config }}
 
       - name: Log in to ghcr.io
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.GH_TOKEN }}
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -455,18 +550,18 @@ jobs:
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
       # Retried for the same reason `docker-test.yml` retries: ghcr answers a pull with
-      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips its
-      # per-source burst limiter, and buildkit does not wait. Being logged in does not help -- run 739's job
-      # logged `Login Succeeded` and still died on a blob GET. That workflow has lost three runs to it; here
-      # the same minute would cost the release its images and take the `mirror` job (`needs: docker`) with it.
+      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips
+      # its per-source burst limiter, and buildkit will not wait. The limiter is keyed on the host, so
+      # being logged in does not lift it. Here a single such minute would cost the release its images and
+      # take the `mirror` job (`needs: docker`) with it.
       #
       # The retry is expensive and deliberately so: `no-cache: true` means attempt two rebuilds the whole
-      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a needless
-      # retry is time, and the cost of not having one is a release with no image.
+      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a
+      # needless retry is time, and the cost of not having one is a release with no image.
       - name: Build and push
         id: buildpush
         continue-on-error: true
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
@@ -484,7 +579,7 @@ jobs:
 
       - name: Build and push (retry)
         if: ${{ steps.buildpush.outcome == 'failure' }}
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
@@ -502,35 +597,40 @@ jobs:
     # PATCHes the Forgejo release body with the scan permalinks, and the mirror copies that body; without
     # the dependency the GitHub release would never carry the section, which the workflow this replaced
     # added via `update_release_body`.
-    needs: [prepare, assets, release, maven, docker, virustotal]
+    needs: [prepare, assets, release, maven, docker, virustotal, winimage]
     runs-on: ubuntu-latest
     steps:
 
-      - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: release-assets
+          path: assets
+
+      # Beside the `release-assets` above, not inside it: `winimage` runs AFTER `assets` so the jar it
+      # packages is the released one, which means its output cannot be part of that artifact. Every
+      # consumer of the asset set therefore merges it in the same way; see claude-docs/WINDOWS-RUNNER.md.
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          pattern: winimage-*
+          merge-multiple: true
           path: assets
 
       # Forgejo push-mirrors replicate refs but NOT releases, so this is explicit rather than a setting.
       # It runs only after the Forgejo release exists, so no downstream forge ever advertises a release
       # this one does not have. The tag itself arrives by ordinary git mirroring.
       #
-      # GitHub is the only outward mirror. gitlab.com WAS mirrored here too, until 2026-08-23: that step
-      # could never have succeeded, and reported a bare `exitcode '22'`, because gitlab.com's copy of the
-      # repository stopped receiving commits on 2024-04-28 (newest commit there: RELEASE: 5.2.1, 1397
-      # commits behind main) when the git push-mirror died with the GitLab->Forgejo migration. Both
-      # branches of GitLab's release API need something that repository does not have -- the tag, or the
-      # `ref` commit to mint it from -- so no amount of release-API work could have fixed it. Do not
-      # re-add it without first restoring the push-mirror and confirming gitlab.com has the tag.
+      # GitHub is the only outward mirror. Before adding another, confirm the git push-mirror to it is
+      # alive and that it already has the tag: a release API needs either an existing tag or a `ref`
+      # commit to mint one from, and a mirror that has stopped receiving commits has neither. That is a
+      # precondition no release-API work can substitute for.
       - name: Fetch release notes from Forgejo
         env:
           TOKEN: ${{ secrets.FJ_TOKEN }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -eu
-          # -o/-w rather than -f: `curl -sf` prints nothing on an HTTP error, which is how the GitLab step
-          # that used to follow this one reported five failed releases as `exitcode '22': failure` and
-          # nothing else. The body is where every one of these APIs says what is actually wrong.
+          # -o/-w rather than -f: `curl -sf` sets exit 22 and discards the body, so a failure reports
+          # `exitcode '22'` and nothing else. The body is where every one of these APIs says what is wrong.
           STATUS="$(curl -sS -o release.json -w '%{http_code}' \
             "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
             -H "Authorization: token $TOKEN")"
@@ -678,18 +778,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
           name: release-assets
           path: assets
 
-      # A job here rather than the old release-triggered .github/workflows/virustotal.yml, for two
-      # reasons: the assets already exist as an artifact, and `crazy-max/ghaction-virustotal` updates a
-      # *GitHub* release body, which is the wrong forge now. Submitting through VirusTotal's API directly
-      # removes both problems, and the permalinks are appended to the Forgejo release notes.
+      # Submits through VirusTotal's API directly rather than through `crazy-max/ghaction-virustotal`,
+      # which updates a *GitHub* release body: the assets are already here as an artifact, and the
+      # permalinks belong on the Forgejo release notes.
       #
       # Files over 32 MB need a one-time upload URL; that is what the branch below is for. Failures are
       # tolerated: a scan that does not come back must not fail a release that is already published.
+      # The Windows app-images are deliberately NOT downloaded here, unlike in `release` and `mirror`:
+      # the loop below scans `*.jar *.sh *.dmg *.exe`, which already excludes the AppImages. A portable
+      # archive is not an installer, and scanning a zip of a zip of a JRE tells a reader nothing.
       - name: Submit assets to VirusTotal
         env:
           VT_API_KEY: ${{ secrets.VT_API_KEY }}
@@ -750,29 +852,24 @@ jobs:
 
   news:
     name: "News on Discord"
-    # Recreated from `main`'s `github_release.yml` and `github-prerelease.yml`, which carried a `news` job
-    # each, differing only in the words "release" and "Pre-Release". `prepare.outputs.prerelease` chooses
-    # between them here, so this is one job rather than two near-identical workflows.
+    # One job for both channels: `prepare.outputs.prerelease` chooses the wording.
     #
     # It announces the FORGEJO release -- the canonical one -- and therefore deliberately does NOT need
     # `mirror`: a stalled push-mirror must not silence the announcement of a release that is complete
-    # here, and `mirror` is the job that failed on BOTH releases of 2026-08-23. It does wait for `maven`
-    # and `docker`, on the same reasoning `mirror` gives for its own `needs`: nobody should be pointed at
-    # a release whose artifacts and images do not exist yet. `virustotal` is left out because its own
-    # failures are explicitly tolerated and this announcement does not reproduce the release notes.
+    # here. It does wait for `maven` and `docker`, on the same reasoning `mirror` gives for its own
+    # `needs`: nobody should be pointed at a release whose artifacts and images do not exist yet.
+    # `virustotal` is left out because its own failures are explicitly tolerated and this announcement
+    # does not reproduce the release notes.
     needs: [prepare, release, maven, docker]
     runs-on: ubuntu-latest
     steps:
 
-      # Two findings against the original are fixed by construction rather than carried across.
-      # WORKFLOW-AUDIT.md M6: it `curl`ed ChaoticWeg/discord.sh's *master* and executed it, which is
-      # remote-code-execution-by-trust for what is only a JSON builder -- so the payload is built the way
-      # qodana.yml already builds its own. M4: the deprecated `::set-output` disappears along with the
-      # separate date step that fed it. Every value reaches python through `env:` rather than being
-      # interpolated into the shell, per WORKFLOW-AUDIT.md L2.
+      # The payload is built by python, the way qodana.yml builds its own: fetching and executing a
+      # third-party shell script for what is only a JSON builder is remote code execution by trust.
+      # Every value reaches python through `env:` rather than being interpolated into the shell.
       - name: Post to Discord
         env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets.NEWS_WEBHOOK_URL }}
           VERSION: ${{ needs.prepare.outputs.version }}
           PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
           REPOSITORY: ${{ github.repository }}
@@ -781,8 +878,8 @@ jobs:
           # A missing webhook is fine and exits cleanly; a webhook that IS configured and then fails to
           # accept the post is a real failure and must not be swallowed -- hence set -e after the guard,
           # exactly as in qodana.yml's post.
-          if [ -z "${WEBHOOK_URL:-}" ]; then
-            echo "No WEBHOOK_URL configured - skipping"
+          if [ -z "${NEWS_WEBHOOK_URL:-}" ]; then
+            echo "No NEWS_WEBHOOK_URL configured - skipping"
             exit 0
           fi
           set -eu
@@ -833,7 +930,7 @@ jobs:
           NEWS_PY
           python3 news.py > payload.json
           STATUS="$(curl -sS -o posted.json -w '%{http_code}' -X POST \
-            -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL")"
+            -H 'Content-Type: application/json' -d @payload.json "$NEWS_WEBHOOK_URL")"
           if [ "$STATUS" -ge 400 ]; then
             echo "::error::The Discord webhook returned HTTP $STATUS"
             cat posted.json

@@ -34,9 +34,9 @@ import org.junit.jupiter.api.Test
  * transport failed silently in exactly the way that matters. A `-v <hostPath>:/templates` bind is
  * resolved by the **daemon's** filesystem, so on Forgejo's runner, whose daemon is a sibling that holds
  * no copy of the job container's `/tmp`, Docker created an empty directory and mounted that. The fish
- * check then reported a `FAIL` line naming the fish glob itself, unexpanded because nothing matched it
- * (run 646, job 1650); the PowerShell parse check matched zero files and **passed**; and the
- * installer-Java probe found no script and skipped.
+ * check then reports a `FAIL` line naming the fish glob itself, unexpanded because nothing matched it; the
+ * PowerShell parse check matches zero files and **passes**; and the installer-Java probe finds no script and
+ * skips.
  * One transport defect, three different-looking verdicts, none of them about a template.
  *
  * Reproduced and fixed against a real remote daemon rather than argued: `docker run -d --privileged

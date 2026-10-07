@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Five **real** boot logs the deployed grinder published, sampled 2026-08-31 from
+ * Five **real** boot logs the deployed grinder published, sampled from
  * `grinder.serverpackcreator.de/boot-log`. Four of the five were scored `CRASHED` by the bare exit-code
  * rung — i.e. eligible for a clientside `HIGH` — on no sideness evidence at all, and one of the mods
  * (`create_ltab`) was already published in the live fallback list because of it.
@@ -151,7 +151,7 @@ internal class RealBootLogClassificationTest {
     }
 
     /**
-     * **A whole tuple's worth of false positives from one broken cache entry.** Measured 2026-08-31: all 90
+ * **A whole tuple's worth of false positives from one broken cache entry.** Measured: all 90
      * boots against the cached `NeoForge 21.11.45 / Minecraft 1.21.11` install died on a missing log4j-core,
      * `corgilib` (a library mod) and `chisels-bits` (a building mod that runs on servers) among them, and the
      * ones reaching a non-zero exit were published as clientside.

@@ -26,11 +26,10 @@ import java.io.File
 /**
  * Guards what `ApiWrapper.stageOne()` actually writes into the user's `server_files` directory.
  *
- * Staging is the one step every single launch performs, for every user, before anything else - and it
- * had been writing a 0-byte `default_java_template.bat` on every one of them, because the resource it
- * copies from has never existed and `JarUtilities.copyFileFromJar` swallowed the missing stream. Nothing
- * noticed: `PathsConfigTest` asserts what the *path* is, never that anything is behind it, and no
- * template is registered under the `bat` key for Java installers, so the empty file was never read.
+ * Staging is the one step every single launch performs, for every user, before anything else, so a resource
+ * that is named but not shipped is written into every home that ever exists. Nothing else notices:
+ * `PathsConfigTest` asserts what the *path* is, never that anything is behind it, and a template nothing
+ * reads back - no `bat` template is registered for Java installers - can sit there empty indefinitely.
  *
  * An empty template is the symptom worth pinning rather than any one file name. Whatever is staged, it
  * came out of the jar, and nothing in the jar is empty - so a zero-length file there means a resource

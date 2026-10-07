@@ -29,7 +29,7 @@ package de.griefed.serverpackcreator.clientside
  * wears the INCONCLUSIVE, exactly like every other "the mod never got a fair run" failure this engine keeps
  * guards for.
  *
- * **Measured live 2026-09-06, `Modrinth/zoomify` on Quilt / Minecraft 1.20.5.** Modrinth tags
+ * **Measured live, `Modrinth/zoomify` on Quilt / Minecraft 1.20.5.** Modrinth tags
  * `yet_another_config_lib_v3-3.6.6+1.20.6-fabric.jar` for 1.20.5 *and* 1.20.6, and the jar's own descriptor
  * declares `"minecraft": "~1.20.5"`, so nothing in selection or in the descriptor gate objects to it — but it
  * also declares `"fabric-api": ">=0.100.0+1.20.6"`, and the newest Fabric API Modrinth publishes for 1.20.5

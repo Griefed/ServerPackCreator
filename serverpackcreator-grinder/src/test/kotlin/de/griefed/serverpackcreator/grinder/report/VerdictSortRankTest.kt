@@ -27,10 +27,9 @@ import org.junit.jupiter.api.Test
 /**
  * The verdict sorts by **rank**, not by the alphabet.
  *
- * Observed on the live report 2026-08-29: `?sort=confidence` returned HIGH, HIGH, INCONCLUSIVE,
- * INCONCLUSIVE, INCONCLUSIVE, LOW — alphabetical order, in which INCONCLUSIVE ("nothing was learned")
- * outranks both MEDIUM and LOW. Only the *default* order carried a rank; a named sort fell through to
- * `VerdictField.text`, which for this column is the enum name.
+ * Falling through to `VerdictField.text` — the enum name for this column — gives `?sort=confidence` the order
+ * HIGH, HIGH, INCONCLUSIVE, INCONCLUSIVE, INCONCLUSIVE, LOW: alphabetical, in which INCONCLUSIVE ("nothing was
+ * learned") outranks both MEDIUM and LOW. A named sort therefore needs the same rank the default order uses.
  *
  * The fix is the one the plan specified: a `sortKey` on [VerdictField], defaulting to `text` and overridden
  * only here — which also collapses the two hand-maintained rank tables (this layer's and the CSV

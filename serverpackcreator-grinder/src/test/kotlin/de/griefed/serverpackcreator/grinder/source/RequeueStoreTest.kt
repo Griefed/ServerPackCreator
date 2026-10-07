@@ -34,9 +34,8 @@ import java.time.Instant
  *
  * It exists because the catalog crawl and the re-verify TTL together answer "when does a project come round
  * again?" with *eventually, at TTL*, and that is the wrong answer when a defect is found in the engine
- * itself. Three landed on 2026-08-23 alone — a source jar becoming a list-entry, a crash re-check that never
- * left the crashing combination's neighbourhood, and two platform runs of one slug sharing a staging
- * directory. Each invalidated verdicts already published, and none of them was fixable by waiting.
+ * itself: an engine defect invalidates verdicts that are already published, and none of them is fixable by
+ * waiting.
  *
  * Persisted, because the daemon is fire-and-forget under systemd and an operator queueing work must not have
  * to keep a process alive for it to survive.
@@ -175,9 +174,9 @@ internal class RequeueStoreTest {
     /**
      * **The selector for "the host, or the engine, was broken between then and now".**
      *
-     * `verifiedBefore` cannot express it: it selects the *complement* of an outage window. Measured
-     * 2026-09-03 — the runtime image was gone from the daemon, so for the hours until it was noticed every
-     * candidate was published INCONCLUSIVE about a boot that never happened, replacing whatever the store held.
+     * `verifiedBefore` cannot express it: it selects the *complement* of an outage window. The shape to picture
+     * is a runtime image missing from the daemon — for the hours until it is noticed, every candidate is
+     * published INCONCLUSIVE about a boot that never happened, replacing whatever the store held.
      * The population that has to be re-ground is "everything verified **since** it broke", and asking for it
      * with `--requeue-before <the fix>` queues the entire store instead, including every verdict the outage
      * never touched.

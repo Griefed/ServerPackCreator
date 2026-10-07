@@ -172,9 +172,9 @@ class ServerTestTab(
     /**
      * Launch [pack] and open a console for it, or say why not.
      *
-     * The sequence this used to contain — take a port, borrow `server.properties`, register before
-     * starting, give everything back exactly once — now lives in [ServerLauncher], where it is reachable
-     * headless. What is left here is the part that is genuinely a view's job: put a console on screen,
+     * The sequence itself — take a port, borrow `server.properties`, register before starting, give
+     * everything back exactly once — lives in [ServerLauncher], where it is reachable headless. What is
+     * here is the part that is genuinely a view's job: put a console on screen,
      * and start the session only once there is somewhere for its output to go.
      */
     private fun launch(pack: LaunchablePack) {

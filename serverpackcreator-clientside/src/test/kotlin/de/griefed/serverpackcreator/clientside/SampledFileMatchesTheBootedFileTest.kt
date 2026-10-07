@@ -30,7 +30,7 @@ import java.io.File
  * Pins that a verdict names the artifact it is **about** — the one staging selected for that verdict's own
  * Minecraft version-line — rather than whichever file of that loader the platform happened to list first.
  *
- * **The reported case, measured against the live CurseForge API on 2026-09-11.** `CurseForge/aether`'s Forge
+ * **The reported case, measured against the live CurseForge API.** `CurseForge/aether`'s Forge
  * row read `Filename = aether-1.12.2-v1.5.4.1.jar` while its detail was a `DEPENDENCY_FAILURE` naming
  * `curios-forge`. Both halves were true of different files:
  *

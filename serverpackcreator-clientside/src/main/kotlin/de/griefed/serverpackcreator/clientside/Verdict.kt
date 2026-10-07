@@ -26,8 +26,8 @@ package de.griefed.serverpackcreator.clientside
  * (HIGH/MEDIUM/LOW/INCONCLUSIVE), which conflated two questions — *what happened* and *how sure are we* —
  * and could not express the one thing the operator most needed to know: whether the grind ran at all.
  *
- * **[LOCKED] and [UNVERIFIABLE] split out of [ERROR] on 2026-09-09**, because a grind that could not be
- * performed and a grind *we* broke are not the same report. See those two for the measurement.
+ * **[LOCKED] and [UNVERIFIABLE] are separate from [ERROR]**, because a grind that could not be performed
+ * and a grind *we* broke are not the same report. See those two for the measurement.
  *
  * @author Griefed
  */
@@ -86,7 +86,7 @@ enum class Verdict(
      * and no boot are possible, and no amount of retrying changes that.
      *
      * **Not [ERROR], because nothing here is ours or an operator's.** 17 of the public grinder's 53 `ERROR`
-     * rows were this on 2026-09-09 — five projects' own files (`corail-tombstone`, `entityculling`,
+ * rows were this — five projects' own files (`corail-tombstone`, `entityculling`,
      * `not-enough-animations`, `skin-layers-3d`, `structory`) plus `better-combat-by-daedelus`, whose
      * `player-animation-library` dependency is locked — sitting in the bucket an operator reads to find out
      * what to fix, and nothing in it was fixable.
@@ -107,7 +107,7 @@ enum class Verdict(
      *
      * **The distinction from [ERROR] is who can act.** `ERROR` means somebody can go and fix this; that is
      * the whole reason it exists, and the reason it must not also mean "the ecosystem does not contain the
-     * pack we would need to build". ~18 of the public grinder's 53 `ERROR` rows were this on 2026-09-09,
+ * pack we would need to build". ~18 of the public grinder's 53 `ERROR` rows were this,
      * QSL being the clearest case: its last Modrinth release is Minecraft 1.21 and the project is
      * discontinued, so every Quilt mod declaring a `quilt_*` module on 1.21.1 or later is unverifiable
      * *forever*, and re-grinding it will never say anything else.

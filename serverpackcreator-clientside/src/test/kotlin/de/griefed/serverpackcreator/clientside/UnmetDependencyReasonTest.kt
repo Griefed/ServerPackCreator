@@ -37,8 +37,8 @@ import java.util.jar.JarOutputStream
  * file and the download died*, and *staging dropped every usable build itself while backtracking* — all
  * print the bare slug, so the verdict reads `Required dependency unavailable … balm` in each case.
  *
- * **This is not cosmetic, and the live store is the argument.** On 2026-09-07 the grinder published 47
- * such rows. Diagnosing them took a CurseForge API probe (`misc/cf-dependency-probe.sh`, which proved the
+ * **This is not cosmetic, and the live store is the argument.** The grinder published 47 such rows in one
+ * day. Diagnosing them took a CurseForge API probe (`misc/cf-dependency-probe.sh`, which proved the
  * files were all there and correctly tagged) and a log grep on the daemon host (`1014` re-stagings against
  * `4` staging failures, which is what finally identified the backtrack). Both were needed only because the
  * verdict itself named no evidence — the standard this module holds every *boot* verdict to

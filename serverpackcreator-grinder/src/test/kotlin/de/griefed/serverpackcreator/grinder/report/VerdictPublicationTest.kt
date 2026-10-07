@@ -88,9 +88,9 @@ internal class VerdictPublicationTest {
     /**
      * **Asked of `Verdict.entries`, so a verdict added later is covered without editing this guard.**
      *
-     * The four hand-written rows above and `anErrorNeverPublishesHoweverManyThereAre` were the whole of this
-     * file's coverage, and `LOCKED`/`UNVERIFIABLE` joined the population it exists to protect against
-     * (2026-09-09) without appearing in a single assertion. `FallbackPropertiesRenderer` filters
+     * Hand-written rows per verdict cannot cover a verdict added later — `LOCKED` and `UNVERIFIABLE` joined
+     * the population this exists to protect against, and a fixed list of assertions would not have mentioned
+     * either. `FallbackPropertiesRenderer` filters
      * `== Verdict.CONFIRMED`, so it is correct by construction — and construction is exactly what a
      * publication gate must not be trusted on, since the cost of being wrong is a mod stripped from every
      * server pack built against the list.
@@ -113,10 +113,9 @@ internal class VerdictPublicationTest {
      * **Every verdict is classified for retention, asserted over `Verdict.entries` so a verdict added later
      * cannot slip through unclassified.**
      *
-     * This replaced `everyVerdictButClearKeepsItsLogs`, whose four hand-written assertions stayed green
-     * while its *name* became false: `LOCKED` and `UNVERIFIABLE` discard too (2026-09-09). A guard that
-     * lists the values it knows about cannot notice a new one, which is the whole failure this is written
-     * to avoid.
+     * A guard that lists the values it knows about cannot notice a new one: four hand-written assertions
+     * stay green under a name like `everyVerdictButClearKeepsItsLogs` long after `LOCKED` and `UNVERIFIABLE`
+     * have started discarding too. That is the whole failure this is written to avoid.
      *
      * The three reasons for discarding are not one rule, which is why this is a set rather than a predicate
      * over [Verdict.grindRan] — a plausible-looking partition on "did a container run?" is wrong, because

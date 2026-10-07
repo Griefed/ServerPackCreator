@@ -30,9 +30,9 @@ import org.junit.jupiter.api.Test
 /**
  * Pins the one note the console adds while a session is running.
  *
- * It exists because of something observed rather than imagined: a real NeoForge boot on 2026-09-25 reached
- * ready, took `stop`, saved its worlds, printed `Exiting...` — and then went completely silent for three
- * minutes until the run was abandoned. The script was blocked on
+ * The behaviour it guards is observed, not imagined: a real NeoForge boot reaches ready, takes `stop`,
+ * saves its worlds, prints `Exiting...` — and then goes completely silent, indefinitely. The script is
+ * blocked on
  * `read -n 1 -s -r -p "Press any key to continue"`, and bash writes a `read -p` prompt **only when standard
  * input is a terminal**. Over this plugin's pipe there is no prompt at all, so a finished server is
  * indistinguishable from a hung one.

@@ -304,11 +304,9 @@ internal class PathsConfigTest {
      * Without it, a host with no stored preference lands on `File("").absolutePath` — the working directory — and
      * `ApiWrapper.setup()` then *writes* into it (it copies README.md, CHANGELOG.md and the `server_files` templates
      * into the home directory). For a Gradle test JVM the working directory is the module's own source directory, so
-     * a suite overwrote checked-in files: `serverpackcreator-clientside/README.md`'s 186-line CLI guide was replaced
-     * by the bundled root README, which then failed `ClientsideReadmeFlagsTest` (measured 2026-07-30, while isolating
-     * the suites onto their own Preferences nodes — the isolated node removed the stored home that had been masking
-     * this). The build now points every test JVM at a scratch home under `build/`, which only works if the override
-     * is honoured here.
+     * a suite can overwrite checked-in files — `serverpackcreator-clientside/README.md`'s CLI guide replaced by the
+     * bundled root README, which then fails `ClientsideReadmeFlagsTest`. The build points every test JVM at a scratch
+     * home under `build/`, which only works if the override is honoured here.
      */
     @Test
     fun aSystemPropertyOverridesTheDevEnvironmentWorkingDirectory(@TempDir tempDir: File) {
@@ -362,10 +360,9 @@ internal class PathsConfigTest {
      *
      * `systemd` starts a unit in `/` unless the unit sets `WorkingDirectory=`, and every locally built artifact is a
      * source build (`gradle.properties` carries `version=dev`, so `Implementation-Version` is `dev` and
-     * [de.griefed.serverpackcreator.api.ApiProperties.devBuild] is true). The two together made the daemon resolve
-     * its home to `/`, and *every* write then failed: reproduced 2026-08-22 by running the installed grinder
-     * distribution from `/`, which died with `java.io.FileNotFoundException: /log4j2.xml` — a message naming
-     * neither the home directory nor the working directory it came from.
+     * [de.griefed.serverpackcreator.api.ApiProperties.devBuild] is true). The two together resolve the home to `/`,
+     * where *every* write fails — the daemon dies with `java.io.FileNotFoundException: /log4j2.xml`, a message
+     * naming neither the home directory nor the working directory it came from.
      *
      * The unwritable directory here is one that does not exist, which is how
      * [tomcatLogsDirectoryFallsBackWhenNotWritable] gets the same signal: `canWrite()` is false for a missing path

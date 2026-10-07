@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
  * Pins blaming a crash on an **injected dependency** rather than on the candidate.
  *
  * Injecting dependencies makes a boot more faithful to a real pack, but it also puts other people's code
- * in the pack — so a crash may belong to a dependency. The decision taken here (2026-08-29) is that
+ * in the pack — so a crash may belong to a dependency. The decision taken here is that
  * attribution **annotates and requeues, never changes the verdict**:
  *
  * The candidate did crash a server in the configuration a real pack produces. Downgrading that on a string

@@ -30,7 +30,7 @@ import java.io.File
  * Pins that a **CurseForge** dependency is found on a neighbouring patch release — the half of the
  * patch-version fallback that was inert.
  *
- * **The fallback shipped on 2026-09-09 and was dead on CurseForge by construction.**
+ * **The fallback shipped and was dead on CurseForge by construction.**
  * `CurseForgePlatform.resolveDependency` narrows its single page with `gameVersion=<exact>`, so every file
  * it returns carries the exact version. `BootCandidateSelector.patchNeighboursOf` sources neighbours *only
  * from the files in hand*, and `preferenceLadder` tries the exact rung first with the same `compatibleAt` —
@@ -38,7 +38,7 @@ import java.io.File
  * neighbour rung can never find anything the exact rung did not. Not "rarely useful": logically
  * unreachable-productive.
  *
- * Measured consequence, 2026-09-10: `better-combat-by-daedelus` and `combat-roll`, both **CurseForge**
+ * Measured consequence: `better-combat-by-daedelus` and `combat-roll`, both **CurseForge**
  * candidates, are published `UNVERIFIABLE` for `playeranimator` on Forge 1.20.2 — while PlayerAnimator
  * publishes a Forge build for 1.20.1 and 1.20. Both rows are exactly what the fallback was written to close,
  * and neither moved, because the six rows it did close were all Modrinth.

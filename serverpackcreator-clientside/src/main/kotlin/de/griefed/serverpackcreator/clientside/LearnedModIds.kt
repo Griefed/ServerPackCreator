@@ -86,7 +86,7 @@ class LearnedModIds(
      * `create` is Create and Create Fabric; `farmersdelight` is Farmer's Delight and its Fabric port;
      * `sophisticatedcore` is Sophisticated Core and its unofficial Fabric port. Whichever was ground first
      * owned the id for every loader afterwards, and a learned mapping's alias-strength then let the wrong
-     * project's empty file list refuse a boot (measured on `chefs-delight`, 2026-09-09).
+ * project's empty file list refuse a boot (measured on `chefs-delight`).
      *
      * Keeping every prover needs no loader dimension to be loader-aware:
      * [BootCandidateSelector.pickDependencyFile] already filters by loader and Minecraft version, so the

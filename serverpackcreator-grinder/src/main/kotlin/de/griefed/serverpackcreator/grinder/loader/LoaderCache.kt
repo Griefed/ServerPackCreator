@@ -92,8 +92,8 @@ class LoaderCache(
     /**
      * Whether the tuple's base is fully installed *and* was produced by the templates currently in force.
      *
-     * The marker alone only says an install succeeded, which is why a template change that alters what an install
-     * produces used to be served from cache regardless. A recorded provenance that differs from the current one is
+     * The marker alone only says an install succeeded, so a template change that alters what an install produces
+     * would otherwise be served from cache regardless. A recorded provenance that differs from the current one is
      * therefore a miss. An **absent** provenance is not: it predates this field, and treating unknown as different
      * would re-install every cached tuple to answer a question that may not apply to it.
      */
@@ -214,8 +214,8 @@ class LoaderCache(
      * Whether this tuple's install failed recently enough that [ensureInstalled] would refuse to retry it.
      *
      * Lets a version *policy* ask before choosing, rather than every candidate discovering it the expensive way: a
-     * loader build whose installer artifact is missing upstream (NeoForge `21.1.247`, measured 2026-07-30) is on
-     * cooldown after the first failure, and knowing that up front is what allows stepping down to an older build
+     * loader build whose installer artifact is missing upstream (NeoForge `21.1.247`, say) is on cooldown after
+     * the first failure, and knowing that up front is what allows stepping down to an older build
      * instead of handing out an inconclusive verdict per candidate.
      */
     fun isInstallOnCooldown(loader: String, loaderVersion: String, minecraftVersion: String): Boolean {
@@ -308,10 +308,10 @@ class LoaderCache(
          * one. A function rather than an interpolation at the call site so it can be pinned without capturing
          * a logger.
          *
-         * The type is not decoration. `${'$'}{throwable.message}` alone printed a bare `null` for a throwable
-         * carrying no message (live daemon, 2026-09-03, NeoForge 21.1.23 / Minecraft 1.21.1), which told an
-         * operator that a tuple had failed and nothing else — while the tuple logged two lines earlier named
-         * `Status 404: No such image` and was diagnosable on sight. The stack trace goes to the logger
+         * The type is not decoration. `${'$'}{throwable.message}` alone prints a bare `null` for a throwable
+         * carrying no message, which tells an operator that a tuple failed and nothing else — while a tuple
+         * logging `Status 404: No such image` two lines earlier is diagnosable on sight. The stack trace goes to
+         * the logger
          * alongside this; the sentence is what a `journalctl | grep` returns.
          */
         internal fun installThrewMessage(

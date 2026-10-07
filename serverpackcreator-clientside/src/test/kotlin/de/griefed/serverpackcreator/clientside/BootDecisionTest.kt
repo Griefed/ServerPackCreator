@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
  * decisive on the console alone, and the bare exit-code fallback, which means only "the process exited
  * non-zero and nothing recognised why". Both produced an identical `HIGH`, so the published fallback list
  * could not tell a mod reaching for `net/minecraft/client` from one whose mixins failed to apply. Measured
- * against five real boot logs on 2026-08-31, four were the latter and one of them —
+ * against five real boot logs, four were the latter and one of them —
  * `created_ltab` — was already published.
  */
 internal class BootDecisionTest {
@@ -103,13 +103,13 @@ internal class BootDecisionTest {
         Assertions.assertEquals(
             setOf(
                 BootDecision.CLIENT_ONLY_CLASS,
-                // Both added 2026-09-04, when `iris` scored INCONCLUSIVE on
+ // Both added, when `iris` scored INCONCLUSIVE on
                 // `NoClassDefFoundError: org/lwjgl/Version`. A dedicated server ships no LWJGL, and FML
                 // saying "invalid dist DEDICATED_SERVER" is the loader itself refusing a client-only
                 // class: neither can be fabricated by a broken harness, which is the bar for this set.
                 BootDecision.LWJGL_ON_A_DEDICATED_SERVER,
                 BootDecision.FML_INVALID_DIST,
-                // Added 2026-09-13. Fabric refusing a MANDATORY dependency as "disabled for this
+ // Added. Fabric refusing a MANDATORY dependency as "disabled for this
                 // environment (client/server only)" is the loader's own words about a jar it read, and a
                 // mod that cannot load without something the server will never have cannot run on a
                 // server. `voxy` and `cull-less-leaves` were both published INCONCLUSIVE on it.

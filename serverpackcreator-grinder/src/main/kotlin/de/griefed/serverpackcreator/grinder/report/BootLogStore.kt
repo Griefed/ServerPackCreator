@@ -171,9 +171,9 @@ class BootLogStore(private val directory: File, private val budgetBytes: Long = 
     /**
      * Re-file every artifact whose owner predates the Minecraft version-line, returning how many moved.
      *
-     * **Why it can be done exactly rather than guessed.** The owner gained the line on 2026-09-11
-     * ([AttemptDirectory.nameFor]), so a name written before then is `<platform>-<slug>-<loader>~…` and
-     * reachable from no row — `namesFor` rebuilds a four-part prefix and finds nothing. But the attempt
+     * **Why it can be done exactly rather than guessed.** An owner written before the Minecraft version-line was
+     * part of it ([AttemptDirectory.nameFor]) is `<platform>-<slug>-<loader>~…`, and reachable from no row —
+     * `namesFor` rebuilds a four-part prefix and finds nothing. But the attempt
      * segment beside it already records what was booted, `<loader>_<loaderVersion>_mc<version>`, so the line
      * the owner is missing is sitting in the same file name. Nothing is invented.
      *

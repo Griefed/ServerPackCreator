@@ -130,11 +130,11 @@ data class GrindTargetVerdict(
      * The loader whose build proved this mod reaches client-only code, when this verdict **inherited** that
      * proof rather than producing it — `null` otherwise.
      *
-     * **A verdict has to be able to name its own evidence.** An inherited proof used to live only in the
-     * note's prose, so the row's `decidedBy` stayed its own boot's rung — `READY_LINE` for a clean one — and
-     * anything re-deriving evidence from the consoles read a published `CONFIRMED` as resting on none.
-     * Measured 2026-09-12 against the public grinder: 86 of 140 published rows, i.e. `GrinderAuditIT`
-     * failing wholesale on a design that was working as intended.
+     * **A verdict has to be able to name its own evidence.** Recording an inherited proof only in the note's
+     * prose leaves the row's `decidedBy` holding its own boot's rung — `READY_LINE` for a clean one — so
+     * anything re-deriving evidence from the consoles reads a published `CONFIRMED` as resting on none. That
+     * is the majority of published rows, i.e. `GrinderAuditIT` failing wholesale on a design working as
+     * intended.
      */
     val inheritedProofFrom: String? = null,
     /** The rule id of the rung that proved it, for the same reason [inheritedProofFrom] exists. */

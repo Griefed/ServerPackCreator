@@ -41,30 +41,27 @@ jobs:
     # the linter itself.
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      # B39. The scan used to run against a raw checkout, so i18n4k's generated `Translations` and
-      # `Example` objects did not exist during analysis and 85 source files referenced a symbol the
-      # scanner could not resolve. A file with an unresolved core symbol is analysed with its
-      # inspections DEGRADED, so the low finding count for -app was not evidence that -app was clean.
-      # Run 832 (revision d97a6e188) carried 35 sanity failures on exactly that: 30 x "Unresolved
-      # reference Translations" and 5 x "Unresolved reference Example", split -app 24 / -api 6 /
-      # -plugin-example 5.
+      # Qodana must analyse generated sources, not a raw checkout. Without i18n4k's `Translations` and
+      # `Example` objects, 85 source files reference a symbol the scanner cannot resolve, and a file with
+      # an unresolved core symbol is analysed with its inspections DEGRADED -- so a low finding count
+      # stops being evidence of clean code.
       #
       # These three steps are what close that. Measured on a clean checkout: the generation costs
       # 23.0 s with every task re-executed and no build cache, 16.4 s with one -- against a scan that
       # takes minutes, which is why the extra dependency resolution is worth it.
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -81,7 +78,7 @@ jobs:
           ./gradlew generateI18n4kFiles kaptKotlin
 
       - name: Cache Qodana
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@v5
         with:
           path: qodana/cache
           key: qodana-2026.2-${{ github.ref_name }}
@@ -111,24 +108,21 @@ jobs:
       # `qodana-jvm-community` is NOT a binary in that image -- verified, `command -v` finds nothing. The
       # entrypoint is the Qodana CLI at /opt/idea/bin/qodana and it needs the `scan` subcommand, so this
       # step would have failed even with node present; it never got the chance, checkout died first.
-      # The /data/{project,cache,results,report} mounts this step used to pass are gone, and NOT because
-      # the image's conventions changed -- they are still its conventions, and its WorkingDir is still
-      # /data/project. Under docker-in-docker a `-v "$PWD:..."` bind is resolved by the DIND daemon, whose
-      # filesystem holds no copy of the job's workspace: verified 2026-08-22 against docker:dind, the
-      # sibling saw an EMPTY directory and exited 0, i.e. Qodana would have scanned nothing and the
-      # `|| true` would have hidden it. `--volumes-from` inherits the job container's own workspace volume,
+      # NO /data/{project,cache,results,report} bind mounts, even though those are the image's own
+      # conventions and its WorkingDir is still /data/project. Under docker-in-docker a `-v "$PWD:..."`
+      # bind is resolved by the DIND daemon, whose filesystem holds no copy of the job's workspace: the
+      # sibling sees an EMPTY directory and exits 0, so Qodana scans nothing and the `|| true` hides it.
+      # `--volumes-from` inherits the job container's own workspace volume,
       # so $PWD names the same files on both sides and the CLI's --*-dir flags point straight at them.
       # THIS REQUIRES the runner's `container.options` to mount a volume at the workspace parent
       # (`-v /workspace`); without it nothing propagates to the sibling.
-      # The /data-mount form was the one proven by a local run against this repo; this workspace-path
-      # form has NOT been run locally, so the first CI run is its proof.
       # THE GENERATED SOURCES MUST ALREADY EXIST when this runs -- that is the codegen step above, which
       # closed B39. Do not delete it and do not move it below this step. Without it i18n4k's `Translations`
       # and `Example` objects are absent, 85 source files (79 of them in -app) reference an unresolved
       # symbol, and every one of those files is analysed with its inspections DEGRADED. The failure is
       # silent in the worst possible direction: it LOWERS the finding count, so a broken scan reads as a
       # clean report. The regression signal is therefore the sanity-failure count in results/sanity.json,
-      # not the problem count -- 35 on run 817 and still 35 on run 832, both before this step existed.
+      # never the problem count.
       - name: Run Qodana
         run: |
           mkdir -p qodana/cache qodana/results qodana/report
@@ -181,7 +175,7 @@ jobs:
 
       - name: Upload report
         id: upload_report
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         if: ${{ always() }}
         with:
           name: qodana-report
@@ -273,19 +267,17 @@ jobs:
             EXPIRES_EPOCH="$(python3 expiry.py || true)"
           fi
           # LANDMINE -- `/actions/runs/{run}` means two different things on Forgejo depending on what
-          # follows it, and this posted a dead link for it. Every handler under that path resolves the
-          # run by its PER-REPO INDEX (`GetRunByIndex`) -- except `ArtifactsDownloadView`, which calls
-          # `getRunByID`. So the same scan is run 644 on its own page and run 936 for its artifact.
-          # Probed on this instance, which is the only proof that counts:
+          # follows it. Every handler under that path resolves the run by its PER-REPO INDEX
+          # (`GetRunByIndex`) -- except `ArtifactsDownloadView`, which calls `getRunByID`. One scan
+          # therefore has two numbers: the index on its own page, the id for its artifact. Probed on this
+          # instance, which is the only proof that counts:
           #   /actions/runs/644/artifacts/qodana-report -> 404
           #   /actions/runs/936/artifacts/qodana-report -> 200, 2515070 bytes
           #   /actions/runs/644/ -> 307 to the job view      /actions/runs/936/ -> 404
-          # The previous wording had the premise right and the conclusion inverted: it rejected the
-          # upload action's own `artifact-url` output *because* that output is built from
-          # `github.context.runId` -- which is exactly the identifier this route wants. That action
-          # logged `.../actions/runs/936/artifacts/879` on the same run, and it was correct.
-          # The name is still used rather than the artifact id because it is stable and readable, and
-          # the id is still consulted, as the existence check.
+          # The upload action's own `artifact-url` output is built from `github.context.runId`, which is
+          # exactly the identifier this route wants, so it is a valid source for the link too. The name
+          # is used here rather than the artifact id because it is stable and readable; the id is still
+          # consulted, as the existence check.
           if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
             export TARGET_URL="$ARTIFACT_BASE/artifacts/qodana-report"
             export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it."

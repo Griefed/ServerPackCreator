@@ -22,9 +22,9 @@ package de.griefed.serverpackcreator.clientside
 /**
  * The modloader build a console says actually started — as opposed to the one staging asked for.
  *
- * **The two really do differ, systematically.** Measured across the public grinder's kept consoles on
- * 2026-09-11: every one of **16 of 16** Quilt boots printed `Quilt Loader 0.30.1` while its verdict
- * reported `Quilt 0.31.0-beta.4`, the build `preferredVersion` had chosen. That is not cosmetic — the two
+ * **The two really do differ, systematically.** Measured across the public grinder's kept consoles, every
+ * one of **16 of 16** Quilt boots printed `Quilt Loader 0.30.1` while its verdict reported
+ * `Quilt 0.31.0-beta.4`, the build `preferredVersion` had chosen. That is not cosmetic — the two
  * builds differ in what they *provide*: quilt-loader `0.30.1` declares `fabricloader 0.19.3` and
  * `0.31.0-beta.4` declares `0.19.5`, and `fabric-language-kotlin` demands `[0.19.5, ∞)`. So twelve published
  * rows failed to load a library the build we believed we were running would have satisfied, and every one of

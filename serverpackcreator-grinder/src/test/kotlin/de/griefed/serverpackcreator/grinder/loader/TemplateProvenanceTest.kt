@@ -34,9 +34,9 @@ import java.io.File
  *
  * Deliberately **not** retroactive: a marker written before provenance existed carries none, and is tolerated
  * rather than invalidated. Treating an absent field as a mismatch would re-install every cached tuple — 74 of them
- * at ~150 MB and a networked boot each — to answer a question about a change that may not affect them. Today's
- * Forge fix is the case in point: its cached tuples turned out to be perfectly bootable, because the argfile the
- * new launch path uses is what the installer had already produced.
+ * at ~150 MB and a networked boot each — to answer a question about a change that may not affect them. A launch
+ * path that changes while still using the argfile the installer already produced is the case in point: the
+ * cached tuples remain perfectly bootable.
  */
 internal class TemplateProvenanceTest {
 

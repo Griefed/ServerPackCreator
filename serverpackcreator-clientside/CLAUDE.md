@@ -475,6 +475,18 @@ positive strips a working mod out of every pack built against the list.
   - `Prepared.Ready.attemptName` derives the `(platform, slug, loader)` tuple from the log file's parent
     rather than carrying three more fields — and stays correct for the other-version re-check, which
     deliberately stages into the *crashing* loader's directory.
+  - **Both callers supply a sink now, and the CLI's writes to `<work>/boot-evidence`, a SIBLING of `boot/`.**
+    `BootArtifactWriter` files each attempt as `<attemptName>/<n>-<loader>-<loaderVersion>`; the grinder keeps
+    using its budgeted `BootLogStore`. The ordinal is what makes it unique, not the tuple — a newest-build
+    re-check differs from the boot it re-checks in the loader *version* alone, and an other-version re-check
+    can repeat a tuple outright. **The sibling is the load-bearing part:** `stageBootPack` deletes and
+    re-creates `boot/<attemptName>` before every attempt, so evidence written inside the tree it was
+    collected from survives exactly until the next boot, which is the defect, one directory deeper.
+  - **Until 2026-10-03 the CLI verb supplied no sink at all, so `BootArtifacts.collect` was dead code on the
+    whole GitHub path** — `clientside-boot.yml` could upload nothing but `boot.log`, the one file every
+    re-check overwrites. Nothing was red for it, which is why `VerifyClientsideArtifactSinkTest` pins the
+    wiring by reading the source: there is no behavioural test that can reach it without an `ApiWrapper`, a
+    real generation and a booting server.
 - **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
   `<work>/boot/<platform>-<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
   overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's
@@ -1429,6 +1441,24 @@ originally written in the container engine's companion, where this module could 
 so the threshold is testable at all: both real callers are integration-shaped and cannot be made to sleep.
 **Landmine:** any new poll/park loop that bounds a boot must use it rather than `System.currentTimeMillis()`, or that
 path silently reacquires the bug.
+
+**LANDMINE — "did it time out?" is a question about the run, never about the clock** (`BootDeadline.timedOut`).
+A poll loop ends for three reasons — the ready line appeared, the thing being waited on finished, or the budget was
+spent — and only the third is a timeout. Computing it as `!ready && !deadline.hasTimeLeft()` cannot tell the second
+from the third, because `hasTimeLeft()` is a wall-clock reading taken after create, start and log-attach have all
+been paid for: on a host where those calls outlast the budget, a container that exited on its own is reported as
+having been given up on. Ask the state the wait ended in — **still running and never ready** — which needs no clock
+at all.
+
+It is not a mislabelled field. `BootLogClassifier.classify` branches on the timeout **second**, immediately after
+the ready line and before every evidence rung it has, and returns INCONCLUSIVE — so a boot wrongly called a timeout
+throws away its exit code, its crash, and the client-only class marker. On a loaded host that converts decisive
+verdicts into "nothing was learned", silently and at scale.
+
+Both runners go through the one predicate, because this was two identical expressions —
+`HostProcessServerRunner.run` and the grinder's `DockerJavaContainerEngine.run` — and only one of them would ever
+have been fixed. It is pure, so `BootDeadlineTest` pins it without a daemon or a server pack; the end-to-end case
+cannot be staged without controlling the clock of a running boot, which is why the decision is what is pinned.
 
 ## Boot teardown kills the tree, and "alive" is not "running" (2026-09-25/26)
 

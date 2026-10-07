@@ -246,9 +246,8 @@ class ServerPackHandler(
         try {
             serverPack.create(createFileOrDir = true, asDirectory = true)
         } catch (ex: IOException) {
-            // An already-existing directory is the normal case and not a failure. A genuine inability
-            // to create one is, and it used to be assumed it "would surface later when files are
-            // written" -- it did not, because nothing downstream checked anything.
+            // An already-existing directory is the normal case and not a failure. A genuine inability to
+            // create one is, and it has to be raised here: nothing downstream checks.
             if (!serverPack.isDirectory) {
                 log.error("Could not create the server pack directory ${serverPack.absolutePath}.", ex)
                 generationErrors.add("Could not create the server pack directory ${serverPack.absolutePath}.")

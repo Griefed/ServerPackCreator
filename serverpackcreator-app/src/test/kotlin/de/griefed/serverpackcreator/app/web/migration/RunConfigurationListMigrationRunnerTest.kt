@@ -30,9 +30,8 @@ import org.junit.jupiter.api.Test
  *
  * `RunConfigurationListMigrationTest` covers the per-document transformation; this covers the ordering and
  * failure handling around it: rewrite before dropping, never drop when nothing was rewritten, and keep the
- * application starting when the database will not cooperate. An audit found the runner untested — the
- * component that mutates persisted data was the only substantial one on the whole performance stack with no
- * coverage, precisely because its collaborator was `MongoTemplate` and therefore unobservable.
+ * application starting when the database will not cooperate. Its collaborator is `MongoTemplate`, which is
+ * unobservable from a test, so these run against a recording double instead.
  */
 internal class RunConfigurationListMigrationRunnerTest {
 

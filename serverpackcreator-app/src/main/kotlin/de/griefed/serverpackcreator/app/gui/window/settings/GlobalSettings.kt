@@ -644,12 +644,11 @@ class GlobalSettings(
     /**
      * Greys out the protected-paths editor when updating is off, because nothing consults it then.
      *
-     * It used to do the opposite and far more: it disabled and un-ticked "Update Server Packs"
-     * whenever "Overwrite Server Pack" was on. That was the only thing keeping the two settings from
-     * producing a silently destructive combination -- the overwrite emptied the directory before the
-     * update could read the manifest it needs -- and since overwriting is on by default it also left
-     * updating greyed out on a fresh install. ServerPackHandler now settles the precedence itself, so
-     * the combination is well-defined and there is nothing left to forbid.
+     * That is the *only* thing this disables. "Update Server Packs" and "Overwrite Server Pack" may both
+     * be on: `ServerPackHandler` settles the precedence between them, so the combination is well-defined
+     * and the GUI has nothing to forbid. Disabling one of the pair here would hide a setting rather than
+     * fix anything, and would leave updating greyed out on a fresh install, since overwriting is on by
+     * default.
      */
     private fun changeUpdateSettingState() {
         updateProtectedSetting.isEnabled = updateServerPackSetting.isSelected

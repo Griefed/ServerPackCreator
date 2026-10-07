@@ -43,7 +43,7 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `FJ_ACTOR` | Forgejo username (`Griefed`) | release-generate, release-build, devbuild, update-readme |
 | `FJ_TOKEN` | Forgejo access token — Settings → Applications → Access Tokens. Scopes: **`write:package`** for the maven registry, **`write:repository`** to create releases, upload assets and push the `RELEASE:` commit and tags | the same four |
 | `GH_ACTOR` | GitHub username; used as the GitHub Packages maven username | release-build |
-| `GH_TOKEN` | GitHub **classic** PAT. Scopes: `write:packages` (covers both `maven.pkg.github.com` and the `ghcr.io` login) and `repo` (mirror the release, delete the stale `continuous` release). Fine-grained tokens do not cover ghcr/maven packages cleanly — use a classic one | release-build, devbuild, docs |
+| `GH_TOKEN` | GitHub **classic** PAT. Scopes: `write:packages` (covers both `maven.pkg.github.com` and the `ghcr.io` login), `repo` (mirror the release, delete the stale `continuous` release) and **`read:user`** (the GraphQL `sponsorshipsAsMaintainer` field, which `repo` does not reach — add `read:org` too if the sponsored account ever becomes an organization). Fine-grained tokens do not cover ghcr/maven packages cleanly, and cannot read sponsorships at all — use a classic one | release-build, devbuild, docs, update-readme |
 | `GITLABCOM_TOKEN` | gitlab.com PAT, scope **`api`** — the `Private-Token` maven upload to project `32677538`. It also covered the release API until the outward mirror to gitlab.com was dropped on 2026-08-23 (that repository stopped receiving commits in April 2024); the package registry does not depend on git refs, so this upload is unaffected | release-build |
 | `SIGNING_KEY` | ASCII-armoured PGP **private** key: `gpg --armor --export-secret-keys <KEYID>`, the entire block including BEGIN/END lines and newlines | release-build |
 | `SIGNING_PASSWORD` | that key's passphrase | release-build |
@@ -75,7 +75,7 @@ Useful when you want a partial setup working rather than all of it at once.
 | `devbuild.yml` | `FJ_*`, `GH_TOKEN`, `INSTALL4J_LICENSE`, `SPCUPLOAD_*` | no nightly `continuous` build |
 | `docs.yml` | `GH_TOKEN`, `DOCKERHUB_USER`, `DOCKERHUB_TOKEN` | no help image |
 | `docker-test.yml` | **nothing required**; `GH_TOKEN` + `DOCKERHUB_USER` optional | without them the ghcr base image is pulled anonymously, and ghcr rate-limits that per source address — `429 Too Many Requests` fails the build, as it did on runs 676 and 680 |
-| `update-readme.yml` | `FJ_*`, `GH_TOKEN`, `GIT_USER`, `GIT_MAIL` | sponsors/contributors stop refreshing |
+| `update-readme.yml` | `FJ_*`, `GH_TOKEN`, `GIT_USER`, `GIT_MAIL` | sponsors/contributors stop refreshing. A `GH_TOKEN` missing `read:user` fails the *sponsors* half only, while contributors keep updating — the preflight step is what makes that visible |
 | `grinder-container-it.yml` | **nothing** | — |
 
 Inside `release-build.yml` the jobs fail independently, so a missing secret usually costs one job
@@ -146,6 +146,11 @@ curl https://git.griefed.de/api/v1/packages/Griefed | jq '.[].name'
 
 # GitHub PAT: does it actually carry write:packages?
 curl -sI -H "Authorization: token $GH_TOKEN" https://api.github.com/user | grep -i x-oauth-scopes
+
+# GitHub PAT: can it read sponsorships? `errors` present, or a null field, means no.
+curl -sS -X POST https://api.github.com/graphql \
+  -H "Authorization: Bearer $GH_TOKEN" \
+  -d '{"query":"query { viewer { login sponsorshipsAsMaintainer(first: 1, activeOnly: false) { totalCount } } }"}'
 ```
 
 The full end-to-end check is a prerelease on `alpha` — push a `feat:` and confirm the version is cut,

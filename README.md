@@ -133,7 +133,10 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
         - Example: placeholder `SPC_FLYNN_LIVES_SPC` in the templates can be replaced with a value configured on a per-server pack basis, i.e `Now that's a big door`
 11. **Plugins!**
     - ServerPackCreator allows you to use plugins to add new features in various places.
-    - An example plugins is available with every release, and the source code for it can be found in this repository, at [Example Plugin](serverpackcreator-plugin-example)
+    - **Four plugins ship with every release**, each marked `_experimental` in its filename — a grinder-backed
+      clientside-mod picker, a server-pack test launcher, a self-extracting-archive writer, and a worked
+      example to copy from. See [6. Experimental plugins](#6-experimental-plugins).
+    - The source for the example is in this repository, at [Example Plugin](serverpackcreator-plugin-example)
 
 ## 2. Issues and help
 
@@ -729,7 +732,99 @@ You may edit the following container-properties if you wish to change some parts
 | `SPC_CONFIGURATION_AIKAR`                     | JVM flags offered as "Aikar's flags". Mind the escaping — see the example compose-file.                                              |
 | `SPC_LOG_LEVEL`                               | Log level of the containerised ServerPackCreator. `INFO` by default, `DEBUG` to troubleshoot.                                        |
 
-## 6. API
+## 6. Experimental plugins
+
+**Four plugins ship with every release**, as `serverpackcreator-plugin-<name>-<version>_experimental.jar`.
+The `_experimental` is in the filename on purpose: these are newer and far less travelled than the
+application they plug into, and you should be able to tell that from the download alone.
+
+**What that means:** they are **not guaranteed to work**. Settings keys may move between releases — a
+plugin's config file is only written if it does not already exist, so a renamed key orphans your settings
+rather than migrating them — and a bug in one does not hold up a release. They are opt-in; ServerPackCreator
+installs none of them for you and behaves exactly as documented everywhere else in this README without them.
+
+**They can leave experimental one day, and testing is what gets them there.** So far they have been
+exercised by their author, on their author's machines, against their author's modpacks. If you run one, you
+are testing it — tell me what broke or confused you, see [2. Issues and help](#2-issues-and-help).
+
+**Installing one:** download the `*_experimental.jar` from a
+[release](https://github.com/Griefed/ServerPackCreator/releases), drop it into the `plugins`-directory of
+your ServerPackCreator home-directory, restart. Settings land in `plugins/config/<plugin-id>.toml`. To switch
+one off without deleting it, add its ID on its own line in `plugins/disabled.txt` — see
+[HELP.md](HELP.md).
+
+| Plugin | Adds | Settings | Works without a GUI |
+|---|---|---|---|
+| Grinder | A **Grinder** tab, and clientside-mod exclusions at generation time | yes | yes — exclusions apply to CLI and web runs too |
+| Server Test | A **Server Test** tab | yes | no — the tab *is* the feature |
+| Self-Extract | Two extra artifacts beside every generated server pack | no | yes |
+| Example | A **Tetris** tab, a config panel, and one of every other extension point | yes | partly |
+
+### 6.1 Grinder
+
+![grinder plugin](img/plugin_grinder.png)
+
+The [grinder](serverpackcreator-grinder) boot-verifies mods at scale and publishes which ones are genuinely
+clientside-only. This plugin puts that feed in front of you and lets you **pick**: tick a row and the entry
+joins the clientside-mod exclusion list of **every** server pack you generate — GUI, CLI and webservice
+alike, no restart. Each row shows the verdict and the two readings behind it, what the platform declared and
+what the jar itself says, which is what makes a disagreement worth checking by hand. Confirmed findings and
+everything else are kept in **separate lists**, because excluding a mod that was never proven clientside-only
+breaks client/server compatibility. A dashboard shows what the daemon is doing right now.
+
+**Rough edges:** it needs a reachable grinder, or it sits idle and does nothing. It is a read-only view — a
+verdict you disagree with is yours to un-tick, not to correct. Suggested entries match by prefix, so an
+unusually-named jar can slip past the pattern proposed for it.
+
+### 6.2 Server Test
+
+![server test plugin](img/plugin_servertest.png)
+
+Lists every pack in your server-packs directory and launches the selected one **through the pack's own start
+script** — not a hand-built `java` command, so the scripts get tested too. The server's console appears in
+the window with a line into its standard input: type `I agree` to get past Mojang's EULA, `stop` later to
+shut it down. Each server gets its own bind-tested port, so two can run at once, and `server.properties` is
+borrowed for the duration and restored byte-for-byte afterwards.
+
+**Rough edges:** it deliberately will not accept the EULA for you. A pack missing its chosen start script is
+refused by name, never quietly substituted. A script this host has no interpreter for is still offered — it
+fails with the interpreter's own error, which beats a disabled control explaining nothing.
+
+### 6.3 Self-Extract
+
+The only one with no interface at all. It wraps **every** generated server pack in two self-extracting
+artifacts, written beside it:
+
+```
+server-packs/
+├── Survive_Create_Prosper_4_custom/
+├── Survive_Create_Prosper_4_custom.bsx    <- self-extracting, Linux / macOS
+├── Survive_Create_Prosper_4_custom.cmd    <- self-extracting, Windows 10 1803+
+└── Survive_Create_Prosper_4_custom_server_pack.zip
+```
+
+Each carries the whole pack inside it — run it and it unpacks itself and starts the server, no unzip step and
+nothing else to download. It is [HELP.md](HELP.md)'s *Fun Stuff → Self-extracting, self-contained script*,
+executed automatically. There is nothing to configure on purpose: installing the plugin is the setting.
+
+**Rough edges:** each artifact is as big as the pack, so a generation that produced a 6 GB server pack now
+writes about 18 GB. The Windows `.cmd` is the less travelled of the two.
+
+### 6.4 Example
+
+![example plugin tab](img/plugin_example.png)
+
+**Documentation-by-example**: one of every extension point ServerPackCreator offers, kept in step with the
+current plugin API on purpose. If you want to write your own plugin, copy from this one — the source is at
+[Example Plugin](serverpackcreator-plugin-example), and [HELP.md](HELP.md)'s *Plugins* chapter covers the
+plugin API itself.
+
+The screenshot shows two of its extension points at once: a tab — a playable Tetris, because a tab has to
+display *something* — and a global config panel whose values are saved and handed back on the next start. It
+also contributes a configuration check and pre-, post- and generic generation listeners, each small enough to
+read in one sitting.
+
+## 7. API
 
 ServerPackCreator's API is available on maven for use in your own projects: https://central.sonatype.com/artifact/de.griefed.serverpackcreator/serverpackcreator-api
 
@@ -811,7 +906,7 @@ if (configCheck.allChecksPassed) {
 }
 ```
 
-## 7. Awesomesauce!
+## 8. Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 **Additionally, ej-Technologies has provided an open-source license for JProfiler and install4j for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues, as well as generated fancy high-end installers.

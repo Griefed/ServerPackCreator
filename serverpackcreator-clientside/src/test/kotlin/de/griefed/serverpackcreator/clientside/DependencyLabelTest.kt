@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
  * `ModFile.requiredDependencies` holds, which for Modrinth is the opaque base62 `project_id` and for
  * CurseForge a bare numeric id.
  *
- * Measured against the live API on 2026-09-04:
+ * Measured against the live API:
  *
  *  - `enchantment-descriptions` requires `uy4Cnpcm` and `aaRl8GiW` — **bookshelf-lib** and **prickle**
  *  - `waystones` requires `bi4iCmsw` and `MBAkmtvl` — **shogi** and **balm**

@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
  * Pins the cross-loader reconciliation: a crash on one loader cannot stand as clientside evidence when
  * **another loader of the same project booted a server with the same list-entry**.
  *
- * Measured live on 2026-08-23 — the report this exists for. `iron-chests` produced two verdicts in one run:
+ * Measured live — the report this exists for. `iron-chests` produced two verdicts in one run:
  *
  * ```
  * Forge    | HIGH | ironchest- | Declared server/both but the server crashed …

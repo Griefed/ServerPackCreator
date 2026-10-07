@@ -133,7 +133,7 @@ internal class BootLogClassifierTest {
      * must never be scored as a crash.
      *
      * This is not hypothetical: the grinder caps each boot at 3 GiB while the host's Docker VM was measured at
-     * **1.93 GiB** (2026-07-30), so the cap cannot actually be honoured and a fat modpack mod gets OOM-killed by the
+     * **1.93 GiB**, so the cap cannot actually be honoured and a fat modpack mod gets OOM-killed by the
      * VM instead. Docker reports that as exit **137**, there is no ready-line, and the template's `Killed "$JAVA"`
      * line deliberately does not match the setup-abort markers — which previously left exactly one outcome:
      * `CRASHED`, i.e. a **HIGH-confidence "this mod is clientside"** produced purely by host memory pressure. In a
@@ -197,9 +197,9 @@ internal class BootLogClassifierTest {
      *
      * Staging force-includes the mod plus its recursively-resolved required deps, but resolution is imperfect —
      * transitive requirements, version ranges and distribution-locked CurseForge files all leak through. Measured
-     * 2026-07-30 across 112 kept boot logs: **36** failed on exactly this (e.g. `biomes-o-plenty` →
+     * across 112 kept boot logs: **36** failed on exactly this (e.g. `biomes-o-plenty` →
      * `Mod biomesoplenty requires terrablender 26.2.0.0.1 or above`), making it the single largest failure class.
-     * It was previously masked, because the start script swallowed the server's exit status and everything read as
+     * It stays masked while the start script swallows the server's exit status and everything reads as
      * INCONCLUSIVE anyway; once the templates propagate the real status these become non-zero exits, and without this
      * guard all 36 would have been promoted to HIGH-confidence "clientside" — a far bigger false-positive source
      * than the one the exit-status fix was meant to expose.
@@ -242,7 +242,7 @@ internal class BootLogClassifierTest {
     /**
      * **The signal the whole engine exists for, and it must not depend on the exit status.**
      *
-     * Measured 2026-07-30: NeoForge's ServerStarterJar prints a mod-loading crash in full and then exits **0**. With
+     * NeoForge's ServerStarterJar prints a mod-loading crash in full and then exits **0**. With
      * classification keyed on the exit code, `modelfix` — whose console holds a textbook
      * `NoClassDefFoundError: net/minecraft/client/Minecraft` — was scored INCONCLUSIVE, and **no verdict in a
      * 517-verdict store ever reached HIGH**: the expensive boot was running, crashing correctly, and being thrown
@@ -293,7 +293,7 @@ internal class BootLogClassifierTest {
     /**
      * A JVM that could not even start is never evidence about a mod.
      *
-     * Found live on 2026-07-30, minutes after exit-status propagation started working: boots whose console was just
+     * Boots whose console is just
      * `Error: Unable to access jarfile forge.jar` (an incomplete cached Forge install layer — the server never
      * launched) exited non-zero and were promoted to **HIGH-confidence clientside**. Ten of the sweep's first fifteen
      * HIGH verdicts were this, including `balm`, `collective` and `geckolib` — library mods that certainly do run on
@@ -324,7 +324,7 @@ internal class BootLogClassifierTest {
      * The modloader's own bootstrap failed, so the JVM started but the server never did — no mod was loaded, and
      * the run says nothing about sideness.
      *
-     * Verbatim from a live grinder verdict (`CurseForge-ars-nouveau-Forge.log`, 2026-08-23), which was scored
+     * Verbatim from a live grinder verdict (`CurseForge-ars-nouveau-Forge.log`), which was scored
      * CRASHED and therefore a clientside HIGH for a mod whose code never ran. The cause is upstream and
      * deterministic: the NeoForge ServerStarterJar synthesises a boot layer for the module path in
      * `unix_args.txt`, and Forge's `SecureModuleClassLoader` matches a read module's configuration against its
@@ -408,10 +408,9 @@ internal class BootLogClassifierTest {
      * 10. fml-invalid-dist   11. dependency-failure   12. sandbox-network   13. mixin-apply
      * 14. loader-solver   15. runtime-mismatch   16. exit code
      *
-     * **Do not write that count from memory — re-derive it from `classify`.** This list has now been wrong three
-     * times: it once omitted the rule and sandbox rungs, said "eight guards" while listing fourteen, kept a stray
-     * fragment of an older ladder after the closing parenthesis, and left rungs 9, 10 and 12–15 asserted nowhere.
-     * The count in the module `CLAUDE.md` was wrong for the same reason.
+     * **Do not write that count from memory — re-derive it from `classify`.** A hand-maintained list of rungs
+     * drifts silently: it omits the ones added last, disagrees with its own prose about how many there are, and
+     * leaves whole rungs asserted nowhere while reading as exhaustive.
      */
     @Test
     fun theGuardOrderIsPinnedAsAWhole() {
@@ -600,7 +599,7 @@ internal class BootLogClassifierTest {
      * A mod that dies because the sandbox denied it the network was never fairly tested.
      *
      * Boots run `--network none` — that isolation is the whole point — so any mod whose loader phones home at
-     * startup is guaranteed to fail here and would fail nowhere else. Measured 2026-08-29 over 200 published
+     * startup is guaranteed to fail here and would fail nowhere else. Measured over 200 published
      * crash logs: **15 (8%)** died this way. The clearest is OneConfig, whose loader fetches its own stage1 from
      * `api.polyfrost.org`, then falls back to a Swing error dialog — which is why the tail of those logs is
      * `Fontconfig error: No writable cache directories` in a headless container — and calls `System.exit`.
@@ -701,7 +700,7 @@ internal class BootLogClassifierTest {
     /**
      * A pack with no Minecraft server jar never loaded a mod, so it cannot say anything about one.
      *
-     * Observed live 2026-08-30 on `Modrinth/architectury-api` at Minecraft 1.20.4 / Quilt. The shipped
+     * Observed live on `Modrinth/architectury-api` at Minecraft 1.20.4 / Quilt. The shipped
      * template fetches the vanilla jar only as a side effect of installing the Quilt launcher, so a pack
      * that already had the launcher — a restored backup, or the grinder's cached loader install — never
      * gets one, and Quilt's launcher aborts before Loader starts. Scored CRASHED off the exit code alone.

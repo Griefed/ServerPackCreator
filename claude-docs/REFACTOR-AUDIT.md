@@ -7013,3 +7013,109 @@ after work in one module, say which suites actually ran** rather than which task
 - **`./gradlew tasks` failing with "Could not read PGP secret key" is PRE-EXISTING** and not this
   branch's: it comes from `-api`'s signing configuration, which nothing here touched. Do not attribute
   it to `buildPlugins`.
+
+---
+
+# Audit — 2026-10-06, `main..develop` (54 commits, `c3f1ef3fd`..`207ffb266`)
+
+Range is everything since `RELEASE: 9.0.0`. Commits dated 2026-09-27 and earlier were audited in the
+sections above (the `servertest` branch, `claude-grinder-container-ownership`); this pass concentrates on
+the 2026-09-28 .. 2026-10-05 commits, which had never been audited in `develop` form, and re-reads the
+eight unpushed ones in full.
+
+**No HIGH findings.** Everything below is one defect class — a number or a plural that was wrong when
+written or became wrong when the code moved — which is the class this file has flagged in three previous
+iterations and the one `## Conventions` addresses with *"Cite names, not snapshots."*
+
+## Verified clean — do not re-litigate
+
+- **Module boundaries.** `serverpackcreator-api/build.gradle.kts` declares no Swing, no
+  `spring-boot-starter-web`, no frontend dependency. Dependencies still point inward.
+- **The one `refactor:` commit is honestly labelled.** `d70628aa6 refactor(servertest): route descendant
+  liveness through one predicate` changes **no** test file at all, so no existing expectation moved.
+- **The `timedOut` behaviour change is recorded where the policy says it must be.**
+  `9964e485a` altered what an exported call returns; `8cce5007e` added the row to
+  `claude-docs/API-BEHAVIOUR-CHANGES.md` naming both types, the old and new expressions, and what an
+  embedder sees. This is the policy working, not a gap.
+- **`6d9192905 test(clientside)` takes the sanctioned "seam with the guard" route correctly.** It lands
+  `BootDeadline` stubbed, commits red, and **names both vacuous guards explicitly**
+  (`aRunStillGoingWhenTheWaitEndedIsATimeout`, `aReadyRunIsNeverATimeout`) with the observed run beside
+  them. This is the model for that route.
+- **The seven `docs(...)` present-tense commits are genuinely comment-only.** Machine-checked: every
+  changed line in `3e69c6021`, `d1abd0b1a`, `396bf5ee0`, `a2ed49c5d`, `333601abc`, `818fc3e5e` begins with
+  `//`, `/*`, `*`, `*/` or `#`. Zero non-comment lines across 58 files in `-grinder` alone.
+- **The AppImage glibc floor is enforced, not merely documented.** `misc/build-appimage.sh:326-344`
+  compares the highest `GLIBC_` symbol against `JDK_MAX_GLIBC` and exits non-zero. Better placed than the
+  plan's "add a step to both jobs": it covers a local build too.
+- **`JavaVersion.kt` is not a second home for the Java version.** It reads
+  `VersionCatalogsExtension.findVersion("java")` and throws when absent; the three convention plugins call
+  it because they cannot use the `libs` accessor. One declaration, one reader.
+- **Relative markdown links in-range all resolve.** The 31 reported by a naive scan are either URL-encoded
+  (`Debug%20Fat%20Jar.run.xml`, which exists) or in `serverpackcreator-plugin-example/README.md`, which
+  **no commit in this range touches** — a pre-existing breakage (paths are missing their `/kotlin/`
+  segment), out of scope here and worth its own commit.
+- **`207ffb266`'s arithmetic re-derives.** 164 MiB / 215,000 = 800 B/row; 227.6 MiB / 215,000 = 1,110
+  B/row; 10,000 → 215,000 is 21.5x rows against 23.2 → 605.6 ms = 26.1x time. All as stated.
+
+## MEDIUM
+
+**MED-1 — `.claude/rules/ci-workflows.md:37` states a count that was never true.**
+"all **105 occurrences** are now the tag". Measured: the repository has **72** `uses:` lines
+(`.github/workflows` 15, `.forgejo/workflows` 57); at `0b8bde7b6` itself it was **77**, and that commit
+converted **63** of them (the rest were already tags — local `./.github/...` reusable-workflow refs and
+forks already on a tag). 105 matches no count taken any way. Introduced by `0b8bde7b6`; the ARM64 removal
+in `c20079dac` later took it from 77 to 72, so it is now wrong twice over.
+Re-run: `grep -rhE '^[[:space:]]*uses:' .forgejo/workflows/ .github/workflows/ | wc -l`.
+
+**MED-2 — `.claude/rules/ci-workflows.md:67` states a second count that was never true.**
+"The **78-odd** occurrences under `.forgejo/workflows` are watched by nothing". Measured: **57** now, **62**
+at the commit that wrote it. Introduced by `0b8bde7b6`. The *claim* is correct and worth keeping —
+Dependabot at `/` reaches `.github/workflows` only — it is the magnitude that is invented.
+
+**MED-3 — the same false number has a second home.** `claude-docs/REFACTOR-LOG.md:4985` repeats
+"**All 105 occurrences**". Added by `c20079dac`. This is the duplicated-knowledge failure this file has
+now recorded five times: correcting one copy and not the other is how the wrong number survives.
+
+**MED-4 — the root `CLAUDE.md:20` now contradicts the workflows it describes.** It reads "the app-image
+**jobs** need `:host`-scheme Windows **runners** and QUEUE rather than fail without **them**." After
+`c20079dac` there is one job (`build-winimage-x86_64`) and one runner (`windows-latest:host`). This is the
+file loaded into every session, so a stale plural here is read far more often than it is checked.
+
+## LOW
+
+**LOW-1 — `misc/windows-runner/.gitignore` describes and ignores a service that does not exist.**
+Line 1 says "Everything a running **pair** of guests creates"; line 4 ignores `storage-arm64/`, the volume
+of the `windows-arm64` service removed in `c20079dac`. Harmless to the build, but it is the kind of
+leftover that makes a reader go looking for the other guest.
+
+**LOW-2 — `claude-docs/REFACTOR-LOG.md:4994` says "this needs real Windows **runners**".** Singular now.
+Same commit, same sweep as MED-4.
+
+## Disposition
+
+All six belong to commits that are **local and unpushed** (`origin/develop..develop`, 8 commits, confirmed
+`0` behind), so each can be fixed by amending the commit that introduced it rather than by a follow-up:
+MED-1, MED-2 → `0b8bde7b6`; MED-3, MED-4, LOW-1, LOW-2 → `c20079dac`.
+
+## Resolution (2026-10-06, same day)
+
+All six fixed by amending the commit that introduced each, since none were pushed. Two amends:
+
+- **`509e8b693 feat(windows)`** — MED-3, MED-4, LOW-1, LOW-2. `claude-docs/REFACTOR-LOG.md` now reads
+  "Sixty-three of the 72 `uses:` lines; the nine others were already tags" and "needs a real Windows
+  runner"; the root `CLAUDE.md` bullet is singular and states the x86_64-only decision; the
+  `misc/windows-runner/.gitignore` comment and its `storage-arm64/` entry are gone.
+- **`e03372819 ci: reference actions by version tag`** — MED-1, MED-2. The rules file now states the
+  measured split and **says how to re-derive it**, which is the part that was missing: a bare count is
+  exactly what goes stale unnoticed.
+
+**Why the 105 was wrong is worth keeping**, because the shape recurs: the Windows app-image jobs were
+authored with tags from the start, so they were never part of the SHA set — the count was taken over a
+population that had already stopped being uniform. Removing the ARM64 job later changed 77 → 72 without
+touching a single converted line, which is why *"all N occurrences"* is the wrong sentence shape here.
+Prefer "63 of 72, re-derive with `<command>`" over any single number.
+
+Verified after both amends: `grep -rhE '^[[:space:]]*uses:' .forgejo/workflows/ .github/workflows/ | wc -l`
+→ **72**; `.forgejo` → **57**, `.github` → **15**; the strings `105 occurrences` and `78-odd` appear
+nowhere in the repository; every workflow in both directories still parses as YAML at every commit in
+`main..develop`.

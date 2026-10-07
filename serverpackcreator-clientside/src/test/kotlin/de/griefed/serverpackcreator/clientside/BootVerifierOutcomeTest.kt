@@ -79,7 +79,7 @@ internal class BootVerifierOutcomeTest {
     /**
      * Staging must refuse to boot when a required dependency could not be supplied. The loader would reject the mod
      * before running any of its code, so the run cannot tell client-only from server-safe — it only yields a non-zero
-     * exit that *looks* like a crash. Measured 2026-07-30: 36 of 112 kept boot logs failed exactly this way, the
+ * exit that *looks* like a crash. Measured: 36 of 112 kept boot logs failed exactly this way, the
      * largest failure class, each burning a full boot to learn nothing.
      */
     @Test
@@ -169,7 +169,7 @@ internal class BootVerifierOutcomeTest {
     /**
      * **A refusal has to name its cause, and "could not download" names nothing.**
      *
-     * Measured against the live store on 2026-09-01: **21 verdicts** said only `Could not download <file>`,
+ * Measured against the live store: **21 verdicts** said only `Could not download <file>`,
      * every one of them CurseForge, and the file names — `bwncr`, `tombstone`, `entityculling`,
      * `moreoverlays` — are the population this module already documents as **distribution-locked**
      * (`allowModDistribution=false`, so `downloadUrl` is null and the fetch has to go through the headless
@@ -187,7 +187,7 @@ internal class BootVerifierOutcomeTest {
         Assertions.assertTrue(
             reason.contains("Modrinth"), "and where the project can be verified instead: $reason"
         )
-        // The browser workaround was removed on 2026-09-02; a refusal must not send anyone looking for it.
+ // The browser workaround was removed; a refusal must not send anyone looking for it.
         Assertions.assertFalse(reason.contains("browser", ignoreCase = true), reason)
         Assertions.assertFalse(reason.contains("Playwright", ignoreCase = true), reason)
     }

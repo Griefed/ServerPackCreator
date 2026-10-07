@@ -135,9 +135,8 @@ internal class RunHeadlessCommandTest {
     }
 
     /**
-     * A configs-directory that cannot be listed is a failure, not an empty success. It used to throw a
-     * NullPointerException, because `listFiles()` returns null for a directory that is not there and the
-     * loop iterated it unguarded.
+     * A configs-directory that cannot be listed is a failure, not an empty success. `listFiles()` returns
+     * null for a directory that is not there, so iterating it unguarded is a NullPointerException.
      */
     @Test
     fun withAllInConfigDirIsAFailureWhenTheDirectoryCannotBeListed(@TempDir tempDir: File) {

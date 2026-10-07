@@ -24,11 +24,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Pins [InstallFailureDiagnosis] against the console of a real failed install (2026-08-23,
- * `1.20.4-Forge-49.0.8`). The failure reporting used to print `output.lines.takeLast(25)`, and this
- * console is exactly the shape that defeats: the cause is three `Permission denied` lines near the
- * *top*, and the last 25 lines carry only the JVM's downstream `@argfile` complaint, which points at
- * the start-script template rather than at the mount.
+ * Pins [InstallFailureDiagnosis] against the console of a real failed install (`1.20.4-Forge-49.0.8`).
+ * That console is exactly the shape a tail defeats: the cause is three `Permission denied` lines near
+ * the *top*, while the last 25 lines carry only the JVM's downstream `@argfile` complaint, which points
+ * at the start-script template rather than at the mount.
  */
 internal class InstallFailureDiagnosisTest {
 

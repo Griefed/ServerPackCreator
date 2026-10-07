@@ -55,8 +55,7 @@ sealed interface LaunchOutcome {
  * Lives in `core` rather than in the tab because none of it is rendering: refusing a pack that is already
  * running, taking a port, taking a *second* port only when RCON is on, borrowing `server.properties`,
  * registering the session before it starts, and releasing all of that exactly once however the run ends.
- * An audit found the whole sequence untested while it sat inside a Swing view; here every branch is
- * reachable headless.
+ * Every branch is therefore reachable headless.
  *
  * @param allocator  Hands out ports and takes them back.
  * @param registry   Owns the running sessions, and refuses a second one for the same pack.

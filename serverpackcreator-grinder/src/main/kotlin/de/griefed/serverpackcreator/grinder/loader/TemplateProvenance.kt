@@ -27,7 +27,7 @@ import java.security.MessageDigest
  *
  * A tuple's cached layer is whatever the pack's own `start.sh` created at install time, so it is a product of the
  * templates then in force. Recording a digest of those templates in the completion marker lets the cache notice
- * that they have since changed, instead of silently serving a layer built by different logic.
+ * when they change, instead of silently serving a layer built by different logic.
  *
  * @author Griefed
  */

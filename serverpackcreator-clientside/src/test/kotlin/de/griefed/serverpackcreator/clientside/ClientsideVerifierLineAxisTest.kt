@@ -30,9 +30,9 @@ import java.io.File
  * asserted through `ClientsideVerifier.report` rather than through the selector it delegates to.
  *
  * `BootCandidateSelector.pickGrindTargets` has its own guards; this is the join, which is the part no unit
- * test of either side can see. The fixture is `CurseForge/aether`'s real shape, read from the live API on
- * 2026-09-11: under the loader axis it produced three verdicts of which two were about Minecraft 1.21.1,
- * and its 1.12.2 build — a wholly separate codebase — was never looked at under any loader.
+ * test of either side can see. The fixture is `CurseForge/aether`'s real shape, read from the live API:
+ * under the loader axis it yields three verdicts of which two are about Minecraft 1.21.1, while its 1.12.2
+ * build — a wholly separate codebase — is never looked at under any loader.
  *
  * @author Griefed
  */

@@ -31,7 +31,7 @@ import java.util.jar.JarOutputStream
  * Pins that a mod id served by **two projects** — the original and a separate cross-loader fork — reaches
  * whichever of them publishes for the loader being booted.
  *
- * **The measured case, read from the live Modrinth API on 2026-09-10 and again on 2026-09-11.** `create`
+ * **The measured case, read from the live Modrinth API and again.** `create`
  * publishes `loaders = [forge, neoforge]` and **nothing** for Fabric; the Fabric port is a distinct project,
  * `create-fabric`, publishing `[fabric, quilt]`. Both declare the mod id `create`, because a port keeps the
  * original's id on purpose — that is what makes it a drop-in. So a Fabric mod declaring `create` resolved to
@@ -174,7 +174,7 @@ internal class ForkedProjectDependencyTest {
 
     /**
      * A renamed project, the other half of the same report: `tacz` is a mod id no Modrinth slug matches
-     * (verified 404 on 2026-09-11), and the project is `timeless-and-classics-guns`. That one *is* a
+ * (verified 404), and the project is `timeless-and-classics-guns`. That one *is* a
      * mapping rather than an alternative — the bare id names nothing on either platform.
      */
     @Test

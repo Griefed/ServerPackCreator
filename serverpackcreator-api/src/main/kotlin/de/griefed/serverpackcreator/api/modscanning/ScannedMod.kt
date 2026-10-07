@@ -113,7 +113,7 @@ class ModDependency @JvmOverloads constructor(
      *
      * Quilt Loader treats the requirement as met when any of these is present, and that is not a nicety: a
      * mod written for either library declares *"QSL, unless Fabric API is here"*, and reading only the
-     * primary id makes it look hard. Measured on the live grinder, 2026-09-10 — `geophilic`, `terralith`,
+     * primary id makes it look hard. Observed on the live grinder — `geophilic`, `terralith`,
      * `trek` and `true-ending` all ship
      * `{"id": "quilt_resource_loader", "unless": "fabric-resource-loader-v0"}`, QSL publishes nothing past
      * Minecraft 1.21, and all four were refused for a requirement their own descriptor said was optional in

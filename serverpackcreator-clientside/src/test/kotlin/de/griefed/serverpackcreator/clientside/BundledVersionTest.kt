@@ -34,8 +34,8 @@ import java.util.jar.JarOutputStream
  * **Why it needs its own guards.** `versionsIn` was added with only an end-to-end test behind it
  * (`NestedDependencyConflictTest`), which exercises the happy path and nothing else. The two rules that make
  * it *safe* are its ambiguity rules, and mutating either to keep the first value seen passed the whole suite
- * — flagged as A-2 in `claude-docs/ANALYSIS-AUDIT.md`, 2026-09-08. They matter because a wrong version here
- * manufactures a demotion, which is how the 47 published `ERROR` verdicts of 2026-09-07 came about.
+ * — flagged as A-2 in `claude-docs/ANALYSIS-AUDIT.md`. They matter because a wrong version here
+ * manufactures a demotion, which publishes `ERROR` verdicts in bulk.
  *
  * @author Griefed
  */

@@ -1,23 +1,36 @@
 # Gradle build + test. This is the canonical CI for the project, replacing GitLab's `Build Test`.
 #
-# NOTE ON `uses:` REFERENCES, here and in every workflow in this directory: they are the same
-# `actions/...@<github-sha>` lines the .github workflows use. Forgejo's docs recommend fully-qualified
-# `https://data.forgejo.org/...` URLs instead, but these exact references are *proven* to resolve on this
-# instance -- they are what built releases 9.0.0-alpha.2 through .6 while Forgejo was reading
-# .github/workflows. Switching them to a mirror whose commit SHAs may differ would trade something known
-# to work for something merely recommended.
+# NOTE ON `uses:` REFERENCES, here and in every workflow in this directory: they name a VERSION TAG,
+# `actions/checkout@v6`, not a commit. A bare `owner/repo` resolves through the runner's configured
+# default action URL, which on this instance is `https://data.forgejo.org` -- read out of the runners'
+# own `git fetch 'https://data.forgejo.org/actions/checkout'` log lines, not from any file here. That
+# mirror carries the major tags: `v1`..`v7` were confirmed present for every bare reference in this
+# directory with `git ls-remote --tags`.
+#
+# WHAT THAT TRADES, stated plainly because it is a real cost: a tag is mutable. Upstream can repoint
+# `v6` and the next push runs different code with no commit here, and `data.forgejo.org` is a mirror,
+# so it is also trusting the mirror to stay in step. Griefed's call, 2026-10-03, after measuring that
+# every major tag was already AHEAD of the commit it replaced -- i.e. the SHA pins had silently frozen
+# eight actions at older releases, which is the other half of the same trade.
+#
+# FOUR REFERENCES ARE NOT A BARE MAJOR, each for its own checked reason:
+#   - tiyee/action-ssh@v1.0.1 and nogsantos/scp-deploy@v1.3.0 publish NO `v1` tag or branch at all;
+#     the exact version is the only tag that exists, and it is the commit that was pinned.
+#   - luangong/setup-install4j@v1 and jmgilman/actions-generate-checksum@v1 resolve to a BRANCH
+#     named `v1`, not a tag -- both currently at exactly the commit that was pinned. More mutable
+#     than a tag, and still what each action's own README tells you to use.
 #
 # THE ARTIFACT ACTIONS ARE THE ONE EXCEPTION, and not by preference. Upstream upload-artifact@v4+ and
 # download-artifact@v4+ call `isGhes()` and abort with `GHESNotSupportedError` on any host that is not
 # github.com, so every upload in this directory died -- test.yml, docs.yml and devbuild.yml all failed
 # that way, after the step had already found and staged the files. It is a client-side refusal, not a
 # missing API on the instance, and no runner or instance setting turns it off. Forgejo maintains patched
-# forks whose `isGhes()` is `return false` -- verified 2026-08-22 by reading `dist/upload/index.js` and
-# `dist/index.js` at the pinned commits -- so those two references point at code.forgejo.org, pinned by
-# commit like every other action here. `.github/workflows` keeps the upstream actions: on GitHub the
-# check is correct and the forks are unnecessary. The forks lag upstream (upload v5 vs v7, download v7
-# vs v8); every input this directory passes -- name, path, if-no-files-found, retention-days -- exists in
-# those versions.
+# forks whose `isGhes()` is `return false` -- confirmed by reading `dist/upload/index.js` and
+# `dist/index.js` -- so those two references point at code.forgejo.org. `.github/workflows` keeps the
+# upstream actions: on GitHub the check is correct and the forks are unnecessary. The forks lag
+# upstream (upload v5 vs v7, download v7 vs v8); every input this directory passes -- name, path,
+# if-no-files-found, retention-days -- exists in those versions. They are referenced by tag like
+# everything else here; `v5` and `v7` are the newest majors the forks publish.
 name: Test
 
 # NOTE: no `permissions:` block anywhere in this directory. Forgejo does not implement the field --
@@ -26,19 +39,13 @@ name: Test
 # scoping on Forgejo is done per job with Authorized Integrations, configured on the instance rather
 # than in the workflow. `.github/workflows` keeps its permissions blocks: GitHub honours them.
 
-# PULL_REQUEST IS DELIBERATELY ABSENT. Every PR on this instance is opened from a branch of this
-# repository (the standing develop -> beta one, #682, and the `claude-` fix branches), and `push:`
-# already builds exactly those commits -- so carrying both triggers ran this workflow twice per push
-# for a second verdict on the same tree, in parallel, on one runner. Measured 2026-10-01: one push
-# queued nine runs at 17:03:00 and the batch ran 2-5x its previous day's time (docker-test 13-15 ->
-# 41.6 min, devbuild ~20 -> 96.6, docs ~25-31 -> 63.4, the container ITs 5.3-8.8 -> 18.1 and 23.3),
-# and every red in it was a deadline expiring. Halving the batch is the cheapest lever there is.
+# NO `pull_request:` TRIGGER. Every PR on this instance is opened from a branch of this repository, and
+# `push:` already builds those commits, so adding it would run this workflow twice per push for a second
+# verdict on the same tree, in parallel, on one runner.
 #
-# What it costs, stated rather than discovered later: the *merge* result is no longer built on its
-# own -- only the head commit -- so a PR that is green can still conflict semantically with its base
-# until the merge lands on `develop` and is built there. And a fork PR gets no Forgejo CI; the GitHub
-# mirror's own test.yml keeps `pull_request:` and covers that case, which is the one place a fork
-# actually arrives. Restoring this is one line.
+# Two things that costs: the *merge* result is not built on its own, so a PR green on its head can still
+# conflict semantically with its base until the merge lands and is built there; and a fork PR gets no
+# Forgejo CI, which `.github/workflows/test.yml` covers instead -- GitHub is where a fork arrives.
 on:
   push:
   workflow_dispatch:
@@ -58,17 +65,17 @@ jobs:
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -88,14 +95,12 @@ jobs:
           docker pull alpine:latest
           docker pull mcr.microsoft.com/powershell:latest
 
-      # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests moved to
+      # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests live in
       # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them
-      # reaps every grinder-labelled container on the daemon and this workflow's per-ref group does not
-      # stop two of its jobs sharing the runner. Dropping `pull_request:` above removed the *routine*
-      # case -- one push no longer builds `develop` and its PR at the same commit -- but not the general
-      # one: two branches pushed close together still run side by side, and that is all the reap needs.
-      # Setting it again here puts the collision back. The other GRINDER_*_IT gates stay unset because
-      # they need a live Modrinth/CurseForge API, a built image, or a deployed grinder.
+      # reaps every grinder-labelled container on the daemon while this workflow's per-ref group still
+      # lets two branches share the runner. Setting it here would put that collision back. The other
+      # GRINDER_*_IT gates stay unset because they need a live Modrinth/CurseForge API, a built image, or
+      # a deployed grinder.
       - name: Build with Gradle
         run: ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace
 
@@ -103,7 +108,7 @@ jobs:
       # instead. Kept separate from the build artifact so a failed run still yields readable results
       # without downloading the whole build directory.
       - name: Upload test results
-        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         if: ${{ always() }}
         with:
           name: test-results
@@ -125,7 +130,7 @@ jobs:
           # actually read after a failure, including one noticed the following Monday.
           retention-days: 7
 
-      - uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
         if: ${{ always() }}
         with:
           name: build-artifacts

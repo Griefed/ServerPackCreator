@@ -34,8 +34,8 @@ object ConsoleHints {
     /**
      * What the script prints immediately before it blocks on `read -n 1 -s -r -p "Press any key to continue"`.
      *
-     * Verified against a real NeoForge boot on 2026-09-25: the server stopped cleanly, the script printed
-     * this line, and then produced **nothing further** while waiting for a keypress — because bash writes a
+     * Observed against a real NeoForge boot: the server stops cleanly, the script prints this line, and
+     * then produces **nothing further** while waiting for a keypress — because bash writes a
      * `read -p` prompt only when standard input is a terminal, and this plugin gives it a pipe. Without a
      * hint at that moment the session is indistinguishable from a hang.
      */

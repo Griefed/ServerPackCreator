@@ -72,8 +72,8 @@ internal class ModpackZipInspectorOpenCountTest {
     /**
      * Pins that validating a modpack archive reads it **once**.
      *
-     * It used to read twice: once for `isNotValidZipFile()`, then again via
-     * `getDirectoriesInModpackZipBaseDirectory` — two full central-directory parses where one
+     * Reading it twice — once for `isNotValidZipFile()`, then again via
+     * `getDirectoriesInModpackZipBaseDirectory` — is two full central-directory parses where the first
      * already has every header the check needs.
      */
     @Test

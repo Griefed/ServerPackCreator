@@ -37,9 +37,8 @@ import java.io.File
  * this repository has already paid for that class of bug twice — the Forge launcher era and the Java-24
  * Security Manager flag. Yet the guards were effectively absent: the fish check skipped itself whenever
  * `fish` was missing, which is every developer machine without it *and* the CI runner, and PowerShell had
- * no source-level check at all — only `ScriptTemplateMatrixIT`, gated behind `GRINDER_TEMPLATE_IT=1` and
- * a built image, so it never ran either. Measured 2026-09-26: neither interpreter is present on this
- * machine, and no workflow in `.forgejo/` or `.github/` sets that gate.
+ * no source-level check at all — only `ScriptTemplateMatrixIT`, which is gated behind
+ * `GRINDER_TEMPLATE_IT=1` and a built image that no workflow provides.
  *
  * Containers rather than an installed interpreter, deliberately. PowerShell is not in Ubuntu's default
  * repositories, so installing it on the runner is a multi-step setup against a third-party apt source,
@@ -98,8 +97,8 @@ internal class ShellTemplateSyntaxTest {
     /**
      * The zero-match guard in [parseCommandFor] has to be able to fire, or it is decoration.
      *
-     * Points the same command at an empty directory — which is precisely what the probe container held
-     * on run 646 — and demands the `FAIL` line. Without it `foreach` iterates nothing, the check reports
+     * Points the same command at an empty directory — which is what a container whose templates never
+     * arrived holds — and demands the `FAIL` line. Without it `foreach` iterates nothing, the check reports
      * no failures, and a run that parsed zero templates is indistinguishable from a clean one.
      */
     @Test
@@ -136,8 +135,8 @@ internal class ShellTemplateSyntaxTest {
      * Shared by the local and container paths so the two cannot drift into checking different things.
      *
      * A glob that matches nothing is itself a `FAIL`, because `foreach` over an empty match runs zero
-     * times and the check would otherwise report success for having parsed nothing — which is what it
-     * did on run 646, where the templates never reached the container and only fish was loud about it.
+     * times and the check would otherwise report success for having parsed nothing. That is the shape a
+     * transport failure takes here: templates that never reached the container read as a clean run.
      */
     private fun parseCommandFor(glob: String): String =
         """

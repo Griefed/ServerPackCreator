@@ -31,9 +31,9 @@ import java.util.jar.JarOutputStream
  *
  * A platform's declared loader/Minecraft sets are what an author ticked, and the selector trusts them
  * absolutely — it boots the newest Minecraft in the set and, where one file claims two loaders, whichever
- * the platform listed first. Measured against the live grinder on 2026-08-31 that produced
- * `DamageVignette-2.0.2-**forge**+mc1.20.jar` on a NeoForge boot and `create_ltab` on Minecraft 1.20.6 with
- * older mappings; both died as crashes and were scored as sideness evidence.
+ * the platform listed first. On the live grinder that produces `DamageVignette-2.0.2-**forge**+mc1.20.jar`
+ * on a NeoForge boot and `create_ltab` on Minecraft 1.20.6 with older mappings; both die as crashes and are
+ * scored as sideness evidence.
  *
  * The jar's own descriptor is the authority the platform metadata is not.
  */
@@ -263,14 +263,14 @@ internal class JarSelfDeclarationTest {
     /**
      * **Once NeoForge has a descriptor of its own, a `mods.toml`-only jar is refused again.**
      *
-     * This test used to include 1.20.2 and 1.20.4, and that was wrong: it conflated two different NeoForge
-     * changes. The **package** rename (`net.minecraftforge` → `net.neoforged`) landed with 1.20.2, which is
+     * The versions matter, because two different NeoForge changes are easily conflated. The **package**
+     * rename (`net.minecraftforge` → `net.neoforged`) landed with 1.20.2, which is
      * what ends *jar parity* and is why `LoaderCompatibility` stays one version wide. The **descriptor**
      * rename landed with 1.20.5 — `META-INF/mods.toml` → `META-INF/neoforge.mods.toml`. Between them, both
      * loaders read the same file, so its presence is *ambiguous* rather than contradictory, and a gate whose
      * whole design is "refuse only on a positive, readable contradiction" must not refuse on it.
      *
-     * Measured against the live Modrinth API on 2026-09-10, on two independent mods:
+     * Measured against the live Modrinth API, on two independent mods:
      *
      * | Minecraft | `architectury-api` | `jei` |
      * |---|---|---|
@@ -404,7 +404,7 @@ internal class JarSelfDeclarationTest {
 
     /**
      * **The same marker, in the descriptor NeoForge renamed.** Read from the live
-     * `continuity-3.0.0+1.21.neoforge.jar` on 2026-09-12: byte-for-byte the placeholder shape above, except
+     * `continuity-3.0.0+1.21.neoforge.jar`: byte-for-byte the placeholder shape above, except
      * that the stub lives at `META-INF/neoforge.mods.toml` because NeoForge moved its descriptor there on
      * Minecraft 1.20.5. Nothing else about the jar differs — the same `[properties] "connector:placeholder"`,
      * the same `fabric.mod.json` beside it declaring `"environment": "client"`.
@@ -442,7 +442,7 @@ internal class JarSelfDeclarationTest {
      * `contradictingLoaders` saw `Forge` among the declared set, accepted, and the container then spent
      * itself proving something about Sinytra Connector.
      *
-     * Measured on the public grinder 2026-09-12, and the reason this is worth a refusal rather than a note:
+     * Why this is worth a refusal rather than a note:
      * under the per-line axis the shim costs the **whole** Minecraft line. `Modrinth/continuity`'s 1.20 row
      * booted `continuity-3.0.0+1.20.1.forge.jar` and died on the stub's own version-less dependency entries
      * (`Expected range: '', Actual version: '1.0.0-beta.49+1.20.1'` — Forge reads an absent `versionRange`
@@ -450,8 +450,8 @@ internal class JarSelfDeclarationTest {
      * refused), while `continuity-3.0.0+1.20.1.jar` — the release a Fabric user installs, same mod, same
      * Minecraft version — was never booted at all.
      *
-     * [MetadataScanner] has redirected the *scan* to Fabric since 2026-09-06. This is the boot making the
-     * same call, so the two stop disagreeing about one fact.
+     * [MetadataScanner] redirects the *scan* to Fabric. This is the boot making the same call, so the two
+     * cannot disagree about one fact.
      */
     @Test
     fun aConnectorPlaceholderDeclaresOnlyTheLoaderItsRealDescriptorNames(@TempDir dir: File) {
@@ -509,7 +509,7 @@ internal class JarSelfDeclarationTest {
      * A jar demanding a loader build that loader never shipped for this Minecraft names the *other* loader
      * to verify it under, rather than spending a container proving the arithmetic.
      *
-     * **The reported case, read from the live `Iceberg-1.20.1-forge-1.1.25.jar` on 2026-09-12.** Its
+     * **The reported case, read from the live `Iceberg-1.20.1-forge-1.1.25.jar`.** Its
      * `META-INF/mods.toml` declares `[[dependencies.iceberg]] modId="forge" versionRange="[47.2,)"`, and
      * Modrinth ticks the file `forge, neoforge` — so [BootCandidateSelector.LOADER_PRIORITY] took NeoForge
      * for the 1.20 line. NeoForge's 1.20.1 fork froze at **47.1.106** and registers itself under the mod id

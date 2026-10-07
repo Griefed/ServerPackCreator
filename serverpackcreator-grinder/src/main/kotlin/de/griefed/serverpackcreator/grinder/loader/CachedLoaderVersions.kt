@@ -79,10 +79,10 @@ class CachedLoaderVersions(
      * With nothing cached, the newest build the cache is not already refusing to install — otherwise the newest,
      * whatever its state.
      *
-     * A loader version can be listed by its maven metadata while its installer artifact is simply absent: measured
-     * 2026-07-30, NeoForge `21.1.247` is in the version index but `neoforge-21.1.247-installer.jar` **404s**, and
-     * `1.21.1 + NeoForge` is one of the most common combinations in the catalogue. Every candidate wanting it paid a
-     * full download-and-boot before failing, then took an INCONCLUSIVE verdict — for a build that cannot be installed
+     * A loader version can be listed by its maven metadata while its installer artifact is simply absent: NeoForge
+     * `21.1.247` is in the version index while `neoforge-21.1.247-installer.jar` **404s**, and `1.21.1 + NeoForge`
+     * is one of the most common combinations in the catalogue. Without this, every candidate wanting it pays a full
+     * download-and-boot before failing, then takes an INCONCLUSIVE verdict — for a build that cannot be installed
      * at all. Stepping down to the previous build turns that dead combination back into a real verdict.
      *
      * [latestVersion] is deliberately **not** consulted here and stays truthful, so the support gate and the crash

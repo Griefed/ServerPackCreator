@@ -88,9 +88,8 @@ class ReportServer(
     /**
      * The store's derivations, rebuilt when a verdict is recorded **and** the coalescing window has passed.
      *
-     * Every endpoint that reads rows goes through this — including `/as-properties`, which used to call
-     * `store.all()` directly and was therefore the one endpoint the caching never covered, despite being the
-     * one polled unattended by every SPC instance in the wild.
+     * Every endpoint that reads rows goes through this — `/as-properties` included, which matters because it is
+     * the one polled unattended by every SPC instance in the wild and so the one least able to afford a miss.
      *
      * Before the cache, each request re-sorted the whole store and re-gathered every filter column across it
      * — 251 ms at 38,258 verdicts, against 3 ms to render the 250 rows actually sent. The window is what

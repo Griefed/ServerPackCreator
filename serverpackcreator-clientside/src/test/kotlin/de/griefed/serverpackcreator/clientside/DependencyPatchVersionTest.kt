@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
  * 1.20.2 and 1.20.3 run each other's mods in practice, and a library that skipped a patch release is not a
  * missing dependency.
  *
- * **What it costs today, measured against the live Modrinth API on 2026-09-09** — every one of these is a
+ * **What it costs, measured against the live Modrinth API** — every one of these is a
  * published `ERROR` on `grinder.serverpackcreator.de` whose dependency exists one patch away:
  *
  * | Refusal | Asked for | Published |

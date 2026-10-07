@@ -127,8 +127,8 @@ internal enum class VerdictField(
     /**
      * Which classifier rung decided the boot. A **CHOICE** column on purpose: filtering the table to
      * `decision=EXIT_CODE` is how a maintainer finds every verdict reached because a process exited non-zero
-     * and nothing recognised why — the population that produced the false positives of 2026-08-31, and the
-     * one the publication gate now refuses to publish.
+     * and nothing recognised why — the population the publication gate refuses to publish, and the one that
+     * produces false positives when it is not refused.
      */
     DECISION("Decision", "Decision", "decision", FilterKind.CHOICE, { it.decidedBy ?: "" }),
     // Beside the decision, never instead of it: DECISION is what *this* row's own boot did, and this is the

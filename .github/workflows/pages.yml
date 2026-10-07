@@ -4,18 +4,17 @@
 # CI is `.forgejo/workflows` (see .claude/rules/ci-workflows.md), and `.forgejo/workflows` existing means
 # Forgejo ignores `.github/workflows` ENTIRELY -- so nothing here can ever run on Forgejo, and nothing
 # Forgejo must do may live here. GitHub Pages can only be deployed from GitHub, and Forgejo has no Pages
-# equivalent at all, which is why hosting the rendered site had to stop when GitLab Pages went away. This
-# brings it back, restoring what `8.x.x`'s `.github/workflows/github_release.yml` `pages` job used to do.
+# equivalent at all, so this is the only place the rendered site can be hosted from.
 #
 # It is NOT a second CI, the line `.github/workflows/test.yml` draws in its own header. It needs no secrets
 # (`GITHUB_TOKEN` is injected, and Pages authenticates by OIDC), it tests nothing, and it gates nothing --
 # a red run here costs a stale docs site and nothing else.
 #
 # THREE DIFFERENCES from the 8.x.x job it replaces, all deliberate:
-#   1. It publishes the WHOLE help site, not just Dokka. Dokka moves from the site root to `/api/`, so
-#      https://griefed.github.io/ServerPackCreator/ becomes the Writerside help. Old deep Dokka bookmarks
-#      will 404; that is the price of the two deployments (this one and the nginx image) having one layout,
-#      which is what lets a single relative link in `spch.tree` work in both.
+#   1. It publishes the WHOLE help site, not just Dokka. Dokka lives at `/api/`, so
+#      https://griefed.github.io/ServerPackCreator/ is the Writerside help. Deep Dokka URLs are therefore
+#      one path segment deeper than they were; the gain is that this deployment and the nginx image have
+#      one layout, so `/api/` means the same thing in both.
 #   2. It deploys via `actions/deploy-pages` rather than committing to a `gh-pages` branch. REQUIRES
 #      Settings -> Pages -> Source = "GitHub Actions"; while it is still set to "Deploy from a branch",
 #      this workflow succeeds and the site does not change.
@@ -54,9 +53,8 @@ env:
   # breaks without a commit to blame. Bump it here and in docs.yml together.
   # NOTE the two pull the SAME tag from DIFFERENT registries -- docs.yml runs `jetbrains/writerside-builder`
   # from Docker Hub by hand, while this action hard-codes
-  # `registry.jetbrains.team/p/writerside/builder/writerside-builder`. Verified 2026-09-30 that this tag
-  # resolves in the JetBrains registry (`docker manifest inspect`), so a Docker Hub tag is not automatically
-  # a valid value here -- check both before bumping.
+  # `registry.jetbrains.team/p/writerside/builder/writerside-builder`. A Docker Hub tag is not automatically
+  # a valid value here, so check both with `docker manifest inspect` before bumping.
   DOCKER_VERSION: 2026.02.8644
 
 jobs:
@@ -65,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses: actions/checkout@v6
 
       # The seven root-level documents are the source of truth and the copies under `Writerside/topics/` are
       # generated and gitignored, so a fresh checkout does NOT have them -- without this step the Changelog,
@@ -87,12 +85,12 @@ jobs:
 
       # JetBrains' own action, rather than docs.yml's hand-rolled `docker run`. docs.yml needs the hand-rolled
       # form because its Forgejo runner puts the job in a container talking to a SIBLING daemon, where a
-      # `-v "$PWD:..."` bind resolves on the daemon's filesystem and silently mounts an empty directory
-      # (measured 2026-08-22; the build exited 0 having produced nothing). GitHub's hosted runners have no job
+      # `-v "$PWD:..."` bind resolves on the daemon's filesystem and silently mounts an empty directory --
+      # the build then exits 0 having produced nothing. GitHub's hosted runners have no job
       # container -- the daemon and the workspace are the same machine -- so an ordinary bind is correct here
       # and the supported action can be used. `location` points the builder at the help module.
       - name: Build the Writerside webhelp
-        uses: JetBrains/writerside-github-action@738910d7cf197d67188300d0e0f84b2e708db3cf # v4
+        uses: JetBrains/writerside-github-action@v4
         with:
           instance: ${{ env.INSTANCE }}
           docker-version: ${{ env.DOCKER_VERSION }}
@@ -100,14 +98,14 @@ jobs:
           artifact: ${{ env.ARTIFACT }}
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -148,7 +146,7 @@ jobs:
           test -s public/api/index.html
           echo "webhelp: $(find public -maxdepth 1 -type f | wc -l) files at root; dokka: $(find public/api -type f | wc -l) files"
 
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: public
 
@@ -163,7 +161,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
 
-      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/configure-pages@v6
 
       - id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        uses: actions/deploy-pages@v5

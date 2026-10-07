@@ -115,9 +115,9 @@ internal data class GrinderConfiguration(
     /** Pause after a pass that found nothing due but has catalog left. */
     val whileCrawling: Duration,
     /**
-     * How often buffered verdicts are written to the store. `0` writes through on every verdict, which is what
-     * the daemon did before B35 and costs O(store) on a grind worker's thread — measured at 787–1050 ms per
-     * verdict for a 100 k-row store. At most one interval of verdicts is lost to a hard kill, and those are
+     * How often buffered verdicts are written to the store. `0` writes through on every verdict, which costs
+     * O(store) on a grind worker's thread — measured at 787–1050 ms per verdict for a 100 k-row store. At
+     * most one interval of verdicts is lost to a hard kill, and those are
      * re-derived by [reverifyTtl]; an orderly stop flushes.
      */
     val storeFlush: Duration,
@@ -132,9 +132,9 @@ internal data class GrinderConfiguration(
     /**
      * Which of a project's Minecraft version-lines get ground — one verdict each.
      *
-     * The single largest lever on what a sweep costs, since it multiplies the boots per project: measured
-     * over the 200 most-downloaded Modrinth mods on 2026-09-11, the shipped default is 3.83 boots/project
-     * against the old per-loader axis's 3.06, while "every line" would be 7.38. Size it against
+     * The single largest lever on what a sweep costs, since it multiplies the boots per project: measured over
+     * the 200 most-downloaded Modrinth mods, the shipped default is 3.83 boots/project where "every line"
+     * would be 7.38. Size it against
      * [reverifyTtl], which must outlast a full sweep.
      */
     val minecraftLines: MinecraftLinePolicy
@@ -186,7 +186,7 @@ internal data class GrinderConfiguration(
          * Read the configuration from [lookup], which defaults to the real environment.
          *
          * Taking the lookup as a parameter is what makes this testable at all: a test hands it a map and
-         * asserts what the daemon *would do*, where the previous shape could only be grepped.
+         * asserts what the daemon *would do*, without an environment variable in sight.
          *
          * Nothing here throws on a malformed value — a bad number falls back to the documented default —
          * because a typo in a unit file should not stop a service that has verdicts to serve. The value the

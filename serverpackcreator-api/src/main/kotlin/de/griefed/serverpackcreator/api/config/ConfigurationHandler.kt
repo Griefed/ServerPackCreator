@@ -70,10 +70,9 @@ class ConfigurationHandler(
          *
          * **Why this catches [Throwable], which is normally wrong.** Nekodetector is a third-party scanner
          * resolved from jitpack: an *optional safety net*, not a precondition for building a server pack. A
-         * host whose classpath lacks it threw `NoClassDefFoundError` out of `checkConfiguration` and killed
-         * the whole generation coroutine (reported 2026-08-29), which is a far worse outcome than not
-         * scanning. `NoClassDefFoundError` is an `Error`, so catching `Exception` — as the scanner itself
-         * did — could never have caught it.
+         * host whose classpath lacks it throws `NoClassDefFoundError` out of `checkConfiguration` and kills
+         * the whole generation coroutine, which is a far worse outcome than not scanning.
+         * `NoClassDefFoundError` is an `Error`, so catching `Exception` cannot catch it.
          *
          * **And why the guard lives here rather than inside `SecurityScans`.** The failure happens while
          * *resolving the call*: the class cannot be loaded, so no statement inside it ever runs. Only a
@@ -556,10 +555,9 @@ class ConfigurationHandler(
         }
 
         // Does the modpack contain a server-icon or server.properties? If so, include them in the
-        // server pack. Looked up inside the extracted modpack, which is the only place they can be:
-        // this used to resolve them under the *pack name* checkManifests returns -- a display string
-        // such as "All the Mods 9", not a path -- so for every modpack carrying a manifest it resolved
-        // against the process working directory and could never match.
+        // server pack. Looked up inside the extracted modpack, which is the only place they can be --
+        // NOT under the pack name `checkManifests` returns, which is a display string such as
+        // "All the Mods 9" rather than a path, and would resolve against the working directory.
         val extractedModpack = File(unzippedModpack)
         val serverIcon = File(extractedModpack, "server-icon.png")
         if (serverIcon.exists()) {
@@ -734,9 +732,9 @@ class ConfigurationHandler(
     fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
         
         log.info("Preparing a list of directories to include in server pack...")
-        // listFiles() returns null when the path is not a readable directory. That used to be handled by
-        // an assert -- disabled at runtime outside tests, so decorative -- followed by `!!` inside a
-        // catch for the NullPointerException it produced. The result was an empty suggestion list and a
+        // listFiles() returns null when the path is not a readable directory, and that must be handled
+        // here: an `assert` is disabled at runtime outside tests, and `!!` inside a catch for the
+        // NullPointerException it produces yields an empty suggestion list and a
         // log line about "copy dirs" that described a different problem, so an unreadable modpack
         // silently produced a server pack with no directories in it.
         val entriesInModpack = File(modpackDir).listFiles()

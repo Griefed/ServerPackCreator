@@ -188,7 +188,7 @@ internal class ClientOnlyProofTest {
 
     /**
      * **A clean boot on a mod that claims the server beats an inherited proof.** Measured on the public
-     * grinder 2026-09-12: **27 rows across 16 projects** were published as clientside while their own boot
+ * grinder: **27 rows across 16 projects** were published as clientside while their own boot
      * reached the ready line and their metadata claimed server support — `agricraft`, `galosphere`,
      * `zombie-awareness`, `immersive-lanterns`, `joy-of-painting` among them.
      *

@@ -204,10 +204,10 @@ class VersionMeta(
     /**
      * The startup manifest refresh, running in the background.
      *
-     * **This is a change of contract, and the reason [awaitManifestRefresh] exists.** Construction used to
-     * block until all twelve manifests had been checked, so the metas held refreshed data the moment the
-     * constructor returned. They now hold the jar-seeded data immediately and the refreshed data shortly
-     * after — which takes ~392 ms off a GUI launch, and far more off an offline one. A caller that genuinely
+     * **Construction does not wait for it, which is why [awaitManifestRefresh] exists.** The metas hold the
+     * jar-seeded data the moment the constructor returns and the refreshed data shortly after; blocking on
+     * all twelve manifest checks instead would add ~392 ms to a GUI launch, and far more offline. A caller
+     * that genuinely
      * needs upstream-fresh data must say so by awaiting.
      */
     private val manifestRefresh: Job

@@ -38,17 +38,16 @@ import java.time.Duration
 /**
  * Grades a **live** grinder's published verdicts against their own evidence.
  *
- * **Why this exists as a committed test rather than as a one-off census.** Sample-and-fix has run twice — a
- * 200-log census on 2026-08-29, then a merge gate reporting `HIGH 8 → 4` — and both times the same class of
- * defect shipped again, because nothing re-checked the *published list* against the consoles behind it. The
- * censuses were ad-hoc and were never committed, so the loop could not close. This does close it: it asks
+ * **Why this exists as a committed test rather than as a one-off census.** An ad-hoc sample finds the defects
+ * present on the day it runs and then stops existing, so nothing re-checks the *published list* against the
+ * consoles behind it and the same class of defect ships again. This closes that loop: it asks
  * one question of the whole store at once, and the answer is either an assertion or a distribution a human
  * can read.
  *
  * The question is: **is every published `CONFIRMED` backed by a decision `BootDecision.decisive` marks?** A
  * `CRASHED` from the bare exit-code rung means only *"the process exited non-zero and nothing recognised
- * why"*, and on 2026-08-31 four of five sampled logs were exactly that — with one of the mods already in the
- * served fallback list.
+ * why"*, which is not evidence that the mod is clientside — and such a verdict can reach the served fallback
+ * list.
  *
  * Gated, because it needs network and politely hits someone's live daemon:
  * ```
@@ -91,7 +90,7 @@ internal class GrinderAuditIT {
         Assumptions.assumeFalse(confirmed.isEmpty(), "the store published no CONFIRMED verdicts, so there is nothing to grade")
         println("[audit] ${confirmed.size} CONFIRMED verdict(s) in the store")
 
-        // GROUPED BY TUPLE, not by artifact. A candidate is booted several times -- the first attempt, the
+        // GROUPED BY TUPLE, not by artifact. A candidate is booted several times -- the initial attempt, the
         // newest-build re-check, each other-version re-check -- and every non-survived attempt keeps its own
         // console, so a tuple commonly has two or three. Grading artifacts would count one verdict repeatedly
         // and, worse, count a re-check attempt against a verdict some *other* attempt decided. A verdict is
@@ -139,7 +138,7 @@ internal class GrinderAuditIT {
      * The `(platform, slug, loader, Minecraft line)` tuples the store publishes as CONFIRMED **on their own
      * evidence**, read from the CSV export.
      *
-     * Two things this has to get right, and it got both wrong before 2026-09-12:
+     * Two things this has to get right:
      *
      * **The tuple gained the Minecraft line.** A project is ground once per line, so the same loader holds
      * several of its rows and the staging directory — which is what a kept console is named after — carries

@@ -30,9 +30,9 @@ import java.io.File
  * things and were briefly conflated.
  *
  * `GrindTargetVerdict.sampleFile` carries that artifact's published name **verbatim**, extension and all: it is
- * what a maintainer types into a platform's search box. It was a *derived stem* of that file until
- * 2026-09-10, under the name `filenamePattern`, and Griefed's report was exactly that — the column "most
- * often equals some sort of pattern" instead of the filename it was meant to be.
+ * what a maintainer types into a platform's search box. A *derived stem* of that file is the thing it must
+ * not be — a column titled for a filename that "most often equals some sort of pattern" answers nobody's
+ * question.
  *
  * `FilenameStemDeriver.deriveStem` over a **single** file is the other half, and it still matters: it is
  * what `Prepared.Ready.candidateStem` is built from, which is how blame attribution tells the candidate's

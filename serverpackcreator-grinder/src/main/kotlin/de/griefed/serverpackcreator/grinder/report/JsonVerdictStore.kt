@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicLong
  *
  * Writes are **coalesced** when [flushInterval] is positive: [record] buffers in memory and a daemon
  * flusher persists on that interval, plus once more on [close]. [persist] serialises the *whole* store, so
- * write-through costs O(store) per verdict on a grind worker's thread — measured 2026-08-29 at 18–25 ms per
+ * write-through costs O(store) per verdict on a grind worker's thread — measured at 18–25 ms per
  * `record()` for 1 k rows, 74–83 ms for 10 k and 787–1050 ms for 100 k, against a deployed store of 38 258
  * verdicts taking ~4.3 verdicts/second. Dropping the pretty-printer was measured and is not enough (707 ms →
  * 361 ms at 100 k); only writing less often is. The durability trade is bounded to one interval, and a lost

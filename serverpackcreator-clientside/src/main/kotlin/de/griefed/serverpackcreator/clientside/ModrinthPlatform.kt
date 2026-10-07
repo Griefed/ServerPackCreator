@@ -99,7 +99,7 @@ class ModrinthPlatform(
      *
      * **Falls back rather than failing.** The slug is presentation; the files are the functional half, so a
      * project lookup that 404s or times out must not lose them. The ref still works as a Modrinth URL, so
-     * the fallback degrades to exactly the previous behaviour.
+     * falling back to it costs nothing but the prettier name.
      */
     private fun slugOf(nativeRef: String): String = runCatching {
         objectMapper.readTree(httpFetcher.get("$apiBase/project/$nativeRef", headers)).textOrNull("slug")
@@ -210,7 +210,7 @@ class ModrinthPlatform(
      *
      * A Modrinth version routinely carries attachments beside its mod jar, source jars above all, and none
      * of them is a mod: not bootable, not worth scanning, and poisonous to the file-name stem the verdict
-     * is published under. Measured against the live API on 2026-08-23: `creativecore`'s single stray
+ * is published under. Measured against the live API: `creativecore`'s single stray
      * `CreativeCore-sources.jar` dragged its Fabric list-entry from `CreativeCore_FABRIC_` down to
      * `CreativeCore-sources`, which matches nothing.
      *

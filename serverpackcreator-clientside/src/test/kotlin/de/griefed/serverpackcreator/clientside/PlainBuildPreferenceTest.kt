@@ -31,7 +31,7 @@ import kotlin.test.Test
  * `java.lang.ClassNotFoundException: org.spongepowered.asm.launch.MixinTweaker`, and the server never
  * launched.
  *
- * Measured on the public grinder 2026-09-13: `litematica`, `minihud`, `tweakeroo` and `zume`, all
+ * Measured on the public grinder: `litematica`, `minihud`, `tweakeroo` and `zume`, all
  * Forge 1.12, all four staged `malilib-forge-1.12.2-0.10.0-dev.23.nomixin.jar`, all four published
  * INCONCLUSIVE. Confirmed against the live Modrinth API — the plain `0.10.0-dev.23` build is right there.
  *

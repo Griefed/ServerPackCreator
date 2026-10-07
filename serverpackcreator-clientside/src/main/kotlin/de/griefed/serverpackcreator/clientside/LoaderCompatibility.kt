@@ -24,9 +24,8 @@ package de.griefed.serverpackcreator.clientside
  *
  * One home for a fact two very different callers need: [JarSelfDeclaration] asks it before refusing a boot
  * the staged jar's descriptor seems to contradict, and [BootCandidateSelector] asks it before giving up on a
- * dependency that publishes nothing for the loader being booted. They used to hold separate, silently
- * diverging copies — a `Quilt to Fabric` map in each — and only one of them could ever have learned the
- * NeoForge rule below.
+ * dependency that publishes nothing for the loader being booted. Separate copies — a `Quilt to Fabric` map
+ * in each — diverge silently, and only one of them would ever learn the NeoForge rule below.
  *
  * **Deliberately one-way and deliberately minimal.** Every entry is a claim that a loader really does load
  * the other's jars unchanged; guessing wider stages a jar the loader cannot use, and the resulting failure is
@@ -44,7 +43,7 @@ object LoaderCompatibility {
      * project shipping only Fabric-tagged files — and LegacyFabric reads the same `fabric.mod.json`. Neither
      * holds in reverse: Fabric cannot load a Quilt mod.
      *
-     * What the Quilt entry is worth, measured 2026-07-30: without it every such dependency was silently
+ * What the Quilt entry is worth, measured: without it every such dependency was silently
      * dropped and the mod hard-failed with *"requires fabric-api"*, wasting the whole boot — **210 dropped
      * dependencies, all but 44 of them on Quilt**.
      */

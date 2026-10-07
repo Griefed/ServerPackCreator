@@ -21,15 +21,16 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
  * Pins reclamation of the per-attempt scratch space. Staging keeps one full server pack (plus the mod jars it
- * downloaded) per `(slug, loader)` attempted, and only ever deleted it when that *same* pair was retried — so a
- * catalog sweep grew the work tree without bound. Measured live on 2026-07-30: **98 GB across 1750 attempt
- * directories**, ~23 GB/h, which fills any host long before a sweep finishes. The logs are the part worth keeping
+ * downloaded) per `(slug, loader)` attempted, and deleting it only when that *same* pair is retried grows the work
+ * tree without bound across a catalog sweep — measured live at **98 GB across 1750 attempt directories**,
+ * ~23 GB/h, which fills any host long before a sweep finishes. The logs are the part worth keeping
  * (a verdict's detail is read from them); the packs are reproducible and must go.
  */
 internal class BootWorkspaceReaperTest {
@@ -62,6 +63,45 @@ internal class BootWorkspaceReaperTest {
     }
 
     private fun reaper() = BootWorkspaceReaper(work)
+
+    /**
+     * An entry that cannot be fully removed contributes NOTHING to the reported total, even though some of its
+     * files may well have gone. The figure is "bytes this sweep is known to have freed", so a partial delete is
+     * counted as zero rather than guessed at, and the entry is left for the next sweep to retry.
+     *
+     * Pinned because the accounting is the subtle half of [BootWorkspaceReaper]: sizing and deleting are two
+     * traversals of the same tree, and any change that fuses them has to keep the all-or-nothing rule or it
+     * starts reporting bytes for packs that are still on disk.
+     *
+     * The failure is manufactured by clearing write permission on a directory, which root ignores — so the
+     * precondition is *asserted* after the sweep, and the test skips rather than passes where it did not hold.
+     */
+    @Test
+    fun anEntryThatCannotBeFullyDeletedContributesNothingToTheTotal() {
+        stageAttempt("jei", "Forge", packBytes = 1024)
+        val libraries = File(work, "boot/${attempt("jei", "Forge")}/serverpack/libraries")
+        val pinnedJar = File(libraries, "loader.jar")
+        Assertions.assertTrue(libraries.setWritable(false), "could not clear write permission on the fixture")
+        try {
+            val reclaimed = reaper().reap(ModPlatforms.MODRINTH, "jei")
+
+            Assumptions.assumeTrue(
+                pinnedJar.isFile,
+                "the fixture's unwritable directory was deleted anyway (running as root?), so there is no " +
+                    "partial failure to characterise"
+            )
+            Assertions.assertEquals(
+                2048, reclaimed,
+                "only the modpack and the downloaded-jar scratch were fully removed; the serverpack must not be counted"
+            )
+            Assertions.assertTrue(
+                File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists(),
+                "what could not be reclaimed must stay, for the next sweep to retry"
+            )
+        } finally {
+            libraries.setWritable(true)
+        }
+    }
 
     /** The whole point: the pack goes, the diagnosis stays. */
     @Test
@@ -143,9 +183,9 @@ internal class BootWorkspaceReaperTest {
      * freshness is already keyed on `(platform, slug)` for exactly that reason, so reaping one platform's
      * finished candidate must leave the other platform's in-flight staging completely alone.
      *
-     * Observed 2026-08-23 on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge
-     * 26.2.0.66 on Minecraft 26.2 SURVIVED for one and CRASHED (exit 1) for the other — same loader build,
-     * same Minecraft, same mod — a Fabric boot exited **127** (a shell that could not find the command it was
+     * Observed on `creativecore`, whose two platform runs finished 71 seconds apart: NeoForge 26.2.0.66 on
+     * Minecraft 26.2 SURVIVED for one and CRASHED (exit 1) for the other — same loader build, same Minecraft,
+     * same mod — a Fabric boot exited **127** (a shell that could not find the command it was
      * given), and two re-checks came back INCONCLUSIVE on files another run had booted to a ready-line.
      */
     @Test

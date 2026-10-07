@@ -34,7 +34,7 @@ import java.util.jar.JarOutputStream
  * `idsIn` and `versionsIn` answer *"is this dependency already inside the jar, and which build?"*. These
  * answer the question nothing was asking: **a bundled library is on the classpath exactly like a staged one,
  * so its own demands bind exactly like a staged one's.** Two live failures, both read off the public
- * grinder's consoles on 2026-09-11:
+ * grinder's consoles:
  *
  * - `Modrinth/highlight` declares `depends: { "resourcefullib": "*" }` and ships
  *   `META-INF/jars/resourcefullib-fabric-26.2-5.0.3.jar`, so the requirement was rightly dropped — nothing

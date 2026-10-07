@@ -17,14 +17,25 @@
          outputs are therefore merged at PACKAGING time, in two places that must stay in step.
          `docker/Dockerfile.help` copies Dokka to `/config/www/api/`, and `.github/workflows/pages.yml`
          assembles the same layout for GitHub Pages.
-         The href is RELATIVE on purpose. Every Writerside topic is served from the site ROOT, verified
-         against the published image, where `index.html`, `api-reference.html` and friends sit directly in
-         `/config/www` despite `web-path="topics"`. So `api/index.html` resolves under nginx at `/api/` AND
-         under GitHub Pages at `/ServerPackCreator/api/`. An absolute `/api/index.html` would work in the
-         container and 404 on Pages, which is served from a project subpath.
+
+         THE HREF MUST BE AN ABSOLUTE URL, and a relative one is not a smaller version of that — it does not
+         navigate at all. The published help is a single-page app, and its viewer treats a link as a real
+         anchor only when the target carries a scheme: the check is `isExternal || /^(?:[a-z]+:)?\/\//`
+         against the href. Anything else becomes a client-side route, so `api/index.html` leaves the Dokka
+         tree untouched on disk and instead pushes the URL to `/api/`, where the app re-bootstraps and asks
+         for `api/config.json`, `api/HelpTOC.json` and `api/api-object-digest.json`. Those are Writerside's
+         own files and exist only at the site root, so all three answer 404 and the page dies on
+         "TOC data error". A root-absolute `/.../api/index.html` fails the same test — one leading slash is
+         not two — so it is no answer either. Nor is there an author-settable escape: the builder derives
+         `data-external="true"` from the href being absolute, and `topic.v2.xsd` has no attribute for it.
+         Typing the Dokka URL directly always works; it is only the click that does not.
+
+         The cost of being absolute is that this one link leaves a self-hosted container for the public site.
+         It is the only shape the viewer will navigate, and a container still serves its own copy at `/api/`
+         for anyone who addresses it directly.
          (Note for editors: an XML comment may not contain a double hyphen anywhere, which is why this block
          uses none.) -->
-    <toc-element toc-title="Kotlin API (Dokka)" href="api/index.html"/>
+    <toc-element toc-title="Kotlin API (Dokka)" href="https://griefed.github.io/ServerPackCreator/api/index.html"/>
     <toc-element topic="Help-Topic.md">
         <toc-element topic="Keeping-Data.md"/>
         <toc-element topic="Multiple-Javas.md"/>

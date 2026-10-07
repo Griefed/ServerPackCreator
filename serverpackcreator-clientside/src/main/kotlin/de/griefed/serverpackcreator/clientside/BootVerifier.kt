@@ -84,9 +84,9 @@ class BootVerifier(
      * What a modloader build declares it **provides**, as id → version, so a staged jar demanding one of
      * those ids is judged rather than skipped.
      *
-     * Defaults to knowing nothing, which is the pre-2026-09-12 behaviour and correct for any caller that
-     * cannot see an install: `DependencyBacktrack` then treats such a demand as naming something absent, as
-     * it always did. The grinder supplies it by reading the cached install layer's own loader jar, which is
+     * Defaults to knowing nothing, which is correct for any caller that cannot see an install:
+     * `DependencyBacktrack` then treats such a demand as naming something absent. The grinder supplies it by
+     * reading the cached install layer's own loader jar, which is
      * the only place the answer actually lives — quilt-loader's `quilt.mod.json` declares
      * `provides: [{ "id": "fabricloader", "version": "0.19.3" }]`, and it differs per build.
      */
@@ -184,9 +184,9 @@ class BootVerifier(
         /**
          * The modloader build the console says actually started, or `null` when it never announced one.
          *
-         * Kept beside the requested build rather than replacing it: measured 2026-09-11, all 16 Quilt boots
-         * ran `0.30.1` while staging had asked for `0.31.0-beta.4`, and the two provide *different*
-         * `fabricloader` versions — so a row naming only one of them cannot be audited either way.
+         * Kept beside the requested build rather than replacing it: the two routinely differ — a boot asked
+         * for Quilt `0.31.0-beta.4` can run `0.30.1` — and they provide *different* `fabricloader` versions,
+         * so a row naming only one of them cannot be audited either way.
          */
         val observedLoaderVersion: String? = null,
         /**
@@ -292,9 +292,9 @@ class BootVerifier(
         restageOnLoaderVersion: (String) -> Prepared
     ): BootOutcome {
         if (prepared is Prepared.Failed) {
-            // Say so out loud. This reason used to be returned as a detail string and then dropped by
-            // `ClientsideVerifier.aggregate` whenever the metadata already decided the confidence, which made a
-            // *silently un-booted* catalogue indistinguishable from a booted one — the boot is the only decisive
+            // Say so out loud. Returning this as a detail string lets `ClientsideVerifier.aggregate` drop it
+            // whenever the metadata already decided the confidence, which makes a *silently un-booted*
+            // catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
             log.info("Not booting ${project.slug} on $loader: ${prepared.detail}")
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail, prevention = prepared.cause)
@@ -358,9 +358,9 @@ class BootVerifier(
      * contradiction. A mod that cannot run server-side cannot run server-side in *any* build, so one clean
      * boot elsewhere proves the crash belonged to the build, not to the mod's sideness.
      *
-     * **Why it exists:** measured live on 2026-08-23, `iron-chests` — a mod nobody would call clientside —
-     * was published `HIGH` off a single crashing build (`Forge 48.1.0 / Minecraft 1.20.2`). One boot cannot
-     * tell a broken build from a clientside mod, and the engine resolved that in the direction that writes a
+     * **Why it exists:** one boot cannot tell a broken build from a clientside mod. Without this, a mod
+     * nobody would call clientside is published `HIGH` off a single crashing build, because the engine
+     * resolves the ambiguity in the direction that writes a
      * wrong entry into the fallback list, which silently strips the mod from every server pack built against
      * it. Stops at the first clean boot, and anything that fails to disprove the crash leaves it standing.
      *
@@ -637,8 +637,8 @@ class BootVerifier(
      * The one scan every reader of a staged jar shares, because three of them ask different questions of the
      * same bytes: what the jar answers to ([identityIn]), whether a dependency the project page attributes
      * to it is one it actually wants, and what it declares that the platform never mentioned
-     * ([stageManifestDependencies]). They used to scan the same file twice over, which is also two chances
-     * to disagree about what it said.
+     * ([stageManifestDependencies]). Scanning the same file once for all three is one answer rather than
+     * three chances to disagree about what it said.
      *
      * **`null` and empty are different answers.** No scanner for the loader, or a scan that threw, means
      * *we do not know*, and everything downstream then defers to the platform. An empty result means the
@@ -697,7 +697,7 @@ class BootVerifier(
         val probed = mutableSetOf<String>()
         for (requirement in stageableRequirements(declaredAndBundled, visited, bundled, provided) { platformRefFor(it) }) {
             // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
-            // seen once must not be resolved twice even when the first attempt came to nothing.
+            // seen once must not be resolved twice even when the earlier attempt came to nothing.
             val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
             if (alreadySeen) {
                 continue
@@ -785,9 +785,9 @@ class BootVerifier(
      * falls back to a neighbouring patch release, but it can only search the files it is handed, and
      * `CurseForgePlatform.resolveDependency` answers one page narrowed by `gameVersion=<exact>` — so every
      * file in hand carries the exact version and the neighbour rung can never match anything the exact rung
-     * did not. The fallback was therefore **inert on CurseForge from the day it shipped**: measured
-     * 2026-09-10, `better-combat-by-daedelus` and `combat-roll` were still published `UNVERIFIABLE` for
-     * `playeranimator` on Forge 1.20.2 while PlayerAnimator publishes Forge builds for 1.20.1 and 1.20.
+     * did not. A neighbour fallback is therefore **inert on CurseForge** unless the candidate list is widened
+     * first — which is how a mod gets published `UNVERIFIABLE` for a dependency whose neighbouring patch
+     * releases are right there, as `playeranimator` on Forge 1.20.2 is while builds exist for 1.20.1 and 1.20.
      *
      * **The exact version is asked for first and alone**, so the common case stays one request; the
      * neighbours are fetched only where the boot would otherwise be refused outright. They come from SPC's
@@ -883,10 +883,9 @@ class BootVerifier(
      *
      * Quilt's `unless` clause says *"this requirement is met if that id is present instead"*, and Quilt
      * Loader honours it — so a mod written for either library declares *"QSL, unless Fabric API is here"*
-     * and runs with either. Reading only the primary id makes such a requirement look hard: measured on the
-     * live grinder 2026-09-10, `geophilic`, `terralith`, `trek` and `true-ending` were each refused for
-     * `quilt_resource_loader` while QSL publishes nothing past Minecraft 1.21 and Fabric API publishes for
-     * every version of it.
+     * and runs with either. Reading only the primary id makes such a requirement look hard, which refuses
+     * mods — `geophilic`, `terralith`, `trek`, `true-ending` — for `quilt_resource_loader` while QSL publishes
+     * nothing past Minecraft 1.21 and Fabric API publishes for every version of it.
      *
      * **Only reached when the primary failed**, which is the order the descriptor implies — `unless` names a
      * substitute, not a preference — and only for a plan that is `Unsatisfied`, i.e. one that would refuse
@@ -1107,8 +1106,8 @@ class BootVerifier(
      * really declares, or `null` when that is not the refusal and the Minecraft retry should have its turn.
      *
      * **Why the jar wins over the page** (Griefed's call). A platform's loader tick is a web form; the
-     * descriptor is what the file was built against, and it is what the loader reads at runtime. Measured on
-     * the public grinder 2026-09-10, ten `UNVERIFIABLE` rows are nothing but a mis-tick —
+     * descriptor is what the file was built against, and it is what the loader reads at runtime. A mis-tick
+     * otherwise publishes `UNVERIFIABLE` for a file that runs perfectly —
      * `bellsandwhistles-0.4.5-1.21.1.jar` carries only `META-INF/neoforge.mods.toml` and is ticked Forge,
      * `Highlighter-1.19.4-forge-1.1.5.jar` is ticked Fabric — and every launcher installs those jars under
      * the loader they name. Refusing them publishes a verdict about our reading of the page.
@@ -1343,9 +1342,9 @@ class BootVerifier(
 
         // The loader's own `provides` first of all, so a jar demanding one of them is judged instead of
         // being skipped as naming something absent -- and last in precedence, because a staged jar claiming
-        // the same id is a real file the loader will load. Measured 2026-09-11: quilt-loader 0.30.1 provides
-        // `fabricloader 0.19.3` while 0.31.0-beta.4 provides `0.19.5`, and `fabric-language-kotlin` demands
-        // `[0.19.5, ∞)` -- twelve published rows died on that, invisibly, because `fabricloader` is
+        // the same id is a real file the loader will load. The versions genuinely differ: quilt-loader
+        // 0.30.1 provides `fabricloader 0.19.3` while 0.31.0-beta.4 provides `0.19.5`, and
+        // `fabric-language-kotlin` demands `[0.19.5, ∞)` -- rows die on that, invisibly, because `fabricloader` is
         // environment-provided and therefore never staged for anything to compare against.
         //
         // Nested next, so a top-level jar of the same id wins: that is the copy staging deliberately
@@ -1687,8 +1686,8 @@ class BootVerifier(
          *
          * **Why refuse rather than boot anyway:** a loader that rejects a mod for missing dependencies never runs the
          * mod's code, so the run cannot distinguish client-only from server-safe; it just produces a non-zero exit
-         * that *looks* like a crash. Measured 2026-07-30 across 112 kept boot logs, 36 failed exactly that way — the
-         * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
+         * that *looks* like a crash. Measured across 112 kept boot logs, 36 failed exactly that way — the
+         * largest single failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
          * is both honest and actionable, where a "crash" would have been neither.
          */
         internal fun refuseForMissingDependencies(
@@ -1738,21 +1737,19 @@ class BootVerifier(
         /**
          * Where one manifest-declared requirement lands, without touching the network or the disk.
          *
-         * Extracted because the decision used to live in three adjacent branches of the staging loop and
-         * they had drifted: the download failure refused, while "resolved but nothing usable" did not,
-         * even though both are the same case by the rule below. `CurseForge/attributefix` at Minecraft
-         * 1.21.11 booted without the Fabric API its manifest hard-requires because of it, and Quilt Loader
-         * blamed the mod.
+         * One decision rather than three adjacent branches of the staging loop, because those drift: a
+         * download failure refusing while "resolved but nothing usable" does not is the same case treated two
+         * ways, and it boots a pack without a hard-required dependency while Quilt Loader blames the mod.
          *
-         * **The rule keys on how the ref was arrived at, not on how far it got** (2026-09-06). An
+         * **The rule keys on how the ref was arrived at, not on how far it got.** An
          * [ModIdMapping.Alias] is a project we know the id names, so failing to stage it is a real gap and
          * refuses. An [ModIdMapping.Guess] is an optimistic slug that may name nothing or something else, so
-         * it never refuses however far it gets. It used to key on distance — mapped-then-unstageable
-         * refused, unmappable did not — which made *being almost resolvable worse than being unknown*, and
-         * is why CurseForge was given no guess at all.
+         * it never refuses however far it gets. Keying on distance instead — mapped-then-unstageable refuses,
+         * unmappable does not — makes *being almost resolvable worse than being unknown*, which is a reason to
+         * stop guessing at all rather than a workable rule.
          *
          * **Several mappings are tried in turn, because one mod id is genuinely served by several
-         * projects** (2026-09-09): a fork or an unofficial port keeps the original's id, so
+         * projects**: a fork or an unofficial port keeps the original's id, so
          * [LearnedModIds.mappingsFor] can offer both, and the first of them having no build for this boot is
          * not the same thing as the dependency being unavailable. The first mapping that yields a file wins;
          * a refusal needs *every* mapping to have failed, and even then only an alias may raise one — the
@@ -1846,8 +1843,8 @@ class BootVerifier(
         /**
          * Ids the environment provides rather than the pack: never staged, whatever a descriptor says.
          *
-         * **`quilt_base` is not one of them**, though it was listed here until 2026-09-01. It is QSL's base
-         * module, shipped by QFAPI, so a mod declaring it needs a jar staged exactly as one declaring
+         * **`quilt_base` is not one of them**, despite reading like a platform id. It is QSL's base module,
+         * shipped by QFAPI, so a mod declaring it needs a jar staged exactly as one declaring
          * `quilt_resource_loader` does — `KnownModIds` resolves both to QSL. Only the loaders and the
          * runtime belong here.
          */
@@ -1898,9 +1895,9 @@ class BootVerifier(
                 // whatever `LearnedModIds`/`KnownModIds` maps the manifest id to, and where those differ the
                 // id was resolved a second time against a DIFFERENT project, whose "publishes nothing for
                 // this loader and Minecraft version" then refused a boot the dependency was sitting in.
-                // Ten published ERROR verdicts were that, measured 2026-09-09: `create` (copycats,
-                // create-steam-n-rails, createaddition), `farmersdelight` (ends-delight) and
-                // `sophisticatedcore` (both unofficial Fabric ports).
+                // It publishes ERROR verdicts for mods whose dependency was present all along: `create`
+                // (copycats, create-steam-n-rails, createaddition), `farmersdelight` (ends-delight) and
+                // `sophisticatedcore` (unofficial Fabric ports) are the shapes it takes.
                 //
                 // Lowercased on both sides because descriptors spell ids inconsistently and a miss here
                 // costs the whole boot, whereas `bundledIds` above compares two ids read by the same scanner.
@@ -1993,12 +1990,11 @@ class BootVerifier(
          * and differs from the one that ran, and only for an outcome the loader build could be responsible
          * for — a **crash**, or any outcome whose console says the loader itself was too old for a mod.
          *
-         * **The second arm is why this is no longer called `shouldRecheckCrash`.** That name was accurate
-         * while a loader too old for the pack produced a non-zero exit and read as CRASHED; since
-         * `dependencyFailureMarkers` was widened (2026-08-29) it reads as INCONCLUSIVE, and the guard
-         * silently stopped covering the case its own tests describe. Measured 2026-09-08: 17 of 42
-         * dependency failures on the live daemon, with all 511 Fabric boots pinned to loader 0.19.3 while
-         * 0.19.5 was current.
+         * **The second arm is why this is not called `shouldRecheckCrash`.** A loader too old for the pack
+         * reads as INCONCLUSIVE rather than CRASHED — `dependencyFailureMarkers` covers it — so a guard keyed
+         * on CRASHED alone silently stops covering the case its own tests describe. It is not a rare shape:
+         * dependency failures of that kind run to a third of them when every boot is pinned to a loader build
+         * older than the current one.
          *
          * A SURVIVED boot is never re-run whatever its console holds: it already answered the question, and
          * a mod that booted cleanly on an old build has nothing to gain from a newer one.
@@ -2051,11 +2047,10 @@ class BootVerifier(
          *
          * **Or it is about to be published.** A crash a *decisive* rung explains reaches `CONFIRMED`, which
          * strips the mod from every server pack built against the fallback list, and that is worth one boot
-         * whatever the metadata says. This arm exists because the axis moved: a project used to be ground
-         * under every loader it publishes for, so a wrong crash routinely met a clean boot from a sibling
-         * loader in the same run (`iron-chests`, 2026-08-23) and `ClientsideVerifier.targetDisprovingTheCrash`
-         * threw it out for free. One loader per Minecraft line means that sibling is no longer booted unless
-         * something asks for it, and this is what asks.
+         * whatever the metadata says. This arm exists because of the grinding axis: one loader per Minecraft
+         * line means a wrong crash does not meet a clean boot from a sibling loader in the same run, so
+         * `ClientsideVerifier.targetDisprovingTheCrash` has nothing to throw it out with unless something
+         * asks for that sibling. This is what asks.
          *
          * In practice the second arm reaches `OPERATOR_RULE` alone — the other decisive rungs all prove
          * client-only and are excluded above — which is exactly right: a hand-written rule is the one
@@ -2236,11 +2231,11 @@ internal enum class UnmetReason {
     /**
      * The project publishes something usable and **staging excluded it** — every candidate build was demoted
      * trying to make the pack coherent. Reporting this as [NO_USABLE_FILE] states the opposite of the truth,
-     * and is what hid 1014 re-stagings a day behind 47 verdicts on 2026-09-07.
+     * and hides the re-staging that produced it — three figures a day can sit behind two of verdicts.
      *
      * Two things reach it, which is why the sentence says *coherent* rather than naming one of them: a
      * version range one staged jar declares about another (`DependencyBacktrack`), and a jar whose own
-     * descriptor excludes the Minecraft being booted (`outsideThePacksMinecraft`, 2026-09-09).
+     * descriptor excludes the Minecraft being booted (`outsideThePacksMinecraft`).
      */
     DROPPED_BY_BACKTRACK,
 
@@ -2256,17 +2251,17 @@ internal enum class UnmetReason {
      * Stated per reason rather than folded at the call site, so a reason added later cannot reach a refusal
      * without somebody deciding whether it is ours, the platform's or nobody's.
      *
-     * **`DROPPED_BY_BACKTRACK` was ours until 2026-09-12, and that was a mis-blame.** The reasoning was
-     * "staging dropped those builds itself", which describes the *mechanism*; this property is about the
-     * *blame*, and staging only ever drops a build because something upstream **declared** an
+     * **`DROPPED_BY_BACKTRACK` is not ours, though it reads like it.** "Staging dropped those builds itself"
+     * describes the *mechanism*; this property is about the *blame*, and staging only ever drops a build
+     * because something upstream **declared** an
      * incompatibility — a version range one jar states about another, or a Minecraft range a jar states
      * about itself. Neither is a host failure, and no operator can act on either: the host worked
      * perfectly. Running out of backtracks is not this case at all — `dependencyToDemote` then logs and
      * boots anyway rather than refusing.
      *
-     * Measured on the public grinder 2026-09-12: **6 of its 7 `ERROR` rows** were this, telling an operator
-     * their host was broken over `bellsandwhistles` needing a `create-fabric` build whose every candidate
-     * conflicts. `ERROR`'s own contract is *"an operator's problem, never evidence about the mod"*, and the
+     * Blaming the host for it dominates the `ERROR` population — a mod needing a dependency build whose every
+     * candidate conflicts is not a broken host. `ERROR`'s own contract is *"an operator's problem, never
+     * evidence about the mod"*, and the
      * module's `CLAUDE.md` already recorded this exact residue as open. `UNVERIFIABLE` is what it means.
      *
      * The fold still protects the loud case: `preventionCauseFor` takes the most actionable cause present,
@@ -2280,9 +2275,9 @@ internal enum class UnmetReason {
         }
 
     /**
-     * How this reads, in a refusal or a log line. **Never `null`** — it used to return `null` for
-     * [UNRESOLVED], on the grounds that the label already says so, and two log sites interpolated the
-     * result straight into a string. Neither can reach that value today, so both would have printed the
+     * How this reads, in a refusal or a log line. **Never `null`** — returning `null` for [UNRESOLVED] on the
+     * grounds that the label already says so breaks the two log sites that interpolate the result straight
+     * into a string. Neither can reach that value today, so both would print the
      * literal `null` only after some later edit, with nothing to warn them. Whether a reason is worth
      * *appending to a refusal* is a rendering decision, and it now lives in the renderer
      * (`refuseForMissingDependencies`) rather than in a nullable return.

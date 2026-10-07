@@ -24,8 +24,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Pins the contract change B31 makes: [VersionMeta] no longer refreshes its manifests while it is being
- * constructed.
+ * Pins that [VersionMeta] does not refresh its manifests while it is being constructed.
  *
  * The metas are built from the manifest *files*, and `ApiWrapper.setup()` has already seeded every one of
  * them from the jar — so there is working version data before any request is made. That is what lets the

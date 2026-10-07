@@ -27,9 +27,9 @@ import java.io.File
 /**
  * Pins the shipped `variables.txt` template that server-pack generation fills in.
  *
- * The content used to be a 91-line Kotlin string literal, so correcting a comment an operator reads meant rebuilding
- * the API. It now lives beside the start-script templates in `server_files`, which introduces one risk worth guarding:
- * generation reads a file on disk, so a missing or unreadable template must not silently produce a server pack with no
+ * It lives beside the start-script templates in `server_files` rather than as a Kotlin string literal, so correcting
+ * a comment an operator reads does not mean rebuilding the API. That brings one risk worth guarding: generation reads
+ * a file on disk, so a missing or unreadable template must not silently produce a server pack with no
  * `variables.txt` — the file every setting in a pack is configured through.
  */
 internal class VariablesTemplateTest {

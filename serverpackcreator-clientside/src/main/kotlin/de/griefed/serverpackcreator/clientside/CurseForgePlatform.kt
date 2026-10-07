@@ -94,8 +94,8 @@ class CurseForgePlatform(
         alsoVersions: List<String>
     ): ProjectFiles? = try {
         // Platform-supplied refs are numeric (a file's `dependencies[].modId`); a manifest-declared one is
-        // a mod id like `mtlib`, which used to throw here and be caught as "unresolvable". The slug route is
-        // the same search `resolve` uses, so it costs a request only where there was previously no answer.
+        // a mod id like `mtlib`, which is not a valid numeric ref and would otherwise be unresolvable. The
+        // slug route is the same search `resolve` uses, so it costs a request only where there is no answer.
         val modId = nativeRef.toLongOrNull() ?: modIdForSlug(nativeRef) ?: return null
         val modNode = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId", headers)).path("data")
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: "https://www.curseforge.com"
@@ -107,7 +107,7 @@ class CurseForgePlatform(
         // `alsoVersions` is what makes a version-line reachable at all here. Every file this endpoint returns
         // carries the version it was asked for, so a caller cannot discover a neighbour from the answer --
         // which is why the patch-version fallback in `BootCandidateSelector` was inert on this platform until
-        // 2026-09-10. The caller supplies neighbours only after the exact version has failed, so the common
+ //. The caller supplies neighbours only after the exact version has failed, so the common
         // case is still exactly one request.
         val files = (listOf(minecraftVersion) + alsoVersions.filter { it != minecraftVersion })
             .distinct()
@@ -170,8 +170,8 @@ class CurseForgePlatform(
      * **Why the whole list:** a project that migrated Forge → NeoForge keeps publishing NeoForge builds, so its
      * last Forge build sinks toward the far end of a single page and the builds before it drop out of view
      * entirely — leaving the boot-phase's crash re-check with no other version of *that* loader to try,
-     * precisely for the projects that produce a false clientside verdict (measured on `iron-chests`,
-     * 2026-08-23). Most projects still cost one call, because `totalCount` says when to stop.
+     * precisely for the projects that produce a false clientside verdict (`iron-chests` is the measured
+     * case). Most projects still cost one call, because `totalCount` says when to stop.
      *
      * Bounded by [MAX_FILE_PAGES]: a `totalCount` that never arrives — an odd answer, a changed response
      * shape — must cost a bounded number of calls against the key's quota rather than spin. A truncated view

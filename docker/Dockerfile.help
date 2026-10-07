@@ -20,8 +20,9 @@ RUN \
     /tmp/*
 
 # The Kotlin API reference (Dokka HTML for `serverpackcreator-api`), merged in here because Writerside cannot
-# host a generated file tree itself -- see the comment in `Writerside/spch.tree`, which links to `api/index.html`
-# relative to the site root and therefore depends on this exact path.
+# host a generated file tree itself -- see the comment in `Writerside/spch.tree`. This is the path a reader
+# reaches by URL; the help site's own TOC entry is an absolute link to the published copy, because the
+# Writerside viewer will not navigate to a relative one.
 #
 # AFTER the RUN above, never before: that RUN opens with `rm -rf /config/www/*`, which would delete this.
 # The source is NOT optional -- a missing `public/api/` fails the build here rather than silently shipping a

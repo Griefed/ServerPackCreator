@@ -174,18 +174,18 @@ internal class FallbackPropertiesRendererTest {
  *
  * Why HIGH alone was never enough: `CRASHED` is reachable both from the client-only-class marker, which no
  * environment failure can fabricate, and from the bare exit-code fallback, which means only "the process
- * exited non-zero and nothing recognised why". Sampled against the live grinder on 2026-08-31, four of five
- * published boot logs were the latter, and `created_ltab-` was already in the served list because of it.
+ * exited non-zero and nothing recognised why" — which is an excuse, not evidence, and must not put a mod in
+ * the served list.
  */
 internal class FallbackPropertiesPublicationGateTest {
 
     /**
      * A stored row as the engine would produce it for a boot decided by [decidedBy].
      *
-     * The decisive-rung check used to live in the renderer beside the confidence floor. It now lives
-     * upstream in `ClientsideVerifier.verdictOf`, which only ever reaches `CONFIRMED` from a rung
-     * `BootDecision.decisive` marks — so this helper models that fold, and the assertions below still pin
-     * the same end-to-end outcomes: what a decisive rung produced publishes, what an excuse produced does not.
+     * The decisive-rung check lives upstream in `ClientsideVerifier.verdictOf`, which only ever reaches
+     * `CONFIRMED` from a rung `BootDecision.decisive` marks — so this helper models that fold, and the
+     * assertions below pin the end-to-end outcomes: what a decisive rung produced publishes, what an excuse
+     * produced does not.
      */
     private fun verdict(slug: String, decidedBy: String?) = grindVerdict(
         slug, "Fabric", suggestedEntry = "$slug-",

@@ -65,9 +65,9 @@ class ModpackZipInspector(
     fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck {
         val foldersInModpackZip: List<String>
         try {
-            // One open for both the validity check and the base-directory scan. They used to be two,
-            // and reading the central directory twice is the single most expensive thing this class
-            // does -- ~80 ms for a 10,000-entry archive, more for a bigger one.
+            // One open for both the validity check and the base-directory scan: reading the central
+            // directory is the single most expensive thing this class does -- ~80 ms for a
+            // 10,000-entry archive, more for a bigger one -- so it is not done twice.
             openZip(Paths.get(pathToZip).toFile()).use {
                 if (it.isNotValidZipFile()) {
                     // Name, not path. These errors are joined verbatim into the 400 body the upload
@@ -200,9 +200,8 @@ class ModpackZipInspector(
     fun getAllFilesAndDirectoriesInModpackZip(zipFile: File): List<String> {
         val filesAndDirectories: MutableList<String> = ArrayList(100)
         try {
-            // One pass, partitioned. This used to call the two per-kind methods, each of which opened
-            // the archive and read the whole central directory -- twice the cost for the same headers.
-            // Directories still come first, as they did when they were two separate calls.
+            // One pass, partitioned: calling the two per-kind methods instead would open the archive
+            // and read the whole central directory twice for the same headers. Directories come first.
             openZip(zipFile).use { archive ->
                 val (directories, files) = archive.fileHeaders.partition { header -> header.isDirectory }
                 filesAndDirectories.addAll(directories.map { header -> header.fileName })

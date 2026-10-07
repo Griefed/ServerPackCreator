@@ -172,8 +172,8 @@ class RunHeadlessCommand(
  *
  * File-level so every command in this file can reach it regardless of nesting. Reported separately
  * from [ServerPackGeneration.errors] because the two are different questions: a pack can build
- * perfectly and still contain an infected mod, and that used to be reported as "Error generating
- * Server Pack" while a pack whose files never copied was reported as a success.
+ * perfectly and still contain an infected mod, and a pack whose files never copied is a failure that
+ * has nothing to do with the scan.
  */
 private fun reportScanFindings(generation: ServerPackGeneration) {
     if (generation.scanFindings.isEmpty()) {

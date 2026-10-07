@@ -36,7 +36,7 @@ import java.nio.charset.StandardCharsets
  * slice, requesting as many API pages as it takes; behind an [HttpFetcher] so it is unit-tested against
  * canned JSON without touching the network.
  *
- * **Offset ceiling (measured, 2026-07-29):** the API serves deep offsets happily (40 000 returns real
+ * **Offset ceiling (measured):** the API serves deep offsets happily (40 000 returns real
  * hits) but clamps `offset` at 99 999, answering with zero hits beyond it. `project_type:mod` currently
  * counts ~71 000 projects, so the whole catalog is reachable today; should it ever pass 100 000, the tail
  * becomes unreachable and looks exactly like the end of the catalog — the crawl would silently wrap early.
@@ -140,7 +140,7 @@ class ModrinthCandidateSource(
 
     internal companion object {
         /**
-         * The deepest `offset` Modrinth's search will serve, measured 2026-07-29: offset 40 000 returns real hits,
+         * The deepest `offset` Modrinth's search will serve, measured: offset 40 000 returns real hits,
          * and beyond this the API answers with **zero hits** rather than an error. `project_type:mod` sits around
          * 71 000 projects today, comfortably below it.
          */

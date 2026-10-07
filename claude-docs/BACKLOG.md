@@ -10,11 +10,43 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B43**, with the reason it waited and enough context to pick
+Add the next item under a dated section, starting at **B46**, with the reason it waited and enough context to pick
 it up cold. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
+
+## 2026-10-03 — from the AppImage portability pass
+
+### B45 — bundle glibc so the AppImage runs on musl and non-FHS systems
+
+The AppImages were reported as not self-contained, "references glibc 2.15". Measured against the JDK
+the build bundles (Temurin `jdk-21.0.12.1+1`, every ELF scanned): the highest symbol version really is
+**`GLIBC_2.15`**, raised by `lib/libjava.so` and `lib/server/libjvm.so`. The AppImage runtime
+contributes none — it is `type2-runtime`, static-pie — and the JDK ships no libc, libstdc++ or libgcc
+of its own, so the bundled JDK alone sets the floor.
+
+A maintained toolchain for closing it exists: **`sharun` + `uruntime`** (pkgforge-dev's
+*Anylinux-AppImages*), which bundles the loader, glibc, NSS, gconv and the dlopened libraries, and
+packs with DwarFS rather than squashfs — plausibly *shrinking* the current 256 MB artifact.
+
+**Why it waited** (Griefed's call, 2026-10-03, with the measurement in hand): the floor is already
+March 2012, so what it buys is musl systems (Alpine, Void-musl), non-FHS ones (NixOS, GUIX) and
+pre-2012 glibc, not the mainstream. Three things argue against doing it now:
+
+- **glibc alone would not make the artifact self-contained.** `libawt_xawt.so` needs host
+  `libX11.so.6`, `libXext.so.6`, `libXi.so.6`, `libXrender.so.1` and `libXtst.so.6`; `libjsound.so`
+  needs `libasound.so.2`. Bundling the C library moves the floor without removing the dependency class.
+- **`libnet.so` calls `getaddrinfo`**, and NSS is where bundled-glibc builds characteristically break:
+  glibc dlopens `libnss_*.so.2` matching the *running* glibc, and a host `/etc/nsswitch.conf` can name
+  modules the bundle does not carry. ServerPackCreator's whole job is downloading modpacks.
+- The cheap half landed instead and removes the way this failed silently: the JDK is pinned, the floor
+  is asserted at build time, and the launcher now errors instead of quietly using the system's Java.
+
+**To pick it up cold:** the measurement, the method to re-run it and the full host-library list are in
+`misc/AppImage-Portability.md`. The decision to revisit is a report from an actual musl or NixOS user,
+or a wish to drop the artifact's size — not the glibc number on its own, which is already as low as a
+prebuilt Temurin goes.
 
 ## 2026-09-25 — from the server-test plugin branch
 

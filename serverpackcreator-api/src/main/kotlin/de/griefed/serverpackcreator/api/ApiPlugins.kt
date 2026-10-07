@@ -81,16 +81,15 @@ class ApiPlugins(
      * listeners, and third-party plugins are entitled to do the same, because the example is the
      * documentation. So this must not run until the API it will reach into exists.
      *
-     * It used to run from this class's `init`, i.e. from inside `ApiWrapper.apiPlugins`' lazy initialiser,
-     * which `stageThree` touches **before** `serverPackHandler` is built. Two unbounded recursions came out
-     * of that, and both are closed by making the caller decide when this happens
+     * Running it from this class's `init` — i.e. from inside `ApiWrapper.apiPlugins`' lazy initialiser,
+     * which `stageThree` touches **before** `serverPackHandler` is built — opens two unbounded recursions,
+     * and both are closed by making the caller decide when this happens
      * ([de.griefed.serverpackcreator.api.ApiWrapper.stageThree] calls it last):
      *  - `ApiWrapper.api()` had not yet published its singleton, so the plugin's call built another wrapper,
      *     which loaded the plugins again;
      *  - `serverPackHandler`'s lazy initialiser needs `apiPlugins`, and Kotlin's `SynchronizedLazyImpl` is
      *     re-entrant on one thread, so reaching it from here ran *this* initialiser a second time.
      *
-     * Reproduced 2026-09-08: 53 wrappers, 268 `example-kotlin` log lines, OutOfMemoryError.
      *
      * Idempotent through pf4j: `loadPlugins` skips what is already resolved and `startPlugins` what is
      * already started, so a caller that runs setup twice does not double-register anything.

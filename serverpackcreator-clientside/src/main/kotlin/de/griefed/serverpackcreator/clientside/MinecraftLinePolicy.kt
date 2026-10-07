@@ -26,10 +26,10 @@ package de.griefed.serverpackcreator.clientside
  * **Why a line is the unit at all.** Sideness is a property of a *build*, and builds differ far more across
  * Minecraft eras than across loaders of one era — a mod rewritten for 1.20 shares little with its 1.12.2
  * ancestor, while its Forge and NeoForge builds of the same era are usually the same source compiled twice.
- * Grinding once per loader therefore spent most of its boots re-asking one era's question and never asked
- * the older eras at all: measured 2026-09-11 on the 200 most-downloaded Modrinth mods, 3.06 boots per
- * project covering a mean of 1.6 distinct lines, and `CurseForge/aether`'s 1.12.2 build — a wholly separate
- * codebase — was never booted under any loader.
+ * Grinding once per loader instead spends most boots re-asking one era's question and never asks the older
+ * eras at all: measured over the 200 most-downloaded Modrinth mods, that is 3.06 boots per project covering
+ * a mean of 1.6 distinct lines, with `CurseForge/aether`'s 1.12.2 build — a wholly separate codebase — never
+ * booted under any loader.
  *
  * **Why two halves rather than one list.** A bare count is self-maintaining but blind: the newest four lines
  * of a prolific project (JEI publishes for sixteen) never reach 1.12.2, which is exactly the era a fallback

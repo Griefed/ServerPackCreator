@@ -30,9 +30,9 @@ import java.util.prefs.Preferences
 /**
  * Pins that the app writes the home directory where `-api` will read it back from.
  *
- * The two used to be able to disagree: four call-sites in this module hard-coded the node name while `-api` resolves it
- * through [ApiProperties.resolvePreferencesNode], so a host claiming its own node — the grinder daemon, a test JVM —
- * would have had the app store a home that `-api` never looked at. That is the same class of mismatch that once let a
+ * The two can disagree if this module hard-codes the node name, because `-api` resolves it through
+ * [ApiProperties.resolvePreferencesNode]: a host claiming its own node — the grinder daemon, a test JVM — would then
+ * have the app store a home that `-api` never looks at. That is the same class of mismatch that once let a
  * test suite relocate a running daemon's home directory.
  *
  * Each test points the resolver at a scratch node so the developer's real settings are never touched.

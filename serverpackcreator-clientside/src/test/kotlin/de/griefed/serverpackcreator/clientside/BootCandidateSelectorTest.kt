@@ -39,7 +39,7 @@ internal class BootCandidateSelectorTest {
      *
      * The selector then legitimately offers either jar for either loader, and being a stable sort it takes
      * whichever the platform listed first. That is how `DamageVignette-2.0.2-forge+mc1.20.jar` came to be
-     * booted under NeoForge 20.4.251 on 2026-08-31, dying on `Missing language javafml version [46,)`.
+     * booted under NeoForge 20.4.251, dying on `Missing language javafml version [46,)`.
      *
      * This is characterization, not a complaint: the selector cannot tell the two jars apart from metadata
      * that describes them identically. `JarSelfDeclaration` is what refuses the pick afterwards, from the
@@ -68,7 +68,7 @@ internal class BootCandidateSelectorTest {
      * `ModrinthPlatform.filesOf` applies a version node's whole `game_versions` list to every file of it
      * without filtering — so one jar becomes one candidate *per version*, and the newest wins.
      *
-     * Measured 2026-08-31: `create_ltab` booted on Minecraft 1.20.6 against older mappings, dying with
+     * It is how `create_ltab` comes to boot on Minecraft 1.20.6 against older mappings, dying with
      * `@Inject … could not find any targets matching 'Lnet/minecraft/class_4317;method_20807'`. Nothing here
      * asks what the jar was compiled for, because nothing here can — the descriptor gate does.
      */
@@ -125,7 +125,7 @@ internal class BootCandidateSelectorTest {
      * — so the crashing combination's own line is skipped before its neighbours are considered, and the
      * budget is not spent twice on the same loader.
      *
-     * **Why:** measured 2026-08-23 on `creativecore`, both re-checks landed on the same loader, the same
+     * **Why:** without it, both re-checks land on the same loader, the same
      * loader version (Fabric 0.19.3) and the two Minecraft versions adjacent to the crashing one — near
      * identical code in a near-identical environment, and both came back INCONCLUSIVE while another loader
      * of the same project had booted a server cleanly.
@@ -289,7 +289,7 @@ internal class BootCandidateSelectorTest {
      * A Quilt boot must accept a **Fabric**-tagged dependency file, because Quilt deliberately runs Fabric mods —
      * which is why the canonical dependency of a Quilt mod is Fabric API, a project that publishes only Fabric files.
      *
-     * Measured live on 2026-07-30: strict loader matching silently dropped **210** dependencies, 210 of them on
+     * Measured live: strict loader matching silently drops **210** dependencies, 210 of them on
      * Quilt, and the single most-dropped ref was `P7dR8mSH` — Fabric API (CurseForge `306612`) — 27 times in one
      * sweep. The mod then hard-failed with "requires fabric-api" and the whole boot was wasted, which is the largest
      * failure class in the kept boot logs.
@@ -324,7 +324,7 @@ internal class BootCandidateSelectorTest {
      * Quilt-compatible on CurseForge, so a Quilt boot found a Quilt-tagged file for the wrong Minecraft version
      * and stopped before ever trying the Fabric fallback that had the right one.
      *
-     * Measured 2026-08-29 over 200 published crash logs: **20 of the 35** boots that staged a Fabric API did so
+     * Measured over 200 published crash logs: **20 of the 35** boots that staged a Fabric API did so
      * for the wrong Minecraft version — every one of them Quilt, every one of them the newest `+26.3` build,
      * dropped into packs as old as 1.19.2. Quilt Loader then refused the pack with "Fabric API requires version
      * ... of fabricloader/minecraft/java", the boot died, and the *candidate* was scored CRASHED for it.
@@ -369,9 +369,9 @@ internal class BootCandidateSelectorTest {
      * cannot load Quilt mods at all, and NeoForge loads Forge mods on Minecraft 1.20.1 only — see
      * [theNeoForgeFallbackToForgeAppliesOnMinecraft1201Only].
      *
-     * **The Forge fixture used to be tagged 1.20.1 and asked for at 1.21.1**, so it answered `null` because no
-     * file carried the version at all — whatever the loader rule said. The message spoke about cross-loading
-     * while the assertion could not see it; both fixtures are now asked at the version they carry.
+     * **Both fixtures are asked at the version they carry.** Tagging the Forge fixture 1.20.1 and asking for
+     * it at 1.21.1 makes it answer `null` because no file carries the version at all, whatever the loader rule
+     * says — an assertion about cross-loading that cannot see cross-loading.
      */
     @Test
     fun theFallbackDoesNotApplyToOtherLoaders() {
@@ -429,7 +429,7 @@ internal class BootCandidateSelectorTest {
      * A declared constraint **narrows** the choice; it must never empty it.
      *
      * That direction is the whole safety property of constraint-aware selection: preferring a satisfying
-     * file is an improvement, but returning `null` where the old code returned a file would turn a
+     * file is an improvement, but returning `null` where an unconstrained pick returns a file turns a
      * bootable candidate into a refusal — and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE,
      * so the mod would silently stop being verified at all.
      */
@@ -637,8 +637,8 @@ internal class BootCandidateSelectorTest {
      * It must prefer the obtainable file even though the locked one is the only version the constraint
      * accepts, because a locked file has no `downloadUrl` at all: picking it guarantees the dependency is
      * reported unmet, while a version the constraint dislikes at least stages and boots. This is the
-     * `306612` / Fabric-API refusal fixed on 2026-09-04, one layer down — and a staging refusal publishes
-     * `ERROR` over whatever decisive verdict the store held.
+     * `306612` / Fabric-API refusal, one layer down — and a staging refusal publishes `ERROR` over whatever
+     * decisive verdict the store held.
      */
     @Test
     fun anObtainableFileBeatsALockedOneThatSatisfiesTheConstraint() {
@@ -673,7 +673,7 @@ internal class BootCandidateSelectorTest {
      * When **no tagged version** satisfies the jar, fall back to the newest real Minecraft **release** the
      * jar's own descriptor accepts, and boot there.
      *
-     * Griefed's call, 2026-09-06, from the live grinder's ERROR rows: `moonlight-1.20.4-2.9.9-forge.jar` is
+     * Griefed's call, from the live grinder's ERROR rows: `moonlight-1.20.4-2.9.9-forge.jar` is
      * tagged 1.20.4 and only 1.20.4, while its descriptor declares `[1.20,1.20.2)`. Platform and jar share
      * no version at all, so `newestVersionSatisfying` returns null and the candidate was refused outright —
      * "bump the version to the one specced in the JAR, then run the grind."
@@ -737,7 +737,7 @@ internal class BootCandidateSelectorTest {
      * tagged — and `pickForLoader` requires `loader in it.loaders`, which no empty set satisfies. The
      * dependency was therefore unpickable and the boot refused.
      *
-     * Measured against the live CurseForge API on 2026-09-06 with Griefed's key, which is what found this:
+     * Measured against the live CurseForge API, which is what found this:
      * `modtweaker` declares dependency `253211`, that resolves to **mtlib**, and all **7** of its obtainable
      * 1.12.2 files carry `loaders=[]`. `pickDependencyFile(files, "Forge", "1.12.2")` returned nothing, and
      * the refusal read *"Required dependency unavailable for Forge / Minecraft 1.12.2: mtlib"* — the exact
@@ -787,7 +787,7 @@ internal class BootCandidateSelectorTest {
     /**
      * **An untagged file is evidence of Forge only where CurseForge had no modloader facet.** The safety
      * argument for the untagged fallback is that such files are pre-1.13, so only Forge is reachable anyway
-     * — and that is empirically false. Measured against the live API on 2026-09-11, `TerraBlender (Forge)`
+     * — and that is empirically false. Measured against the live API, `TerraBlender (Forge)`
      * publishes `TerraBlender-forge-26.2-26.2.0.0.2.jar` with `gameVersions=['26.2']`: untagged, for
      * Minecraft 26.2, in 2026.
      *
@@ -833,7 +833,7 @@ internal class BootCandidateSelectorTest {
     }
 
     /**
-     * **The candidate half of the untagged-loader rule** (Griefed's call, 2026-09-06). A project whose files
+     * **The candidate half of the untagged-loader rule** (Griefed's call). A project whose files
      * are *all* untagged was never selected as a candidate at all, so it was never ground under any loader.
      *
      * Measured against the live CurseForge API: `pickBootableCandidate(mtlib.files, "Forge")` returned
