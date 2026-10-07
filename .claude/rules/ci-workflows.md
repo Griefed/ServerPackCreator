@@ -172,6 +172,39 @@ above survived three audit iterations that validated YAML, checked action pinnin
 verified secret names. None of that touches whether the runner can execute a step. The only test that
 finds these is a real run on the real instance.
 
+## A step output written from PowerShell needs UTF-8 with no BOM
+
+**LANDMINE — `Out-File` to `$env:GITHUB_OUTPUT` on a Windows runner yields an EMPTY output, silently.**
+Windows PowerShell 5.1 — the only PowerShell a Windows host ships — defaults `Out-File` and the `>`/`>>`
+operators to **UTF-16LE**, and its `-Encoding utf8`, the workaround GitHub's own documentation gives,
+emits **UTF-8 with a byte-order mark**.
+
+The Forgejo runner vendors act as `act/container/parse_env_file.go` (module
+`code.forgejo.org/forgejo/runner/v13`), and `ParseEnvFile` splits each line on its first `=` with **no
+encoding and no BOM handling at all** — unlike upstream nektos/act, which strips a UTF-8 BOM from the
+first line. So UTF-16LE gives the key `\xff\xfep\x00a\x00t\x00h\x00` and `-Encoding utf8` gives
+`\xef\xbb\xbfpath`, where the step meant `path`. The consuming step reads an empty string.
+
+**The step stays GREEN either way, which is the part that costs the time.** `runStepExecutor`
+(`act/runner/step.go`) records `stepResult.Conclusion` from the script's own exit code and logs
+`✅ Success`, and only *then* runs the file commands, whose error never touches `stepResult`. UTF-8+BOM
+parses as a junk key and reports nothing at all. UTF-16LE *does* error — the `\x0a\x00` line
+terminator leaves a trailing `\x00` byte as a line of its own, which has neither `=` nor `<<` — but it
+surfaces only as a log line reading `[runner]: invalid format '', expected a line with '=' or '<<'`,
+under a step the UI has already marked green. The `''` is not an empty line: it is the NUL byte, which
+renders as nothing.
+
+Write the file through .NET, which is the one spelling with no BOM in either PowerShell:
+
+```powershell
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "path=$jar`n", $utf8NoBom)
+```
+
+`release-build.yml`'s `winimage` job is the only place in this repository that passes a value between
+two PowerShell steps, and it is where this is enforced. The same applies to `GITHUB_ENV`,
+`GITHUB_STATE` and `GITHUB_PATH`, which that one parser serves for all four.
+
 ## A run has two numbers, and the web routes disagree about which one they take
 
 **LANDMINE — `/actions/runs/{run}` takes the per-repo index everywhere except the artifact download,

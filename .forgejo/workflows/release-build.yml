@@ -99,7 +99,15 @@ jobs:
             Get-ChildItem assets | ForEach-Object { Write-Output "  $($_.Name)" }
             exit 1
           }
-          "path=$jar" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          # LANDMINE -- a step output written with `Out-File` arrives EMPTY, from a step that stays
+          # GREEN. Windows PowerShell 5.1 defaults `Out-File` (and `>`/`>>`) to UTF-16LE, and its
+          # `-Encoding utf8` -- the workaround GitHub's own documentation gives -- emits UTF-8 WITH a
+          # byte-order mark. The Forgejo runner's env-file parser (`act/container/parse_env_file.go`)
+          # splits each line on the first `=` with no encoding or BOM handling whatsoever, so both
+          # spellings store a key that is not `path` and the consuming step reads an empty string.
+          # UTF-8 with no BOM is the only encoding that works.
+          $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "path=$jar`n", $utf8NoBom)
 
       # Resolved by glob, never spelled out: `misc/build-winimage.ps1` owns the filename including
       # `_experimental`, the same arrangement `misc/build-appimage.sh` has, and a copy here is a copy
