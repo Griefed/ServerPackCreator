@@ -376,8 +376,19 @@ jobs:
       - name: Set Permissions
         run: chmod +x gradlew
 
+      # `-Pversion` is NOT optional here, and leaving it out was not a missing nicety -- it put a second
+      # ServerPackCreator in every continuous installer. The root build's `media` task sets install4j's
+      # `release` from `version.toString()`, which without this falls back to gradle.properties'
+      # `version=dev`; and `media` dependsOn `build`, so Gradle writes `serverpackcreator-app-dev.jar`
+      # BESIDE the `serverpackcreator-app-<version>.jar` that `Download JARs` just unpacked into the same
+      # directory. `spc.install4j`'s dirEntry ships that whole directory with `excludeSuffixes="plain.jar"`,
+      # and all three launchers resolve their classpath with `<scanDirectory location="."/>` -- so the
+      # installer carried two Spring Boot fat jars and chose between them by scan order.
+      #
+      # With the version passed, Gradle's output takes the downloaded jar's name and replaces it, which
+      # is the shape release-build.yml's `assets` job has always had.
       - name: Build Install4J Media
-        run: ./gradlew media --info --full-stacktrace
+        run: ./gradlew -Pversion="${{ needs.build-jar.outputs.version }}" media --info --full-stacktrace
 
       - name: Upload Media
         uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
