@@ -53,17 +53,7 @@ jobs:
       # These three steps are what close that. Measured on a clean checkout: the generation costs
       # 23.0 s with every task re-executed and no build cache, 16.4 s with one -- against a scan that
       # takes minutes, which is why the extra dependency resolution is worth it.
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
+      - uses: ./.forgejo/actions/setup-build
 
       # `generateI18n4kFiles` resolves in -api and -plugin-example, `kaptKotlin` in both plugin
       # modules -- exactly the three modules the sanity failures came from. kaptKotlin drags in
@@ -73,9 +63,7 @@ jobs:
       # NOT `build`: the scan needs the generated SOURCES to exist, not the artifacts, and a full build
       # here would cost the frontend, the license report and the test suites for nothing.
       - name: Generate the sources the scan cannot see
-        run: |
-          chmod +x gradlew
-          ./gradlew generateI18n4kFiles kaptKotlin
+        run: ./gradlew generateI18n4kFiles kaptKotlin
 
       - name: Cache Qodana
         uses: actions/cache@v5
