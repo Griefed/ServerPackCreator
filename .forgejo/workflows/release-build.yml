@@ -869,7 +869,7 @@ jobs:
       # Every value reaches python through `env:` rather than being interpolated into the shell.
       - name: Post to Discord
         env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets.NEWS_WEBHOOK_URL }}
           VERSION: ${{ needs.prepare.outputs.version }}
           PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
           REPOSITORY: ${{ github.repository }}
@@ -878,8 +878,8 @@ jobs:
           # A missing webhook is fine and exits cleanly; a webhook that IS configured and then fails to
           # accept the post is a real failure and must not be swallowed -- hence set -e after the guard,
           # exactly as in qodana.yml's post.
-          if [ -z "${WEBHOOK_URL:-}" ]; then
-            echo "No WEBHOOK_URL configured - skipping"
+          if [ -z "${NEWS_WEBHOOK_URL:-}" ]; then
+            echo "No NEWS_WEBHOOK_URL configured - skipping"
             exit 0
           fi
           set -eu
@@ -930,7 +930,7 @@ jobs:
           NEWS_PY
           python3 news.py > payload.json
           STATUS="$(curl -sS -o posted.json -w '%{http_code}' -X POST \
-            -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL")"
+            -H 'Content-Type: application/json' -d @payload.json "$NEWS_WEBHOOK_URL")"
           if [ "$STATUS" -ge 400 ]; then
             echo "::error::The Discord webhook returned HTTP $STATUS"
             cat posted.json
