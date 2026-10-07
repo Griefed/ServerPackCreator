@@ -213,9 +213,14 @@ class DockerJavaContainerEngine(
     }
 
     /**
-     * Ask one container to exit, then remove it. `docker stop` with a timeout is SIGTERM followed by the
-     * daemon's own SIGKILL once the window passes, which is what gives a Minecraft server the chance to save
-     * its world — going straight to `remove --force`, as this used to, is a SIGKILL to PID 1 with no warning.
+     * Ask one container to exit, then remove it. `docker stop` with a timeout is SIGTERM to PID 1 followed by
+     * the daemon's own SIGKILL once [shutdownGrace] passes, where `remove --force` is that SIGKILL with no
+     * warning at all.
+     *
+     * **Sending the signal is this engine's half of the contract; honouring it is the container's.** The kernel
+     * discards a default-action signal aimed at PID 1, so a container whose PID 1 installs no handler cannot
+     * act on it and is killed when the window expires — which is what a boot's `bash start.sh` does. The
+     * landmine in this package's `CLAUDE.md` has the measurement and what it costs.
      */
     private fun stopThenRemove(containerId: String) {
         runCatching { client.stopContainerCmd(containerId).withTimeout(shutdownGrace.seconds.toInt()).exec() }
@@ -318,8 +323,7 @@ class DockerJavaContainerEngine(
     private fun exitCodeOf(containerId: String): Int? =
         runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
 
-    /** Poll interval, the suspend-gap threshold and the ambient-environment Docker client factory. */
-
+    /** The poll interval, the ownership labels, the bounded shutdown wait and the Docker client factory. */
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L

@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * Integration test for the one piece no unit test can cover: [DockerJavaContainerEngine] against a
@@ -170,28 +172,54 @@ internal class DockerJavaContainerEngineIT {
 
     /**
      * `systemctl stop` must *signal* a container, not shoot it. `close` issues a `docker stop` with a bounded
-     * grace window before force-removing, so a Minecraft server gets its chance to save and exit; a bare
-     * `remove --force` is a SIGKILL to PID 1 and loses the world save of an in-flight boot.
+     * grace window before force-removing, so a container that handles the signal gets to finish what it is
+     * doing; a bare `remove --force` is a SIGKILL to PID 1 with no warning at all.
      *
-     * Asserted on the container's own exit: a shell trapping TERM writes its marker and exits 0 only if the
-     * signal actually arrived.
+     * Asserted on the container's own exit: a shell trapping TERM writes [GRACEFUL_TERM] and exits 0 only if
+     * the signal actually arrived.
+     *
+     * **This asserts what the engine sends, not what a boot does with it.** The fixture installs a trap;
+     * `bash start.sh` — what a real boot runs as PID 1 — does not, and the kernel discards a default-action
+     * signal sent to PID 1. See the landmine in this package's `CLAUDE.md`.
      */
     @Test
     fun closeSignalsAContainerBeforeKillingIt() {
         // A short window: this asserts that the signal is *sent and honoured*, not how long production waits.
         val signalEngine = DockerJavaContainerEngine(shutdownGrace = Duration.ofSeconds(5))
         val sawSignal = java.util.concurrent.atomic.AtomicBoolean(false)
+        val trapInstalled = CountDownLatch(1)
         val booting = Thread {
             runCatching {
                 signalEngine.run(
-                    busyboxSpec("trap 'echo GRACEFUL-TERM; exit 0' TERM; echo ready-to-be-stopped; while true; do sleep 1; done"),
+                    // `sleep & wait` rather than a loop of foreground sleeps: a trap runs only once the current
+                    // foreground command returns, so looping `sleep 1` spends up to a second of the grace window
+                    // on shell granularity before the handler is even entered. Measured against docker 29.7.2,
+                    // `docker stop -t 5` on an identical trap: 1037 ms looping, 72 ms waiting.
+                    busyboxSpec(
+                        "trap 'echo $GRACEFUL_TERM; exit 0' TERM; echo $TRAP_INSTALLED; sleep 600 & wait"
+                    ),
                     Regex("this-never-appears"),
                     Duration.ofMinutes(5)
-                ) { line -> if (line.contains("GRACEFUL-TERM")) sawSignal.set(true) }
+                ) { line ->
+                    if (line.contains(TRAP_INSTALLED)) trapInstalled.countDown()
+                    if (line.contains(GRACEFUL_TERM)) sawSignal.set(true)
+                }
             }
         }.apply { isDaemon = true; start() }
 
-        waitForContainerOf(signalEngine)
+        // Wait for the container to say its handler is installed, NOT merely for the daemon to call it running.
+        // Those are different events and this test depends on the later one: a container is "running" from the
+        // moment its process exists, several shell statements before `trap` has been executed, and a SIGTERM
+        // arriving in that window is **discarded** rather than honoured -- the kernel drops a default-action
+        // signal aimed at PID 1. The run then survives its own stop, the grace window expires, and the engine
+        // kills it, which reads as "the engine never signalled". Reproduced by delaying the trap behind a
+        // `sleep 2`: 3 of 3 runs failed on this assertion with the container exiting 137.
+        Assertions.assertTrue(
+            trapInstalled.await(FIXTURE_DAEMON_BUDGET_MILLIS, TimeUnit.MILLISECONDS),
+            "the fixture never saw the container install its TERM handler within " +
+                "${FIXTURE_DAEMON_BUDGET_MILLIS / 1000}s; the daemon was too slow, which is not what this " +
+                "test is about"
+        )
         signalEngine.close()
         booting.join(FIXTURE_DAEMON_BUDGET_MILLIS)
 
@@ -407,5 +435,15 @@ internal class DockerJavaContainerEngineIT {
          * `lines.none { it.contains(...) }` cannot match something else and quietly pass.
          */
         const val SLEPT_THROUGH = "SLEPT-THROUGH-THE-READY-LINE"
+
+        /**
+         * Printed by the signal fixture once its TERM trap is installed, which is the moment it becomes able
+         * to honour a stop. One constant for the shell that writes it and the sink that waits on it, so the
+         * two cannot drift into a wait for a line nothing prints.
+         */
+        const val TRAP_INSTALLED = "TRAP-INSTALLED"
+
+        /** Written by the signal fixture's TERM handler, so its presence proves the signal arrived. */
+        const val GRACEFUL_TERM = "GRACEFUL-TERM"
     }
 }

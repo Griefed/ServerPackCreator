@@ -149,11 +149,37 @@ downloadIfNotExist() {
   fi
 }
 
+# stopServer
+# Hands a termination request to the running server and waits for it to shut down, leaving with the
+# conventional 128+15. Registered for TERM only: that is what `docker stop` and `systemctl stop` send,
+# while Ctrl-C already reaches the server directly as SIGINT.
+#
+# Without this the signal dies here. A pack run under docker or systemd has this script as PID 1, and the
+# kernel discards a signal aimed at PID 1 unless a handler is installed for it -- so the request is lost,
+# the stop window expires, and the server is SIGKILLed with its world unsaved.
+stopServer() {
+  if [[ -n "${SERVER_PID}" ]]; then
+    kill -TERM "${SERVER_PID}" 2>/dev/null
+    wait "${SERVER_PID}" 2>/dev/null
+  fi
+  exit 143
+}
+trap stopServer TERM
+
 # runJavaCommand(command)
-# Runs the command $1 using the Java installation set in $JAVA.
+# Runs the command $1 using the Java installation set in $JAVA, in the background, and waits for it —
+# returning the server's own exit status, as a foreground run would.
+#
+# Backgrounded so the shell stays responsive while the server runs: a shell blocked in a foreground command
+# does not enter a trap until that command returns, which is what lets stopServer forward a stop request at
+# once. `0<&0` re-attaches standard input explicitly, and is load-bearing: with job control off a shell
+# redirects an asynchronous command's input from /dev/null, which would silently cut the server console off
+# from every command an operator types.
 runJavaCommand() {
   # shellcheck disable=SC2086
-  "$JAVA" ${1}
+  "$JAVA" ${1} 0<&0 &
+  SERVER_PID=$!
+  wait "${SERVER_PID}"
 }
 
 # runInstallerJavaCommand(command)

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 /**
  * Guards the **shipped** start-script templates at the source level, without a container. The grinder's
@@ -1034,4 +1035,90 @@ internal class ScriptTemplateContentTest {
             "the offline path must still assemble the run command, was:\n$output"
         )
     }
+
+    /**
+     * **Executes** the bash template's signal handling: a `SIGTERM` to the script must reach the *server*, and
+     * the server console must keep working while it can.
+     *
+     * A pack's PID 1 under docker or systemd is this script, and the kernel **discards** a default-action signal
+     * aimed at PID 1 — so a script that neither traps `TERM` nor `exec`s the server swallows every stop request
+     * and the server is SIGKILLed when the window expires, losing the world save. Measured with `docker stop -t 5`
+     * against the two shapes: no trap, 5096 ms and exit 137; trap plus `wait`, 72 ms and exit 0.
+     *
+     * The stdin half is the trap this fix sets for itself, and it fails silently: a shell with job control off
+     * redirects an asynchronous command's stdin from `/dev/null` unless a redirection says otherwise, so
+     * backgrounding the server to make it signallable also disconnects the console every operator types `stop`
+     * into. Verified under `bash:latest`: `cat & wait` reads nothing, `cat 0<&0 & wait` reads its input.
+     */
+    @Test
+    fun theBashTemplateForwardsATerminationSignalToTheServerAndKeepsItsConsole() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — signal-forwarding execution check skipped")
+
+        // Stands in for the server: announces what it read from stdin, then waits to be signalled. `sleep & wait`
+        // rather than a foreground sleep, so the handler is entered at once instead of after the sleep returns.
+        val fakeServer = File.createTempFile("spc-fake-server-", ".sh").apply {
+            writeText(
+                """
+                #!/bin/sh
+                trap 'echo CHILD-GOT-TERM; exit 0' TERM
+                if read -r line; then echo "CHILD-STDIN:${'$'}line"; else echo "CHILD-STDIN-CLOSED"; fi
+                sleep 30 & wait
+                """.trimIndent()
+            )
+            setExecutable(true)
+            deleteOnExit()
+        }
+
+        val harness = File.createTempFile("spc-signal-", ".sh").apply { deleteOnExit() }
+        harness.writeText(
+            """
+            JAVA="${fakeServer.absolutePath}"
+            ${extractShellFunction("default_template.sh", "stopServer")}
+            ${extractShellLine("default_template.sh", "trap stopServer")}
+            ${extractShellFunction("default_template.sh", "runJavaCommand")}
+            runJavaCommand ""
+            """.trimIndent()
+        )
+
+        // The console goes to a file rather than a pipe. A pipe loses the very lines this test is about: the JDK
+        // closes it as the process exits, so the reader throws `Stream closed` on output the handler had already
+        // written. The file keeps everything and can be read after the exit.
+        val console = File.createTempFile("spc-signal-console-", ".log").apply { deleteOnExit() }
+        val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+            .redirectOutput(console).redirectErrorStream(true).start()
+        process.outputStream.use { it.write("say hello\n".toByteArray()) }
+
+        // Wait for the stand-in to have read stdin before signalling, so this asserts the handler and never the
+        // race of a signal arriving before the child exists.
+        val until = System.currentTimeMillis() + FIXTURE_BUDGET_MILLIS
+        while (!console.readText().contains("CHILD-STDIN") && System.currentTimeMillis() < until) {
+            Thread.sleep(50)
+        }
+        Assertions.assertTrue(
+            console.readText().contains("CHILD-STDIN:say hello"),
+            "the server must still receive its console on stdin; backgrounding it without re-attaching fd 0 " +
+                "sends the console to /dev/null. Saw:\n${console.readText()}"
+        )
+
+        process.destroy() // SIGTERM on Unix, which is what `docker stop` and `systemctl stop` send.
+        val finished = process.waitFor(FIXTURE_BUDGET_MILLIS, TimeUnit.MILLISECONDS)
+
+        Assertions.assertTrue(finished, "the script must act on SIGTERM rather than ignore it. Saw:\n${console.readText()}")
+        Assertions.assertTrue(
+            console.readText().contains("CHILD-GOT-TERM"),
+            "SIGTERM to the script must be forwarded to the server so it can save and exit. " +
+                "Saw:\n${console.readText()}"
+        )
+    }
+
+    /** How long the signal check waits on a child process before calling the host, not the template, the problem. */
+    private val FIXTURE_BUDGET_MILLIS = 30_000L
+
+    /**
+     * Cut one top-level line out of a shell template, so a harness can execute the real registration rather than
+     * a copy of it. Pins the line's existence as a side effect: a template that stops containing it fails here.
+     */
+    private fun extractShellLine(template: String, startsWith: String): String =
+        template(template).lines().firstOrNull { it.trimStart().startsWith(startsWith) }
+            ?: Assertions.fail("template $template has no line starting `$startsWith` — update this test")
 }

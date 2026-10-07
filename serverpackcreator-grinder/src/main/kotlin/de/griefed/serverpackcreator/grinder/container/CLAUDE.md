@@ -84,6 +84,45 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   `aBootCanExecuteFromItsTmpfsWhileKeepingTheRestOfItsHardening` pins both halves — it **executes** a binary out
   of `/tmp` (the flag is the mechanism, running the file is the promise) and then asserts `nosuid`/`nodev`
   survived.
+- **LANDMINE — the graceful stop is SENT but a boot cannot HONOUR it, and the IT that "proves" it only proves
+  the sending half.** `close()` → `stopThenRemove` issues `docker stop`, i.e. SIGTERM to PID 1 then the daemon's
+  SIGKILL once the window passes. A boot's PID 1 is **`bash start.sh`** (`ContainerServerRunner`,
+  `command = listOf("bash", "start.sh")`), the shipped `default_template.sh` installs **no trap** and launches the
+  server with `runJavaCommand` as a **child rather than `exec`** — and the kernel *discards* a default-action
+  signal aimed at PID 1. So the signal reaches nothing, the full `SHUTDOWN_GRACE` (15 s) elapses, and the server
+  is SIGKILLed anyway. Measured against docker 29.7.2, `docker stop -t 5` on the two shapes:
+
+  | PID 1 | result |
+  |---|---|
+  | `sh -c 'sleep 600 & wait'` — the production shape, no trap | **5096 ms, exit 137** (SIGKILL) |
+  | `sh -c "trap 'exit 0' TERM; sleep 600 & wait"` — the IT's fixture | **72 ms, exit 0** |
+
+  **The bash template now forwards it** (`stopServer` + a backgrounded `runJavaCommand`, pinned by
+  `ScriptTemplateContentTest.theBashTemplateForwardsATerminationSignalToTheServerAndKeepsItsConsole`), so a
+  grinder boot — which runs `bash start.sh` — does get a clean stop. **fish and PowerShell do not, and the
+  reasons are measured rather than assumed.** Against fish 4.6.0:
+
+  | asked of fish | answer |
+  |---|---|
+  | does an `--on-signal TERM` handler run during a foreground command? | **no** — deferred until it returns (30 s late in the probe), so a foreground server swallows the stop |
+  | does `wait $pid` wait? | **no** — returns at once |
+  | does `wait` (no args) wait? | yes, but reports **status 0** whatever the job did |
+  | does `begin … end &` set `$last_pid`? | **no** — the block has no addressable pid |
+
+  So fish can have signal forwarding *or* a faithful exit status, not both: the run loop captures
+  `runJavaCommand`'s status and exits with it precisely so a crash is distinguishable from a clean shutdown,
+  and backgrounding silently makes that 0. PowerShell is a separate case — the `.ps1` targets Windows, which
+  has no SIGTERM at all. **Do not port the bash shape to either without re-measuring.**
+
+  **`closeSignalsAContainerBeforeKillingIt` passes because its fixture installs a trap**, which a fish or
+  PowerShell pack still does not — so
+  it guards the engine's half of the contract and is silent about the half that decides whether a server ever
+  gets to save. Do not read it as proof that a boot shuts down gracefully. Two consequences: every grinder
+  shutdown costs the full 15 s window per in-flight boot rather than the sub-second a handled signal takes, and
+  a *user's* pack has the same shape, where the world being lost is not scratch. Fixing it means a `trap` plus
+  `wait` (or `exec`) in the three shipped start-script templates, which is a user-facing change to every
+  generated pack and therefore Griefed's call, not a drive-by.
+
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
