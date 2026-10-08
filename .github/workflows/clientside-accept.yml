@@ -33,7 +33,7 @@ jobs:
       # exact entries a maintainer reviewed rather than re-deriving (and re-booting) them.
       - name: Extract report JSON from comment
         id: report
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs')

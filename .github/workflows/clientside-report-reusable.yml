@@ -49,7 +49,7 @@ jobs:
       # since the caller always passes the issue number.
       - name: Resolve project link
         id: link
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const issueNumber = Number('${{ inputs.issue_number }}')
@@ -76,7 +76,7 @@ jobs:
 
       - name: Comment that no link was found
         if: steps.link.outputs.found != 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const marker = process.env.REPORT_MARKER
@@ -157,7 +157,7 @@ jobs:
       # exist until the upload above has run, which is after the report was rendered.
       - name: Post report comment
         if: steps.link.outputs.found == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           ARTIFACT_URL: ${{ steps.boot-logs.outputs.artifact-url }}
           PROOF_URL: ${{ steps.link.outputs.proof }}
