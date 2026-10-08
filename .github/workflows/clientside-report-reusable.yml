@@ -42,7 +42,7 @@ jobs:
     env:
       REPORT_MARKER: "<!-- serverpackcreator-clientside-report -->"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # The issue-template stores the project-link in a dedicated field; grab the first
       # Modrinth/CurseForge URL from the issue-body. Works for both the issue and dispatch triggers

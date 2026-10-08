@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # The seven root-level documents are the source of truth and the copies under `Writerside/topics/` are
       # generated and gitignored, so a fresh checkout does NOT have them -- without this step the Changelog,
