@@ -1,18 +1,25 @@
-# TEMPORARY -- Phase 0 of the shared-base work. Delete both probe workflows once the questions below
-# are answered; they exist to produce evidence, not to stay.
+# TEMPORARY -- Phase 0 of the shared-base work. Delete all three probe workflows once the questions
+# below are answered; they exist to produce evidence, not to stay.
 #
-# Three questions, none of which can be settled by reading. All three must pass before any real
+# Four questions, none of which can be settled by reading. All must be answered before any real
 # workflow starts calling a reusable one:
 #
-#   1. Does this instance's runner expand a local `workflow_call` reference at all?
-#   2. Does a `windows-latest` job inside a called workflow reach the Windows runner?
-#   3. **Does a FAILING inner job fail the caller?** A multi-job reusable workflow used to report
+#   1. Does this instance's runner expand a local `workflow_call` reference at all, and do an input
+#      and an output cross the boundary in both directions?
+#   2. Does `secrets: inherit` parse on the caller, given the callee may not declare its secrets?
+#   3. Does a `windows-latest` job INSIDE a called workflow reach the Windows runner?
+#   4. **Does a FAILING inner job fail the caller?** A multi-job reusable workflow used to report
 #      SUCCESS when an inner job failed -- intermittently, and only above one job
 #      (https://codeberg.org/forgejo/forgejo/issues/6657). Fixed by forgejo/runner#1081 and verified
 #      against Runner v12.1.2. Below that, a broken artifact build reports green and a release ships
 #      on it, so this is the question that decides whether the shared base is safe to build.
 #
-# Not triggered on its own: `workflow_call` is the only trigger, so no push runs this.
+# WHAT THIS PROBE CANNOT TELL YOU: #6657 was reported as job-count dependent, and a call here runs
+# two or three jobs where `artifacts-reusable.yml` will run about six. Three green canaries are
+# evidence the mechanism works, not proof it scales. The first deliberate failure under the real
+# workflow in Phase 3 is the confirmation; this is the gate that decides whether Phase 3 starts.
+#
+# Not triggered on its own: `workflow_call` is the only trigger, so no push runs this directly.
 name: Probe (reusable)
 
 on:
@@ -27,6 +34,14 @@ on:
         required: false
         type: boolean
         default: false
+      windows:
+        description: >-
+          When true, also run the `windows-latest` job. Off by default because a Windows job QUEUES
+          rather than failing when no Windows runner is online, and a call that hangs there answers
+          nothing else either.
+        required: false
+        type: boolean
+        default: false
     # NO `secrets:` block. Forgejo rejects `on.workflow_call.secrets` as a schema violation -- unlike
     # GitHub, where `.github/workflows/clientside-report-reusable.yml` declares its secrets. A callee
     # here simply reads `secrets.X`, and the caller passes `secrets: inherit`.
@@ -38,6 +53,10 @@ on:
 jobs:
   # Question 1. An input reaching an inner job, and that job's output reaching the caller, are two
   # separate hops; this job exercises both so a failure says which one broke.
+  #
+  # It also exists in EVERY call, including the canary ones, on purpose: forgejo#6657 only ever
+  # showed itself when the called workflow had more than one job, so a one-job canary would not be
+  # testing the reported condition.
   linux:
     name: "probe: input and output round-trip"
     runs-on: ubuntu-latest
@@ -52,11 +71,14 @@ jobs:
           echo "received: $ECHO"
           echo "echoed=$ECHO" >> "$GITHUB_OUTPUT"
 
-  # Question 2. This QUEUES rather than failing when no Windows runner is online, which is the same
-  # behaviour claude-docs/WINDOWS-RUNNER.md describes for the real app-image job -- so a run that sits
-  # here is a missing runner, not a broken reference.
+  # Question 3. `== true` rather than a bare `${{ inputs.windows }}` so the FAILURE DIRECTION IS
+  # SAFE: if this runner hands a workflow_call boolean through as the string "false", a bare
+  # reference is a non-empty string and therefore truthy, and every canary call would hang waiting
+  # for a Windows runner. Compared against `true` the same mistake merely skips the job, which
+  # costs one answer instead of all four.
   windows:
     name: "probe: windows runner reachable"
+    if: ${{ inputs.windows == true }}
     runs-on: windows-latest
     steps:
       - name: Report the host
@@ -64,8 +86,7 @@ jobs:
         run: |
           Write-Output "PowerShell $($PSVersionTable.PSVersion) on $env:PROCESSOR_ARCHITECTURE"
 
-  # Question 3, the one that matters. Run the caller with `fail: true` SEVERAL times: forgejo#6657 was
-  # intermittent, so one red run proves nothing on its own and one green run condemns the whole design.
+  # Question 4, the one that decides the design.
   canary:
     name: "probe: a failing inner job must fail the caller"
     runs-on: ubuntu-latest
@@ -75,7 +96,7 @@ jobs:
           FAIL: ${{ inputs.fail }}
         run: |
           if [ "$FAIL" = "true" ]; then
-            echo "Exiting 1 deliberately. The CALLING workflow must go red."
+            echo "Exiting 1 deliberately. The CALLING job must report failure."
             exit 1
           fi
           echo "Not asked to fail."

@@ -1,0 +1,101 @@
+# TEMPORARY -- Phase 0 of the shared-base work, deleted once it has answered. Separate from
+# `probe.yml` for two reasons: this run is EXPECTED to be red, so mixing it with the capability
+# probe would make a colour meaningless; and if one of the two is rejected by the instance, the
+# other still answers.
+#
+# HOW TO READ A RUN -- and this is the one place in the repository where red is the good outcome:
+#
+#   canary1, canary2, canary3      must ALL be RED.      <- a failing inner job failed its caller
+#   verdict                        must be GREEN.        <- it checked the three above and agreed
+#   the run as a whole             will be RED.          <- because the canaries are, by design
+#
+# **If `verdict` is RED, stop.** It means at least one calling job reported SUCCESS while the job it
+# called exited 1 -- this instance's runner predates forgejo/runner#1081, a broken artifact build
+# would report green, and a release would ship on it. Nothing may move into a reusable workflow
+# until the runners are past v12.1.2. That is strictly worse than the bug that started this work.
+#
+# THREE CALLS, NOT ONE: forgejo#6657 was intermittent, so one red proves nothing on its own and one
+# green condemns the design. Three samples in one run beats three runs nobody remembers to repeat.
+name: Probe (failure propagation)
+
+# See probe.yml's trigger comment for why this cannot be dispatch-only: Forgejo lists dispatchable
+# workflows from the default branch, and this one exists on a branch.
+on:
+  push:
+    branches:
+      - claude-ci-shared-base
+    paths:
+      - '.forgejo/workflows/probe*.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: probe-failure-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # NO `runs-on:` -- Forgejo disables workflow expansion for a calling job that declares one.
+  canary1:
+    name: "Failing inner job, sample 1"
+    uses: ./.forgejo/workflows/probe-reusable.yml
+    with:
+      echo: canary1-${{ github.sha }}
+      fail: true
+    secrets: inherit
+
+  canary2:
+    name: "Failing inner job, sample 2"
+    uses: ./.forgejo/workflows/probe-reusable.yml
+    with:
+      echo: canary2-${{ github.sha }}
+      fail: true
+    secrets: inherit
+
+  canary3:
+    name: "Failing inner job, sample 3"
+    uses: ./.forgejo/workflows/probe-reusable.yml
+    with:
+      echo: canary3-${{ github.sha }}
+      fail: true
+    secrets: inherit
+
+  verdict:
+    name: "A failing inner job must fail its caller, three times out of three"
+    needs: [canary1, canary2, canary3]
+    # `always()`, or this never runs: every job it needs is expected to have failed.
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every calling job must have reported failure
+        env:
+          R1: ${{ needs.canary1.result }}
+          R2: ${{ needs.canary2.result }}
+          R3: ${{ needs.canary3.result }}
+        run: |
+          echo "canary1: '$R1'"
+          echo "canary2: '$R2'"
+          echo "canary3: '$R3'"
+
+          verdict=0
+          for r in "$R1" "$R2" "$R3"; do
+            case "$r" in
+              failure)
+                ;;
+              success)
+                echo "::error::a calling job reported SUCCESS while the workflow it called exited 1 - this is forgejo#6657. The runners are below v12.1.2 and the shared base is OFF."
+                verdict=1
+                ;;
+              "")
+                echo "::error::a calling job reported no result at all - needs.<job>.result is unusable, so this probe cannot answer its question."
+                verdict=1
+                ;;
+              *)
+                echo "::error::unexpected result '$r' - expected 'failure'. Read the job before drawing a conclusion."
+                verdict=1
+                ;;
+            esac
+          done
+
+          if [ "$verdict" -ne 0 ]; then
+            exit 1
+          fi
+          echo "PASS: 3/3 failing inner jobs failed their caller. The runner is at or above v12.1.2 for this behaviour."

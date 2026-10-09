@@ -1,58 +1,100 @@
-# TEMPORARY -- Phase 0 of the shared-base work, deleted once it has answered. The questions it answers
-# and why they matter are in `probe-reusable.yml`.
+# TEMPORARY -- Phase 0 of the shared-base work, deleted once it has answered. The questions and why
+# they matter are in `probe-reusable.yml`. This file asks the three that a WORKING instance answers
+# green; `probe-failure.yml` asks the fourth, which only answers red.
 #
-# HOW TO READ A RUN:
-#   fail = false  ->  the run must be GREEN and `verdict` must pass. A red `verdict` means the output
-#                     did not cross back out of the called workflow.
-#                 ->  a run that sits forever on "probe: windows runner reachable" means no Windows
-#                     runner is online, which is a host problem, not a reference problem.
-#   fail = true   ->  the run must be RED. Run it at least three times. **If it is ever green, stop:**
-#                     this instance's runner predates forgejo/runner#1081, a failing inner job does not
-#                     fail the caller, and nothing may be moved into a reusable workflow until the
-#                     runners are upgraded past v12.1.2.
+# HOW TO READ A RUN: this one must be **GREEN**, and `verdict` must pass. A red `verdict` means an
+# input or an output did not cross the workflow_call boundary, and the shared base is off until it
+# does.
+#
+# EXCEPT for the Windows call, which has nothing depending on it on purpose: a `windows-latest` job
+# QUEUES rather than failing when no Windows runner is online (claude-docs/WINDOWS-RUNNER.md), so a
+# run that sits forever on `windows` has already answered everything else -- read `verdict` and stop
+# waiting. A hung Windows runner must not be able to withhold the answer to the other questions.
 name: Probe
 
-# Dispatch only. Nothing here should ever run off a push.
+# PUSH-TRIGGERED, which is not a preference. Forgejo builds the dispatchable workflow list from
+# `GetBranchCommit(ctx.Repo.Repository.DefaultBranch)` in `routers/web/repo/actions/actions.go`, with
+# no fallback to the branch being viewed -- so a workflow that exists only on a branch is INVISIBLE
+# in the UI's dispatch menu, and `workflow_dispatch` alone made this probe unrunnable where it lives.
+#
+# `paths:` keeps it to pushes that actually touch a probe, so the rest of the branch's work does not
+# re-run it. The REST API is the other way in and needs no merge either: it resolves the workflow
+# from the ref you pass -- `GetWorkflowFromCommit(gitRepo, opt.Ref, name)` in
+# `routers/api/v1/repo/action.go` expands that ref and lists the workflows of THAT commit:
+#
+#   curl -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+#     https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/actions/workflows/probe.yml/dispatches \
+#     -d '{"ref":"claude-ci-shared-base","return_run_info":true}'
 on:
+  push:
+    branches:
+      - claude-ci-shared-base
+    paths:
+      - '.forgejo/workflows/probe*.yml'
   workflow_dispatch:
-    inputs:
-      fail:
-        description: "Make an inner job fail on purpose, to check the caller goes red"
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: probe-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # NO `runs-on:` -- Forgejo disables workflow expansion for a calling job that declares one, and
-  # expansion is the behaviour under test.
-  call:
+  # NO `runs-on:` on any calling job -- Forgejo disables workflow expansion for a calling job that
+  # declares one, and expansion is the behaviour under test.
+  roundtrip:
     name: "Call the reusable workflow"
     uses: ./.forgejo/workflows/probe-reusable.yml
     with:
       echo: probe-${{ github.sha }}
-      fail: ${{ inputs.fail }}
-    # Passed although the probe reads no secret: the point is to confirm the keyword parses here, since
-    # the real callers need it and the callee cannot declare its secrets on Forgejo.
+    # Passed although the probe reads no secret: the point is to confirm the keyword parses here,
+    # since the real callers need it and the callee cannot declare its secrets on Forgejo.
+    secrets: inherit
+
+  # Deliberately depended on by NOTHING. See the header: this is the one call that can hang.
+  windows:
+    name: "Call it again, asking for the Windows job"
+    uses: ./.forgejo/workflows/probe-reusable.yml
+    with:
+      echo: windows-${{ github.sha }}
+      windows: true
     secrets: inherit
 
   verdict:
     name: "Check the output crossed back out"
-    needs: call
+    needs: roundtrip
     runs-on: ubuntu-latest
     steps:
+      # The plan has a hard floor of Runner v12.1.2 and nothing in this repository records what the
+      # runners actually are. If the runner identifies itself to a job at all, it is here; if this
+      # prints nothing useful, the authoritative source is the instance's admin Runners page.
+      - name: What is running this
+        run: |
+          echo "--- runner/act/forgejo environment ---"
+          env | grep -Ei '^(RUNNER|ACT|FORGEJO|GITEA)' | sort || echo "(nothing matched)"
+          echo "--- host ---"
+          uname -a
+
+      # No `if: always()` on this job: `needs: roundtrip` alone is what we want, since a failed
+      # calling job is already a loud red and this step would add nothing to it.
+      #
+      # `result` on a CALLING job is unproven on this instance, and `probe-failure.yml`'s whole
+      # verdict is built on it, so it is printed and checked for emptiness here where the answer is
+      # known to be `success`. An empty value is a finding, not a pass.
       - name: The caller must see what an inner job produced
         env:
-          GOT: ${{ needs.call.outputs.echoed }}
+          RESULT: ${{ needs.roundtrip.result }}
+          GOT: ${{ needs.roundtrip.outputs.echoed }}
           WANT: probe-${{ github.sha }}
         run: |
-          echo "want: $WANT"
-          echo "got : $GOT"
+          echo "needs.roundtrip.result : '$RESULT'"
+          echo "want                   : '$WANT'"
+          echo "got                    : '$GOT'"
+
+          if [ -z "$RESULT" ]; then
+            echo "::error::needs.<job>.result is empty for a calling job - the verdict in probe-failure.yml cannot be trusted either."
+            exit 1
+          fi
           if [ "$GOT" != "$WANT" ]; then
             echo "::error::a called workflow's output did not reach the caller"
             exit 1
           fi
-          echo "Output round-trip works."
+          echo "PASS: expansion, inputs, outputs and secrets: inherit all work."
