@@ -272,20 +272,21 @@ it is a broken build — and becomes one when the count reaches zero.
   intermittently, and only above one job ([forgejo#6657](https://codeberg.org/forgejo/forgejo/issues/6657),
   fixed by [runner#1081](https://code.forgejo.org/forgejo/runner/pulls/1081), verified against
   **Runner v12.1.2**). Below that floor a broken artifact build reports green and the release ships on
-  it. **Measured on this instance, runs 987/988 (2026-10-09): it propagates.** Three Linux calls were
-  made with an inner job exiting 1 and all three calling jobs reported `failure`, with
-  `needs.<job>.result` populated — the probe's own verdict job read it and passed. Expansion, inputs,
-  outputs and `secrets: inherit` all work, and a `windows-latest` job inside a called workflow reaches
-  the Windows runner.
+  it. **Measured on this instance, runs 987/988 and 993/994 (2026-10-09): it propagates, 4/4.** Three
+  calls were made with a Linux inner job exiting 1 and a fourth with only the *Windows* job exiting
+  1; all four calling jobs reported `failure`. `needs.<job>.result` is populated on a calling job,
+  which is what let the probe read its own verdict. Expansion, inputs, outputs and `secrets: inherit`
+  all work, and a `windows-latest` job inside a called workflow reaches the Windows runner.
 - **The runner version is in the first line of every job log** — `Runner <uuid> (version:v13.2.0)` —
   and a Linux job also gets `FORGEJO_ACTIONS_RUNNER_VERSION`, so neither the admin page nor a host
   login is needed to check the floor. The **Linux** runner is **v13.2.0**.
 - **The Windows runner reports `version:dev`, so the floor cannot be checked there at all.**
   `misc/windows-runner/README.md` builds it from `main` with a bare `go build`, which stamps no
   version in, and `FORGEJO_ACTIONS_RUNNER_VERSION` is `dev` to match. Being built from `main` is an
-  argument that it is ahead of v12.1.2, not evidence — so for that host the **behaviour is the only
-  evidence available**, which is why `probe-failure.yml` carries a Windows canary of its own rather
-  than generalising from the Linux result. `winimage` moves inside the shared workflow in Phase 3.
+  argument that it is ahead of v12.1.2, not evidence, so that host was measured directly rather than
+  generalised from the Linux result — the fourth call above is why. Keep that distinction if the
+  question is ever reopened: **the Linux runners can be checked by version, the Windows one only by
+  behaviour**, and `winimage` lives inside the shared workflow from Phase 3 on.
 - **A composite action may call other actions.** The runner's own fixture
   `act/runner/testdata/act-composite-env-test/action1/action.yml` does `uses: ./…/action2`.
 
