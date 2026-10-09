@@ -2,7 +2,7 @@ version: '3'
 services:
   serverpackcreator:
     container_name: serverpackcreator
-    image: griefed/serverpackcreator:latest
+    image: griefed/serverpackcreator:latest@sha256:31ac6b54336f4cb21d933ceaaa76ed2414cea182f8a3b18b6750c0784b70af7a
     restart: unless-stopped
     depends_on:
       - serverpackcreatordb
@@ -38,7 +38,7 @@ services:
       - ./logs:/app/serverpackcreator/logs
 
   serverpackcreatordb:
-    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204@sha256:4d7cd163d60c81c257badef488707601fa02c56368894bde4af69839fc761d69
     container_name: serverpackcreatordb
     restart: unless-stopped
     environment:

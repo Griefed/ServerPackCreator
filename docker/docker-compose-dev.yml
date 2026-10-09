@@ -40,7 +40,7 @@ services:
       - server-packs:/app/serverpackcreator/server-packs
       - logs:/app/serverpackcreator/logs
   serverpackcreatordb:
-    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204@sha256:4d7cd163d60c81c257badef488707601fa02c56368894bde4af69839fc761d69
     container_name: serverpackcreatordb
     restart: unless-stopped
     environment:
@@ -55,7 +55,7 @@ services:
   serverpackcreator-mongo-express:
     container_name: mongo-express
     restart: unless-stopped
-    image: mongo-express
+    image: mongo-express@sha256:1b23d7976f0210dbec74045c209e52fbb26d29b2e873d6c6fa3d3f0ae32c2a64
     ports:
       - 8081:8081
     depends_on:

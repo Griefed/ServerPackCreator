@@ -23,7 +23,7 @@ services:
   # Windows 11 x86_64 — hardware-accelerated, the one that behaves like a normal machine.
   # ---------------------------------------------------------------------------------------------
   windows-x64:
-    image: dockurr/windows
+    image: dockurr/windows@sha256:16fd7c39a3e48bb946d29c59dc6015942e5b900a1fa5d7e5552053bfc48ee2ea
     container_name: spc-windows-x64
     environment:
       # Windows 11 Pro, and deliberately NOT `11l` (LTSC), which reads as the obvious choice for a
