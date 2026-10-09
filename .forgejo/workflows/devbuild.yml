@@ -1,15 +1,20 @@
-# The rolling dev build -- effectively the nightly. Produces the JAR, the AppImages and the install4j
-# media, and publishes them as the `continuous` release.
+# The rolling dev build. Every push to `develop` produces the JAR, the AppImages, the Windows app-image
+# and the install4j media, and publishes them as the `continuous` release.
 name: Continuous
 
+# NO `schedule:` TRIGGER, and adding one back does not do what it looks like. Forgejo runs a scheduled
+# workflow only on the DEFAULT BRANCH, which is `main` -- so the nightly built the RELEASED code, took
+# the `git describe` branch of the version resolver because `github.ref_name` was `main`, and
+# republished `9.2.0` as the dev build, moving the rolling `continuous` tag onto `main` until the next
+# develop push moved it back. Measured in the published release of 2026-10-07: jars named `9.2.0` under
+# the `continuous` tag, from a run whose job log reads `triggered by event: schedule`.
+#
+# A nightly rebuild of unchanged source is also no fresher than the push build it replaces, and this
+# workflow publishes rather than tests, so it could not catch dependency drift either.
 on:
   push:
     branches:
       - develop
-  schedule:
-    # Nightly as well as on push, so a quiet day still refreshes the build instead of leaving a stale one
-    # on the download page.
-    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       version:
