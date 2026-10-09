@@ -42,6 +42,13 @@ on:
         required: false
         type: boolean
         default: false
+      fail_windows:
+        description: >-
+          When true, the `windows-latest` job exits 1 instead of the Linux canary. Underscored, not
+          hyphenated, so no expression parser has to decide whether `fail-windows` is a subtraction.
+        required: false
+        type: boolean
+        default: false
     # NO `secrets:` block. Forgejo rejects `on.workflow_call.secrets` as a schema violation -- unlike
     # GitHub, where `.github/workflows/clientside-report-reusable.yml` declares its secrets. A callee
     # here simply reads `secrets.X`, and the caller passes `secrets: inherit`.
@@ -85,6 +92,19 @@ jobs:
         shell: powershell
         run: |
           Write-Output "PowerShell $($PSVersionTable.PSVersion) on $env:PROCESSOR_ARCHITECTURE"
+
+      # Question 5, which run 987 did NOT answer and which the version floor cannot answer either.
+      # That run proved a failing LINUX inner job fails its caller, on a runner that identifies
+      # itself as v13.2.0. The Windows runner reports `version:dev` -- `misc/windows-runner/README.md`
+      # builds it from main with a bare `go build`, so no version is stamped in and it cannot be
+      # compared against the v12.1.2 floor at all. The behaviour is therefore the only evidence
+      # available for it, and `winimage` moves inside the shared workflow in Phase 3.
+      - name: Fail on purpose when asked
+        if: ${{ inputs.fail_windows == true }}
+        shell: powershell
+        run: |
+          Write-Output "Exiting 1 deliberately. The CALLING job must report failure."
+          exit 1
 
   # Question 4, the one that decides the design.
   canary:

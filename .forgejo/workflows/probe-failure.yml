@@ -5,8 +5,9 @@
 #
 # HOW TO READ A RUN -- and this is the one place in the repository where red is the good outcome:
 #
-#   canary1, canary2, canary3      must ALL be RED.      <- a failing inner job failed its caller
-#   verdict                        must be GREEN.        <- it checked the three above and agreed
+#   canary1, canary2, canary3      must ALL be RED.      <- a failing LINUX inner job failed it
+#   canarywin                      must be RED.         <- same again on the WINDOWS runner
+#   verdict                        must be GREEN.        <- it checked the four above and agreed
 #   the run as a whole             will be RED.          <- because the canaries are, by design
 #
 # **If `verdict` is RED, stop.** It means at least one calling job reported SUCCESS while the job it
@@ -14,8 +15,14 @@
 # would report green, and a release would ship on it. Nothing may move into a reusable workflow
 # until the runners are past v12.1.2. That is strictly worse than the bug that started this work.
 #
-# THREE CALLS, NOT ONE: forgejo#6657 was intermittent, so one red proves nothing on its own and one
-# green condemns the design. Three samples in one run beats three runs nobody remembers to repeat.
+# THREE LINUX CALLS, NOT ONE: forgejo#6657 was intermittent, so one red proves nothing on its own
+# and one green condemns the design. Three samples in one run beats three runs nobody repeats.
+#
+# AND ONE WINDOWS CALL, because the version floor cannot be checked there. Every Linux job log opens
+# with `Runner <uuid> (version:v13.2.0)` and sets FORGEJO_ACTIONS_RUNNER_VERSION to match; the
+# Windows runner says `version:dev`, since misc/windows-runner/README.md builds it from main with a
+# bare `go build` and stamps nothing in. Behaviour is the only evidence available for that host, and
+# `winimage` moves inside the shared workflow in Phase 3.
 name: Probe (failure propagation)
 
 # See probe.yml's trigger comment for why this cannot be dispatch-only: Forgejo lists dispatchable
@@ -58,9 +65,25 @@ jobs:
       fail: true
     secrets: inherit
 
+  # The same question for the WINDOWS runner, which run 987 left open. Only the Windows job fails
+  # here -- `fail:` stays at its default, so the Linux canary succeeds and a red caller can only have
+  # come from the Windows one.
+  #
+  # It shares the verdict job rather than getting its own because a second `if: always()` in this
+  # file would be a duplicate the check is right to flag. The cost is that a queued Windows runner
+  # holds up the Linux verdict too; acceptable, because run 987 already banked that answer.
+  canarywin:
+    name: "Failing inner job, Windows"
+    uses: ./.forgejo/workflows/probe-reusable.yml
+    with:
+      echo: canarywin-${{ github.sha }}
+      windows: true
+      fail_windows: true
+    secrets: inherit
+
   verdict:
-    name: "A failing inner job must fail its caller, three times out of three"
-    needs: [canary1, canary2, canary3]
+    name: "A failing inner job must fail its caller, on both runners"
+    needs: [canary1, canary2, canary3, canarywin]
     # `always()`, or this never runs: every job it needs is expected to have failed.
     if: ${{ always() }}
     runs-on: ubuntu-latest
@@ -70,18 +93,20 @@ jobs:
           R1: ${{ needs.canary1.result }}
           R2: ${{ needs.canary2.result }}
           R3: ${{ needs.canary3.result }}
+          RW: ${{ needs.canarywin.result }}
         run: |
-          echo "canary1: '$R1'"
-          echo "canary2: '$R2'"
-          echo "canary3: '$R3'"
+          echo "canary1   (linux)  : '$R1'"
+          echo "canary2   (linux)  : '$R2'"
+          echo "canary3   (linux)  : '$R3'"
+          echo "canarywin (windows): '$RW'"
 
           verdict=0
-          for r in "$R1" "$R2" "$R3"; do
+          for r in "$R1" "$R2" "$R3" "$RW"; do
             case "$r" in
               failure)
                 ;;
               success)
-                echo "::error::a calling job reported SUCCESS while the workflow it called exited 1 - this is forgejo#6657. The runners are below v12.1.2 and the shared base is OFF."
+                echo "::error::a calling job reported SUCCESS while the workflow it called exited 1 - this is forgejo#6657. That runner predates forgejo/runner#1081 and the shared base is OFF."
                 verdict=1
                 ;;
               "")
@@ -98,4 +123,6 @@ jobs:
           if [ "$verdict" -ne 0 ]; then
             exit 1
           fi
-          echo "PASS: 3/3 failing inner jobs failed their caller. The runner is at or above v12.1.2 for this behaviour."
+          echo "PASS: 4/4 failing inner jobs failed their caller, Windows included."
+          echo "Both runners propagate a failure out of a reusable workflow."
+
