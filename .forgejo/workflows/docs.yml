@@ -186,18 +186,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to ghcr.io
-        uses: docker/login-action@v3
+      # A composite action cannot read `secrets`, so the three values are passed in.
+      - uses: ./.forgejo/actions/registry-login
         with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.GH_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub-user: ${{ secrets.DOCKERHUB_USER }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
 
       # One job replacing three. GitLab needed a separate job per tag set because its rules are per-job;
       # here the tag list is computed, and `latest` is still reserved for a full release.

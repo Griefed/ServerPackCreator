@@ -445,18 +445,12 @@ jobs:
       # address must never be a failed build.
       - uses: ./.forgejo/actions/registry-cache
 
-      - name: Log in to ghcr.io
-        uses: docker/login-action@v3
+      # A composite action cannot read `secrets`, so the three values are passed in.
+      - uses: ./.forgejo/actions/registry-login
         with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.GH_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub-user: ${{ secrets.DOCKERHUB_USER }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
 
       # `latest` only for a full release -- a prerelease must never become the default pull, which is
       # exactly how GitLab split `Build Docker Release` from `Build Docker PreRelease`.
