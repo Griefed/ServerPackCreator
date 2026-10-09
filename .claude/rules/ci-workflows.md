@@ -205,6 +205,39 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 two PowerShell steps, and it is where this is enforced. The same applies to `GITHUB_ENV`,
 `GITHUB_STATE` and `GITHUB_PATH`, which that one parser serves for all four.
 
+## A workflow that lives only on a branch cannot be dispatched from the UI
+
+**LANDMINE — the dispatch menu is built from the DEFAULT BRANCH, so a new workflow is unrunnable
+until it is merged.** `routers/web/repo/actions/actions.go` resolves the list with
+`ctx.Repo.GitRepo.GetBranchCommit(ctx.Repo.Repository.DefaultBranch)` and hands that commit to
+`actions.ListWorkflows`; the branch being viewed never enters into it, and there is no fallback. A
+`workflow_dispatch`-only workflow pushed on a feature branch therefore appears nowhere, which is the
+chicken-and-egg this repository hit while building a probe whose entire job was to be run before its
+branch merged.
+
+**The REST API has no such restriction and is the way out.** `DispatchWorkflow`
+(`routers/api/v1/repo/action.go`) calls `GetWorkflowFromCommit(ctx.Repo().GitRepo, opt.Ref, name)`,
+and that function expands **the ref the caller passed** and lists the workflows of *that* commit:
+
+```
+curl -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+  https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/actions/workflows/<file>.yml/dispatches \
+  -d '{"ref":"<branch>","inputs":{"key":"value"},"return_run_info":true}'
+```
+
+`ref` is required (`400 ref is empty` without it), the workflow must declare `on: workflow_dispatch`,
+and a `type: boolean` input is converted from its string form before expressions see it
+(`services/actions/workflows.go`, `resolveDispatchInput`). `return_run_info` swaps the `204` for a
+`201` carrying the run id and its jobs.
+
+**The third way, and the cheapest when the branch is already pushed, is to add a `push:` trigger
+scoped with `branches:` and `paths:`** so only a commit touching the thing under test runs it. That
+is what the Phase 0 probes do. It needs no token and no merge.
+
+The consequence to plan around: **a workflow cannot be rehearsed by dispatch before it exists on the
+default branch**, so anything whose first real run would otherwise be a release needs one of the
+three routes above arranged in advance, not discovered at the point of use.
+
 ## The shared base: one definition per thing, dev and release differ only by inputs
 
 **The rule, and why it is a rule.** A release failed on 2026-10-07 because `release-build.yml`'s
