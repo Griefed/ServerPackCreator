@@ -205,6 +205,65 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 two PowerShell steps, and it is where this is enforced. The same applies to `GITHUB_ENV`,
 `GITHUB_STATE` and `GITHUB_PATH`, which that one parser serves for all four.
 
+## The shared base: one definition per thing, dev and release differ only by inputs
+
+**The rule, and why it is a rule.** A release failed on 2026-10-07 because `release-build.yml`'s
+Windows job passed `-JarPath` from a step output that was silently empty, while `devbuild.yml`'s
+Windows job passes no `-JarPath` at all — one script, two invocation shapes, and only the one nobody
+rehearses was broken. The job *looked* covered because a job of the same name runs on every develop
+push. The same audit found three more of the identical shape, one of them shipping: `devbuild.yml` ran
+`./gradlew media` with no `-Pversion`, so every continuous installer was built at
+`gradle.properties`' `version=dev` **and carried two Spring Boot fat jars**, because `media` dependsOn
+`build` and Gradle wrote `serverpackcreator-app-dev.jar` beside the downloaded
+`serverpackcreator-app-<version>.jar` that `spc.install4j`'s dirEntry then shipped alongside it.
+
+So: an artifact has exactly one definition, and the dev and release pipelines differ only in the values
+they pass it. A difference that has to exist is an **input**, never a second copy.
+
+**`misc/ci-duplication-check.py` enforces it**, with `misc/ci-duplication-allowlist.yml` holding the
+repeats that genuinely cannot be shared, each with its reason. The allowlist is keyed by a hash of the
+step's normalised body, so editing an exempted step turns the check red and the exemption is re-argued
+rather than inherited. It is not yet a `test.yml` step — a gate that is red on every push is not a pin,
+it is a broken build — and becomes one when the count reaches zero.
+
+### What Forgejo will and will not do, all of it checked rather than assumed
+
+- **`on.workflow_call.secrets` is a schema violation here.** A callee simply reads `secrets.X`, and the
+  caller passes `jobs.<id>.secrets: inherit`. This **differs from `.github/workflows/`**, where
+  `clientside-report-reusable.yml` declares its secrets and should keep doing so — GitHub honours it.
+  The cost is real and unavoidable: `inherit` is all-or-nothing, so a shared artifact workflow runs
+  with every publishing credential in scope. Say so wherever one is written, or someone will add a
+  publish step there *because the token is right here*.
+- **A calling job must omit `runs-on:`**, or Forgejo disables workflow expansion.
+- **A multi-job reusable workflow used to report SUCCESS when an inner job failed** —
+  intermittently, and only above one job ([forgejo#6657](https://codeberg.org/forgejo/forgejo/issues/6657),
+  fixed by [runner#1081](https://code.forgejo.org/forgejo/runner/pulls/1081), verified against
+  **Runner v12.1.2**). Below that floor a broken artifact build reports green and the release ships on
+  it. The instance is Forgejo 16.0.5; the **runner** versions are the thing to check, and
+  `misc/windows-runner/README.md` cross-compiles the Windows one from `main`, so the Linux runners are
+  the unknown.
+- **A composite action may call other actions.** The runner's own fixture
+  `act/runner/testdata/act-composite-env-test/action1/action.yml` does `uses: ./…/action2`.
+
+### What cannot go inside a composite action
+
+- **`actions/checkout`.** A local action's own files arrive *with* the checkout, so the checkout can
+  never be the thing inside one. Forgejo's reference calls forgetting this the most common mistake.
+- **The `secrets` context.** Pass secrets as inputs; they stay masked, because masking applies to the
+  value wherever it appears.
+- **A job-level `if:`.** It decides whether a job is scheduled; a composite runs inside one that
+  already was.
+- A composite `run:` step **must declare `shell:`**, where a job step defaults to bash.
+
+### Where the pieces live
+
+`.forgejo/actions/` — `setup-build` (JDK, Gradle, `chmod +x gradlew`; `gradle: "false"` for the Windows
+jobs, which run jpackage and never resolve a dependency), `resolve-version` (`tag` mode refuses a tag
+that is neither `X.Y.Z` nor `X.Y.Z-(alpha|beta).N`, `branch` mode derives one), `registry-cache` (the
+pull-through-cache probe **and** the builder it configures, as one unit, because the config is useless
+unless the next builder is handed it), `registry-login` (and the fact worth having in one place: ghcr's
+username is `DOCKERHUB_USER`, because the accounts share a name and ghcr authenticates the token).
+
 ## A run has two numbers, and the web routes disagree about which one they take
 
 **LANDMINE — `/actions/runs/{run}` takes the per-repo index everywhere except the artifact download,
