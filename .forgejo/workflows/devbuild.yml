@@ -42,26 +42,16 @@ jobs:
 
       - uses: ./.forgejo/actions/setup-build
 
+      # `branch` mode derives the name; the dispatch input, when one was given, wins over it. The
+      # action takes it as an input rather than reading `inputs.version` itself, so the untrusted-ish
+      # value still reaches the script through the environment and never through interpolation.
+      # The checkout above is `fetch-depth: 0`, which `branch` mode needs for `git describe` on `main`.
       - name: Determine version
         id: version
-        # Untrusted-ish dispatch input is passed via env (never interpolated into the script) to
-        # avoid shell injection; github.* contexts below are controlled by the runner.
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_VERSION" ]; then
-            VERSION="$INPUT_VERSION"
-          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
-          elif [ "$REF_NAME" = "main" ]; then
-            VERSION="$(git describe --tags --always)"
-          else
-            VERSION="${REF_NAME}-$(git rev-parse --short HEAD)"
-          fi
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Building version: ${VERSION}"
+        uses: ./.forgejo/actions/resolve-version
+        with:
+          mode: branch
+          override: ${{ inputs.version }}
 
       - name: Build with Gradle
         run: |

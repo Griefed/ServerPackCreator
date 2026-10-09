@@ -21,22 +21,18 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       prerelease: ${{ steps.v.outputs.prerelease }}
     steps:
+      # This job needs no source of its own -- it reads a ref name. The checkout is here because a
+      # LOCAL action's files arrive with the checkout, and the alternative is a second copy of the
+      # version rules. A shallow clone is enough: `tag` mode runs no git command.
+      - uses: actions/checkout@v6
+
       # The tag *is* the version: .releaserc.yml uses `tagFormat: '${version}'`, no `v` prefix.
-      # Anything not matching the two release shapes is ignored rather than half-released.
+      # Anything not matching the two release shapes is refused rather than half-released.
       - name: Determine version
         id: v
-        run: |
-          VERSION="${{ github.ref_name }}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-          elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta)\.[0-9]+$ ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::error::Tag '$VERSION' is neither X.Y.Z nor X.Y.Z-(alpha|beta).N - refusing to release."
-            exit 1
-          fi
-          echo "Releasing ${VERSION}"
+        uses: ./.forgejo/actions/resolve-version
+        with:
+          mode: tag
 
   # The one artifact that cannot be produced on any runner already in this pool. jpackage CANNOT
   # CROSS-COMPILE (JEP 392, explicit non-goal), so a Windows app-image is built on Windows -- unlike the
