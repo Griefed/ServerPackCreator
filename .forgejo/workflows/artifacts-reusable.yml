@@ -15,7 +15,39 @@
 # caller, which is where the decision to publish was made.
 name: Artifacts
 
+# TEMPORARY `workflow_dispatch:` BELOW -- remove it once this has been exercised on a branch.
+#
+# It exists because the thing it builds cannot otherwise be tested before it is merged: `devbuild.yml`
+# triggers on `push: branches: [develop]`, so a feature branch never runs it, and dispatching THAT
+# publishes -- it force-moves the rolling `continuous` tag, deletes and recreates the Forgejo and
+# GitHub releases, and rsyncs the download server. None of those belong to a rehearsal.
+#
+# Dispatching this workflow instead exercises all five jobs, the fan-out and the whole of `stage`
+# while publishing nothing: every outward-facing step lives in the CALLER. Inspect the `release-assets`
+# artifact the run produces and compare its contents against a release.
+#
+# This file is not on the default branch, so it is absent from the UI's dispatch menu -- see
+# .claude/rules/ci-workflows.md. The REST route resolves the workflow from the ref it is given:
+#
+#   curl -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+#     https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/actions/workflows/artifacts-reusable.yml/dispatches \
+#     -d '{"ref":"claude-ci-shared-base","return_run_info":true}'
+#
+# The inputs are declared twice because a trigger's inputs are its own; the defaults below exist so a
+# bare dispatch is a valid rehearsal.
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to build under. The default is deliberately not a real release."
+        required: false
+        type: string
+        default: "9.9.9-stagecheck"
+      update-channel:
+        description: "AppImage update channel: continuous or latest."
+        required: false
+        type: string
+        default: "continuous"
   workflow_call:
     inputs:
       version:
