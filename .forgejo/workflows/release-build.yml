@@ -439,66 +439,11 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
-      # must work whether or not they are up.
-      #
-      # They are addressed by IP because jobs here run inside a `docker:dind` daemon while the caches are
-      # containers of the host daemon. dind's embedded DNS does not know them, so a service name cannot
-      # resolve; routing does reach them, because `docker_dind` is attached to the cache network and its
-      # children egress through that interface.
-      #
-      # The probe asks the question that decides the outcome -- can this job reach the cache -- rather
-      # than a proxy for it. A job container and the buildx builder are both children of the same dind
-      # daemon, so a `GET /v2/` from here takes the path the builder will take. A registry whose cache
-      # does not answer is simply left out of the config and pulled from upstream.
-      #
-      # No `driver-opts: network=...`: with fixed IPs the builder has no network to join, and naming one
-      # the daemon does not know is a hard failure before a single layer is pulled --
-      #   ERROR: Error response from daemon: failed to set up container networking:
-      #          network <name> not found
-      - name: Point BuildKit at the host's registry caches when they answer
-        id: regcache
-        env:
-          # Pinned by the runner host's compose file -- claude-docs/RUNNER-REGISTRY-CACHE.md section 1.
-          # If these drift from the host, nothing breaks: the probe finds nothing and the build goes
-          # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
-          GHCR_CACHE: "172.31.77.6:5000"
-          DOCKERHUB_CACHE: "172.31.77.5:5000"
-        run: |
-          set -eu
-          toml="${RUNNER_TEMP:-/tmp}/buildkitd.toml"
-          : > "$toml"
-
-          # The second stanza per registry is not optional and is not obvious: `newMirrorRegistryHost`
-          # defaults a mirror to https, and `fillInsecureOpts` looks the mirror's own scheme up under a
-          # top-level [registry."<host:port>"] section. Without it buildkit dials https, fails the
-          # handshake, falls back to upstream -- and silently does nothing at all.
-          add_mirror() {
-            upstream="$1"
-            cache="$2"
-            if curl -fsS --max-time 5 "http://${cache}/v2/" >/dev/null 2>&1; then
-              printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' \
-                "$upstream" "$cache" "$cache" >> "$toml"
-              echo "${upstream}: the cache at ${cache} answered /v2/ - BuildKit will pull through it."
-            else
-              echo "::notice::${upstream}: nothing answered /v2/ at ${cache} - pulling from upstream. See claude-docs/RUNNER-REGISTRY-CACHE.md."
-            fi
-          }
-
-          add_mirror ghcr.io "$GHCR_CACHE"
-          add_mirror docker.io "$DOCKERHUB_CACHE"
-
-          # An empty file is valid TOML and means "no mirrors", but a comment says so in the log.
-          [ -s "$toml" ] || echo '# no registry cache answered; BuildKit pulls from upstream' > "$toml"
-
-          echo "config=$toml" >> "$GITHUB_OUTPUT"
-          echo "BuildKit config for this run:"
-          sed 's/^/  /' "$toml"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-config: ${{ steps.regcache.outputs.config }}
+      # The probe and the builder it configures, as one unit. The caches are HOST configuration
+      # (claude-docs/RUNNER-REGISTRY-CACHE.md) and this is fail-soft by design: a cache that does not
+      # answer is left out of the config and that registry is pulled from upstream, because a wrong
+      # address must never be a failed build.
+      - uses: ./.forgejo/actions/registry-cache
 
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
