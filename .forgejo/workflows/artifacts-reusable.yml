@@ -1,0 +1,455 @@
+# THE ONE DEFINITION OF WHAT A SERVERPACKCREATOR BUILD PRODUCES.
+#
+# `devbuild.yml` and `release-build.yml` both call this and differ only in what they pass. That is the
+# whole point: a release failed on 2026-10-07 because the Windows job existed twice with two different
+# invocation shapes and only the rehearsed one worked, and the same audit found the dev build shipping
+# install4j media built at `version=dev`. Every such difference is now an INPUT or it does not exist.
+#
+# THE CONTRACT IS THE `release-assets` ARTIFACT, produced by `stage`. Both callers consume exactly that
+# and nothing else, so neither has a collection step of its own to drift.
+#
+# `secrets: inherit` IS ALL-OR-NOTHING ON FORGEJO -- `on.workflow_call.secrets` is a schema violation
+# here, so a caller cannot narrow what it passes. This workflow therefore runs with EVERY publishing
+# credential the repository holds in scope, while needing exactly one (INSTALL4J_LICENSE). Do not add a
+# publish, push or mirror step here because the token happens to be reachable; publishing belongs to the
+# caller, which is where the decision to publish was made.
+name: Artifacts
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: >-
+          The version every artifact is named and built with. The CALLER resolves it (both use
+          `./.forgejo/actions/resolve-version`), so nothing has to flow back out of this workflow and
+          no `on.workflow_call.outputs` is needed.
+        required: true
+        type: string
+      update-channel:
+        description: >-
+          The AppImage update channel, baked into the `gh-releases-zsync` URL the AppImage advertises:
+          `continuous` for the rolling dev build, `latest` for a release. This is the one genuine
+          behavioural difference between the two callers.
+        required: true
+        type: string
+
+jobs:
+  # Everything that comes out of Gradle, built ONCE. Every other job downloads `gradle-jars` rather
+  # than building its own, so the jar inside the Windows app-image and the jar the release ships are
+  # the same bytes -- which `release-build.yml` used to buy by running `winimage` AFTER `assets`, at
+  # the cost of serialising them and of the `-JarPath` hand-off that broke the release.
+  jars:
+    name: "JARs"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: ./.forgejo/actions/setup-build
+
+      # `clean`, which release-build.yml's single `assets` job did NOT have: a runner workspace is
+      # reused between runs, and a stale jar in `build/libs` is exactly how the install4j media came to
+      # ship two Spring Boot fat jars. Tests are skipped because they already ran on this commit --
+      # `test.yml` on a push, and a release tags a commit that has been through it.
+      #
+      # No explicit `generateLicenseReport`: `serverpackcreator-app/build.gradle.kts` declares
+      # `tasks.build { dependsOn(":generateLicenseReport") }`, so `build` already pulls it in. The
+      # release job ran it as a separate first invocation, which was redundant rather than load-bearing.
+      - name: Build
+        run: |
+          ./gradlew clean build -Pversion="${{ inputs.version }}" \
+            --info --full-stacktrace \
+            -x :serverpackcreator-api:test -x :serverpackcreator-app:test
+
+      # Scoped to the one published module, deliberately. A bare `dokkaGenerateHtml` runs in every
+      # project that applies the dokka convention plugin, which is how a release once died on a module
+      # with no `module.md` -- see .claude/rules/ci-workflows.md.
+      - name: Build the API reference
+        run: ./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion="${{ inputs.version }}" --info
+
+      # Zipped HERE rather than in `stage`, because this is the only job with the generated tree. It
+      # used to be zipped by the release's collection step behind `if [ -d ... ]`, which FAILS OPEN: the
+      # dev build never ran dokka, so that branch was skipped on every rehearsal and executed for the
+      # first time on release day. Unconditional, and it fails if the directory is missing.
+      - name: Zip the API reference
+        run: |
+          set -eu
+          DOKKA=serverpackcreator-api/build/dokka
+          if [ ! -d "$DOKKA" ]; then
+            echo "::error::$DOKKA does not exist - dokkaGenerateHtml produced nothing."
+            exit 1
+          fi
+          (cd "$DOKKA" && zip -qr "$GITHUB_WORKSPACE/serverpackcreator-api-${{ inputs.version }}-dokka-html.zip" .)
+          ls -lh "serverpackcreator-api-${{ inputs.version }}-dokka-html.zip"
+
+      - name: Upload JARs
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          # The paths are preserved, not flattened, because the consumers below depend on them:
+          # `misc/build-appimage.sh` and `misc/build-winimage.ps1` both look under
+          # `serverpackcreator-app/build/libs`, which is why neither needs to be told where the jar is.
+          path: |
+            serverpackcreator-api/build/libs/*.jar
+            serverpackcreator-app/build/libs/*.jar
+            serverpackcreator-plugin-*/build/libs/*_experimental.jar
+          if-no-files-found: error
+          retention-days: 1
+
+      # Its own artifact, not part of `gradle-jars`: three jobs download that one and none of them
+      # wants tens of megabytes of HTML they will not open.
+      - name: Upload the API reference
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: dokka-html
+          path: serverpackcreator-api-${{ inputs.version }}-dokka-html.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  # ONE job for both architectures. They were two near-identical jobs in devbuild.yml and two
+  # sequential script invocations inside release-build.yml's single `assets` job -- three copies of one
+  # thing, which is how the x86_64 and aarch64 halves could have drifted apart unnoticed.
+  #
+  # An amd64 runner builds BOTH: the AppImage is cross-packaged. Nothing aarch64 has to run -- the JDK
+  # is merely unpacked, and appimagetool runs as the host's architecture while ARCH decides which
+  # runtime is embedded. That keeps this off the `ubuntu-24.04-arm` label, which no registered runner
+  # offers, and off QEMU.
+  appimage:
+    name: "AppImage (${{ matrix.arch }})"
+    needs: jars
+    runs-on: ubuntu-latest
+    strategy:
+      # Both architectures are reported, rather than the first failure hiding the second's state.
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      # `misc/build-appimage.sh` owns both values; a copy here is a copy that goes stale. The cache KEY
+      # carries the pinned release while the PATH is only the directory the script unpacks into
+      # (`jdk-<major>-<arch>`) -- the script skips the download when that directory already exists, so a
+      # key naming the major alone would serve a superseded JDK for ever after a JDK_RELEASE bump.
+      - name: Resolve the AppImage JDK
+        id: jdk
+        run: |
+          set -e
+          MAJOR="$(sed -n 's/^JDK_VERSION="\(.*\)"$/\1/p' misc/build-appimage.sh)"
+          RELEASE="$(sed -n 's/^JDK_RELEASE="\(.*\)"$/\1/p' misc/build-appimage.sh)"
+          test -n "$MAJOR" && test -n "$RELEASE" || { echo "::error::could not read JDK_VERSION/JDK_RELEASE from misc/build-appimage.sh"; exit 1; }
+          echo "dir=jdk-$MAJOR-${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Cache JDK download
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.jdk.outputs.dir }}
+          key: ${{ steps.jdk.outputs.dir }}-${{ steps.jdk.outputs.release }}
+
+      # `--arch` is passed EXPLICITLY for both, including x86_64, where the two original call sites
+      # omitted it and relied on the host default. The script accepts it (`case` on x86_64|aarch64), and
+      # one spelling for both halves of a matrix is what makes it a matrix rather than a branch.
+      - name: Build the AppImage
+        run: |
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh --arch ${{ matrix.arch }} \
+            --update-channel "${{ inputs.update-channel }}" "${{ inputs.version }}"
+
+      # Resolved by glob, never spelled out: `misc/build-appimage.sh` owns the filename (it appends
+      # `_experimental`), and a copy here is a copy that goes stale the next time it changes. Anchored
+      # on `ServerPackCreator-` rather than `*.AppImage` because the script downloads
+      # `appimagetool-<arch>.AppImage` into this same directory and a bare glob would match it.
+      - name: Verify the AppImage and checksum it
+        id: appimage
+        run: |
+          set -eu
+          APPIMAGE="$(ls -1 ServerPackCreator-*.AppImage 2>/dev/null | head -n 1)"
+          if [ -z "$APPIMAGE" ]; then
+            echo "::error::no ServerPackCreator AppImage was produced"
+            ls -la *.AppImage 2>/dev/null || echo "no AppImages at all"
+            exit 1
+          fi
+          # The `.zsync` is not optional. The AppImage advertises `gh-releases-zsync|...|<channel>|...`,
+          # which resolves the `.zsync` out of the release the AppImage came from -- so one published
+          # without it carries an update route that is dead on arrival and says nothing until a user
+          # tries. One per architecture, here, where the architecture is still known.
+          if [ ! -f "$APPIMAGE.zsync" ]; then
+            echo "::error::$APPIMAGE has no .zsync beside it - its update route would be dead on arrival"
+            ls -la ServerPackCreator-*.AppImage* 2>/dev/null || true
+            exit 1
+          fi
+          ls -lh "$APPIMAGE" "$APPIMAGE.zsync"
+          sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
+          cat "$APPIMAGE.sha256"
+          echo "name=$APPIMAGE" >> "$GITHUB_OUTPUT"
+
+      # The binary, its update descriptor and its checksum in ONE artifact. devbuild.yml published the
+      # checksum as a second artifact per architecture; nothing consumed them separately, and two
+      # artifacts per thing is two chances for `stage` to be given half of it.
+      - name: Upload the AppImage
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: appimage-${{ matrix.arch }}
+          path: |
+            ServerPackCreator-*.AppImage
+            ServerPackCreator-*.AppImage.zsync
+            ServerPackCreator-*.AppImage.sha256
+          if-no-files-found: error
+          retention-days: 1
+
+  # jpackage CANNOT CROSS-COMPILE (JEP 392, an explicit non-goal), which is why this is a job on its own
+  # runner rather than another matrix leg of `appimage`. An AppImage is a tarball plus a prebuilt
+  # runtime stub; a jpackage app-image carries a native launcher built with the HOST's toolchain.
+  #
+  # A `:host`-scheme Windows runner is a HOST prerequisite -- claude-docs/WINDOWS-RUNNER.md. Without one
+  # this job does not fail, it QUEUES on "No matching online runner with label", and `stage` waits on
+  # it, so the caller publishes nothing rather than publishing something incomplete.
+  #
+  # x86_64 ONLY, deliberately: a Windows ARM64 artifact needs a native ARM64 Windows runner, and the
+  # only way to host one here is an emulated guest whose throughput is not fit to gate a release on.
+  # Windows on ARM64 runs x86_64 binaries, so that audience is served by this artifact.
+  winimage:
+    name: "Windows app-image (x86_64)"
+    needs: jars
+    runs-on: windows-latest
+    steps:
+      # SPARSE, because this job has hung in `git checkout` on the Windows guest -- 38 minutes with no
+      # further output after `git checkout --progress --force -B`, on a tree of 2570 files, following a
+      # `--depth=1` fetch that took 3.6 s. The pack arrives fine; it is writing the working tree that
+      # stalls. act's host executor puts that tree under the runner service's profile, which here is
+      # `C:\WINDOWS\system32\config\systemprofile\.cache\act\...` -- the LocalSystem profile, the
+      # most aggressively scanned path on a Windows box.
+      #
+      # 2570 files -> 182. That is not a diagnosis and does not pretend to be one; it removes most of
+      # the exposure to whatever per-file cost is doing this, and it is correct regardless, because this
+      # job never needed the other 2388 files.
+      #
+      # Cone mode, so the three directories plus the 22 top-level files come across. Each is load-bearing:
+      #   misc      `build-winimage.ps1` itself
+      #   .forgejo  a LOCAL composite action's files arrive WITH the checkout, so `setup-build` below
+      #             does not exist without this
+      #   img       `build-winimage.ps1` passes `img/icon.ico` to jpackage
+      #
+      # NOT `timeout-minutes:`. It parses, and the Forgejo runner never enforces it -- the only
+      # reference to `TimeoutMinutes` outside the YAML struct is a `log.Debugf` in `pkg/runner/runner.go`.
+      # Declaring it would be inert in exactly the way `permissions:` is, which this directory already
+      # removed once. A hung job is bounded by the INSTANCE: `[actions] ZOMBIE_TASK_TIMEOUT` (10m, for a
+      # task that stops reporting) and `ENDLESS_TASK_TIMEOUT` (3h, for one that keeps reporting and
+      # never ends).
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            misc
+            .forgejo
+            img
+
+      # `gradle: false` -- jpackage comes from the JDK and nothing here runs Gradle, so the dependency
+      # cache would be restored and saved for a job that never resolves a dependency.
+      - uses: ./.forgejo/actions/setup-build
+        with:
+          gradle: "false"
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      # NO `-JarPath`, AND THAT IS THE FIX. release-build.yml passed one, sourced from a step output
+      # that a PowerShell encoding bug silently emptied, and the script then reported "No
+      # ServerPackCreator app jar found. Run ./gradlew build first" -- advice for a local build, on a
+      # CI runner, about a jar that was present. `gradle-jars` restores the paths Gradle wrote, so the
+      # script's own default search of `serverpackcreator-app/build/libs` finds it, which is what
+      # devbuild.yml always did. The value that cannot be wrong is the one nobody passes.
+      - name: Build the Windows app-image
+        # `powershell`, NOT `pwsh`. PowerShell 7 is a separate install that Windows does not ship and
+        # the runner guest does not have, so `shell: pwsh` fails before the step runs with
+        # `Cannot find: pwsh in PATH`. `powershell` is Windows PowerShell 5.1, present on every Windows
+        # host, and this plus build-winimage.ps1 is written to its dialect.
+        shell: powershell
+        run: |
+          misc/build-winimage.ps1 -Version "${{ inputs.version }}" -Arch x86_64
+          # @() so a single match is still an array: unwrapped, 5.1 hands back a bare FileInfo.
+          $image = @(Get-ChildItem "ServerPackCreator-*-Windows-x86_64_experimental.zip")
+          if ($image.Count -ne 1) { Write-Output "::error::expected 1 Windows app-image, found $($image.Count)"; exit 1 }
+          Write-Output "Produced $($image[0].Name) ($([math]::Round($image[0].Length / 1MB, 1)) MB)"
+          $hash = (Get-FileHash $image[0].FullName -Algorithm SHA256).Hash.ToLower()
+          Set-Content -NoNewline "$($image[0].Name).sha256" "$hash  $($image[0].Name)"
+
+      - name: Upload the Windows app-image
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: winimage-x86_64
+          path: |
+            ServerPackCreator-*-Windows-x86_64_experimental.zip
+            ServerPackCreator-*-Windows-x86_64_experimental.zip.sha256
+          if-no-files-found: error
+          retention-days: 1
+
+  media:
+    name: "install4j media"
+    needs: jars
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: ./.forgejo/actions/setup-build
+
+      # The one action deliberately fetched from GitHub rather than a Forgejo mirror: install4j has no
+      # equivalent there. Requires the instance to permit github.com actions; if it does not, install4j
+      # must be pre-installed on the runner and this step replaced by nothing.
+      - uses: https://github.com/luangong/setup-install4j@v1
+        with:
+          version: '13.1'
+          license: ${{ secrets.INSTALL4J_LICENSE }}
+
+      # `-f`: the installer is only present because `setup-install4j` left it there, so a version of
+      # that action which cleans up after itself would otherwise fail this job on an empty glob.
+      - name: Remove install4j script
+        run: rm -f install4j_linux-x64_*.sh
+
+      - name: Download JARs
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: gradle-jars
+          path: .
+
+      # `-Pversion` IS NOT OPTIONAL, and leaving it out was not a missing nicety -- it put a second
+      # ServerPackCreator inside every continuous installer and named them all `dev`. The root build's
+      # `media` task sets install4j's `release` from `version.toString()`, which falls back to
+      # gradle.properties' `version=dev`; and `media` dependsOn `build`, so Gradle writes
+      # `serverpackcreator-app-dev.jar` BESIDE the `serverpackcreator-app-<version>.jar` just restored
+      # into the same directory. `spc.install4j`'s dirEntry ships that whole directory with
+      # `excludeSuffixes="plain.jar"`, and all three launchers resolve their classpath with
+      # `<scanDirectory location="."/>` -- so the installer carried two fat jars and chose by scan order.
+      # Measured in the published `continuous` release of 2026-10-07:
+      # `ServerPackCreator-dev-Installer-Mac.dmg` beside `serverpackcreator-api-9.2.0.jar`.
+      #
+      # With the version passed, Gradle's output takes the restored jar's name and replaces it.
+      - name: Build the install4j media
+        run: ./gradlew -Pversion="${{ inputs.version }}" media --info --full-stacktrace
+
+      - name: Upload the media
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: install4j-media
+          path: media/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # THE SINGLE COLLECTION STEP. There were two, and they disagreed in six ways -- the app jar was
+  # renamed only for a release, `updates.xml` and the API reference were release-only, the per-artifact
+  # `.sha256` files were dev-only, and the plugin-jar count was checked only on a release. Every one of
+  # those was invisible until the two asset lists were put side by side.
+  #
+  # It runs after EVERYTHING, including `winimage`, which is a real improvement on the release's old
+  # shape: there, `checksum.txt` was written by `assets` before the Windows job existed, so the one
+  # artifact a user is most likely to want verified was the one it did not cover.
+  stage:
+    name: "Stage the release assets"
+    needs: [jars, appimage, winimage, media]
+    runs-on: ubuntu-latest
+    steps:
+      # For `ls -d serverpackcreator-plugin-*/` below: the expected plugin count is DERIVED from the
+      # modules that exist, never written down, so it cannot go stale.
+      - uses: actions/checkout@v6
+
+      - name: Download every artifact
+        uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          path: artifacts
+
+      - name: Collect
+        env:
+          V: ${{ inputs.version }}
+        run: |
+          set -eu
+          mkdir -p "release/$V"
+          JARS=artifacts/gradle-jars
+
+          echo "=== JARs ==="
+          cp -v "$JARS/serverpackcreator-api/build/libs/"*.jar "release/$V/"
+          cp -v "$JARS/serverpackcreator-app/build/libs/"*.jar "release/$V/"
+          # The app's fat jar is the product, so it carries the product's name. This rename existed only
+          # on the release path, which is why the dev build published `serverpackcreator-app-<V>.jar`
+          # and a release published `ServerPackCreator-<V>.jar` for the same file.
+          mv -v "release/$V/serverpackcreator-app-$V.jar" "release/$V/ServerPackCreator-$V.jar"
+
+          # Every plugin module, by glob rather than by name: the modules are listed in
+          # settings.gradle.kts and in the root build's `appPluginConfigurations`, and a third list here
+          # is the one that silently stops growing -- which is what happened while the release named
+          # `-plugin-example` alone and three more plugins existed. `_experimental` is decided by
+          # `serverpackcreator.plugin-conventions`; nothing here repeats it.
+          #
+          # Fewer than expected means a module whose jar did not build or did not get the name; more
+          # means a stale jar from an earlier build. The dev build checked neither.
+          PLUGIN_MODULES="$(ls -d serverpackcreator-plugin-*/ | wc -l)"
+          PLUGIN_JARS="$(ls -1 "$JARS/serverpackcreator-plugin-"*/build/libs/*_experimental.jar 2>/dev/null | wc -l)"
+          if [ "$PLUGIN_JARS" -ne "$PLUGIN_MODULES" ]; then
+            echo "::error::Expected one _experimental jar per plugin module ($PLUGIN_MODULES), found $PLUGIN_JARS"
+            ls -la "$JARS/serverpackcreator-plugin-"*/build/libs/ 2>/dev/null || echo "no plugin build directories at all"
+            exit 1
+          fi
+          cp -v "$JARS/serverpackcreator-plugin-"*/build/libs/*_experimental.jar "release/$V/"
+
+          echo "=== AppImages ==="
+          # Both architectures, each already verified to have its `.zsync` in the job that built it --
+          # so the count here is about the FAN-IN (did both legs of the matrix arrive), which is a
+          # different question from the one `appimage` answered.
+          cp -v artifacts/appimage-*/ServerPackCreator-*.AppImage       "release/$V/"
+          cp -v artifacts/appimage-*/ServerPackCreator-*.AppImage.zsync "release/$V/"
+          for what in AppImage AppImage.zsync; do
+            COUNT="$(ls -1 "release/$V/ServerPackCreator-"*".$what" 2>/dev/null | wc -l)"
+            if [ "$COUNT" -ne 2 ]; then
+              echo "::error::Expected 2 .$what files (one per architecture), found $COUNT"
+              ls -la "release/$V/" || true
+              exit 1
+            fi
+          done
+
+          echo "=== Windows app-image ==="
+          cp -v artifacts/winimage-x86_64/ServerPackCreator-*_experimental.zip "release/$V/"
+
+          echo "=== install4j media ==="
+          # The whole directory, which is how the release path has always done it -- `updates.xml` is
+          # install4j's update descriptor and the dev build was silently dropping it by copying only
+          # *.dmg, *.sh and *.exe. `output.txt` is install4j's build log and is not an asset.
+          cp -v artifacts/install4j-media/* "release/$V/"
+          rm -f "release/$V/output.txt"
+
+          echo "=== API reference ==="
+          cp -v "artifacts/dokka-html/serverpackcreator-api-$V-dokka-html.zip" "release/$V/"
+
+          echo "=== per-artifact checksums ==="
+          # Kept, and now on both paths: the release published only checksum.txt, the dev build
+          # published both. A `.sha256` beside a binary is what a user checks a single download with.
+          find artifacts -name "*.sha256" -exec cp -v {} "release/$V/" \;
+
+          # Nothing with this suffix is ever an asset: `-plain.jar` is Spring Boot's pre-repackage jar.
+          rm -f "release/$V/"*plain.jar
+
+          echo "=== checksum.txt ==="
+          # Into a temp file first: `sha256sum * > checksum.txt` has the shell create the (empty) target
+          # before the glob expands, so the file would checksum itself.
+          (cd "release/$V" && sha256sum * > ../checksum.txt && mv ../checksum.txt checksum.txt)
+
+          echo "=== final contents ==="
+          ls -lh "release/$V"
+
+      - name: Upload the release assets
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork
+        with:
+          name: release-assets
+          path: release/${{ inputs.version }}/*
+          if-no-files-found: error

@@ -11,11 +11,11 @@
     runner, so every action is guarded and reported rather than allowed to abort provisioning -- which
     is the step that actually matters. Read the log to see what did and did not happen.
 
-    THIS PASS IS LOAD-BEARING, because the leaner editions are not an option. docker-compose.yml
-    installs `VERSION: "11"` -- Windows 11 Pro -- which ships the whole consumer app set, so every
-    pattern below has something to find. The editions that would have shipped without it are all
-    Evaluation media in dockur and expire after 90 days with no key able to activate them; the compose
-    file has the dispatch. On a guest built from licensed LTSC media bound at /custom.iso most of the
+    THIS PASS IS LOAD-BEARING, because the leaner editions are not an option. The README beside this
+    script installs retail Windows 11 Pro, which ships the whole consumer app set, so every pattern
+    below has something to find. The leaner editions are Evaluation media, which expires after 90 days
+    with no key able to activate it, and a build runner that stops working on a date nobody wrote down
+    is worse than a fat one. On a guest built from licensed LTSC media most of the
     removal pass correctly reports matching nothing, and then earns its place as the guard that
     notices when an edition starts shipping something new.
 

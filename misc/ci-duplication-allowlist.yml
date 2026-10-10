@@ -1,0 +1,40 @@
+# Repeats that `misc/ci-duplication-check.py` must not flag, each with the reason it cannot be shared.
+#
+# The key is the fingerprint the check prints, which is a hash of the step's normalised body. That is
+# deliberate: editing an allowlisted step changes its fingerprint and turns the check red again, so the
+# exemption has to be re-argued rather than inherited. Run `--list` to get the new one.
+#
+# An entry here is a claim that sharing is IMPOSSIBLE or WORSE, not that nobody got round to it. A
+# repeat that merely has not been dealt with yet belongs in the report, where it is visible.
+
+8e11ca619330: >-
+  actions/checkout@v6 with fetch-depth: 0, in seven jobs. Irreducible: a local composite action's own
+  files arrive with the checkout, so the checkout can never be the thing inside one. Forgejo's own
+  reference calls forgetting it "the most common mistake when using an action included in the
+  repository under test".
+
+de92b2337da4: >-
+  The alpha/beta create-guard, in six jobs. A job-level `if:` decides whether a job is scheduled at
+  all, and a composite action runs inside a job that has already been scheduled, so there is nowhere
+  for it to live. It also varies where it is used: qodana's `notify` needs `always() && (...)` because
+  `always()` would otherwise run it when the job it `needs` was skipped, and release-generate.yml adds
+  a `RELEASE:` commit-message clause. A shared version with escape hatches for both is a guard nobody
+  can evaluate by reading it.
+
+d8342dbff323: >-
+  docker-test.yml's `Build image` and `Build image (retry)`. The retry exists to re-run the identical
+  build after waiting out ghcr's burst limiter, so its inputs are the same BY DEFINITION -- a version
+  that differed would not be a retry. See 5301067150ae for why the two files' retries are not shared
+  with each other either.
+
+5301067150ae: >-
+  release-build.yml's `Build and push` and `Build and push (retry)`. Same reason as d8342dbff323. The
+  pattern is deliberately NOT shared with docker-test.yml's: a composite would need six pass-through
+  inputs (push, no-cache, platforms, build-args, tags, file) to share about 25 lines of shell, and the
+  two differ in what they cost -- around 30 s there against roughly fifteen minutes here -- so a change
+  made for one would be made blind to the other's consequences. Sharing it would also couple the
+  release's image push to whatever lands in docker-test.yml.
+
+07c2806dc83b: >-
+  update-readme.yml hashes README.md before and after rewriting it. Two invocations of one action with
+  the same inputs is what a before/after measurement IS; collapsing them would delete the measurement.

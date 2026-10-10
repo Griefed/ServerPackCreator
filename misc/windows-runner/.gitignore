@@ -1,6 +1,7 @@
-# Everything a running guest creates. None of it belongs in the repository: disk images and installation
-# media are tens of gigabytes, and `shared/` and `.env` hold credentials.
-storage-x64/
+# Installation media, if you stage it here rather than in libvirt's own image directory. Tens of
+# gigabytes, and not ours to redistribute.
+#
+# The guest's disk lives under /var/lib/libvirt/images and never appears here, which is the one real
+# advantage of libvirt over the container this replaced: nothing a running guest creates is inside the
+# repository at all, so there is no `shared/` holding a token and no `.env` holding a password.
 iso/
-shared/
-.env

@@ -21,22 +21,18 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       prerelease: ${{ steps.v.outputs.prerelease }}
     steps:
+      # This job needs no source of its own -- it reads a ref name. The checkout is here because a
+      # LOCAL action's files arrive with the checkout, and the alternative is a second copy of the
+      # version rules. A shallow clone is enough: `tag` mode runs no git command.
+      - uses: actions/checkout@v6
+
       # The tag *is* the version: .releaserc.yml uses `tagFormat: '${version}'`, no `v` prefix.
-      # Anything not matching the two release shapes is ignored rather than half-released.
+      # Anything not matching the two release shapes is refused rather than half-released.
       - name: Determine version
         id: v
-        run: |
-          VERSION="${{ github.ref_name }}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-          elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta)\.[0-9]+$ ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::error::Tag '$VERSION' is neither X.Y.Z nor X.Y.Z-(alpha|beta).N - refusing to release."
-            exit 1
-          fi
-          echo "Releasing ${VERSION}"
+        uses: ./.forgejo/actions/resolve-version
+        with:
+          mode: tag
 
   # The one artifact that cannot be produced on any runner already in this pool. jpackage CANNOT
   # CROSS-COMPILE (JEP 392, explicit non-goal), so a Windows app-image is built on Windows -- unlike the
@@ -70,12 +66,11 @@ jobs:
 
       # The JDK jpackage comes from, and whose runtime it embeds into the image. No Gradle here: the jar
       # arrives from `assets` below.
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
+      # `gradle: false` -- jpackage comes from the JDK and nothing here runs Gradle, so the dependency
+      # cache would be restored and saved for a job that never resolves a dependency.
+      - uses: ./.forgejo/actions/setup-build
         with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
+          gradle: "false"
 
       - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
@@ -99,7 +94,15 @@ jobs:
             Get-ChildItem assets | ForEach-Object { Write-Output "  $($_.Name)" }
             exit 1
           }
-          "path=$jar" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          # LANDMINE -- a step output written with `Out-File` arrives EMPTY, from a step that stays
+          # GREEN. Windows PowerShell 5.1 defaults `Out-File` (and `>`/`>>`) to UTF-16LE, and its
+          # `-Encoding utf8` -- the workaround GitHub's own documentation gives -- emits UTF-8 WITH a
+          # byte-order mark. The Forgejo runner's env-file parser (`act/container/parse_env_file.go`)
+          # splits each line on the first `=` with no encoding or BOM handling whatsoever, so both
+          # spellings store a key that is not `path` and the consuming step reads an empty string.
+          # UTF-8 with no BOM is the only encoding that works.
+          $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "path=$jar`n", $utf8NoBom)
 
       # Resolved by glob, never spelled out: `misc/build-winimage.ps1` owns the filename including
       # `_experimental`, the same arrangement `misc/build-appimage.sh` has, and a copy here is a copy
@@ -136,17 +139,7 @@ jobs:
 
       - uses: actions/checkout@v6
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
+      - uses: ./.forgejo/actions/setup-build
 
       # The one action deliberately fetched from GitHub rather than a Forgejo mirror: install4j has no
       # equivalent there. Requires the instance to permit github.com actions; if it does not, install4j
@@ -158,9 +151,6 @@ jobs:
 
       - name: Remove install4j script
         run: rm -f install4j_linux-x64_*.sh
-
-      - name: Set Permissions
-        run: chmod +x gradlew
 
       # Tests already ran on the commit this tag points at, so they are skipped here -- same exclusions
       # GitLab's `Build Release` used.
@@ -397,20 +387,7 @@ jobs:
 
       - uses: actions/checkout@v6
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
-
-      - name: Set Permissions
-        run: chmod +x gradlew
+      - uses: ./.forgejo/actions/setup-build
 
       # One job where GitLab had five (sign + four publishes). They shared everything but the target and
       # each rebuilt the same artifacts; sequencing them here keeps that work once.
@@ -462,79 +439,18 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # The registry caches are HOST configuration (claude-docs/RUNNER-REGISTRY-CACHE.md), and this step
-      # must work whether or not they are up.
-      #
-      # They are addressed by IP because jobs here run inside a `docker:dind` daemon while the caches are
-      # containers of the host daemon. dind's embedded DNS does not know them, so a service name cannot
-      # resolve; routing does reach them, because `docker_dind` is attached to the cache network and its
-      # children egress through that interface.
-      #
-      # The probe asks the question that decides the outcome -- can this job reach the cache -- rather
-      # than a proxy for it. A job container and the buildx builder are both children of the same dind
-      # daemon, so a `GET /v2/` from here takes the path the builder will take. A registry whose cache
-      # does not answer is simply left out of the config and pulled from upstream.
-      #
-      # No `driver-opts: network=...`: with fixed IPs the builder has no network to join, and naming one
-      # the daemon does not know is a hard failure before a single layer is pulled --
-      #   ERROR: Error response from daemon: failed to set up container networking:
-      #          network <name> not found
-      - name: Point BuildKit at the host's registry caches when they answer
-        id: regcache
-        env:
-          # Pinned by the runner host's compose file -- claude-docs/RUNNER-REGISTRY-CACHE.md section 1.
-          # If these drift from the host, nothing breaks: the probe finds nothing and the build goes
-          # upstream. That fail-soft is deliberate; a wrong address must never be a failed build.
-          GHCR_CACHE: "172.31.77.6:5000"
-          DOCKERHUB_CACHE: "172.31.77.5:5000"
-        run: |
-          set -eu
-          toml="${RUNNER_TEMP:-/tmp}/buildkitd.toml"
-          : > "$toml"
+      # The probe and the builder it configures, as one unit. The caches are HOST configuration
+      # (claude-docs/RUNNER-REGISTRY-CACHE.md) and this is fail-soft by design: a cache that does not
+      # answer is left out of the config and that registry is pulled from upstream, because a wrong
+      # address must never be a failed build.
+      - uses: ./.forgejo/actions/registry-cache
 
-          # The second stanza per registry is not optional and is not obvious: `newMirrorRegistryHost`
-          # defaults a mirror to https, and `fillInsecureOpts` looks the mirror's own scheme up under a
-          # top-level [registry."<host:port>"] section. Without it buildkit dials https, fails the
-          # handshake, falls back to upstream -- and silently does nothing at all.
-          add_mirror() {
-            upstream="$1"
-            cache="$2"
-            if curl -fsS --max-time 5 "http://${cache}/v2/" >/dev/null 2>&1; then
-              printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' \
-                "$upstream" "$cache" "$cache" >> "$toml"
-              echo "${upstream}: the cache at ${cache} answered /v2/ - BuildKit will pull through it."
-            else
-              echo "::notice::${upstream}: nothing answered /v2/ at ${cache} - pulling from upstream. See claude-docs/RUNNER-REGISTRY-CACHE.md."
-            fi
-          }
-
-          add_mirror ghcr.io "$GHCR_CACHE"
-          add_mirror docker.io "$DOCKERHUB_CACHE"
-
-          # An empty file is valid TOML and means "no mirrors", but a comment says so in the log.
-          [ -s "$toml" ] || echo '# no registry cache answered; BuildKit pulls from upstream' > "$toml"
-
-          echo "config=$toml" >> "$GITHUB_OUTPUT"
-          echo "BuildKit config for this run:"
-          sed 's/^/  /' "$toml"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # A composite action cannot read `secrets`, so the three values are passed in.
+      - uses: ./.forgejo/actions/registry-login
         with:
-          buildkitd-config: ${{ steps.regcache.outputs.config }}
-
-      - name: Log in to ghcr.io
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.GH_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub-user: ${{ secrets.DOCKERHUB_USER }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
 
       # `latest` only for a full release -- a prerelease must never become the default pull, which is
       # exactly how GitLab split `Build Docker Release` from `Build Docker PreRelease`.

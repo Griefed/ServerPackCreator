@@ -1,0 +1,79 @@
+# Point BuildKit at the host's registry caches when they answer, then set up the builder.
+#
+# The probe and the builder are ONE unit on purpose. The config this writes is useless unless the very
+# next `setup-buildx-action` is handed it, and the two were previously written out together in two
+# files, byte for byte, where a change to one could miss the other.
+#
+# The caches are HOST configuration -- `claude-docs/RUNNER-REGISTRY-CACHE.md`. This must work whether or
+# not they are up, so a cache that does not answer is simply left out of the config and that registry
+# is pulled from upstream. A wrong address must never be a failed build.
+#
+# They are addressed by IP because jobs run inside a `docker:dind` daemon while the caches are
+# containers of the host daemon. dind's embedded DNS does not know them, so a service name cannot
+# resolve; routing does reach them, because `docker_dind` is attached to the cache network and its
+# children egress through that interface.
+#
+# No `driver-opts: network=...`: with fixed IPs the builder has no network to join, and naming one the
+# daemon does not know is a hard failure before a single layer is pulled --
+#   ERROR: Error response from daemon: failed to set up container networking:
+#          network <name> not found
+name: "Registry cache and Buildx"
+description: "Probe the host's pull-through caches, write a BuildKit config from whichever answer, and start the builder."
+
+inputs:
+  ghcr-cache:
+    description: "host:port of the ghcr.io pull-through cache, pinned by the runner host's compose file."
+    required: false
+    default: "172.31.77.6:5000"
+  dockerhub-cache:
+    description: "host:port of the docker.io pull-through cache, pinned by the runner host's compose file."
+    required: false
+    default: "172.31.77.5:5000"
+
+runs:
+  using: composite
+  steps:
+    # The probe asks the question that decides the outcome -- can this job reach the cache -- rather
+    # than a proxy for it. A job container and the buildx builder are both children of the same dind
+    # daemon, so a `GET /v2/` from here takes the path the builder will take.
+    - name: Point BuildKit at the host's registry caches when they answer
+      id: regcache
+      shell: bash
+      env:
+        GHCR_CACHE: ${{ inputs.ghcr-cache }}
+        DOCKERHUB_CACHE: ${{ inputs.dockerhub-cache }}
+      run: |
+        set -eu
+        toml="${RUNNER_TEMP:-/tmp}/buildkitd.toml"
+        : > "$toml"
+
+        # The second stanza per registry is not optional and is not obvious: `newMirrorRegistryHost`
+        # defaults a mirror to https, and `fillInsecureOpts` looks the mirror's own scheme up under a
+        # top-level [registry."<host:port>"] section. Without it buildkit dials https, fails the
+        # handshake, falls back to upstream -- and silently does nothing at all.
+        add_mirror() {
+          upstream="$1"
+          cache="$2"
+          if curl -fsS --max-time 5 "http://${cache}/v2/" >/dev/null 2>&1; then
+            printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' \
+              "$upstream" "$cache" "$cache" >> "$toml"
+            echo "${upstream}: the cache at ${cache} answered /v2/ - BuildKit will pull through it."
+          else
+            echo "::notice::${upstream}: nothing answered /v2/ at ${cache} - pulling from upstream. See claude-docs/RUNNER-REGISTRY-CACHE.md."
+          fi
+        }
+
+        add_mirror ghcr.io "$GHCR_CACHE"
+        add_mirror docker.io "$DOCKERHUB_CACHE"
+
+        # An empty file is valid TOML and means "no mirrors", but a comment says so in the log.
+        [ -s "$toml" ] || echo '# no registry cache answered; BuildKit pulls from upstream' > "$toml"
+
+        echo "config=$toml" >> "$GITHUB_OUTPUT"
+        echo "BuildKit config for this run:"
+        sed 's/^/  /' "$toml"
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        buildkitd-config: ${{ steps.regcache.outputs.config }}

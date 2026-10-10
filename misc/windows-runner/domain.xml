@@ -1,0 +1,163 @@
+<domain type='kvm'>
+
+  <!-- Name used by every 'virsh' command in the README, as $VM. -->
+  <name>windows-11-x86_64-forgejo-runner</name>
+
+  <!-- Must be unique on the host. Generate a fresh one with 'uuidgen' before defining a second domain. -->
+  <uuid>0857048e-c49c-11f1-8409-a7bb57415b55</uuid>
+
+  <title>Windows 11 - x86_64 Forgejo Runner</title>
+  <description>Windows 11 guest that builds ServerPackCreator's Windows app-image, which jpackage cannot cross-compile.</description>
+
+  <!-- GiB, not GB: 'GB' is 10^9 bytes and would hand the guest 14.9 GiB. -->
+  <memory unit='GiB'>16</memory>
+  <currentMemory unit='GiB'>16</currentMemory>
+
+  <vcpu>4</vcpu>
+  <cpu mode='host-passthrough'>
+    <!-- 1 socket x 2 cores x 2 threads = the 4 vcpus above. Windows client editions
+         license at most 2 sockets, so cores and threads are where the count has to go. -->
+    <topology sockets='1' dies='1' cores='2' threads='2'/>
+    <cache mode='passthrough'/>
+    <feature policy='optional' name='hypervisor'/>
+  </cpu>
+
+  <cputune>
+    <!-- Unitless weight against other domains when the host is saturated. -->
+    <shares>1000</shares>
+  </cputune>
+
+  <os firmware='efi'>
+    <!-- q35, not i440fx: Secure Boot needs SMM and SMM needs q35. -->
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <!-- Ask libvirt to PICK a Secure Boot OVMF build with Microsoft's keys enrolled,
+         rather than hardcoding a path - the filenames differ on every distribution. -->
+    <firmware>
+      <feature enabled='yes' name='enrolled-keys'/>
+      <feature enabled='yes' name='secure-boot'/>
+    </firmware>
+    <loader secure='yes'/>
+    <!-- libvirt copies the matching template here on first start. The directory must exist. -->
+    <nvram>/var/lib/libvirt/qemu/nvram/windows-11-x86_64-forgejo-runner_VARS.fd</nvram>
+    <bootmenu enable='yes' timeout='7000'/>
+  </os>
+
+  <features>
+    <acpi/>
+    <apic/>
+    <!-- Required by <loader secure='yes'/>. Secure Boot without SMM is not Secure Boot. -->
+    <smm state='on'/>
+    <!-- Paravirtualisation hints. Without them a Windows guest busy-waits on spinlocks
+         and times itself off the emulated RTC, which costs real throughput on a build. -->
+    <hyperv mode='custom'>
+      <relaxed state='on'/>
+      <vapic state='on'/>
+      <spinlocks state='on' retries='8191'/>
+      <vpindex state='on'/>
+      <synic state='on'/>
+      <stimer state='on'/>
+      <frequencies state='on'/>
+      <tlbflush state='on'/>
+      <ipi state='on'/>
+    </hyperv>
+    <kvm>
+      <hidden state='off'/>
+    </kvm>
+  </features>
+
+  <!-- Windows keeps the RTC in local time. -->
+  <clock offset='localtime'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+    <timer name='hypervclock' present='yes'/>
+  </clock>
+
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <!-- 'restart' keeps the runner available unattended, at the cost of erasing the state
+       'virsh domstate' with 'reason' would have shown. Switch to 'preserve' while chasing a crash. -->
+  <on_crash>restart</on_crash>
+
+  <!-- Both off on purpose: a guest that suspends is a runner that is offline with no
+       error anywhere, and 'virsh domstate' is the only place it shows. -->
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+
+  <devices>
+
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+
+    <!-- Windows 11 refuses to install without this. It needs the swtpm binary on the host;
+         that dependency is checked at start, so a missing one defines fine and then fails. -->
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0'/>
+    </tpm>
+
+    <!-- Paravirtualised disk. Windows setup cannot see it until the virtio driver is
+         loaded from the second CD during installation; that step is not optional. -->
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none' io='native' discard='unmap'/>
+      <source file='/var/lib/libvirt/images/windows-11-x86_64-forgejo-runner.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+      <boot order='2'/>
+      <serial>W11FR-HDD01</serial>
+    </disk>
+
+    <!-- Windows installation media. Eject it once Windows is installed. -->
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/var/lib/libvirt/images/win11.iso'/>
+      <target dev='sda' bus='sata'/>
+      <boot order='1'/>
+      <readonly/>
+    </disk>
+
+    <!-- virtio driver media. A distinct target: two disks sharing one 'dev' is rejected at define time. -->
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/var/lib/libvirt/images/virtio-win.iso'/>
+      <target dev='sdb' bus='sata'/>
+      <readonly/>
+    </disk>
+
+    <!-- The only NIC, on purpose. vmnet1 forwards NAT, so the runner reaches git.griefed.de
+         and the Node, Git and Go downloads provisioning makes, while nothing outside the host
+         can open a connection to the guest. A second, bridged NIC would put this machine on
+         the LAN with an unauthenticated Forgejo runner on it and buy nothing.
+         52:54:00 is QEMU's OUI; the last three bytes must be unique across the host and must
+         not collide with a <host> reservation in vmnet1's own definition. -->
+    <interface type='network'>
+      <mac address='52:54:00:e7:1d:3e'/>
+      <source network='vmnet1'/>
+      <model type='virtio'/>
+    </interface>
+
+    <!-- qemu-guest-agent. libvirt creates and binds the socket itself, so no <source> is needed,
+         but it only treats a channel as the agent when the target carries exactly this name.
+         Install guest-agent\qemu-ga-x86_64.msi from the virtio CD or the channel stays silent:
+         it is what lets 'virsh domifaddr' and 'virsh shutdown' be asked with 'source agent'
+         and 'mode agent' respectively, instead of guessing from DHCP leases and ACPI. -->
+    <controller type='virtio-serial' index='0' model='virtio'/>
+    <channel type='unix'>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+    </channel>
+
+    <!-- Absolute pointer. Without it the cursor in a VNC console drifts away from the real one. -->
+    <input type='tablet' bus='usb'/>
+
+    <!-- Unauthenticated console to a machine with no login screen during setup.
+         Bound to loopback it is reachable only through an SSH tunnel. -->
+    <graphics type='vnc' port='5900' autoport='no' listen='127.0.0.1' keymap='de'/>
+
+    <!-- Plain VGA, driven by the inbox Microsoft Basic Display Adapter. This guest renders
+         nothing but an installer and an RDP handoff, and a display that needs no guest
+         driver cannot go black in the one window where the console is the only way in. -->
+    <video>
+      <model type='vga' vram='16384' heads='1'/>
+    </video>
+
+  </devices>
+</domain>

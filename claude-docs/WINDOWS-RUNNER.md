@@ -47,18 +47,29 @@ Checked against the last five releases of `forgejo/runner` (v12.13.1 … v13.2.0
 `linux-amd64` or `linux-arm64`, twelve per release, no Windows among them. The Makefile carries
 `WINDOWS_ARCHS ?= windows/amd64`, so the build system knows the target — nothing is released for it.
 
-It is Go, so building it is one command:
+It is Go, so building it is one command — and `misc/windows-runner/provision.ps1` runs that command
+**in the guest**, rather than cross-compiling it on the Linux host and handing the binary over. The
+cross-compiled route worked and is not what is wrong with it: the binary arrived on a shared drive with
+no record of which commit produced it, so "which runner is this" had no answer. Built in the guest, the
+provisioning log names the commit.
 
-```sh
-git clone https://code.forgejo.org/forgejo/runner && cd runner
-GOOS=windows GOARCH=amd64 go build -o forgejo-runner.exe
-```
+It reports its version as `dev` either way, because the Makefile stamps that in and a plain `go build`
+does not — which is why the Windows runner's behaviour has to be **measured** rather than compared
+against the v12.1.2 floor the reusable-workflow design depends on. See
+[`../.claude/rules/ci-workflows.md`](../.claude/rules/ci-workflows.md).
 
-### If the Windows machine is a container on a Linux host
+### The guest is a libvirt domain, not a container
 
-[`misc/windows-runner/`](../misc/windows-runner/) has a `docker-compose.yml` for the guest on an
-x86_64 Linux host, with the unattended provisioning that registers it. Its
-[README](../misc/windows-runner/README.md) is the operating manual.
+[`misc/windows-runner/`](../misc/windows-runner/) is the operating manual: host packages,
+[`domain.xml`](../misc/windows-runner/domain.xml) and what in it is load-bearing, the one manual step
+Windows setup needs, and the provisioning script.
+
+**It was a `dockurr/windows` container until 2026-10-09.** What ended that is worth recording, because
+it is not a preference: during run 1005 the app-image job sat in `git checkout` for 38 minutes with no
+output, **and the container's own web console on port 8006 was unresponsive at the same time**. A stuck
+console means the stall is below Windows, so nothing inside the guest could have been the fix, and the
+container offered no way to ask the question — where a libvirt domain answers it with
+`virsh domstate --reason`, `domjobinfo` and `domblkstat` in seconds.
 
 ## What to check on the first run, because it fails the same way the container landmine does
 
@@ -75,7 +86,7 @@ runs as, not just from an interactive shell.
 **Do not reach for `winget` to install it from an unattended or service context.** It ships inside the
 App Installer MSIX, which is registered per *user*, so anything running as SYSTEM — a `SetupComplete`
 script, an OEM provisioning step — gets `The term 'winget' is not recognized`, which reads like a PATH
-problem and is not one. `misc/windows-runner/oem/provision.ps1` downloads the official installers
+problem and is not one. `misc/windows-runner/provision.ps1` downloads the official installers
 instead.
 
 **PowerShell 7 is NOT required, and the workflows must not ask for it.** Windows ships `powershell.exe`
@@ -105,19 +116,36 @@ the artifact's bundled Java as well as the build's compiler.
 
 ## When the host half is done
 
-The repository half is `build-winimage-x86_64` in
-[`../.forgejo/workflows/devbuild.yml`](../.forgejo/workflows/devbuild.yml), and the `winimage` job in
-[`release-build.yml`](../.forgejo/workflows/release-build.yml). Both call
-[`../misc/build-winimage.ps1`](../misc/build-winimage.ps1). Run a `workflow_dispatch` dev build first:
-it produces the same artifact as a release without touching one.
+The repository half is the **`winimage` job of
+[`../.forgejo/workflows/artifacts-reusable.yml`](../.forgejo/workflows/artifacts-reusable.yml)**, which
+both `devbuild.yml` and `release-build.yml` reach by calling that workflow — there is one definition
+now, not one per pipeline. It calls [`../misc/build-winimage.ps1`](../misc/build-winimage.ps1).
+Rehearse it by dispatching the artifact workflow, which publishes nothing.
 
-**The release job runs AFTER `assets`, on purpose**, and takes the jar that `assets` already built
+Its checkout is **sparse** — `misc`, `.forgejo` and `img`, 182 files of 2570 — because this job needs
+fifteen of them and a full checkout is what hung on the container.
+
+**It no longer takes a `-JarPath`.** The release job used to run after `assets` and be handed the
+released jar's path through a step output, which a PowerShell encoding bug silently emptied; building
+the jars once upstream gives the same byte-identity with the jobs running in parallel and nothing to
+hand over. The paragraph below describes the arrangement that replaced:
+
+<details><summary>How it worked before the shared artifact workflow</summary>
+
+The release job ran AFTER `assets` and took the jar that `assets` already built
 rather than building a second one — so the jar inside the image is byte-identical to the jar the
 release ships, and the frontend's npm build never has to run on Windows. The cost is that
 `checksum.txt` is written before the images exist, so each one carries its own `.sha256` beside it,
 the same way the devbuild jobs publish theirs. `release` and `mirror` merge the images into their
 asset set; `virustotal` deliberately does not, because its loop scans `*.jar *.sh *.dmg *.exe` and
 already excludes the AppImages for the same reason.
+
+</details>
+
+Two of those statements have since stopped being true, which is why they are folded away rather than
+deleted: `stage` runs after `winimage` now, so `checksum.txt` **does** cover the Windows app-image, and
+`release` and `mirror` no longer merge the images in separately because `release-assets` already holds
+them.
 
 Then, on a real machine of each architecture, extract the zip and start all three launchers — the GUI,
 `ServerPackCreator-CLI.exe` and `ServerPackCreator-WebService.exe`. The script already fails the build

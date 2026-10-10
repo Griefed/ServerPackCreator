@@ -1,0 +1,38 @@
+# Log in to the two registries this repository publishes images to.
+#
+# THE GHCR USERNAME IS THE DOCKER HUB USERNAME, which looks like a copy-paste error and is not: the two
+# accounts share a name, and ghcr authenticates the TOKEN, not the name beside it. Having that written
+# once is most of the reason this action exists -- it was previously stated by two identical pairs of
+# steps in two workflows, where correcting one would have left the other.
+#
+# A COMPOSITE ACTION CANNOT READ THE `secrets` CONTEXT, so all three arrive as inputs. They are still
+# masked in the log, because masking is applied to the secret's value wherever it appears.
+name: "Log in to the image registries"
+description: "Authenticate to ghcr.io and Docker Hub for a job that pushes images."
+
+inputs:
+  dockerhub-user:
+    description: "The Docker Hub account name, which is also the name ghcr is given."
+    required: true
+  dockerhub-token:
+    description: "The Docker Hub access token."
+    required: true
+  ghcr-token:
+    description: "The forge token ghcr authenticates with."
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Log in to ghcr.io
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ inputs.dockerhub-user }}
+        password: ${{ inputs.ghcr-token }}
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ inputs.dockerhub-user }}
+        password: ${{ inputs.dockerhub-token }}

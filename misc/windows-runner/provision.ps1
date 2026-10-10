@@ -3,10 +3,12 @@
     Turn a fresh Windows guest into a registered Forgejo Actions runner.
 
 .DESCRIPTION
-    Run once by install.bat at the end of the unattended install, and safe to re-run by hand
-    afterwards:
+    Run once in a freshly installed Windows guest, and safe to re-run afterwards:
 
-        powershell -NoProfile -ExecutionPolicy Bypass -File C:\OEM\provision.ps1
+        powershell -NoProfile -ExecutionPolicy Bypass -File .\provision.ps1 `
+            -Uuid <uuid> -Token <token>
+
+    The UUID and the Token are what the Forgejo web UI shows after "Create new runner".
 
     NO WINGET. It is tempting and it does not work here: winget ships inside the App Installer MSIX,
     which is registered PER USER, and this runs as SYSTEM during the unattended install before any
@@ -25,12 +27,14 @@
             installs and caches it per run -- so a JDK baked in here would be a second, unused copy
             that drifts from the one the build actually uses.
 
-    From the host, on drive Z: (the compose file's ./shared):
+      go    REQUIRED, because THE RUNNER IS BUILT HERE. Forgejo publishes no Windows binary -- every
+            asset of the last five releases is linux-amd64 or linux-arm64 -- so it used to be
+            cross-compiled on the Linux host and handed over on a shared drive. Building it in the
+            guest removes that hand-off, and with it the one file whose provenance nothing checked.
 
-      Z:\forgejo-runner.exe   cross-compiled on the Linux host, see the README beside the compose file
-      Z:\runner-uuid.txt      the UUID the web UI showed after "Create new runner"
-      Z:\runner-token.txt     the Token it showed beside that UUID
-      Z:\runner-labels.txt    one label, e.g. `windows-latest:host`
+    NOTHING IS MOUNTED FROM THE HOST. A libvirt guest has no equivalent of the container's bind
+    mount, and it does not need one: the UUID and Token arrive as parameters and the runner is built
+    from its own public repository.
 
     REGISTRATION IS A CONFIG FILE, NOT A COMMAND. Forgejo's web UI hands out a UUID and a Token and
     its own documentation says to copy them into the runner configuration's `server` section, so that
@@ -40,9 +44,17 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $SharedDrive = 'Z:',
-    [string] $InstallDir  = 'C:\forgejo-runner',
-    [string] $Instance    = 'https://git.griefed.de'
+    [Parameter(Mandatory)] [string] $Uuid,
+    [Parameter(Mandatory)] [string] $Token,
+    [string] $Labels     = 'windows-latest:host',
+    [string] $InstallDir = 'C:\forgejo-runner',
+    # NOT under the account's profile. Left unset, the runner puts every job's working directory in
+    # `$HOME/.cache/act/` -- its own config reference says so -- and this task runs as SYSTEM, whose
+    # $HOME is C:\WINDOWS\system32\config\systemprofile. Builds then unpack into the Windows
+    # directory, which is the most aggressively scanned path on the machine.
+    [string] $WorkDir    = 'C:\forgejo-runner\work',
+    [string] $Instance   = 'https://git.griefed.de',
+    [string] $RunnerRepo = 'https://code.forgejo.org/forgejo/runner'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -64,28 +76,25 @@ Step "Guest architecture: $env:PROCESSOR_ARCHITECTURE (installers: $arch)"
 
 <#
 .SYNOPSIS
-    Read a credential out of [Path], trimmed, and fail with its shape if it is not [Pattern].
+    Check [Value] against [Pattern], and fail naming its shape rather than its content.
 .DESCRIPTION
-    `-Raw` then Trim, because a value written with `echo` carries a newline and one written on Windows
-    may carry a BOM; both are invisible and both make the instance reject it.
+    Trimmed first, because a value pasted over a console carries whitespace and one copied out of a
+    browser may carry a BOM; both are invisible and both make the instance reject it.
 
     [Pattern] is deliberately loose for the token. Its length has been hard-coded here twice and been
     wrong twice -- the format is the server's business and has changed between versions -- so this
     catches an empty file, a leftover placeholder and pasted prose, and lets Forgejo judge the rest.
 #>
 function Read-Credential {
-    param([string] $Path, [string] $What, [string] $Pattern)
+    param([string] $Value, [string] $What, [string] $Pattern)
 
-    if (-not (Test-Path $Path)) {
-        throw "$Path is missing. Put the $What from the web UI's new-runner dialog there."
-    }
-    $value = (Get-Content $Path -Raw).Trim([char]0xFEFF, [char]0x20, [char]0x09, [char]0x0D, [char]0x0A)
+    $value = $Value.Trim([char]0xFEFF, [char]0x20, [char]0x09, [char]0x0D, [char]0x0A)
     $masked = if ($value.Length -ge 12) {
         $value.Substring(0, 4) + ('*' * ($value.Length - 8)) + $value.Substring($value.Length - 4)
     } else { $value }
 
     if ($value -notmatch $Pattern) {
-        throw "$Path does not hold a $What (read $($value.Length) characters: $masked)."
+        throw "-$What is not a $What (got $($value.Length) characters: $masked)."
     }
     Write-Host "  $What : $($value.Length) characters, $masked"
     return $value
@@ -159,6 +168,32 @@ Write-Host "  resolved Git installer: $($gitAsset.name)"
 Install-Package -Name $gitAsset.name -Url $gitAsset.browser_download_url -FileName $gitAsset.name `
     -Arguments @('/VERYSILENT', '/NORESTART', '/NOCANCEL', '/SP-')
 
+# --- go ------------------------------------------------------------------------------------------
+# Resolved from go.dev's own index, same reason as node and git above: a pinned version goes stale
+# unattended and this guest is rebuilt rarely enough that it would be stale every time.
+#
+# `foreach`, not a pipeline, for the reason the node block spells out at length: under Windows
+# PowerShell 5.1 `Invoke-RestMethod ... | Where-Object` returned every entry at once.
+Step 'Installing Go'
+$goReleases = Invoke-RestMethod 'https://go.dev/dl/?mode=json' -UseBasicParsing
+$goInstaller = $null
+foreach ($release in $goReleases) {
+    if (-not $release.stable) { continue }
+    foreach ($file in $release.files) {
+        if ($file.os -eq 'windows' -and $file.arch -eq 'amd64' -and $file.kind -eq 'installer') {
+            $goInstaller = $file
+            break
+        }
+    }
+    if ($goInstaller) { break }
+}
+if (-not $goInstaller -or -not $goInstaller.filename) {
+    throw "could not resolve a stable Go windows/amd64 installer from go.dev/dl"
+}
+Write-Host "  resolved Go installer: $($goInstaller.filename)"
+Install-Package -Name $goInstaller.filename -Url "https://go.dev/dl/$($goInstaller.filename)" `
+    -FileName $goInstaller.filename -Arguments @('/quiet', '/norestart')
+
 # --- make the installs visible to this process and to the service -------------------------------
 # An installer updates the MACHINE PATH in the registry; it cannot update the environment of a
 # process that is already running. Re-reading it is necessary and NOT sufficient -- re-reading alone
@@ -173,6 +208,7 @@ $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 $knownBinDirs = @(
     (Join-Path $env:ProgramFiles 'Git\cmd'),
     (Join-Path $env:ProgramFiles 'nodejs'),
+    (Join-Path $env:ProgramFiles 'Go\bin'),
     (Join-Path ${env:ProgramFiles(x86)} 'Git\cmd')
 ) | Where-Object { $_ -and (Test-Path $_) }
 
@@ -188,7 +224,7 @@ $env:Path = "$machinePath;" + [Environment]::GetEnvironmentVariable('Path', 'Use
 # Resolved to FULL PATHS and used as such below. `git config --system` later in this script failed
 # once already for exactly this reason; calling a resolved path cannot fail that way.
 $tools = @{}
-foreach ($tool in @('node', 'git')) {
+foreach ($tool in @('node', 'git', 'go')) {
     $resolved = Get-Command $tool -ErrorAction SilentlyContinue
     if (-not $resolved) {
         $fallback = $knownBinDirs | ForEach-Object { Join-Path $_ "$tool.exe" } | Where-Object { Test-Path $_ } | Select-Object -First 1
@@ -211,33 +247,52 @@ Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name LongP
 
 # --- the runner ---------------------------------------------------------------------------------
 Step 'Installing the Forgejo runner'
-$binary   = Join-Path $SharedDrive 'forgejo-runner.exe'
-$uuidFile = Join-Path $SharedDrive 'runner-uuid.txt'
-$token    = Join-Path $SharedDrive 'runner-token.txt'
-$labels   = Join-Path $SharedDrive 'runner-labels.txt'
-foreach ($required in @($binary, $uuidFile, $token, $labels)) {
-    if (-not (Test-Path $required)) {
-        throw "$required is missing. Put it in the compose file's ./shared and re-run this script."
-    }
-}
-
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-Copy-Item $binary (Join-Path $InstallDir 'forgejo-runner.exe') -Force
+
+# BUILT HERE, not handed over. Forgejo publishes no Windows runner binary, so this used to be
+# cross-compiled on the Linux host and dropped on a shared drive -- a file whose version nothing
+# recorded and whose provenance nothing checked. `go build` in the guest is the same one command,
+# against a clone whose commit is logged below.
+Step "Building the runner from $RunnerRepo"
+$source = Join-Path $env:TEMP 'forgejo-runner-src'
+if (Test-Path $source) { Remove-Item $source -Recurse -Force }
+& $tools['git'] clone --depth 1 $RunnerRepo $source
+if ($LASTEXITCODE -ne 0) { throw "git clone of $RunnerRepo exited $LASTEXITCODE" }
+
+$builtBinary = Join-Path $InstallDir 'forgejo-runner.exe'
+Push-Location $source
+try {
+    $commit = (& $tools['git'] rev-parse --short HEAD).Trim()
+    Write-Host "  building $commit"
+    # No ldflags: the Makefile stamps a version in, and without it the binary reports `dev`. That is
+    # accurate here -- this is main, not a release -- and claude-docs/WINDOWS-RUNNER.md records that
+    # the version is therefore unreadable from a job log, which is why the Windows runner's
+    # behaviour has to be measured rather than compared against a floor.
+    & $tools['go'] build -o $builtBinary .
+    if ($LASTEXITCODE -ne 0) { throw "go build exited $LASTEXITCODE" }
+} finally {
+    Pop-Location
+}
+if (-not (Test-Path $builtBinary)) { throw "go build reported success but produced no $builtBinary" }
+Write-Host "  built $builtBinary ($([math]::Round((Get-Item $builtBinary).Length / 1MB, 1)) MB) from $commit"
+Remove-Item $source -Recurse -Force -ErrorAction SilentlyContinue
+
 Push-Location $InstallDir
 try {
     # The web UI's "Create new runner" dialog displays a UUID and a Token and says to copy them into
     # the runner configuration's `server` section. That is the only route this script supports.
     # `forgejo-runner register` is deprecated in favour of exactly this, and consuming a separate
     # registration token would be a second mechanism for no gain.
-    $runnerUuid  = Read-Credential $uuidFile  'UUID'  '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-    $runnerToken = Read-Credential $token     'token' '^[A-Za-z0-9_-]{16,}$'
-    $runnerLabels = (Get-Content $labels -Raw).Trim()
+    $runnerUuid  = Read-Credential $Uuid  'UUID'  '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    $runnerToken = Read-Credential $Token 'token' '^[A-Za-z0-9_-]{16,}$'
+    $runnerLabels = $Labels.Trim()
 
     Step "Writing the runner configuration (labels '$runnerLabels')"
     # Labels are declared ON the connection: per the runner's config reference, a connection with none
     # falls back to `runner.labels`, and being explicit keeps one guest's labels from being read as
     # another's.
     $configFile = Join-Path $InstallDir 'config.yml'
+    New-Item -ItemType Directory -Path $WorkDir -Force | Out-Null
     @(
         'server:'
         '  connections:'
@@ -247,6 +302,13 @@ try {
         "      token: $runnerToken"
         '      labels:'
         "        - $runnerLabels"
+        'host:'
+        # NOT optional, whatever the config reference's "if it's empty" implies. Empty means
+        # `$HOME/.cache/act/`, and this daemon runs as SYSTEM, so every job's working directory
+        # lands in C:\WINDOWS\system32\config\systemprofile\.cache\act\. A 2570-file checkout
+        # into the Windows directory is how run 1005's app-image job came to sit in `git checkout`
+        # for 38 minutes with no output.
+        "  workdir_parent: $($WorkDir -replace '\\', '/')"
     ) | Set-Content -LiteralPath $configFile -Encoding ASCII
     Write-Host "  wrote $configFile for $Instance"
 
