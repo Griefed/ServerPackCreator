@@ -38,3 +38,18 @@ d8342dbff323: >-
 07c2806dc83b: >-
   update-readme.yml hashes README.md before and after rewriting it. Two invocations of one action with
   the same inputs is what a before/after measurement IS; collapsing them would delete the measurement.
+
+e8e7c95aa6dc: >-
+  Downloading `release-assets`, in release-build.yml's `release`, `mirror` and `virustotal`. A step
+  cannot be shared between JOBS except through a composite action, and a composite action's files
+  arrive only with a checkout -- which `mirror` and `virustotal` do not have and need nothing else
+  from. Sharing a four-line download would mean adding a clone of the repository to two jobs that
+  consume an artifact and nothing else. Three consumers of one artifact each fetching it IS the
+  mechanism; there is no shape with fewer copies.
+
+eaa02ee3d83f: >-
+  Downloading `gradle-jars`, in artifacts-reusable.yml's `appimage`, `winimage` and `media`. Same
+  mechanism as e8e7c95aa6dc: one producer, three consumers, and a fan-out is what that looks like in
+  YAML. The weaker of the two claims, because all three of these jobs DO check out -- so a composite
+  is possible here, just worse: it would wrap a single `uses:` and move the pinned
+  `download-artifact@v7` out of sight of the job that depends on it.

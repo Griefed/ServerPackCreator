@@ -337,8 +337,16 @@ jobs:
       # `ServerPackCreator-dev-Installer-Mac.dmg` beside `serverpackcreator-api-9.2.0.jar`.
       #
       # With the version passed, Gradle's output takes the restored jar's name and replaces it.
+      #
+      # The SAME test exclusions `jars` uses, and they are not cosmetic: the root build's `media` task
+      # declares `dependsOn(tasks.build)`, so without them this job re-runs the whole api and app suite
+      # that `jars` deliberately skipped and `test.yml` already ran on this commit. release-build.yml's
+      # old `assets` job excluded them; the conversion to this workflow would have quietly dropped that
+      # and put a second full test run on the release's critical path.
       - name: Build the install4j media
-        run: ./gradlew -Pversion="${{ inputs.version }}" media --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion="${{ inputs.version }}" media --info --full-stacktrace \
+            -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
       - name: Upload the media
         uses: https://code.forgejo.org/forgejo/upload-artifact@v5  # Forgejo's GHES-patched fork

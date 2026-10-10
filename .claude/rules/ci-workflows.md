@@ -201,8 +201,11 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "path=$jar`n", $utf8NoBom)
 ```
 
-`release-build.yml`'s `winimage` job is the only place in this repository that passes a value between
-two PowerShell steps, and it is where this is enforced. The same applies to `GITHUB_ENV`,
+**Nothing in this repository passes a value between two PowerShell steps any more.** `release-build.yml`'s
+`winimage` job was the only one that did, and it is gone: both pipelines call `artifacts-reusable.yml`,
+whose Windows job passes no `-JarPath`, so there is no hand-off to encode. That is the better fix and
+the reason to prefer it -- the value that cannot be wrong is the one nobody passes. The rule above
+stands for the next step that genuinely needs a hand-off, and applies equally to `GITHUB_ENV`,
 `GITHUB_STATE` and `GITHUB_PATH`, which that one parser serves for all four.
 
 ## A workflow that lives only on a branch cannot be dispatched from the UI
