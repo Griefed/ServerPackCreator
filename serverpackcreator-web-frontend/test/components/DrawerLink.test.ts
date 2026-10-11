@@ -19,6 +19,17 @@ describe('DrawerLink', () => {
     expect(wrapper.find('.q-icon').text()).toBe('send')
   })
 
+  it('tints the icon with the accent colour', () => {
+    const wrapper = mount(DrawerLink, {
+      props: { title: 'Submit', caption: 'Create a server pack', link: '/submit', icon: 'send' }
+    })
+
+    // Quasar turns `color="accent"` into the `text-accent` class. A misspelled prop - this component
+    // shipped `colour=` once - is silently dropped by Vue and leaves the icon in the default colour,
+    // which renders perfectly and looks like nobody's bug. Asserting the class is what catches it.
+    expect(wrapper.find('.q-icon').classes()).toContain('text-accent')
+  })
+
   it('defaults caption to empty and still renders the title', () => {
     const wrapper = mount(DrawerLink, { props: { title: 'About' } })
     expect(wrapper.text()).toContain('About')
