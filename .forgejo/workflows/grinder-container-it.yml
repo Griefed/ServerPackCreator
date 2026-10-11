@@ -46,7 +46,7 @@ jobs:
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.forgejo/actions/setup-build
 

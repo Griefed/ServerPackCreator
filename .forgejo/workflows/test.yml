@@ -1,7 +1,7 @@
 # Gradle build + test. This is the canonical CI for the project, replacing GitLab's `Build Test`.
 #
 # NOTE ON `uses:` REFERENCES, here and in every workflow in this directory: they name a VERSION TAG,
-# `actions/checkout@v6`, not a commit. A bare `owner/repo` resolves through the runner's configured
+# `actions/checkout@v7`, not a commit. A bare `owner/repo` resolves through the runner's configured
 # default action URL, which on this instance is `https://data.forgejo.org` -- read out of the runners'
 # own `git fetch 'https://data.forgejo.org/actions/checkout'` log lines, not from any file here. That
 # mirror carries the major tags: `v1`..`v7` were confirmed present for every bare reference in this
@@ -65,7 +65,7 @@ jobs:
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # The JDK, Gradle and the wrapper's executable bit, from the one definition every build job in
       # this repository shares. It has to follow the checkout: a local action's own files arrive with
