@@ -17,9 +17,9 @@ import java.io.PrintStream
  * Pins the contract `lang` has with the user about locale strings: whatever it lists is what it
  * accepts, and what it accepts is what it stores.
  *
- * Both halves were broken. `printAvailableLanguages` printed the locale (`en_GB`) while the loop
- * compared against `locale.language` (`en`), so the command refused every value it offered. And
- * having validated `scanner.next()`, it passed `scanner.nextLine()` -- the remainder of that same
+ * Both halves can break independently. Listing the locale (`en_GB`) while matching against
+ * `locale.language` (`en`) makes the command refuse every value it offers; and validating
+ * `scanner.next()` then passing `scanner.nextLine()` -- the remainder of that same
  * line, which is the empty string -- to `changeLocale`, so even an accepted answer stored the wrong
  * locale.
  */

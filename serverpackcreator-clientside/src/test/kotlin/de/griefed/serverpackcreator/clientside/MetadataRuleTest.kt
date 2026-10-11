@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Pins stage 3: **the sideness a mod's metadata declares is decided by rules too**, not by a `when` in
- * `aggregateFor` that no operator can reach.
+ * Pins stage 3: **the sideness a mod's metadata declares is decided by rules too**, so an operator can
+ * reach it in the rules file rather than only in code.
  *
  * The platform's `server_side` and the jar's own descriptor are the two signals that decide a mod without
  * ever booting it, and they were the last hardcoded clientside determination left. They now match through

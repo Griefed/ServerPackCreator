@@ -306,7 +306,7 @@ class ClientsideVerifier(
         /**
          * The sentence a reader gets beside the verdict, or `null` when the verdict speaks for itself.
          *
-         * Carries over the two observations the retired `aggregateFor` made that the verdict alone cannot:
+         * Carries the two observations the verdict alone cannot:
          * that a **contradicted server claim** is what makes a confirmation interesting rather than routine,
          * and that a distribution-locked file was never readable at all — otherwise indistinguishable from a
          * mod nobody has got round to.

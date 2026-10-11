@@ -46,8 +46,7 @@ import org.junit.jupiter.api.TestFactory
  * failure both.
  *
  * The ready-line, the timeout and the exit codes are deliberately **not** rules. They are structural readings
- * of how the process ended rather than of what it said, which is what `BootObservation` models; a rules file
- * is for the console.
+ * of how the process ended rather than of what it said; a rules file is for the console.
  */
 internal class DefaultBootRulesTest {
 

@@ -84,11 +84,12 @@ abstract class ExtensionConfigPanel protected constructor(
     )
 
     /**
-     * Clear the interface, or in other words, reset this extensions config panel UI. If your Config
-     * Panel Extensions has no elements you wish to reset, then simply overwrite this method with an
-     * empty method body.
+     * Resets this panel's inputs to their defaults. Give it an empty body when the panel has nothing
+     * to reset.
      *
-     * The `clear()`-method is called when the owning `TabCreateServerPack.clearInterface()`-method is called.
+     * **No host calls this today.** The GUI reaches a panel through `ApiPlugins.getConfigPanels` and
+     * drives it only via [serverPackExtensionConfig] and [setServerPackExtensionConfig]. Implement it
+     * regardless: it is abstract, so a host may begin calling it without the API changing shape.
      */
     abstract fun clear()
 }

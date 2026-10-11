@@ -26,12 +26,10 @@ import org.junit.jupiter.api.Test
  * Pins that a boot the **loader build itself** was too old for is re-checked on the newest build, whatever
  * verdict the classifier reached.
  *
- * **The guard existed and stopped covering the case it was written for.** `BootVerifierCrashRecheckTest`'s
- * own doc states the hazard: *"a mod needing a newer loader than the cached build fails to load, the server
- * exits non-zero, `BootLogClassifier` reads that as CRASHED"* — and `shouldRecheckCrash` re-boots a CRASHED
- * outcome on the newest build before letting it stand. Then `dependencyFailureMarkers` was widened
- * and that console became **INCONCLUSIVE** instead, which the re-check does not look at. The
- * premise moved out from under the guard.
+ * **Why the re-check may not key on CRASHED alone.** The hazard `BootVerifierCrashRecheckTest` describes
+ * is *"a mod needing a newer loader than the cached build fails to load, the server exits non-zero"* — but
+ * `dependencyFailureMarkers` reads that console as **INCONCLUSIVE**, not CRASHED. A re-check narrowed to
+ * CRASHED therefore stops covering the very case it is written for, and does so silently.
  *
  * **Measured on the live daemon**, ten hours after a full clear: **all 511** Fabric boots ran
  * loader `0.19.3` while Fabric's current stable is `0.19.5`, and **17 of 42** `DEPENDENCY_FAILURE` rows are

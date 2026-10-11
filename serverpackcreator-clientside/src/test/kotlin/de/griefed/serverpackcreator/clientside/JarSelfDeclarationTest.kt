@@ -191,8 +191,8 @@ internal class JarSelfDeclarationTest {
     /**
      * **The safety property, and the whole design.** A gate that refuses on doubt turns a gap in descriptor
      * coverage into a catalog-wide mass-INCONCLUSIVE event — the same shape `VersionConstraint`'s own doc
-     * warns about, and the same shape a `LoaderSupportMemory` once produced by marking Fabric unusable for
-     * 22 Minecraft versions inside minutes. Only a *positive, readable* contradiction may refuse.
+     * warns about, and the one that once marked Fabric unusable for 22 Minecraft versions inside minutes.
+     * Only a *positive, readable* contradiction may refuse.
      */
     @Test
     fun everythingUnreadableIsAccepted(@TempDir dir: File) {

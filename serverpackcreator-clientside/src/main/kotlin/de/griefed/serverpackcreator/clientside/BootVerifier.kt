@@ -1990,9 +1990,9 @@ class BootVerifier(
          * and differs from the one that ran, and only for an outcome the loader build could be responsible
          * for — a **crash**, or any outcome whose console says the loader itself was too old for a mod.
          *
-         * **The second arm is why this is not called `shouldRecheckCrash`.** A loader too old for the pack
-         * reads as INCONCLUSIVE rather than CRASHED — `dependencyFailureMarkers` covers it — so a guard keyed
-         * on CRASHED alone silently stops covering the case its own tests describe. It is not a rare shape:
+         * **The second arm is why this may not key on CRASHED alone.** A loader too old for the pack reads
+         * as INCONCLUSIVE rather than CRASHED — `dependencyFailureMarkers` covers it — so a guard narrowed to
+         * CRASHED silently stops covering the case its own tests describe. It is not a rare shape:
          * dependency failures of that kind run to a third of them when every boot is pinned to a loader build
          * older than the current one.
          *
