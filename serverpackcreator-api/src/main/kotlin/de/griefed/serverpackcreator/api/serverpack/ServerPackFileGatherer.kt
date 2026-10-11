@@ -90,7 +90,7 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
             log.warn("Do not open an issue on GitHub if this configuration errors or results in a broken server pack.")
             log.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!")
             /*
-            * Walked rather than copyRecursively'd, for two reasons the early return used to cost:
+            * Walked rather than copyRecursively'd, for two reasons an early return here would cost:
             * a protected path must still be left alone -- "no exceptions" cannot mean the operator's
             * world -- and the copy has to report what it produced, or the manifest describes only the
             * files provisioned beside the modpack and an update has nothing to prune against.

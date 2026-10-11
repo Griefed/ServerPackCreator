@@ -53,9 +53,9 @@ class RunConfigurationService @Autowired constructor(
         config.modloader = modloader
         config.modloaderVersion = modloaderVersion
 
-        // No per-entry lookup-or-store any more: these are plain strings embedded in the document, so
-        // there is nothing to resolve. Each list used to cost one findBy per entry plus a save per miss
-        // -- on the default clientside list that is ~550 sequential round-trips to build one config.
+        // No per-entry lookup-or-store: these are plain strings embedded in the document, so there is
+        // nothing to resolve. Referencing them instead costs one findBy per entry plus a save per miss
+        // -- on the default clientside list, ~550 sequential round-trips to build one configuration.
         if (startArgs.isNotBlank()) {
             config.startArgs.addAll(startArgs.replace(spaces, space).split(space))
         } else {

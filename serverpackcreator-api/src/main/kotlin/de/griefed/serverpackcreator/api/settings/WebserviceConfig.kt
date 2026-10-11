@@ -110,7 +110,7 @@ class WebserviceConfig(private val store: PropertyStore) {
                 dbPath.contains("sqlite") ||
                 dbPath.contains("postgresql") ||
                 // Not `startsWith("mongodb")`: that accepts the degenerate `mongodb:` a partially-configured
-                // container used to produce, which then fails deep in the driver instead of here.
+                // container produces, which then fails deep in the driver instead of here.
                 !(dbPath.startsWith("mongodb://") || dbPath.startsWith("mongodb+srv://"))
             ) {
                 log.warn("Your $DATABASE_URI_KEY-property didn't match a MongoDB-URL: $dbPath. It has been migrated to $FALLBACK_DATABASE_URI.")

@@ -417,8 +417,8 @@ class ServerPackHandler(
         runGenericEventListeners()
         log.debug("Generation took ${generationStopWatch.stop().getTime()}")
 
-        // A ZIP that was requested and did not appear is a generation failure, and was previously
-        // indistinguishable from one that was never asked for -- both left serverPackZip empty.
+        // A ZIP that was requested and did not appear is a generation failure. Without this it is
+        // indistinguishable from one that was never asked for -- both leave serverPackZip empty.
         if (packConfig.isZipCreationDesired && serverPackZip.isEmpty) {
             log.error("A ZIP-archive was requested but none was created.")
             generationErrors.add("A ZIP-archive was requested but none was created.")

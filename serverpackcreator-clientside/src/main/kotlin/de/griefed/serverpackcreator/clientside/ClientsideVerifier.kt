@@ -487,7 +487,7 @@ class ClientsideVerifier(
 
         /**
          * Restate [verdict] once [disproving] has taken the sting out of its crash: the confidence drops to
-         * [metadataOnly] — what `aggregate` yields for the same signals with no boot, so there is one
+         * [metadataOnly] — what [verdictOf] yields for the same signals with no boot, so there is one
          * confidence ladder and not a second one written here — and the note is **rebuilt** from the metadata
          * caveat, the [bootDetail] and why the crash no longer counts.
          *

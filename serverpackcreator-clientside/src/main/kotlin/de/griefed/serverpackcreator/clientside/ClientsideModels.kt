@@ -28,10 +28,10 @@ package de.griefed.serverpackcreator.clientside
  * ([ProjectFiles.clientSide] / [ProjectFiles.serverSide]) — so a single value answers "how much does
  * it want *this* side", never "which side does it belong on".
  *
- * **Not to be merged with `api.modscanning.Sideness`, despite the name this type used to carry.**
- * That enum is SPC's own *verdict* (`SERVER`/`CLIENT`, one value = the whole answer, defaulting to
- * `SERVER` so nothing is dropped). This one is a third party's *self-report* about one side, and the
- * confidence model is built on keeping the two apart: `ClientsideVerifier.aggregate` folds this,
+ * **Not to be merged with `api.modscanning.Sideness`.** That enum is SPC's own *verdict*
+ * (`SERVER`/`CLIENT`, one value = the whole answer, defaulting to `SERVER` so nothing is dropped).
+ * This one is a third party's *self-report* about one side, and the
+ * confidence model is built on keeping the two apart: `ClientsideVerifier.verdictOf` folds this,
  * `JarScan` (where SPC's own verdict arrives) and `BootResult` into a [Verdict] precisely because
  * the platform's claim is unreliable — which is the entire reason the expensive boot-test exists.
  * The translation between the two domains is deliberate and lives at that call-site, taking *two* of

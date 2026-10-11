@@ -150,9 +150,9 @@ internal enum class VerdictField(
         /**
          * Verdict ordering, the findings first — **the** rank table.
          *
-         * Both the report's default order and `/export.csv`'s hand-maintained copy used to declare this
-         * separately, so the table and the export could drift into disagreeing about what "the findings
-         * first" means. Pinned by `theCsvDefaultOrderIsTheSameOrdering`.
+         * The report's default order and `/export.csv` both read it from here. Declaring it twice lets the
+         * table and the export drift into disagreeing about what "the findings first" means; pinned by
+         * `theCsvDefaultOrderIsTheSameOrdering`.
          */
         val VERDICT_RANK = mapOf(
             // What a maintainer came for, in order: the findings; then the consoles a new rule gets written

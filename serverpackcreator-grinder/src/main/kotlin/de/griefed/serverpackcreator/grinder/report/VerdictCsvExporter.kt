@@ -48,7 +48,7 @@ object VerdictCsvExporter {
             verdicts
         } else {
             // The table's own ordering, through the same key rather than a second rank table kept in step
-            // by hand -- the two used to declare confidence order separately.
+            // by hand -- two declarations of one order drift, and the export then disagrees with the table.
             verdicts.sortedWith(
                 compareBy<GrindVerdict> { VerdictField.VERDICT.sortKey(it) }
                     .thenBy { it.slug }

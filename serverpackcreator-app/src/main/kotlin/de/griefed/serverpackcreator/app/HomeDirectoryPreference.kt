@@ -28,9 +28,9 @@ import java.util.prefs.Preferences
  *
  * The home directory lives in a `Preferences` node, and **which** node is not fixed: `-api` resolves it through
  * [ApiProperties.resolvePreferencesNode], so a host that must not share state with other ServerPackCreator processes
- * (the grinder daemon, each module's test suite) can claim its own. Four call-sites in this module used to hard-code
- * both the node name and the key, which meant the app could write its home somewhere `-api` would never read it back
- * from — the same class of mismatch that once let a test suite relocate a running daemon's home.
+ * (the grinder daemon, each module's test suite) can claim its own. **Never hard-code the node name or the key**:
+ * the app would then write its home somewhere `-api` never reads it back from, which is the class of mismatch that
+ * lets one process relocate another's home.
  *
  * **`GuiProps` deliberately stays on the default node** and does not go through here. Window geometry and layout belong
  * to the *installation* a user sees, not to whichever process resolved a home directory, and moving it would reset

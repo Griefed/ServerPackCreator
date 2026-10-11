@@ -239,8 +239,8 @@ class TaskExecutionServiceImpl @Autowired constructor(
             taskDetail.modpack.serverPacks.addLast(serverPack)
             if (generation.scanFindings.isNotEmpty()) {
                 // Recorded as an event against the still-GENERATED pack: the generation worked, and
-                // what the scan found about its contents is a separate thing the user should see. It
-                // used to arrive as ModPackStatus.ERROR, i.e. as "generation failed".
+                // what the scan found about its contents is a separate thing the user should see.
+                // Raising ModPackStatus.ERROR here would report it as "generation failed" instead.
                 eventService.submit(
                     taskDetail.modpack.id,
                     taskDetail.serverPack?.id,

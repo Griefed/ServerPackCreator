@@ -61,7 +61,7 @@ class AmountStatsService @Autowired constructor(
                 }
             }
 
-            // count() rather than findAll().size: the sizes used to cost three more full-collection
+            // count() rather than findAll().size: taking the sizes costs three more full-collection
             // loads, and each one fans out across four collections because the @DBRef graph
             // (ServerPack -> RunConfiguration -> start-args/clientside-mods/whitelist) resolves eagerly.
             return AmountStatsData(

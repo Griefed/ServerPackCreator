@@ -292,7 +292,7 @@ class BootVerifier(
         restageOnLoaderVersion: (String) -> Prepared
     ): BootOutcome {
         if (prepared is Prepared.Failed) {
-            // Say so out loud. Returning this as a detail string lets `ClientsideVerifier.aggregate` drop it
+            // Say so out loud. Returning this as a detail string lets `ClientsideVerifier.verdictOf` drop it
             // whenever the metadata already decided the confidence, which makes a *silently un-booted*
             // catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
@@ -506,7 +506,8 @@ class BootVerifier(
             }
             val dependencyProject = resolveDependencyAcrossTheLine(dependencyRef, loader, minecraftVersion, excluded)
             if (dependencyProject == null) {
-                // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
+                // Never a silent `continue`: an unreported missing dependency goes unnoticed, and the boot
+                // then fails in a way that reads as the candidate's fault.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
                 unsatisfied[unsatisfiedLabel(dependencyRef, null, platform.name)] = UnmetReason.UNRESOLVED
                 continue
