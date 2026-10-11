@@ -178,7 +178,17 @@ tasks.register<Delete>("cleanLicenseReport") {
     delete(projectDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
+// Both ends of this task are GENERATED and gitignored -- `licenses/*` covers the source, and the
+// destination has its own .gitignore entry. Neither is committed, so a build never dirties the tree
+// and nobody can commit one developer's `-Pversion` into a document about what ships.
 tasks.register<Copy>("copyLicenseReport") {
+    // dependsOn, not just the `finalizedBy` below. A finalizer runs the copy AFTER the report, but it
+    // does not make the copy REQUIRE it -- and `processResources` depends on this task directly, so
+    // without this edge the copy can run with no source at all. A Gradle `Copy` whose source is absent
+    // reports NO-SOURCE and succeeds, which packaged a jar carrying no third-party notice and said
+    // nothing. Measured before this line existed: `:copyLicenseReport` -> `NO-SOURCE`, BUILD
+    // SUCCESSFUL, destination absent.
+    dependsOn(tasks.named("generateLicenseReport"))
     from(rootDir.resolve("licenses/LICENSE-AGREEMENT"))
     into(rootDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui"))
 }
