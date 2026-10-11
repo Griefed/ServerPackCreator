@@ -1,4 +1,6 @@
-<domain type='kvm'>
+<!-- The qemu namespace is what <qemu:commandline> at the bottom of this file needs. A domain without
+     that block does not need the declaration; one with it fails to define without it. -->
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
 
   <!-- Name used by every 'virsh' command in the README, as $VM. -->
   <name>windows-11-x86_64-forgejo-runner</name>
@@ -13,17 +15,58 @@
   <memory unit='GiB'>16</memory>
   <currentMemory unit='GiB'>16</currentMemory>
 
+  <memoryBacking>
+    <!-- Keep KSM's scanner off this domain's 16 GiB. KSM spends host CPU looking for identical pages
+         to merge, and a single Windows guest has nobody to share them with, so the scan is pure cost.
+         Drop this element if the host is memory-overcommitted and wants the merging. -->
+    <nosharepages/>
+  </memoryBacking>
+
   <vcpu>4</vcpu>
+
+  <!-- One IOThread, so block I/O is submitted off the vCPU threads instead of on them. The app-image
+       job is tens of thousands of small files - a JDK unpacked by setup-java, a jlink runtime
+       assembled by jpackage, a zip written over both - which is the low-queue-depth shape this helps
+       most. It is referenced by iothread='1' on the disk below; the two have to agree. -->
+  <iothreads>1</iothreads>
+
   <cpu mode='host-passthrough'>
-    <!-- 1 socket x 2 cores x 2 threads = the 4 vcpus above. Windows client editions
-         license at most 2 sockets, so cores and threads are where the count has to go. -->
-    <topology sockets='1' dies='1' cores='2' threads='2'/>
+    <!-- 1 socket x 4 cores x 1 thread. Windows client editions license at most 2 sockets, so the
+         count has to go into cores. Threads are NOT declared, deliberately: threads='2' tells the
+         Windows scheduler those vcpus are SMT siblings sharing one physical core, and nothing pins
+         them to real siblings, so the guest would be scheduling against a topology that is not
+         true. Declare threads only together with <vcpupin> onto actual sibling CPUs. -->
+    <topology sockets='1' dies='1' cores='4' threads='1'/>
     <cache mode='passthrough'/>
     <feature policy='optional' name='hypervisor'/>
+
+    <!-- NO NESTED VIRTUALISATION, and this is the single largest performance decision in the file.
+         'host-passthrough' hands the guest vmx/svm whenever the host's kvm module has nesting on,
+         and Windows 11 uses it the moment it sees it: Virtualisation-Based Security and HVCI
+         ("Memory integrity") run the kernel under a Hyper-V root partition, which makes this guest
+         a nested hypervisor and taxes every exit. Microsoft turns Memory integrity on through
+         quality updates, so a guest-side switch is something an update can switch back.
+         Withholding the CPU feature cannot be undone from inside.
+
+         The cost: no WSL2, no Hyper-V, no Docker Desktop in this guest. The runner uses the ':host'
+         label scheme and starts no containers, so it wants none of them.
+
+         'disable' on a feature the host does not have is not an error, so both spellings can stand
+         here and the file stays correct on an Intel and an AMD host. -->
+    <feature policy='disable' name='vmx'/>
+    <feature policy='disable' name='svm'/>
   </cpu>
 
   <cputune>
-    <!-- Unitless weight against other domains when the host is saturated. -->
+    <!-- Unitless weight against other domains when the host is saturated; 1000 is roughly the
+         default. Lower it to make this domain yield to the others, which is usually what you want
+         for a runner that is busy only around a release.
+
+         NO <vcpupin>/<emulatorpin>. Pinning helps a domain that owns its cores and hurts one that
+         shares a host with others, because it removes the scheduler's freedom to place the vcpu on
+         whatever is free. If this host ever becomes dedicated to this guest, pin the vcpus to real
+         sibling pairs, pin <emulatorpin> and <iothreadpin> onto different CPUs, declare the matching
+         threads='2' topology above, and measure before and after - not one of those four alone. -->
     <shares>1000</shares>
   </cputune>
 
@@ -47,18 +90,47 @@
     <apic/>
     <!-- Required by <loader secure='yes'/>. Secure Boot without SMM is not Secure Boot. -->
     <smm state='on'/>
+
+    <!-- libvirt emulates VMware's IO port by default on KVM. It exists for VMware Tools; nothing in
+         this guest speaks to it, and every access to it is a VM exit. -->
+    <vmport state='off'/>
+
     <!-- Paravirtualisation hints. Without them a Windows guest busy-waits on spinlocks
-         and times itself off the emulated RTC, which costs real throughput on a build. -->
+         and times itself off the emulated RTC, which costs real throughput on a build.
+
+         Everything here is for a guest that is NOT itself a hypervisor, which is what the two
+         disabled CPU features above make this one. The nested-only enlightenments - evmcs,
+         emsr_bitmap, reenlightenment, <stimer><direct/></stimer>, <tlbflush><direct/></tlbflush> -
+         are deliberately absent: they accelerate an L2 guest that cannot exist here. -->
     <hyperv mode='custom'>
       <relaxed state='on'/>
       <vapic state='on'/>
-      <spinlocks state='on' retries='8191'/>
+      <!-- Attempts before a spinning vcpu notifies the hypervisor and yields. QEMU's own guidance is
+           ~0xfff on an overcommitted host, and this one runs other domains; raise it towards 8191 if
+           the guest ever gets the host to itself. -->
+      <spinlocks state='on' retries='4095'/>
       <vpindex state='on'/>
+      <!-- Exposes the vcpu run-time MSR, so the guest can see time the host took from it and does
+           not mistake steal time for work of its own. -->
+      <runtime state='on'/>
       <synic state='on'/>
       <stimer state='on'/>
       <frequencies state='on'/>
+      <!-- Paravirtualised TLB shootdown. -->
       <tlbflush state='on'/>
       <ipi state='on'/>
+
+      <!-- TWO MORE ENLIGHTENMENTS ARE DELIBERATELY NOT ENABLED HERE, because they are newer than the
+           libvirt most distributions ship and a domain that will not define is worse than one that
+           is marginally slower. Add them only after checking the output of 'virsh version':
+
+             <tlbflush state='on'><extended state='on'/></tlbflush>   libvirt 11.0.0, QEMU 7.1
+             <xmm_input state='on'/>                                  libvirt 10.7.0, QEMU 7.1
+
+           For scale: Ubuntu 24.04 ships 10.0.0 and Debian 12 ships 9.0.0, so neither accepts either
+           one. What makes this worth a paragraph rather than a footnote is HOW it fails - libvirt
+           reports 'Extra element features in interleave', naming <features> and not the child that
+           is actually unknown, so the message sends you to the wrong element. -->
     </hyperv>
     <kvm>
       <hidden state='off'/>
@@ -97,13 +169,32 @@
     </tpm>
 
     <!-- Paravirtualised disk. Windows setup cannot see it until the virtio driver is
-         loaded from the second CD during installation; that step is not optional. -->
+         loaded from the second CD during installation; that step is not optional.
+
+         cache='none' io='native' keeps the host page cache out of the path and submits
+         asynchronously; io='io_uring' measures about the same once an IOThread is in play, so it is
+         not worth the newer-kernel requirement here.
+
+         queues='4' matches the vcpu count and gives each one its own virtqueue instead of one lock
+         for all four. The single IOThread serves all four queues.
+
+         discard='unmap' is what lets a guest TRIM shrink the host image. It is ALSO what makes
+         Windows' retrim pathologically slow at the default granularity - see <qemu:commandline> at
+         the bottom of this file, which is the other half of this setting and not optional with it.
+
+         detect_zeroes is deliberately absent: libvirt describes it as compute-intensive, and the
+         guest-side TRIM reclaims the same space without spending host CPU on every write.
+
+         The user alias is what <qemu:commandline> addresses the device by. 'ua-' is a required
+         prefix for an alias the XML sets rather than libvirt. -->
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='none' io='native' discard='unmap'/>
+      <driver name='qemu' type='qcow2' cache='none' io='native' discard='unmap'
+              iothread='1' queues='4'/>
       <source file='/var/lib/libvirt/images/windows-11-x86_64-forgejo-runner.qcow2'/>
       <target dev='vda' bus='virtio'/>
       <boot order='2'/>
       <serial>W11FR-HDD01</serial>
+      <alias name='ua-vda'/>
     </disk>
 
     <!-- Windows installation media. Eject it once Windows is installed. -->
@@ -128,12 +219,23 @@
          can open a connection to the guest. A second, bridged NIC would put this machine on
          the LAN with an unauthenticated Forgejo runner on it and buy nothing.
          52:54:00 is QEMU's OUI; the last three bytes must be unique across the host and must
-         not collide with a <host> reservation in vmnet1's own definition. -->
+         not collide with a <host> reservation in vmnet1's own definition.
+
+         No multiqueue. It pays off on many concurrent connections, and this guest's traffic is a
+         handful of large sequential downloads, which one queue already saturates. -->
     <interface type='network'>
       <mac address='52:54:00:e7:1d:3e'/>
       <source network='vmnet1'/>
       <model type='virtio'/>
     </interface>
+
+    <!-- Free page reporting hands pages the guest has freed back to the host, so the host's
+         resident set follows the guest's actual use instead of its high-water mark. It needs the
+         balloon driver from the virtio CD, which the README already installs, and libvirt 6.9.0.
+
+         It is mutually exclusive with hugepage backing: hugepages are locked and cannot be
+         returned. Pick one - the README says which measurement decides it. -->
+    <memballoon model='virtio' freePageReporting='on'/>
 
     <!-- qemu-guest-agent. libvirt creates and binds the socket itself, so no <source> is needed,
          but it only treats a channel as the agent when the target carries exactly this name.
@@ -160,4 +262,35 @@
     </video>
 
   </devices>
+
+  <!-- THE OTHER HALF OF discard='unmap', and the largest measured win in this file.
+       Windows asks the disk for its "optimal unmap granularity" and issues one TRIM per slab of
+       that size. Unset, virtio-blk reports a single block, so a retrim of a 10 GiB volume becomes
+       millions of requests: Red Hat bug 2020998 measures 615.61 s at 4 KiB against 1.22 s at 32 MiB
+       on the same volume. Hyper-V reports 32 MiB, which is where this value comes from. The viostor
+       fix that shipped in virtio-win build 229 narrows the gap, not closes it - the same bug
+       measures 3 min 25 s unset against under 10 s at 32 MiB.
+
+       THIS IS THE SPELLING THAT WORKS ON EVERY LIBVIRT, which is why it is a raw command-line
+       argument rather than one of the two tidier forms. libvirt grew a native attribute and a typed
+       override, and both are newer than the 8.0.0 that Ubuntu 22.04 ships:
+
+         <blockio discard_granularity='33554432'/> on the disk   libvirt 10.0.0, and taints nothing
+         <qemu:override><qemu:frontend><qemu:property ...>       libvirt 8.2.0
+         <qemu:commandline> with -set, below                     libvirt 0.8.3
+
+       Prefer the first on a host new enough for it. `-set group.id.arg=value` addresses the device
+       by the id libvirt gives it, which is the <alias> on the disk above, hence 'ua-vda'. QEMU
+       parses every option before it creates any device, so this applies even though it appears
+       after the -device it modifies.
+
+       Either qemu-namespace form marks the domain TAINTED, which libvirt logs. The README's
+       "Measuring" section carries the qom-get that confirms the value took; a guest whose weekly
+       retrim runs for minutes is the symptom of it not having.
+  -->
+  <qemu:commandline>
+    <qemu:arg value='-set'/>
+    <qemu:arg value='device.ua-vda.discard_granularity=33554432'/>
+  </qemu:commandline>
+
 </domain>

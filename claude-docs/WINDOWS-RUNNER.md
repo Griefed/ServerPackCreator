@@ -95,6 +95,33 @@ fails before it runs a line, with `Cannot find: pwsh in PATH`, and act skips the
 reads as the build failing rather than as a missing interpreter. The Windows jobs use
 `shell: powershell`, and `misc/build-winimage.ps1` is written in the 5.1 dialect for the same reason.
 
+**Every `run:` step on this runner is a PowerShell script, and a fresh Windows client blocks all of
+them.** The runner does not pipe a `run:` body into a shell: `act/runner/step_run.go` writes the body
+to a **`.ps1` file** and runs `powershell -command . '{0}'` against it, with no `-ExecutionPolicy` on
+that command line. The same file also picks the Windows default when a step declares no `shell:` at
+all — `pwsh` if present, `powershell` otherwise — so this is not confined to the steps that ask for
+PowerShell by name. A freshly installed Windows **client** edition leaves every execution-policy scope
+`Undefined`, whose effective value is `Restricted`, and a dot-sourced script under `Restricted` fails
+with *"running scripts is disabled on this system"*. Windows **Server** defaults to `RemoteSigned`
+instead, which is why the same workflow can be fine on one Windows host and dead on another.
+
+`misc/windows-runner/provision.ps1` sets `LocalMachine` to `Bypass` and then reads the effective
+policy back, failing with the responsible scope named if something outranks it. Three things about
+that are deliberate:
+
+- **`LocalMachine`, not `CurrentUser`.** `CurrentUser` has the higher precedence of the two, which
+  makes it the tempting choice and the wrong one: provisioning runs interactively as an administrator
+  while jobs run as **SYSTEM**, so a `CurrentUser` setting lands on an account the daemon never uses.
+- **`Bypass`, not `RemoteSigned`.** `RemoteSigned` has to ask the Windows Desktop Shell which zone a
+  file came from, and
+  [`about_Execution_Policies`](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies)
+  records that this check fails with `AuthorizationManager check failed` wherever that shell is
+  unavailable or not yet ready — which describes a daemon the task scheduler starts as SYSTEM at boot
+  on a guest with no interactive session. `Bypass` performs no zone check.
+- **The read-back is the point.** Group Policy overrides every scope and `Set-ExecutionPolicy` still
+  reports success, so "we set it" and "it took" are different claims — the same shape as the Defender
+  exclusions in `optimise.ps1`.
+
 Three more worth confirming before blaming a workflow:
 
 - **`jpackage` is on `PATH`.** It ships with the JDK, and the jobs install one with `setup-java`, so
@@ -103,6 +130,32 @@ Three more worth confirming before blaming a workflow:
 - **`git` is on `PATH`**, for `actions/checkout`'s fallback path.
 - **Long paths are enabled** (`git config --system core.longpaths true`). The staged jlink runtime is
   deep, and Windows' 260-character default truncates it in ways that read as a corrupt artifact.
+
+## The guest has no nested virtualisation, and that is a capability statement
+
+`domain.xml` sets `<feature policy='disable' name='vmx'/>` and the `svm` equivalent, so the guest's
+CPU carries no virtualisation extensions. It is the largest single performance decision about this
+machine and it is also a constraint on what the runner can ever be asked to do:
+
+- **No Virtualisation-Based Security, no HVCI "Memory integrity".** This is the point. VBS runs the
+  Windows kernel under a Hyper-V root partition, which inside KVM makes the guest a *nested*
+  hypervisor and taxes every exit twice over. Microsoft enables Memory integrity through quality
+  updates, so a guest-side registry switch is one an update can switch back; a CPU feature the guest
+  was never given is not.
+- **No WSL2, no Hyper-V, no Docker Desktop in the guest.** Nothing needs them — the runner registers
+  as `windows-latest:host` precisely because there is no container to run a Windows job in — but a
+  future job that wanted a Linux container on this runner would have to get it somewhere else.
+
+`misc/windows-runner/optimise.ps1` turns VBS off from inside as well. That is not redundancy for its
+own sake: it is what makes a guest correct when it runs on a host whose domain definition predates the
+CPU-feature change.
+
+The rest of the tuning is where it is enforced and not restated here: each choice is commented at its
+own element in `domain.xml`, and [`../misc/windows-runner/README.md`](../misc/windows-runner/README.md)
+carries the host-OS half in its build order — the host profile in §1, the disk format in §3, the memory
+backing in §4 — with §7 the commands that measure whether any of it worked. The one to read before
+changing the disk is the `<qemu:commandline>` block, because `discard='unmap'` and the discard
+granularity beside it are a pair and the guest's weekly TRIM is unusable with only half of them.
 
 ## The JDK distribution
 

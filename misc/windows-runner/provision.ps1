@@ -245,6 +245,78 @@ Step 'Enabling long paths'
 Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name LongPathsEnabled -Value 1
 & $tools['git'] config --system core.longpaths true
 
+# --- script execution ---------------------------------------------------------------------------
+# WITHOUT THIS, EVERY `run:` STEP ON THIS RUNNER FAILS, and it does not read as a policy problem.
+#
+# The runner does not pipe a `run:` body into a shell. It WRITES IT TO A `.ps1` FILE and dot-sources
+# that file -- `step_run.go` returns the command `powershell -command . '{0}'` and appends `.ps1` to
+# the script name -- with no `-ExecutionPolicy` on that command line. So the machine's execution
+# policy decides whether the step runs at all, and a freshly installed Windows CLIENT edition leaves
+# every scope Undefined, whose effective policy is `Restricted`: scripts do not run.
+#
+# IT IS NOT ONLY THE STEPS THAT SAY `shell: powershell`. With no `shell:` declared and no container,
+# the same file picks PowerShell as the default for Windows -- `pwsh` if it is present, `powershell`
+# otherwise. Every `run:` step on this runner is a PowerShell script.
+#
+# SCOPE: `LocalMachine`, and the obvious alternative is wrong here. `CurrentUser` outranks it, but
+# this script runs interactively as an administrator while jobs run as SYSTEM, so a CurrentUser
+# setting would be written for the wrong account and change nothing for the daemon.
+#
+# `Bypass` RATHER THAN `RemoteSigned`, on this machine, for a documented reason rather than for
+# convenience: RemoteSigned has to ask the Windows Desktop Shell which zone a file came from, and
+# `about_Execution_Policies` records that the check fails with `AuthorizationManager check failed`
+# wherever that shell is unavailable or not yet ready. A daemon started by the task scheduler as
+# SYSTEM at boot, on a guest with no interactive session, is that case. `Bypass` performs no zone
+# check at all.
+Step 'Allowing script execution'
+# `-ErrorAction Continue` in a script that is otherwise fail-fast, deliberately: when a Group Policy
+# outranks this scope, the cmdlet reports a non-terminating error AND STILL WRITES THE VALUE. Letting
+# that throw here would abort on the less informative of the two messages, where the read-back below
+# names the scope actually responsible and what clears it.
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope LocalMachine -Force -ErrorAction Continue
+
+# READ IT BACK, because setting a policy and changing the effective one are different things: Group
+# Policy overrides every scope, and Process and CurrentUser both outrank LocalMachine. The cmdlet
+# reports success either way, so the effective value is the only evidence.
+# `-List` returns them already in precedence order, highest first.
+$policies = Get-ExecutionPolicy -List
+foreach ($entry in $policies) { Write-Host "  $($entry.Scope) : $($entry.ExecutionPolicy)" }
+
+# ASSERT THE OUTCOME, then diagnose it. Checking only whether some other scope outranks LocalMachine
+# would miss the plainest failure there is -- Set-ExecutionPolicy itself not taking, for instance
+# because this was not started as an administrator -- which leaves every scope Undefined and the
+# effective policy Restricted, with no scope to point at. `Get-ExecutionPolicy` with no -Scope is the
+# one value that answers the question the jobs actually ask.
+#
+# Restricted and AllSigned both stop a dot-sourced step script; nothing else does. Cast to string
+# rather than compare the enum, so the match does not depend on PowerShell's coercion rules.
+$effective = [string](Get-ExecutionPolicy)
+Write-Host "  effective policy: $effective"
+
+if ($effective -in @('Restricted', 'AllSigned')) {
+    # Name the scope responsible if one outranks LocalMachine. Undefined in a higher scope is not a
+    # culprit -- it means that scope defers to the next one down.
+    $culprit = $policies | Where-Object {
+        [string]$_.Scope -ne 'LocalMachine' -and [string]$_.ExecutionPolicy -in @('Restricted', 'AllSigned')
+    } | Select-Object -First 1
+
+    $because = if ($culprit) {
+        "$($culprit.Scope) is $($culprit.ExecutionPolicy) and outranks LocalMachine."
+    } else {
+        'No scope outranks LocalMachine, so the setting above did not take. Start PowerShell as an administrator.'
+    }
+
+    throw @"
+The effective execution policy is $effective. $because
+Every run: step would fail with "running scripts is disabled on this system", because the runner
+writes each step to a .ps1 file and dot-sources it.
+
+MachinePolicy and UserPolicy come from Group Policy and cannot be changed with Set-ExecutionPolicy;
+clear the 'Turn on Script Execution' policy instead. CurrentUser is clearable with:
+    Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope CurrentUser
+"@
+}
+
 # --- the runner ---------------------------------------------------------------------------------
 Step 'Installing the Forgejo runner'
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
