@@ -33,7 +33,7 @@ runs:
     # fails as a cache miss, which is invisible, and this is the preamble to every build in the repo.
     - name: Set up JDK 21 with the Gradle cache
       if: ${{ inputs.gradle == 'true' }}
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v6
       with:
         distribution: 'zulu'
         java-version: '21'
@@ -42,7 +42,7 @@ runs:
 
     - name: Set up JDK 21
       if: ${{ inputs.gradle != 'true' }}
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v6
       with:
         distribution: 'zulu'
         java-version: '21'

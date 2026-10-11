@@ -24,7 +24,7 @@ jobs:
       # This job needs no source of its own -- it reads a ref name. The checkout is here because a
       # LOCAL action's files arrive with the checkout, and the alternative is a second copy of the
       # version rules. A shallow clone is enough: `tag` mode runs no git command.
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # The tag *is* the version: .releaserc.yml uses `tagFormat: '${version}'`, no `v` prefix.
       # Anything not matching the two release shapes is refused rather than half-released.
@@ -76,7 +76,7 @@ jobs:
       release_id: ${{ steps.create.outputs.release_id }}
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
@@ -185,7 +185,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.forgejo/actions/setup-build
 
@@ -234,10 +234,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       # The probe and the builder it configures, as one unit. The caches are HOST configuration
       # (claude-docs/RUNNER-REGISTRY-CACHE.md) and this is fail-soft by design: a cache that does not
@@ -277,7 +277,7 @@ jobs:
       - name: Build and push
         id: buildpush
         continue-on-error: true
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/Dockerfile
@@ -295,7 +295,7 @@ jobs:
 
       - name: Build and push (retry)
         if: ${{ steps.buildpush.outcome == 'failure' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/Dockerfile

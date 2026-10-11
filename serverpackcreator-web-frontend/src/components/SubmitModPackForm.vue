@@ -502,10 +502,10 @@
             @mouseleave="zipAutoplay = true"
 
           >
-            <q-carousel-slide :name="1" class="rounded-borders" img-src="~assets/invalid_minecraft.webp"/>
-            <q-carousel-slide :name="2" class="rounded-borders" img-src="~assets/invalid_overrides.webp"/>
-            <q-carousel-slide :name="3" class="rounded-borders" img-src="~assets/valid1.webp"/>
-            <q-carousel-slide :name="4" class="rounded-borders" img-src="~assets/valid2.webp"/>
+            <q-carousel-slide :name="1" class="rounded-borders" img-src="~@/assets/invalid_minecraft.webp"/>
+            <q-carousel-slide :name="2" class="rounded-borders" img-src="~@/assets/invalid_overrides.webp"/>
+            <q-carousel-slide :name="3" class="rounded-borders" img-src="~@/assets/valid1.webp"/>
+            <q-carousel-slide :name="4" class="rounded-borders" img-src="~@/assets/valid2.webp"/>
           </q-carousel>
           <q-chip outline>
             {{ zipSlideInfo[zipSlide - 1] }}
@@ -546,10 +546,10 @@
 
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
-import {modpacks, runConfigs, versions} from 'boot/axios';
-import {settingsStore} from 'stores/setting-store';
+import {modpacks, runConfigs, versions} from '@/boot/axios';
+import {settingsStore} from '@/stores/setting-store';
 import {date, useQuasar, type QRejectedEntry} from 'quasar';
-import type {ModPack, RunConfiguration} from 'src/types/api';
+import type {ModPack, RunConfiguration} from '@/types/api';
 
 export default defineComponent({
   name: 'SubmitModPackForm',

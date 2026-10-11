@@ -5,6 +5,9 @@
 
 version: 2
 updates:
+  # Reaches `.github/workflows` ONLY. Dependabot has no way to read `.forgejo/workflows`, where 40 of
+  # this repository's 55 `uses:` lines live -- so those are bumped by hand and will drift between
+  # sweeps. Do not read a green Dependabot here as "the actions are current".
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -21,34 +24,23 @@ updates:
 ###################################################
 #.....................GRADLE......................#
 ###################################################
+  # `directories`, with "/" FIRST, because that is where the versions actually are. Every module
+  # declares its dependencies as `libs.*` aliases with no literal coordinate anywhere, so the three
+  # per-module entries this replaced could never have found a version to bump -- Dependabot's Gradle
+  # coverage here was zero, and the catalog stayed current only because it was bumped by hand. "/"
+  # is the entry that reaches `gradle/libs.versions.toml`; the module directories are listed so a
+  # literal coordinate added to one later is still seen.
   - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-api"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "develop"
-    pull-request-branch-name:
-      separator: "-"
-
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-app"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "develop"
-    pull-request-branch-name:
-      separator: "-"
-
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-plugin-example"
+    directories:
+      - "/"
+      - "/serverpackcreator-api"
+      - "/serverpackcreator-app"
+      - "/serverpackcreator-clientside"
+      - "/serverpackcreator-grinder"
+      - "/serverpackcreator-plugin-example"
+      - "/serverpackcreator-plugin-grinder"
+      - "/serverpackcreator-plugin-selfextract"
+      - "/serverpackcreator-plugin-servertest"
     schedule:
       interval: "monthly"
     assignees:

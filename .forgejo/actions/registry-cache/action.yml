@@ -74,6 +74,6 @@ runs:
         sed 's/^/  /' "$toml"
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
       with:
         buildkitd-config: ${{ steps.regcache.outputs.config }}

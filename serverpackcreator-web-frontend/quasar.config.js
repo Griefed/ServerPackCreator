@@ -1,7 +1,7 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 
-import { defineConfig } from '#q-app/wrappers'
+import { defineConfig } from '@quasar/app-vite'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig((ctx) => {
@@ -65,7 +65,11 @@ export default defineConfig((ctx) => {
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
+      // The SPA is served by the Spring app, so it is built straight into that module's
+      // resources rather than into a local dist/. app-vite 3 refuses an output directory
+      // outside the project unless this flag says the escape is intended.
       distDir: '../serverpackcreator-app/src/main/resources/static',
+      allowOutsideProjectDistDir: true,
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},

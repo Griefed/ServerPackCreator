@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import AboutItem from 'components/AboutItem.vue'
+import AboutItem from '@/components/AboutItem.vue'
 
 /**
  * First component test — exercises the Quasar test harness (`test/install-quasar.ts`) by mounting a

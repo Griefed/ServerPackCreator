@@ -26,7 +26,7 @@
 
 <script lang="ts">
 import {defineComponent, type PropType} from 'vue';
-import type {ErrorItem} from 'src/types/api';
+import type {ErrorItem} from '@/types/api';
 
 export default defineComponent({
   name: 'ErrorsCard',

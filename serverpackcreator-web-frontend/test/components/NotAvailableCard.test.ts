@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import NotAvailableCard from 'components/NotAvailableCard.vue'
+import NotAvailableCard from '@/components/NotAvailableCard.vue'
 
 /**
  * NotAvailableCard is a static placeholder shown in card-grids where no entity exists. The whole of

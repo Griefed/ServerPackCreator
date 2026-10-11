@@ -17,7 +17,7 @@
             <q-img
               class="rounded-borders"
               height="256px"
-              src="~assets/icon.svg"
+              src="~@/assets/icon.svg"
               width="256px"
             />
           </q-card-section>
@@ -69,7 +69,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import AboutItem from 'components/AboutItem.vue';
+import AboutItem from '@/components/AboutItem.vue';
 
 const aboutItems = [
   {

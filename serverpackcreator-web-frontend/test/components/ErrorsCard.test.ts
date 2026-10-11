@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ErrorsCard from 'components/ErrorsCard.vue'
-import type { ErrorItem } from 'src/types/api'
+import ErrorsCard from '@/components/ErrorsCard.vue'
+import type { ErrorItem } from '@/types/api'
 
 /**
  * Pins that ErrorsCard renders one row per error and shows each error's id and message — the

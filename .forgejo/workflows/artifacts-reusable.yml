@@ -42,7 +42,7 @@ jobs:
     name: "JARs"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -125,7 +125,7 @@ jobs:
       matrix:
         arch: [x86_64, aarch64]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -150,7 +150,7 @@ jobs:
           echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Cache JDK download
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.jdk.outputs.dir }}
           key: ${{ steps.jdk.outputs.dir }}-${{ steps.jdk.outputs.release }}
@@ -245,7 +245,7 @@ jobs:
       # removed once. A hung job is bounded by the INSTANCE: `[actions] ZOMBIE_TASK_TIMEOUT` (10m, for a
       # task that stops reporting) and `ENDLESS_TASK_TIMEOUT` (3h, for one that keeps reporting and
       # never ends).
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: |
             misc
@@ -300,7 +300,7 @@ jobs:
     needs: jars
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -371,7 +371,7 @@ jobs:
     steps:
       # For `ls -d serverpackcreator-plugin-*/` below: the expected plugin count is DERIVED from the
       # modules that exist, never written down, so it cannot go stale.
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download every artifact
         uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork

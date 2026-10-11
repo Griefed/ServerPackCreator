@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
-import HistoryTable from 'components/HistoryTable.vue';
+import HistoryTable from '@/components/HistoryTable.vue';
 
 export default defineComponent({
   name: 'HistoryPage',

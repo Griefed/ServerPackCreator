@@ -47,7 +47,7 @@ jobs:
       INSTANCE: Writerside/spch
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # The root-level documents are the source of truth and get copied into the help module, exactly as
       # the GitLab job did -- Writerside cannot reach outside its own directory.
@@ -114,7 +114,7 @@ jobs:
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.forgejo/actions/setup-build
 
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
         with:
@@ -181,10 +181,10 @@ jobs:
           echo "dokka: $(find public/api -type f | wc -l) files"
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # A composite action cannot read `secrets`, so the three values are passed in.
       - uses: ./.forgejo/actions/registry-login
@@ -216,7 +216,7 @@ jobs:
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/Dockerfile.help

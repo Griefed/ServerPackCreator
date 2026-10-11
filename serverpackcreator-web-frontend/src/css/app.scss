@@ -1,32 +1,32 @@
 // app global css in SCSS form
 body {
-  background-image: url("assets/background.webp");
+  background-image: url("@/assets/background.webp");
   background-repeat: repeat;
   background-attachment: fixed;
 }
 
 .tile-x {
-  background: url("assets/tile.webp") repeat-x;
+  background: url("@/assets/tile.webp") repeat-x;
 }
 
 .tile-y {
-  background: url("assets/tile.webp") repeat-y;
+  background: url("@/assets/tile.webp") repeat-y;
 }
 
 .tile-xy {
-  background: url("assets/tile.webp") repeat;
+  background: url("@/assets/tile.webp") repeat;
 }
 
 .tile2-x {
-  background: url("assets/tile2.webp") repeat-x;
+  background: url("@/assets/tile2.webp") repeat-x;
 }
 
 .tile2-y {
-  background: url("assets/tile2.webp") repeat-y;
+  background: url("@/assets/tile2.webp") repeat-y;
 }
 
 .tile2-xy {
-  background: url("assets/tile2.webp") repeat;
+  background: url("@/assets/tile2.webp") repeat;
 }
 
 .sticky-header-table {  /* height or max-height is important */

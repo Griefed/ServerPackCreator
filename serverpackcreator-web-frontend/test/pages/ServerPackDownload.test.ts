@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import ServerPackDownload from 'pages/ServerPackDownload.vue'
+import ServerPackDownload from '@/pages/ServerPackDownload.vue'
 
 // Mock the axios boot-module: the page fetches the server pack and its owning modpack on mount.
-vi.mock('boot/axios', () => ({
+vi.mock('@/boot/axios', () => ({
   serverpacks: { get: vi.fn(() => Promise.resolve({ data: { size: 0, downloads: 0, confirmedWorking: 0, dateCreated: 0, sha256: '' } })) },
   modpacks: { get: vi.fn(() => Promise.resolve({ data: { name: modpackName } })) }
 }))

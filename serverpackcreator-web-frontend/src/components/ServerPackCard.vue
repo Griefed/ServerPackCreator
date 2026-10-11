@@ -74,8 +74,8 @@
 
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
-import {serverpacks} from 'boot/axios';
-import {formatBytes} from 'src/utils/format';
+import {serverpacks} from '@/boot/axios';
+import {formatBytes} from '@/utils/format';
 import {date} from 'quasar';
 
 export default defineComponent({
