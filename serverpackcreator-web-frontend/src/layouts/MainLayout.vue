@@ -6,7 +6,7 @@
         <q-separator inset />
         <q-toolbar-title>
           <q-img :ratio="323/54" width="256px" alt="ServerPackCreator" fit="contain"
-                 src="~assets/serverpackcreator.webp" />
+                 src="~@/assets/serverpackcreator.webp" />
         </q-toolbar-title>
       </q-toolbar>
     </q-header>
@@ -38,7 +38,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import DrawerLink from 'components/DrawerLink.vue';
+import DrawerLink from '@/components/DrawerLink.vue';
 
 const linksList = [
   {

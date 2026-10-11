@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes } from 'src/utils/format'
+import { formatBytes } from '@/utils/format'
 
 /**
  * The API reports archive sizes in bytes. It used to report truncated mebibytes as an integer, so

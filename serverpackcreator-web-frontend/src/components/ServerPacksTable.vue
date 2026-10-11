@@ -116,10 +116,10 @@
 
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
-import {modpacks, serverpacks} from 'boot/axios';
-import {formatBytes} from 'src/utils/format';
+import {modpacks, serverpacks} from '@/boot/axios';
+import {formatBytes} from '@/utils/format';
 import {date, type QTableColumn} from 'quasar';
-import RunConfigurationCard from 'components/RunConfigurationCard.vue';
+import RunConfigurationCard from '@/components/RunConfigurationCard.vue';
 
 // `field` is required on QTableColumn; the 'download' column renders via a body-cell slot, so its
 // field is inert (kept only to satisfy the type). Typing the array fixes the `align` literals,

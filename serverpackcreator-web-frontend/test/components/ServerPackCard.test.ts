@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import ServerPackCard from 'components/ServerPackCard.vue'
+import ServerPackCard from '@/components/ServerPackCard.vue'
 
 // The card fetches its server pack by id on mount; mock the axios boot-module so it resolves with
 // a controlled payload and never touches the network.
-vi.mock('boot/axios', () => ({
+vi.mock('@/boot/axios', () => ({
   serverpacks: { get: vi.fn(() => Promise.resolve({ data: serverPackPayload })) }
 }))
 

@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import MainLayout from 'layouts/MainLayout.vue'
-import routes from 'src/router/routes'
+import MainLayout from '@/layouts/MainLayout.vue'
+import routes from '@/router/routes'
 
-// `routes` statically imports the two download pages, which reach `boot/axios` and its Quasar-only
-// `#q-app/wrappers`. Mocking the boot module keeps that chain out of the test, as the data-card tests do.
-vi.mock('boot/axios', () => ({
+// `routes` statically imports the two download pages, which reach `@/boot/axios` and its Quasar-only
+// `@quasar/app-vite` wrappers. Mocking the boot module keeps that chain out of the test, as the
+// data-card tests do.
+vi.mock('@/boot/axios', () => ({
   modpacks: { get: vi.fn(() => Promise.resolve({ data: {} })) },
   serverpacks: { get: vi.fn(() => Promise.resolve({ data: {} })) },
   settings: { get: vi.fn(() => Promise.resolve({ data: {} })) }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import AboutPage from 'pages/AboutPage.vue'
-import AboutItem from 'components/AboutItem.vue'
+import AboutPage from '@/pages/AboutPage.vue'
+import AboutItem from '@/components/AboutItem.vue'
 
 /**
  * Pins the About page's outbound links.

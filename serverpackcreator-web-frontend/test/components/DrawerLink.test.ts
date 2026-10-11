@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import DrawerLink from 'components/DrawerLink.vue'
+import DrawerLink from '@/components/DrawerLink.vue'
 
 /**
  * Pins DrawerLink's presentational contract: a navigation list-item that renders its title and

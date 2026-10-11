@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 import { fileURLToPath } from 'node:url'
 
-// Resolve Quasar's path-aliases so test imports match the app's import style
-// (e.g. `stores/setting-store`, `components/...`).
+// Resolve Quasar's path alias so test imports match the app's import style
+// (e.g. `@/stores/setting-store`, `@/components/...`).
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
 export default defineConfig({
@@ -13,14 +13,7 @@ export default defineConfig({
   plugins: [vue({ template: { transformAssetUrls } }), quasar()],
   resolve: {
     alias: {
-      src: srcDir,
-      app: fileURLToPath(new URL('.', import.meta.url)),
-      assets: `${srcDir}/assets`,
-      boot: `${srcDir}/boot`,
-      stores: `${srcDir}/stores`,
-      components: `${srcDir}/components`,
-      layouts: `${srcDir}/layouts`,
-      pages: `${srcDir}/pages`,
+      '@': srcDir,
     },
   },
   test: {

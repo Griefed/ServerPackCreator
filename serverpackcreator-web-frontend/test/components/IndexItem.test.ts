@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import IndexItem from 'components/IndexItem.vue'
+import IndexItem from '@/components/IndexItem.vue'
 
 /**
  * Pins IndexItem's presentational contract: a landing-page entry that renders its title and caption

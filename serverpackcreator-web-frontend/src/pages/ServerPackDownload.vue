@@ -110,7 +110,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { modpacks, serverpacks } from 'boot/axios';
+import { modpacks, serverpacks } from '@/boot/axios';
 import { date } from 'quasar';
 
 export default defineComponent({
