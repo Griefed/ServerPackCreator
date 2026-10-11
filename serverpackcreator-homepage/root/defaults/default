@@ -1,0 +1,20 @@
+server {
+    listen 80 default_server;
+
+    listen 443 ssl;
+
+    root /app/serverpackcreator.de;
+    index index.php index.html index.htm;
+
+    server_name _;
+
+    ssl_certificate /config/keys/cert.crt;
+    ssl_certificate_key /config/keys/cert.key;
+
+    client_max_body_size 0;
+
+    location / {
+        root   /app/serverpackcreator.de;
+        index  index.html index.htm;
+    }
+}

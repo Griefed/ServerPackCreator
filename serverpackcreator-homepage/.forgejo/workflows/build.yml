@@ -1,0 +1,127 @@
+# Converted from the `build` stage of .gitlab-ci.yml.
+#
+# GitLab triggered this with the rule
+#   $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"
+# Forgejo compiles ref filters into a regular expression, where `+` and `?` are
+# quantifiers and everything else is escaped, so `[0-9]+.[0-9]+.[0-9]+` becomes
+# `^[0-9]+\.[0-9]+\.[0-9]+$` — the same thing the GitLab rule matched. The host
+# check is dropped: there is only one instance now.
+name: Build
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    # `workflow_dispatch` exists so a tag build can be re-run by hand, but a
+    # dispatch from a branch would tag that build `:latest` and overwrite the
+    # published release image. Only tags get here.
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@v5
+
+      # Fail fast with a readable message instead of pushing to a
+      # half-interpolated tag like `ghcr.io//:1.2.0`.
+      - name: Prepare tags
+        id: prep
+        shell: bash
+        env:
+          DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+          DOCKERHUB_REPO: ${{ vars.DOCKERHUB_REPO }}
+          GHCR_USER: ${{ vars.GHCR_USER }}
+        run: |
+          set -euo pipefail
+
+          version='${{ github.ref_name }}'
+          : "${DOCKERHUB_USER:?repository variable DOCKERHUB_USER is not set}"
+          : "${DOCKERHUB_REPO:?repository variable DOCKERHUB_REPO is not set}"
+          # The old pipeline logged in to ghcr.io with $DOCKERHUB_USER, so keep
+          # that as the fallback when GHCR_USER is not configured separately.
+          ghcr_user="${GHCR_USER:-$DOCKERHUB_USER}"
+
+          # OCI references must be lowercase; `github.repository` is not
+          # (it is `Griefed/serverpackcreator-de`).
+          forge_host="${GITHUB_SERVER_URL#*://}"
+          forge_repo="$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
+
+          {
+            echo 'tags<<TAGS_EOF'
+            echo "ghcr.io/${ghcr_user}/${DOCKERHUB_REPO}:${version}"
+            echo "ghcr.io/${ghcr_user}/${DOCKERHUB_REPO}:latest"
+            echo "index.docker.io/${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${version}"
+            echo "index.docker.io/${DOCKERHUB_USER}/${DOCKERHUB_REPO}:latest"
+            echo "${forge_host}/${forge_repo}:${version}"
+            echo "${forge_host}/${forge_repo}:latest"
+            echo 'TAGS_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+          echo "ghcr_user=${ghcr_user}" >> "$GITHUB_OUTPUT"
+          echo "host=${forge_host}" >> "$GITHUB_OUTPUT"
+
+      # No `registry:` on purpose — it must be omitted (or be exactly
+      # `docker.io`) for Docker Hub. `docker login` only rewrites the server
+      # address to the canonical credential key when the argument is empty or
+      # `docker.io`:
+      #
+      #   if opts.serverAddress != "" && opts.serverAddress != DefaultNamespace {
+      #       serverAddress = opts.serverAddress      // kept verbatim
+      #   } else {
+      #       serverAddress = IndexServer             // https://index.docker.io/v1/
+      #   }
+      #
+      # so `registry: index.docker.io` stored the credential under the literal
+      # key `index.docker.io`, while buildkit looks Docker Hub up under
+      # `https://index.docker.io/v1/` for host `registry-1.docker.io`
+      # (authprovider.go, DockerHubConfigfileKey). The lookup missed, buildx
+      # pushed anonymously, and the token endpoint answered with a pull-only
+      # scope — surfacing as `insufficient_scope: authorization failed` on a
+      # step whose login had just reported success. The tell is the absent
+      # `[auth] ... token for registry-1.docker.io` line in the build log.
+      - name: Log in to Docker Hub
+        uses: https://data.forgejo.org/docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: https://data.forgejo.org/docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ steps.prep.outputs.ghcr_user }}
+          # Renamed from GITHUB_TOKEN: Forgejo injects a `GITHUB_TOKEN` of its
+          # own into the secrets context, so a repository secret of that name
+          # cannot be used.
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Forgejo Container Registry
+        uses: https://data.forgejo.org/docker/login-action@v3
+        with:
+          registry: ${{ steps.prep.outputs.host }}
+          username: ${{ github.repository_owner }}
+          # The automatic per-run token cannot write to the package registry;
+          # this must be a personal access token with the `write:package` scope.
+          password: ${{ secrets.PACKAGES_TOKEN }}
+
+      - name: Set up QEMU
+        uses: https://data.forgejo.org/docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: https://data.forgejo.org/docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: https://data.forgejo.org/docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          # linux/amd64 only, as in .gitlab-ci.yml. The base image
+          # (ghcr.io/linuxserver/nginx) also publishes arm64 if that is wanted.
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          tags: ${{ steps.prep.outputs.tags }}

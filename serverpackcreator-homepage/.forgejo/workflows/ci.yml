@@ -1,0 +1,170 @@
+# Converted from .gitlab-ci.yml (stages: test, release).
+#
+# GitLab `workflow:rules` had no direct equivalent, so the two conditions that
+# actually mattered are expressed as per-job `if:`:
+#   * merge-request pipelines      -> this workflow simply does not listen to
+#                                     `pull_request`, so they never run.
+#   * `RELEASE: x.y.z` commits     -> skipped, otherwise semantic-release's own
+#                                     release commit would re-trigger the pipeline.
+#
+# Action references are fully qualified on purpose: `uses: actions/checkout@v5`
+# would be resolved against the instance's DEFAULT_ACTIONS_URL, which an admin
+# can repoint. Spelling out the host makes the workflow behave identically on
+# any Forgejo instance.
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  # Replaces `test quasar` + `pages`.
+  # GitLab built the SPA twice (once to test, once to publish to GitLab Pages)
+  # and copied the result over `public/` so the artifact would carry the name
+  # GitLab Pages demands. Forgejo has no Pages, so the build happens once, the
+  # copy is gone (it only ever dirtied the working tree — Quasar already copies
+  # `public/` into `dist/spa` itself), and the result is attached to the run as
+  # a downloadable artifact.
+  quasar:
+    name: Quasar build
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message || '', 'RELEASE:') }}
+    steps:
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: https://data.forgejo.org/actions/setup-node@v5
+        with:
+          # Pinned rather than ranged so CI is reproducible. Nothing in the
+          # tree declares an upper bound (@quasar/app 3.3.3 says
+          # `node >= 12.22.1`, quasar `>= 10.18.1`), and webpack 5.64.3 is past
+          # the 5.61 fix for ERR_OSSL_EVP_UNSUPPORTED, so Node 17+ needs no
+          # --openssl-legacy-provider. The release image's builder stage
+          # (griefed/gitlab-ci-cd:2.8.0) ships Node 22 and builds this tree
+          # cleanly, so 22 is the verified-good version; 20 is simply the
+          # conservative floor. Consider moving this to 22 to test on the same
+          # Node the published image is built with.
+          node-version: '20'
+          # Replaces the GitLab `cache: paths: [node_modules/]`. Caches the npm
+          # download cache (~/.npm) rather than node_modules, which is the
+          # supported approach. Requires the runner's built-in cache server,
+          # which forgejo-runner enables by default.
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Clean previous build
+        run: rm -Rf dist
+
+      - name: Build
+        run: npx quasar build
+
+      # NOT actions/upload-artifact: from v4 on it refuses to run against
+      # anything that is not GitHub.com. Forgejo maintains a fork with that
+      # check removed, and it is what the upstream runner test suite uses.
+      # See https://code.forgejo.org/forgejo/runner RELEASE-NOTES.md#3-4-0
+      - name: Upload SPA
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v5
+        with:
+          name: spa
+          path: dist/spa
+          # GitLab: `expire_in: 1 week`
+          retention-days: 7
+          if-no-files-found: error
+
+  # Replaces `test docker`. The GitLab rule `$CI_SERVER_HOST == "git.griefed.de"`
+  # scoped this job to the GitLab instance only; on Forgejo it is always the
+  # instance we are running on, so the rule is dropped.
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message || '', 'RELEASE:') }}
+    steps:
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@v5
+
+      - name: Set up QEMU
+        uses: https://data.forgejo.org/docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: https://data.forgejo.org/docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: https://data.forgejo.org/docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: false
+          no-cache: true
+
+  # Replaces the `release` stage. GitLab: `only: master`, `except: tags` and
+  # `except: $CI_COMMIT_TITLE =~ /^RELEASE:.+$/`.
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [quasar, docker]
+    if: >-
+      ${{ (github.ref_name == 'master' || github.ref_name == 'main')
+          && !startsWith(github.event.head_commit.message || '', 'RELEASE:') }}
+    steps:
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@v5
+        with:
+          # semantic-release needs the full history and all tags to work out
+          # the next version.
+          fetch-depth: 0
+          # Without this, checkout leaves an http.extraheader credential for
+          # the automatic token in .git/config, which would take precedence
+          # over the GIT_CREDENTIALS semantic-release injects into the push URL.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: https://data.forgejo.org/actions/setup-node@v5
+        with:
+          # semantic-release 25 requires ^22.14.0 || >= 24.10.0, and
+          # @semantic-release/changelog 7 requires >= 24.15 — hence 24, not the
+          # 20 the app itself is built with.
+          node-version: '24'
+
+      # conventional-changelog-conventionalcommits is deliberately held at 9.x.
+      # From 10.0.0 on, the preset's templates require
+      # conventional-changelog-writer@9, but @semantic-release/release-notes-
+      # generator@14 — the newest there is, and what semantic-release@25 pins
+      # with `^14.1.0` — still depends on conventional-changelog-writer@^8. The
+      # mismatch is not caught at install time; it surfaces at the generateNotes
+      # step as
+      #   Error: Missing helper: "conventional-changelog-conventionalcommits
+      #   requires conventional-changelog-writer@9 or newer ..."
+      # Bump this only once release-notes-generator ships a writer@9 dependency.
+      # Installed globally and deliberately NOT added to package.json: the
+      # release toolchain needs Node 24 while the app is built on Node 20, so a
+      # shared dependency tree would mean permanent EBADENGINE warnings and
+      # would pull the whole Quasar tree into this job for nothing. This is
+      # what the old `griefed/gitlab-ci-cd` image shipped preinstalled.
+      # semantic-release resolves plugins from its own install directory first,
+      # so a global install finds them. Bump the pins here when updating.
+      - name: Install semantic-release
+        run: |
+          npm install --global \
+            semantic-release@25.0.9 \
+            @semantic-release/commit-analyzer@13.0.1 \
+            @semantic-release/release-notes-generator@14.1.1 \
+            @semantic-release/changelog@7.0.0 \
+            @semantic-release/exec@7.1.0 \
+            @semantic-release/git@11.0.1 \
+            conventional-changelog-conventionalcommits@9.3.1
+
+      - name: Release
+        run: semantic-release
+        env:
+          # Pushes the `RELEASE: x.y.z` commit and the tag. Format is
+          # `<url-encoded-user>:<url-encoded-token>`.
+          GIT_CREDENTIALS: ${{ secrets.RELEASE_USER }}:${{ secrets.RELEASE_TOKEN }}
+          # Consumed by .forgejo/scripts/forgejo-release.mjs via
+          # @semantic-release/exec (replaces @semantic-release/gitlab).
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}

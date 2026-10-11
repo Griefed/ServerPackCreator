@@ -1,0 +1,97 @@
+# Fallback deployment of the SPA to GitHub Pages.
+#
+# The site is normally served from the Docker image that .forgejo/workflows/
+# build.yml publishes; this exists only so there is something to fall back to.
+# It is independent of the Forgejo pipeline and runs on the GitHub mirror.
+#
+# Rewritten after the Forgejo migration. The previous version never once
+# succeeded: all three runs it ever had ended in failure (2026-03-09 x2,
+# 2026-03-11), no `gh-pages` branch was ever created, and GitHub Pages was
+# never enabled on the repository. The exact cause is no longer recoverable --
+# the runs are past GitHub's log retention, so the API returns the jobs with an
+# empty `steps` array. What is known is that the failing job ran for 42s before
+# giving up, so it did execute steps rather than failing at startup, and that
+# all three actions it used (actions/checkout@v3, actions/setup-node@v3.6.0 and
+# JamesIves/github-pages-deploy-action@v4.4.1) declare `runs.using: node16`, a
+# runtime GitHub has since retired from its runner images. Rather than guess,
+# this is rebuilt on current actions so the next run reports its own problem.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+# The default GITHUB_TOKEN is read-only on repositories created or updated
+# under GitHub's current defaults, which is enough to break a deployment with
+# a permissions error rather than a build error. Request exactly what the
+# Pages deployment needs: `pages: write` to publish, and `id-token: write` for
+# the OIDC token deploy-pages exchanges with the Pages service.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Pages allows one deployment at a time. Queue rather than cancel, so a push
+# that lands during a deployment still ends up published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build SPA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          # Was `>= 16.1.0` with `check-latest: false`, which resolves to
+          # whatever the runner image happens to ship — it silently changes
+          # under you whenever GitHub updates the image. Pinned to 22, the
+          # version the release image's builder stage
+          # (griefed/gitlab-ci-cd:2.8.0) uses, so the fallback is built with
+          # the same toolchain as the image it stands in for.
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      # `npm install -g @quasar/cli` is gone: @quasar/cli is already a
+      # dependency in package.json, so npx resolves it from node_modules and
+      # the build uses the pinned version rather than whatever is newest.
+      - name: Build
+        run: npx quasar build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      # quasar.conf.js sets `publicPath: ''`, which makes webpack emit
+      # document-relative asset URLs (`js/app.js`, not `/js/app.js`), and
+      # `vueRouterMode: 'hash'`, which needs no server-side rewrites. The build
+      # is therefore already correct for a project page served from the
+      # subpath https://<user>.github.io/serverpackcreator-de/ — no base-path
+      # override is needed here.
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/spa
+
+  # Split from the build job because deploy-pages must run in the
+  # `github-pages` environment, and a job can only declare one environment.
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

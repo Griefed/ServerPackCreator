@@ -1,0 +1,15 @@
+# Keep the build context small and the builder stage reproducible: node_modules
+# would carry the host's platform-specific binaries into the image and dist/
+# a stale build, and neither the CI definitions nor editor state can affect the
+# SPA build.
+.git
+.github
+.forgejo
+node_modules
+dist
+.quasar
+.idea
+.vscode
+.run
+.DS_Store
+*.log
