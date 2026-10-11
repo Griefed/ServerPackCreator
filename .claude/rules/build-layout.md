@@ -76,8 +76,8 @@ the "do not tidy that away, here is what it cost last time".
   **not** list `mavenLocal()`, which used to be first there and let a stale `~/.m2` artifact shadow the
   real one.
 - **The foojay toolchain resolver is declared TWICE, differently, and both are required.**
-  `settings.gradle.kts` has it `version "0.8.0"`; `buildSrc/settings.gradle.kts` has it **without** a
-  version. buildSrc is a separate build and does **not** inherit the root's toolchain repositories
+  `settings.gradle.kts` has it with an explicit version — the number is not repeated here because it
+  goes stale on every bump; `buildSrc/settings.gradle.kts` has it **without** a version. buildSrc is a separate build and does **not** inherit the root's toolchain repositories
   (verified — it fails with *"Toolchain download repositories have not been configured"*), yet by the
   time its settings evaluate the plugin is already on the classpath, so requesting a version there
   fails with *"already on the classpath with an unknown version"*. Don't "tidy" either one away.
