@@ -1,3 +1,34 @@
+## [9.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.2.0...9.2.1) (2026-10-11)
+
+### ⏩ Performance
+
+* **runner:** tune the Windows runner guest, and the guide that builds it ([0817b78](https://git.griefed.de/Griefed/ServerPackCreator/commit/0817b783deba617833c3067189cf6dea4dd77051))
+
+### 📦 Other
+
+* **docs:** Screenshots in Writerside docs ([6e0b592](https://git.griefed.de/Griefed/ServerPackCreator/commit/6e0b592cb6caacc9c70aebf833c75684d4911143))
+
+### 🦊 CI/CD
+
+* **deps:** @quasar/app-vite 2.4 -> 3.10, and the alias scheme it renames ([053e1ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/053e1efd532ea443680e568adf20e5efb3d71a9d)), closes [#1296](https://git.griefed.de/Griefed/ServerPackCreator/issues/1296)
+* **deps:** bring every GitHub Action up to its current major ([1d5e863](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d5e86348962e5b9bb179ff9e8e4401f9ea9b2fb))
+* **deps:** declare the two build plugins the frontend imports but never declared ([0097a64](https://git.griefed.de/Griefed/ServerPackCreator/commit/0097a64b05d71580202f37b78e85b22bc9f6527a))
+* **deps:** delete the .npmrc, whose every option npm ignores ([c04edf6](https://git.griefed.de/Griefed/ServerPackCreator/commit/c04edf676fe4853d97ec2e2cf4caf1dbae536c58))
+* **deps:** give Renovate a config it still understands ([add6abf](https://git.griefed.de/Griefed/ServerPackCreator/commit/add6abfdc80e4ae3d204fef2e73b0e4cc516ee5a))
+* **deps:** let Dependabot see where the Gradle versions actually are ([46bd9f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/46bd9f74c076fc6138a89fb2706b807d1aefd2e2))
+* **deps:** refresh the frontend lockfile within its existing ranges ([cb31c89](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb31c89149950455d56c0e9a629b26334f9142a5))
+* **deps:** vitest 3.2 -> 5.0, verified by mutation rather than by a green tick ([644fb32](https://git.griefed.de/Griefed/ServerPackCreator/commit/644fb32f345f50e22a5de5711ead528ecc8623ac)), closes [#1241](https://git.griefed.de/Griefed/ServerPackCreator/issues/1241)
+* **deps:** vue-router 4 -> 5, which @quasar/app-vite 3 requires ([01cdef7](https://git.griefed.de/Griefed/ServerPackCreator/commit/01cdef70497c6027a91c74864dedee1ff793f179))
+
+### 🧪 Tests
+
+* **frontend:** pin DrawerLink's icon colour, which nothing guarded ([a84a7d3](https://git.griefed.de/Griefed/ServerPackCreator/commit/a84a7d3733ead487e0050153bfc5a2f870699550))
+
+### 🛠 Fixes
+
+* **ci:** the release build takes its artifacts from the shared definition ([3a71fe7](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a71fe746d874fde58155228689313ca3c1fd742))
+* **ci:** the Windows app-image build, and the duplication that broke it ([6b09b87](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b09b87eaf761f0de5e073f58d95899918771a18))
+
 ## [9.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.1.0...9.2.0) (2026-10-07)
 
 ### 📔 Docs
