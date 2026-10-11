@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import ModPackCard from 'components/ModPackCard.vue'
+import ModPackCard from '@/components/ModPackCard.vue'
 
 // The card fetches its modpack by id on mount; mock the axios boot-module so it never hits the
 // network and resolves with a well-shaped payload the test controls.
-vi.mock('boot/axios', () => ({
+vi.mock('@/boot/axios', () => ({
   modpacks: { get: vi.fn(() => Promise.resolve({ data: modpackPayload })) }
 }))
 

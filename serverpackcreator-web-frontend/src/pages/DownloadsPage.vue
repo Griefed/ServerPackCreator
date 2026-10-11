@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import ModpacksTable from 'components/ModpacksTable.vue';
+import ModpacksTable from '@/components/ModpacksTable.vue';
 
 export default defineComponent({
   name: 'DownloadsPage',

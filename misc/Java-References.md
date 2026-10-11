@@ -62,10 +62,13 @@ on whatever these install, so section A cannot move until these have.
   [`docs.yml`](../.forgejo/workflows/docs.yml),
   [`qodana.yml`](../.forgejo/workflows/qodana.yml),
   [`grinder-container-it.yml`](../.forgejo/workflows/grinder-container-it.yml) — one each
-- [`.forgejo/workflows/devbuild.yml`](../.forgejo/workflows/devbuild.yml) — **three**
-  (`build-jar`, `build-winimage-x86_64`, `build-media`)
-- [`release-build.yml`](../.forgejo/workflows/release-build.yml) — **three**
-  (`winimage`, `assets`, `maven`)
+- [`.forgejo/workflows/artifacts-reusable.yml`](../.forgejo/workflows/artifacts-reusable.yml) —
+  **three** (`jars`, `winimage`, `media`). This is the shared artifact definition that both
+  `devbuild.yml` and `release-build.yml` call, so a JDK bump here reaches the dev build and the
+  release at once. `devbuild.yml` itself now has **none**: its `prepare` job only resolves a version.
+- [`release-build.yml`](../.forgejo/workflows/release-build.yml) — **two**
+  (`assets`, `maven`). `assets` goes when it moves onto the shared workflow; `maven` stays, because
+  publishing is not an artifact-build concern.
 
 The step names say `Set up JDK 21`, so grep for the name as well as the value.
 

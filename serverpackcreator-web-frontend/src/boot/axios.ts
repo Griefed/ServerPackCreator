@@ -1,4 +1,4 @@
-import { defineBoot } from '#q-app/wrappers'
+import { defineBoot } from '@quasar/app-vite'
 import axios, { type AxiosInstance } from 'axios'
 
 // Type the axios instances this boot file exposes on the Vue Options-API `this`

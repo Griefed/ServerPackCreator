@@ -1,4 +1,4 @@
-import { defineRouter } from '#q-app/wrappers'
+import { defineRouter } from '@quasar/app-vite'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
 

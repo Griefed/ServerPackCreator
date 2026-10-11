@@ -1,4 +1,4 @@
-import { defineStore } from '#q-app/wrappers'
+import { defineStore } from '@quasar/app-vite'
 import { createPinia } from 'pinia'
 
 /*

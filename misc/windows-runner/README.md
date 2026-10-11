@@ -1,307 +1,484 @@
 # A Windows Forgejo runner on a Linux x86_64 host
 
-One Windows guest as a container, because `jpackage` cannot cross-compile and so ServerPackCreator's
-Windows app-image has to be built on Windows. The operational context — why this exists, what the job
-does, and what to check on the first run — is in
+One Windows guest on libvirt/KVM, because `jpackage` cannot cross-compile ServerPackCreator's Windows
+app-image. Why the guest exists and what the job does:
 [`../../claude-docs/WINDOWS-RUNNER.md`](../../claude-docs/WINDOWS-RUNNER.md).
 
-| Service | Guest | Acceleration | Label | Web viewer | RDP |
-|---|---|---|---|---|---|
-| `windows-x64` | Windows 11 x86_64 | KVM | `windows-latest:host` | `8006` | `3389` |
+Blocks are marked **host**, **workstation** or **guest**. Everything but the Windows installation
+itself can be driven from your workstation.
 
-**Both ports are bound to `127.0.0.1` on the Docker host and are not reachable from anywhere else.**
-See *Connecting from your workstation* below — that is deliberate, not an oversight to work around.
+**Follow the steps in order and the guest comes up tuned.** Every performance decision is made at the
+point where it is cheap — the disk format when the image is created, the memory backing before the
+domain is defined, the guest settings before the runner is registered. Nothing here needs a second
+pass. [Appendix A](#appendix-a-retrofitting-a-guest-that-already-exists) exists only for a guest built
+before this file said so.
 
-## x86_64 only, deliberately
+## 0. Conventions — **host** and **workstation**
 
-There is no ARM64 guest here, and that is a decision rather than something missing. **An ARM64 guest on
-an x86_64 CPU gets no acceleration at all:** KVM virtualises, it does not translate instruction sets,
-so `qemu-system-aarch64` falls back to TCG — `-accel tcg,thread=multi` with `-cpu cortex-a76`, read out
-of `qemus/qemu-arm`'s `proc.sh` — and every guest instruction is translated in software. That is a
-difference in kind rather than degree: hours for the unattended Windows install alone, and a jpackage
-run close enough to `release-build.yml`'s job timeout that a release would be gated on emulation
-throughput.
+`<user>@<host>` is a login on the Linux KVM host — the account step 1 adds to the `libvirt` group.
+Substitute it wherever it appears.
 
-Windows on ARM64 runs x86_64 binaries, so that audience is served by the x86_64 artifact.
-
-## There is no published Forgejo runner for Windows — cross-compile it
-
-Checked against the last five releases of `forgejo/runner` (v12.13.1 … v13.2.0): every asset is
-`linux-amd64` or `linux-arm64`. The Makefile knows `WINDOWS_ARCHS ?= windows/amd64`, but nothing is
-released for it.
-
-It is Go, so one command on the Linux host produces it:
+Export `VM` in every shell you use, on both machines; the blocks below interpolate it.
 
 ```sh
-git clone https://code.forgejo.org/forgejo/runner && cd runner
-GOOS=windows GOARCH=amd64 go build -o forgejo-runner.exe
+export VM=windows-11-x86_64-forgejo-runner
 ```
 
-The JDK `provision.ps1` installs is what matters for the artifact, not this binary: that JDK's runtime
-is what `jpackage` embeds into the app-image.
-
-## Connecting from your workstation
-
-The host is normally headless and remote, and the ports are published on `127.0.0.1` only, so nothing
-here is reachable across the network by design. **Port 8006 is an unauthenticated console to a Windows
-VM** — anyone who can open it is sitting at the machine, before Windows has a login screen and after.
-Publishing it on `0.0.0.0` on a remote host hands that out to whatever can route to it.
-
-So the route in is an SSH tunnel, which needs nothing installed on the host:
+On the **workstation**, point libvirt at the host as well — `virsh` and `virt-viewer` then tunnel
+over that SSH connection by themselves, with no VNC port published on the host:
 
 ```sh
-ssh -N -L 8006:127.0.0.1:8006 -L 3389:127.0.0.1:3389 you@runner-host
+export LIBVIRT_DEFAULT_URI="qemu+ssh://<user>@<host>/system"
 ```
 
-Leave it running, and the guest is at `localhost` on your own machine. Identical on macOS and Linux;
-`-N` means "forward only, no shell".
+On the host itself, leave it unset or use `qemu:///system`. Not `qemu:///session`: that is a
+per-user libvirt instance and cannot see a domain defined system-wide.
 
-| What | Where, once the tunnel is up |
-|---|---|
-| Web viewer | <http://localhost:8006> |
-| RDP | `localhost:3389` |
-
-The **web viewer is the only thing that works during installation** — there is no RDP service until
-Windows is up — so that is what you watch an install with, and what you use if a guest stops booting.
-
-For RDP afterwards, user `runner` and the password from `.env`:
-
-- **macOS** — [Windows App](https://apps.apple.com/us/app/windows-app/id1295203466), which replaced
-  Microsoft Remote Desktop in May 2025. Add a PC with hostname `localhost:3389`.
-- **Linux** — Remmina, or FreeRDP directly. The binary is `xfreerdp` or `xfreerdp3` depending on the
-  distribution's packaging:
-
-  ```sh
-  xfreerdp3 /v:localhost:3389 /u:runner /p:"$WINDOWS_PASSWORD" /dynamic-resolution
-  ```
-
-**RDP's UDP transport does not survive the tunnel**, because `ssh -L` forwards TCP only. The client
-negotiates TCP and works; it is only slightly less smooth over a slow link.
-
-Worth a one-line `~/.ssh/config` entry, since this is a thing you do repeatedly:
-
-```
-Host runner-host
-    HostName <ip or name>
-    User <you>
-    LocalForward 8006 127.0.0.1:8006
-    LocalForward 3389 127.0.0.1:3389
-```
-
-Then `ssh -N runner-host` is the whole command.
-
-If the host is already on a WireGuard or Tailscale network you share, binding the ports to that
-interface instead of `127.0.0.1` is the other reasonable answer — the point is that *something*
-authenticates before port 8006 does, because port 8006 never will.
-
-## Setup
+## 1. The host — **host**
 
 ```sh
-cd misc/windows-runner
-mkdir -p shared storage-x64
-echo "WINDOWS_PASSWORD=$(head -c 18 /dev/urandom | base64)" > .env   # compose refuses to start without it
+sudo apt install -y qemu-system-x86 libvirt-daemon-system swtpm swtpm-tools ovmf
+# Fedora/RHEL: qemu-kvm libvirt swtpm swtpm-tools edk2-ovmf
 
-cp /path/to/forgejo-runner.exe shared/
-printf '%s' 'windows-latest:host' > shared/runner-labels.txt
-
-# Settings -> Actions -> Runners -> "Create new runner" shows a UUID and a Token. Both, verbatim:
-printf '%s' '<uuid>'  > shared/runner-uuid.txt
-printf '%s' '<token>' > shared/runner-token.txt
-
-docker compose up -d windows-x64
+sudo usermod -aG libvirt "$USER" && newgrp libvirt
+systemctl is-active libvirtd && test -w /dev/kvm && echo ready
 ```
 
-Watch the install at <http://localhost:8006> through the tunnel from the previous section. It takes a
-while even with KVM, and the web viewer is the only way to see it: there is no RDP service until
-Windows is up.
+`swtpm` is required: Windows 11 will not install without TPM 2.0. `virt-viewer` is not — it belongs on
+your workstation.
 
-`oem/install.bat` runs at the end of the unattended install and calls two scripts, each writing its own
-log to the public desktop so a failure is visible over RDP without reading container logs:
+### Tune the host before it has a guest to tune for
 
-| Script | Does | Log |
+```sh
+sudo apt install -y tuned
+tuned-adm list | grep virtual-host     # confirm the profile exists before selecting it
+sudo tuned-adm profile virtual-host
+```
+
+`virtual-host` is the profile Red Hat names for a KVM host: it lowers swappiness and writes dirty
+pages back more aggressively, which is what keeps a guest's I/O burst from becoming the host's.
+
+```sh
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+```
+
+The governor is the one knob `tuned` does not settle for you. `performance` gives the best guest
+throughput; `schedutil` gives a 24/7 host a far better idle bill for a runner that is busy around a
+release and asleep the rest of the month. Pick against the duty cycle, not the benchmark.
+
+KSM needs no host change: `<memoryBacking><nosharepages/>` in `domain.xml` keeps the scanner off this
+domain, and leaves it available to the others.
+
+## 2. Media — **host**
+
+```sh
+sudo curl -L -o /var/lib/libvirt/images/virtio-win.iso \
+  https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso
+```
+
+**The Windows ISO link has to be minted in a browser** — Microsoft rejects scripted clients. On your
+workstation open
+[microsoft.com/en-us/software-download/windows11](https://www.microsoft.com/en-us/software-download/windows11),
+pick *Windows 11 (multi-edition ISO for x64 devices)* → **Confirm**, then *English (United States)* →
+**Confirm**. Copy the **64-bit Download** link and the SHA-256 under *Verify your download*. The link
+is valid 24 hours and needs no cookies, so the host fetches the 8.4 GiB itself:
+
+```sh
+sudo curl -L -C - -o /var/lib/libvirt/images/win11.iso '<link>'    # quote it: it contains &
+sha256sum /var/lib/libvirt/images/win11.iso
+```
+
+Keep the ISO. The link expires, the file does not.
+
+## 3. The disk image — **host**
+
+Decide the format now. Converting later is an offline copy of the whole image
+([Appendix A](#appendix-a-retrofitting-a-guest-that-already-exists)); choosing now is one word.
+
+**`domain.xml` ships qcow2, and this is the command that matches it:**
+
+```sh
+sudo qemu-img create -f qcow2 -o extended_l2=on,cluster_size=128k \
+  /var/lib/libvirt/images/$VM.qcow2 128G
+sudo mkdir -p /var/lib/libvirt/qemu/nvram
+```
+
+Both `-o` options are load-bearing, and they only work as a pair. 128 KiB clusters cut the L2 metadata
+32x against the 64 KiB default, which is what keeps the mapping tables resident instead of thrashing.
+On its own that would raise the allocation unit to 128 KiB, which against a 4 KiB-cluster NTFS doing
+scattered Gradle writes is write amplification. `extended_l2=on` splits every cluster into exactly 32
+subclusters — fixed, not tunable — so 128 KiB / 32 = **4 KiB**, and allocation and zero/discard
+marking happen per subcluster. Big-cluster metadata, small-cluster write granularity.
+
+That fixed 32 is also the constraint: extended L2 needs `cluster_bits >= 14`, a **16 KiB minimum
+cluster size**, because below that a subcluster would be under 512 bytes. It needs QEMU 5.2+, and the
+image is unreadable by anything older — which matters only if the image will ever move to an older
+host.
+
+**`raw` is still the faster choice, and costs nothing you are using** — `domain.xml` ships qcow2
+because it is what every other command in this file names, not because it won a measurement. The only
+thing qcow2 buys over a sparse raw file is internal snapshots, and §8's rollback does not use them
+— internal snapshots of a UEFI domain need the NVRAM in qcow2 format too, so the rollback is a file
+copy either way. A raw file is sparse on ext4, XFS and btrfs, and `discard='unmap'` punches holes in
+it, so it still occupies only what the guest actually uses. If you take it, create the image and edit the two matching lines in
+`domain.xml` in the same sitting:
+
+```sh
+sudo qemu-img create -f raw /var/lib/libvirt/images/$VM.img 128G
+# then in domain.xml: <driver name='qemu' type='raw' .../> and a matching <source file=.../>
+```
+
+## 4. Define the domain — **host**
+
+[`domain.xml`](domain.xml) is the whole definition, commented inline.
+
+### First, check your libvirt accepts it
+
+```sh
+virsh version        # the "Using library:" line is the one that decides this
+```
+
+| Element | Needs | In `domain.xml`? |
 |---|---|---|
-| `oem/optimise.ps1` | removes the apps a runner does not need, tunes the guest | `runner-optimise.log` |
-| `oem/provision.ps1` | installs Node and Git, writes the runner config, starts it at boot | `runner-provisioning.log` |
+| `<disk><driver iothread='1'/>` | libvirt 1.2.8, QEMU 2.1 | yes |
+| `<disk><driver queues='4'/>` | libvirt 3.9.0 | yes |
+| `<memballoon freePageReporting='on'/>` | libvirt 6.9.0 | yes |
+| `<qemu:commandline>` → `-set …discard_granularity` | libvirt 0.8.3 | yes |
+| `<hyperv><xmm_input/>` | libvirt 10.7.0, QEMU 7.1 | **no — opt in** |
+| `<hyperv><tlbflush><extended/>` | libvirt 11.0.0, QEMU 7.1 | **no — opt in** |
 
-Nothing in `optimise.ps1` is fatal — a fatter guest is still a working runner — so it cannot stop the
-step that matters.
+The last two are commented out rather than shipped, because Ubuntu 24.04 is on libvirt 10.0.0 and
+Debian 12 on 9.0.0 — neither accepts either one, and a domain that will not define is worse than one
+that is marginally slower. The comment beside them in `domain.xml` says how to turn them on.
 
-**Do not also set a `COMMAND` in the compose file.** dockur does not run it separately: it *appends*
-the variable to the `install.bat` it finds in `/oem`, so anything there lands after that file's
-`exit /b 0` and can never run. dockur's linter reports it on every boot as
-*"Unreachable code after EXIT or GOTO (E008)"*. `oem/install.bat` is the entry point; `COMMAND` is the
-same mechanism reached a worse way. **No JDK is installed**: every job that needs one uses `actions/setup-java`, so one
-baked in here would be a second, unused copy that drifts from the one the build actually uses.
+**The discard granularity is set through a raw `-set` argument on purpose.** libvirt has two tidier
+spellings for it and both are too new for Ubuntu 22.04, which ships libvirt 8.0.0:
 
-### What gets removed, and the bigger lever
+| Spelling | Needs |
+|---|---|
+| `<blockio discard_granularity='33554432'/>` on the disk — native, taints nothing | libvirt 10.0.0 |
+| `<qemu:override><qemu:frontend><qemu:property …>` | libvirt 8.2.0 |
+| `<qemu:commandline>` with `-set` — what `domain.xml` ships | libvirt 0.8.3 |
 
-`optimise.ps1` removes OneDrive, Copilot, Feedback Hub, Clipchamp, News, Teams, To Do, Outlook, Power
-Automate, Quick Assist, Solitaire, Sound Recorder, Sticky Notes, Weather, Media Player, Movies & TV,
-Paint and the Xbox stack — both the installed copies and the *provisioned* ones, which is what stops
-them reappearing for the next user created. It also sets the policies that prevent Windows
-re-acquiring them, disables Search indexing, SysMain, telemetry and hibernation, puts the guest on the
-high-performance power scheme, and adds Defender exclusions for the build directories.
+`-set` is not deprecated (checked against QEMU master), and `discard_granularity` is a property of
+every block device from well before QEMU 6.2. **On a host at libvirt 10.0.0 or newer, make the swap
+now rather than living with it:** move the value to `<blockio>` on the disk and delete the
+`<qemu:commandline>` block. That spelling needs no `xmlns:qemu` on the root element and does not mark
+the domain tainted.
 
-Apps are matched **by pattern, and every pattern reports what it matched**, because Microsoft renames
-these — the Xbox app became `Microsoft.GamingApp`, Teams became `MSTeams`. A list of exact names fails
-silently; a pattern matching nothing is logged as such, which distinguishes "already absent" from "the
-name moved". Framework packages are protected by name and can never be caught.
+### Then pick the memory backing — this is the one real either/or
 
-**Why this pass is needed at all, when a leaner edition exists.** Windows 11 LTSC ships without the
-Microsoft Store, Game Bar, Feedback Hub and the rest of the consumer set, which would make most of
-`optimise.ps1` redundant, and it is 4.7 GB against Pro's 7.9 GB. **It is also Evaluation media, and
-expires.**
+Backing the guest's 16 GiB with 2 MiB hugepages removes a level of page-table walk from every guest
+memory access. The price is that hugepage memory is **locked**: it cannot be swapped, and it cannot be
+given back, which means `freePageReporting` on the balloon stops meaning anything. So:
 
-Every "lean" alias dockur offers — `11l` (LTSC), `11e` (Enterprise), `11i` (IoT) — resolves to an id
-ending `-eval`. `define.sh` rewrites `11l` to `win11x64-enterprise-ltsc-eval`; `mido.sh` routes any
-`-eval` id through `downloadWindowsEval`, which fetches from
-`microsoft.com/en-us/evalcenter/download-…`. Evaluation Windows stops after 90 days and **no product
-key activates it** — the edition itself is not licensable. Only `VERSION: "11"` takes the other
-branch, `downloadWindows` → `microsoft.com/en-us/software-download/windows11`, which is retail media.
+- **Shared host, several domains** — keep what `domain.xml` ships, and skip to the next block. Free
+  page reporting hands pages back as the guest frees them, so the host's resident set follows real
+  use rather than the high-water mark.
+- **Host that mostly runs this guest** — reserve the pages, add `<hugepages/>` to `<memoryBacking>`,
+  and set `<memballoon model='none'/>`, before you define.
 
-So the guest installs **Windows 11 Pro**, and `optimise.ps1` is the first line of defence rather than
-the second. Left unactivated, retail Windows 11 runs indefinitely: a desktop watermark and a locked
-*Settings → Personalization*, no shutdowns and no deadline. Neither reaches a headless build runner.
-
-Two ways to do better, if you want them:
-
-- **A licence.** Set `KEY` to a 25-character product key in the service's `environment`. dockur runs
-  `slmgr /ipk` with it during setup (`answer.sh`, `updateProductKey`), which installs the key without
-  activating; activate afterwards as you would on any machine.
-- **Your own media.** Bind a volume-licensed LTSC or Enterprise ISO at `/custom.iso` — see *Reusing
-  the ISO* below. That bypasses `VERSION` entirely and is the only route to a **non-evaluation** LTSC
-  guest, which is the configuration this section would otherwise recommend.
-
-### How registration works
-
-**Registration here is a configuration file, not a command.** *Settings → Actions → Runners →
-"Create new runner"* shows a **UUID** and a **Token**, and Forgejo's documentation says to copy them
-into the runner configuration's `server` section. `provision.ps1` does exactly that and nothing else:
-
-```yaml
-server:
-  connections:
-    forgejo:
-      url: https://git.griefed.de
-      uuid: <from the dialog>
-      token: <from the dialog>
-      labels:
-        - windows-latest:host
+```sh
+echo 'vm.nr_hugepages=8300' | sudo tee /etc/sysctl.d/10-kvm-hugepages.conf   # 16 GiB / 2 MiB + headroom
+sudo sysctl --system
+grep Huge /proc/meminfo
 ```
 
-That is what `forgejo-runner register`'s own deprecation warning means by *"declare connections in the
-runner configuration instead"*. The older `register` route, which consumes a separate single-use
-registration token, is deliberately not supported — it is a second mechanism for no gain, and the one
-it replaces hands you both values at once.
+Reserve them through `/etc/sysctl.d` rather than a bare `sysctl`, for two reasons: the reservation
+survives a host reboot, and it is re-applied at each one, when memory is least fragmented. Read
+`HugePages_Total` straight back — the kernel satisfies the request as far as it can and reports
+success either way, so a host that has been up for weeks can hand you fewer pages than you asked for.
+If it will not give them up, `hugepages=8300` on the kernel command line allocates them before
+anything can fragment the memory at all.
 
-Labels are declared **on the connection**: a connection with none falls back to `runner.labels`, and
-being explicit keeps one guest's labels from ever being read as another's.
+§7 has the second check, the one that says whether the *domain* took them. Do not skip it: a domain
+configured for hugepages whose pages are unavailable starts anyway, out of the ordinary pool, and
+performs exactly as it did before.
 
-The guest reads those three files from `./shared` at provisioning time, so write them before starting
-it.
+### Then the site-specific values, and define
 
-### Two things that will go wrong
+The only values you should need to change: `<uuid>`, `<mac address>` and `<source network>`. The guest
+has **one** NIC, on a NAT network: it reaches the internet, and nothing outside the host can open a
+connection to it. Give it no bridged second NIC — that would put an unauthenticated runner on the LAN
+for no gain.
 
-**A runner listed as OFFLINE with a "last online" time a few minutes old** means it connected once and
-then stopped. `forgejo-runner daemon` is an ordinary console program — the runner implements no Windows
-service support — so registering it with `sc.exe create` makes the Service Control Manager start it,
-wait for a status report that never comes, and kill it after about 30 seconds. That is why it runs as a
-**scheduled task at startup** here instead, under SYSTEM, via `run-runner.cmd`. `provision.ps1` checks
-the process is still alive ten seconds after starting it, so this fails loudly rather than looking like
-a successful provisioning.
+Generate a fresh MAC and check it against the network's own definition, not just against the
+other domains: `virsh net-dumpxml vmnet1` lists `<host mac=... ip=...>` reservations, and a MAC
+already in one belongs to another machine.
 
-Its output is in `C:\forgejo-runner\daemon.log`, and `C:\forgejo-runner\run-runner.cmd` can be run by
-hand to see the daemon without the scheduler in the way.
+```sh
+printf '52:54:00:%02x:%02x:%02x\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256))
+```
 
-**A runner that is online and never takes a job** is usually a label nobody is asking for, or a UUID
-and Token that are not the pair the dialog showed together. `provision.ps1` reports the length and a
-masked form of each value it read, so compare those against the dialog before suspecting the network.
+Adding a reservation for it is worth it — the address stops moving, and step 5's tunnel can
+name it.
 
-**Git or Node "not found" immediately after being installed.** An installer writes the machine `PATH`
-in the registry and cannot update a process that is already running, so re-reading the registry is
-necessary and was not sufficient. The script now also asserts the install directories itself and calls
-`git` by resolved full path. On an older copy of this script, relaunching the shell and re-running was
-the workaround.
+```sh
+curl -LO https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/misc/windows-runner/domain.xml
+# edit uuid, mac, source network, and the memory backing if you chose hugepages
+virsh define domain.xml
+```
 
+## 5. Install Windows — **workstation**
 
-## Re-running the provisioning
+```sh
+virsh start "$VM"
+virt-viewer "$VM"
+# no virt-viewer? `virsh vncdisplay "$VM"` gives :0, i.e. port 5900:
+#   ssh -fNL 5900:127.0.0.1:5900 <user>@<host> && remote-viewer vnc://127.0.0.1:5900
+```
 
-`oem/provision.ps1` is safe to run again, and that is the fix for a guest that came up but never
-appeared as a runner. Over RDP or the web viewer, as Administrator:
+In that console:
+
+- At *"Where do you want to install Windows?"* the disk list is empty, because the virtio driver is
+  not in Microsoft's installer. **Load driver → Browse →** virtio CD → `amd64\w11`.
+- Name the local account **`runner`**. If setup insists on a Microsoft account: Shift+F10,
+  `OOBE\BYPASSNRO`, reboot.
+- **Device Manager →** each unknown device **→ Update driver →** virtio CD, for network and balloon.
+- **Install the guest agent** — virtio CD → `guest-agent\qemu-ga-x86_64.msi`. `domain.xml` already
+  carries the channel it talks over; without the MSI that channel stays silent. It is what makes the
+  guest answerable from the host when Windows itself is not.
+- **Enable RDP** — Settings → System → Remote Desktop. Step 6 pastes a UUID and a token, and a VNC
+  console has no shared clipboard.
+
+RDP answers in the guest, not on the host, so the tunnel names the guest's address on vmnet1:
+
+```sh
+virsh domifaddr "$VM" --source agent   # or omit --source once a DHCP lease exists
+ssh -fNL 3389:<guest-ip>:3389 <user>@<host>
+xfreerdp /v:127.0.0.1 /u:runner
+```
+
+`-f` backs ssh into the background once authenticated, so the tunnel outlives the command.
+
+## 6. Tune and provision the guest — **guest**
+
+Tune first, provision second. `optimise.ps1` turns off VBS and the hypervisor launch type, which only
+take effect across a reboot, and the reboot is free before there is a daemon running on the machine.
+
+UUID and Token come from Forgejo: **Settings → Actions → Runners → Create new runner**. In an
+Administrator PowerShell:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\OEM\provision.ps1
+# Strips the consumer apps and tunes the guest. Nothing in it is fatal.
+iwr https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/misc/windows-runner/optimise.ps1 -OutFile optimise.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\optimise.ps1
+Restart-Computer        # the VBS and hypervisor settings do not take effect before this
+
+iwr https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/misc/windows-runner/provision.ps1 -OutFile provision.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\provision.ps1 -Uuid <uuid> -Token <token>
 ```
 
-Read `C:\Users\Public\Desktop\runner-provisioning.log` first — it says which step failed.
+`provision.ps1` installs Node, Git and Go, builds `forgejo-runner.exe` from source, writes
+`C:\forgejo-runner\config.yml`, registers a scheduled task that starts the daemon at boot. Safe to
+re-run. The runner then appears under Settings → Actions → Runners as `windows-latest:host`.
 
-## Reusing the ISO instead of re-downloading it
+Two things in it that look wrong and are not:
 
-The installation media is 7.9 GB, and by default it is downloaded **again after every reinstall** — dockur sets `REMOVE: "Y"`, deleting the ISO once the install finishes, so there is
-nothing left to reuse. The compose file overrides that to `"N"`, which keeps it; the two steps below
-then move it somewhere `storage-<arch>` being cleared cannot reach.
+- **A scheduled task, not a Windows service.** `forgejo-runner daemon` has no Service Control Manager
+  support, so `sc.exe` kills it after ~30 s and Forgejo reports it as *offline* rather than failed.
+- **`host.workdir_parent` is set explicitly.** Left empty, the task runs as SYSTEM and jobs unpack into
+  `C:\WINDOWS\system32\config\systemprofile\.cache\act\` — the most aggressively scanned path on the
+  machine, and where run 1005's 2570-file checkout stalled.
 
-**Binding an ISO onto a guest that is already installed REINSTALLS it.** dockur decides whether to
-install by comparing the media it recorded against the media it has now (`needsInstall`), and a path
-change counts: you get *"Detected that your custom .iso file was changed, a backup of your previous
-installation will be saved"* and the whole unattended install again. The only carve-out in that
-comparison is *removing* custom media after a completed install, which is ignored — adding or changing
-it is not.
+### Windows Update is yours to decide, and both answers are wrong somewhere
 
-So the order that costs nothing:
+Left alone, Windows installs updates and reboots unattended — which, on a machine whose job is to be
+available when a release pipeline asks for it, is a runner that goes offline mid-job with no error
+anywhere. Turned off, it is an unpatched machine with outbound internet access. `optimise.ps1`
+deliberately does neither; it is a policy decision about this host, not a tuning default. Make it now,
+while the machine has no jobs to lose:
 
-- **If you already have an ISO**, bind it before the guest is ever started. Nothing is downloaded and
-  nothing is reinstalled.
-- **If you do not**, let the first guest download one, copy it out, and bind it on the *next* guest or
-  at the next deliberate rebuild. Switching a working guest over buys the saving at the price of one
-  reinstall.
+```powershell
+# Download, never install unattended. The operator installs and reboots on their own schedule.
+New-Item 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Force
+Set-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' AUOptions 3 -Type DWord
+Set-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' NoAutoUpdate 0 -Type DWord
+```
 
-Copying it out, per architecture, after a guest has finished installing:
+## 7. Confirm it took — **workstation** and **guest**
+
+Each setting below fails *silently* when it does not apply: the guest boots, the jobs pass, and the
+tuning simply is not in effect. None of them announces itself, so run these once, on the first boot
+after provisioning, and again after any change to `domain.xml`.
 
 ```sh
-mkdir -p iso
-cp storage-x64/win11x64.iso iso/win11-x64.iso        # see the naming note below
+# The discard_granularity override is applied. Expect 33554432, not 4096.
+virsh qemu-monitor-command "$VM" --hmp \
+  'qom-get /machine/peripheral/ua-vda discard_granularity'
 ```
 
-**The file is named after the RESOLVED version, not the alias you set.** `install.sh` builds it as
-`"${VERSION//\//}.iso"` *after* `define.sh` has rewritten the alias, so `VERSION: "11"` leaves
-`win11x64.iso` rather than `11.iso`. `ls storage-x64/*.iso` settles it without guessing.
+If that answers `Device '/machine/peripheral/ua-vda' not found`, the running QEMU predates the
+definition — domain XML applies when QEMU is *launched*, and a reboot inside Windows does not relaunch
+it. `virsh shutdown`, wait for `virsh domstate` to say `shut off`, `virsh start`. If it still says not
+found, `virsh qemu-monitor-command "$VM" --hmp 'qom-list /machine/peripheral'` names the ids QEMU
+actually assigned; `-set` addresses the disk by exactly the `<alias>` on it, and the two have to agree.
 
-Then uncomment the matching line in `docker-compose.yml`:
-
-```yaml
-- ./iso/win11-x64.iso:/custom.iso
+```powershell
+# In the guest: VBS must read 0. 2 means it is running and this guest is a nested hypervisor.
+(Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard).VirtualizationBasedSecurityStatus
 ```
 
-From then on nothing is downloaded: a bound `/custom.iso` is used in place of any download and
-**`VERSION` is ignored entirely**. Clearing `storage-x64` to reinstall then costs no bandwidth.
+```sh
+grep Huge /proc/meminfo     # only if you chose hugepages in step 4
+```
 
-**Uncomment it only once the file exists.** Docker creates a *directory* at a bind source that is
-missing, and a directory at `/custom.iso` fails confusingly rather than clearly — which is why the
-line ships commented rather than as something to delete later.
+`HugePages_Free` must drop by ~8192 once the guest starts. That is the only thing that says the
+backing took — the domain starts either way.
 
-`iso/` is gitignored — gigabytes, and Microsoft's to distribute rather than ours.
+```sh
+virsh cpu-stats "$VM" --total                       # twice, a minute apart, with the guest idle
+virsh domstats "$VM" --block --interface
+virsh domblkstat "$VM" vda                          # 'vda' for qcow2 or raw alike
+```
 
-Supplying your own ISO works the same way and skips step one entirely. It is also how you pin an
-exact build rather than taking whatever `VERSION` currently resolves to, and — per *What gets removed*
-above — the only way to run a **licensed** LTSC guest, since every LTSC alias dockur resolves is
-Evaluation media.
+An idle Windows guest with the Hyper-V enlightenments in `domain.xml` should cost the host a fraction
+of one core. If it costs more, the guest is busy-waiting on something — the synthetic timers
+(`<stimer/>`) are the usual missing piece, and `<spinlocks/>` the next.
 
-## What survives a `docker compose down`
+### The one exclusion that cannot be written in advance
 
-Everything. `./storage-<arch>` holds the guest's installed disk image, the ISO, `setup.img` and
-`windows.base`, bind-mounted, so an image update, a host reboot or a `down && up` recreates only the
-*container* — the Windows install, the runner and its registration are all still there.
+`optimise.ps1` excludes `C:\forgejo-runner`, which covers the runner, its work directory and anything
+act places beneath them. It does **not** know where `actions/setup-java` unpacks the JDK, because that
+is the runner's tool cache and nothing here fixes its location. That unpack is tens of thousands of
+small files and it is the single biggest thing Defender could be scanning.
 
-To deliberately start over — a Windows version bump, or a guest you have broken past repairing —
-comment the `/storage` line out of the service in `docker-compose.yml` and bring it up again. Expect
-the whole unattended install, and a fresh registration: **the old runner stays listed on Forgejo as
-offline until you delete it there**, which is easy to miss and looks like the new one failing to
-register. If you have done the ISO step above, that reinstall costs no download.
+The first job's log prints the path it installed to. If it is not under `C:\forgejo-runner`, add it:
 
-## Afterwards
+```powershell
+Add-MpPreference -ExclusionPath '<the path from the log>'
+(Get-MpPreference).ExclusionPath
+```
 
-Confirm both appear under *Settings → Actions → Runners* with the right labels **before** relying on
-them. A label no runner offers does not fail a job, it queues it — which in this repository stalls the
-dev build's continuous release and the tagged release, by design, because a release quietly short of
-two artifacts is worse.
+## 8. Operate — **workstation**
+
+Eject the installation media first, or a reboot lands back in Windows setup:
+
+```sh
+virsh change-media "$VM" sda --eject --config      # `virsh domblklist "$VM"` names them
+virsh change-media "$VM" sdb --eject --config
+virsh autostart "$VM"
+```
+
+```sh
+virsh start "$VM"
+virsh domstate "$VM"
+virsh shutdown "$VM"        # graceful; `destroy` is the power cord
+```
+
+When it hangs, these answer in seconds and headless:
+
+```sh
+virsh domstate "$VM" --reason                      # paused? pmsuspended? crashed?
+virsh domblkstat "$VM" vda                         # is the disk actually moving?
+virsh qemu-monitor-command "$VM" --hmp 'info status'
+```
+
+A flat `domblkstat` with the domain still `running` is a guest wedged on I/O — a different fix from
+anything inside Windows. Note that `<on_crash>restart</on_crash>` has the domain back up before you
+look; set `preserve` in `domain.xml` while chasing a crash.
+
+### Rolling back a bad provision
+
+```sh
+virsh shutdown "$VM"
+sudo cp --reflink=auto /var/lib/libvirt/images/$VM.qcow2 /var/lib/libvirt/images/$VM.bak.qcow2
+```
+
+`virsh snapshot-create-as` would be nicer, but internal snapshots of a UEFI domain additionally need
+the NVRAM in qcow2 format and a libvirt new enough to allow it. The copy works everywhere.
+
+## Appendix A: retrofitting a guest that already exists
+
+Nothing here is needed for a guest built from steps 0–8. It is for one defined before this file
+carried the tuning.
+
+Every domain change is a **cold** edit: `virsh shutdown "$VM"`, wait for `virsh domstate` to report
+`shut off`, `virsh edit "$VM"`, `virsh start "$VM"`. `virsh reboot` is an ACPI reboot inside the guest
+and relaunches nothing. Roll back the way §8 does: copy the image aside first.
+
+### Two changes to know about before you make them
+
+- **The CPU topology changes shape**, from 2 cores x 2 threads to 4 cores x 1 thread. It is the same
+  four vcpus and the same socket count, but it is a different hardware description, and a Windows
+  digital licence is bound to a hardware hash. Have the account that owns the licence to hand, and
+  check Settings → System → Activation on the next boot.
+- **Withholding `vmx`/`svm` turns a feature off underneath a guest that may be using it.** Windows
+  boots without VBS and without complaint, but anything in the guest that needed a hypervisor — WSL2,
+  Hyper-V, Docker Desktop — stops working rather than degrading. On this runner there is nothing in
+  that set; confirm that before assuming it of another guest you copy this file to.
+
+### `virsh edit` rejects `<qemu:commandline>` until you declare the namespace
+
+`virsh edit` hands you the *stored* XML, and a domain defined before this change has no `xmlns:qemu`
+on its root element — so pasting the block in gives you an element whose prefix is undeclared. The
+first line has to become:
+
+```xml
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+```
+
+**Read the error with suspicion: it names the wrong element.** A child libvirt does not recognise
+makes its *parent* fail to validate, and the message reports the parent:
+
+```
+error: XML document failed to validate against schema: Unable to validate doc against
+/usr/share/libvirt/schemas/domain.rng
+Extra element features in interleave
+Element domain failed to validate content
+```
+
+That is `<features>` being blamed for an unknown element *inside* it. To find the real one, validate
+the file directly instead of bisecting through `virsh edit`'s prompt — this gives a line number:
+
+```sh
+virsh dumpxml "$VM" > /tmp/$VM.xml      # then edit /tmp/$VM.xml
+xmllint --noout --relaxng /usr/share/libvirt/schemas/domain.rng /tmp/$VM.xml
+virsh define /tmp/$VM.xml
+```
+
+### Converting the disk image in place
+
+An image created before step 3 has 64 KiB clusters and no subclusters. `qemu-img convert` rewrites it,
+with the guest **shut off** — run against a disk a live QEMU has open, it copies a torn image with no
+warning, and you find out at the next chkdsk.
+
+```sh
+virsh domblklist "$VM"                  # convert the file the domain actually uses
+qemu-img info --backing-chain /var/lib/libvirt/images/$VM.qcow2 | grep -iE 'snapshot|backing|cluster'
+```
+
+Internal snapshots are dropped silently by the conversion unless you pass `-s`; that `grep` is how you
+find out you had any. Then:
+
+```sh
+qemu-img convert -p -O qcow2 -o extended_l2=on,cluster_size=128k \
+  /var/lib/libvirt/images/$VM.qcow2 /var/lib/libvirt/images/$VM.new.qcow2
+
+qemu-img info  /var/lib/libvirt/images/$VM.new.qcow2   # cluster_size 131072, extended l2: true
+qemu-img check /var/lib/libvirt/images/$VM.new.qcow2   # "No errors were found"
+```
+
+`extended l2: true` is the line that matters. A mis-parsed `-o` leaves you a perfectly valid 128 KiB
+image with no subclusters, which is the one combination you do not want.
+
+Swap by rename rather than by editing the domain. Keeping the path identical means you touch neither
+the XML nor AppArmor — `virt-aa-helper` regenerates the per-domain profile from the XML path at start,
+and there is no reason to re-prove a non-default image directory today:
+
+```sh
+mv /var/lib/libvirt/images/$VM.qcow2     /var/lib/libvirt/images/$VM.old.qcow2
+mv /var/lib/libvirt/images/$VM.new.qcow2 /var/lib/libvirt/images/$VM.qcow2
+chown --reference=/var/lib/libvirt/images/$VM.old.qcow2 /var/lib/libvirt/images/$VM.qcow2
+chmod --reference=/var/lib/libvirt/images/$VM.old.qcow2 /var/lib/libvirt/images/$VM.qcow2
+```
+
+libvirt's `dynamic_ownership` chowns the disk to `libvirt-qemu:kvm` at start and hands it back at
+shutdown, so the ownership copy is belt-and-braces — but a root-owned image is exactly how this fails,
+with a `Permission denied` that reads like a path problem.
+
+Start, run one job, and only then delete `$VM.old.qcow2`. It is the only rollback there is, and
+keeping it costs nothing but space.
+
+Converting to raw is the same procedure with `-O raw` and no `-o`, plus the two `domain.xml` edits
+from step 3.

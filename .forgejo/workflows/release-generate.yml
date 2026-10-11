@@ -37,13 +37,13 @@ jobs:
             && (github.ref_name == 'alpha' || github.ref_name == 'beta'))) }}
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0          # semantic-release needs the full history to find the last release
           persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
 

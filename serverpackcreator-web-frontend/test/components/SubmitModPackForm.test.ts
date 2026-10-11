@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import SubmitModPackForm from 'components/SubmitModPackForm.vue'
+import SubmitModPackForm from '@/components/SubmitModPackForm.vue'
 
 // Mock the axios boot-module so mounting the form never touches the network. The store imports
 // `settings`; the form imports `modpacks`/`runConfigs`/`versions`. All resolve with empty-ish,
 // well-shaped payloads so setup()/mounted() complete without firing error notifications.
-vi.mock('boot/axios', () => ({
+vi.mock('@/boot/axios', () => ({
   settings: {
     get: vi.fn(() =>
       Promise.resolve({
@@ -119,7 +119,7 @@ describe('SubmitModPackForm', () => {
   // than `error.response.data`, which threw a TypeError from inside the catch block.
 
   it('keeps the ids the server actually returned after a successful regeneration', async () => {
-    const { modpacks } = await import('boot/axios')
+    const { modpacks } = await import('@/boot/axios')
     vi.mocked(modpacks.postForm).mockResolvedValueOnce({
       data: { modPackId: 'mp-7', runConfigId: 'rc-9', success: true }
     })
@@ -135,7 +135,7 @@ describe('SubmitModPackForm', () => {
   })
 
   it('survives a regeneration failure that carries no response body', async () => {
-    const { modpacks } = await import('boot/axios')
+    const { modpacks } = await import('@/boot/axios')
     // A network-level axios failure has no `response` at all; reading through it used to throw.
     vi.mocked(modpacks.postForm).mockRejectedValueOnce(new Error('Network Error'))
     const wrapper = await mountForm()

@@ -73,9 +73,17 @@ if ($hostArch -ne $Arch) {
 }
 
 # --- the jar ----------------------------------------------------------------------------------------
+# A caller that binds -JarPath to an EMPTY string is a broken caller, not a caller asking for the
+# default, and the two are indistinguishable from `$JarPath` alone -- so `$PSBoundParameters` separates
+# them. Falling through to the build directory answers a bad argument with `Run ./gradlew build first`,
+# which is advice for a local build and misdirects everywhere the jar arrives as a CI artifact instead.
+if ($PSBoundParameters.ContainsKey('JarPath') -and -not $JarPath) {
+    throw '-JarPath was passed but is empty. Whatever supplies it resolved to nothing -- in CI that is the step output, not a missing jar.'
+}
 if (-not $JarPath) {
-    $candidates = Get-ChildItem 'serverpackcreator-app/build/libs' -Filter 'serverpackcreator-app-*.jar' -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch 'plain|javadoc|sources' }
+    # @() so a single match is still an array: unwrapped, 5.1 hands back a bare FileInfo.
+    $candidates = @(Get-ChildItem 'serverpackcreator-app/build/libs' -Filter 'serverpackcreator-app-*.jar' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notmatch 'plain|javadoc|sources' })
     if (-not $candidates) { throw 'No ServerPackCreator app jar found. Run `./gradlew build` first, or pass -JarPath.' }
     $JarPath = $candidates[0].FullName
 }

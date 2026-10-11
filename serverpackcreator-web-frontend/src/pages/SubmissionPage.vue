@@ -21,9 +21,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import HistoryTable from 'components/HistoryTable.vue';
-import SubmitModPackForm from 'components/SubmitModPackForm.vue';
-import ModpacksTable from 'components/ModpacksTable.vue';
+import HistoryTable from '@/components/HistoryTable.vue';
+import SubmitModPackForm from '@/components/SubmitModPackForm.vue';
+import ModpacksTable from '@/components/ModpacksTable.vue';
 
 export default defineComponent({
   name: 'SubmissionPage',

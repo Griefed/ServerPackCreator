@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import RunConfigurationCard from 'components/RunConfigurationCard.vue'
+import RunConfigurationCard from '@/components/RunConfigurationCard.vue'
 
 // The card fetches its run-configuration by id on mount; mock the axios boot-module. RunConfiguration
 // imports `runConfigs` via a relative path, which resolves to the same module the alias points at,
-// so mocking 'boot/axios' intercepts it.
-vi.mock('boot/axios', () => ({
+// so mocking '@/boot/axios' intercepts it.
+vi.mock('@/boot/axios', () => ({
   runConfigs: { get: vi.fn(() => Promise.resolve({ data: runConfigPayload })) }
 }))
 
