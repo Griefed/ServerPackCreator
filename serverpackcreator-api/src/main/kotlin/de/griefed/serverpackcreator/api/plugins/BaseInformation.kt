@@ -25,35 +25,15 @@ package de.griefed.serverpackcreator.api.plugins
  * @author Griefed
  */
 interface BaseInformation {
-    /**
-     * Get the name of this plugin.
-     *
-     * @return The name of this plugin.
-     * @author Griefed
-     */
+    /** Shown in the GUI's plugin list and named in `plugins.log` whenever this extension misbehaves. */
     val name: String
 
-    /**
-     * Get the description of this plugin.
-     *
-     * @return The description of this plugin.
-     * @author Griefed
-     */
+    /** One line telling a user what this does, shown beside [name]. */
     val description: String
 
-    /**
-     * Get the author of this plugin.
-     *
-     * @return The author of this plugin.
-     * @author Griefed
-     */
+    /** Credited in the GUI; free-form, and never used to identify anything. */
     val author: String
 
-    /**
-     * Get the version of this plugin.
-     *
-     * @return The version of this plugin.
-     * @author Griefed
-     */
+    /** Displayed as-is. SPC compares nothing against it, so any scheme works. */
     val version: String
 }

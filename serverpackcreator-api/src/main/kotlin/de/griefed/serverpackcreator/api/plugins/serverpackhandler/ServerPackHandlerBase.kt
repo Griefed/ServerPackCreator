@@ -30,12 +30,25 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import java.util.*
 
 /**
- * Base-interface from which every [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler]-extension interface starts from.
+ * The shape every generation hook shares. Sealed, so the hook a plugin implements is one of
+ * [PreGenExtension], [PreZipExtension] or [PostGenExtension] — which of the three decides *when*
+ * [run] fires, not what it is handed.
  *
  * @author Griefed
  */
 sealed interface ServerPackHandlerBase : ExtensionInformation {
     /**
+     * Does this hook's work on the server pack at [destination], at the moment its own interface names.
+     *
+     * Called once per generation by `ApiPlugins.runPreGenExtensions`, `runPreZipExtensions` or
+     * `runPostGenExtensions`, all three of which `ServerPackHandler.run` drives in that order: before
+     * any file is gathered, after they are gathered but before the ZIP is written, and after the pack is
+     * finished. [destination] is a real directory on disk at every one of those points, so a hook may
+     * add to it or read it — a PreZip hook writing there still lands inside the archive, a PostGen hook
+     * does not. Returning normally is the only success signal — the host catches `ExtensionException`,
+     * `Exception` and `Error` alike and logs them against this plugin in `plugins.log`, so a hook cannot
+     * fail a generation and a silent one is indistinguishable from one that did nothing.
+     *
      * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
      * LegacyFabric and Quilt versions.
      * @param utilities             Instance of [Utilities] commonly used across ServerPackCreator.

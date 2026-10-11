@@ -37,6 +37,13 @@ import javax.swing.Icon
 @Suppress("unused")
 interface TabExtension : ExtensionInformation {
     /**
+     * Builds the tab this plugin contributes to the GUI, once, when the main window is assembled.
+     *
+     * Called by `ApiPlugins.addTabExtensionTabs` at GUI startup — not per generation — so the returned
+     * [ExtensionTab] is long-lived and owns its own state. A throw here is caught and logged against the
+     * plugin rather than propagated, so a failing tab costs its own tab and not the window. [icon] and
+     * [title] name it in the tab bar.
+     *
      * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
      * LegacyFabric and Quilt versions.
      * @param apiProperties Instance of [ApiProperties] The current configuration of ServerPackCreator,
