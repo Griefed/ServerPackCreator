@@ -40,6 +40,5 @@ class ServerPropertiesChooser(current: File?, dimension: Dimension) : BaseFileCh
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
-        //preferredSize = dimension
     }
 }

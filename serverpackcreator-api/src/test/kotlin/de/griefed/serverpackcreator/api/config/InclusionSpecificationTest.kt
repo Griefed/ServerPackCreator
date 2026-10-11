@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Test
 
 /**
  * Tests for the value-equality of [InclusionSpecification] so that two inclusions with the same source,
- * destination and filters compare equal. Previously the class used reference-equality, which made
- * list-comparisons and the editor's dirty-check over-report and disabled the deduplication in
- * ConfigurationHandler.isZip.
+ * destination and filters compare equal. Reference-equality here would make list-comparisons and the
+ * editor's dirty-check over-report, and would disable the deduplication in ConfigurationHandler.isZip.
  */
 internal class InclusionSpecificationTest {
 

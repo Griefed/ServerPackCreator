@@ -39,6 +39,5 @@ class InclusionSourceChooser(current: File?, dimension: Dimension) : BaseFileCho
         fileSelectionMode = DIRECTORIES_ONLY
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true
-        //preferredSize = dimension
     }
 }

@@ -42,6 +42,5 @@ class ServerIconChooser(current: File?, dimension: Dimension) : BaseFileChooser(
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
-        //preferredSize = dimension
     }
 }

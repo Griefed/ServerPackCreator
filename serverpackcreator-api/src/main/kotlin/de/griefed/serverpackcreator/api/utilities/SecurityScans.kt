@@ -33,10 +33,9 @@ class SecurityScans {
     /**
      * The scans themselves. Static because they hold no state: each takes a path and returns findings.
      *
-     * There is exactly one, [scanUsingNekodetector]. An earlier doc here promised "zip-slip and
-     * archive-safety checks applied before an upload is trusted", which never existed in this class —
-     * archive traversal is rejected by zip4j during extraction, which is a fact about a dependency and
-     * not something this file does.
+     * There is exactly one, [scanUsingNekodetector]. **Archive safety is not done here** — zip4j
+     * rejects traversal during extraction, so that guarantee belongs to a dependency rather than to
+     * this class.
      */
     companion object {
         /** Logger for the scans below, so a scan that could not run leaves a trace of *why*. */

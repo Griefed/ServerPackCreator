@@ -27,6 +27,5 @@ import com.formdev.flatlaf.util.SystemFileChooser
 abstract class BaseFileChooser: SystemFileChooser() {
     init {
         isFileHidingEnabled = false
-        //preferredSize = Dimension(750, 450)
     }
 }

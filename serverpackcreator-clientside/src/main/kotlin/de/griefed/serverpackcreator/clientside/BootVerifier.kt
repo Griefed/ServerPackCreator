@@ -681,8 +681,7 @@ class BootVerifier(
         if (depth >= maxDependencyDepth) {
             return
         }
-        // `null` is "the descriptor could not be read", which is nothing to stage from -- the same early
-        // return this made for itself when it owned the scan.
+        // `null` is "the descriptor could not be read", which is nothing to stage from.
         val requirements = declared ?: return
 
         val bundled = BundledJars.idsIn(staged)

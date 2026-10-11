@@ -72,7 +72,6 @@ class UpdateDialogs(
         updateButton.isContentAreaFilled = false
         updateButton.isVisible = update.isPresent
         updateButton.addActionListener(updateCheckListener)
-        //checkForUpdateWithApi()
     }
 
     /**

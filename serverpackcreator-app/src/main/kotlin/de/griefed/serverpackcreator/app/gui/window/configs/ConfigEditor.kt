@@ -1358,7 +1358,6 @@ class ConfigEditor(
         javaChooser.fileSelectionMode = FILES_ONLY
         javaChooser.isAcceptAllFileFilterUsed = true
         javaChooser.isMultiSelectionEnabled = false
-        //javaChooser.preferredSize = Dimension(750, 450)
         if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             apiWrapper.apiProperties.javaPath = javaChooser.selectedFile.path
             log.debug("Set path to Java executable to: ${javaChooser.selectedFile.path}")

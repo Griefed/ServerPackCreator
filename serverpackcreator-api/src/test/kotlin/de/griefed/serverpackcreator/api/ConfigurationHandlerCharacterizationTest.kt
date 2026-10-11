@@ -8,10 +8,10 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Characterization tests pinning the current behavior of
- * [de.griefed.serverpackcreator.api.config.ConfigurationHandler] before its decomposition into per-concern
- * validators. These tests document behavior as-is — including quirks — so the upcoming restructuring can be
- * verified to be behavior-preserving. Quirks worth keeping in mind are marked with "QUIRK" comments.
+ * Characterization tests pinning [de.griefed.serverpackcreator.api.config.ConfigurationHandler]'s behaviour
+ * through the facade, so that restructuring behind it stays behaviour-preserving. They assert what the code
+ * does rather than what it should do — quirks included, marked with "QUIRK" comments — which is why an
+ * assertion here changing is a signal that behaviour moved, not that a test needs updating.
  */
 internal class ConfigurationHandlerCharacterizationTest {
     private val configurationHandler =
