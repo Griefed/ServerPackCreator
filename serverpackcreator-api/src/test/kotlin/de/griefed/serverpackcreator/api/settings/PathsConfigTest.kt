@@ -11,10 +11,10 @@ import java.io.File
 import java.util.prefs.Preferences
 
 /**
- * Tests for [PathsConfig], the home-directory and derived-paths settings-group extracted from
- * ApiProperties in refactor Phase 1b. Uses a scratch Preferences-node so the developer-machine's
- * real ServerPackCreator-preferences stay untouched. Pins home-directory resolution, the
- * derived-directory layout, the server-packs override, and the Tomcat-directory quirks.
+ * Tests for [PathsConfig], the home-directory and derived-paths settings-group. Uses a scratch
+ * Preferences-node so the developer-machine's real ServerPackCreator-preferences stay untouched. Pins
+ * home-directory resolution, the derived-directory layout, the server-packs override, and the Tomcat-directory
+ * quirks.
  */
 internal class PathsConfigTest {
     private val scratchPreferences = Preferences.userRoot().node("ServerPackCreatorPathsConfigTest")

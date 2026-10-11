@@ -4,10 +4,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for the value-equality of [InclusionSpecification], added in refactor Phase 2 so that
- * two inclusions with the same source, destination and filters compare equal. Previously the
- * class used reference-equality, which made list-comparisons and the editor's dirty-check
- * over-report and disabled the deduplication in ConfigurationHandler.isZip.
+ * Tests for the value-equality of [InclusionSpecification] so that two inclusions with the same source,
+ * destination and filters compare equal. Previously the class used reference-equality, which made
+ * list-comparisons and the editor's dirty-check over-report and disabled the deduplication in
+ * ConfigurationHandler.isZip.
  */
 internal class InclusionSpecificationTest {
 

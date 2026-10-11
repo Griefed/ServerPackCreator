@@ -61,8 +61,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
-     * Property-storage core handling file-loading, typed accessors and saving. ApiProperties
-     * orchestrates load-ordering and domain-semantics on top of it (refactor Phase 1b).
+     * Property-storage core handling file-loading, typed accessors and saving. ApiProperties orchestrates
+     * load-ordering and domain-semantics on top of it.
      */
     private val store = PropertyStore()
     private val internalProps = store.properties

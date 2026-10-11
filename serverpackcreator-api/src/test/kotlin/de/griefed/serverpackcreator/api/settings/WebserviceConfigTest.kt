@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for [WebserviceConfig], the web-service settings-group extracted from ApiProperties in
- * refactor Phase 1b. Pins the MongoDB-URI migration- and normalization-behavior and the
- * schedule-properties' pass-through to the property-store.
+ * Tests for [WebserviceConfig], the web-service settings-group. Pins the MongoDB-URI migration- and
+ * normalization-behavior and the schedule-properties' pass-through to the property-store.
  */
 internal class WebserviceConfigTest {
 

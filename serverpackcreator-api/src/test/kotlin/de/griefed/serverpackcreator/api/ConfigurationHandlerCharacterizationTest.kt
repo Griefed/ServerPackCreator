@@ -8,10 +8,10 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Characterization tests pinning the current behavior of [de.griefed.serverpackcreator.api.config.ConfigurationHandler]
- * before its decomposition into per-concern validators (refactor Phase 1c). These tests document
- * behavior as-is — including quirks — so the upcoming restructuring can be verified to be
- * behavior-preserving. Quirks worth keeping in mind are marked with "QUIRK" comments.
+ * Characterization tests pinning the current behavior of
+ * [de.griefed.serverpackcreator.api.config.ConfigurationHandler] before its decomposition into per-concern
+ * validators. These tests document behavior as-is — including quirks — so the upcoming restructuring can be
+ * verified to be behavior-preserving. Quirks worth keeping in mind are marked with "QUIRK" comments.
  */
 internal class ConfigurationHandlerCharacterizationTest {
     private val configurationHandler =

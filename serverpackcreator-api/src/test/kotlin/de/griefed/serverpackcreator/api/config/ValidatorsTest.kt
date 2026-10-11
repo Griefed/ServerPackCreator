@@ -7,10 +7,9 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Direct tests for the validators extracted from ConfigurationHandler in refactor Phase 1c:
- * [InclusionsValidator], [ModpackDirectoryValidator] and [ModloaderValidator]. The
- * modloader-version checks require the full version-meta, which is obtained from the (cached,
- * no-network) test [ApiWrapper].
+ * Direct tests for the validators: [InclusionsValidator], [ModpackDirectoryValidator] and
+ * [ModloaderValidator]. The modloader-version checks require the full version-meta, which is obtained from the
+ * (cached, no-network) test [ApiWrapper].
  */
 internal class ValidatorsTest {
 

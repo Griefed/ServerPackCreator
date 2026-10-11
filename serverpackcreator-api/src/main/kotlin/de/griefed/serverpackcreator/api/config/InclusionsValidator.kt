@@ -26,10 +26,9 @@ import java.io.File
 import java.util.regex.PatternSyntaxException
 
 /**
- * Validator for the inclusions-concern of a server pack configuration: existing sources, valid
- * destinations, valid in-/exclusion-filter regexes and the lazy-mode special-case. Extracted
- * from ConfigurationHandler (refactor Phase 1c); ConfigurationHandler remains the facade through
- * which consumers access these checks.
+ * Validator for the inclusions-concern of a server pack configuration: existing sources, valid destinations,
+ * valid in-/exclusion-filter regexes and the lazy-mode special-case. ConfigurationHandler remains the facade
+ * through which consumers access these checks.
  */
 class InclusionsValidator {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

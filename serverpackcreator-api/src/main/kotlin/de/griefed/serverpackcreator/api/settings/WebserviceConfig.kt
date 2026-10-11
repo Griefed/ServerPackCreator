@@ -23,10 +23,9 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
- * Settings-group for the web-service side of ServerPackCreator: the MongoDB database-URI with
- * legacy-value migration and scheme-normalization, plus the cron-schedules of the webservice's
- * cleanup- and refresh-jobs. Extracted from ApiProperties (refactor Phase 1b); ApiProperties
- * remains the facade through which consumers access these values.
+ * Settings-group for the web-service side of ServerPackCreator: the MongoDB database-URI with legacy-value
+ * migration and scheme-normalization, plus the cron-schedules of the webservice's cleanup- and refresh-jobs.
+ * ApiProperties remains the facade through which consumers access these values.
  */
 class WebserviceConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

@@ -8,10 +8,9 @@ import java.io.File
 import java.net.URI
 
 /**
- * Tests for [UpdateConfig], the update- and release-info settings-group extracted from
- * ApiProperties in refactor Phase 1b. Pins the update-URL handling, the pre-release
- * version-check flag, old-version tracking for migrations, and the fallback-list update from
- * a remote (here: file://) properties-source.
+ * Tests for [UpdateConfig], the update- and release-info settings-group. Pins the update-URL handling, the
+ * pre-release version-check flag, old-version tracking for migrations, and the fallback-list update from a
+ * remote (here: file://) properties-source.
  */
 internal class UpdateConfigTest {
 

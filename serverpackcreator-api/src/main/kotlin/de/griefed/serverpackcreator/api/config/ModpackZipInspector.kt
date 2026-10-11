@@ -31,9 +31,8 @@ import java.nio.file.ProviderNotFoundException
 import java.util.*
 
 /**
- * Inspector for modpack ZIP-archives: lists their contents and checks their validity as
- * modpacks (full-pack layout with mods- and config-directories in the archive-root). Extracted
- * from ConfigurationHandler (refactor Phase 1c); ConfigurationHandler remains the facade
+ * Inspector for modpack ZIP-archives: lists their contents and checks their validity as modpacks (full-pack
+ * layout with mods- and config-directories in the archive-root). ConfigurationHandler remains the facade
  * through which consumers access these checks.
  */
 class ModpackZipInspector(

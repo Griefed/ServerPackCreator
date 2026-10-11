@@ -24,11 +24,9 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
- * Validator for the modloader-concern of a server pack configuration: whether a supported
- * modloader was specified and whether the modloader-version exists for the given
- * Minecraft-version, verified against the version-meta. Extracted from ConfigurationHandler
- * (refactor Phase 1c); ConfigurationHandler remains the facade through which consumers access
- * these checks.
+ * Validator for the modloader-concern of a server pack configuration: whether a supported modloader was
+ * specified and whether the modloader-version exists for the given Minecraft-version, verified against the
+ * version-meta. ConfigurationHandler remains the facade through which consumers access these checks.
  */
 class ModloaderValidator(private val versionMeta: VersionMeta) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

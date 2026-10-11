@@ -35,10 +35,9 @@ import java.util.*
 import java.util.regex.PatternSyntaxException
 
 /**
- * Compiler of the list of mods to include in a server pack: walks the mods-directory, excludes
- * user-specified and automatically discovered clientside-only mods, and honors the
- * mod-whitelist. Extracted from ServerPackHandler (refactor Phase 1d); ServerPackHandler
- * remains the facade through which consumers access these operations.
+ * Compiler of the list of mods to include in a server pack: walks the mods-directory, excludes user-specified
+ * and automatically discovered clientside-only mods, and honors the mod-whitelist. ServerPackHandler remains
+ * the facade through which consumers access these operations.
  */
 class ModListCompiler(
     private val apiProperties: ApiProperties,

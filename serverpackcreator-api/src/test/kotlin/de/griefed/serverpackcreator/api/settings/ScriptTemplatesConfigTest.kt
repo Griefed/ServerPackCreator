@@ -11,10 +11,9 @@ import java.io.File
 import java.util.prefs.Preferences
 
 /**
- * Tests for [ScriptTemplatesConfig], the start- and java-script-template settings-group
- * extracted from ApiProperties in refactor Phase 1b. Pins the default-template maps, the
- * prefixed-property mapping of custom templates, and the deprecated list-based template
- * handling including custom-file discovery in the server_files-directory.
+ * Tests for [ScriptTemplatesConfig], the start- and java-script-template settings-group. Pins the
+ * default-template maps, the prefixed-property mapping of custom templates, and the deprecated list-based
+ * template handling including custom-file discovery in the server_files-directory.
  */
 internal class ScriptTemplatesConfigTest {
     private val scratchPreferences = Preferences.userRoot().node("ServerPackCreatorScriptTemplatesConfigTest")

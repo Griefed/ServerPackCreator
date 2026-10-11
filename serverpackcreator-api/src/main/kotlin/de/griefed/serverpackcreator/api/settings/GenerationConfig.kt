@@ -25,11 +25,10 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.util.*
 
 /**
- * Settings-group for server pack generation: clientside-mod lists and their whitelist, directory
- * in- and exclusions, pre- and post-install cleanup-files, ZIP-archive exclusions, the
- * clientside-mod exclusion-filter, generation-flags and Aikar's flags. Extracted from
- * ApiProperties (refactor Phase 1b); ApiProperties remains the facade through which consumers
- * access these values.
+ * Settings-group for server pack generation: clientside-mod lists and their whitelist, directory in- and
+ * exclusions, pre- and post-install cleanup-files, ZIP-archive exclusions, the clientside-mod
+ * exclusion-filter, generation-flags and Aikar's flags. ApiProperties remains the facade through which
+ * consumers access these values.
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class GenerationConfig(private val store: PropertyStore) {

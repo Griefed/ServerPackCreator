@@ -20,10 +20,9 @@
 package de.griefed.serverpackcreator.api.config
 
 /**
- * The single source of truth for the modloaders supported by ServerPackCreator: their
- * exact-match regexes for case-insensitive loader-detection and their canonical names.
- * Consolidates the regexes previously duplicated across PackConfig, ConfigurationHandler,
- * ModloaderValidator and ModpackManifestParser (refactor Phase 1e).
+ * The single source of truth for the modloaders supported by ServerPackCreator: their exact-match regexes for
+ * case-insensitive loader-detection and their canonical names. Anything matching a loader name asks here
+ * instead of carrying its own copy.
  */
 object SupportedModloaders {
     /**

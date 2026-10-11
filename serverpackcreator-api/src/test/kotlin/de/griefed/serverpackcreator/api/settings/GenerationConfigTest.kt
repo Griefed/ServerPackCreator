@@ -7,10 +7,9 @@ import org.junit.jupiter.api.Test
 import java.util.*
 
 /**
- * Tests for [GenerationConfig], the server pack-generation settings-group extracted from
- * ApiProperties in refactor Phase 1b. Pins list-merging with fallbacks, the
- * include-wins-over-exclude rule, exclusion-filter parsing, the legacy auto-discovery
- * migration and the regex-variants of the mod-lists.
+ * Tests for [GenerationConfig], the server pack-generation settings-group. Pins list-merging with fallbacks,
+ * the include-wins-over-exclude rule, exclusion-filter parsing, the legacy auto-discovery migration and the
+ * regex-variants of the mod-lists.
  */
 internal class GenerationConfigTest {
 

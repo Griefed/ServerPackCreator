@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for [LoggingConfig], the log-level settings-group extracted from ApiProperties in
- * refactor Phase 1b. The log4j-XML machinery stays in ApiProperties and is represented here by
- * the injected apply-callback.
+ * Tests for [LoggingConfig], the log-level settings-group. The log4j-XML machinery stays in ApiProperties and
+ * is represented here by the injected apply-callback.
  */
 internal class LoggingConfigTest {
 

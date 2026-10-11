@@ -25,11 +25,10 @@ import java.io.File
 import java.util.*
 
 /**
- * Settings-group for the start- and java-script-templates used during server pack generation:
- * the per-type template-maps stored under prefixed property-keys, their defaults inside the
- * server_files-directory, and the deprecated list-based template-handling. Extracted from
- * ApiProperties (refactor Phase 1b); ApiProperties remains the facade through which consumers
- * access these values.
+ * Settings-group for the start- and java-script-templates used during server pack generation: the per-type
+ * template-maps stored under prefixed property-keys, their defaults inside the server_files-directory, and the
+ * deprecated list-based template-handling. ApiProperties remains the facade through which consumers access
+ * these values.
  */
 class ScriptTemplatesConfig(
     private val store: PropertyStore,

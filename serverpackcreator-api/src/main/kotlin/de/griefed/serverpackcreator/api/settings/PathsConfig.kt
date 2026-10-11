@@ -28,12 +28,11 @@ import java.util.*
 import java.util.prefs.Preferences
 
 /**
- * Settings-group for ServerPackCreators home-directory and every directory and file derived from
- * it: configs, logs, manifests, work/temp, modpacks, server-files with the default templates,
- * plugins, the server-packs directory with its override, and the Tomcat-directories of the
- * webservice. The home-directory itself resolves through the given [preferences]. Extracted from
- * ApiProperties (refactor Phase 1b); ApiProperties remains the facade through which consumers
- * access these values.
+ * Settings-group for ServerPackCreators home-directory and every directory and file derived from it: configs,
+ * logs, manifests, work/temp, modpacks, server-files with the default templates, plugins, the server-packs
+ * directory with its override, and the Tomcat-directories of the webservice. The home-directory itself
+ * resolves through the given [preferences]. ApiProperties remains the facade through which consumers access
+ * these values.
  */
 class PathsConfig(
     private val store: PropertyStore,

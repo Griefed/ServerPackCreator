@@ -26,10 +26,10 @@ import java.io.IOException
 import java.util.*
 
 /**
- * Property-storage core of ServerPackCreator: loads properties-files with blank-value filtering,
- * offers typed accessors with define-if-absent-semantics, manages custom user-properties under a
- * dedicated prefix, and saves the merged state back to every tracked file. Extracted from
- * ApiProperties (refactor Phase 1b) so configuration-groups can share one storage-engine.
+ * Property-storage core of ServerPackCreator: loads properties-files with blank-value filtering, offers typed
+ * accessors with define-if-absent-semantics, manages custom user-properties under a dedicated prefix, and
+ * saves the merged state back to every tracked file. Shared by every settings-group so they read and write one
+ * store.
  */
 class PropertyStore {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

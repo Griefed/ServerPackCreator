@@ -20,11 +20,11 @@
 package de.griefed.serverpackcreator.api.versionmeta
 
 /**
- * Central registry of the manifest URLs, installer/launcher URL templates and manifest tag-names
- * used across the versionmeta package. Centralizing these previously-inline literals keeps the
- * per-loader parsers free of magic strings and gives a single place to update an upstream URL or a
- * manifest schema tag. Values are intentionally compile-time constants — version resolution must
- * stay deterministic and offline-testable, so these are not runtime-configurable settings.
+ * Central registry of the manifest URLs, installer/launcher URL templates and manifest tag-names used across
+ * the versionmeta package. Keeping these literals in one place keeps the per-loader parsers free of magic
+ * strings and gives a single place to update an upstream URL or a manifest schema tag. Values are
+ * intentionally compile-time constants — version resolution must stay deterministic and offline-testable, so
+ * these are not runtime-configurable settings.
  */
 internal object VersionMetaConfig {
 

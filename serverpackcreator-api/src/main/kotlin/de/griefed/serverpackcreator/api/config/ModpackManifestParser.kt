@@ -30,12 +30,10 @@ import java.net.URI
 import java.util.*
 
 /**
- * Parser deriving PackConfig-values from the manifests of various launchers: CurseForge
- * (manifest.json, minecraftinstance.json), Modrinth (modrinth.index.json), ATLauncher
- * (instance.json), GDLauncher (config.json, instance.json) and MultiMC/Prism (mmc-pack.json,
- * instance.cfg), including modloader-name normalization. Extracted from ConfigurationHandler
- * (refactor Phase 1c); ConfigurationHandler remains the facade through which consumers access
- * these parsers.
+ * Parser deriving PackConfig-values from the manifests of various launchers: CurseForge (manifest.json,
+ * minecraftinstance.json), Modrinth (modrinth.index.json), ATLauncher (instance.json), GDLauncher
+ * (config.json, instance.json) and MultiMC/Prism (mmc-pack.json, instance.cfg), including modloader-name
+ * normalization. ConfigurationHandler remains the facade through which consumers access these parsers.
  */
 class ModpackManifestParser(
     private val apiProperties: ApiProperties,

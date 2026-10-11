@@ -15,9 +15,9 @@ import java.io.File
 import java.util.*
 
 /**
- * Tests for [ConfigEditorViewModel], the display-independent state-logic extracted from the
- * Swing-coupled ConfigEditor in refactor Phase 2. Pins the unsaved-changes dirty-check that
- * drives the editor's warning-icon and the required-Java-version derivation.
+ * Tests for [ConfigEditorViewModel], the display-independent state-logic extracted from the Swing-coupled
+ * ConfigEditor. Pins the unsaved-changes dirty-check that drives the editor's warning-icon and the
+ * required-Java-version derivation.
  */
 internal class ConfigEditorViewModelTest {
     private val versionMeta = mockk<VersionMeta>()

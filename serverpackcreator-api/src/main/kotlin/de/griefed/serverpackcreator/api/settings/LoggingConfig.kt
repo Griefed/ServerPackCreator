@@ -22,11 +22,9 @@ package de.griefed.serverpackcreator.api.settings
 import de.griefed.serverpackcreator.api.PropertyStore
 
 /**
- * Settings-group for ServerPackCreators log-level: stores the level uppercased and applies every
- * change via the injected [applyLogLevel]-callback. The log4j-XML machinery itself stays with
- * ApiProperties, which acts as log4j's ConfigurationFactory. Extracted from ApiProperties
- * (refactor Phase 1b); ApiProperties remains the facade through which consumers access this
- * value.
+ * Settings-group for ServerPackCreators log-level: stores the level uppercased and applies every change via
+ * the injected [applyLogLevel]-callback. The log4j-XML machinery itself stays with ApiProperties, which acts
+ * as log4j's ConfigurationFactory. ApiProperties remains the facade through which consumers access this value.
  */
 class LoggingConfig(
     private val store: PropertyStore,

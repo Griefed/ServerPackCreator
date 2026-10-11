@@ -37,10 +37,9 @@ import java.util.*
 import javax.imageio.ImageIO
 
 /**
- * Provisioner for everything a server pack needs besides the modpack-files themselves: the
- * server-icon, server.properties, start-scripts with variables.txt and HOW-TO-RUN.md, the
- * ZIP-archive, the improved Fabric-launcher, installer-availability checks and pre-/post-install
- * cleanups. Extracted from ServerPackHandler (refactor Phase 1d); ServerPackHandler remains the
+ * Provisioner for everything a server pack needs besides the modpack-files themselves: the server-icon,
+ * server.properties, start-scripts with variables.txt and HOW-TO-RUN.md, the ZIP-archive, the improved
+ * Fabric-launcher, installer-availability checks and pre-/post-install cleanups. ServerPackHandler remains the
  * facade through which consumers access these operations.
  */
 class ServerPackProvisioner(
