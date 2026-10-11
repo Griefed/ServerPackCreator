@@ -140,11 +140,10 @@ class SimpleStopWatch {
      * Get the elapsed time in nanoseconds. Depending on the state of the stopwatch, two values or an
      * [IllegalStateException] may be thrown.
      *
-     *  1. Stopwatch is still running: The elapsed time up to the point of calling this method is returned.
-     *  1. Stopwatch started and stopped: The elapsed time between the start and stop is returned.
-     *  1. Any other state: An [IllegalStateException] is thrown.
+     * 1. Stopwatch is still running: The elapsed time up to the point of calling this method is returned.
+     * 1. Stopwatch started and stopped: The elapsed time between the start and stop is returned.
+     * 1. Any other state: An [IllegalStateException] is thrown.
      *
-     * @return The elapsed time in nanoseconds.
      * @throws IllegalStateException when the stopwatch is in an invalid state for time-retrieval.
      * @author Griefed
      */

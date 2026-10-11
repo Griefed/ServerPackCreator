@@ -161,7 +161,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /**
      * Acquire the base toml-config of a mod.
      *
-     * @param file The file from which to acquire the toml config.
      * @return Config read from the toml in the mod.
      * @throws IOException if the mods.toml file could not be read.
      * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a

@@ -259,7 +259,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The folder containing the ServerPackCreator.exe or JAR-file.
      *
-     * @return Folder containing the ServerPackCreator.exe or JAR-file.
      * @author Griefed
      */
     fun getJarFolder() = jarInformation.jarFolder
@@ -275,7 +274,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The .exe or JAR-file of ServerPackCreator.
      *
-     * @return The .exe or JAR-file of ServerPackCreator.
      * @author Griefed
      */
     fun getJarFile() = jarInformation.jarFile
@@ -283,7 +281,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The name of the .exe or JAR-file.
      *
-     * @return The name of the .exe or JAR-file.
      * @author Griefed
      */
     fun getJarName(): String = jarInformation.jarFile.name
@@ -291,7 +288,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The Java version used to run ServerPackCreator.
      *
-     * @return Java version.
      * @author Griefed
      */
     fun getJavaVersion() = jarInformation.javaVersion
@@ -315,7 +311,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The version of the OS on which ServerPackCreator is running on.
      *
-     * @return Version of the OS.
      * @author Griefed
      */
     fun getOSVersion() = jarInformation.osVersion
@@ -1221,7 +1216,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * `de.griefed.serverpackcreator.serverpack.autodiscovery.filter` is set to
      * [ExclusionFilter.REGEX], a regex fallback list is returned.
      *
-     * @return The fallback list of whitelisted mods.
      * @author Griefed
      */
     fun whitelistedMods() = generationConfig.whitelistedMods()

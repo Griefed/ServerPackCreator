@@ -67,7 +67,6 @@ class ModPackService @Autowired constructor(
      * Increment the download counter for a given modpack entry in the database identified by the
      * database id.
      *
-     * @param modPack The database id of the modpack.
      * @author Griefed
      */
     fun updateDownloadStats(modPack: ModPack): Optional<ModPack> {
@@ -245,7 +244,6 @@ class ModPackService @Autowired constructor(
     /**
      * Retrieve the archive of a previously uploaded modpack.
      *
-     * @param modPack The modpack for which to retrieve the archive.
      * @return The modpack-zip, wrapped in an [Optional]
      * @throws IOException If an I/O error occurs writing to or creating the file.
      * @throws IllegalArgumentException If the modpack doesn't have data to export.

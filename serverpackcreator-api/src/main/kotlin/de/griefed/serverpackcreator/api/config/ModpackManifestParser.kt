@@ -79,8 +79,6 @@ class ModpackManifestParser(
      * Check whether various manifests from various launchers exist and use them to update our
      * ConfigurationModel and pack name.
      *
-     * @param destination The destination in which the manifests are.
-     * @param packConfig The ConfigurationModel to update.
      * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return The name of the modpack currently being checked. `null` if the name could not be
      * acquired.
@@ -458,7 +456,6 @@ class ModpackManifestParser(
      * instance.cfg, which is usually created by the MultiMC launcher.
      *
      * @param instanceCfg The config.json-file of the modpack to read.
-     * @return The instance name.
      * @author Griefed
      */
     @Throws(IOException::class)

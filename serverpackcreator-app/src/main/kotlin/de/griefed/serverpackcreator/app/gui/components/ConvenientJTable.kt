@@ -306,7 +306,6 @@ abstract class ConvenientJTable(
         /**
          * The foreground color of the button when the cell has focus
          *
-         * @param focusBorder the foreground color
          * @author Griefed
          */
         @Suppress("unused")

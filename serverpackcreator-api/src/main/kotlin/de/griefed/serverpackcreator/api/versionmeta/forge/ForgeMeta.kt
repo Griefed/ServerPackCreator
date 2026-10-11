@@ -88,7 +88,6 @@ class ForgeMeta(
     /**
      * Check whether a given Minecraft version is valid/supported/available.
      *
-     * @param minecraftVersion Minecraft version.
      * @return `true` if the given Minecraft version is valid/supported/available.
      * @author Griefed
      */
@@ -98,7 +97,6 @@ class ForgeMeta(
     /**
      * Check whether a given Forge version is valid/supported/available.
      *
-     * @param forgeVersion Forge version.
      * @return `true` if the given Forge version is valid/supported/available.
      * @author Griefed
      */
@@ -108,8 +106,6 @@ class ForgeMeta(
     /**
      * Check whether Forge is available for a given Forge- and Minecraft version.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param forgeVersion     Forge version.
      * @return `true` if Forge is available for the given Forge- and Minecraft version.
      * @author Griefed
      */
@@ -120,8 +116,6 @@ class ForgeMeta(
      * Get a [ForgeInstance] for a given Minecraft and Forge version, wrapped in an
      * [Optional].
      *
-     * @param minecraftVersion Minecraft version.
-     * @param forgeVersion     Forge version.
      * @return Forge instance for the given Minecraft and Forge version, wrapped in an
      * [Optional]
      * @author Griefed
@@ -132,7 +126,6 @@ class ForgeMeta(
     /**
      * Check whether Forge is available for a given Forge version
      *
-     * @param forgeVersion Forge version.
      * @return `true` if Forge is available for the given Forge version.
      * @author Griefed
      */
@@ -141,7 +134,6 @@ class ForgeMeta(
     /**
      * Get a [ForgeInstance] for a given Forge version, wrapped in an [Optional].
      *
-     * @param forgeVersion Forge version.
      * @return Forge instance for the given Forge version, wrapped in an [Optional]
      * @author Griefed
      */
@@ -159,7 +151,6 @@ class ForgeMeta(
      * Get a list of all available [ForgeInstance] for a given Minecraft version, wrapped in an
      * [Optional]
      *
-     * @param minecraftVersion Minecraft version.
      * @return Forge instance-list for the given Minecraft version.
      * @author Griefed
      */
@@ -182,7 +173,6 @@ class ForgeMeta(
     /**
      * Latest Forge version for a given Minecraft version, wrapped in [Optional]
      *
-     * @param minecraftVersion Minecraft version.
      * @return Latest Forge version for the given Minecraft version, wrapped in an [Optional]
      * @author Griefed
      */
@@ -199,7 +189,6 @@ class ForgeMeta(
     /**
      * Oldest Forge version for a given Minecraft version, wrapped in [Optional]
      *
-     * @param minecraftVersion Minecraft version.
      * @return Oldest Forge version for the given Minecraft version, wrapped in [Optional]
      * @author Griefed
      */
@@ -217,7 +206,6 @@ class ForgeMeta(
     /**
      * Get the list of available Forge versions, in ascending order.
      *
-     * @return List of available Forge versions.
      * @author Griefed
      */
     fun forgeVersions() = forgeLoader!!.forgeVersions
@@ -225,7 +213,6 @@ class ForgeMeta(
     /**
      * Get a list of available Forge version for a given Minecraft version in ascending order.
      *
-     * @param minecraftVersion Minecraft version.
      * @return List of available Forge versions for the given Minecraft version in ascending order.
      * @author Griefed
      */
@@ -235,7 +222,6 @@ class ForgeMeta(
     /**
      * Get the Minecraft version for a given Forge version, wrapped in an [Optional].
      *
-     * @param forgeVersion Forge version.
      * @return Minecraft version for the given Forge version, wrapped in an [Optional].
      * @author Griefed
      */
@@ -245,7 +231,6 @@ class ForgeMeta(
     /**
      * Get the list of Forge supported Minecraft versions, in ascending order.
      *
-     * @return List of Forge supported Minecraft versions, in ascending order.
      * @author Griefed
      */
     fun supportedMinecraftVersions() = forgeLoader!!.minecraftVersions
@@ -253,7 +238,6 @@ class ForgeMeta(
     /**
      * Get the Forge server installer URL for a given Forge version, wrapped in an [Optional].
      *
-     * @param forgeVersion Forge version.
      * @return Forge server installer URL for the given Forge version, wrapped in an [Optional].
      * @author Griefed
      */

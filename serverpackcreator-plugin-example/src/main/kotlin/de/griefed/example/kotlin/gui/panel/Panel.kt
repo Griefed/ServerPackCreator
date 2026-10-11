@@ -103,7 +103,6 @@ class Panel : ConfigPanelExtension {
      * Get the ID of this extension. Used by ServerPackCreator to determine which configuration, if
      * any, to provide to any given extension being run.
      *
-     * @return The ID of this extension.
      * @author Griefed
      */
     override val extensionId: String

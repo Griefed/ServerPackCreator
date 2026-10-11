@@ -181,9 +181,6 @@ class FabricMeta(
     /**
      * Get the [URL] to the Fabric launcher for the specified Minecraft and Fabric version.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param fabricVersion    Fabric version.
-     * @return URL to the Fabric launcher for the specified Minecraft and Fabric version.
      * @author Griefed
      */
     fun improvedLauncherUrl(minecraftVersion: String, fabricVersion: String): URL =

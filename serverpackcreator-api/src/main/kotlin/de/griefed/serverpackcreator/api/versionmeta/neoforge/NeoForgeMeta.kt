@@ -96,7 +96,6 @@ class NeoForgeMeta(
     /**
      * Check whether a given Minecraft version is valid/supported/available.
      *
-     * @param minecraftVersion Minecraft version.
      * @return `true` if the given Minecraft version is valid/supported/available.
      * @author Griefed
      */
@@ -106,7 +105,6 @@ class NeoForgeMeta(
     /**
      * Check whether a given NeoForge version is valid/supported/available.
      *
-     * @param neoForgeVersion NeoForge version.
      * @return `true` if the given NeoForge version is valid/supported/available.
      * @author Griefed
      */
@@ -116,8 +114,6 @@ class NeoForgeMeta(
     /**
      * Check whether NeoForge is available for a given NeoForge- and Minecraft version.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param neoForgeVersion     NeoForge version.
      * @return `true` if NeoForge is available for the given NeoForge- and Minecraft version.
      * @author Griefed
      */
@@ -128,8 +124,6 @@ class NeoForgeMeta(
      * Get a [NeoForgeInstance] for a given Minecraft and NeoForge version, wrapped in an
      * [Optional].
      *
-     * @param minecraftVersion Minecraft version.
-     * @param neoForgeVersion     NeoForge version.
      * @return NeoForge instance for the given Minecraft and NeoForge version, wrapped in an
      * [Optional]
      * @author Griefed
@@ -140,7 +134,6 @@ class NeoForgeMeta(
     /**
      * Check whether NeoForge is available for a given NeoForge version
      *
-     * @param neoForgeVersion NeoForge version.
      * @return `true` if NeoForge is available for the given NeoForge version.
      * @author Griefed
      */
@@ -149,7 +142,6 @@ class NeoForgeMeta(
     /**
      * Get a [NeoForgeInstance] for a given NeoForge version, wrapped in an [Optional].
      *
-     * @param neoForgeVersion NeoForge version.
      * @return NeoForge instance for the given NeoForge version, wrapped in an [Optional]
      * @author Griefed
      */
@@ -167,7 +159,6 @@ class NeoForgeMeta(
      * Get a list of all available [NeoForgeInstance] for a given Minecraft version, wrapped in an
      * [Optional]
      *
-     * @param minecraftVersion Minecraft version.
      * @return NeoForge instance-list for the given Minecraft version.
      * @author Griefed
      */
@@ -190,7 +181,6 @@ class NeoForgeMeta(
     /**
      * Latest NeoForge version for a given Minecraft version, wrapped in [Optional]
      *
-     * @param minecraftVersion Minecraft version.
      * @return Latest NeoForge version for the given Minecraft version, wrapped in an [Optional]
      * @author Griefed
      */
@@ -207,7 +197,6 @@ class NeoForgeMeta(
     /**
      * Oldest NeoForge version for a given Minecraft version, wrapped in [Optional]
      *
-     * @param minecraftVersion Minecraft version.
      * @return Oldest NeoForge version for the given Minecraft version, wrapped in [Optional]
      * @author Griefed
      */
@@ -223,7 +212,6 @@ class NeoForgeMeta(
     /**
      * Get the list of available NeoForge versions, in ascending order.
      *
-     * @return List of available NeoForge versions.
      * @author Griefed
      */
     fun neoForgeVersions() = neoForgeLoader!!.neoForgeVersions
@@ -231,7 +219,6 @@ class NeoForgeMeta(
     /**
      * Get a list of available NeoForge version for a given Minecraft version in ascending order.
      *
-     * @param minecraftVersion Minecraft version.
      * @return List of available NeoForge versions for the given Minecraft version in ascending order.
      * @author Griefed
      */
@@ -241,7 +228,6 @@ class NeoForgeMeta(
     /**
      * Get the Minecraft version for a given NeoForge version, wrapped in an [Optional].
      *
-     * @param neoForgeVersion NeoForge version.
      * @return Minecraft version for the given Neo version, wrapped in an [Optional].
      * @author Griefed
      */
@@ -251,7 +237,6 @@ class NeoForgeMeta(
     /**
      * Get the list of NeoForge supported Minecraft versions, in ascending order.
      *
-     * @return List of NeoForge supported Minecraft versions, in ascending order.
      * @author Griefed
      */
     fun supportedMinecraftVersions() = neoForgeLoader!!.minecraftVersions
@@ -259,7 +244,6 @@ class NeoForgeMeta(
     /**
      * Get the NeoForge server installer URL for a given NeoForge version, wrapped in an [Optional].
      *
-     * @param neoForgeVersion NeoForge version.
      * @return NeoForge server installer URL for the given NeoForge version, wrapped in an [Optional].
      * @author Griefed
      */

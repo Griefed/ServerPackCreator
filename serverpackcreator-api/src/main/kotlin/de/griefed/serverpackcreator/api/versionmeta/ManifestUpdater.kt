@@ -53,7 +53,6 @@ internal class ManifestUpdater(private val utilities: Utilities) {
      * If it exists, it is compared to the online manifest. If the online version contains more
      * versions, the local manifest is replaced by the online one.
      *
-     * @param manifestToCheck The manifest to check.
      * @param urlToManifest   The URL to the manifest.
      * @param manifestType    The type of the manifest, which decides how its versions are counted.
      * @author Griefed

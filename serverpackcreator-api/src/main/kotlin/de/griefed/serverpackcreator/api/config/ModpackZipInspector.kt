@@ -186,7 +186,6 @@ class ModpackZipInspector(
      * Acquire a list of all files and directories in a ZIP-file.
      *
      * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All files and directories in the ZIP-file.
      * @author Griefed
      */
     @Throws(
@@ -216,7 +215,6 @@ class ModpackZipInspector(
      * Acquire a list of all directories in a ZIP-file. The resulting list excludes files.
      *
      * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All directories in the ZIP-file.
      * @author Griefed
      */
     @Throws(
@@ -242,7 +240,6 @@ class ModpackZipInspector(
      * Acquire a list of all files in a ZIP-file. The resulting list excludes directories.
      *
      * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All files in the ZIP-file.
      * @author Griefed
      */
     @Throws(

@@ -139,7 +139,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available Fabric versions.
      *
-     * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
     @GetMapping("/fabric", produces = ["application/json"])
@@ -152,7 +151,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available Fabric versions.
      *
-     * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
     @GetMapping("/legacyfabric", produces = ["application/json"])
@@ -165,7 +163,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available Fabric versions.
      *
-     * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
     @GetMapping("/quilt", produces = ["application/json"])

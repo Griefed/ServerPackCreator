@@ -370,7 +370,6 @@ class VersionMeta(
     /**
      * Check a given manifest for updates, delegating to [ManifestUpdater] which owns the refresh.
      *
-     * @param manifestToCheck The manifest to check.
      * @param urlToManifest   The URL to the manifest.
      * @param manifestType    The type of the manifest, either [Type.MINECRAFT], [Type.FORGE], [Type.FABRIC] or [Type.FABRIC_INSTALLER].
      * @author Griefed

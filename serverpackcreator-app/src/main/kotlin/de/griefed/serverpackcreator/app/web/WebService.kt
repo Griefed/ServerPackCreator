@@ -114,7 +114,6 @@ class WebService(private val api: ApiWrapper) {
          * will be started with the given arguments.
          *
          * @param args CLI arguments to pass to Spring Boot when it has not yet been started.
-         * @return Application context of Spring Boot.
          * @author Griefed
          */
         @Synchronized

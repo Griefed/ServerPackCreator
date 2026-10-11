@@ -275,7 +275,6 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
      * Get the id of the mod currently being checked.
      *
      * @param jsonNode The JSON node containing the modId.
-     * @return The id of the mod.
      * @throws NullPointerException if the JSON node does not contain the modId.
      * @author Griefed
      */
@@ -317,7 +316,6 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
      * it is, then the mod of the modId is required.
      *
      * @param child The child-JSON node containing dependency information.
-     * @param modId The ID of the mod for which to check for dependencies.
      * @return `true` if the modId is a dependency.
      * @author Griefed
      */

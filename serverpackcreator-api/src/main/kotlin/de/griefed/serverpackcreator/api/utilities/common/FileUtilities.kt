@@ -53,7 +53,6 @@ class FileUtilities {
         /**
          * Move a file from source to destination, and replace the destination file if it exists.
          *
-         * @param sourceFile      The source file.
          * @param destinationFile The destination file to be replaced by the source file.
          * @return  Returns true if the file was successfully replaced.
          * @throws IOException Thrown if an error occurs when the file is moved.
@@ -93,7 +92,6 @@ class FileUtilities {
          * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
          * symlink.
          *
-         * @param file The file to check
          * @return The type of the given file. Either [FileType.FILE], [FileType.LINK] or
          * [FileType.SYMLINK]
          * @author Griefed
@@ -107,7 +105,6 @@ class FileUtilities {
          * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
          * symlink.
          *
-         * @param file The file to check
          * @return The type of the given file. Either [FileType.FILE], [FileType.LINK] or
          * [FileType.SYMLINK]
          * @author Griefed
@@ -141,7 +138,6 @@ class FileUtilities {
         /**
          * Check if the given file is a UNIX symlink or Windows lnk.
          *
-         * @param file The file to check.
          * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
@@ -150,7 +146,6 @@ class FileUtilities {
         /**
          * Check if the given file is a UNIX symlink or Windows lnk.
          *
-         * @param file The file to check.
          * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
@@ -247,7 +242,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if both read- and write-permissions are set.
          * @author Griefed
          */
@@ -257,7 +251,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if read-permissions are set.
          * @author Griefed
          */
@@ -277,7 +270,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if write-permissions are set.
          * @author Griefed
          */
@@ -297,7 +289,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if read-permissions are set.
          * @author Griefed
          */
@@ -306,7 +297,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if read-permissions are set.
          * @author Griefed
          */
@@ -315,7 +305,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if write-permissions are set.
          * @author Griefed
          */
@@ -324,7 +313,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if write-permissions are set.
          * @author Griefed
          */
@@ -333,7 +321,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if both read- and write-permissions are set.
          * @author Griefed
          */
@@ -343,7 +330,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if both read- and write-permissions are set.
          * @author Griefed
          */
@@ -353,7 +339,6 @@ class FileUtilities {
         /**
          * Open the specified folder in the file explorer.
          *
-         * @param folder The folder to open.
          * @author Griefed
          */
         fun openFolder(folder: String) = openFolder(File(folder))
@@ -361,7 +346,6 @@ class FileUtilities {
         /**
          * Open the specified folder in the file explorer.
          *
-         * @param folder The folder to open.
          * @author Griefed
          */
         fun openFolder(folder: File) {
@@ -381,7 +365,6 @@ class FileUtilities {
         /**
          * Open the specified file in an editor.
          *
-         * @param fileToOpen The file to open.
          * @author Griefed
          */
         fun openFile(fileToOpen: String) = openFile(File(fileToOpen))
@@ -389,7 +372,6 @@ class FileUtilities {
         /**
          * Open the specified file in an editor.
          *
-         * @param fileToOpen The file to open.
          * @author Griefed
          */
         fun openFile(fileToOpen: File) {

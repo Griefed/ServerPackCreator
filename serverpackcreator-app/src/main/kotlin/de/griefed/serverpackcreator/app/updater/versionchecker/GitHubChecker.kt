@@ -84,7 +84,6 @@ class GitHubChecker : VersionChecker {
      * versions.
      * @author Griefed
      * @throws IOException Exception thrown if [.setRepository] or [.setLatest] encounter an error.
-     * @return This GitHub-instance.
      */
     @Throws(IOException::class)
     override fun refresh(): GitHubChecker {
@@ -213,8 +212,6 @@ class GitHubChecker : VersionChecker {
     /**
      * Get the URL for the given release version.
      * @author Griefed
-     * @param version The version for which to get the URL to.
-     * @return Returns the URL to the given release version.
      */
     public override fun getDownloadUrl(version: String): String {
         if (repository != null) {

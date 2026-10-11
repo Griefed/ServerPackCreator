@@ -105,7 +105,6 @@ class LegacyFabricInstaller(
     /**
      * The URL to the latest installer for Legacy Fabric.
      *
-     * @return URL to the latest installer for Legacy Fabric.
      * @throws MalformedURLException when the URL could not be created.
      * @author Griefed
      */
@@ -115,7 +114,6 @@ class LegacyFabricInstaller(
     /**
      * The URL to the release installer for Legacy Fabric.
      *
-     * @return URL to the release installer for Legacy Fabric.
      * @throws MalformedURLException when the URL could not be created.
      * @author Griefed
      */
@@ -125,7 +123,6 @@ class LegacyFabricInstaller(
     /**
      * Get the URL for a specific installer version, wrapped in an Optional.
      *
-     * @param version The version of the installer for which to get the URL.
      * @return URL to the installer, for the specified version, wrapped in an Optional.
      * @throws MalformedURLException when the URL could not be created.
      * @author Griefed

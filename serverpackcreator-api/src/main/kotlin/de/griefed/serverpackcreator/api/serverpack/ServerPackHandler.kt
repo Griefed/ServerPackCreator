@@ -176,7 +176,6 @@ class ServerPackHandler(
      *
      * @param packConfig Model containing the modpack directory of the modpack from which the
      * server pack will be generated.
-     * @return The complete path to the directory in which the server pack will be generated.
      * @author Griefed
      */
     fun getServerPackDestination(packConfig: PackConfig): String {

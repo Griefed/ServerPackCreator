@@ -126,7 +126,6 @@ class LarsonScanner : JPanel {
      *
      * @param interval Interval in milliseconds at which to scroll.
      * @param backgroundColor The background colour for the scanner and the eye.
-     * @param eyeColor The color of the eye.
      * @author Griefed
      */
     constructor(interval: Short, backgroundColor: Color, eyeColor: Color) : super() {
@@ -184,7 +183,6 @@ class LarsonScanner : JPanel {
      *
      * Default setting: `255,0,0`
      *
-     * @param color The color to set all elements in the eye to.
      * @author Griefed
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -227,7 +225,6 @@ class LarsonScanner : JPanel {
      *
      * Default setting: `true`
      *
-     * @param useOval Whether to use oval or rectangular shapes.
      * @author Griefed
      */
     fun drawOval(useOval: Boolean) {
@@ -257,15 +254,14 @@ class LarsonScanner : JPanel {
      * to use solid colours. Depending on the shape, gradients are drawn in two ways:
      *
      *
-     *  * Oval shapes: Gradients are created from the center of element `n` to the
+     * * Oval shapes: Gradients are created from the center of element `n` to the
      * height of element `n`. This is most beautiful when forcing the aspect ratio,
      * as radial gradients are best for circles, not ovals.
-     *  * Rectangle shapes: Gradients are created from left to right, at half the height of element
+     * * Rectangle shapes: Gradients are created from left to right, at half the height of element
      * `n`, over the width of element `n`, for each element.
      *
      * Default setting: `true`
      *
-     * @param useGradient Whether to use gradients or solid colours.
      * @author Griefed
      */
     fun useGradient(useGradient: Boolean) {
@@ -303,8 +299,6 @@ class LarsonScanner : JPanel {
      *
      * Default setting: `true`
      *
-     * @param useDivider Whether to in-/decrement using the divider. `true`
-     * to use it.
      * @author Griefed
      */
     fun useDivider(useDivider: Boolean) {
@@ -336,29 +330,29 @@ class LarsonScanner : JPanel {
      * elements in the eye expand from the center outward. If the Kitt-animation is chosen, the eye
      * behaves as follows:
      *
-     *  * Left-to-right:
+     * * Left-to-right:
      *
-     *  * From the current position towards the right, each element is drawn. Each element is
+     * * From the current position towards the right, each element is drawn. Each element is
      * drawn with less alpha, leading to the last element, visually the first of the eye,
      * being or almost being solid.
-     *  * When the eye leaves the left side, the illusion of the eye emerging is created by
+     * * When the eye leaves the left side, the illusion of the eye emerging is created by
      * drawing the left most element of the elements already drawn from 0 to the width of
      * the eye. As the eye leaves the play, the starting element increases in alpha, thus
      * creating the illusion of the eye emerging from one spot.
-     *  * When the eye enters the right side, the illusion of the elements gathering is
+     * * When the eye enters the right side, the illusion of the elements gathering is
      * created by drawing the brightest, most solid, element at the absolute
      * right, thus creating the illusion of the elements coalescing.
      *
-     *  * Right-to-left:
+     * * Right-to-left:
      *
-     *  * From the current position towards the left, each element is drawn.Each element is
+     * * From the current position towards the left, each element is drawn.Each element is
      * drawn with less alpha, leading to the last element, visually the first or the eye,
      * being or almost being solid.
-     *  * When the eye leaves the right side, the illusion of the eye emerging is created by
+     * * When the eye leaves the right side, the illusion of the eye emerging is created by
      * drawing the right most element of the elements already drawn from the width of the
      * Larson Scanner to the width of the eye. As the eye leaves the end, the last element
      * increases in alpha, thus creating the illusion of the eye emerging from one spot.
-     *  * When the eye enters the left side, the illusion of the elements gathering is
+     * * When the eye enters the left side, the illusion of the elements gathering is
      * created by drawing the brightest, most solid, element at the absolute
      * left, thus creating the illusion of the elements coalescing.
      *
@@ -401,7 +395,6 @@ class LarsonScanner : JPanel {
      *
      * Default setting: `false`
      *
-     * @param force
      * @author Griefed
      */
     fun forceAspectRatio(force: Boolean) {
@@ -432,12 +425,12 @@ class LarsonScanner : JPanel {
      * Set the fractions for the distribution of the colours along the gradients of each oval-shaped
      * element. Keep in mind, that the
      *
-     *  1. fractions **must** range from 0.0f to 1.0f.
-     *  1. first fraction **must** be smaller than the second one.
-     *  1. first fraction **must not** be the same size as the second one
-     *  1. first fraction **can** be 0.0f, but not smaller
-     *  1. second fraction **must** be bigger than the first one
-     *  1. second fraction **must not** be 0.0f
+     * 1. fractions **must** range from 0.0f to 1.0f.
+     * 1. first fraction **must** be smaller than the second one.
+     * 1. first fraction **must not** be the same size as the second one
+     * 1. first fraction **can** be 0.0f, but not smaller
+     * 1. second fraction **must** be bigger than the first one
+     * 1. second fraction **must not** be 0.0f
      *
      * Default setting: `0.4f, 1.0f`
      *
@@ -500,11 +493,11 @@ class LarsonScanner : JPanel {
      *
      * Depending on the currently set shape, these alpha values are used in different ways:
      *
-     *  * Oval: Radial gradients are generated, one for each element in the eye. The alpha is
+     * * Oval: Radial gradients are generated, one for each element in the eye. The alpha is
      * applied to the colour in said gradients, from the center of the element to the edge, with
      * the alpha continually increasing. Outer elements frequently end up fading into
      * transparency, especially if larger number of elements are being drawn.
-     *  * Rectangular: Linear gradients are generated, one for each element in the eye. The alpha
+     * * Rectangular: Linear gradients are generated, one for each element in the eye. The alpha
      * is applied from left-to-right at half the height of each element, for each element. For
      * each element left-to-center the alpha decreases gradually. For each element
      * center-to-right the alpha continually increases.
@@ -642,15 +635,15 @@ class LarsonScanner : JPanel {
     /**
      * Set the rendering quality of the eye to high. Settings are:
      *
-     *  1. RenderingHints.KEY_ANTIALIASING<br></br>
+     * 1. RenderingHints.KEY_ANTIALIASING<br></br>
      * RenderingHints.VALUE_ANTIALIAS_ON
-     *  1. RenderingHints.KEY_ALPHA_INTERPOLATION<br></br>
+     * 1. RenderingHints.KEY_ALPHA_INTERPOLATION<br></br>
      * RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY
-     *  1. RenderingHints.KEY_COLOR_RENDERING<br></br>
+     * 1. RenderingHints.KEY_COLOR_RENDERING<br></br>
      * RenderingHints.VALUE_COLOR_RENDER_QUALITY
-     *  1. RenderingHints.KEY_INTERPOLATION<br></br>
+     * 1. RenderingHints.KEY_INTERPOLATION<br></br>
      * RenderingHints.VALUE_INTERPOLATION_BICUBIC
-     *  1. RenderingHints.KEY_RENDERING<br></br>
+     * 1. RenderingHints.KEY_RENDERING<br></br>
      * RenderingHints.VALUE_RENDER_QUALITY
      *
      * Default setting: `low`
@@ -664,15 +657,15 @@ class LarsonScanner : JPanel {
     /**
      * Set the rendering quality of the eye to medium. Settings are:
      *
-     *  1. RenderingHints.KEY_ANTIALIASING<br></br>
+     * 1. RenderingHints.KEY_ANTIALIASING<br></br>
      * RenderingHints.VALUE_ANTIALIAS_DEFAULT
-     *  1. RenderingHints.KEY_ALPHA_INTERPOLATION<br></br>
+     * 1. RenderingHints.KEY_ALPHA_INTERPOLATION<br></br>
      * RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT
-     *  1. RenderingHints.KEY_COLOR_RENDERING<br></br>
+     * 1. RenderingHints.KEY_COLOR_RENDERING<br></br>
      * RenderingHints.VALUE_COLOR_RENDER_DEFAULT
-     *  1. RenderingHints.KEY_INTERPOLATION<br></br>
+     * 1. RenderingHints.KEY_INTERPOLATION<br></br>
      * RenderingHints.VALUE_INTERPOLATION_BILINEAR
-     *  1. RenderingHints.KEY_RENDERING<br></br>
+     * 1. RenderingHints.KEY_RENDERING<br></br>
      * RenderingHints.VALUE_RENDER_DEFAULT
      *
      * Default setting: `low`
@@ -686,15 +679,15 @@ class LarsonScanner : JPanel {
     /**
      * Set the rendering quality of the eye to low. Settings are:
      *
-     *  1. RenderingHints.KEY_ANTIALIASING<br></br>
+     * 1. RenderingHints.KEY_ANTIALIASING<br></br>
      * RenderingHints.VALUE_ANTIALIAS_OFF
-     *  1. RenderingHints.KEY_ALPHA_INTERPOLATION<br></br>
+     * 1. RenderingHints.KEY_ALPHA_INTERPOLATION<br></br>
      * RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED
-     *  1. RenderingHints.KEY_COLOR_RENDERING<br></br>
+     * 1. RenderingHints.KEY_COLOR_RENDERING<br></br>
      * RenderingHints.VALUE_COLOR_RENDER_SPEED
-     *  1. RenderingHints.KEY_INTERPOLATION<br></br>
+     * 1. RenderingHints.KEY_INTERPOLATION<br></br>
      * RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
-     *  1. RenderingHints.KEY_RENDERING<br></br>
+     * 1. RenderingHints.KEY_RENDERING<br></br>
      * RenderingHints.VALUE_RENDER_SPEED
      *
      * Default setting: `low`
@@ -708,7 +701,6 @@ class LarsonScanner : JPanel {
     /**
      * Set the configuration of the Larson Scanner with values from the given config.
      *
-     * @param config The configuration from which to set the Larson Scanner values.
      * @throws IllegalArgumentException if any of the configured values is invalid.
      * @author Griefed
      */
@@ -954,7 +946,6 @@ class LarsonScanner : JPanel {
         /**
          * Whether the aspect ratio is enforced in this configuration.
          *
-         * @return Whether the aspect ratio is enforced in this configuration.
          * @author Griefed
          */
         var isAspectRatioForced = false
@@ -963,7 +954,6 @@ class LarsonScanner : JPanel {
         /**
          * Whether the elements for this configuration are drawn as ovals or rectangles.
          *
-         * @return Whether elements are drawn as ovals or rectangles.
          * @author Griefed
          */
         var isShapeOval = true
@@ -972,7 +962,6 @@ class LarsonScanner : JPanel {
         /**
          * Whether the elements for this configuration are drawn using gradients.
          *
-         * @return Whether elements are drawn using gradients.
          * @author Griefed
          */
         var isGradientActive = true
@@ -981,7 +970,6 @@ class LarsonScanner : JPanel {
         /**
          * Whether the position of this configuration in-/decrements using a divider.
          *
-         * @return Whether the position in-/decrements using a divider.
          * @author Griefed
          */
         var isDividerActive = true
@@ -1138,7 +1126,6 @@ class LarsonScanner : JPanel {
          * Set whether the elements for this configuration should be drawn as ovals or rectangles. For
          * more information, see [LarsonScanner.drawOval].
          *
-         * @param ovalShaped Whether the elements for this configuration should be drawn as ovals.
          * @author Griefed
          */
         fun setOvalShaped(ovalShaped: Boolean) {
@@ -1149,8 +1136,6 @@ class LarsonScanner : JPanel {
          * Set whether the elements for this configuration should be drawn using gradients. For more
          * information, see [LarsonScanner.useGradient].
          *
-         * @param useGradients Whether the elements for this configuration should be
-         * drawn using gradients.
          * @author Griefed
          */
         fun setUseGradients(useGradients: Boolean) {
@@ -1487,12 +1472,12 @@ class LarsonScanner : JPanel {
 
         /**
          * Set the new values for the eyes
-         *  * Size with width and height
-         *  * partitioning of the eye
-         *  * width of a single element in the eye
-         *  * width of the pag between two elements when drawing as rectangles
-         *  * total width of all gaps when drawing as rectangles
-         *  * half of the total width of all gaps when drawing as rectangles
+         * * Size with width and height
+         * * partitioning of the eye
+         * * width of a single element in the eye
+         * * width of the pag between two elements when drawing as rectangles
+         * * total width of all gaps when drawing as rectangles
+         * * half of the total width of all gaps when drawing as rectangles
          *
          * @author Griefed
          */
@@ -1535,7 +1520,6 @@ class LarsonScanner : JPanel {
          * being drawn.
          *
          * @param start The play point of the element currently being drawn.
-         * @return The Y-coordinate of the center of the element currently being drawn.
          * @author Griefed
          */
         private fun getCenter(start: Double): Double {
@@ -1545,11 +1529,11 @@ class LarsonScanner : JPanel {
         /**
          * Calculate the position of an element in oval shape. Steps are:
          *
-         *  * Multiply the width of one element with the number of elements in the eye. Divide by two
-         *  * multiply the width of one element with the number of the element currently being drawn
+         * * Multiply the width of one element with the number of elements in the eye. Divide by two
+         * * multiply the width of one element with the number of the element currently being drawn
          * (0 to total number of elements in the eye)
-         *  * add the values from above together
-         *  * subtract the above value from the current position in the eye being drawn at
+         * * add the values from above together
+         * * subtract the above value from the current position in the eye being drawn at
          *
          * The element width multiplied with the number of elements, then divided by two, gives the half of the total
          * width of the eye itself.
@@ -1580,9 +1564,6 @@ class LarsonScanner : JPanel {
          * @param element The number of the element currently being drawn.
          * @param centerX The X-coordinate of the center of the element currently being
          * drawn.
-         * @param color The color of the element currently being drawn.
-         * @return A radial gradient for the currently being drawn,
-         * oval-shaped, element.
          * @author Griefed
          */
         private fun cylonRadialGradient(
@@ -1626,39 +1607,38 @@ class LarsonScanner : JPanel {
          * Calculate the play of an element in rectangular shape. Steps are:
          *
          *
-         *  * **Calculate the width of a gap:**
+         * * **Calculate the width of a gap:**
          *
-         *  * Divide the width of one element by 100
-         *  * multiply with the currently set gap-percentage. (Default `25.0f`)
+         * * Divide the width of one element by 100
+         * * multiply with the currently set gap-percentage. (Default `25.0f`)
          *
-         *  * **Calculate the half of the total gap width, across all elements:**
+         * * **Calculate the half of the total gap width, across all elements:**
          *
-         *  * Subtract two from the number of elements in the eye. No gaps before the first, or
+         * * Subtract two from the number of elements in the eye. No gaps before the first, or
          * after the last element, we only care about the ones between.
-         *  * multiply with the width of one gap
-         *  * divide by two
+         * * multiply with the width of one gap
+         * * divide by two
          *
-         *  * **When the current element is the first of all elements in the eye:**
+         * * **When the current element is the first of all elements in the eye:**
          *
-         *  * Multiply the width of an element with the number of elements in the eye. Divide
+         * * Multiply the width of an element with the number of elements in the eye. Divide
          * by two
-         *  * subtract the previously calculated half of the total gap width, across all
+         * * subtract the previously calculated half of the total gap width, across all
          * elements
-         *  * subtract that from the current position in the eye being drawn at
+         * * subtract that from the current position in the eye being drawn at
          *
-         *  * **When the current element is not the first of all elements in the eye:**
+         * * **When the current element is not the first of all elements in the eye:**
          *
-         *  * Multiply the width of an element with the number of elements in the eye. Divide
+         * * Multiply the width of an element with the number of elements in the eye. Divide
          * by two
-         *  * subtract the previously calculated half of the total gap width, across all
+         * * subtract the previously calculated half of the total gap width, across all
          * elements
-         *  * add the width of one element to the gap width, multiply with the number of the
+         * * add the width of one element to the gap width, multiply with the number of the
          * element currently being drawn
-         *  * Subtract that from the current position in the eye being drawn at
+         * * Subtract that from the current position in the eye being drawn at
          *
          *
          *
-         * @param element The number of the element currently being drawn.
          * @return The X-coordinate where the current element starts.
          * @author Griefed
          */
@@ -1686,14 +1666,14 @@ class LarsonScanner : JPanel {
          *
          * Every gradient for these rectangular shapes is drawn from:
          *
-         *  * `X-coordinate:` Acquired from [calcCylonRectStart]
-         *  * `Y-coordinate:` Half of the height of one element.
+         * * `X-coordinate:` Acquired from [calcCylonRectStart]
+         * * `Y-coordinate:` Half of the height of one element.
          *
          * to:
          *
-         *  * `X-coordinate:` Acquired from [calcCylonRectStart] plus the
+         * * `X-coordinate:` Acquired from [calcCylonRectStart] plus the
          * width of one element.
-         *  * `Y-coordinate:` Half of the height of one element.
+         * * `Y-coordinate:` Half of the height of one element.
          *
          * @param element The number of the current element being drawn.
          * @param startX The X-coordinate where the current element starts.
@@ -1720,14 +1700,14 @@ class LarsonScanner : JPanel {
          *
          * Every gradient for these rectangular shapes is drawn from:
          *
-         *  * `X-coordinate:` Acquired from [calcCylonRectStart]
-         *  * `Y-coordinate:` Half of the height of one element.
+         * * `X-coordinate:` Acquired from [calcCylonRectStart]
+         * * `Y-coordinate:` Half of the height of one element.
          *
          * to:
          *
-         *  * `X-coordinate:` Acquired from [calcCylonRectStart] plus the
+         * * `X-coordinate:` Acquired from [calcCylonRectStart] plus the
          * width of one element.
-         *  * `Y-coordinate:` Half of the height of one element.
+         * * `Y-coordinate:` Half of the height of one element.
          *
          * @param element The number of the current element being drawn.
          * @param startX The X-coordinate where the current element starts.
@@ -1862,8 +1842,8 @@ class LarsonScanner : JPanel {
          * **left to right:**
          *
          *
-         *  * Multiply the element currently being drawn with the width of one element
-         *  * add the previous to the current position from which we are drawing
+         * * Multiply the element currently being drawn with the width of one element
+         * * add the previous to the current position from which we are drawing
          *
          *
          * The element width multiplied with the element currently being drawn, then added on top of the
@@ -1874,8 +1854,8 @@ class LarsonScanner : JPanel {
          * **right to left**
          *
          *
-         *  * Multiply the element currently being drawn, plus 1, with the width of one element
-         *  * subtract the previous from the current position from which we are drawing
+         * * Multiply the element currently being drawn, plus 1, with the width of one element
+         * * subtract the previous from the current position from which we are drawing
          *
          *
          * The element width multiplied with the element currently being drawn, plus 1 because we want
@@ -1905,9 +1885,6 @@ class LarsonScanner : JPanel {
          * @param element The number of the element currently being drawn.
          * @param centerX The X-coordinate of the center of the element currently being
          * drawn.
-         * @param color The color of the element currently being drawn.
-         * @return A radial gradient for the currently being drawn,
-         * oval-shaped, element.
          * @author Griefed
          */
         private fun kittRadialGradient(element: Byte, centerX: Double, color: Color): RadialGradientPaint {
@@ -2016,15 +1993,15 @@ class LarsonScanner : JPanel {
          *
          * **left to right**
          *
-         *  * Add the width of an element with the width of the gap between two elements
-         *  * multiply with the number of the current element
-         *  * add the result to the current position along the X-axis.
+         * * Add the width of an element with the width of the gap between two elements
+         * * multiply with the number of the current element
+         * * add the result to the current position along the X-axis.
          *
          * **right to left**
          *
-         *  * Add the width of an element with the width of the gap between two elements
-         *  * multiply with the number of the current element
-         *  * subtract the result from the current position along the X-axis.
+         * * Add the width of an element with the width of the gap between two elements
+         * * multiply with the number of the current element
+         * * subtract the result from the current position along the X-axis.
          *
          * @param element The number of the element currently being drawn.
          * @return The X-coordinate where the current element starts.
@@ -2048,14 +2025,14 @@ class LarsonScanner : JPanel {
          *
          * Every gradient for these rectangular shapes is drawn from:
          *
-         *  * `X-coordinate:` Acquired from [calcKittRectStart]
-         *  * `Y-coordinate:` Half of the height of one element.
+         * * `X-coordinate:` Acquired from [calcKittRectStart]
+         * * `Y-coordinate:` Half of the height of one element.
          *
          * to:
          *
-         *  * `X-coordinate:` Acquired from [calcKittRectStart] plus the
+         * * `X-coordinate:` Acquired from [calcKittRectStart] plus the
          * width of one element.
-         *  * `Y-coordinate:` Half of the height of one element.
+         * * `Y-coordinate:` Half of the height of one element.
          *
          * @param element The number of the current element being drawn.
          * @param startX The X-coordinate where the current element starts.
@@ -2103,27 +2080,27 @@ class LarsonScanner : JPanel {
         /**
          * Update the position at which we are currently drawing the eye.
          *
-         *  * Cylon Style
+         * * Cylon Style
          *
-         *  * If `useDivider` is set, then the position is in-/decremented with the
+         * * If `useDivider` is set, then the position is in-/decremented with the
          * division of the width of the Larson Scanner and the currently set divider.
-         *  * If `useDivider` is not set, then the position is in-/decremented by 1.
-         *  * When the window the Larson Scanner resides in is resized, and the position is out
+         * * If `useDivider` is not set, then the position is in-/decremented by 1.
+         * * When the window the Larson Scanner resides in is resized, and the position is out
          * of the visible area, then the position is forcefully set to either the width of
          * the Larson Scanner, or 0, depending on whether the position is outside the
          * visible field to the left or right.
          *
-         *  * Kitt Style
+         * * Kitt Style
          *
-         *  * If `useDivider` is set, then the position is in-/decremented with the
+         * * If `useDivider` is set, then the position is in-/decremented with the
          * division of the width of the Larson Scanner and the currently set divider.
-         *  * If `useDivider` is not set, then the position is in-/decremented by 1.
-         *  * When the window the Larson Scanner resides in is resized, and the position is out
+         * * If `useDivider` is not set, then the position is in-/decremented by 1.
+         * * When the window the Larson Scanner resides in is resized, and the position is out
          * of the visible area, then the position is forcefully set to either the width plus
          * the max width of the eye of the Larson Scanner, or 0 minus the max width of the
          * eye, depending on whether the position is outside the visible field to the left
          * or right.
-         *  * In Kitt-style animation, the position does **not** scroll from 0 to
+         * * In Kitt-style animation, the position does **not** scroll from 0 to
          * the width of the Larson Scanner and the other way around. Instead, the total
          * scroll width of the Larson Scanner is increased in both directions by the total
          * width of the eye

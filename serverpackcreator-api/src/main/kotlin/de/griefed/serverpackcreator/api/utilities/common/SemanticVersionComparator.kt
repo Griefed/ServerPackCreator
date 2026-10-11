@@ -131,7 +131,6 @@ class SemanticVersionComparator {
         /**
          * Acquire the version numbers of a semantic-formatted version.
          * @author Griefed
-         * @param version The version from which to acquire the version numbers.
          * @return List of version numbers. Major index 0, minor index 1, patch index 2.
          */
         private fun getSemantics(version: String): List<Int> {

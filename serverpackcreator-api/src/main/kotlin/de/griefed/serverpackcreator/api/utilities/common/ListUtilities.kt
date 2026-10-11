@@ -46,7 +46,6 @@ class ListUtilities {
          * Encapsulate every element of the passed String List in quotes. Returns the list as
          * `["element1","element2","element3"` etc.
          *
-         * @param listToEncapsulate The String List of which to encapsulate every element in.
          * @return Returns a concatenated String with all elements of the passed list encapsulated.
          * @author Griefed
          */
@@ -104,8 +103,6 @@ class ListUtilities {
          * Print a list to console in chunks. If a chunk size of 5 is set for a list with 20 entries, the
          * result would be 4 lines printed, with 5 entries each.
          *
-         * @param list         The list to print to the console.
-         * @param chunkSize    The chunk size to print the list with.
          * @param prefix       A prefix to add to each line printed to the console.
          * @param printIndexes Whether to print the indexes of the entries.
          * @author Griefed
@@ -121,8 +118,6 @@ class ListUtilities {
          * Print a list to our log at info level, in chunks. If a chunk size of 5 is set for a list with
          * 20 entries, the result would be 4 lines printed, with 5 entries each.
          *
-         * @param list         The list to print to the log.
-         * @param chunkSize    The chunk size to print the list with.
          * @param prefix       A prefix to add to each line printed to the log.
          * @param printIndexes Whether to print the indexes of the entries.
          * @author Griefed

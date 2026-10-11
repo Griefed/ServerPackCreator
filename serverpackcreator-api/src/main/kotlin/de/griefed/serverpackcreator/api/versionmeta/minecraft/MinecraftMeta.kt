@@ -68,7 +68,6 @@ class MinecraftMeta(
     /**
      * Check whether a [MinecraftClient] is available for the specified Minecraft-version.
      *
-     * @param minecraftVersion The Minecraft-version.
      * @return `true` if a [MinecraftClient] is available.
      * @author Griefed
      */
@@ -113,7 +112,6 @@ class MinecraftMeta(
      * Get all available Minecraft releases, both releases and pre-releases or snapshots, in
      * descending order.
      *
-     * @return All available Minecraft releases in descending order.
      * @author Griefed
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -124,7 +122,6 @@ class MinecraftMeta(
     /**
      * Get the latest Minecraft release as a [MinecraftClient].
      *
-     * @return Latest Minecraft release.
      * @author Griefed
      */
     fun latestRelease(): MinecraftClient {
@@ -134,7 +131,6 @@ class MinecraftMeta(
     /**
      * Get the latest Minecraft snapshot as a [MinecraftClient].
      *
-     * @return Latest Minecraft snapshot.
      * @author Griefed
      */
     fun latestSnapshot(): MinecraftClient {
@@ -144,7 +140,6 @@ class MinecraftMeta(
     /**
      * Check whether a [MinecraftServer] is available for the specified Minecraft-version.
      *
-     * @param minecraftVersion The Minecraft-version.
      * @return `true` if a [MinecraftServer] is available.
      * @author Griefed
      */
@@ -156,7 +151,6 @@ class MinecraftMeta(
      * Get a specific [MinecraftServer] for the specified Minecraft-version, wrapped in an
      * [Optional].
      *
-     * @param minecraftVersion The Minecraft-version.
      * @return Server wrapped in an [Optional]
      * @author Griefed
      */

@@ -99,7 +99,6 @@ class ApiWrapper private constructor(
     /**
      * This instances common JSON utilities used across ServerPackCreator.
      *
-     * @return Common JSON utilities used across ServerPackCreator.
      * @author Griefed
      */
     @get:Synchronized
@@ -108,7 +107,6 @@ class ApiWrapper private constructor(
     /**
      * This instances common web utilities used across ServerPackCreator.
      *
-     * @return Common web utilities used across ServerPackCreator.
      * @author Griefed
      */
     @get:Synchronized
@@ -119,7 +117,6 @@ class ApiWrapper private constructor(
     /**
      * This instances DocumentBuilder for working with XML-data.
      *
-     * @return DocumentBuilder for working with XML.
      * @author Griefed
      */
     @get:Synchronized
@@ -128,7 +125,6 @@ class ApiWrapper private constructor(
     /**
      * This instances common XML utilities used across ServerPackCreator.
      *
-     * @return Common XML utilities used across ServerPackCreator.
      * @author Griefed
      */
     @get:Synchronized
@@ -137,7 +133,6 @@ class ApiWrapper private constructor(
     /**
      * This instances collection of common utilities used across ServerPackCreator.
      *
-     * @return Collection of common utilities used across ServerPackCreator.
      * @author Griefed
      */
     @get:Synchronized
@@ -153,7 +148,6 @@ class ApiWrapper private constructor(
      * This instances version meta used for checking version-correctness of Minecraft and supported
      * modloaders, as well as gathering information about Minecraft servers and modloader installers.
      *
-     * @return Meta used for checking version-correctness of Minecraft and supported modloaders.
      * @throws IOException                  When manifests couldn't be parsed.
      * @throws ParserConfigurationException When xml-manifests couldn't be read.
      * @throws SAXException                 When xml-manifests couldn't be read.
@@ -205,7 +199,6 @@ class ApiWrapper private constructor(
      * access to the available extensions, should any be available in your instance of
      * ServerPackCreator.
      *
-     * @return Plugin manager for ServerPackCreator-plugins, if any are installed.
      * @throws IOException                  When the [VersionMeta] had to be instantiated, but an error occurred during
      * the parsing of a manifest.
      * @throws ParserConfigurationException When the [VersionMeta] had to be instantiated, but an error occurred during
@@ -241,8 +234,6 @@ class ApiWrapper private constructor(
      * This instances modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or
      * Quilt mod.
      *
-     * @return Modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or Quilt
-     * mod.
      * @author Griefed
      */
     @get:Synchronized
@@ -254,8 +245,6 @@ class ApiWrapper private constructor(
      * This instances annotation scanner used to determine the sideness of Forge mods for Minecraft
      * 1.12.2 and older.
      *
-     * @return Annotation scanner used to determine the sideness of Forge mods for Minecraft 1.12.2
-     * and older.
      * @author Griefed
      */
     @get:Synchronized
@@ -266,7 +255,6 @@ class ApiWrapper private constructor(
     /**
      * This instances scanner to determine the sideness of Fabric mods.
      *
-     * @return Scanner to determine the sideness of Fabric mods.
      * @author Griefed
      */
     @get:Synchronized
@@ -277,7 +265,6 @@ class ApiWrapper private constructor(
     /**
      * This instances scanner to determine the sideness of Quilt mods.
      *
-     * @return Scanner to determine the sideness of Quilt mods.
      * @author Griefed
      */
     @get:Synchronized
@@ -289,7 +276,6 @@ class ApiWrapper private constructor(
      * This instances toml parser to read and parse various `.toml`-files during mod-scanning,
      * plugin- and extension config loading and provisioning, serverpackcreator.conf reading and more.
      *
-     * @return Toml parser to read and parse `.toml`-files.
      * @author Griefed
      */
     @get:Synchronized
@@ -299,7 +285,6 @@ class ApiWrapper private constructor(
      * This instances toml scanner to determine the sideness of Forge mods for Minecraft 1.13.x and
      * newer.
      *
-     * @return Scanner to determine the sideness of Forge mods for Minecraft 1.13.x and newer.
      * @author Griefed
      */
     val forgeTomlScanner: ForgeTomlScanner = ForgeTomlScanner(tomlParser)
@@ -392,27 +377,27 @@ class ApiWrapper private constructor(
      * directories and copying required files from the JAR-file to the filesystem. Some of these files
      * can and should be edited by a given user, others however, not.
      *
-     *  * Checks the read- and write-permissions of ServerPackCreators base-directory.
-     *  * Copies the `README.md` from the JAR to the home-directory.
-     *  * Copies the `HELP.md` from the JAR to the home-directory.
-     *  * Copies the `CHANGELOG.md` from the JAR to the home-directory.
-     *  * Copies the `LICENSE` from the JAR to the home-directory.
-     *  * Copies the fallback version-manifests to the manifests.
-     *  * Creates default directories:
+     * * Checks the read- and write-permissions of ServerPackCreators base-directory.
+     * * Copies the `README.md` from the JAR to the home-directory.
+     * * Copies the `HELP.md` from the JAR to the home-directory.
+     * * Copies the `CHANGELOG.md` from the JAR to the home-directory.
+     * * Copies the `LICENSE` from the JAR to the home-directory.
+     * * Copies the fallback version-manifests to the manifests.
+     * * Creates default directories:
      *
-     *  * server_files
-     *  * work
-     *  * temp
-     *  * work/modpacks
-     *  * server-packs (depending on the users settings, this may be anywhere on the users system)
-     *  * plugins
-     *  * plugins/config
+     * * server_files
+     * * work
+     * * temp
+     * * work/modpacks
+     * * server-packs (depending on the users settings, this may be anywhere on the users system)
+     * * plugins
+     * * plugins/config
      *
-     *  * Example `disabled.txt`-file in plugins/disabled.txt.
-     *  * Creates the default `server.properties` if it doesn't exist.
-     *  * Creates the default `server-icon.png` if it doesn't exist.
-     *  * Creates the default PowerShell and Shell script templates or overwrites them if they already exist.
-     *  * Determines whether this instance of ServerPackCreator was updated from a previous version.
+     * * Example `disabled.txt`-file in plugins/disabled.txt.
+     * * Creates the default `server.properties` if it doesn't exist.
+     * * Creates the default `server-icon.png` if it doesn't exist.
+     * * Creates the default PowerShell and Shell script templates or overwrites them if they already exist.
+     * * Determines whether this instance of ServerPackCreator was updated from a previous version.
      *
      * If an update was detected, and migrations are available for any of the steps of the update, they are executed,
      * thus ensuring users are safe to update their instances. Writes ServerPackCreator and system information to the

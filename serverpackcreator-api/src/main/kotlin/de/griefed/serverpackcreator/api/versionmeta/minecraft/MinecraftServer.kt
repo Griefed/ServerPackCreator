@@ -36,7 +36,6 @@ import java.util.*
  * Representation of a Minecraft server, containing information about its Minecraft-version,
  * release-type, download-url and the java-version.
  *
- * @param minecraftVersion The Minecraft version of this server.
  * @param releaseType      The release-type of this server. Either [Type.RELEASE] or [Type.SNAPSHOT].
  * @param serverUrl        The URL to the download of these servers JAR-file.
  * @param utilities        Commonly used utilities across ServerPackCreator.
@@ -72,7 +71,6 @@ class MinecraftServer internal constructor(
     /**
      * Get the [URL] to the download of this Minecraft-servers JAR-file.
      *
-     * @return URL.
      * @author Griefed
      */
     fun url() =
@@ -131,7 +129,6 @@ class MinecraftServer internal constructor(
     /**
      * Get the Java-version of this Minecraft-server.
      *
-     * @return Java version.
      * @author Griefed
      */
     fun javaVersion() =

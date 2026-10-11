@@ -95,7 +95,6 @@ internal class FabricLoader(
     /**
      * Get the latest Fabric loader version.
      *
-     * @return The latest Fabric loader version.
      * @author Griefed
      */
     fun latestLoaderVersion() = latest!!
@@ -103,7 +102,6 @@ internal class FabricLoader(
     /**
      * Get the release Fabric loader version.
      *
-     * @return The release Fabric loader version.
      * @author Griefed
      */
     fun releaseLoaderVersion() = release!!

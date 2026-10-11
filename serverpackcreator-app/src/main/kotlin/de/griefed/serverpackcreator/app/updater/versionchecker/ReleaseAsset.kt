@@ -29,14 +29,11 @@ import java.net.URL
  * A release asset is usually some form of compiled program or library.
  * Create a new release asset from an asset name and the [URL] to said asset download.
  * @author Griefed
- * @param assetName Asset name.
- * @param assetUrl Asset download URL.
 */
 class ReleaseAsset(private val assetName: String, private val assetUrl: URL) {
     /**
      * Get the name of this asset. Usually a filename.
      * @author Griefed
-     * @return The name of this asset. Usually a filename.
      */
     fun name(): String {
         return assetName

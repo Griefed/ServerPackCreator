@@ -75,7 +75,6 @@ class JsonUtilities(
      *
      * @param jsonNode   The JsonNode from which to acquire the nested element.
      * @param childNodes The nested elements, in order.
-     * @return The nested element from the JsonNode.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -96,7 +95,6 @@ class JsonUtilities(
      * case-insensitive.
      *
      * @param jsonNode         The JsonNode from which to acquire the text.
-     * @param equalsIgnoreCase The text to check with whether it is equal, case-insensitive.
      * @param childNodes       The nested nodes in the JsonNode to acquire the text from, in order.
      * @return `true` if the texts are equal, case-insensitive.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
@@ -169,7 +167,6 @@ class JsonUtilities(
      * Check whether a child node contains the specified text.
      *
      * @param jsonNode   The JsonNode from which to acquire the text for checks.
-     * @param contains   The text to check with whether the node contains it.
      * @param childNodes The child node(s) from which to acquire the text for contain-checks from, in
      * order.
      * @return `true` if the child node contains the specified text.
@@ -184,7 +181,6 @@ class JsonUtilities(
      * Get a string iterator for the field names of the last specified child node in the specified
      * JsonNode.
      *
-     * @param jsonNode   The JsonNode from which to get the string iterator.
      * @param childNodes The nested nodes from which to get the iterator, in order.
      * @return A string iterator for the field names in the last requested child node in the provided
      * JsonNode.

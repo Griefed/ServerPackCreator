@@ -438,9 +438,6 @@ class ServerPackProvisioner(
      * Check whether the installer for the given combination of Minecraft version, modloader and
      * modloader version is available/reachable.
      *
-     * @param mcVersion        The Minecraft version.
-     * @param modloader        The modloader.
-     * @param modloaderVersion The modloader version.
      * @return `true` if the installer can be downloaded.
      * @author Griefed
      */

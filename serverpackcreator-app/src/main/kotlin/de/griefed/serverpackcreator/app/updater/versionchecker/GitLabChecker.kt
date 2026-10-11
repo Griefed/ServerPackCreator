@@ -81,7 +81,6 @@ class GitLabChecker : VersionChecker {
      * Refresh this GitLab-instance. Refreshes repository information and the list of all available versions.
      * @author Griefed
      * @throws IOException Exception thrown if [.setRepository] encounters an error.
-     * @return This GitLab-instance.
      */
     @Throws(IOException::class)
     override fun refresh(): GitLabChecker {
@@ -235,8 +234,6 @@ class GitLabChecker : VersionChecker {
     /**
      * Get the URL for the given release version.
      * @author Griefed
-     * @param version The version for which to get the URL to.
-     * @return Returns the URL to the given release version.
      */
     public override fun getDownloadUrl(version: String): String {
         if (repository != null) {

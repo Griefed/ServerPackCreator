@@ -55,7 +55,6 @@ abstract class HasteBinMenuItem(
      * Display the given URL in a text pane.
      *
      * @param urlToHasteBin   The URL, as a String, to display.
-     * @param displayTextPane The text pane to display the URL in.
      * @author Griefed
      */
     fun displayUploadUrl(

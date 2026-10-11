@@ -34,7 +34,6 @@ import java.util.Collections
 /**
  * Information about the Quilt installer.
  *
- * @param manifest  Quilt installer information.
  * @param utilities Commonly used utilities across ServerPackCreator.
  *
  * @author Griefed
@@ -122,7 +121,6 @@ internal class QuiltInstaller(
     /**
      * Acquire the URL for the given Quilt version.
      *
-     * @param quiltInstallerVersion Quilt version.
      * @return URL to the installer for the given Quilt version.
      * @throws MalformedURLException if the URL could not be formed.
      * @author Griefed

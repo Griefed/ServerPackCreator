@@ -36,8 +36,6 @@ abstract class JsonDescriptorScanner : DescriptorScanner() {
     /**
      * Acquire a JsonNode from the specified entry in the specified jar.
      *
-     * @param file         The jar from which to get the JsonNode.
-     * @param entryInJar   The entry in the jar from which to get the JsonNode.
      * @param objectMapper The ObjectMapper with which to parse the JSON to a JsonNode.
      * @return A JsonNode containing all information from the requested entry in the specified jar.
      * @throws IOException           if the file could not be opened or read from, or if the JSON

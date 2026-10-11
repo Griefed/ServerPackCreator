@@ -132,7 +132,6 @@ class ModListCompiler(
      * clientside-only mods to exclude, Minecraft version used by the
      * modpack and server pack and the modloader used by the modpack and
      * server pack.
-     * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
     @Suppress("unused")
@@ -155,7 +154,6 @@ class ModListCompiler(
      * @param minecraftVersion The Minecraft version the modpack uses. When the modloader is Forge, this determines
      * whether Annotations or Tomls are scanned.
      * @param modloader The modloader the modpack uses.
-     * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
     fun compileModList(

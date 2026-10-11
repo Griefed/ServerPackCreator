@@ -335,8 +335,6 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * file, a singular [ServerPackFile] is returned. If the source is a directory, then all
      * files in said directory are returned.
      *
-     * @param source source-file/directory
-     * @param destination destination-file/directory
      * @param modpackDir  The modpack-directory.
      * @param serverPackDestination The destination, normally the server pack-directory.
      * @return List of [ServerPackFile].
@@ -383,7 +381,6 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * [ServerPackFile].
      *
      * @param clientDir   Target directory in the server pack. Usually the name of the world.
-     * @param directory   The save-directory.
      * @param destination The destination of the server pack.
      * @return List of [ServerPackFile] which will be included in the server pack.
      * @author Griefed
@@ -418,7 +415,6 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * Recursively acquire all files and directories inside the given directory as a list of
      * [ServerPackFile].
      *
-     * @param source      The source-directory.
      * @param destination The server pack-directory.
      * @return List of files and folders of the server pack.
      * @author Griefed
@@ -458,8 +454,6 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      *
      * @param modpackDir     The directory where the modpack resides in. Used to filter out any
      * unwanted directories using the property `de.griefed.serverpackcreator.configuration.directories.shouldexclude`.
-     * @param fileToCheckFor The file or directory to check whether it should be excluded from the
-     * server pack.
      * @param exclusions     Files or directories determined by ServerPackCreator to be excluded from
      * the server pack
      * @return `true` if the file or directory was determined to be excluded from the server

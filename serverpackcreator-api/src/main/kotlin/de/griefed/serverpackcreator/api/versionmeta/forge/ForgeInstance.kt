@@ -29,8 +29,6 @@ import java.util.*
  * An instance of a complete Forge combination, containing a Minecraft version, related Forge
  * version and the URL to the server installer.
  *
- * @param minecraftVersion Minecraft version.
- * @param forgeVersion     Forge version.
  * @param minecraftMeta    The corresponding Minecraft client for this Forge version.
  * @throws [java.net.MalformedURLException] if the URL to the download of the Forge server installer could not be created.
  *

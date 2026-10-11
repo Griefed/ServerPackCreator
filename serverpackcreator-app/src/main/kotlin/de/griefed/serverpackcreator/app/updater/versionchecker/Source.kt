@@ -35,7 +35,6 @@ class Source
  * Create a new source from an [ArchiveType] and the download-[URL] to this archive.
  * @author Griefed
  * @param archiveType Archive type of this source.
- * @param archiveUrl Download url for this source.
  */(private val archiveType: ArchiveType?, private val archiveUrl: URL) {
     /**
      * Get the [ArchiveType] of this source.

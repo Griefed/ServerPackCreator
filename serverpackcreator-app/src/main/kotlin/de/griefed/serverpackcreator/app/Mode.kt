@@ -144,7 +144,6 @@ enum class Mode(private val argument: String) {
     /**
      * Textual representation of this mode or argument.
      *
-     * @return Textual representation of this mode.
      * @author Griefed
      */
     fun argument(): String {

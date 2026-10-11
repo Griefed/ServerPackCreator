@@ -28,7 +28,6 @@ class FabricLibrary internal constructor() {
     /**
      * The name of this library.
      *
-     * @return Library-name.
      * @author Griefed
      */
     val name: String? = null

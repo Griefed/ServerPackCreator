@@ -38,7 +38,6 @@ class FabricDetails internal constructor() {
     /**
      * The Minecraft version from which this Fabric loader version inherits from.
      *
-     * @return The Minecraft version of this Fabric loader.
      * @author Griefed
      */
     val inheritsFrom: String? = null
@@ -63,7 +62,6 @@ class FabricDetails internal constructor() {
     /**
      * The release type of this Fabric loader.
      *
-     * @return Release type of this Fabric loader.
      * @author Griefed
      */
     val type: String? = null
@@ -71,7 +69,6 @@ class FabricDetails internal constructor() {
     /**
      * The Main class of this Fabric loader.
      *
-     * @return Main class.
      * @author Griefed
      */
     val mainClass: String? = null

@@ -76,7 +76,6 @@ class JarUtilities {
          *
          * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
          * @param identifierClass The class of the JAR from which to get the resource.
-         * @param directory       The directory to copy the file to.
          * @return `true` if the file was created, `false` otherwise.
          * @author Griefed
          */
@@ -116,7 +115,6 @@ class JarUtilities {
          * to the outside of the JAR-file as `log4j2.xml`
          *
          * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
-         * @param destinationFile The file to which to copy to.
          * @param identifierClass The class of the JAR from which to get the resource.
          * @param replaceIfExists Whether to replace the file, if it already exists.
          * @author Griefed
@@ -143,7 +141,6 @@ class JarUtilities {
          *
          * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
          * @param identifierClass The class of the JAR from which to get the resource.
-         * @param destinationFile The file to which to copy to.
          * @return `true` if the file was created, `false` otherwise.
          * @author Griefed
          */

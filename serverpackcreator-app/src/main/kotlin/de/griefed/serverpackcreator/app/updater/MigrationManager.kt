@@ -134,7 +134,6 @@ class MigrationManager(
     /**
      * Check if the first version is older than the second one.
      *
-     * @param old          The old version used.
      * @param checkAgainst The current version being used.
      * @return `true` if the current version is older than the previously used version.
      * @author Griefed
@@ -149,7 +148,6 @@ class MigrationManager(
      * Acquire the list of migration-methods to execute based on the current version being used. All
      * methods which match a version newer than the passed one are executed.
      *
-     * @param oldVersion The current version being used.
      * @return Methods to execute to ensure proper migration between version updates.
      * @author Griefed
      */
@@ -180,7 +178,6 @@ class MigrationManager(
      * Convert a text-based version to a semantic representation, usable in version comparisons.
      *
      * @param textVersion The text-based version to convert to the semantic format.
-     * @return Semantic representation of the text-based version.
      * @author Griefed
      */
     private fun toSemantic(textVersion: String): String {
@@ -259,7 +256,6 @@ class MigrationManager(
     /**
      * Check if the first version is older than or the same as the second one.
      *
-     * @param old          The old version used.
      * @param checkAgainst The current version being used.
      * @return `true` if the current version is older than or the same as the previously used
      * version.
@@ -337,7 +333,6 @@ class MigrationManager(
     /**
      * Convert a semantic version to text-based representation.
      *
-     * @param version The version to convert.
      * @return The semantic version converted to text-based representation.
      * @author Griefed
      */
