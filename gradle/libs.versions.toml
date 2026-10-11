@@ -72,7 +72,7 @@ flatlafFontsInter = "4.1"
 flatlafFontsRoboto = "2.137"
 flatlafFontsRobotoMono = "3.000"
 svgSalamander = "1.1.4"
-miglayout = "11.4.3"
+miglayout = "11.5.1"
 balloontip = "1.2.4.1"
 tipoftheday = "0.6.0"
 # https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring — runs a REAL mongod in-process for
