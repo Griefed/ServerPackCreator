@@ -193,9 +193,19 @@ evidence consulted occasionally, not context every session needs.
 
 ### Module boundaries (architecture — SOLID / MVC)
 
-- `serverpackcreator-api` is the domain core. It must **not** gain compile dependencies on Swing,
-  Spring web, or the web frontend. Dependencies point inward toward `-api`, never outward; the app
-  and frontend are adapters around it. Flag any inward-pointing violation.
+- `serverpackcreator-api` is the domain core. It must **not** gain compile dependencies on Spring web
+  or the web frontend. Dependencies point inward toward `-api`, never outward; the app and frontend are
+  adapters around it. Flag any inward-pointing violation.
+  - **Swing has one carve-out, and it is the `plugins.swinggui` package plus the `ApiPlugins` methods
+    that serve it** — `TabExtension`, `ExtensionTab`, `ConfigPanelExtension`, `ExtensionConfigPanel`,
+    and `ApiPlugins.addTabExtensionTabs`/`getConfigPanels`. Same reason `java.awt` is carved out in
+    `serverpackcreator-api/CLAUDE.md`: **only `-api` is published**, so a GUI extension point has
+    nowhere else to live, and inverting it behind an app-side adapter would remove the capability from
+    plugins entirely. Nothing else in `-api` may import `javax.swing`; those five files are the whole
+    list, and it is re-derivable with
+    `grep -rl "javax\.swing" serverpackcreator-api/src/main/kotlin`.
+    Stated here because the rule above and the code have disagreed in writing since the extension
+    points were added, which costs every audit the same rediscovery.
 - Domain logic in `-api` must be unit-testable **without** booting a Spring context. A class that
   needs the Spring container to be tested is a design smell — flag it.
 - (Plugin-API stability is governed by the **API compatibility policy** above — don't duplicate it.)

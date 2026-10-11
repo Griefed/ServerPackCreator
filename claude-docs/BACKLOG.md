@@ -16,6 +16,36 @@ per-line axis made the shim cost a whole Minecraft line and the placeholder was 
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
 
+## 2026-10-11 — from the documentation and call-depth pass
+
+### B46 — `checkConfiguration` downloads a CurseForge thumbnail
+
+`ConfigurationHandler.checkConfiguration` reaches `WebUtilities.downloadFile` at depth 13:
+
+```
+checkConfiguration -> isZip -> checkManifests -> ModpackManifestParser.checkManifests
+  -> updateConfigModelFromMinecraftInstance -> getAndSetIcon -> WebUtilities.downloadFile
+```
+
+`getAndSetIcon` fetches the pack's icon from a third-party host. A call whose whole contract is *check
+this configuration* therefore performs network I/O against CurseForge, and an embedder calling the
+published `checkConfiguration` has no way to know that from its signature or its documentation.
+
+**It is not a hang** — the call is bounded by `NetworkConfig`'s timeouts, and the manifest landmine in
+`serverpackcreator-api/CLAUDE.md` covers the rest of that path — so this is a responsibility leak
+rather than a defect. It is also on the GUI's config-check timer, which is why
+`ConfigEditorViewModel` memoises around it.
+
+**Why it waited:** splitting the fetch out of validation is a behaviour change on published API —
+`checkConfiguration` currently *populates* `packConfig` as a side effect, and the icon is part of what
+it populates, so a caller relying on the icon being set after a check would stop getting it. That
+belongs in a major, with a row in `API-BEHAVIOUR-CHANGES.md`.
+
+**To pick it up cold:** the decision is whether `getAndSetIcon` moves out of `checkManifests` into an
+explicit "enrich from manifest" step a caller opts into, or whether validation keeps it and the
+documentation simply says so. Found by `misc/call-depth.py`; `claude-docs/CALL-DEPTH.md` has the full
+chain and the measurement.
+
 ## 2026-10-03 — from the AppImage portability pass
 
 ### B45 — bundle glibc so the AppImage runs on musl and non-FHS systems
