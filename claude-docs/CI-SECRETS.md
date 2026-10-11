@@ -41,10 +41,10 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | Secret | What it is / where to get one | Consumed by |
 |---|---|---|
 | `FJ_ACTOR` | Forgejo username (`Griefed`) | release-generate, release-build, devbuild, update-readme |
-| `FJ_TOKEN` | Forgejo access token — Settings → Applications → Access Tokens. Scopes: **`write:package`** for the maven registry, **`write:repository`** to create releases, upload assets and push the `RELEASE:` commit and tags | the same four |
+| `FJ_TOKEN` | Forgejo access token — Settings → Applications → Access Tokens. Scopes: **`write:package`** for the maven registry, **`write:repository`** to create releases, upload assets, push the `RELEASE:` commit and tags, and trigger the outward push-mirror sync. That last one additionally needs the token's owner to hold **repo admin**, not merely write (`push_mirrors-sync` is behind `reqAdmin()`) — Griefed owns the repository, so this is satisfied, but a token minted for a collaborator would `403` there while succeeding everywhere else | the same four |
 | `GH_ACTOR` | GitHub username; used as the GitHub Packages maven username | release-build |
 | `GH_TOKEN` | GitHub **classic** PAT. Scopes: `write:packages` (covers both `maven.pkg.github.com` and the `ghcr.io` login), `repo` (mirror the release, delete the stale `continuous` release) and **`read:user`** (the GraphQL `sponsorshipsAsMaintainer` field, which `repo` does not reach — add `read:org` too if the sponsored account ever becomes an organization). Fine-grained tokens do not cover ghcr/maven packages cleanly, and cannot read sponsorships at all — use a classic one | release-build, devbuild, docs, update-readme |
-| `GITLABCOM_TOKEN` | gitlab.com PAT, scope **`api`** — the `Private-Token` maven upload to project `32677538`. It also covered the release API until the outward mirror to gitlab.com was dropped on 2026-08-23 (that repository stopped receiving commits in April 2024); the package registry does not depend on git refs, so this upload is unaffected | release-build |
+| `GITLABCOM_TOKEN` | gitlab.com PAT, scope **`api`** — the `Private-Token` maven upload to project `32677538`. It also covered the release API until the outward *release* mirror to gitlab.com was dropped on 2026-08-23; the package registry does not depend on git refs, so this upload is unaffected. The git push-mirror there is live again and is not frozen at April 2024 as this row used to say — it carries tags through `9.1.0`, while its branches lag by three releases. `.claude/rules/ci-workflows.md` has the measurement; `release-build.yml` prints that mirror's `last_error` on every release | release-build |
 | `SIGNING_KEY` | ASCII-armoured PGP **private** key: `gpg --armor --export-secret-keys <KEYID>`, the entire block including BEGIN/END lines and newlines | release-build |
 | `SIGNING_PASSWORD` | that key's passphrase | release-build |
 | `SONATYPE_USERNAME` / `SONATYPE_PASSWORD` | Central Portal **user token** pair — central.sonatype.com → View Account → Generate User Token. Not your portal login | release-build |
@@ -89,7 +89,7 @@ rather than the release:
 | `maven` | `SIGNING_KEY`, `SIGNING_PASSWORD`, and then whichever registries you want: `FJ_*`, `GH_*`, `GITLABCOM_TOKEN`, `SONATYPE_*` |
 | `docker` | `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO`, `GH_TOKEN` (ghcr login) |
 | `virustotal` | `VT_API_KEY`, `FJ_TOKEN` (appends the scan links to the release) |
-| `mirror` | `GH_TOKEN`, `FJ_TOKEN` (reads the release notes back off Forgejo). **No `GITLABCOM_TOKEN`** since 2026-08-23 — GitHub is the only outward mirror |
+| `mirror` | `GH_TOKEN`, `FJ_TOKEN` (triggers the push-mirror sync, then reads the release notes back off Forgejo). **No `GITLABCOM_TOKEN`** since 2026-08-23 — GitHub is the only forge that gets a mirrored *release*, though the sync pushes refs to every mirror the repository has |
 | `news` | `WEBHOOK_URL` only, and optionally — a release with no Discord webhook configured announces nothing and stays green. Announces the **Forgejo** release, so it does not wait for `mirror` |
 
 `FJ_TOKEN` is therefore the one secret four separate jobs depend on — it is the first thing to check

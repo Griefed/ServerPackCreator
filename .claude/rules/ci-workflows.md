@@ -454,11 +454,67 @@ mirror is current: its GitHub release carries `target_commitish` `f7ebba4e`, whe
 `main`.
 
 Note what this costs in reading time: GitHub's 422 is about `tag_name`, so it sends you to the tag, the
-changelog and the release payload — three places that were all fine. `release-build.yml` now probes
-`GET /commits/${{ github.sha }}` before the POST and polls for five minutes, because a push-mirror's
-`Sync when new commits are pushed` is an **opt-in** checkbox and without it the mirror is periodic on an
-interval that [defaults to 8h](https://forgejo.org/docs/v15.0/user/repo-mirror/); it then fails naming the
-mirror, and treats `401`/`403` as the credential rather than waiting five minutes to blame the wrong thing.
+changelog and the release payload — three places that were all fine. `release-build.yml` probes
+`GET /commits/${{ github.sha }}` before the POST, and treats `401`/`403` as the credential rather than
+waiting out the poll to blame the wrong thing.
+
+### Waiting for a push-mirror was the wrong half of the fix — trigger it
+
+**The probe named the cause correctly and then failed the release anyway, five times.** `Sync when new
+commits are pushed` is an **opt-in** checkbox on a Forgejo push-mirror, and without it the mirror is
+periodic on an interval that
+[defaults to 8h](https://forgejo.org/docs/v15.0/user/repo-mirror/) — so the original five-minute poll was
+waiting on something that, in the bad case, was up to ninety-six times longer than its own patience. The
+run list measures it: of the 12 release builds from `9.0.0-alpha.6` to `9.2.1`, the `mirror` job reached
+its steps 8 times and **failed 6**, and **5 of those 6 are this identical stall** — alpha.7 (run `311`),
+alpha.9 (`755`), beta.3 (`901`), 9.0.0 (`1063`) and 9.2.1 (`1411`), each 20/20 attempts of
+`422 No commit found for SHA`. The sixth is alpha.6's deleted GitLab step, above. The proof that only
+timing was ever missing: GitHub holds the `9.2.0` tag today, delivered by the mirror's own interval hours
+after the workflow had already given up on it.
+
+**The fix is `POST /repos/{owner}/{repo}/push_mirrors-sync`, and it is synchronous.** `repoPushMirrorSync`
+(`routers/api/v1/repo/mirror.go`) loops the repository's push mirrors calling `SyncPushMirror` **inline**
+rather than putting it on the mirror queue, and that runs
+`git.Push(…, Force: true, Mirror: true)` — a `git push --mirror --force`. So a `200` means every mirror
+holds the release commit *and* its tag by the time the call returns, which also demotes `target_commitish`
+in the POST below from load-bearing to belt-and-braces. One call covers every mirror the repository has,
+so **a forge added later needs no workflow change** — that is the whole reason to prefer it over probing
+each target.
+
+Three constraints that decide how the step is written:
+
+- **It needs repo ADMIN, not write.** The route is `reqAdmin(), reqToken()`. `FJ_TOKEN` carries
+  `write:repository` and its owner owns the repo, so nothing new is needed — but a token minted for a
+  non-admin would get a `403` here while succeeding at every other `FJ_TOKEN` call in the pipeline.
+- **One dead mirror can mask a healthy one.** The handler `return`s a 500 on the **first** mirror whose
+  push fails and stops iterating, and the API offers no per-mirror sync (`GET`/`DELETE /push_mirrors/{name}`
+  only) to route around it. So the step is best-effort and the **per-forge probe stays the verdict**; and
+  the operational rule for a second mirror is that it gets repaired or removed, never left configured
+  and broken, because a broken one taxes every release.
+- **`last_error` is the thing to print.** `GET /push_mirrors` returns `remote_name`, `remote_address`,
+  `sync_on_commit`, `interval`, `last_update` and `last_error` per mirror, and `last_error` is the exact
+  text the web UI shows under Settings → Mirror Settings — which is what the old failure message sent an
+  operator to go and read by hand. `remote_address` is stored credential-stripped (`util.SanitizeURL` at
+  creation), so it is safe in a job log.
+
+The poll that follows is now sized for GitHub indexing a push it has already received, not for a mirror
+that may not have run: 8 attempts at 15 s. **A poll is only honest about what it is waiting for** — the
+old 20×15 s looked like diligence and was actually a coin-flip on an 8-hour timer.
+
+**Current outward state, measured 2026-10-11 by `git ls-remote` against all three forges** (re-measure
+rather than trusting this; it is a snapshot):
+
+| ref | Forgejo | GitHub | gitlab.com |
+|---|---|---|---|
+| `main` | `894c574aa` — 9.2.1 | `894c574aa` | `c3f1ef3fd` — 9.0.0 |
+| `develop` | `d94ec0257` | `d94ec0257` | `8524c009c` — 2024-03-26 |
+| tag `9.2.1` | yes | yes | no |
+
+**So the gitlab.com entry above is stale in one direction and still right in the other.** That repository
+is no longer frozen at April 2024 — it now carries tags through `9.1.0` (2026-10-02), so refs do reach it
+— but its *branches* lag its own tags by three releases, which is a mirror that partially fails rather
+than one that is stopped. Do not invent the mechanism for that: `GET /push_mirrors` prints `last_error`
+for it, the job now does so on every release, and that is the thing to read before changing anything.
 
 **Nothing else in the release should be gated on the mirror.** The `news` job — the Discord
 announcement recreated from `main`'s `github_release.yml`/`github-prerelease.yml` — needs
@@ -471,11 +527,15 @@ silenced the announcement of two perfectly good releases.
 that reject a re-published version. Only `release` is idempotent by design. Forgejo 16.0.3 can re-run a
 single job, so repair the mirror, then re-run `mirror` alone.
 
-Two things generalise beyond GitLab:
+Three things generalise beyond GitLab:
 
 - **A mirror step's precondition is the mirror, not the API call.** Before adding or restoring one, check the
   target actually has the ref: `curl -s https://<forge>/api/.../repository/commits?per_page=1`. Anonymous is
   enough for a public repo, and it takes seconds.
+- **Waiting on an asynchronous dependency is a worse answer than triggering it, whenever a trigger
+  exists.** The probe above was correct, well-documented and diagnosed its own failure precisely — and it
+  still failed 5 releases, because a poll can only ever be a bet on someone else's schedule. Ask what
+  *starts* the thing being waited for before choosing how long to wait for it.
 - **`curl -sf` in CI is how a failure becomes unreadable.** `-f` sets exit 22 and `-s` throws away the body —
   which is the only place these APIs say what is wrong. The failing run said nothing else whatsoever.
   Every call whose failure is not deliberately tolerated now captures the status with
