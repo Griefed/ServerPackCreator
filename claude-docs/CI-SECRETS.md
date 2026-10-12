@@ -74,7 +74,7 @@ Useful when you want a partial setup working rather than all of it at once.
 | `release-build.yml` | everything else | see below — several jobs fail independently |
 | `devbuild.yml` | `FJ_*`, `GH_TOKEN`, `INSTALL4J_LICENSE`, `SPCUPLOAD_*` | no nightly `continuous` build |
 | `docs.yml` | `GH_TOKEN`, `DOCKERHUB_USER`, `DOCKERHUB_TOKEN` | no help image |
-| `docker-test.yml` | **nothing required**; `GH_TOKEN` + `DOCKERHUB_USER` optional | without them the ghcr base image is pulled anonymously, and ghcr rate-limits that per source address — `429 Too Many Requests` fails the build, as it did on runs 676 and 680 |
+| `test.yml` (its `docker` job) | **nothing required**; `GH_TOKEN` + `DOCKERHUB_USER` optional | without them the ghcr base image is pulled anonymously, and ghcr rate-limits that per source address — `429 Too Many Requests` fails the build, as it did on runs 676 and 680 |
 | `update-readme.yml` | `FJ_*`, `GH_TOKEN`, `GIT_USER`, `GIT_MAIL` | sponsors/contributors stop refreshing. A `GH_TOKEN` missing `read:user` fails the *sponsors* half only, while contributors keep updating — the preflight step is what makes that visible |
 | `grinder-container-it.yml` | **nothing** | — |
 

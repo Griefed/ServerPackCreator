@@ -236,7 +236,7 @@ covered.
 
 ### 3a. The workflow half, which is already in place
 
-`docker-test.yml` and `release-build.yml` probe each cache with `GET /v2/` and emit a
+`test.yml` and `release-build.yml` probe each cache with `GET /v2/` and emit a
 `buildkitd.toml` containing stanzas only for the ones that answered, then pass it as
 `buildkitd-config`. Three things about it are deliberate:
 

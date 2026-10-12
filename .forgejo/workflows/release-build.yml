@@ -265,7 +265,7 @@ jobs:
           fi
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
-      # Retried for the same reason `docker-test.yml` retries: ghcr answers a pull with
+      # Retried for the same reason `test.yml`'s image check retries: ghcr answers a pull with
       # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips
       # its per-source burst limiter, and buildkit will not wait. The limiter is keyed on the host, so
       # being logged in does not lift it. Here a single such minute would cost the release its images and

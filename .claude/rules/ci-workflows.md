@@ -139,8 +139,9 @@ its blocks, because GitHub honours them.
 here.** `services/repository/push.go` takes the `IsNewRef()` branch and calls `notify_service.CreateRef`
 **and then** `notify_service.PushCommits`, so both events are dispatched; worse, it fills the push payload
 with `newCommit.CommitsBeforeLimit(10)`, advertising the branch's last ten commits though not one of them
-is new. Creating `alpha` or `beta` therefore started five workflows — `test`, `qodana`, `docker-test`,
-`docs` and `release-generate` — against a branch that is byte-for-byte `main`. The last of those is the
+is new. Creating `alpha` or `beta` therefore started four workflows — `test`, `qodana`, `docs` and
+`release-generate` — against a branch that is byte-for-byte `main`. It was five until `docker-test`
+merged into `test`. The last of those is the
 one that matters: **semantic-release can mint a tag**, and it was running on a branch nobody had pushed
 work to yet.
 
@@ -350,6 +351,25 @@ identifier the route wants — the action logged `.../actions/runs/936/artifacts
 and it was correct. **When a forge hands you two identifiers for one object, probe the route rather
 than reasoning about which one is "the" run number.** `curl -o /dev/null -w '%{http_code}'` answers it
 anonymously in a second.
+
+## One workflow per area, and the one that cannot join them
+
+**`docker-test.yml` merged into `test.yml` as its `docker` job.** The two had identical triggers
+(`push`, `workflow_dispatch`) and identical concurrency semantics, so they were one workflow wearing
+two names — and "did the tests pass?" took two places to answer.
+
+**`grinder-container-it.yml` stays separate, and the reason is structural rather than preference.**
+Its concurrency group has **no ref in it** and `cancel-in-progress: false`, so one run happens at a
+time across the whole repository; `test.yml`'s is per-ref and cancellable. One workflow can hold only
+one of those, because **Forgejo has no job-level `concurrency`** — read from its source, not assumed:
+`ConfigureActionRunConcurrency` evaluates `workflow.RawConcurrency` onto the `ActionRun`, and
+`models/actions/run_job.go` mentions concurrency nowhere at all.
+
+So merging it costs one of two things, and both are already on the record above: dropping the
+repo-wide lock re-opens the interference that failed runs 947, 954 and 956 on a *different* test each
+time, and taking the lock for all of `test.yml` serialises every push — which the *Pacing* entry
+below already states was considered and rejected. Leave it where it is until Forgejo grows job-level
+concurrency.
 
 ## `concurrency` is per-ref here, and two refs build the same commit on every push
 
@@ -720,13 +740,13 @@ copy of it.** `nick-fields/retry` and its kin run shell commands, not JavaScript
 the runner's own engine rather than assumed: `pkg/runner/step.go` in `code.forgejo.org/forgejo/act` sets
 `stepResult.Outcome` to `failure` while `isContinueOnError` turns `Conclusion` back to `success`, and
 `StepResult` (`pkg/model/step_result.go`) marshals `outcome` as exactly the string an
-`if: steps.<id>.outcome == 'failure'` compares against. Both `docker-test.yml` and `release-build.yml`
-now do this; the second is the one that matters, because a 429 there costs the release its images and
+`if: steps.<id>.outcome == 'failure'` compares against. Both `test.yml`'s `docker` job and
+`release-build.yml` now do this; the second is the one that matters, because a 429 there costs the release its images and
 takes the `mirror` job (`needs: docker`) down with it.
 
 **One retry, not a loop.** The limiter resets in under a millisecond, so a host still limiting a minute
-later is a condition worth failing loudly on rather than grinding against. In `docker-test.yml` the retry
-is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
+later is a condition worth failing loudly on rather than grinding against. In `test.yml`'s `docker` job
+the retry is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
 In `release-build.yml` it is not: `no-cache: true` means attempt two rebuilds the whole Gradle stage,
 about fifteen minutes. Pushing the same tags twice is idempotent, so that is the price of the insurance.
 
@@ -740,7 +760,7 @@ not, and falls back to upstream — verified from `util/resolver/resolver.go`, w
 reference does not state), and the bridge-gateway/`INPUT policy DROP` trap that makes a mirror look like
 it simply does not work.
 
-**The workflow half has landed and no longer has to wait for the host half.** `docker-test.yml` and
+**The workflow half has landed and no longer has to wait for the host half.** `test.yml` and
 `release-build.yml` probe each cache with `GET /v2/` and mirror only what answered, so a host with no
 caches builds against upstream exactly as before. The caches are reached by **fixed IP, not by name**,
 because jobs run inside a `docker:dind` daemon whose embedded DNS does not know the host daemon's
