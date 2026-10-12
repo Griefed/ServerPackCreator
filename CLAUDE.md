@@ -212,8 +212,28 @@ evidence consulted occasionally, not context every session needs.
 
 ### Refactor discipline (behavior-preserving by default)
 
-- One logical concern per commit. Keep "add tests", "pure refactor (no behavior change)", and
-  "change behavior" in **separate** commits. Related behavior changes may be grouped.
+- **One commit per GOAL, not per edit — Griefed's call, 2026-10-12.** A commit is the unit at which
+  somebody later asks *"why was this done?"*, so everything sharing one answer belongs in one commit,
+  however many files, modules or languages it spans. Atomic commits blow up the history: they record
+  the *process* of arriving at a change rather than the change, and a reader paging through twenty of
+  them has to reconstruct the one intent that produced them.
+  - **The test for whether two changes belong together is whether they share a reason**, not whether
+    they touch the same file. A workflow edit and the shell script it calls are one commit when one
+    goal needs both; two unrelated fixes in the same file are two commits.
+  - **It is worth the most where the first attempt was wrong.** A feature plus the four repairs its
+    own audit then found is **one** commit, because the repairs were never separately true — nothing
+    shipped in between. The history should show the feature that works, not a broken one followed by
+    apologies. Measured instance: `CI-NOTES.md` was written by one commit of a session and deleted by
+    a later one in the same session, so the atomic history recorded a 156-line file arriving and
+    leaving; grouped, it never existed.
+  - **This does not license a grab-bag.** "Everything I did today" is not a goal. If the commit message
+    needs the word *"and"* between two unrelated clauses, it is two commits — `fix(ci): the continuous
+    build's GitHub half still prints the traceback` stayed separate from the homepage work for exactly
+    that reason.
+  - **Keep "add tests", "pure refactor" and "change behaviour" separable where they are separable**, and
+    see the pin-first rule below for what survives when they are not. A `refactor:` label is still a
+    claim about behaviour, so a commit that groups a refactor with a behaviour change is labelled for
+    the behaviour change.
 - Pin current behavior with characterization tests **before** restructuring legacy code; refactor
   in small steps behind source-compatible facades (Strangler-Fig), keep the suite green at every
   commit.
@@ -271,9 +291,16 @@ evidence consulted occasionally, not context every session needs.
   a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
   outcome of the manifest work even though nothing can guard `TestHome.prepare` itself, because `ApiWrapper.setup()`
   re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
-- **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
-  commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
-  no evidence, and it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
+- **Pin first means *commit* first, not just write first — and when grouping absorbs the boundary, the
+  message carries it.** The ideal is still a failing `test(...)` commit, **red**, with the fix in the next
+  one, because that is the only form a reader can re-run (`git checkout <fix>^`). Where the goal-grouping
+  rule above puts the guard and the fix in one commit, the message must state that the pin was written and
+  **observed red first**, and quote the mutation that reproduces the red — `8f2ac90ce` is the worked
+  example, a squash whose message reproduces its own `test(api): pin that a stop signal reaches the
+  server, red` sub-commit verbatim along with the two mutations that fail against it. A grouped commit
+  that merely asserts "tests added" has thrown the evidence away, which is the thing this rule exists to
+  prevent. In-session verification with no written trace is not a substitute: it leaves no evidence, and
+  it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
   commits of that day's plan (`2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`,
   `1f92f585c`, `5caa6833f`) bundled guard and change, so nobody can check out `2a9a03473^` and watch the pin
   go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
