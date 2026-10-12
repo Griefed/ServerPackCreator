@@ -127,6 +127,7 @@ class ServerPropertiesPatch(private val packDirectory: File) {
         Regex("^[ \\t]*${Regex.escape(key)}[ \\t]*=(.*)$", RegexOption.MULTILINE)
             .findAll(contents).lastOrNull()?.groupValues?.get(1)
 
+    /** The files this patch reads, writes and restores. */
     companion object {
         /** Minecraft's own settings file, and the only place a server's port can be set from here. */
         const val PROPERTIES_NAME = "server.properties"

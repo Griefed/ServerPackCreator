@@ -28,7 +28,7 @@ import java.io.File
  * One server pack on disk, as the pack list shows it.
  *
  * The version fields come from the pack's `manifest.json` and are display-only — nothing launches differently
- * because of them. [selection] is what decides whether the Start button is enabled, and carries the reason
+ * because of them. [StartScriptSelection] is what decides whether the Start button is enabled, and carries the reason
  * when it is not.
  */
 data class LaunchablePack(

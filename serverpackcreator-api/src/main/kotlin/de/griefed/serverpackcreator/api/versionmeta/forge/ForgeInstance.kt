@@ -36,7 +36,9 @@ import java.util.*
  */
 @Suppress("unused")
 class ForgeInstance(
+    /** The Minecraft release this Forge build is for, and what [minecraftClient] resolves against. */
     val minecraftVersion: String,
+    /** The Forge build, spelled as Forge's own maven names it -- so `47.4.0`, not `1.20.1-47.4.0`. */
     val forgeVersion: String,
     private val minecraftMeta: MinecraftMeta
 ) {

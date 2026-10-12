@@ -98,10 +98,13 @@ class PackTableModel : AbstractTableModel() {
     /** Whether [row] can be launched right now. */
     fun startableAt(row: Int): Boolean = rows[row].startable
 
+    /** One row per discovered server pack. */
     override fun getRowCount(): Int = rows.size
 
+    /** Fixed by [COLUMNS]; this model has no optional columns. */
     override fun getColumnCount(): Int = COLUMNS.size
 
+    /** The heading from [COLUMNS], which is the only place the order is spelled. */
     override fun getColumnName(column: Int): String = COLUMNS[column]
 
     /**
@@ -116,6 +119,7 @@ class PackTableModel : AbstractTableModel() {
      */
     override fun getColumnClass(columnIndex: Int): Class<*> = String::class.java
 
+    /** The cell's display text. Every column renders as a String -- see [getColumnClass]. */
     override fun getValueAt(rowIndex: Int, columnIndex: Int): String {
         val row = rows[rowIndex]
         return when (columnIndex) {
@@ -127,6 +131,7 @@ class PackTableModel : AbstractTableModel() {
         }
     }
 
+    /** The table's column layout, spelled once so the model and its renderers cannot disagree. */
     companion object {
         /** Column order, and the only place it is spelled. */
         val COLUMNS = listOf("Server Pack", "Minecraft", "Modloader", "Loader Version", "Status")

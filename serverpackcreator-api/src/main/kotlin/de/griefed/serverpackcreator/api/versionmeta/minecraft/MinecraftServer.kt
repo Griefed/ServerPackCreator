@@ -44,6 +44,11 @@ import java.util.*
  * @author Griefed
  */
 class MinecraftServer internal constructor(
+    /**
+     * The Minecraft release this server is for. It also names the per-version manifest this instance
+     * caches under [ApiProperties.minecraftServerManifestsDirectory], so two instances of one version
+     * share a file.
+     */
     val minecraftVersion: String,
     val releaseType: Type,
     @Suppress("MemberVisibilityCanBePrivate") val serverUrl: URL,

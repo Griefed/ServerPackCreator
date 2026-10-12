@@ -240,6 +240,7 @@ class ConsolePane(
         }
     }
 
+    /** Tuning constants for the console's follow-the-tail behaviour. */
     companion object {
         /**
          * How many pixels short of the bottom still counts as "at the bottom".
