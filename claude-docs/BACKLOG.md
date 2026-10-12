@@ -182,3 +182,30 @@ would be a guess at demand, and a name-only match that skipped the confirm step 
 
 **Pick it up when** a refusal names an id that none of the four routes above reach. The confirm step is not
 optional: `askLinkedProjects` is the template — never trust a name, download and read the id.
+
+## 2026-10-12 — from the `9.1.0..develop` audit, iteration 1
+
+### B38 — the homepage's eslint 8 island, which nothing runs
+
+**What:** `serverpackcreator-homepage/` carries `.eslintrc.js`, `.eslintignore` and `eslint 8.37.0` with
+`@babel/eslint-parser`, `eslint-config-prettier 8.6.0`, `eslint-plugin-vue 9.8.0` and
+`eslint-webpack-plugin 4.0.0`, plus a `"lint": "eslint --ext .js,.vue ./"` script. Migrate it to the flat
+config and the eslint the rest of the repository is on, or decide deliberately that the homepage is not
+linted and delete the config, the script and the five dependencies.
+
+**Why it waited.** It is **inert, not wrong**. No workflow invokes it — `grep -rn homepage
+.forgejo/workflows/*.yml | grep -i lint` finds nothing — and `"test"` is
+`echo "No test specified" && exit 0`, so neither can fail a build or mislead a reader the way the deleted
+`CI-NOTES.md` could. The audit iteration it was found in was fixing things that break the release, and
+this breaks nothing.
+
+It is worth doing because the repository now holds **both** eslint generations:
+`build(deps-dev): bump eslint 9.39.5 -> 10.12.0, and @eslint/js with it` has just moved
+`serverpackcreator-web-frontend` to eslint 10 flat config, and that module's `CLAUDE.md` records that its
+legacy `.eslintrc.cjs`/`.eslintignore` "are gone". Two generations of one tool, one of them unreachable,
+is the duplicated-knowledge shape this project has paid for four times.
+
+**Pick it up when** the homepage SPA is touched for anything else, or when a dependency alert names one of
+those five packages — at which point the honest answer is the migration rather than a bump of a linter
+nobody runs. Note the homepage is Quasar 1 / webpack (`quasar.conf.js`, `babel.config.js`), not the
+app-vite 3 the other frontend uses, so its flat config is not a copy of that one.
