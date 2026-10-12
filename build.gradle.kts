@@ -219,7 +219,13 @@ install4j {
 }
 
 tasks.register<Install4jTask>("media") {
-    dependsOn(tasks.build)
+    // `generateLicenseReport` as well as `build`, because `spc.install4j` reads
+    // `licenses/LICENSE-AGREEMENT.txt` for the installer's licence screen and that file is generated
+    // and gitignored -- a checkout never carries it. `tasks.build` here is the ROOT project's build,
+    // which has no sources of its own and pulls in no subproject, so `-app`'s
+    // `build { dependsOn(":generateLicenseReport") }` does not reach this task. This edge is the only
+    // thing that puts the notice on disk before install4j reads it.
+    dependsOn(tasks.build, tasks.named("generateLicenseReport"))
     verbose = true
     release = version.toString()
     projectFile = file("spc.install4j")
