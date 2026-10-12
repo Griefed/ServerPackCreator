@@ -226,7 +226,7 @@ class PropertyStore {
                 file.outputStream().use {
                     properties.store(
                         it,
-                        "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
+                        "For details about each property, see https://serverpackcreator.de/help/latest/settings-and-configs.html"
                     )
                 }
                 log.info("Saved properties to: $file")

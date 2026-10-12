@@ -143,7 +143,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 - Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
     - https://github.com/Griefed/ServerPackCreator/issues/new/choose
 - There's a Wiki available which goes into further detail for many of ServerPackCreators available aspects:
-    - https://help.serverpackcreator.de/help-topic.html
+    - https://serverpackcreator.de/help/latest/help-topic.html
 - The same as the Wiki, but as a file should you prefer it. 😊
     - [HELP.md](HELP.md)
 
@@ -864,7 +864,7 @@ Initialize the API with your properties file, containing some basic settings for
 Make sure to select a directory which doesn't contain any vital data for the API, as the API will setup and create
 any and all required files in said directory. Best to give it its own directory all to itself.
 
-For information about possible settings, see https://help.serverpackcreator.de/settings-and-configs.html#serverpackcreator-properties
+For information about possible settings, see https://serverpackcreator.de/help/latest/settings-and-configs.html#serverpackcreator-properties
 
 ```kotlin
 val spcAPI = ApiWrapper.api(File("/path/to/file.properties"))

@@ -2,10 +2,46 @@
   <q-layout :class="$q.dark.isActive ? 'background_dark' : 'background'" view="hHh Lpr lff">
     <q-header :class="$q.dark.isActive ? 'header_dark' : 'header_normal'" elevated reveal>
       <q-toolbar class="shadow-5 toolbar">
+
+        <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
+          <q-item-section side :style="'background-color:' + secondaryColour" class="q-pa-sm q-mr-none text-white">
+            <q-icon name="fab fa-readme" size="42px"/>
+          </q-item-section>
+          <q-item-section class="q-pa-md q-ml-none">
+            <q-item-label class="text-h6 text-teal-3 text-uppercase">ServerPackCreator Help</q-item-label>
+            <q-item-label class="text-blue-grey-10">
+              <strong>
+                <a href="/help/latest"
+                   rel="noopener" target="_blank">
+                  Need help or details about ServerPackCreators features?
+                </a>
+              </strong>
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-toolbar-title>
 
         </q-toolbar-title>
         <img class="absolute-center" alt="header" src="~assets/serverpackcreator.webp" width="320">
+
+        <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
+          <q-item-section class="q-pa-md q-ml-none">
+            <q-item-label class="text-h6 text-teal-3 text-uppercase text-right">ServerPackCreator API docs</q-item-label>
+            <q-item-label class="text-blue-grey-10 text-right">
+              <strong>
+                <a href="/api/latest"
+                   rel="noopener" target="_blank">
+                  Need API documentation?
+                </a>
+              </strong>
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side :style="'background-color:' + secondaryColour" class="q-pa-sm q-mr-none text-white">
+            <q-icon name="fas fa-code" size="42px"/>
+          </q-item-section>
+        </q-item>
+
       </q-toolbar>
     </q-header>
 
@@ -23,27 +59,6 @@
 
     <q-footer class="footer shadow-5" elevated height-hint="50">
       <q-toolbar>
-        <q-space/>
-        <q-item
-          v-ripple
-          clickable
-          style="color: #c0ffee;"
-          href="https://www.griefed.de/#/about">
-          <q-item-section>
-            <b>Site Notice & About</b>
-          </q-item-section>
-        </q-item>
-        <q-space/>
-        <q-item
-          v-ripple
-          clickable
-          style="color: #c0ffee;"
-          href="https://www.griefed.de/#/privacy">
-          <q-item-section>
-            <b>Privacy</b>
-          </q-item-section>
-        </q-item>
-        <q-space/>
         Copyright © {{ year }} Griefed.de
       </q-toolbar>
     </q-footer>

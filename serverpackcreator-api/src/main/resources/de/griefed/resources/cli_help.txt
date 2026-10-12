@@ -96,7 +96,7 @@ Discord:
 Help/Wiki:
     If you want additional help on how to use ServerPackCreator, take a look at my wiki articles
     regarding ServerPackCreator and some of the more advanced things it can do.
-        - Help:  https://help.serverpackcreator.de/help-topic.html
+        - Help:  https://serverpackcreator.de/help/latest/help-topic.html
 
 Buy Me A Coffee:
     You like ServerPackCreator and would like to support me? By all means, every bit is very much

@@ -314,7 +314,7 @@ class ApiWrapper private constructor(
          * Acquire a new instance of the ServerPackCreator API.
          *
          * @param properties A ServerPackCreator properties-file to use for API initialization. This files may contain
-         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://help.serverpackcreator.de/settings-and-configs.html).
+         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://serverpackcreator.de/help/latest/settings-and-configs.html).
          * @param runSetup Whether to run the initial setup, creating and copying all required files to the filesystem and
          * ensuring the home-directory is properly set up and available to the API.
          * @author Griefed

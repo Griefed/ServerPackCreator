@@ -331,12 +331,7 @@
 
               If you find ServerPackCreator behind a paywall or otherwise monetized, then do not pay any money!
             </span>
-            <span class="row flex flex-center" style="margin-top: 20px;">
-              Speaking of money! *insert Kappa-face here*
-            </span>
-            <span class="row flex flex-center" style="margin-top: 20px;">
-              <a href='https://ko-fi.com/X7X31GM8DG' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi5.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-            </span>
+
           </span>
         </h5>
       </div>
@@ -349,40 +344,6 @@
         </h5>
       </div>
       <div class="col-md-12 col-lg-12 col-sx-12 col-sm-12 q-gutter-md flex flex-center">
-        <div class="col-md-4 col-lg-4 col-sx-12 col-sm-12">
-          <q-flashcard :no-hover="hover" class="my-card text-center box-shadow" flat bordered>
-            <q-flashcard-section transition="nudge-in" :active="active">
-              <!--suppress CheckImageSize -->
-              <img src="~assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
-            </q-flashcard-section>
-            <q-card @mouseover="hoverOver(1)" @mouseout="hoverOutTimeout(1)" style="border: none;"
-                    class="my-card text-center box-shadow" flat bordered>
-              <a href="https://www.ej-technologies.com/products/jprofiler/overview.html" rel="noopener"
-                 target="_blank">
-                <q-img src="~assets/jprofiler.webp" alt="Java profiler"/>
-                <q-img src="~assets/jprofiler_banner.webp" alt="Java profiler"/>
-              </a>
-
-              <q-card-section>
-                <div class="text-overline text-orange-9">EJ TECHNOLOGIES</div>
-                <div :class="about_heading_1" :style="'color: ' + about_heading_color_1"
-                     class="about_heading_1 text-h6 q-mt-sm q-mb-xs">JPROFILER
-                </div>
-                <div :class="about_heading_1" :style="'color: ' + about_heading_color_1"
-                     class="about_heading_1 q-mt-sm q-mb-xs">
-                  <code><strong>
-                    JProfiler's intuitive UI helps you resolve performance bottlenecks, pin down memory leaks and
-                    understand threading issues.
-                  </strong></code>
-                </div>
-                <div class="text-caption text-grey-6">
-                  © Copyright 2001-{{ year }} ej-technologies GmbH<br>
-                  JProfiler and ej-technologies logos property of ej-technologies GmbH
-                </div>
-              </q-card-section>
-            </q-card>
-          </q-flashcard>
-        </div>
         <div class="col-md-4 col-lg-4 col-sx-12 col-sm-12">
           <q-flashcard :no-hover="hover" class="my-card text-center box-shadow" flat bordered>
             <q-flashcard-section transition="nudge-in" :active="active">
@@ -427,7 +388,7 @@
                     :style="'color: ' + about_heading_color_2" style="border: none;"
                     class="my-card text-center box-shadow" flat bordered>
               <a href="https://www.jetbrains.com/idea/" rel="noopener" target="_blank">
-                <q-img src="~assets/idea.webp" alt=""/>
+                <q-img src="~assets/idea.png" alt=""/>
               </a>
 
               <q-card-section>
@@ -444,37 +405,6 @@
                 </div>
                 <div class="text-caption text-grey-6">
                   Copyright © {{ year }} JetBrains s.r.o.<br>IntelliJ IDEA and the IntelliJ IDEA logo are registered trademarks of JetBrains s.r.o.
-                </div>
-              </q-card-section>
-            </q-card>
-          </q-flashcard>
-        </div>
-        <div class="col-md-4 col-lg-4 col-sx-12 col-sm-12">
-          <q-flashcard :no-hover="hover" class="my-card text-center box-shadow" flat bordered>
-            <q-flashcard-section transition="nudge-in" :active="active">
-              <!--suppress CheckImageSize -->
-              <img src="~assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
-            </q-flashcard-section>
-            <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)" style="border: none;"
-                    class="my-card text-center box-shadow" flat bordered>
-              <a href="https://www.jetbrains.com/webstorm/" rel="noopener" target="_blank">
-                <q-img src="~assets/webstorm.webp" alt=""/>
-              </a>
-              <q-card-section>
-                <div class="text-overline text-orange-9">JETBRAINS</div>
-                <div :class="about_heading_3" :style="'color: ' + about_heading_color_3"
-                     class="text-h6 q-mt-sm q-mb-xs">
-                  WEBSTORM
-                </div>
-                <div :class="about_heading_3" :style="'color: ' + about_heading_color_3"
-                     class="about_heading_1 q-mt-sm q-mb-xs">
-                  <code><strong>
-                    WebStorm is used for the development of the webservice-portion of ServerPackCreator. It's an
-                    IDE for JavaScript and related technologies.
-                  </strong></code>
-                </div>
-                <div class="text-caption text-grey-6">
-                  Copyright © {{ year }} JetBrains s.r.o.<br>WebStorm and the WebStorm logo are registered trademarks of JetBrains s.r.o.
                 </div>
               </q-card-section>
             </q-card>
@@ -678,13 +608,8 @@
       </q-carousel>
     </div>
     <div style="background: #f7f7f7">
-      <div class="row">
-        <div class="col-md-12 col-lg-12 col-xs-12 col-sm-12">
-          <h5 class="text-center"><strong>Help - Support - Contributing</strong></h5>
-        </div>
-      </div>
       <div class="q-pa-xl">
-        <div class="row q-col-gutter-sm ">
+        <div class="row">
           <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
             <q-item class="box-shadow q-pa-none q-ml-xs ">
               <q-item-section side :style="'background-color:' + primaryColour" class="q-pa-sm q-mr-none text-white">
@@ -722,26 +647,6 @@
             </q-item>
           </div>
           <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
-            <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
-              <q-item-section side :style="'background-color:' + primaryColour" class="q-pa-sm q-mr-none text-white">
-                <q-icon name="fas fa-book" size="65px"/>
-              </q-item-section>
-              <q-item-section class="q-pa-md q-ml-none">
-                <q-item-label class="text-h6 text-grey-10 text-uppercase">Wiki</q-item-label>
-                <q-item-label class="text-blue-grey-10">Need help or details about ServerPackCreators features?<br>
-                  <strong>
-                    <a href="https://help.serverpackcreator.de/help-topic.html"
-                       rel="noopener" target="_blank">
-                      Check out the official Help-Website.
-                    </a>
-                  </strong>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </div>
-        </div>
-        <div class="row q-col-gutter-sm q-mt-lg">
-          <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
             <q-item class="box-shadow q-pa-none q-ml-xs ">
               <q-item-section side :style="'background-color:' + primaryColour" class="q-pa-sm q-mr-none text-white">
                 <q-icon name="fas fa-code-branch" size="65px"/>
@@ -752,42 +657,6 @@
                   <strong>
                     <a href="https://github.com/Griefed/ServerPackCreator" rel="noopener" target="_blank">
                       See the publicly available GitHub-Repository.
-                    </a>
-                  </strong>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </div>
-          <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
-            <q-item class="box-shadow q-pa-none q-ml-xs">
-              <q-item-section side :style="'background-color:' + primaryColour" class="q-pa-sm q-mr-none text-white">
-                <q-icon name="fas fa-paper-plane" size="65px"/>
-              </q-item-section>
-              <q-item-section class="q-pa-md q-ml-none">
-                <q-item-label class="text-h6 text-grey-10 text-uppercase">Community</q-item-label>
-                <q-item-label class="text-blue-grey-10">Want to talk to other users of ServerPackCreator, or the
-                  team?<br>
-                  <strong>
-                    <a href="https://discord.griefed.de/" rel="noopener" target="_blank">
-                      Join the Discord server!
-                    </a>
-                  </strong>
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </div>
-          <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
-            <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
-              <q-item-section side :style="'background-color:' + primaryColour" class="q-pa-sm q-mr-none text-white">
-                <q-icon name="fab fa-wordpress" size="65px"/>
-              </q-item-section>
-              <q-item-section class="q-pa-md q-ml-none">
-                <q-item-label class="text-h6 text-grey-10 text-uppercase">News</q-item-label>
-                <q-item-label class="text-blue-grey-10">I occasionally write blog-posts, sometimes
-                  Minecraft-related.<br>
-                  <strong>
-                    <a href="https://blog.griefed.de/" rel="noopener" target="_blank">
-                      Check out the blog.
                     </a>
                   </strong>
                 </q-item-label>

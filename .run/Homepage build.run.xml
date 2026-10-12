@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Homepage build" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/serverpackcreator-homepage/package.json" />
+    <command value="build" />
+    <node-interpreter value="project" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>
