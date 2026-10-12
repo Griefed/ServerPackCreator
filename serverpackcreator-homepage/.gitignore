@@ -34,3 +34,7 @@ yarn-error.log*
 
 # Yarn
 yarn.lock
+
+# Assembled documentation -- built by docs/assemble-docs.sh, never committed.
+/docs-build/*
+!/docs-build/.gitkeep

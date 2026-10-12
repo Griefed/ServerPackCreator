@@ -89,8 +89,17 @@ app whose viewer navigates for real only when the href carries a scheme — `isE
 — so a relative `api/index.html` is client-side routed instead: the app pushes the URL to `/api/` and
 re-bootstraps there, asking for `api/config.json`, `api/HelpTOC.json` and `api/api-object-digest.json`,
 which exist only at the site root. All three 404 and the page dies on *"TOC data error"*. A root-absolute
-`/ServerPackCreator/api/index.html` fails the same test. The cost is that the link leaves a self-hosted
-container for the public site; `/api/` is still served in both layouts for anyone addressing it directly.
+`/ServerPackCreator/api/index.html` fails the same test.
+
+**It is also PER-VERSION now, and only one of the two builds rewrites it.** The literal in `spch.tree` is
+the GitHub Pages URL, which is what `pages.yml` wants, so that workflow substitutes nothing. `docs.yml`
+replaces it with `https://serverpackcreator.de/api/<version>/index.html` before the builder runs, because
+its bundle ships in the help image and serverpackcreator.de serves a tree per version — 9.1.0's help must
+reach 9.1.0's reference, not whatever is newest. That step matches the literal and FAILS if it is absent,
+since `sed` matching nothing exits 0 and would ship the Pages link silently. A second step reads
+`HelpTOC.json` back out of the built zip, because Writerside rewrites hrefs as it builds and the source
+saying so is not evidence the output does; it SKIPS, loudly, where neither `unzip` nor `python3` is on the
+runner — `unzip` is not a given here, which is the same reason the dokka job ships a tar.gz.
 **`pages.yml` needs Settings → Pages → Source set to "GitHub Actions"**; while it is still "Deploy from a
 branch" the workflow goes green and publishes nothing.
 
