@@ -44,7 +44,14 @@ constraints.
   documentation by example.
 - **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
 - Not in the Gradle build, so `settings.gradle.kts` will not mention them:
-  `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
+  `serverpackcreator-help` (docs), `serverpackcreator-homepage` (the website), `buildSrc`, `docker`,
+  `misc`.
+- **`serverpackcreator-homepage` is a git subtree of a separate repository, and it must only ever be
+  pulled with `--squash`** — see `serverpackcreator-homepage/CLAUDE.md`. A non-squash
+  `git subtree pull` makes every website commit an ancestor of `develop`, and because `.releaserc.yml`
+  uses a bare `tagFormat: '${version}'`, semantic-release reads their subjects as SPC's own. The
+  original `git subtree add` did this: 39 website commits reaching back to 2023 landed in the next
+  SPC changelog, and one `breaking:` among them would have released 10.0.0 instead of 9.3.0.
 - **CI lives in `.forgejo/workflows`** — Forgejo (`git.griefed.de`) is the canonical CI and the origin of
   every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
   the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
