@@ -19,10 +19,9 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta
 
-import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.utilities.common.readText
+import de.griefed.serverpackcreator.api.utilities.common.writeTextAtomically
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
@@ -44,6 +43,11 @@ import javax.xml.parsers.ParserConfigurationException
  */
 internal class ManifestUpdater(private val utilities: Utilities) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    private companion object {
+        /** What [versionsIn] could not answer, because the content it was handed does not parse. */
+        const val UNREADABLE = -1
+    }
 
     /**
      * Check a given manifest for updates.
@@ -94,64 +98,28 @@ internal class ManifestUpdater(private val utilities: Utilities) {
             try {
                 manifestToCheck.inputStream().use { existing ->
                     connection.inputStream.use { newManifest ->
-                        var countOldFile = 0
-                        var countNewFile = 0
                         val oldContent: String = existing.readText()
                         val newContent: String = newManifest.readText()
-                        when (manifestType) {
-                            Type.MINECRAFT -> {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).get(VersionMetaConfig.TAG_VERSIONS).size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).get(VersionMetaConfig.TAG_VERSIONS).size()
-                            }
-
-                            Type.FORGE -> {
-                                for (mcVer in utilities.jsonUtilities.getJson(oldContent)) {
-                                    countOldFile += mcVer.size()
-                                }
-                                for (mcVer in utilities.jsonUtilities.getJson(newContent)) {
-                                    countNewFile += mcVer.size()
-                                }
-                            }
-
-                            Type.FABRIC_INTERMEDIARIES -> {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).size()
-                            }
-
-                            Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE -> {
-                                countOldFile = utilities.xmlUtilities.getXml(oldContent)
-                                    .getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                                countNewFile = utilities.xmlUtilities.getXml(newContent)
-                                    .getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                            }
-
-                            Type.LEGACY_FABRIC -> if (manifestToCheck.name.endsWith(".json")) {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).size()
-                            } else {
-                                val oldXML: Document = utilities.xmlUtilities.getXml(oldContent)
-                                val newXML: Document = utilities.xmlUtilities.getXml(newContent)
-                                countOldFile = oldXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                                countNewFile = newXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                                if (countOldFile == countNewFile) {
-                                    if (oldXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes.item(0)
-                                            .nodeValue != newXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes
-                                            .item(0)
-                                            .nodeValue
-                                    ) {
-                                        countNewFile += 1
-                                    }
-                                }
-                            }
-
-                            else -> throw InvalidTypeException(
-                                "Manifest type must be either Type.MINECRAFT, Type.FORGE, Type.FABRIC or Type.FABRIC_INSTALLER. Specified: "
-                                        + manifestType
-                            )
+                        // The new copy is counted first and without a net: an answer that cannot be parsed is
+                        // never adopted, however broken the local one is, or a truncated response would become
+                        // the same permanent failure it is being adopted to repair.
+                        val countNewFile = versionsIn(newContent, manifestType, manifestToCheck)
+                        val countOldFile = try {
+                            versionsIn(oldContent, manifestType, manifestToCheck)
+                        } catch (ex: Exception) {
+                            // The one manifest a host could not read used to be the one manifest it could never
+                            // replace: the comparison parses the local copy too, so a truncated one threw here
+                            // and the working download already in hand was discarded.
+                            log.warn("Manifest $manifestToCheck can not be parsed. Adopting the upstream copy.")
+                            log.debug("Parsing the local $manifestToCheck failed.", ex)
+                            UNREADABLE
                         }
                         log.debug("Nodes/Versions/Size in/of old $manifestToCheck: $countOldFile")
                         log.debug("Nodes/Versions/Size in/of new $manifestToCheck: $countNewFile")
-                        if (countNewFile > countOldFile) {
+                        val refresh = countOldFile == UNREADABLE || countNewFile > countOldFile ||
+                                (countNewFile == countOldFile &&
+                                        legacyFabricHeadChanged(oldContent, newContent, manifestType, manifestToCheck))
+                        if (refresh) {
                             log.info("Refreshing $manifestToCheck.")
                             updateManifest(manifestToCheck, newContent)
                             // Only now, and only paired with what was written: an ETag recorded for a
@@ -163,16 +131,9 @@ internal class ManifestUpdater(private val utilities: Utilities) {
                     }
                 }
             } catch (ex: SAXException) {
-                JarUtilities.copyFileFromJar(
-                    "de/griefed/resources/manifests/${manifestToCheck.name}",
-                    manifestToCheck,
-                    true,
-                    ManifestUpdater::class.java
-                )
-                log.error(
-                    "Unexpected end of file in XML-manifest. Restoring default "
-                            + manifestToCheck.path
-                )
+                // Only the upstream answer can reach this now -- an unreadable local copy is caught where it is
+                // counted, above -- so the manifest on disk is the working one and must be left alone.
+                log.error("Couldn't refresh manifest $manifestToCheck", ex)
             } catch (ex: ParserConfigurationException) {
                 log.error("Couldn't refresh manifest $manifestToCheck", ex)
             } catch (ex: IOException) {
@@ -190,6 +151,80 @@ internal class ManifestUpdater(private val utilities: Utilities) {
             )
             log.error("Make sure you include this log when reporting an error! Please....")
         }
+    }
+
+    /**
+     * How many versions [content] declares, counted the way [manifestType] stores them.
+     *
+     * This is the comparison the refresh is decided on — a manifest is adopted when the upstream copy carries
+     * *more* versions than the local one — so each type is counted in the shape it is published in: Minecraft
+     * nests its versions under one tag, Forge keys lists by Minecraft version, the loader metadata is maven
+     * metadata, and LegacyFabric publishes both shapes under one type.
+     *
+     * @param content      The manifest to count, as it was read.
+     * @param manifestType The type deciding how versions are counted.
+     * @param manifest     The file the content belongs to — LegacyFabric's two shapes are told apart by name.
+     * @return The number of versions declared.
+     * @throws IOException                  if JSON content can not be parsed.
+     * @throws SAXException                 if XML content can not be parsed.
+     * @throws InvalidTypeException         if the type does not describe a countable manifest.
+     * @author Griefed
+     */
+    @Throws(IOException::class, SAXException::class, InvalidTypeException::class)
+    private fun versionsIn(content: String, manifestType: Type, manifest: File): Int = when (manifestType) {
+        Type.MINECRAFT ->
+            utilities.jsonUtilities.getJson(content).get(VersionMetaConfig.TAG_VERSIONS).size()
+
+        Type.FORGE ->
+            utilities.jsonUtilities.getJson(content).sumOf { mcVer -> mcVer.size() }
+
+        Type.FABRIC_INTERMEDIARIES ->
+            utilities.jsonUtilities.getJson(content).size()
+
+        Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE ->
+            utilities.xmlUtilities.getXml(content).getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
+
+        Type.LEGACY_FABRIC -> if (manifest.name.endsWith(".json")) {
+            utilities.jsonUtilities.getJson(content).size()
+        } else {
+            utilities.xmlUtilities.getXml(content).getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
+        }
+
+        else -> throw InvalidTypeException(
+            "Manifest type must be either Type.MINECRAFT, Type.FORGE, Type.FABRIC or Type.FABRIC_INSTALLER. Specified: "
+                    + manifestType
+        )
+    }
+
+    /**
+     * Whether LegacyFabric's XML metadata declares a different newest version while declaring the same number
+     * of them, which is the one way it can change without the count moving.
+     *
+     * LegacyFabric prunes as it publishes, so a release and a removal in the same window leave the count
+     * identical and the head different — and the count alone would then decline a genuine update for ever.
+     *
+     * @param oldContent   The manifest currently on disk.
+     * @param newContent   The manifest the upstream answered with.
+     * @param manifestType The type of the manifest; only LegacyFabric is pruned this way.
+     * @param manifest     The file the content belongs to — only LegacyFabric's XML half is affected.
+     * @return `true` if the newest declared version differs between the two.
+     * @author Griefed
+     */
+    @Throws(SAXException::class)
+    private fun legacyFabricHeadChanged(
+        oldContent: String,
+        newContent: String,
+        manifestType: Type,
+        manifest: File
+    ): Boolean {
+        if (manifestType != Type.LEGACY_FABRIC || manifest.name.endsWith(".json")) {
+            return false
+        }
+        val newestIn = { content: String ->
+            utilities.xmlUtilities.getXml(content)
+                .getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes.item(0).nodeValue
+        }
+        return newestIn(oldContent) != newestIn(newContent)
     }
 
     /**
@@ -262,10 +297,7 @@ internal class ManifestUpdater(private val utilities: Utilities) {
     private fun updateManifest(
         manifestToRefresh: File,
         content: String
-    ) {
-        manifestToRefresh.create()
-        manifestToRefresh.writeText(content)
-    }
+    ) = manifestToRefresh.writeTextAtomically(content)
 
     /**
      * Ensures we always have the latest manifest for version validation available.

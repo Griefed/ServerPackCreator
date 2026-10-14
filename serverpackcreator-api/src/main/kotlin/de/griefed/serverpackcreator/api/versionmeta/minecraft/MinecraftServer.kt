@@ -128,7 +128,18 @@ class MinecraftServer internal constructor(
             lastDownloadAttempt = clock()
             utilities.webUtilities.downloadFile(manifestFile, serverUrl)
         }
-        serverJson = utilities.jsonUtilities.getJson(manifestFile)
+        serverJson = try {
+            utilities.jsonUtilities.getJson(manifestFile)
+        } catch (ex: Exception) {
+            // A cached manifest that can not be parsed -- a partial write left by a killed process is how one
+            // gets there -- would otherwise fail identically for ever, and every caller reads that failure as
+            // "this version declares no required Java". Discarding it puts the question back on the download
+            // path, where the cooldown above already bounds how often it is asked.
+            log.warn("Discarding $manifestFile for Minecraft $minecraftVersion: it can no longer be parsed.")
+            log.debug("Parsing $manifestFile failed.", ex)
+            manifestFile.delete()
+            throw ex
+        }
     }
 
     /**

@@ -262,6 +262,39 @@
   grinder's gated matrix on 2026-09-26: the fallback to `JAVA` is the branch every hand-made pack takes, and
   no parse check can see it. `TemplateInterpreterRunner` is the one definition of "reach an interpreter,
   locally or in a container" that both tests use — don't grow a second.
+- **LANDMINE — a manifest is seeded from the jar only when it is ABSENT, so an unreadable one used to be
+  unrepairable (fixed 2026-10-14).** `ApiWrapper.setup()` copies the shipped manifests through
+  `JarUtilities.copyFolderFromJar`, whose inner loop is guarded by `if (!destination.exists())` — correct for
+  "do not overwrite a refreshed manifest", fatal for "this file is a half-write". And the refresh could not
+  undo it either: `ManifestUpdater.checkManifest` decides on *version counts*, so it parsed the local copy
+  too, threw, and discarded the good download already in memory. **The manifest a host could not read was
+  therefore the one manifest it could never replace.** Reported from the grinder under systemd: a truncated
+  `forge-manifest.json` ended every start with `JsonEOFException` at `ForgeLoader.update` → `VersionMeta.<init>`
+  → `ApiWrapper.setup()` → `main`, with `Restart=on-failure` making it a loop, and the only remedy was deleting
+  the file by hand. Three pieces now, and all three are needed:
+  - **`File.writeTextAtomically`** (`FileUtilities.kt`) stages into a sibling and `ATOMIC_MOVE`s it into place,
+    so a killed or failed write leaves the previous manifest rather than part of the new one. `ManifestUpdater`
+    is its only caller today. Its `temporaryFile` parameter exists **only so the failure can be executed** —
+    the same reason `ModpackZipInspector` takes an `openZip`; a partial write cannot be provoked from a test.
+  - **`ManifestIntegrity.restoreIfUnreadable`** asks whether a file still parses and answers "no" with the jar's
+    copy, or with deletion when the jar carries none (the `mcserver/` files). It also deletes the `.etag`
+    sidecar, because an ETag is a promise that the local copy *is* the upstream one.
+  - **`VersionMeta.updateOrRepair`** is where it is wired: every meta's `update()` runs through it, and a
+    failure repairs that meta's manifests and retries **once**. **A failure that repaired nothing is rethrown
+    unchanged, deliberately** — the alternative is an empty meta, and this module already has the receipts for
+    what an empty `serverReleases()` costs (every candidate refused with "No bootable combination", i.e. the
+    engine's own state published as a statement about a mod).
+  **Do not add a proactive scan of the manifests directory to `setup()`**: it would parse ~500 KB on every
+  start for a case that is rare, and the metas parse the same files seconds later anyway. The repair is on the
+  failure path on purpose.
+  **Consequence worth knowing:** `ManifestUpdater`'s SAX catch no longer restores from the jar. It now can only
+  describe the *upstream* answer — an unreadable local copy is handled where it is counted — and overwriting a
+  working local manifest because upstream sent rubbish is the opposite of a repair.
+  **The same shape one level down:** `MinecraftServer.readServerJson` discards an `mcserver/<version>.json` it
+  cannot parse. It never crashed anything (both callers catch), which is why it was worse: every lookup read the
+  same broken file and returned `Optional.empty()`, which every consumer reads as *this version declares no
+  required Java* — `REQUIREMENT_UNKNOWN` masquerading as `JDK_NOT_BUNDLED`, permanently.
+
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI

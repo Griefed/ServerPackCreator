@@ -357,4 +357,96 @@ internal class ManifestUpdaterTest {
             )
         }
     }
+
+    /**
+     * Pins that a local manifest which can no longer be parsed is replaced by the upstream copy.
+     *
+     * The refresh compares version *counts*, which means it parses the local file too — so a truncated one
+     * threw before the comparison and the download already in hand was discarded. The manifest a host could
+     * not read was therefore the one manifest it could never replace, which is how a single partial write
+     * became a permanent startup crash.
+     */
+    @Test
+    fun anUnreadableLocalManifestIsReplacedByTheUpstreamCopy(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        val truncated = minecraftManifest(3).take(40)
+        manifest.writeText(truncated)
+        val upstream = minecraftManifest(3)
+        withServer(upstream, honourConditional = false) { uri, _ ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertEquals(
+                upstream, manifest.readText(),
+                "A manifest that cannot be parsed must be replaced by one that can"
+            )
+        }
+    }
+
+    /**
+     * Pins the other half: an upstream copy that cannot be parsed must never be adopted, however broken the
+     * local one is. Taking it would turn a transient truncated response into the same permanent failure.
+     */
+    @Test
+    fun anUnreadableUpstreamManifestIsNotAdopted(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        val original = minecraftManifest(3)
+        manifest.writeText(original)
+        withServer(minecraftManifest(9).take(40), honourConditional = false) { uri, _ ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertEquals(
+                original, manifest.readText(),
+                "An unparseable response must leave the working local manifest exactly as it was"
+            )
+        }
+    }
+
+    /**
+     * Pins that the refresh leaves no staging file beside the manifest it wrote.
+     *
+     * The write stages into a sibling and moves it into place, so a killed or failed write can never leave a
+     * half-manifest where a whole one was. A staging file left behind would be served to nobody but would
+     * accumulate one per manifest per refresh.
+     */
+    @Test
+    fun aRefreshLeavesNoStagingFileBehind(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        manifest.writeText(minecraftManifest(1))
+        withServer(minecraftManifest(5), honourConditional = false) { uri, _ ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertArrayEquals(
+                arrayOf("minecraft-manifest.json"),
+                tempDir.list()?.sortedArray(),
+                "The refresh must leave the manifest and nothing beside it"
+            )
+        }
+    }
+
+    /**
+     * Pins the JDK behaviour the repair depends on: a manifest with no modification time is fetched in full.
+     *
+     * `HttpURLConnection` omits `If-Modified-Since` entirely when it is set to zero, which is what lets
+     * `ManifestIntegrity` mark a restored snapshot as "ask for everything" rather than have it earn a `304`
+     * for content the host only holds because its own copy broke. Non-obvious and load-bearing, so it is
+     * pinned here rather than assumed.
+     */
+    @Test
+    fun aManifestWithNoModificationTimeIsFetchedUnconditionally(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        manifest.writeText(minecraftManifest(1))
+        manifest.setLastModified(0)
+        withServer(minecraftManifest(5)) { uri, observed ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertNull(
+                observed.lastIfModifiedSince,
+                "A manifest with no modification time must be asked for in full, not conditionally"
+            )
+            Assertions.assertEquals(
+                minecraftManifest(5), manifest.readText(),
+                "...and the fuller upstream copy must therefore have been adopted"
+            )
+        }
+    }
 }
