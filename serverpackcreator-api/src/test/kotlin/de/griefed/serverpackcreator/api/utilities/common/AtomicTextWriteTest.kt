@@ -86,4 +86,32 @@ internal class AtomicTextWriteTest {
             "A write that could not be completed must not have destroyed what was there"
         )
     }
+
+    /**
+     * Pins that each write stages into a file of its own.
+     *
+     * A staging name derived from the destination alone is shared by every concurrent write to it, so two
+     * writers interleave their bytes in the staging file and then move the mixture into place — the corruption
+     * this helper exists to prevent, one path along. It is reachable: the grinder runs N workers against one
+     * shared installer cache, and `ForgeMeta.installerFor` and its four siblings take no lock. With a staging
+     * file per call each writer stages a complete copy and whichever move lands last wins, which is a correct
+     * outcome rather than a mixed one.
+     */
+    @Test
+    fun eachWriteStagesIntoAFileOfItsOwn(@TempDir tempDir: File) {
+        val destination = File(tempDir, "manifest.json")
+        val staged = mutableListOf<File>()
+
+        repeat(2) { attempt ->
+            destination.writeAtomically { staging ->
+                staged += staging
+                staging.writeText("""{"attempt":$attempt}""")
+            }
+        }
+
+        Assertions.assertEquals(
+            2, staged.map { it.path }.toSet().size,
+            "Two writes to one destination must not share a staging file, or they interleave into it"
+        )
+    }
 }

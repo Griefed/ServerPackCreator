@@ -34,6 +34,7 @@ import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.util.UUID
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.moveTo
@@ -524,16 +525,45 @@ fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) 
 }
 
 /**
- * Replace this file's contents with [text] so that a reader can only ever see the whole of it.
+ * Produce this file's new contents through [write] so that a reader can only ever see the whole of them.
  *
- * [text] is written to [temporaryFile] — a sibling, so the move below stays within one filesystem — and that
+ * [write] is handed [temporaryFile] — a sibling, so the move below stays within one filesystem — and that
  * file is then moved onto this one with [StandardCopyOption.ATOMIC_MOVE], which is a rename on every platform
- * ServerPackCreator runs on. A write that does not finish therefore leaves the previous contents in place
+ * ServerPackCreator runs on. Content that is not finished therefore leaves the previous contents in place
  * instead of a half-file, which writing in place cannot promise: a killed process or a full disk leaves
- * exactly as many bytes as it managed.
+ * exactly as many bytes as it managed, and that partial file satisfies every `isFile` check afterwards.
+ *
+ * The default staging name is **unique per call**, not derived from the destination alone: two writers
+ * sharing one would interleave their bytes into it and then move the mixture into place, which is the
+ * corruption this exists to prevent. Given one each, both stage a complete copy and the last move wins.
  *
  * [temporaryFile] is a parameter purely so the failure can be exercised — provoking a partial write is not
  * something a test can do, but pointing the staging somewhere unusable reaches the same question.
+ *
+ * @param temporaryFile Where the new contents are staged before being moved into place.
+ * @param write         Fills the staging file. Anything it throws leaves this file untouched.
+ * @throws IOException if the contents could not be staged or moved, in which case this file is untouched.
+ * @author Griefed
+ */
+@Throws(IOException::class)
+fun File.writeAtomically(
+    temporaryFile: File = File(absoluteFile.parentFile, "$name.${UUID.randomUUID()}.tmp"),
+    write: (File) -> Unit
+) {
+    absoluteFile.toPath().createParentDirectories()
+    try {
+        write(temporaryFile)
+        Files.move(temporaryFile.toPath(), absoluteFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
+    } catch (ex: Exception) {
+        // Never leave the staging behind: it is invisible to every reader and would otherwise accumulate one
+        // per failed attempt, beside the file it failed to become.
+        temporaryFile.delete()
+        throw ex
+    }
+}
+
+/**
+ * Replace this file's contents with [text], completely or not at all — [writeAtomically] for a string.
  *
  * @param text          The contents this file should hold once the write has completed.
  * @param temporaryFile Where the contents are staged before being moved into place.
@@ -541,18 +571,10 @@ fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) 
  * @author Griefed
  */
 @Throws(IOException::class)
-fun File.writeTextAtomically(text: String, temporaryFile: File = File(absoluteFile.parentFile, "$name.tmp")) {
-    absoluteFile.toPath().createParentDirectories()
-    try {
-        temporaryFile.writeText(text)
-        Files.move(temporaryFile.toPath(), absoluteFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
-    } catch (ex: Exception) {
-        // Never leave the staging behind: it is invisible to every reader and would otherwise accumulate one
-        // per failed write, beside the file it failed to become.
-        temporaryFile.delete()
-        throw ex
-    }
-}
+fun File.writeTextAtomically(
+    text: String,
+    temporaryFile: File = File(absoluteFile.parentFile, "$name.${UUID.randomUUID()}.tmp")
+) = writeAtomically(temporaryFile) { it.writeText(text) }
 
 /**
  * Test whether files can be written to this file denoting a directory, by creating a throwaway file in it and

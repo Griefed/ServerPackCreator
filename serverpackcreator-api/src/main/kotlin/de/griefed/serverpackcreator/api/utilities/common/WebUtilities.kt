@@ -141,27 +141,32 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * * /tmp/some_folder/foo.bar
      * * C:/temp/some_folder/bar.foo
      * @param downloadURL     The URL to the file you want to download.
-     * @return true if the file was created.
+     * @return true if **this call** wrote the file. A failure answers `false` whether or not a file is there,
+     * because every caller reads a `true` as "I now have this artifact".
      * @author Griefed
      */
     fun downloadFile(
         file: File,
         downloadURL: URL
     ): Boolean {
-        file.create()
-        try {
-            openTimedStream(downloadURL, apiProperties.networkDownloadReadTimeout).use { url ->
-                Channels.newChannel(url).use { channel ->
-                    file.outputStream().use { stream ->
-                        stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
+        return try {
+            // Staged and moved rather than streamed into place: a half-written artifact satisfies isFile, so a
+            // killed process would otherwise leave one to be served from cache as a complete jar ever after --
+            // and a download that merely fails must not destroy the copy the host already had.
+            file.writeAtomically { staging ->
+                openTimedStream(downloadURL, apiProperties.networkDownloadReadTimeout).use { url ->
+                    Channels.newChannel(url).use { channel ->
+                        staging.outputStream().use { stream ->
+                            stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
+                        }
                     }
                 }
             }
+            true
         } catch (ex: IOException) {
             log.error("An error occurred downloading $file from $downloadURL.", ex)
-            file.deleteQuietly()
+            false
         }
-        return file.isFile
     }
 
     /**

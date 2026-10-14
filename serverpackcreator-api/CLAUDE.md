@@ -272,10 +272,15 @@
   `forge-manifest.json` ended every start with `JsonEOFException` at `ForgeLoader.update` → `VersionMeta.<init>`
   → `ApiWrapper.setup()` → `main`, with `Restart=on-failure` making it a loop, and the only remedy was deleting
   the file by hand. Three pieces now, and all three are needed:
-  - **`File.writeTextAtomically`** (`FileUtilities.kt`) stages into a sibling and `ATOMIC_MOVE`s it into place,
-    so a killed or failed write leaves the previous manifest rather than part of the new one. `ManifestUpdater`
-    is its only caller today. Its `temporaryFile` parameter exists **only so the failure can be executed** —
-    the same reason `ModpackZipInspector` takes an `openZip`; a partial write cannot be provoked from a test.
+  - **`File.writeAtomically`** (`FileUtilities.kt`) stages into a sibling and `ATOMIC_MOVE`s it into place,
+    so a killed or failed write leaves the previous contents rather than part of the new ones.
+    `writeTextAtomically` is the string overload; `WebUtilities.downloadFile` is the other caller. Its
+    `temporaryFile` parameter exists **only so the failure can be executed** — the same reason
+    `ModpackZipInspector` takes an `openZip`; a partial write cannot be provoked from a test. **The default
+    staging name is unique per call and must stay so:** derived from the destination alone it is shared by
+    every concurrent write to that path, so two writers interleave into it and move the mixture into place —
+    reachable, because the grinder runs N workers against one shared installer cache and the five
+    `installerFor` methods take no lock.
   - **`ManifestIntegrity.restoreIfUnreadable`** asks whether a file still parses and answers "no" with the jar's
     copy, or with deletion when the jar carries none (the `mcserver/` files). It also deletes the `.etag`
     sidecar, because an ETag is a promise that the local copy *is* the upstream one.
@@ -290,6 +295,15 @@
   **Consequence worth knowing:** `ManifestUpdater`'s SAX catch no longer restores from the jar. It now can only
   describe the *upstream* answer — an unreadable local copy is handled where it is counted — and overwriting a
   working local manifest because upstream sent rubbish is the opposite of a repair.
+  **And the same shape in every download, since `WebUtilities.downloadFile` writes the same way.** Its old
+  body truncated the destination with `create()` *before* opening the stream and `deleteQuietly()`d it on
+  `IOException`, so a failed re-download destroyed the copy the host already had, and a killed one left a
+  partial file that `isFile` reports as present — which the old `return file.isFile` then published as
+  success. Every caller reads a `true` as *I now have this artifact* and the five `installerFor` methods
+  never re-download (`if (!destination.isFile)`), so a truncated installer cached as a complete one for ever.
+  The return value now answers *did this call write the file*, which is the only reading that stays honest
+  once the destination survives a failure. `downloadAndReplaceFile` still deletes first — that is its
+  documented contract, not an oversight.
   **The same shape one level down:** `MinecraftServer.readServerJson` discards an `mcserver/<version>.json` it
   cannot parse. It never crashed anything (both callers catch), which is why it was worse: every lookup read the
   same broken file and returned `Optional.empty()`, which every consumer reads as *this version declares no
