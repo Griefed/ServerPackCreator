@@ -22,7 +22,7 @@
     "github-release-stats": "1.0.2"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.19.1",
+    "@babel/eslint-parser": "7.29.9",
     "@quasar/app": "3.3.3",
     "eslint": "8.37.0",
     "eslint-config-prettier": "8.6.0",
