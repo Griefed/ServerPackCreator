@@ -50,6 +50,21 @@ the "do not tidy that away, here is what it cost last time".
     the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it. A
     non-test source set wants its configurations extending `implementation`/`runtimeOnly`, not the test
     ones — otherwise it compiles without the module's own dependencies.
+- **buildSrc HAS a test source set as of 2026-10-16, and nothing runs it by itself.** `buildSrc/src/test/kotlin`
+  (JUnit 5, `libs.kotlinTestJunit5`) holds pins for buildSrc's **pure functions** — currently
+  `BuildVersionTest` over `BuildVersion.sanitize`. It is reached only because `buildSrc/build.gradle.kts`
+  finalizes `jar` with `test`; `:buildSrc:check`, `gradle.includedBuild("buildSrc")` and `-p buildSrc` are all
+  dead ends on 9.8.1. What belongs there, what still belongs in a commit-message measurement, and why the edge
+  has to be `finalizedBy` rather than `dependsOn`, are in the root `CLAUDE.md` under *Build logic is verified by
+  measurement where it cannot be unit-tested* — stated once, there.
+  - **LANDMINE — a test that reads a file outside its own project is UP-TO-DATE when that file changes.**
+    `BuildVersionTest` reads `.forgejo/actions/resolve-version/action.yml` to check the action still
+    normalises a version the way `BuildVersion` does. Gradle knows nothing about that path, so mutating the
+    action left the suite **green** — the guard could never have fired on the one edit it exists to catch.
+    `tasks.test { inputs.file(...) }` in `buildSrc/build.gradle.kts` is what makes it re-run, and the
+    mutation turns it red with the line present. Any guard that reaches across a project boundary needs the
+    same declaration; ask what makes its task re-run, not only what it asserts.
+
 - **A plugin module's jar name is decided in `serverpackcreator.plugin-conventions`, and nowhere else.**
   Every plugin jar is `<module>-<version>_experimental.jar`; the convention plugin also owns the
   `pluginArtifact` consumable configuration and its `artifacts { add }`, which stood verbatim in all four

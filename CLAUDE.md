@@ -287,11 +287,28 @@ evidence consulted occasionally, not context every session needs.
   documented shape. It also surfaced what was filed at the time as B33 — the web application
     writing to MongoDB's default `test` database instead of the configured one, which no test could have caught, and
     which the Spring Boot 4 property-key fix has since closed. Cost: about fifteen minutes.
-- **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
-  `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
-  predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
-  change to `buildSrc`, a `build.gradle.kts` or task wiring, the standard is: **measure the behaviour before and
-  after, and record both numbers in the commit message.** `8b87057cf` did this (a planted marker plus a cached
+- **Build logic is verified by measurement where it cannot be unit-tested, and `buildSrc` now has a test source
+  set for the part that can be — Griefed's call, 2026-10-16.** `buildSrc/src/test/kotlin` holds JUnit 5 via
+  `libs.kotlinTestJunit5`, and it exists for **pure functions**: `BuildVersionTest` pins
+  `BuildVersion.sanitize`, the predicate that keeps a `/` in `-Pversion` from being read as a path. Task
+  wiring, a `Copy`'s inputs and a one-line filter are still NOT worth a TestKit harness, so for those — and
+  for the real-world consequence of a pure function too — the standard is unchanged: **measure the behaviour
+  before and after, and record both numbers in the commit message.**
+  - **LANDMINE — a buildSrc test does not run unless something drags it in, and `build` is not that
+    something.** Gradle 8.0 made buildSrc an included build and stopped running its lifecycle tasks from the
+    main build; a maintainer confirms that is intended, with no plan to change it
+    ([gradle#25439](https://github.com/gradle/gradle/issues/25439)). Three obvious routes are all dead ends,
+    measured on 9.8.1: `tasks.check { dependsOn("buildSrc:check") }` is inert, `gradle.includedBuild("buildSrc")`
+    does not resolve, and `./gradlew -p buildSrc check` fails in buildSrc's *settings* — it declares the foojay
+    resolver with no version, which only resolves because the root build has already put it on the classpath
+    (the deliberate asymmetry `.claude/rules/build-layout.md` records under *the foojay toolchain resolver is
+    declared TWICE*). What works is `buildSrc`'s **jar**, which is built on every
+    invocation: `tasks.jar { finalizedBy(tasks.test) }`, so `./gradlew help` runs the suite in ~3 s. It must be
+    `finalizedBy` and not `dependsOn` — `kotlin-dsl` puts the jar on the test compile classpath, so
+    `dependsOn` is a circular dependency and fails the build outright.
+  - The named *Verify the build logic* step in both `test.yml`s runs exactly that `./gradlew help`, before the
+    long build, so a broken convention plugin fails in seconds rather than after the frontend.
+  Historic measurements, from before the source set existed: `8b87057cf` did this (a planted marker plus a cached
   manifest; the cache went 643 → 0 before the change and survived after), as did the `updateManifests` retarget (app
   home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
   Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where

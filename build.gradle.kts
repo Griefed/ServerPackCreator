@@ -1,4 +1,5 @@
 import com.install4j.gradle.Install4jTask
+import de.griefed.common.gradle.BuildVersion
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.internal.os.OperatingSystem
@@ -16,6 +17,11 @@ plugins {
 // A real build script, so the type-safe accessor works here; the precompiled script plugins in
 // buildSrc have to read the same entry the long way round. One value either way.
 val javaLanguageLevel = IdeaLanguageLevel(libs.versions.java.get())
+
+// The root project applies no convention plugin, so it needs the same guard `java-conventions` gives
+// every module: `media` below hands `version.toString()` to install4j as the installer's release
+// number and as the `projectVersion` compiler variable.
+version = BuildVersion.of(project)
 
 idea {
     project {

@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
+import de.griefed.common.gradle.BuildVersion
 import de.griefed.common.gradle.TestHome
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -16,6 +17,12 @@ plugins {
 // The one Java version, from `gradle/libs.versions.toml`; see `JavaVersion` for why it is read
 // this way rather than through the type-safe `libs` accessor.
 val javaVersion: String = de.griefed.common.gradle.JavaVersion.of(project)
+
+// `version` names every archive this module produces, so it has to be a legal file name. Applied here
+// because this convention plugin is what every jar-producing module reaches -- `-api`, `-clientside`,
+// `-grinder` and the four plugin modules through `kotlin-conventions`, `-app` through
+// `application-conventions`. See `BuildVersion` for what a path separator in it costs.
+version = BuildVersion.of(project)
 
 java {
     // Auto JDK setup
