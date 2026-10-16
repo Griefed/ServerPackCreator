@@ -4,7 +4,7 @@
     "config:recommended",
     ":semanticCommitTypeAll(deps)"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "develop"
   ],
   "labels": ["dependencies"],
