@@ -27,8 +27,18 @@
   `"required"` and also taking `"optional"`, `"incompatible"` and `"discouraged"`. `ForgeTomlScanner.isOptional`
   reads **both**, and must keep doing so: `NeoForgeTomlScanner` overrides only the descriptor's file name, and
   NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml` with `mandatory`, so a per-scanner split would
-  miss that overlap. `"incompatible"` counts as not-required on purpose — it means the mod must *not* be
-  present, which is the opposite of something to fetch.
+  miss that overlap. **`"incompatible"` is not merely not-required, it is not a dependency at all** — it
+  means the mod must *not* be present — so `getSidenessAndDependencies` drops the entry outright and it
+  never reaches `ModDependency`. It stays in `notRequiredTypes` as well, because `isOptional` also serves
+  the Forge path and must not call it required if it ever reaches it. `"discouraged"` is the one to keep
+  apart: it still names something a pack may carry, so it survives as optional.
+  - **The `type` field has exactly ONE reader, `getType`, and it trims and lowercases.** A descriptor is
+    hand-written, so ` Incompatible ` occurs; comparing the raw value makes the drop turn on invisible
+    whitespace. It also reads the value with `toString()` rather than casting — a `type` holding a number
+    throws `ClassCastException`, which the scan loop does **not** catch (only `NullPointerException`), so it
+    escapes `read()` and `DescriptorScanner` flattens the jar to the never-read-anything fallback. The mod
+    loses its whole descriptor and the result is indistinguishable from a jar belonging to another loader,
+    which is why nothing would report it. Both pinned by `OptionalDependencyTest`.
   **Absent or unreadable means required**, deliberately: reading a required dependency as optional boots a mod
   without something it needs, which fails as a crash and can publish a *wrong* verdict, whereas reading an
   optional one as required only refuses a boot and learns nothing. It is also NeoForge's own documented default.

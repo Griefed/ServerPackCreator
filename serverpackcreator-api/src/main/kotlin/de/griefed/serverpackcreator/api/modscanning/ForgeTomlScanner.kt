@@ -23,7 +23,6 @@ import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import java.io.File
 import java.io.IOException
-import java.util.Optional
 import java.util.jar.JarFile
 
 /**
@@ -37,7 +36,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
-    private val type = "type"
 
     /** The key a Forge/NeoForge dependency entry states its Maven version range under. */
     private val versionRange = "versionRange"
@@ -123,8 +121,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                 //check all dependencies in mod
                 for (declared in declaredDependencies) {
                     val dependencyModId = getModId(declared)
-                    val dependencyType = getType(declared)
-                    if (dependencyType.isPresent && dependencyType.get() == incompatibleDependency) {
+                    if (getType(declared) == incompatibleDependency) {
                         continue
                     }
                     val side = getSide(declared)
@@ -246,7 +243,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * documented default for an absent `type`, and the safe direction: see [ModDependency.optional].
      */
     private fun isOptional(config: CommentedConfig): Boolean {
-        val declaredType = config.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
+        val declaredType = getType(config)
         if (declaredType != null) {
             return declaredType in notRequiredTypes
         }
@@ -254,15 +251,17 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     }
 
     /**
-     * Whether [dependency] declares a type, such as `incompatible` in which case this dependency is irrelevant
-     * for our dependency-system.
+     * NeoForge's `type` for [dependency], trimmed and lowercased, or `null` where the field is absent.
+     *
+     * Reads the value with `toString()` rather than casting it: a descriptor is hand-written, so `type` can
+     * hold a number or a boolean, and a `ClassCastException` here is not caught by the scan loop — it
+     * escapes `read()` and costs the mod its whole descriptor, leaving the fallback entry that is
+     * indistinguishable from a jar belonging to another loader.
      *
      * @author Griefed
      */
-    private fun getType(dependency: CommentedConfig): Optional<String> {
-        val dependencyType = dependency.valueMap()[type] as String? ?: return Optional.empty()
-        return Optional.of(dependencyType.toString().lowercase())
-    }
+    private fun getType(dependency: CommentedConfig): String? =
+        dependency.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
 
     /**
      * Acquire the side of the passed dependency.
