@@ -29,8 +29,6 @@ import java.util.*
  * An instance of a complete Forge combination, containing a Minecraft version, related Forge
  * version and the URL to the server installer.
  *
- * @param minecraftVersion Minecraft version.
- * @param forgeVersion     Forge version.
  * @param minecraftMeta    The corresponding Minecraft client for this Forge version.
  * @throws [java.net.MalformedURLException] if the URL to the download of the Forge server installer could not be created.
  *
@@ -38,7 +36,9 @@ import java.util.*
  */
 @Suppress("unused")
 class ForgeInstance(
+    /** The Minecraft release this Forge build is for, and what [minecraftClient] resolves against. */
     val minecraftVersion: String,
+    /** The Forge build, spelled as Forge's own maven names it -- so `47.4.0`, not `1.20.1-47.4.0`. */
     val forgeVersion: String,
     private val minecraftMeta: MinecraftMeta
 ) {

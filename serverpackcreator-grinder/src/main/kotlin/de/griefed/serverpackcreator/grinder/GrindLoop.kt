@@ -84,7 +84,8 @@ internal class GrindLoop(
             val requeued = requeue.drain()
             val batch = crawler.nextBatch()
             // Announced before either pool runs, and counting both: /status answers "what is it doing right
-            // now?", and a drain of hundreds used to leave it showing the *previous* pass for the duration.
+            // now?", so announcing after the drain would leave a drain of hundreds showing the *previous*
+            // pass for its whole duration.
             status.beginPass(pass, requeued.size + batch.candidates.size)
             if (requeued.isNotEmpty()) {
                 log.info("Pass #$pass: re-grinding ${requeued.size} requested candidate(s) ahead of the crawl...")

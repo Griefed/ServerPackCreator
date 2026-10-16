@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Pins the fold that replaces `aggregateFor`: what one loader's evidence adds up to under the four-state
- * verdict, with the console deciding and the metadata only declaring.
+ * Pins the fold: what one loader's evidence adds up to under the four-state verdict, with the console
+ * deciding and the metadata only declaring.
  *
  * This is where the redesign becomes visible in the report. The old fold produced a `Confidence` from a
  * `BootResult` and two self-reports, and could not distinguish *"the grind was prevented"* from *"the grind

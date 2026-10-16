@@ -154,4 +154,41 @@ internal class MinecraftServerManifestCooldownTest {
             "a manifest already on disk must be read even inside the cooldown; the cooldown gates downloads only"
         )
     }
+
+    /**
+     * Pins that a cached manifest which can no longer be parsed is discarded rather than re-read for ever.
+     *
+     * Same shape as the version manifests, one level down: the file exists, so nothing downloads it again, and
+     * the parse fails on every lookup — which every caller reads as *this version declares no required Java*.
+     * That is the "not applicable versus could not find out" confusion that silently dropped the newest
+     * Minecraft versions from the template matrix, except permanent. Discarding the file puts the question back
+     * on the download path, where the cooldown already bounds how often it is asked.
+     */
+    @Test
+    fun anUnparseableCachedManifestIsDiscardedSoItCanBeFetchedAgain(@TempDir tempDir: File) {
+        val source = File(tempDir, "$probeVersion.json")
+        source.writeText(manifestJson(21))
+        val server = MinecraftServer(
+            minecraftVersion = probeVersion,
+            releaseType = Type.RELEASE,
+            serverUrl = source.toURI().toURL(),
+            utilities = apiWrapper.utilities,
+            apiProperties = apiWrapper.apiProperties,
+            downloadCooldown = Duration.ofHours(1),
+            clock = { Instant.parse("2026-07-31T12:00:00Z") }
+        )
+        manifestFile.parentFile.mkdirs()
+        manifestFile.writeText(manifestJson(21).take(40))
+
+        Assertions.assertFalse(
+            server.javaVersion().isPresent,
+            "precondition: the truncated cache cannot answer, and the clock never moves past the cooldown"
+        )
+
+        Assertions.assertEquals(
+            21.toByte(),
+            server.javaVersion().orElse(null),
+            "the unreadable cache must have been discarded, so the next lookup fetches instead of re-reading it"
+        )
+    }
 }

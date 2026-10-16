@@ -28,7 +28,6 @@ class FabricArguments internal constructor() {
     /**
      * Object-array of arguments used.
      *
-     * @return Object-array of arguments used.
      * @author Griefed
      */
     lateinit var game: Array<Any>

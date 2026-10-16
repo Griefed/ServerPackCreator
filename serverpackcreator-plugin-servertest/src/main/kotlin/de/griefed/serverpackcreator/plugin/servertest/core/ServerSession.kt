@@ -224,6 +224,7 @@ class ServerSession(
         }
     }
 
+    /** Console text this session recognises, shared verbatim with the runners that watch for the same lines. */
     companion object {
         /**
          * The vanilla server's ready-line, and the point at which a client can connect.

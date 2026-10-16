@@ -548,7 +548,6 @@ class GuiProps(private val apiProperties: ApiProperties) {
             UIManager.put(defaultFontProp,FontUIResource(currentFont.fontName, currentFont.style, value))
             FlatLaf.updateUI()
         }
-    // Font("Arial Unicode MS", Font.BOLD, size)
     /**
      * The GUI font. Only the *family* of an assigned value is kept — size comes from [fontSize] and the style is
      * always plain — so the two settings cannot disagree about how big the UI is.

@@ -54,6 +54,7 @@ class ServerTestSettings(private val config: CommentedConfig) {
     /** The integer at [key], or [fallback] when it is absent or is not a number. */
     private fun intOrDefault(key: String, fallback: Int): Int = (config.get(key) as? Number)?.toInt() ?: fallback
 
+    /** The config keys this plugin persists under. Stable across releases -- a rename orphans a user's setting. */
     companion object {
         /** Config key for [portRangeStart]. **Stable across releases** — a rename orphans a user's setting. */
         const val PORT_RANGE_START_KEY = "portRangeStart"

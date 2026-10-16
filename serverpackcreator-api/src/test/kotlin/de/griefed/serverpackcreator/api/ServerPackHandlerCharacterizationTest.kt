@@ -9,10 +9,10 @@ import java.io.File
 import javax.imageio.ImageIO
 
 /**
- * Characterization tests pinning the current behavior of [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler]
- * before its decomposition into explicit pipeline steps (refactor Phase 1d). These tests document
- * file-gathering, cleanup, icon/properties handling and placeholder replacement as-is, so the
- * upcoming restructuring can be verified to be behavior-preserving.
+ * Characterization tests pinning [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler]'s behaviour
+ * through the facade — file-gathering, cleanup, icon/properties handling and placeholder replacement — so
+ * that restructuring behind it stays behaviour-preserving. They assert what the code does rather than what
+ * it should do, so an assertion changing here means behaviour moved.
  */
 internal class ServerPackHandlerCharacterizationTest {
     private val serverPackHandler =

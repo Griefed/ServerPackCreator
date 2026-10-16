@@ -29,7 +29,6 @@ class FabricIntermediary internal constructor() {
     /**
      * The maven mapping of this intermediary.
      *
-     * @return maven mapping.
      * @author Griefed
      */
     val maven: String? = null
@@ -37,7 +36,6 @@ class FabricIntermediary internal constructor() {
     /**
      * The version of this intermediary.
      *
-     * @return The version of this intermediary.
      * @author Griefed
      */
     val version: String? = null
@@ -45,7 +43,6 @@ class FabricIntermediary internal constructor() {
     /**
      * Whether this intermediary is considered stable.
      *
-     * @return Whether this intermediary is considered stable.
      * @author Griefed
      */
     val isStable = false

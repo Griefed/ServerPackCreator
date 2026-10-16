@@ -208,7 +208,7 @@ internal class ClientsideVerifierCrossLoaderTest {
     // --- what a superseded crash then reports -------------------------------------------------------
 
     /**
-     * The confidence drops to whatever the metadata alone supports — re-derived from `aggregate` with no boot
+     * The confidence drops to whatever the metadata alone supports — re-derived from [ClientsideVerifier.verdictOf] with no boot
      * rather than hardcoded here, so there is one ladder and not two. For the reported case that is `LOW`:
      * the jar declares server/both and nothing decisive stands against it any more.
      *

@@ -100,6 +100,39 @@ commandAvailable() {
   command -v "$1" > /dev/null 2>&1
 }
 
+# loadVariables(path)
+# Reads the KEY=VALUE file $1 -- your variables.txt -- into this script's settings.
+#
+# It does more than just read the file, because variables.txt does not always arrive the way it left.
+# Uploading it with an FTP client set to "ASCII" or "Auto", or editing it in a hosting panel's web editor
+# or on Windows, can change invisible characters in it. Two of those changes stop your settings from being
+# read, and neither of them looks like what it is when the server then fails to start:
+#
+#   Carriage returns. Windows ends a line with a carriage return AND a line feed, where Linux and macOS
+#   use the line feed alone. Read as-is, that extra carriage return becomes part of every value: JAVA=java
+#   turns into "java<carriage return>", and starting the server fails with "java: command not found" --
+#   printed over itself, because a carriage return sends the cursor back to the start of the line.
+#
+#   A byte-order mark. Some Windows editors write three invisible bytes at the very start of a file. They
+#   stick to the FIRST setting's name, turning JAVA into a name nothing ever reads -- so your choice of
+#   Java is quietly ignored while every setting below it still works.
+#
+# Both are repaired here, in memory. Your variables.txt on disk is never modified.
+loadVariables() {
+  local settings
+
+  # Turn carriage returns into line breaks. Turn into, not delete: if a file's lines happen to be
+  # separated by carriage returns alone, deleting them would join the whole file into one single line.
+  settings="$(tr '\r' '\n' < "$1")"
+
+  # Drop the byte-order mark, if the file starts with one.
+  settings="${settings#$'\xEF\xBB\xBF'}"
+
+  # Why "eval" and not "source <(...)", which would read nicer: the bash that ships with macOS reads
+  # nothing at all that way, and says nothing about it, leaving every setting empty.
+  eval "$settings"
+}
+
 # getJavaVersion
 # Set $JAVA_VERSION by checking $JAVA using -fullversion. Only the major version is stored, e.g. 8, 11, 17, 21.
 getJavaVersion() {
@@ -601,7 +634,7 @@ if [[ ! -s "variables.txt" ]]; then
   crashServer "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
 fi
 
-source "./variables.txt"
+loadVariables "./variables.txt"
 
 LAUNCHER_JAR_LOCATION="do_not_manually_edit"
 SERVER_RUN_COMMAND="do_not_manually_edit"
@@ -651,7 +684,7 @@ if [[ "$1" == "--cleanup" ]]; then
   echo "Running cleanup..."
   cleanServerFiles
 elif [[ -f "./.previousrun" ]]; then
-  source "./.previousrun"
+  loadVariables "./.previousrun"
   if [[ "$PREVIOUS_MINECRAFT_VERSION" != "$MINECRAFT_VERSION" || \
         "$PREVIOUS_MODLOADER" != "$MODLOADER" || \
         "$PREVIOUS_MODLOADER_VERSION" != "$MODLOADER_VERSION" ]]; then

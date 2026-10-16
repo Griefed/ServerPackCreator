@@ -66,7 +66,6 @@ class ServerPackService @Autowired constructor(
      * Increment the download counter for a given server pack entry in the database identified by the
      * database id.
      *
-     * @param id The database id of the server pack.
      * @author Griefed
      */
     fun updateDownloadStats(id: String): Optional<ServerPack> {

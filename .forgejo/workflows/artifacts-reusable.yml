@@ -325,24 +325,24 @@ jobs:
           name: gradle-jars
           path: .
 
-      # `-Pversion` IS NOT OPTIONAL, and leaving it out was not a missing nicety -- it put a second
-      # ServerPackCreator inside every continuous installer and named them all `dev`. The root build's
-      # `media` task sets install4j's `release` from `version.toString()`, which falls back to
-      # gradle.properties' `version=dev`; and `media` dependsOn `build`, so Gradle writes
-      # `serverpackcreator-app-dev.jar` BESIDE the `serverpackcreator-app-<version>.jar` just restored
-      # into the same directory. `spc.install4j`'s dirEntry ships that whole directory with
-      # `excludeSuffixes="plain.jar"`, and all three launchers resolve their classpath with
-      # `<scanDirectory location="."/>` -- so the installer carried two fat jars and chose by scan order.
-      # Measured in the published `continuous` release of 2026-10-07:
+      # `-Pversion` IS NOT OPTIONAL: the root build's `media` task sets install4j's `release` from
+      # `version.toString()`, which otherwise falls back to gradle.properties' `version=dev` and names
+      # every artifact after it. Measured in the published `continuous` release of 2026-10-07,
       # `ServerPackCreator-dev-Installer-Mac.dmg` beside `serverpackcreator-api-9.2.0.jar`.
       #
-      # With the version passed, Gradle's output takes the restored jar's name and replaces it.
+      # WHAT THIS JOB PACKAGES COMES FROM THE ARTIFACT ABOVE, NOT FROM GRADLE. `media` dependsOn
+      # `tasks.build`, which is the ROOT project's build -- that project has no sources and reaches no
+      # subproject, so the whole invocation is 9 root-project tasks plus `:generateLicenseReport`.
+      # `spc.install4j`'s dirEntry ships `serverpackcreator-app/build/libs` with
+      # `excludeSuffixes="plain.jar"`, and all three launchers resolve their classpath with
+      # `<scanDirectory location="."/>` -- so the installer carries whatever `Download JARs` restored,
+      # and a second fat jar in that directory would be chosen by scan order. Re-derive with
+      # `./gradlew media --dry-run`.
       #
-      # The SAME test exclusions `jars` uses, and they are not cosmetic: the root build's `media` task
-      # declares `dependsOn(tasks.build)`, so without them this job re-runs the whole api and app suite
-      # that `jars` deliberately skipped and `test.yml` already ran on this commit. release-build.yml's
-      # old `assets` job excluded them; the conversion to this workflow would have quietly dropped that
-      # and put a second full test run on the release's critical path.
+      # The test exclusions are therefore INERT today -- the root build runs no subproject's suite.
+      # They are kept because they cost nothing and are the correct flags the moment `media` gains a
+      # real dependency on a module build, which is also the day this job stops being safe to run on a
+      # clean checkout: nothing here builds the application it installs.
       - name: Build the install4j media
         run: |
           ./gradlew -Pversion="${{ inputs.version }}" media --info --full-stacktrace \

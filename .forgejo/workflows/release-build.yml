@@ -265,7 +265,7 @@ jobs:
           fi
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
-      # Retried for the same reason `docker-test.yml` retries: ghcr answers a pull with
+      # Retried for the same reason `test.yml`'s image check retries: ghcr answers a pull with
       # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips
       # its per-source burst limiter, and buildkit will not wait. The limiter is keyed on the host, so
       # being logged in does not lift it. Here a single such minute would cost the release its images and
@@ -322,14 +322,59 @@ jobs:
           name: release-assets
           path: assets
 
+      # Forgejo push-mirrors are asynchronous, so the refs this job is about to publish a release
+      # against may not have reached any downstream forge yet. This pushes every one of them and waits:
+      # `repoPushMirrorSync` loops the repository's mirrors calling `SyncPushMirror` INLINE rather than
+      # queueing it (routers/api/v1/repo/mirror.go), and that runs `git push --mirror --force` -- so a
+      # 200 means every mirror holds the release commit AND its tag by the time this step returns.
+      # One call covers every mirror the repository has, so a forge added later needs nothing here.
+      #
+      # Deliberately best-effort. The handler returns 500 on the FIRST mirror whose push fails and stops
+      # there, and the API offers no per-mirror sync to route around a broken one, so a dead remote could
+      # otherwise mask a healthy one. The verdict stays with the per-forge probe below; this step exists
+      # to make that probe pass, and to print why when it will not.
+      #
+      # Needs FJ_TOKEN's owner to be a repo ADMIN, not merely a writer -- the route is `reqAdmin()`.
+      - name: Sync Forgejo's push mirrors outward
+        env:
+          TOKEN: ${{ secrets.FJ_TOKEN }}
+        run: |
+          set -eu
+          API="https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator"
+          # Git.Timeout.Mirror is 300s PER MIRROR by default, so the call is budgeted for several.
+          STATUS="$(curl -sS -o sync.json -w '%{http_code}' --max-time 900 \
+            -X POST "$API/push_mirrors-sync" -H "Authorization: token $TOKEN")"
+          echo "push_mirrors-sync -> HTTP $STATUS"
+          # Newline of its own: Forgejo's error body carries none, so without it the message runs
+          # straight into the mirror table below.
+          [ "$STATUS" = "200" ] || { cat sync.json; echo; }
+          # Printed whatever the status: `last_error` is the exact text the web UI shows under
+          # Settings -> Mirror Settings, so a broken mirror names itself here instead of sending an
+          # operator to go and look. `remote_address` is stored credential-stripped (util.SanitizeURL
+          # at creation time), so it is safe in a log.
+          curl -sS "$API/push_mirrors" -H "Authorization: token $TOKEN" > mirrors.json
+          python3 - <<'MIRRORS_PY'
+          import json
+
+          for mirror in json.load(open("mirrors.json")):
+              # json.dumps rather than the value itself, so sync_on_commit reads `true`/`false` as the
+              # API and the web UI spell it -- Python would print `True`, which is a different word to
+              # anyone comparing this log against either.
+              print(f"{mirror['remote_name']:16} {mirror['remote_address']}")
+              print(f"  sync_on_commit={json.dumps(mirror['sync_on_commit'])}"
+                    f" interval={mirror['interval']}"
+                    f" last_update={mirror['last_update'] or '(never)'}")
+              print(f"  last_error={mirror['last_error'] or '(none)'}")
+          MIRRORS_PY
+
       # Forgejo push-mirrors replicate refs but NOT releases, so this is explicit rather than a setting.
       # It runs only after the Forgejo release exists, so no downstream forge ever advertises a release
-      # this one does not have. The tag itself arrives by ordinary git mirroring.
+      # this one does not have. The tag itself arrives with the push-mirror sync above.
       #
-      # GitHub is the only outward mirror. Before adding another, confirm the git push-mirror to it is
-      # alive and that it already has the tag: a release API needs either an existing tag or a `ref`
-      # commit to mint one from, and a mirror that has stopped receiving commits has neither. That is a
-      # precondition no release-API work can substitute for.
+      # GitHub is the only outward mirror that gets a RELEASE; the step above pushes refs to all of
+      # them. Before adding a second release target, note that its precondition is the git mirror, not
+      # the release API: a release API needs either an existing tag or a `ref` commit to mint one from,
+      # and a mirror that cannot push has delivered neither. No release-API work substitutes for that.
       - name: Fetch release notes from Forgejo
         env:
           TOKEN: ${{ secrets.FJ_TOKEN }}
@@ -376,9 +421,10 @@ jobs:
       # `GET /commits/50fd50f37` returned 422 `No commit found for SHA` and GitHub's `alpha` still sat on
       # `RELEASE: 9.0.0-alpha.6`, 69 commits behind. Probe the precondition here and name the real cause.
       #
-      # Poll rather than fail at once: `Sync when new commits are pushed` is an OPT-IN checkbox on a
-      # Forgejo push-mirror, and without it the mirror is periodic on an interval that defaults to 8h.
-      # No release can wait that long, but one merely queued behind a large push is worth a few minutes.
+      # Still a poll, but a short one, and it is now measuring something different. The sync step
+      # above has already completed the push, so what is left is GitHub making the commit visible to
+      # its own API. Two minutes is generous for that; longer means the push did not land, which the
+      # mirror table printed above explains far better than more waiting would.
       - name: Require GitHub to have the release commit
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -386,25 +432,27 @@ jobs:
           set -eu
           SHA="${{ github.sha }}"
           API="https://api.github.com/repos/Griefed/ServerPackCreator"
-          for attempt in $(seq 1 20); do
+          for attempt in $(seq 1 8); do
             STATUS="$(curl -sS -o probe.json -w '%{http_code}' "$API/commits/$SHA" \
               -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json')"
             if [ "$STATUS" = "200" ]; then
               echo "GitHub has $SHA (attempt $attempt) - safe to create the release"
               exit 0
             fi
-            # 401/403 is the token, not the mirror. Waiting five minutes on a credential problem and
-            # then blaming the mirror is exactly the misdiagnosis this step exists to prevent.
+            # 401/403 is the token, not the mirror. Waiting out the whole poll on a credential
+            # problem and then blaming the mirror is the misdiagnosis this step exists to prevent.
             if [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
-              cat probe.json
+              # `::error::` is only an annotation when it starts a line, and whether the body before
+              # it ends in a newline is the remote's choice, not ours.
+              cat probe.json; echo
               echo "::error::GH_TOKEN was rejected with HTTP $STATUS probing $SHA - this is the credential, not the mirror. See claude-docs/CI-SECRETS.md."
               exit 1
             fi
-            echo "attempt $attempt/20: GitHub answered HTTP $STATUS for $SHA - waiting 15s"
+            echo "attempt $attempt/8: GitHub answered HTTP $STATUS for $SHA - waiting 15s"
             sleep 15
           done
-          cat probe.json
-          echo "::error::The Forgejo->GitHub push-mirror has not delivered ${{ github.sha }} after 5 minutes, so GitHub cannot mint tag ${{ github.ref_name }} and the release POST below would fail with a 422 about tag_name/target_commitish. Repair the mirror first: repo Settings -> Mirror Settings -> Synchronize Now, and READ the error it prints there. Confirm with: curl -s -o /dev/null -w '%{http_code}' ${API}/commits/${{ github.sha }} returning 200. Then re-run THIS JOB ALONE - a whole-workflow re-run would re-publish Maven and Docker for a version that is already released."
+          cat probe.json; echo
+          echo "::error::GitHub still does not have ${{ github.sha }} two minutes after the push-mirror sync, so it cannot mint tag ${{ github.ref_name }} and the release POST below would fail with a 422 about tag_name/target_commitish. READ THE MIRROR TABLE printed by 'Sync Forgejo's push mirrors outward' above: a non-200 there, or a non-empty last_error on the GitHub remote, is the cause and says what it is. An HTTP 200 with an empty last_error means the push succeeded and GitHub has not indexed it, which re-running this job alone resolves. Re-run THIS JOB ALONE either way - a whole-workflow re-run would re-publish Maven and Docker for a version that is already released."
           exit 1
 
       - name: Mirror to GitHub
@@ -412,12 +460,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           set -eu
-          # target_commitish is not optional here. GitHub creates the tag from it when the tag does not
-          # exist, defaulting to the DEFAULT BRANCH -- and git mirroring is asynchronous, so seconds after
-          # the Forgejo release the tag usually has not arrived. Without this, GitHub would create a
-          # `$V` tag pointing at main's HEAD, disagreeing with Forgejo and blocking the real tag later.
-          # It covers an absent TAG only; the commit it names still has to be there, which is what the
-          # step above guarantees. 9.0.0-alpha.6 is the proof it works when the mirror is current -- its
+          # target_commitish is the fallback for an absent tag: GitHub mints one from it, defaulting to
+          # the DEFAULT BRANCH, so without it a release reaching GitHub before its tag would create a
+          # `$V` tag on main's HEAD, disagreeing with Forgejo and blocking the real tag later. The sync
+          # step pushes `--mirror`, which carries tags, so the tag is normally already here and this
+          # never fires -- it is kept because a release must not depend on that being true. It covers an
+          # absent TAG only; the commit it names still has to be there, which is what the probe above
+          # guarantees. 9.0.0-alpha.6 is the proof it works when the mirror is current -- its
           # GitHub release carries target_commitish f7ebba4e, not `main` as .1 through .5 do.
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"

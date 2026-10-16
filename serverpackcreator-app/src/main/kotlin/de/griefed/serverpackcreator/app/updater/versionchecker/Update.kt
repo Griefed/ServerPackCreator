@@ -39,9 +39,6 @@ import java.util.*
  * - A list of [Source].
  *
  * @author Griefed
- * @param version The version of this update/release.
- * @param description The description (release description as shown on release pages on GitLab or GitHub), of this release/update.
- * @param link The URL to this release for visiting it in your browser.
  * @param releaseDate The date at which this release was published/release.
  * @param assets Available release-assets for this update/release, if any.
  * @param sources Available source-archives for this update/release.
@@ -60,7 +57,6 @@ class Update(
     /**
      * Get the version of this update/release.
      * @author Griefed
-     * @return The version of this update/release.
      */
     fun version(): String {
         return version
@@ -172,7 +168,6 @@ class Update(
     /**
      * Get a specific release-asset for a given name of said release.
      * @author Griefed
-     * @param releaseName The name of the release asset.
      * @return [ReleaseAsset] for the given name, wrapped in an [Optional].
      */
     fun getReleaseAsset(releaseName: String): Optional<ReleaseAsset> {

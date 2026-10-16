@@ -82,7 +82,6 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return
      * the update.
      *
-     * @param version         The version for which to check for updates.
      * @param preReleaseCheck Whether to check pre-releasesDescending as well. Use `true` to
      * check pre-releasesDescending as well, `false` to only check with
      * regular releases.

@@ -48,9 +48,8 @@ class RunConfiguration() {
     /**
      * The JVM arguments a server started from this configuration runs with.
      *
-     * Plain strings, embedded in this document. They were `@DBRef`s to a `StartArgument` collection
-     * whose documents held nothing but their own `@MongoId` — so resolving one returned the string it
-     * was already keyed by, at the cost of a join. Same for the two lists below.
+     * Plain strings, embedded in this document rather than referenced — the same for the two lists
+     * below. Read back as `string[]` by the SPA; see `serverpackcreator-web-frontend/src/types/api.ts`.
      */
     var startArgs: MutableList<String> = mutableListOf()
 

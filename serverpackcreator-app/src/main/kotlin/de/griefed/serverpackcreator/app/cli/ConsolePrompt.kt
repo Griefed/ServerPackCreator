@@ -26,10 +26,11 @@ import java.util.Scanner
 /**
  * Asks a question on the console and keeps asking until the answer is usable.
  *
- * Every prompting command used to carry its own copy of this loop, and the copies drifted: one asked
- * for a home-directory while validating a config file, and one listed the locales it would then
- * refuse. Taking [input] and [output] as parameters rather than reaching for `System.in`/`System.out`
- * is what lets the loop be driven by a test instead of a terminal.
+ * **The one copy of this loop.** Per-command copies drift into asking for one thing while validating
+ * another, or offering a choice they then refuse — [readChoice] takes a single map whose keys are both
+ * what is listed and what is matched, so that pairing is unrepresentable rather than merely correct.
+ * Taking [input] and [output] as parameters rather than reaching for `System.in`/`System.out` is what
+ * lets the loop be driven by a test instead of a terminal.
  *
  * @author Griefed
  */

@@ -194,6 +194,9 @@ class VersionMeta(
     /** Keeps the locally stored manifests up to date against their upstream sources. */
     private val manifestUpdater = ManifestUpdater(utilities)
 
+    /** Repairs a manifest that can no longer be parsed, so one bad write cannot end every start. */
+    private val manifestIntegrity = ManifestIntegrity(utilities)
+
     /**
      * Where the startup manifest refresh runs. `Dispatchers.IO` owns no thread of its own, and the job below
      * is the only work ever submitted, so there is nothing to cancel and nothing to leak — deliberately not
@@ -229,13 +232,7 @@ class VersionMeta(
     private fun refreshManifests() {
         try {
             checkManifests()
-            minecraft.update()
-            fabricIntermediaries.update()
-            fabric.update()
-            legacyFabric.update()
-            forge.update()
-            neoForge.update()
-            quilt.update()
+            updateMetas()
             log.info("Manifests refreshed.")
         } catch (ex: Exception) {
             // Never fatal: the seeded manifests are perfectly usable, and this runs after startup where
@@ -254,6 +251,60 @@ class VersionMeta(
      */
     fun awaitManifestRefresh(timeoutMillis: Long = 10_000): Boolean = runBlocking {
         withTimeoutOrNull(timeoutMillis) { manifestRefresh.join() } != null
+    }
+
+    /**
+     * Re-read every meta from its manifest files, repairing any manifest that can no longer be parsed.
+     *
+     * The metas are built from the files, so this is what makes a refreshed — or a repaired — manifest
+     * visible. It is the same sequence for all three callers (construction, [update] and the background
+     * [refreshManifests]), and the order matters: the Minecraft meta is what the loader metas resolve their
+     * versions against, and Quilt reads Fabric's intermediaries.
+     *
+     * @throws IOException                  if a manifest can not be read and can not be repaired either.
+     * @throws ParserConfigurationException indicates a serious configuration error.
+     * @throws SAXException                 if an XML manifest can not be parsed and can not be repaired.
+     * @author Griefed
+     */
+    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
+    private fun updateMetas() {
+        updateOrRepair(minecraftManifest) { minecraft.update() }
+        updateOrRepair(fabricIntermediariesManifest) { fabricIntermediaries.update() }
+        updateOrRepair(fabricManifest, fabricInstallerManifest) { fabric.update() }
+        updateOrRepair(legacyFabricGameManifest, legacyFabricLoaderManifest, legacyFabricInstallerManifest) {
+            legacyFabric.update()
+        }
+        updateOrRepair(forgeManifest) { forge.update() }
+        updateOrRepair(oldNeoForgeManifest, newNeoForgeManifest) { neoForge.update() }
+        updateOrRepair(quiltManifest, quiltInstallerManifest) { quilt.update() }
+    }
+
+    /**
+     * Run [update], and if it fails, repair whichever of [manifests] can no longer be parsed and run it once
+     * more.
+     *
+     * A manifest is seeded from the jar only when it is **absent**, so an unreadable one that exists was
+     * previously unrecoverable from inside the process: a grinder host whose `forge-manifest.json` had been
+     * truncated mid-write died here on every start, through `ApiWrapper.setup()` and straight out of `main`,
+     * naming neither the file nor a remedy. A failure that repaired nothing is rethrown unchanged — there is
+     * no data to work with, and hiding that would leave every lookup answering about an empty meta, which is
+     * how an engine defect gets published as a statement about a mod.
+     *
+     * @param manifests The manifest files this meta is built from.
+     * @param update    Re-reads the meta from those files.
+     * @author Griefed
+     */
+    private fun updateOrRepair(vararg manifests: File, update: () -> Unit) {
+        try {
+            update()
+        } catch (ex: Exception) {
+            val repaired = manifests.filter { manifestIntegrity.restoreIfUnreadable(it) }
+            if (repaired.isEmpty()) {
+                throw ex
+            }
+            log.warn("Repaired ${repaired.joinToString { it.name }} and re-read the versions it declares.")
+            update()
+        }
     }
 
     init {
@@ -306,14 +357,8 @@ class VersionMeta(
             utilities,
             apiProperties.installerCacheDirectory
         )
-        minecraft.update()
-        fabricIntermediaries.update()
-        fabric.update()
-        legacyFabric.update()
-        forge.update()
-        neoForge.update()
-        quilt.update()
-    
+        updateMetas()
+
         // Kicked off last, so everything it re-parses already exists.
         manifestRefresh = refreshScope.launch { refreshManifests() }
 }
@@ -370,7 +415,6 @@ class VersionMeta(
     /**
      * Check a given manifest for updates, delegating to [ManifestUpdater] which owns the refresh.
      *
-     * @param manifestToCheck The manifest to check.
      * @param urlToManifest   The URL to the manifest.
      * @param manifestType    The type of the manifest, either [Type.MINECRAFT], [Type.FORGE], [Type.FABRIC] or [Type.FABRIC_INSTALLER].
      * @author Griefed
@@ -382,35 +426,24 @@ class VersionMeta(
     ) = manifestUpdater.checkManifest(manifestToCheck, urlToManifest, manifestType)
 
     /**
-     * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been
-     * refreshed.
+     * Refresh every meta from the manifests on disk, returning this instance.
      *
-     * @return The instance of this version meta, updated.
+     * **Serialised**, because the metas are refreshed from a background coroutine *and* by callers: each
+     * meta publishes an internally consistent snapshot, but two overlapping runs could still leave one
+     * meta on generation A beside another on generation B, so a lookup could miss a version its own release
+     * list contained. The lock is uncontended in the normal case — one refresh at startup — and a refresh is
+     * far too coarse to be on any hot path.
+     *
      * @throws ParserConfigurationException indicates a serious configuration error.
      * @throws IOException                  if any IO errors occur.
      * @throws SAXException                 if any parse errors occur.
      * @author Griefed
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    /**
-     * Refresh every meta from the manifests on disk.
-     *
-     * **Serialised**, because the metas are refreshed from a background coroutine *and* by callers: each
-     * meta now publishes an internally consistent snapshot, but two overlapping runs could still leave one
-     * meta on generation A beside another on generation B, so a lookup could miss a version its own release
-     * list contained. The lock is uncontended in the normal case — one refresh at startup — and a refresh is
-     * far too coarse to be on any hot path.
-     */
     @Synchronized
     fun update(): VersionMeta {
         checkManifests()
-        minecraft.update()
-        fabricIntermediaries.update()
-        fabric.update()
-        legacyFabric.update()
-        forge.update()
-        neoForge.update()
-        quilt.update()
+        updateMetas()
         return this
     }
 }

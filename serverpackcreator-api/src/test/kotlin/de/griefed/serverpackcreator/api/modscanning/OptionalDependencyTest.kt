@@ -162,11 +162,12 @@ internal class OptionalDependencyTest {
     }
 
     /**
-     * `"incompatible"` and `"discouraged"` are the other two `type` values. Neither is a thing to go and
-     * fetch — incompatible means the mod must *not* be present — so neither may be treated as required.
+     * `"incompatible"` and `"discouraged"` are the other two `type` values, and they are NOT the same
+     * answer. Incompatible means the mod must *not* be present, so it is not a dependency at all and is
+     * dropped; discouraged still names something the pack may carry, so it survives as optional.
      */
     @Test
-    fun neoForgeTreatsIncompatibleAndDiscouragedAsNotRequired(@TempDir tempDir: File) {
+    fun neoForgeDropsAnIncompatibleDependencyAndKeepsADiscouragedOne(@TempDir tempDir: File) {
         val toml = """
             modLoader="javafml"
             loaderVersion="[4,)"
@@ -186,7 +187,60 @@ internal class OptionalDependencyTest {
 
         val scanned = modScanner.neoForgeTomlScanner.scan(listOf(jar)).single()
 
-        Assertions.assertEquals(true, scanned.dependency("enemy")?.optional, "an incompatible mod is never fetched")
+        Assertions.assertNull(scanned.dependency("enemy"), "an incompatible mod is not a dependency at all")
         Assertions.assertEquals(true, scanned.dependency("frowned")?.optional, "discouraged is not required")
+    }
+
+    /**
+     * The `type` is compared after trimming and lowercasing, the same way [ForgeTomlScanner.isOptional]
+     * already reads the field. A descriptor is a hand-written file, so ` Incompatible ` is a spelling that
+     * occurs; comparing the raw value makes the drop depend on whitespace nobody can see.
+     */
+    @Test
+    fun anIncompatibleTypeIsRecognisedWhateverItsSpacingAndCase(@TempDir tempDir: File) {
+        val toml = """
+            modLoader="javafml"
+            loaderVersion="[4,)"
+            license="MIT"
+            [[mods]]
+            modId="picky"
+            [[dependencies.picky]]
+                modId="enemy"
+                type=" Incompatible "
+                side="BOTH"
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "picky.jar", "META-INF/neoforge.mods.toml", toml)
+
+        val scanned = modScanner.neoForgeTomlScanner.scan(listOf(jar)).single()
+
+        Assertions.assertNull(scanned.dependency("enemy"), "` Incompatible ` is still incompatible")
+    }
+
+    /**
+     * A `type` that is not a string must not cost the mod its whole descriptor. Reading it with a cast
+     * throws `ClassCastException`, which the scan loop does not catch — only `NullPointerException` — so it
+     * escapes `read()` and `DescriptorScanner` flattens the jar to the never-read-anything fallback: file
+     * name as the mod id, no dependencies, SERVER. That looks exactly like a jar belonging to another
+     * loader, which is why nothing would report it.
+     */
+    @Test
+    fun aNonStringTypeDoesNotCostTheModItsDescriptor(@TempDir tempDir: File) {
+        val toml = """
+            modLoader="javafml"
+            loaderVersion="[4,)"
+            license="MIT"
+            [[mods]]
+            modId="picky"
+            [[dependencies.picky]]
+                modId="softlib"
+                type=1
+                side="BOTH"
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "picky.jar", "META-INF/neoforge.mods.toml", toml)
+
+        val scanned = modScanner.neoForgeTomlScanner.scan(listOf(jar)).single()
+
+        Assertions.assertTrue(scanned.descriptorRead, "the descriptor was read, not thrown away")
+        Assertions.assertEquals("picky", scanned.modID, "the declared id survives, not the file name")
     }
 }

@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 /**
- * Tests for [ModpackZipInspector], extracted from ConfigurationHandler in refactor Phase 1c.
- * Pins the content-listing of modpack ZIP-archives against the valid modpack-fixture; the
- * validity-checks themselves are pinned by ConfigurationHandlerCharacterizationTest through
- * the facade.
+ * Tests for [ModpackZipInspector]. Pins the content-listing of modpack ZIP-archives against the valid
+ * modpack-fixture; the validity-checks themselves are pinned by ConfigurationHandlerCharacterizationTest
+ * through the facade.
  */
 internal class ModpackZipInspectorTest {
     private val validModpackZip = File("src/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")

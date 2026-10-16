@@ -10,11 +10,42 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B46**, with the reason it waited and enough context to pick
-it up cold. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
+Add the next item under a dated section, starting at **B49**, with the reason it waited and enough context to pick
+it up cold. **B47 is issued and gone** — `resolve-version`'s `branch` mode carrying a branch's slashes into the
+version it outputs, closed 2026-10-16 in the same pass that found it; see `REFACTOR-LOG.md`. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
+
+## 2026-10-11 — from the documentation and call-depth pass
+
+### B46 — `checkConfiguration` downloads a CurseForge thumbnail
+
+`ConfigurationHandler.checkConfiguration` reaches `WebUtilities.downloadFile` at depth 13:
+
+```
+checkConfiguration -> isZip -> checkManifests -> ModpackManifestParser.checkManifests
+  -> updateConfigModelFromMinecraftInstance -> getAndSetIcon -> WebUtilities.downloadFile
+```
+
+`getAndSetIcon` fetches the pack's icon from a third-party host. A call whose whole contract is *check
+this configuration* therefore performs network I/O against CurseForge, and an embedder calling the
+published `checkConfiguration` has no way to know that from its signature or its documentation.
+
+**It is not a hang** — the call is bounded by `NetworkConfig`'s timeouts, and the manifest landmine in
+`serverpackcreator-api/CLAUDE.md` covers the rest of that path — so this is a responsibility leak
+rather than a defect. It is also on the GUI's config-check timer, which is why
+`ConfigEditorViewModel` memoises around it.
+
+**Why it waited:** splitting the fetch out of validation is a behaviour change on published API —
+`checkConfiguration` currently *populates* `packConfig` as a side effect, and the icon is part of what
+it populates, so a caller relying on the icon being set after a check would stop getting it. That
+belongs in a major, with a row in `API-BEHAVIOUR-CHANGES.md`.
+
+**To pick it up cold:** the decision is whether `getAndSetIcon` moves out of `checkManifests` into an
+explicit "enrich from manifest" step a caller opts into, or whether validation keeps it and the
+documentation simply says so. Found by `misc/call-depth.py`; `claude-docs/CALL-DEPTH.md` has the full
+chain and the measurement.
 
 ## 2026-10-03 — from the AppImage portability pass
 
@@ -152,3 +183,53 @@ would be a guess at demand, and a name-only match that skipped the confirm step 
 
 **Pick it up when** a refusal names an id that none of the four routes above reach. The confirm step is not
 optional: `askLinkedProjects` is the template — never trust a name, download and read the id.
+
+## 2026-10-12 — from the `9.1.0..develop` audit, iteration 1
+
+### B38 — the homepage's eslint 8 island, which nothing runs
+
+**What:** `serverpackcreator-homepage/` carries `.eslintrc.js`, `.eslintignore` and `eslint 8.37.0` with
+`@babel/eslint-parser`, `eslint-config-prettier 8.6.0`, `eslint-plugin-vue 9.8.0` and
+`eslint-webpack-plugin 4.0.0`, plus a `"lint": "eslint --ext .js,.vue ./"` script. Migrate it to the flat
+config and the eslint the rest of the repository is on, or decide deliberately that the homepage is not
+linted and delete the config, the script and the five dependencies.
+
+**Why it waited.** It is **inert, not wrong**. No workflow invokes it — `grep -rn homepage
+.forgejo/workflows/*.yml | grep -i lint` finds nothing — and `"test"` is
+`echo "No test specified" && exit 0`, so neither can fail a build or mislead a reader the way the deleted
+`CI-NOTES.md` could. The audit iteration it was found in was fixing things that break the release, and
+this breaks nothing.
+
+It is worth doing because the repository now holds **both** eslint generations:
+`build(deps-dev): bump eslint 9.39.5 -> 10.12.0, and @eslint/js with it` has just moved
+`serverpackcreator-web-frontend` to eslint 10 flat config, and that module's `CLAUDE.md` records that its
+legacy `.eslintrc.cjs`/`.eslintignore` "are gone". Two generations of one tool, one of them unreachable,
+is the duplicated-knowledge shape this project has paid for four times.
+
+**Pick it up when** the homepage SPA is touched for anything else, or when a dependency alert names one of
+those five packages — at which point the honest answer is the migration rather than a bump of a linter
+nobody runs. Note the homepage is Quasar 1 / webpack (`quasar.conf.js`, `babel.config.js`), not the
+app-vite 3 the other frontend uses, so its flat config is not a copy of that one.
+
+## 2026-10-16 — from the slashed-`-Pversion` fix
+
+### B48 — move `buildSrc/` to a `build-logic` included build
+
+**What:** convert `buildSrc/` into an ordinary included build (`pluginManagement { includeBuild("build-logic") }`)
+so the root `check` can depend on `gradle.includedBuild("build-logic").task(":check")` and the build logic's
+tests become part of one honest gate.
+
+**Why it waited.** The present wiring works and is pinned — `buildSrc/build.gradle.kts` finalizes `jar` with
+`test`, and `./gradlew help` runs the suite in ~3 s — but it is a *workaround* for Gradle 8.0 having stopped
+running buildSrc's lifecycle tasks ([gradle#25439](https://github.com/gradle/gradle/issues/25439), closed as
+intended). Hanging a test off a jar is not what either edge is for, and the obvious alternatives are all dead
+ends on 9.8.1: `:buildSrc:check` is inert, `gradle.includedBuild("buildSrc")` does not resolve, and
+`-p buildSrc check` fails in buildSrc's own settings, which declare the foojay resolver with no version
+because only the root build puts it on the classpath. The conversion touches `settings.gradle.kts`, both
+settings files' catalog and toolchain wiring, and anything that reaches buildSrc classes directly — far
+beyond the one-goal commit that introduced the sanitiser.
+
+**Pick it up when** buildSrc grows a second kind of verification (a TestKit harness, or a check that must run
+on its own in CI), at which point the workaround stops carrying its weight. Note the foojay asymmetry is the
+first thing to re-solve: an included build evaluates its settings standalone, so the resolver needs a version
+there, which is exactly what fails today under the root build.

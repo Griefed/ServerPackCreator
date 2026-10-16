@@ -27,8 +27,18 @@
   `"required"` and also taking `"optional"`, `"incompatible"` and `"discouraged"`. `ForgeTomlScanner.isOptional`
   reads **both**, and must keep doing so: `NeoForgeTomlScanner` overrides only the descriptor's file name, and
   NeoForge on Minecraft 1.20.2-1.20.4 still ships `mods.toml` with `mandatory`, so a per-scanner split would
-  miss that overlap. `"incompatible"` counts as not-required on purpose — it means the mod must *not* be
-  present, which is the opposite of something to fetch.
+  miss that overlap. **`"incompatible"` is not merely not-required, it is not a dependency at all** — it
+  means the mod must *not* be present — so `getSidenessAndDependencies` drops the entry outright and it
+  never reaches `ModDependency`. It stays in `notRequiredTypes` as well, because `isOptional` also serves
+  the Forge path and must not call it required if it ever reaches it. `"discouraged"` is the one to keep
+  apart: it still names something a pack may carry, so it survives as optional.
+  - **The `type` field has exactly ONE reader, `getType`, and it trims and lowercases.** A descriptor is
+    hand-written, so ` Incompatible ` occurs; comparing the raw value makes the drop turn on invisible
+    whitespace. It also reads the value with `toString()` rather than casting — a `type` holding a number
+    throws `ClassCastException`, which the scan loop does **not** catch (only `NullPointerException`), so it
+    escapes `read()` and `DescriptorScanner` flattens the jar to the never-read-anything fallback. The mod
+    loses its whole descriptor and the result is indistinguishable from a jar belonging to another loader,
+    which is why nothing would report it. Both pinned by `OptionalDependencyTest`.
   **Absent or unreadable means required**, deliberately: reading a required dependency as optional boots a mod
   without something it needs, which fails as a crash and can publish a *wrong* verdict, whereas reading an
   optional one as required only refuses a boot and learns nothing. It is also NeoForge's own documented default.
@@ -262,6 +272,118 @@
   grinder's gated matrix on 2026-09-26: the fallback to `JAVA` is the branch every hand-made pack takes, and
   no parse check can see it. `TemplateInterpreterRunner` is the one definition of "reach an interpreter,
   locally or in a container" that both tests use — don't grow a second.
+- **LANDMINE — a manifest is seeded from the jar only when it is ABSENT, so an unreadable one used to be
+  unrepairable (fixed 2026-10-14).** `ApiWrapper.setup()` copies the shipped manifests through
+  `JarUtilities.copyFolderFromJar`, whose inner loop is guarded by `if (!destination.exists())` — correct for
+  "do not overwrite a refreshed manifest", fatal for "this file is a half-write". And the refresh could not
+  undo it either: `ManifestUpdater.checkManifest` decides on *version counts*, so it parsed the local copy
+  too, threw, and discarded the good download already in memory. **The manifest a host could not read was
+  therefore the one manifest it could never replace.** Reported from the grinder under systemd: a truncated
+  `forge-manifest.json` ended every start with `JsonEOFException` at `ForgeLoader.update` → `VersionMeta.<init>`
+  → `ApiWrapper.setup()` → `main`, with `Restart=on-failure` making it a loop, and the only remedy was deleting
+  the file by hand. Three pieces now, and all three are needed:
+  - **`File.writeAtomically`** (`FileUtilities.kt`) stages into a sibling and `ATOMIC_MOVE`s it into place,
+    so a killed or failed write leaves the previous contents rather than part of the new ones.
+    `writeTextAtomically` is the string overload; `WebUtilities.downloadFile` is the other caller. Its
+    `temporaryFile` parameter exists **only so the failure can be executed** — the same reason
+    `ModpackZipInspector` takes an `openZip`; a partial write cannot be provoked from a test. **The default
+    staging name is unique per call and must stay so:** derived from the destination alone it is shared by
+    every concurrent write to that path, so two writers interleave into it and move the mixture into place —
+    reachable, because the grinder runs N workers against one shared installer cache and the five
+    `installerFor` methods take no lock.
+  - **`ManifestIntegrity.restoreIfUnreadable`** asks whether a file still parses and answers "no" with the jar's
+    copy, or with deletion when the jar carries none (the `mcserver/` files). It also deletes the `.etag`
+    sidecar, because an ETag is a promise that the local copy *is* the upstream one.
+  - **`VersionMeta.updateOrRepair`** is where it is wired: every meta's `update()` runs through it, and a
+    failure repairs that meta's manifests and retries **once**. **A failure that repaired nothing is rethrown
+    unchanged, deliberately** — the alternative is an empty meta, and this module already has the receipts for
+    what an empty `serverReleases()` costs (every candidate refused with "No bootable combination", i.e. the
+    engine's own state published as a statement about a mod).
+  **Do not add a proactive scan of the manifests directory to `setup()`**: it would parse ~500 KB on every
+  start for a case that is rare, and the metas parse the same files seconds later anyway. The repair is on the
+  failure path on purpose.
+  **Consequence worth knowing:** `ManifestUpdater`'s SAX catch no longer restores from the jar. It now can only
+  describe the *upstream* answer — an unreadable local copy is handled where it is counted — and overwriting a
+  working local manifest because upstream sent rubbish is the opposite of a repair.
+  **And the same shape in every download, since `WebUtilities.downloadFile` writes the same way.** Its old
+  body truncated the destination with `create()` *before* opening the stream and `deleteQuietly()`d it on
+  `IOException`, so a failed re-download destroyed the copy the host already had, and a killed one left a
+  partial file that `isFile` reports as present — which the old `return file.isFile` then published as
+  success. Every caller reads a `true` as *I now have this artifact* and the five `installerFor` methods
+  never re-download (`if (!destination.isFile)`), so a truncated installer cached as a complete one for ever.
+  The return value now answers *did this call write the file*, which is the only reading that stays honest
+  once the destination survives a failure. `downloadAndReplaceFile` still deletes first — that is its
+  documented contract, not an oversight.
+  **The same shape one level down:** `MinecraftServer.readServerJson` discards an `mcserver/<version>.json` it
+  cannot parse. It never crashed anything (both callers catch), which is why it was worse: every lookup read the
+  same broken file and returned `Optional.empty()`, which every consumer reads as *this version declares no
+  required Java* — `REQUIREMENT_UNKNOWN` masquerading as `JDK_NOT_BUNDLED`, permanently.
+
+- **LANDMINE — deleting `\r` is not a line-ending conversion, and the generated files do not all want the
+  same ending (2026-10-14).** Every run-file `ServerPackProvisioner.createServerRunFiles` writes goes through
+  `String.withLineEndings` (`FileUtilities.kt`), and the convention is picked by extension in
+  `lineEndingFor` — **LF for everything except `bat`/`cmd`, which get CRLF**. Do not reintroduce
+  `.replace("\r", "")`; it was at four call sites and wrong in two different ways.
+  - **Deleting the carriage return destroys a file whose lines are separated by lone CRs** — a classic-Mac
+    editor, or a conversion that ran halfway. The separator is removed instead of replaced, so the whole
+    template becomes one line. Measured: `#!/usr/bin/env bash\recho one\recho two\r` came out as
+    `#!/usr/bin/env bashecho oneecho two` — no shebang, no commands, and still a perfectly valid file.
+    Nothing reports it. `withLineEndings` normalises to LF first and expands afterwards, which also stops
+    the CRLF direction doubling an already-CRLF template into `\r\r\n`.
+  - **`start.bat` was shipped LF-only, which is a latent wrong-jump.** `cmd.exe` resolves a `goto`/`call`
+    label by scanning the file and misses a label crossing a 512-byte boundary when no carriage return has
+    reset its line counter — so the jump lands mid-line or reports a label that is visibly present as
+    missing ([DosTips](https://www.dostips.com/forum/viewtopic.php?t=8988), Dave Benham). Today's shipped
+    `default_template.bat` has no label at all, so nothing was broken; the templates are operator-editable,
+    which is what made it worth closing rather than noting. `serverpackcreator-plugin-selfextract`'s
+    `Stubs.batch` reached the same conclusion independently and joins its lines with `\r\n` — same fact,
+    two places, so change both or neither.
+  - **The template's own endings are not the answer and never were.** They are files an operator edits with
+    any editor on any platform, so generation decides. `.gitattributes` keeps the shipped templates LF in
+    the *working tree* only; its comment says so, and will go stale again if `lineEndingFor` moves.
+  - Pinned by `RunFileLineEndingsTest` (drives `createServerRunFiles` against fixture templates, mocking
+    `ApiProperties` rather than repointing the real template maps — those are backed by the shared test home
+    and would outlive the class) and `LineEndingTest`. Three of the four provisioner guards were observed
+    red first; the fourth pins the behaviour that was already correct so the change could not regress it.
+- **LANDMINE — `variables.txt` is read by FOUR shipped templates, each with its own loader, and writing it
+  correctly does not keep it correct (2026-10-16).** SPC writes it LF-only and without a byte-order mark,
+  and cannot keep it that way: it travels to a server, and an FTP client in ASCII/auto mode rewrites `.txt`
+  on upload, as do a hosting panel's web editor and an editor on Windows. The start script is the last
+  point of control, so every loader repairs **both** carriage returns and a leading byte-order mark before
+  reading — `loadVariables` in `default_template.sh`, `default_template.fish`, `default_java_template.sh`
+  and `default_java_template.fish`. **The installer templates are not covered by fixing the start
+  scripts**: they guard and read `variables.txt` themselves because they also run standalone. All four are
+  pinned by `VariablesFileLoadingTest`, which drives the real function out of each shipped template across
+  all six combinations of LF/CRLF/lone-CR and mark/no-mark.
+  - **A byte-order mark damages only the FIRST setting, which is what makes it hard to recognise.** The
+    three bytes stick to that name, so `JAVA` becomes a name nothing reads and the operator's Java choice
+    is ignored while every setting below it works normally. bash additionally prints
+    `﻿JAVA=java: command not found` — the line reads as a *command* rather than an assignment. A fixture
+    whose first line is a comment cannot catch this, so `VariablesFileLoadingTest` puts `JAVA` first
+    deliberately.
+  - **`${settings#$'\xEF\xBB\xBF'}` in bash, `string replace -r '^\x{feff}'` in fish.** Anchored in
+    both, never a bare delete: those bytes are a legal lead byte inside ordinary UTF-8, so removing them
+    anywhere would corrupt a value. fish's `string trim` does **not** remove the mark — it is not
+    whitespace — which is why it needs its own line even though trim handles the carriage return.
+  - **The two shells failed differently, which is why one fix is not the fix.** Measured: bash broke on
+    **both** CRLF and lone CR (`source` attaches the CR to every value — `JAVA=java\r` fails as
+    `java\r: command not found`, and a terminal rewinds its cursor over the message); fish already survived
+    CRLF, because `string trim` counts a carriage return as whitespace, and broke **only** on lone CR, which
+    its `read` hands over as one single line.
+  - **`eval "$(tr ...)"`, never `source <(tr ...)`.** bash 3.2 — what macOS ships — sets **no variable at
+    all** from a process substitution handed to `source`, and reports nothing: every value comes back empty
+    and the pack starts with its settings gone. Verified on 3.2.57 (silent) against 5.2.15 (works).
+  - **`tr '\r' '\n'`, never `tr -d '\r'`** — the same rule as `withLineEndings` above, for the same reason:
+    deleting the separator collapses a lone-CR file into one line. Turning it into a break costs a CRLF file
+    one blank line per entry, which both shells ignore.
+  - **The script comments are written for the operator, not for us — Griefed's call, 2026-10-16.**
+    These files ship inside every server pack and are write-protected but editable, so a user or a
+    contributor reading one has to be able to follow it. "Readability trumps professionalism": say what
+    goes wrong in plain words and what the line does, rather than naming the mechanism and moving on.
+  - **A fish probe must `functions --erase` between templates.** fish keeps a function defined when a later
+    `source` fails, so the first template's working copy silently graded the second's — the guard passed
+    against a deliberately corrupted installer template until that was added. Found by mutation, not by
+    reading, which is the only way this class shows up.
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI

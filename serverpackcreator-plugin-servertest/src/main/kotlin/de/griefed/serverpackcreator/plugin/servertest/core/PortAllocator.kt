@@ -96,6 +96,7 @@ class PortAllocator(
         allocated.remove(port)
     }
 
+    /** The bounds any configured port range is clamped to. */
     companion object {
         /** Lowest port a process can bind without privileges, and the floor for any configured range. */
         const val LOWEST_UNPRIVILEGED_PORT = 1024

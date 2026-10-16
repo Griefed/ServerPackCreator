@@ -41,8 +41,7 @@ import java.util.zip.ZipFile
  * an unparseable constraint, a loader this does not recognise: every one of them boots. Only a *positive,
  * readable* contradiction refuses. A gate that refused on doubt would turn a gap in descriptor coverage into
  * a catalog-wide mass-INCONCLUSIVE event — the same shape [VersionConstraint]'s own documentation warns
- * about, and the shape a `LoaderSupportMemory` once produced by marking Fabric unusable for 22 Minecraft
- * versions within minutes.
+ * about: refusing on doubt once marked Fabric unusable for 22 Minecraft versions within minutes.
  *
  * @author Griefed
  */

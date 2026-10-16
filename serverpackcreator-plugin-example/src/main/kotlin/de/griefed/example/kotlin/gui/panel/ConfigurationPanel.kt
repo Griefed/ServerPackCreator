@@ -202,10 +202,8 @@ class ConfigurationPanel(
     }
 
     /**
-     * Clear the interface, or in other words, reset this extensions config panel UI. If your Config
-     * Panel Extensions has no elements you wish to reset, then simply overwrite this method with an
-     * empty method body.<br></br><br></br> The `clear()`-method is called when the owning
-     * `TabCreateServerPack.clearInterface()`-method is called.
+     * Resets this panel's inputs to their defaults. No host calls it today — see
+     * [ExtensionConfigPanel.clear] — so this body exists to show the shape, not to be relied on.
      */
     override fun clear() {
         pluginsLog.info("Clearing $panelName interface.")

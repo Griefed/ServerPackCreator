@@ -64,8 +64,9 @@ class StorageSystem(
      * before anything durable is written.
      *
      * The caller owns the returned file and must delete it. Committing is [store]; nothing here reaches
-     * GridFS or the archive's final name, which is the point — a rejected upload used to cost all three
-     * writes, and the GridFS one could never be reclaimed because the sweep works back from ModPack rows.
+     * GridFS or the archive's final name, which is the point — committing first would cost a rejected
+     * upload all three writes, and the GridFS one could never be reclaimed because the sweep works back
+     * from ModPack rows.
      */
     fun land(file: MultipartFile): Optional<File> {
         val uploadName = landingName(file)

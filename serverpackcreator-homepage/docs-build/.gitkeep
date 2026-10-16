@@ -1,0 +1,2 @@
+# `docs/assemble-docs.sh` writes the versioned help and API trees here.
+# Committed empty so the Dockerfile COPY resolves on a fresh checkout; its contents are ignored.

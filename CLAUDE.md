@@ -44,7 +44,14 @@ constraints.
   documentation by example.
 - **Dependencies point inward toward `-api`, never outward** — see **Module boundaries** below.
 - Not in the Gradle build, so `settings.gradle.kts` will not mention them:
-  `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
+  `serverpackcreator-help` (docs), `serverpackcreator-homepage` (the website), `buildSrc`, `docker`,
+  `misc`.
+- **`serverpackcreator-homepage` is a git subtree of a separate repository, and it must only ever be
+  pulled with `--squash`** — see `serverpackcreator-homepage/CLAUDE.md`. A non-squash
+  `git subtree pull` makes every website commit an ancestor of `develop`, and because `.releaserc.yml`
+  uses a bare `tagFormat: '${version}'`, semantic-release reads their subjects as SPC's own. The
+  original `git subtree add` did this: 39 website commits reaching back to 2023 landed in the next
+  SPC changelog, and one `breaking:` among them would have released 10.0.0 instead of 9.3.0.
 - **CI lives in `.forgejo/workflows`** — Forgejo (`git.griefed.de`) is the canonical CI and the origin of
   every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
   the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
@@ -193,17 +200,47 @@ evidence consulted occasionally, not context every session needs.
 
 ### Module boundaries (architecture — SOLID / MVC)
 
-- `serverpackcreator-api` is the domain core. It must **not** gain compile dependencies on Swing,
-  Spring web, or the web frontend. Dependencies point inward toward `-api`, never outward; the app
-  and frontend are adapters around it. Flag any inward-pointing violation.
+- `serverpackcreator-api` is the domain core. It must **not** gain compile dependencies on Spring web
+  or the web frontend. Dependencies point inward toward `-api`, never outward; the app and frontend are
+  adapters around it. Flag any inward-pointing violation.
+  - **Swing has one carve-out, and it is the `plugins.swinggui` package plus the `ApiPlugins` methods
+    that serve it** — `TabExtension`, `ExtensionTab`, `ConfigPanelExtension`, `ExtensionConfigPanel`,
+    and `ApiPlugins.addTabExtensionTabs`/`getConfigPanels`. Same reason `java.awt` is carved out in
+    `serverpackcreator-api/CLAUDE.md`: **only `-api` is published**, so a GUI extension point has
+    nowhere else to live, and inverting it behind an app-side adapter would remove the capability from
+    plugins entirely. Nothing else in `-api` may import `javax.swing`; those five files are the whole
+    list, and it is re-derivable with
+    `grep -rl "javax\.swing" serverpackcreator-api/src/main/kotlin`.
+    Stated here because the rule above and the code have disagreed in writing since the extension
+    points were added, which costs every audit the same rediscovery.
 - Domain logic in `-api` must be unit-testable **without** booting a Spring context. A class that
   needs the Spring container to be tested is a design smell — flag it.
 - (Plugin-API stability is governed by the **API compatibility policy** above — don't duplicate it.)
 
 ### Refactor discipline (behavior-preserving by default)
 
-- One logical concern per commit. Keep "add tests", "pure refactor (no behavior change)", and
-  "change behavior" in **separate** commits. Related behavior changes may be grouped.
+- **One commit per GOAL, not per edit — Griefed's call, 2026-10-12.** A commit is the unit at which
+  somebody later asks *"why was this done?"*, so everything sharing one answer belongs in one commit,
+  however many files, modules or languages it spans. Atomic commits blow up the history: they record
+  the *process* of arriving at a change rather than the change, and a reader paging through twenty of
+  them has to reconstruct the one intent that produced them.
+  - **The test for whether two changes belong together is whether they share a reason**, not whether
+    they touch the same file. A workflow edit and the shell script it calls are one commit when one
+    goal needs both; two unrelated fixes in the same file are two commits.
+  - **It is worth the most where the first attempt was wrong.** A feature plus the four repairs its
+    own audit then found is **one** commit, because the repairs were never separately true — nothing
+    shipped in between. The history should show the feature that works, not a broken one followed by
+    apologies. Measured instance: `CI-NOTES.md` was written by one commit of a session and deleted by
+    a later one in the same session, so the atomic history recorded a 156-line file arriving and
+    leaving; grouped, it never existed.
+  - **This does not license a grab-bag.** "Everything I did today" is not a goal. If the commit message
+    needs the word *"and"* between two unrelated clauses, it is two commits — `fix(ci): the continuous
+    build's GitHub half still prints the traceback` stayed separate from the homepage work for exactly
+    that reason.
+  - **Keep "add tests", "pure refactor" and "change behaviour" separable where they are separable**, and
+    see the pin-first rule below for what survives when they are not. A `refactor:` label is still a
+    claim about behaviour, so a commit that groups a refactor with a behaviour change is labelled for
+    the behaviour change.
 - Pin current behavior with characterization tests **before** restructuring legacy code; refactor
   in small steps behind source-compatible facades (Strangler-Fig), keep the suite green at every
   commit.
@@ -250,20 +287,44 @@ evidence consulted occasionally, not context every session needs.
   documented shape. It also surfaced what was filed at the time as B33 — the web application
     writing to MongoDB's default `test` database instead of the configured one, which no test could have caught, and
     which the Spring Boot 4 property-key fix has since closed. Cost: about fifteen minutes.
-- **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
-  `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
-  predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
-  change to `buildSrc`, a `build.gradle.kts` or task wiring, the standard is: **measure the behaviour before and
-  after, and record both numbers in the commit message.** `8b87057cf` did this (a planted marker plus a cached
+- **Build logic is verified by measurement where it cannot be unit-tested, and `buildSrc` now has a test source
+  set for the part that can be — Griefed's call, 2026-10-16.** `buildSrc/src/test/kotlin` holds JUnit 5 via
+  `libs.kotlinTestJunit5`, and it exists for **pure functions**: `BuildVersionTest` pins
+  `BuildVersion.sanitize`, the predicate that keeps a `/` in `-Pversion` from being read as a path. Task
+  wiring, a `Copy`'s inputs and a one-line filter are still NOT worth a TestKit harness, so for those — and
+  for the real-world consequence of a pure function too — the standard is unchanged: **measure the behaviour
+  before and after, and record both numbers in the commit message.**
+  - **LANDMINE — a buildSrc test does not run unless something drags it in, and `build` is not that
+    something.** Gradle 8.0 made buildSrc an included build and stopped running its lifecycle tasks from the
+    main build; a maintainer confirms that is intended, with no plan to change it
+    ([gradle#25439](https://github.com/gradle/gradle/issues/25439)). Three obvious routes are all dead ends,
+    measured on 9.8.1: `tasks.check { dependsOn("buildSrc:check") }` is inert, `gradle.includedBuild("buildSrc")`
+    does not resolve, and `./gradlew -p buildSrc check` fails in buildSrc's *settings* — it declares the foojay
+    resolver with no version, which only resolves because the root build has already put it on the classpath
+    (the deliberate asymmetry `.claude/rules/build-layout.md` records under *the foojay toolchain resolver is
+    declared TWICE*). What works is `buildSrc`'s **jar**, which is built on every
+    invocation: `tasks.jar { finalizedBy(tasks.test) }`, so `./gradlew help` runs the suite in ~3 s. It must be
+    `finalizedBy` and not `dependsOn` — `kotlin-dsl` puts the jar on the test compile classpath, so
+    `dependsOn` is a circular dependency and fails the build outright.
+  - The named *Verify the build logic* step in both `test.yml`s runs exactly that `./gradlew help`, before the
+    long build, so a broken convention plugin fails in seconds rather than after the frontend.
+  Historic measurements, from before the source set existed: `8b87057cf` did this (a planted marker plus a cached
   manifest; the cache went 643 → 0 before the change and survived after), as did the `updateManifests` retarget (app
   home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
   Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
   a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
   outcome of the manifest work even though nothing can guard `TestHome.prepare` itself, because `ApiWrapper.setup()`
   re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
-- **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
-  commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
-  no evidence, and it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
+- **Pin first means *commit* first, not just write first — and when grouping absorbs the boundary, the
+  message carries it.** The ideal is still a failing `test(...)` commit, **red**, with the fix in the next
+  one, because that is the only form a reader can re-run (`git checkout <fix>^`). Where the goal-grouping
+  rule above puts the guard and the fix in one commit, the message must state that the pin was written and
+  **observed red first**, and quote the mutation that reproduces the red — `8f2ac90ce` is the worked
+  example, a squash whose message reproduces its own `test(api): pin that a stop signal reaches the
+  server, red` sub-commit verbatim along with the two mutations that fail against it. A grouped commit
+  that merely asserts "tests added" has thrown the evidence away, which is the thing this rule exists to
+  prevent. In-session verification with no written trace is not a substitute: it leaves no evidence, and
+  it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
   commits of that day's plan (`2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`,
   `1f92f585c`, `5caa6833f`) bundled guard and change, so nobody can check out `2a9a03473^` and watch the pin
   go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
@@ -356,20 +417,20 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-10-02).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-10-12).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 503           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 673           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
-| app            | 232           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| api            | 504           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 680           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| app            | 234           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | plugin-selfextract | 17            | Wraps every generated pack in a self-extracting `.bsx` and `.cmd`; the `.cmd` is pinned but has never been run. → `serverpackcreator-plugin-selfextract/CLAUDE.md` |
 | plugin-servertest | 112 (1 skip)  | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
-| web-frontend   | 37 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 542 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| web-frontend   | 38 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
+| grinder        | 543 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

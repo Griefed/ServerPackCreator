@@ -22,18 +22,18 @@ de92b2337da4: >-
   can evaluate by reading it.
 
 d8342dbff323: >-
-  docker-test.yml's `Build image` and `Build image (retry)`. The retry exists to re-run the identical
+  test.yml's `Build image` and `Build image (retry)`, in its `docker` job. The retry exists to re-run the identical
   build after waiting out ghcr's burst limiter, so its inputs are the same BY DEFINITION -- a version
   that differed would not be a retry. See 5301067150ae for why the two files' retries are not shared
   with each other either.
 
 5301067150ae: >-
   release-build.yml's `Build and push` and `Build and push (retry)`. Same reason as d8342dbff323. The
-  pattern is deliberately NOT shared with docker-test.yml's: a composite would need six pass-through
+  pattern is deliberately NOT shared with test.yml's `docker` job: a composite would need six pass-through
   inputs (push, no-cache, platforms, build-args, tags, file) to share about 25 lines of shell, and the
   two differ in what they cost -- around 30 s there against roughly fifteen minutes here -- so a change
   made for one would be made blind to the other's consequences. Sharing it would also couple the
-  release's image push to whatever lands in docker-test.yml.
+  release's image push to whatever lands in test.yml's image check.
 
 07c2806dc83b: >-
   update-readme.yml hashes README.md before and after rewriting it. Two invocations of one action with

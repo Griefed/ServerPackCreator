@@ -39,8 +39,6 @@ internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
     /**
      * Get the details for a given Minecraft and Fabric version combination.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param modloaderVersion Fabric version,
      * @return Details for a given Minecraft and Fabric version combination, wrapped in an [Optional].
      * @author Griefed
      */

@@ -26,10 +26,9 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
- * Settings-group for ServerPackCreators language: parses the stored language-property into a
- * locale, propagates every change to the given i18n4k-configuration, and persists locale-changes
- * via the injected [saveToDisk]-callback. Extracted from ApiProperties (refactor Phase 1b);
- * ApiProperties remains the facade through which consumers access these values.
+ * Settings-group for ServerPackCreators language: parses the stored language-property into a locale,
+ * propagates every change to the given i18n4k-configuration, and persists locale-changes via the injected
+ * [saveToDisk]-callback. ApiProperties remains the facade through which consumers access these values.
  */
 class I18nConfig(
     private val store: PropertyStore,

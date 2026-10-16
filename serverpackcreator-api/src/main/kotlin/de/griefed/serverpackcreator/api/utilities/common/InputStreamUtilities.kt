@@ -35,7 +35,6 @@ fun InputStream.readText(charset: Charset = Charsets.UTF_8) = this.bufferedReade
 
 /**
  * Write this input stream to a text-file.
- * @param file The file to write to
  * @param charset Charset to use for reading. Default is [Charsets.UTF_8]
  * @author Griefed
  */

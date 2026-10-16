@@ -37,9 +37,9 @@ sealed interface SessionState {
     /** A stop has been asked for and the process has not gone yet. */
     data object Stopping : SessionState
 
-    /**
-     * The script has exited. [exitCode] is its status, or `null` when it could not be read because the
-     * process had to be forced.
-     */
-    data class Exited(val exitCode: Int?) : SessionState
+    /** The script has exited. */
+    data class Exited(
+        /** Its exit status, or `null` when the process had to be forced and no status could be read. */
+        val exitCode: Int?
+    ) : SessionState
 }

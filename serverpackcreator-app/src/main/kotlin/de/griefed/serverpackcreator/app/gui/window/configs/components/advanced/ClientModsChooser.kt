@@ -42,6 +42,5 @@ class ClientModsChooser(current: File?, dimension: Dimension) : BaseFileChooser(
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = true
-        //preferredSize = dimension
     }
 }

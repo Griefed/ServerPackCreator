@@ -46,6 +46,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /** NeoForge's replacement for [mandatory] in `neoforge.mods.toml`: a `type` string, default `"required"`. */
     private val dependencyType = "type"
 
+    /** A dependency in a mods.toml only to state that it is incompatible with the parent mod. **/
+    private val incompatibleDependency = "incompatible"
+
     /**
      * The `type` values that do **not** oblige the pack to carry the dependency. `"incompatible"` is here
      * because it means the mod must *not* be present, which is the opposite of something to go and fetch.
@@ -118,6 +121,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                 //check all dependencies in mod
                 for (declared in declaredDependencies) {
                     val dependencyModId = getModId(declared)
+                    if (getType(declared) == incompatibleDependency) {
+                        continue
+                    }
                     val side = getSide(declared)
                     val dependencySideness = if (side.uppercase().matches(client)) {
                         Sideness.CLIENT
@@ -161,7 +167,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /**
      * Acquire the base toml-config of a mod.
      *
-     * @param file The file from which to acquire the toml config.
      * @return Config read from the toml in the mod.
      * @throws IOException if the mods.toml file could not be read.
      * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a
@@ -238,12 +243,25 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * documented default for an absent `type`, and the safe direction: see [ModDependency.optional].
      */
     private fun isOptional(config: CommentedConfig): Boolean {
-        val declaredType = config.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
+        val declaredType = getType(config)
         if (declaredType != null) {
             return declaredType in notRequiredTypes
         }
         return config.valueMap()[mandatory]?.toString()?.trim()?.lowercase() == "false"
     }
+
+    /**
+     * NeoForge's `type` for [dependency], trimmed and lowercased, or `null` where the field is absent.
+     *
+     * Reads the value with `toString()` rather than casting it: a descriptor is hand-written, so `type` can
+     * hold a number or a boolean, and a `ClassCastException` here is not caught by the scan loop — it
+     * escapes `read()` and costs the mod its whole descriptor, leaving the fallback entry that is
+     * indistinguishable from a jar belonging to another loader.
+     *
+     * @author Griefed
+     */
+    private fun getType(dependency: CommentedConfig): String? =
+        dependency.valueMap()[dependencyType]?.toString()?.trim()?.lowercase()
 
     /**
      * Acquire the side of the passed dependency.

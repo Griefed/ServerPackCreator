@@ -126,7 +126,6 @@ class LegacyFabricMeta(
     /**
      * All Legacy Fabric supported Minecraft versions.
      *
-     * @return All Legacy Fabric supported Minecraft versions.
      * @author Griefed
      */
     // Narrowed from `MutableList` to `List`: the returned collection is now an immutable snapshot, and

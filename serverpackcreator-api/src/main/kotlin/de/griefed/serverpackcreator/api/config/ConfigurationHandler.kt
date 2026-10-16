@@ -529,7 +529,6 @@ class ConfigurationHandler(
         }
 
         // Does the modpack extracted from the ZIP-archive already exist?
-        //unzippedModpack = unzipDestination(unzippedModpack)
 
         // Extract the archive to the modpack directory.
         FileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)

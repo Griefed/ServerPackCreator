@@ -293,7 +293,7 @@ props.defaultStartScriptTemplates()           // the shipped defaults
 Point the API at a specific configuration by handing that file to `ApiWrapper.api(...)` — best for
 reproducible or server-side runs where you don't want the ambient home directory.
 
-Full setting reference: <https://help.serverpackcreator.de/settings-and-configs.html>
+Full setting reference: <https://serverpackcreator.de/help/latest/settings-and-configs.html>
 
 ---
 
@@ -366,4 +366,4 @@ version manifests — no live network needed.
 
 Deeper architecture notes, established patterns and the durable landmine list live in
 [`CLAUDE.md`](CLAUDE.md); the per-package narrative is in [`module.md`](module.md), rendered into the API
-docs at <https://help.serverpackcreator.de>.
+docs at <https://serverpackcreator.de/help/latest>.

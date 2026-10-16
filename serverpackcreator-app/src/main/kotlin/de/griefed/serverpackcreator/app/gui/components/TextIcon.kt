@@ -138,8 +138,6 @@ class TextIcon(
     /**
      * Set the text to be rendered on the Icon
      *
-     * @param text The text to be rendered on the Icon
-     *
      * @author Rob Camick
      */
     private fun setText(text: String) {

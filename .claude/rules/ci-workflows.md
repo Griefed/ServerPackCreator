@@ -89,8 +89,17 @@ app whose viewer navigates for real only when the href carries a scheme — `isE
 — so a relative `api/index.html` is client-side routed instead: the app pushes the URL to `/api/` and
 re-bootstraps there, asking for `api/config.json`, `api/HelpTOC.json` and `api/api-object-digest.json`,
 which exist only at the site root. All three 404 and the page dies on *"TOC data error"*. A root-absolute
-`/ServerPackCreator/api/index.html` fails the same test. The cost is that the link leaves a self-hosted
-container for the public site; `/api/` is still served in both layouts for anyone addressing it directly.
+`/ServerPackCreator/api/index.html` fails the same test.
+
+**It is also PER-VERSION now, and only one of the two builds rewrites it.** The literal in `spch.tree` is
+the GitHub Pages URL, which is what `pages.yml` wants, so that workflow substitutes nothing. `docs.yml`
+replaces it with `https://serverpackcreator.de/api/<version>/index.html` before the builder runs, because
+its bundle ships in the help image and serverpackcreator.de serves a tree per version — 9.1.0's help must
+reach 9.1.0's reference, not whatever is newest. That step matches the literal and FAILS if it is absent,
+since `sed` matching nothing exits 0 and would ship the Pages link silently. A second step reads
+`HelpTOC.json` back out of the built zip, because Writerside rewrites hrefs as it builds and the source
+saying so is not evidence the output does; it SKIPS, loudly, where neither `unzip` nor `python3` is on the
+runner — `unzip` is not a given here, which is the same reason the dokka job ships a tar.gz.
 **`pages.yml` needs Settings → Pages → Source set to "GitHub Actions"**; while it is still "Deploy from a
 branch" the workflow goes green and publishes nothing.
 
@@ -130,8 +139,9 @@ its blocks, because GitHub honours them.
 here.** `services/repository/push.go` takes the `IsNewRef()` branch and calls `notify_service.CreateRef`
 **and then** `notify_service.PushCommits`, so both events are dispatched; worse, it fills the push payload
 with `newCommit.CommitsBeforeLimit(10)`, advertising the branch's last ten commits though not one of them
-is new. Creating `alpha` or `beta` therefore started five workflows — `test`, `qodana`, `docker-test`,
-`docs` and `release-generate` — against a branch that is byte-for-byte `main`. The last of those is the
+is new. Creating `alpha` or `beta` therefore started four workflows — `test`, `qodana`, `docs` and
+`release-generate` — against a branch that is byte-for-byte `main`. It was five until `docker-test`
+merged into `test`. The last of those is the
 one that matters: **semantic-release can mint a tag**, and it was running on a branch nobody had pushed
 work to yet.
 
@@ -342,6 +352,25 @@ and it was correct. **When a forge hands you two identifiers for one object, pro
 than reasoning about which one is "the" run number.** `curl -o /dev/null -w '%{http_code}'` answers it
 anonymously in a second.
 
+## One workflow per area, and the one that cannot join them
+
+**`docker-test.yml` merged into `test.yml` as its `docker` job.** The two had identical triggers
+(`push`, `workflow_dispatch`) and identical concurrency semantics, so they were one workflow wearing
+two names — and "did the tests pass?" took two places to answer.
+
+**`grinder-container-it.yml` stays separate, and the reason is structural rather than preference.**
+Its concurrency group has **no ref in it** and `cancel-in-progress: false`, so one run happens at a
+time across the whole repository; `test.yml`'s is per-ref and cancellable. One workflow can hold only
+one of those, because **Forgejo has no job-level `concurrency`** — read from its source, not assumed:
+`ConfigureActionRunConcurrency` evaluates `workflow.RawConcurrency` onto the `ActionRun`, and
+`models/actions/run_job.go` mentions concurrency nowhere at all.
+
+So merging it costs one of two things, and both are already on the record above: dropping the
+repo-wide lock re-opens the interference that failed runs 947, 954 and 956 on a *different* test each
+time, and taking the lock for all of `test.yml` serialises every push — which the *Pacing* entry
+below already states was considered and rejected. Leave it where it is until Forgejo grows job-level
+concurrency.
+
 ## `concurrency` is per-ref here, and two refs build the same commit on every push
 
 **Forgejo implements `concurrency` (since v14), and its `cancel-in-progress: false` QUEUES rather than
@@ -454,11 +483,67 @@ mirror is current: its GitHub release carries `target_commitish` `f7ebba4e`, whe
 `main`.
 
 Note what this costs in reading time: GitHub's 422 is about `tag_name`, so it sends you to the tag, the
-changelog and the release payload — three places that were all fine. `release-build.yml` now probes
-`GET /commits/${{ github.sha }}` before the POST and polls for five minutes, because a push-mirror's
-`Sync when new commits are pushed` is an **opt-in** checkbox and without it the mirror is periodic on an
-interval that [defaults to 8h](https://forgejo.org/docs/v15.0/user/repo-mirror/); it then fails naming the
-mirror, and treats `401`/`403` as the credential rather than waiting five minutes to blame the wrong thing.
+changelog and the release payload — three places that were all fine. `release-build.yml` probes
+`GET /commits/${{ github.sha }}` before the POST, and treats `401`/`403` as the credential rather than
+waiting out the poll to blame the wrong thing.
+
+### Waiting for a push-mirror was the wrong half of the fix — trigger it
+
+**The probe named the cause correctly and then failed the release anyway, five times.** `Sync when new
+commits are pushed` is an **opt-in** checkbox on a Forgejo push-mirror, and without it the mirror is
+periodic on an interval that
+[defaults to 8h](https://forgejo.org/docs/v15.0/user/repo-mirror/) — so the original five-minute poll was
+waiting on something that, in the bad case, was up to ninety-six times longer than its own patience. The
+run list measures it: of the 12 release builds from `9.0.0-alpha.6` to `9.2.1`, the `mirror` job reached
+its steps 8 times and **failed 6**, and **5 of those 6 are this identical stall** — alpha.7 (run `311`),
+alpha.9 (`755`), beta.3 (`901`), 9.0.0 (`1063`) and 9.2.1 (`1411`), each 20/20 attempts of
+`422 No commit found for SHA`. The sixth is alpha.6's deleted GitLab step, above. The proof that only
+timing was ever missing: GitHub holds the `9.2.0` tag today, delivered by the mirror's own interval hours
+after the workflow had already given up on it.
+
+**The fix is `POST /repos/{owner}/{repo}/push_mirrors-sync`, and it is synchronous.** `repoPushMirrorSync`
+(`routers/api/v1/repo/mirror.go`) loops the repository's push mirrors calling `SyncPushMirror` **inline**
+rather than putting it on the mirror queue, and that runs
+`git.Push(…, Force: true, Mirror: true)` — a `git push --mirror --force`. So a `200` means every mirror
+holds the release commit *and* its tag by the time the call returns, which also demotes `target_commitish`
+in the POST below from load-bearing to belt-and-braces. One call covers every mirror the repository has,
+so **a forge added later needs no workflow change** — that is the whole reason to prefer it over probing
+each target.
+
+Three constraints that decide how the step is written:
+
+- **It needs repo ADMIN, not write.** The route is `reqAdmin(), reqToken()`. `FJ_TOKEN` carries
+  `write:repository` and its owner owns the repo, so nothing new is needed — but a token minted for a
+  non-admin would get a `403` here while succeeding at every other `FJ_TOKEN` call in the pipeline.
+- **One dead mirror can mask a healthy one.** The handler `return`s a 500 on the **first** mirror whose
+  push fails and stops iterating, and the API offers no per-mirror sync (`GET`/`DELETE /push_mirrors/{name}`
+  only) to route around it. So the step is best-effort and the **per-forge probe stays the verdict**; and
+  the operational rule for a second mirror is that it gets repaired or removed, never left configured
+  and broken, because a broken one taxes every release.
+- **`last_error` is the thing to print.** `GET /push_mirrors` returns `remote_name`, `remote_address`,
+  `sync_on_commit`, `interval`, `last_update` and `last_error` per mirror, and `last_error` is the exact
+  text the web UI shows under Settings → Mirror Settings — which is what the old failure message sent an
+  operator to go and read by hand. `remote_address` is stored credential-stripped (`util.SanitizeURL` at
+  creation), so it is safe in a job log.
+
+The poll that follows is now sized for GitHub indexing a push it has already received, not for a mirror
+that may not have run: 8 attempts at 15 s. **A poll is only honest about what it is waiting for** — the
+old 20×15 s looked like diligence and was actually a coin-flip on an 8-hour timer.
+
+**Current outward state, measured 2026-10-11 by `git ls-remote` against all three forges** (re-measure
+rather than trusting this; it is a snapshot):
+
+| ref | Forgejo | GitHub | gitlab.com |
+|---|---|---|---|
+| `main` | `894c574aa` — 9.2.1 | `894c574aa` | `c3f1ef3fd` — 9.0.0 |
+| `develop` | `d94ec0257` | `d94ec0257` | `8524c009c` — 2024-03-26 |
+| tag `9.2.1` | yes | yes | no |
+
+**So the gitlab.com entry above is stale in one direction and still right in the other.** That repository
+is no longer frozen at April 2024 — it now carries tags through `9.1.0` (2026-10-02), so refs do reach it
+— but its *branches* lag its own tags by three releases, which is a mirror that partially fails rather
+than one that is stopped. Do not invent the mechanism for that: `GET /push_mirrors` prints `last_error`
+for it, the job now does so on every release, and that is the thing to read before changing anything.
 
 **Nothing else in the release should be gated on the mirror.** The `news` job — the Discord
 announcement recreated from `main`'s `github_release.yml`/`github-prerelease.yml` — needs
@@ -471,11 +556,15 @@ silenced the announcement of two perfectly good releases.
 that reject a re-published version. Only `release` is idempotent by design. Forgejo 16.0.3 can re-run a
 single job, so repair the mirror, then re-run `mirror` alone.
 
-Two things generalise beyond GitLab:
+Three things generalise beyond GitLab:
 
 - **A mirror step's precondition is the mirror, not the API call.** Before adding or restoring one, check the
   target actually has the ref: `curl -s https://<forge>/api/.../repository/commits?per_page=1`. Anonymous is
   enough for a public repo, and it takes seconds.
+- **Waiting on an asynchronous dependency is a worse answer than triggering it, whenever a trigger
+  exists.** The probe above was correct, well-documented and diagnosed its own failure precisely — and it
+  still failed 5 releases, because a poll can only ever be a bet on someone else's schedule. Ask what
+  *starts* the thing being waited for before choosing how long to wait for it.
 - **`curl -sf` in CI is how a failure becomes unreadable.** `-f` sets exit 22 and `-s` throws away the body —
   which is the only place these APIs say what is wrong. The failing run said nothing else whatsoever.
   Every call whose failure is not deliberately tolerated now captures the status with
@@ -651,13 +740,13 @@ copy of it.** `nick-fields/retry` and its kin run shell commands, not JavaScript
 the runner's own engine rather than assumed: `pkg/runner/step.go` in `code.forgejo.org/forgejo/act` sets
 `stepResult.Outcome` to `failure` while `isContinueOnError` turns `Conclusion` back to `success`, and
 `StepResult` (`pkg/model/step_result.go`) marshals `outcome` as exactly the string an
-`if: steps.<id>.outcome == 'failure'` compares against. Both `docker-test.yml` and `release-build.yml`
-now do this; the second is the one that matters, because a 429 there costs the release its images and
+`if: steps.<id>.outcome == 'failure'` compares against. Both `test.yml`'s `docker` job and
+`release-build.yml` now do this; the second is the one that matters, because a 429 there costs the release its images and
 takes the `mirror` job (`needs: docker`) down with it.
 
 **One retry, not a loop.** The limiter resets in under a millisecond, so a host still limiting a minute
-later is a condition worth failing loudly on rather than grinding against. In `docker-test.yml` the retry
-is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
+later is a condition worth failing loudly on rather than grinding against. In `test.yml`'s `docker` job
+the retry is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
 In `release-build.yml` it is not: `no-cache: true` means attempt two rebuilds the whole Gradle stage,
 about fifteen minutes. Pushing the same tags twice is idempotent, so that is the price of the insurance.
 
@@ -671,7 +760,7 @@ not, and falls back to upstream — verified from `util/resolver/resolver.go`, w
 reference does not state), and the bridge-gateway/`INPUT policy DROP` trap that makes a mirror look like
 it simply does not work.
 
-**The workflow half has landed and no longer has to wait for the host half.** `docker-test.yml` and
+**The workflow half has landed and no longer has to wait for the host half.** `test.yml` and
 `release-build.yml` probe each cache with `GET /v2/` and mirror only what answered, so a host with no
 caches builds against upstream exactly as before. The caches are reached by **fixed IP, not by name**,
 because jobs run inside a `docker:dind` daemon whose embedded DNS does not know the host daemon's

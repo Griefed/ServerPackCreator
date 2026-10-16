@@ -34,6 +34,7 @@ enum class Platform {
     /** Linux and macOS — anything that is not Windows, where `bash start.sh` is the default. */
     POSIX;
 
+    /** How a [Platform] is derived from an OS name. */
     companion object {
         /**
          * The family [osName] belongs to. Defaults to the running host, and takes the name as an argument so
@@ -67,6 +68,7 @@ data class StartScript(
     /** The file inside a server pack, which `ServerPackProvisioner` names `start.<key>`. */
     val fileName: String get() = "$FILE_PREFIX$key"
 
+    /** The naming convention a generated start script follows. */
     companion object {
         /** The prefix `ServerPackProvisioner.startScriptName` gives every generated start script. */
         const val FILE_PREFIX = "start."

@@ -35,10 +35,9 @@ import java.util.*
 import java.util.regex.PatternSyntaxException
 
 /**
- * Compiler of the list of mods to include in a server pack: walks the mods-directory, excludes
- * user-specified and automatically discovered clientside-only mods, and honors the
- * mod-whitelist. Extracted from ServerPackHandler (refactor Phase 1d); ServerPackHandler
- * remains the facade through which consumers access these operations.
+ * Compiler of the list of mods to include in a server pack: walks the mods-directory, excludes user-specified
+ * and automatically discovered clientside-only mods, and honors the mod-whitelist. ServerPackHandler remains
+ * the facade through which consumers access these operations.
  */
 class ModListCompiler(
     private val apiProperties: ApiProperties,
@@ -133,7 +132,6 @@ class ModListCompiler(
      * clientside-only mods to exclude, Minecraft version used by the
      * modpack and server pack and the modloader used by the modpack and
      * server pack.
-     * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
     @Suppress("unused")
@@ -156,7 +154,6 @@ class ModListCompiler(
      * @param minecraftVersion The Minecraft version the modpack uses. When the modloader is Forge, this determines
      * whether Annotations or Tomls are scanned.
      * @param modloader The modloader the modpack uses.
-     * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
     fun compileModList(

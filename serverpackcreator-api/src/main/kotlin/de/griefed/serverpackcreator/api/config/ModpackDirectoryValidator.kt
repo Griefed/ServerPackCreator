@@ -24,10 +24,9 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
 /**
- * Validator for the modpack-directory-concern of a server pack configuration: existence, type
- * and the absence of the overrides-directory which marks uninstalled modpack-exports. Extracted
- * from ConfigurationHandler (refactor Phase 1c); ConfigurationHandler remains the facade through
- * which consumers access these checks.
+ * Validator for the modpack-directory-concern of a server pack configuration: existence, type and the absence
+ * of the overrides-directory which marks uninstalled modpack-exports. ConfigurationHandler remains the facade
+ * through which consumers access these checks.
  */
 class ModpackDirectoryValidator {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

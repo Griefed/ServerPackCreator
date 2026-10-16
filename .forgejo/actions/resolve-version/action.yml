@@ -85,6 +85,27 @@ runs:
             exit 1
             ;;
         esac
+
+        # THE VERSION BECOMES A FILE NAME -- the jars, the installer media, the dokka zip, the release
+        # directory -- so it is normalised the same way the build normalises it in `BuildVersion.sanitize`:
+        # every run of characters illegal in a file name becomes one `-`. `branch` mode is why. A Renovate
+        # branch is `renovate/babel-monorepo`, and a `/` in an archive name is a DIRECTORY SEPARATOR, so
+        # `<module>-<version>.jar` lands in a subdirectory whose leaf name no longer carries the module --
+        # which is how `bootJar` came to refuse two modules' jars as one duplicate `BOOT-INF/lib/` entry.
+        # `tag` mode is already restricted to `X.Y.Z[-(alpha|beta).N]` above, so this never touches a
+        # release; it is applied to both modes anyway, because a guard that runs on one path only is a
+        # guard someone has to remember.
+        #
+        # KEEP THIS EXPRESSION IDENTICAL to `BuildVersion.ILLEGAL_IN_A_FILE_NAME_PATTERN`. Bash and Kotlin
+        # cannot share it, so `BuildVersionTest.the resolve-version action normalises with the same
+        # expression` reads this file and fails if the two ever diverge. Divergence means a workflow labels
+        # an asset something the build did not name it.
+        SANITISED="$(printf '%s' "$VERSION" | sed -E 's/[^A-Za-z0-9._+-]+/-/g')"
+        if [ "$SANITISED" != "$VERSION" ]; then
+          echo "Version '${VERSION}' is not a legal file name; building as '${SANITISED}'."
+          VERSION="$SANITISED"
+        fi
+
         echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
         echo "prerelease=${PRERELEASE}" >> "$GITHUB_OUTPUT"
         echo "Building version: ${VERSION} (prerelease: ${PRERELEASE})"

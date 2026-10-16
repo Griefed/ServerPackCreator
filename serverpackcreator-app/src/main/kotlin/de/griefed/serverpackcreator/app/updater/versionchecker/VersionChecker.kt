@@ -332,8 +332,6 @@ abstract class VersionChecker {
     /**
      * Acquire the response from a given URL.
      * @author Griefed
-     * @param requestUrl The URL to get the response from.
-     * @return The response from the given URL.
      * @throws IOException Thrown if the requested URL can not be reached or if any other error occurs during the request.
      */
     @Throws(IOException::class)

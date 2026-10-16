@@ -49,7 +49,6 @@ class ServerPackController @Autowired constructor(
     /**
      * Download a server pack by its ID.
      *
-     * @param id The id of the server pack.
      * @return Gives the requester the requested file as a download, if it was found.
      * @author Griefed
      */

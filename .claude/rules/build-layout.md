@@ -50,6 +50,21 @@ the "do not tidy that away, here is what it cost last time".
     the coverage number until it is named in `excludedSourceSets`. Dokka, checked, does *not* adopt it. A
     non-test source set wants its configurations extending `implementation`/`runtimeOnly`, not the test
     ones — otherwise it compiles without the module's own dependencies.
+- **buildSrc HAS a test source set as of 2026-10-16, and nothing runs it by itself.** `buildSrc/src/test/kotlin`
+  (JUnit 5, `libs.kotlinTestJunit5`) holds pins for buildSrc's **pure functions** — currently
+  `BuildVersionTest` over `BuildVersion.sanitize`. It is reached only because `buildSrc/build.gradle.kts`
+  finalizes `jar` with `test`; `:buildSrc:check`, `gradle.includedBuild("buildSrc")` and `-p buildSrc` are all
+  dead ends on 9.8.1. What belongs there, what still belongs in a commit-message measurement, and why the edge
+  has to be `finalizedBy` rather than `dependsOn`, are in the root `CLAUDE.md` under *Build logic is verified by
+  measurement where it cannot be unit-tested* — stated once, there.
+  - **LANDMINE — a test that reads a file outside its own project is UP-TO-DATE when that file changes.**
+    `BuildVersionTest` reads `.forgejo/actions/resolve-version/action.yml` to check the action still
+    normalises a version the way `BuildVersion` does. Gradle knows nothing about that path, so mutating the
+    action left the suite **green** — the guard could never have fired on the one edit it exists to catch.
+    `tasks.test { inputs.file(...) }` in `buildSrc/build.gradle.kts` is what makes it re-run, and the
+    mutation turns it red with the line present. Any guard that reaches across a project boundary needs the
+    same declaration; ask what makes its task re-run, not only what it asserts.
+
 - **A plugin module's jar name is decided in `serverpackcreator.plugin-conventions`, and nowhere else.**
   Every plugin jar is `<module>-<version>_experimental.jar`; the convention plugin also owns the
   `pluginArtifact` consumable configuration and its `artifacts { add }`, which stood verbatim in all four
@@ -76,8 +91,8 @@ the "do not tidy that away, here is what it cost last time".
   **not** list `mavenLocal()`, which used to be first there and let a stale `~/.m2` artifact shadow the
   real one.
 - **The foojay toolchain resolver is declared TWICE, differently, and both are required.**
-  `settings.gradle.kts` has it `version "0.8.0"`; `buildSrc/settings.gradle.kts` has it **without** a
-  version. buildSrc is a separate build and does **not** inherit the root's toolchain repositories
+  `settings.gradle.kts` has it with an explicit version — the number is not repeated here because it
+  goes stale on every bump; `buildSrc/settings.gradle.kts` has it **without** a version. buildSrc is a separate build and does **not** inherit the root's toolchain repositories
   (verified — it fails with *"Toolchain download repositories have not been configured"*), yet by the
   time its settings evaluate the plugin is already on the classpath, so requesting a version there
   fails with *"already on the classpath with an unknown version"*. Don't "tidy" either one away.
@@ -182,10 +197,15 @@ the "do not tidy that away, here is what it cost last time".
   (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
   Those constructs block project **isolation**, a different feature.
 
-  **Re-measured 2026-09-26 — our half is fixed, and only the third-party half is left.**
-  `./gradlew build --configuration-cache --dry-run` now reports **8 problems, 2 of which seem unique, all
-  of them `:generateLicenseReport`** holding a `Project` (jk1 gradle-license-report — not fixable here).
-  `./gradlew :serverpackcreator-app:test --configuration-cache` stores an entry with **no problems at all**.
+  **Re-measured 2026-10-16 on Gradle 9.8.1: `./gradlew build --configuration-cache --dry-run` reports
+  11 problems, 3 of which seem unique.** Two are `:generateLicenseReport` holding a `Project` (jk1
+  gradle-license-report — not fixable here) and the third is **`:serverpackcreator-app:processResources`
+  holding one**, which is ours and is new since the 2026-09-26 reading of *8 problems, 2 unique, all of
+  them `generateLicenseReport`*. Nothing in the slashed-`-Pversion` work caused it — `develop` and that
+  branch were measured against each other and are identical at 11/3 — so it arrived with some change
+  between those two dates and is worth a `git log -S` over `-app`'s `processResources`.
+  `./gradlew :serverpackcreator-app:test --configuration-cache` stored an entry with no problems at all
+  in September; re-run it rather than trusting that now.
 
   It used to be 20 problems, 13 unique, and the entry above used to name ours: the `filter { }` in
   `processTestResources` and a `doFirst { cleanup() }` in `test`, both capturing the enclosing script,
@@ -193,8 +213,9 @@ the "do not tidy that away, here is what it cost last time".
   `TestHome.prepare(File)`, a **compiled buildSrc class** that closes over nothing but the `File` handed
   to it, and `-app`'s duplicate `doFirst` was deleted once it was shown to be redundant.
 
-  So the ceiling *is* now `generateLicenseReport`: excluding that one task is the difference between 8
-  problems and zero, rather than merely "fewer". Re-run the command above before believing this
+  So the ceiling is `generateLicenseReport` **plus** whatever re-captured a `Project` in `-app`'s
+  `processResources`: only the first of those is third-party, which makes the second the one worth
+  chasing. Re-run the command above before believing this
   paragraph — it is the kind of fact that goes stale the moment a task action captures a script again.
 - **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
   that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`

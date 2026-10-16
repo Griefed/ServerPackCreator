@@ -145,7 +145,8 @@ internal class GrinderSpcEnvironmentTest {
      * The window is `main`'s own body, closing brace included in the arithmetic. Scanning to end-of-file instead
      * would let both `indexOf` calls match text that is not `main` — the `pinSpcHomeDirectory` *declaration* below
      * it, or a helper's log call — and the guard would then compare positions of things it is not asserting about
-     * and pass whatever `main` does. [mainBody] asserts its own boundedness, so that cannot rot silently.
+     * and pass whatever `main` does. [grinderMainBody] asserts its own boundedness, so that cannot rot
+     * silently.
      */
     @Test
     fun theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement() {

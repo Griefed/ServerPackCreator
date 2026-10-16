@@ -35,7 +35,6 @@ import java.util.Collections
 /**
  * Information about the Fabric installer.
  *
- * @param installerManifest Fabric installer information
  * @param utilities         Commonly used utilities across ServerPackCreator.
  *
  * @author Griefed
@@ -144,7 +143,6 @@ internal class FabricInstaller(
     /**
      * Acquire the URL for the given Fabric version.
      *
-     * @param fabricInstallerVersion Fabric version.
      * @return URL to the installer for the given Fabric version.
      * @throws MalformedURLException if the URL could not be formed.
      * @author Griefed
@@ -156,7 +154,6 @@ internal class FabricInstaller(
     /**
      * Get the latest Fabric installer version.
      *
-     * @return The latest Fabric installer version.
      * @author Griefed
      */
     fun latestInstallerVersion() = latestInstaller!!
@@ -164,7 +161,6 @@ internal class FabricInstaller(
     /**
      * Get the release Fabric installer version.
      *
-     * @return The release Fabric installer version.
      * @author Griefed
      */
     fun releaseInstallerVersion() = releaseInstaller!!
@@ -172,7 +168,6 @@ internal class FabricInstaller(
     /**
      * Get the [URL] to the latest Fabric installer.
      *
-     * @return URL to the latest Fabric installer.
      * @author Griefed
      */
     fun latestInstallerUrl() = latestInstallerUrl!!
@@ -180,7 +175,6 @@ internal class FabricInstaller(
     /**
      * Get the [URL] to the release Fabric installer.
      *
-     * @return URL to the release Fabric installer.
      * @author Griefed
      */
     fun releaseInstallerUrl() = releaseInstallerUrl!!

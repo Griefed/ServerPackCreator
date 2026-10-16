@@ -42,6 +42,18 @@ jobs:
         run: |
           chmod +x gradlew
 
+      # THE BUILD LOGIC'S OWN TESTS, and `help` is genuinely the way to reach them. Gradle 8.0 made
+      # buildSrc an included build and stopped running its lifecycle tasks from the main build -- a
+      # maintainer confirms that is intended -- and neither `:buildSrc:check` nor
+      # `gradle.includedBuild("buildSrc")` resolves from the root, while `-p buildSrc` fails outright
+      # because `buildSrc/settings.gradle.kts` declares the foojay resolver with no version and only
+      # the root build puts it on the classpath. What IS always built is buildSrc's jar, which
+      # `buildSrc/build.gradle.kts` finalizes with `test`, so any root invocation runs them. This one
+      # is here rather than left to the build below so a broken convention plugin fails in seconds
+      # instead of after the frontend.
+      - name: Verify the build logic
+        run: ./gradlew help
+
       - name: Build with Gradle
         run: |
           ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace

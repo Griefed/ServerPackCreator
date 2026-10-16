@@ -93,7 +93,6 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * throws `ClassCastException`, which is not an `IOException` and so escapes every caller's error
      * handling. Callers needing `responseCode` cast for themselves, exactly as they did before.
      *
-     * @param url The URL to connect to.
      * @param readTimeout Milliseconds a single read may block. Pass
      * [ApiProperties.networkDownloadReadTimeout] for file-downloads.
      * @return The opened, timeout-carrying connection.
@@ -142,27 +141,32 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * * /tmp/some_folder/foo.bar
      * * C:/temp/some_folder/bar.foo
      * @param downloadURL     The URL to the file you want to download.
-     * @return true if the file was created.
+     * @return true if **this call** wrote the file. A failure answers `false` whether or not a file is there,
+     * because every caller reads a `true` as "I now have this artifact".
      * @author Griefed
      */
     fun downloadFile(
         file: File,
         downloadURL: URL
     ): Boolean {
-        file.create()
-        try {
-            openTimedStream(downloadURL, apiProperties.networkDownloadReadTimeout).use { url ->
-                Channels.newChannel(url).use { channel ->
-                    file.outputStream().use { stream ->
-                        stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
+        return try {
+            // Staged and moved rather than streamed into place: a half-written artifact satisfies isFile, so a
+            // killed process would otherwise leave one to be served from cache as a complete jar ever after --
+            // and a download that merely fails must not destroy the copy the host already had.
+            file.writeAtomically { staging ->
+                openTimedStream(downloadURL, apiProperties.networkDownloadReadTimeout).use { url ->
+                    Channels.newChannel(url).use { channel ->
+                        staging.outputStream().use { stream ->
+                            stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
+                        }
                     }
                 }
             }
+            true
         } catch (ex: IOException) {
             log.error("An error occurred downloading $file from $downloadURL.", ex)
-            file.deleteQuietly()
+            false
         }
-        return file.isFile
     }
 
     /**
@@ -352,7 +356,6 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * Get the response of a call to a URL as a string.
      *
      * @param url The URL you want to get the response from
-     * @return The response.
      * @throws IOException if the URL could not be called or a communication error occurred.
      */
     @Throws(IOException::class)
@@ -371,7 +374,6 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * Get the response-code of a call to a URL as an integer.
      *
      * @param url The URL you want to get the response from
-     * @return The response.
      * @throws IOException if the URL could not be called or a communication error occurred.
      */
     @Throws(IOException::class)
@@ -389,7 +391,6 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * 200. Only when both the host is available and the URL returns a status code of 200 does this
      * method return `true`.
      *
-     * @param url The URL of which to check for host-availability.
      * @return `true` if, and only if, the host is available and the URL returns the status code 200.
      */
     fun isReachable(url: URL): Boolean {

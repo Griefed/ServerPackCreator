@@ -86,8 +86,13 @@ internal class KDocAttachmentTest {
             } else {
                 continue
             }
+            // Annotations are skipped as well as blank lines. A doc block, an `@Throws`, then a second
+            // doc block is the same defect wearing a disguise: dokka still drops the first, and the
+            // lookahead stopping at the annotation is what let `VersionMeta.update` carry two blocks.
             var next = index + 1
-            while (next < lines.size && lines[next].isBlank()) {
+            while (next < lines.size &&
+                (lines[next].isBlank() || lines[next].trim().startsWith("@"))
+            ) {
                 next++
             }
             if (next < lines.size && lines[next].trim().startsWith("/**")) {

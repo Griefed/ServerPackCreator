@@ -34,6 +34,36 @@ dependencies {
     implementation(libs.plugins.licenseReport.marker())
     implementation(libs.plugins.kover.marker())
     implementation(libs.plugins.frontend.marker())
+
+    testImplementation(libs.kotlinTestJunit5)
+    testRuntimeOnly(libs.junitPlatformLauncher)
+}
+
+tasks.test {
+    useJUnitPlatform()
+
+    // `BuildVersionTest` reads `.forgejo/actions/resolve-version/action.yml`, which lives outside this
+    // project and is therefore not an input Gradle knows about. Without this the task is UP-TO-DATE after
+    // a change to the action and the guard never runs on the single edit it exists to catch -- measured:
+    // mutating the action's expression left the suite green until this line existed.
+    inputs.file(file("../.forgejo/actions/resolve-version/action.yml"))
+        .withPropertyName("resolveVersionAction")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
+// THE ONE EDGE THAT MAKES buildSrc's TESTS RUN. The main build does not run buildSrc's lifecycle
+// tasks, so `./gradlew build` reaches `check` in every module except this one; `:buildSrc:check`,
+// `gradle.includedBuild("buildSrc")` and `-p buildSrc check` are all unavailable from the root. What
+// is always built here is the jar, so the tests hang off that. Without this they are a guard nobody
+// runs -- the failure mode this project has already paid for, with 30 tests gated on an environment
+// variable no workflow set.
+//
+// `finalizedBy`, NOT `dependsOn`: `kotlin-dsl` puts this jar on the test compile classpath, so
+// `dependsOn(tasks.test)` is a cycle (`compileTestKotlin` -> `jar` -> `test` -> `compileTestKotlin`)
+// and fails every invocation outright, `./gradlew help` included. A finalizer runs after the jar it
+// needs, and a failing one still fails the build, which is the whole requirement.
+tasks.jar {
+    finalizedBy(tasks.test)
 }
 
 // buildSrc is a SEPARATE build with its own toolchain and target, so these are not inherited from the

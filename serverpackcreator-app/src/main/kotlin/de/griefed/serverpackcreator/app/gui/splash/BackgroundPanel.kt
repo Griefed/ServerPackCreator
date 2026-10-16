@@ -75,7 +75,6 @@ class BackgroundPanel(
     /**
      * Setter for the image used as the background.
      *
-     * @param image Image to be set as the background.
      * @author Rob Camick
      */
     private fun setImage(image: Image) {
@@ -138,7 +137,6 @@ class BackgroundPanel(
      * also need to change the renderer to be transparent. An easy way to do this it to set the
      * background of the table to a Color using an alpha value of 0.
      *
-     * @param component The component to make transparent.
      * @author Rob Camick
      */
     private fun makeComponentTransparent(component: JComponent) {

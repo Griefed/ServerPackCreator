@@ -43,10 +43,9 @@ interface SPCGenericListener {
 interface SPCConfigCheckListener {
 
     /**
-     * Run the given listener with a config and a config check object.
-     *
-     * @param packConfig A pack config from which a server pack can be generated.
-     * @param configCheck Config check object holding check results.
+     * Called once a configuration has been checked, with [configCheck] holding whatever the validators
+     * found. The outcome is already decided by the time this fires — to add a check of your own, use
+     * [de.griefed.serverpackcreator.api.plugins.configurationhandler.ConfigCheckExtension].
      */
     fun run(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck())
 }
@@ -59,10 +58,9 @@ interface SPCConfigCheckListener {
 interface SPCPreServerPackGenerationListener {
 
     /**
-     * Run the given listener with a config and path to the server pack.
-     *
-     * @param packConfig A pack config from which a server pack can be generated.
-     * @param serverPackPath The path to the server pack in question.
+     * Called before any file is gathered. [serverPackPath] is the directory the pack will be built in;
+     * it exists, but it is only empty on a first run — regenerating over a previous pack leaves that
+     * pack's files in place until the copy overwrites them.
      */
     fun run(packConfig: PackConfig, serverPackPath: Path)
 }
@@ -76,10 +74,8 @@ interface SPCPreServerPackGenerationListener {
 interface SPCPreServerPackZipListener {
 
     /**
-     * Run the given listener with a config and path to the server pack.
-     *
-     * @param packConfig A pack config from which a server pack can be generated.
-     * @param serverPackPath The path to the server pack in question.
+     * Called once every file is in [serverPackPath] and before the archive is written, so anything added
+     * here still lands inside the ZIP. Fires whether or not an archive is actually configured.
      */
     fun run(packConfig: PackConfig, serverPackPath: Path)
 }
@@ -92,10 +88,8 @@ interface SPCPreServerPackZipListener {
 interface SPCPostGenListener {
 
     /**
-     * Run the given listener with a config and path to the server pack.
-     *
-     * @param packConfig A pack config from which a server pack can be generated.
-     * @param serverPackPath The path to the server pack in question.
+     * Called once the pack in [serverPackPath] is finished. The ZIP, if one was configured, is already
+     * written — anything added here is in the directory but not in the archive.
      */
     fun run(packConfig: PackConfig, serverPackPath: Path)
 }

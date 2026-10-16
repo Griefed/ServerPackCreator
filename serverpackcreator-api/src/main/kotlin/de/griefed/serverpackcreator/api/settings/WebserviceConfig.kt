@@ -23,10 +23,9 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
- * Settings-group for the web-service side of ServerPackCreator: the MongoDB database-URI with
- * legacy-value migration and scheme-normalization, plus the cron-schedules of the webservice's
- * cleanup- and refresh-jobs. Extracted from ApiProperties (refactor Phase 1b); ApiProperties
- * remains the facade through which consumers access these values.
+ * Settings-group for the web-service side of ServerPackCreator: the MongoDB database-URI with legacy-value
+ * migration and scheme-normalization, plus the cron-schedules of the webservice's cleanup- and refresh-jobs.
+ * ApiProperties remains the facade through which consumers access these values.
  */
 class WebserviceConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -111,7 +110,7 @@ class WebserviceConfig(private val store: PropertyStore) {
                 dbPath.contains("sqlite") ||
                 dbPath.contains("postgresql") ||
                 // Not `startsWith("mongodb")`: that accepts the degenerate `mongodb:` a partially-configured
-                // container used to produce, which then fails deep in the driver instead of here.
+                // container produces, which then fails deep in the driver instead of here.
                 !(dbPath.startsWith("mongodb://") || dbPath.startsWith("mongodb+srv://"))
             ) {
                 log.warn("Your $DATABASE_URI_KEY-property didn't match a MongoDB-URL: $dbPath. It has been migrated to $FALLBACK_DATABASE_URI.")

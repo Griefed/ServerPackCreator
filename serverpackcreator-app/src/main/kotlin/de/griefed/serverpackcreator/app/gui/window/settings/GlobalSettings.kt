@@ -436,7 +436,6 @@ class GlobalSettings(
     /** Fills the widgets from the stored global settings. */
     override fun loadSettings() {
         homeSetting.file = apiProperties.homeDirectory.absoluteFile
-        //javaSetting.file = File(apiProperties.javaPath).absoluteFile
         serverPacksSetting.file = apiProperties.serverPacksDirectory.absoluteFile
         zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ")
         inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ")
@@ -482,7 +481,6 @@ class GlobalSettings(
         val showRestartNotice = checkRestartNoticeRequired()
 
         apiProperties.homeDirectory = homeSetting.file.absoluteFile
-        //apiProperties.javaPath = javaSetting.file.absolutePath
         apiProperties.serverPacksDirectory = serverPacksSetting.file.absoluteFile
         apiProperties.zipArchiveExclusions = TreeSet(zipSetting.text.replace(", ",",").split(","))
         apiProperties.directoriesToInclude = TreeSet(inclusionsSetting.text.replace(", ",",").split(","))

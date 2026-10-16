@@ -30,6 +30,14 @@
          `data-external="true"` from the href being absolute, and `topic.v2.xsd` has no attribute for it.
          Typing the Dokka URL directly always works; it is only the click that does not.
 
+         THE VALUE BELOW IS A DEFAULT, AND ONE BUILD REWRITES IT. `pages.yml` publishes to GitHub Pages
+         and wants exactly this URL, so it substitutes nothing. `docs.yml` replaces it with
+         `https://serverpackcreator.de/api/VERSION/index.html` before the builder runs, because the bundle
+         it produces ships in the help image and serverpackcreator.de serves one tree per version: 9.1.0's
+         help must reach 9.1.0's reference, not whatever is newest. That step matches on the literal string
+         below and FAILS if it does not find it, so editing this href is safe in the sense that it cannot
+         silently ship the wrong one.
+
          The cost of being absolute is that this one link leaves a self-hosted container for the public site.
          It is the only shape the viewer will navigate, and a container still serves its own copy at `/api/`
          for anyone who addresses it directly.

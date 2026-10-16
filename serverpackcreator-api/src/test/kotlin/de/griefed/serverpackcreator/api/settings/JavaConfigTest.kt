@@ -6,10 +6,9 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 /**
- * Tests for [JavaConfig], the Java-installation settings-group extracted from ApiProperties in
- * refactor Phase 1b. Uses the running JVM's java-binary as a known-valid installation and pins
- * path-validation, the per-version java-paths map, system-fallback acquisition and the
- * script-autoupdate flag.
+ * Tests for [JavaConfig], the Java-installation settings-group. Uses the running JVM's java-binary as a
+ * known-valid installation and pins path-validation, the per-version java-paths map, system-fallback
+ * acquisition and the script-autoupdate flag.
  */
 internal class JavaConfigTest {
 

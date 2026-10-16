@@ -33,6 +33,8 @@ import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+import java.util.UUID
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.moveTo
@@ -53,7 +55,6 @@ class FileUtilities {
         /**
          * Move a file from source to destination, and replace the destination file if it exists.
          *
-         * @param sourceFile      The source file.
          * @param destinationFile The destination file to be replaced by the source file.
          * @return  Returns true if the file was successfully replaced.
          * @throws IOException Thrown if an error occurs when the file is moved.
@@ -93,7 +94,6 @@ class FileUtilities {
          * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
          * symlink.
          *
-         * @param file The file to check
          * @return The type of the given file. Either [FileType.FILE], [FileType.LINK] or
          * [FileType.SYMLINK]
          * @author Griefed
@@ -107,7 +107,6 @@ class FileUtilities {
          * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
          * symlink.
          *
-         * @param file The file to check
          * @return The type of the given file. Either [FileType.FILE], [FileType.LINK] or
          * [FileType.SYMLINK]
          * @author Griefed
@@ -141,7 +140,6 @@ class FileUtilities {
         /**
          * Check if the given file is a UNIX symlink or Windows lnk.
          *
-         * @param file The file to check.
          * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
@@ -150,7 +148,6 @@ class FileUtilities {
         /**
          * Check if the given file is a UNIX symlink or Windows lnk.
          *
-         * @param file The file to check.
          * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
@@ -247,7 +244,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if both read- and write-permissions are set.
          * @author Griefed
          */
@@ -257,7 +253,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if read-permissions are set.
          * @author Griefed
          */
@@ -277,7 +272,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if write-permissions are set.
          * @author Griefed
          */
@@ -297,7 +291,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if read-permissions are set.
          * @author Griefed
          */
@@ -306,7 +299,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if read-permissions are set.
          * @author Griefed
          */
@@ -315,7 +307,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if write-permissions are set.
          * @author Griefed
          */
@@ -324,7 +315,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if write-permissions are set.
          * @author Griefed
          */
@@ -333,7 +323,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if both read- and write-permissions are set.
          * @author Griefed
          */
@@ -343,7 +332,6 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @param fileOrDirectory File or directory.
          * @return `true` if both read- and write-permissions are set.
          * @author Griefed
          */
@@ -353,7 +341,6 @@ class FileUtilities {
         /**
          * Open the specified folder in the file explorer.
          *
-         * @param folder The folder to open.
          * @author Griefed
          */
         fun openFolder(folder: String) = openFolder(File(folder))
@@ -361,7 +348,6 @@ class FileUtilities {
         /**
          * Open the specified folder in the file explorer.
          *
-         * @param folder The folder to open.
          * @author Griefed
          */
         fun openFolder(folder: File) {
@@ -381,7 +367,6 @@ class FileUtilities {
         /**
          * Open the specified file in an editor.
          *
-         * @param fileToOpen The file to open.
          * @author Griefed
          */
         fun openFile(fileToOpen: String) = openFile(File(fileToOpen))
@@ -389,7 +374,6 @@ class FileUtilities {
         /**
          * Open the specified file in an editor.
          *
-         * @param fileToOpen The file to open.
          * @author Griefed
          */
         fun openFile(fileToOpen: File) {
@@ -539,6 +523,92 @@ fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) 
         }
     }
 }
+
+/**
+ * Produce this file's new contents through [write] so that a reader can only ever see the whole of them.
+ *
+ * [write] is handed [temporaryFile] — a sibling, so the move below stays within one filesystem — and that
+ * file is then moved onto this one with [StandardCopyOption.ATOMIC_MOVE], which is a rename on every platform
+ * ServerPackCreator runs on. Content that is not finished therefore leaves the previous contents in place
+ * instead of a half-file, which writing in place cannot promise: a killed process or a full disk leaves
+ * exactly as many bytes as it managed, and that partial file satisfies every `isFile` check afterwards.
+ *
+ * The default staging name is **unique per call**, not derived from the destination alone: two writers
+ * sharing one would interleave their bytes into it and then move the mixture into place, which is the
+ * corruption this exists to prevent. Given one each, both stage a complete copy and the last move wins.
+ *
+ * [temporaryFile] is a parameter purely so the failure can be exercised — provoking a partial write is not
+ * something a test can do, but pointing the staging somewhere unusable reaches the same question.
+ *
+ * @param temporaryFile Where the new contents are staged before being moved into place.
+ * @param write         Fills the staging file. Anything it throws leaves this file untouched.
+ * @throws IOException if the contents could not be staged or moved, in which case this file is untouched.
+ * @author Griefed
+ */
+@Throws(IOException::class)
+fun File.writeAtomically(
+    temporaryFile: File = File(absoluteFile.parentFile, "$name.${UUID.randomUUID()}.tmp"),
+    write: (File) -> Unit
+) {
+    absoluteFile.toPath().createParentDirectories()
+    try {
+        write(temporaryFile)
+        Files.move(temporaryFile.toPath(), absoluteFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
+    } catch (ex: Exception) {
+        // Never leave the staging behind: it is invisible to every reader and would otherwise accumulate one
+        // per failed attempt, beside the file it failed to become.
+        temporaryFile.delete()
+        throw ex
+    }
+}
+
+/**
+ * Replace this file's contents with [text], completely or not at all — [writeAtomically] for a string.
+ *
+ * @param text          The contents this file should hold once the write has completed.
+ * @param temporaryFile Where the contents are staged before being moved into place.
+ * @throws IOException if the contents could not be staged or moved, in which case this file is untouched.
+ * @author Griefed
+ */
+@Throws(IOException::class)
+fun File.writeTextAtomically(
+    text: String,
+    temporaryFile: File = File(absoluteFile.parentFile, "$name.${UUID.randomUUID()}.tmp")
+) = writeAtomically(temporaryFile) { it.writeText(text) }
+
+/**
+ * How the lines of a generated text file are terminated, chosen by whatever has to read the file.
+ *
+ * @author Griefed
+ */
+enum class LineEnding(
+    /** The characters written between two lines. */
+    val sequence: String
+) {
+    /** Unix. What every POSIX shell, and everything else ServerPackCreator writes, expects. */
+    LF("\n"),
+
+    /**
+     * Windows. Wanted by `cmd.exe`, which resolves a `goto` or `call` label by scanning the file and can
+     * miss one that crosses a 512-byte boundary when no carriage return has reset its line counter.
+     */
+    CRLF("\r\n")
+}
+
+/**
+ * This text with every line terminated by [lineEnding], whichever convention it arrived in.
+ *
+ * Normalises to LF before expanding, so a carriage return is only ever *replaced* and never deleted:
+ * deleting it reads as a conversion while a file using lone carriage returns — a classic-Mac editor, or
+ * a half-finished conversion elsewhere — loses every line separator it had and becomes one long line
+ * that is still syntactically plausible. Normalising first is also what keeps [LineEnding.CRLF] from
+ * doubling the carriage returns of text that already had them.
+ *
+ * @param lineEnding The convention the returned text uses throughout.
+ * @author Griefed
+ */
+fun String.withLineEndings(lineEnding: LineEnding): String =
+    replace("\r\n", "\n").replace('\r', '\n').replace("\n", lineEnding.sequence)
 
 /**
  * Test whether files can be written to this file denoting a directory, by creating a throwaway file in it and

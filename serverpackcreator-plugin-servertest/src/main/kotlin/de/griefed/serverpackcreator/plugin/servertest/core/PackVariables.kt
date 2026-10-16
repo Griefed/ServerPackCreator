@@ -48,6 +48,7 @@ data class PackVariables(
     val waitsForUserInput: Boolean
 ) {
 
+    /** The `variables.txt` keys this plugin reads, and the file it reads them from. */
     companion object {
         /** The file these are read from, written into every generated pack beside its start scripts. */
         const val FILE_NAME = "variables.txt"

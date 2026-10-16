@@ -79,7 +79,6 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             var themesPrefix = "BOOT-INF/classes"
             if (apiWrapper.apiProperties.isExe()) {
                 themesPrefix = ""
-                //source = "de/griefed/resources/manifests"
             }
             JarUtilities.copyFolderFromJar(
                 this.javaClass,

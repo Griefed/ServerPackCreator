@@ -39,6 +39,15 @@ import java.util.*
 interface ConfigCheckExtension : ExtensionInformation {
 
     /**
+     * Runs this plugin's own checks over [packConfig] and reports any problem by adding it to
+     * [configCheck].
+     *
+     * Called by `ApiPlugins.runConfigCheckExtensions`, which `ConfigurationHandler.checkConfiguration`
+     * invokes **after** its own validators — so the configuration has already passed or failed the
+     * built-in checks by the time this runs, and [packConfig] is the same instance they inspected.
+     * Returning `true` marks the whole configuration as failed; add the reason to [configCheck] as well,
+     * or the user is told only that something is wrong.
+     *
      * @param versionMeta           Instance of [VersionMeta] so you can work with available
      * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
      * @param apiProperties Instance of [ApiProperties] The current

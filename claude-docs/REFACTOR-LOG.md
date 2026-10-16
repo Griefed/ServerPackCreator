@@ -5005,3 +5005,60 @@ across three of the five: **the thing the request names is often not the thing t
 existed, the glibc number was right, and the jpackage choice was sound; what was wrong was reachability,
 a silent fallback, and a missing runner.
 
+
+## 2026-10-16 — a branch name with a slash in it broke every Renovate build (`claude-slashed-version-breaks-bootjar`)
+
+**The report.** Three `bootJar` failures on Forgejo, all PR builds, all Renovate: `Entry
+BOOT-INF/lib/pin-dependencies.jar is a duplicate`, and the same for `typescript-eslint-monorepo` and
+`babel-monorepo`. Griefed's own framing carried the answer — *all except #713* — because #713's head is
+`develop` and every other open PR is `renovate/<slug>`. The predicate was `contains("/")`.
+
+**The mechanism.** `test.yml` passes `-Pversion="${{ github.ref_name }}"`, and `version` is a **file name
+component**: every archive is `<module>-<version>.jar`. Gradle does not check that it is a legal one, so the
+slash was a path separator and the jars landed in directories — `build/libs/serverpackcreator-api-renovate/`
+— whose leaf name no longer carries the module. Boot copies dependencies into `BOOT-INF/lib/` under
+`file.getName()`, so `-api` and `-clientside` both arrived as `babel-monorepo.jar`. Reproduced locally in 8 s,
+with the three created directories as the proof.
+
+**The fix went in the build, not the workflow**, because the invariant is a build invariant and the
+alternative is the normalisation living in each workflow that passes a ref-derived version — where the next
+one written will not have it. `BuildVersion.sanitize` collapses every run of file-name-illegal characters to
+one `-`; `BuildVersion.of` announces a rewrite, so it is auditable from a CI log. **Not** `duplicatesStrategy`
+on `bootJar`, which the error message invites and which is green by dropping a module out of the fat jar.
+
+**B47 was closed in the same pass rather than deferred — Griefed's call.** `resolve-version`'s `branch` mode
+builds `${REF_NAME}-<sha>` and was equally slash-prone; latent only because `devbuild.yml` triggers on
+`develop`. It now normalises with the identical expression. That deliberately creates a **fifth** instance of
+duplicated knowledge — bash and Kotlin cannot share a regex — so the duplication is pinned rather than
+merely commented: `BuildVersionTest` extracts the `sed -E` program **out of the action** and runs it over
+every case the class asserts, and a second, cheaper guard compares the two spellings as strings so a host
+without `sed` still catches a divergence.
+
+**Three findings worth more than the fix.**
+
+- **A test that reads a file outside its project is UP-TO-DATE when that file changes.** Mutating the
+  action's expression left the suite green, because `.forgejo/actions/...` was not a declared input of
+  `:buildSrc:test`. The guard would never have fired on the single edit it exists to catch. One
+  `inputs.file(...)` fixed it, and the mutation then turned both guards red. **Ask of any cross-boundary
+  guard what makes its task re-run**, not only what it asserts.
+- **buildSrc's tests do not run, and the three obvious ways to run them are all dead ends.** Gradle 8.0
+  stopped the main build running its lifecycle tasks (gradle#25439, closed as intended). Measured on 9.8.1:
+  `:buildSrc:check` is inert, `gradle.includedBuild("buildSrc")` does not resolve, and `-p buildSrc check`
+  dies in buildSrc's own settings, which declare the foojay resolver with no version precisely because only
+  the root build puts it on the classpath. The jar is always built, so `jar { finalizedBy(test) }` is the
+  edge — `finalizedBy`, since `kotlin-dsl` puts that jar on the test compile classpath and `dependsOn` is a
+  cycle that fails `./gradlew help` outright.
+- **A stale measurement pointed at the wrong ceiling.** `build-layout.md` recorded 8 configuration-cache
+  problems, 2 unique, *all third-party*. Re-run: 11 and 3, and the third is ours
+  (`-app:processResources` holding a `Project`). Measured develop against the branch in a worktree, so the
+  branch could be ruled out rather than assumed innocent.
+
+**One pre-existing red was fixed on the way.** `e4844fa5e` started skipping `type="incompatible"`
+dependencies and left `OptionalDependencyTest` asserting the old behaviour. Updating the test is right — the
+skip is the intent — but the new reader had two defects of its own: it lowercased without trimming, where
+its sibling `isOptional` always did both, and it read the value with `as String?`. A `type` holding a number
+throws `ClassCastException`, which the scan loop does **not** catch (only `NullPointerException`), so it
+escapes `read()` and `DescriptorScanner` flattens the jar to the never-read-anything fallback — the mod
+loses its whole descriptor, and the result is indistinguishable from a jar belonging to another loader.
+The field now has exactly one reader. *A fix and its own reader are written in the same pass, so the reader
+gets the least review of anything in the commit.*

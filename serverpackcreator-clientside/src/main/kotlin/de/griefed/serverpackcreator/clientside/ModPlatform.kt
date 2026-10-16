@@ -146,6 +146,7 @@ class JdkHttpFetcher(
     internal val client: HttpClient = SHARED
 ) : HttpFetcher {
 
+    /** The process-wide HTTP client every default-constructed fetcher shares. */
     companion object {
         /**
          * The one client every default-constructed fetcher uses, so a connection to Modrinth or CurseForge

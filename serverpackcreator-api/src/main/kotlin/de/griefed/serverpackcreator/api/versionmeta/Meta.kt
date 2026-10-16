@@ -39,7 +39,6 @@ interface Meta {
     /**
      * Get the latest loader version.
      *
-     * @return The latest version.
      * @author Griefed
      */
     fun latestLoader(): String
@@ -47,7 +46,6 @@ interface Meta {
     /**
      * Get the release loader version.
      *
-     * @return The release loader version.
      * @author Griefed
      */
     fun releaseLoader(): String
@@ -55,7 +53,6 @@ interface Meta {
     /**
      * Get the latest installer version.
      *
-     * @return The latest installer version.
      * @author Griefed
      */
     fun latestInstaller(): String
@@ -63,7 +60,6 @@ interface Meta {
     /**
      * Get the release installer version.
      *
-     * @return The release installer version.
      * @author Griefed
      */
     fun releaseInstaller(): String
@@ -71,7 +67,6 @@ interface Meta {
     /**
      * List of available loader versions in ascending order.
      *
-     * @return Available loader versions in ascending order.
      * @author Griefed
      */
     fun loaderVersions(): List<String>
@@ -79,7 +74,6 @@ interface Meta {
     /**
      * List of available installer version in ascending order.
      *
-     * @return Available installer version in ascending order.
      * @author Griefed
      */
     fun installerVersions(): List<String>
@@ -87,7 +81,6 @@ interface Meta {
     /**
      * Get the URL to the latest installer.
      *
-     * @return URL to the latest installer.
      * @author Griefed
      */
     fun latestInstallerUrl(): URL
@@ -95,7 +88,6 @@ interface Meta {
     /**
      * Get the URL to the release installer.
      *
-     * @return URL to the release installer.
      * @author Griefed
      */
     fun releaseInstallerUrl(): URL
@@ -133,7 +125,6 @@ interface Meta {
     /**
      * Check whether the specified version is available/correct/valid.
      *
-     * @param version The version to check.
      * @return `true` if the specified version is available/correct/valid.
      * @author Griefed
      */

@@ -38,7 +38,6 @@ const val INSTALL_LOG = "install.log"
  * the runtime image, and a real `ApiWrapper` behind the generator — so it is not unit-tested; the
  * error-prone pieces it leans on ([InstallLayerSnapshot], [PackVariables], [ImageJavaRuntimes]) are.
  *
- * @param engine         The container runtime.
  * @param image          The runtime image (must carry the JDKs + SPC's shell tooling).
  * @param packGenerator  Produces the mod-less pack for the tuple.
  * @param imageJava      Resolves the bundled JDK for the tuple's Minecraft version.

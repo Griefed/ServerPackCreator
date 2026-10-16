@@ -62,7 +62,6 @@ import java.nio.charset.StandardCharsets
  * `popularity`), so a mis-sorted page would only change *which* projects get fetched, never the grind order.
  * [warnIfMisordered] surfaces that case instead of letting it pass silently.
  *
- * @param apiKey       The CurseForge API-key (from `CURSEFORGE_API_KEY`).
  * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
  * @param objectMapper Jackson mapper for the JSON responses.
  * @param pageSize     Hits per call (CurseForge caps a page at 50).

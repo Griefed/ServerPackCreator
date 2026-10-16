@@ -292,7 +292,7 @@ class BootVerifier(
         restageOnLoaderVersion: (String) -> Prepared
     ): BootOutcome {
         if (prepared is Prepared.Failed) {
-            // Say so out loud. Returning this as a detail string lets `ClientsideVerifier.aggregate` drop it
+            // Say so out loud. Returning this as a detail string lets `ClientsideVerifier.verdictOf` drop it
             // whenever the metadata already decided the confidence, which makes a *silently un-booted*
             // catalogue indistinguishable from a booted one — the boot is the only decisive
             // signal this engine has, so "it did not run, and here is why" has to reach the log.
@@ -506,7 +506,8 @@ class BootVerifier(
             }
             val dependencyProject = resolveDependencyAcrossTheLine(dependencyRef, loader, minecraftVersion, excluded)
             if (dependencyProject == null) {
-                // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
+                // Never a silent `continue`: an unreported missing dependency goes unnoticed, and the boot
+                // then fails in a way that reads as the candidate's fault.
                 log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
                 unsatisfied[unsatisfiedLabel(dependencyRef, null, platform.name)] = UnmetReason.UNRESOLVED
                 continue
@@ -681,8 +682,7 @@ class BootVerifier(
         if (depth >= maxDependencyDepth) {
             return
         }
-        // `null` is "the descriptor could not be read", which is nothing to stage from -- the same early
-        // return this made for itself when it owned the scan.
+        // `null` is "the descriptor could not be read", which is nothing to stage from.
         val requirements = declared ?: return
 
         val bundled = BundledJars.idsIn(staged)
@@ -1990,9 +1990,9 @@ class BootVerifier(
          * and differs from the one that ran, and only for an outcome the loader build could be responsible
          * for — a **crash**, or any outcome whose console says the loader itself was too old for a mod.
          *
-         * **The second arm is why this is not called `shouldRecheckCrash`.** A loader too old for the pack
-         * reads as INCONCLUSIVE rather than CRASHED — `dependencyFailureMarkers` covers it — so a guard keyed
-         * on CRASHED alone silently stops covering the case its own tests describe. It is not a rare shape:
+         * **The second arm is why this may not key on CRASHED alone.** A loader too old for the pack reads
+         * as INCONCLUSIVE rather than CRASHED — `dependencyFailureMarkers` covers it — so a guard narrowed to
+         * CRASHED silently stops covering the case its own tests describe. It is not a rare shape:
          * dependency failures of that kind run to a third of them when every boot is pinned to a loader build
          * older than the current one.
          *

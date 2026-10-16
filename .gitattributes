@@ -2,9 +2,13 @@
 #
 # Why this file exists: the repo is uniformly LF, but nothing enforced it. A contributor with
 # `core.autocrlf=true` (the Windows default in some setups) would commit CRLF shell scripts, and a CRLF
-# `start.sh` fails at runtime with a "bad interpreter" error — in a *shipped* server pack. The templates
-# under `serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/` are the sharp edge:
-# they are copied verbatim into every generated server pack, so their endings are user-facing.
+# `start.sh` fails at runtime with a "bad interpreter" error.
+#
+# Note what this file does NOT decide: the endings of a *generated* server pack. The templates under
+# `serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/` are normalised at
+# generation time — `ServerPackProvisioner.lineEndingFor` picks the convention from the written file's
+# extension — so whatever an operator's editor did to their copy of a template never reaches the pack.
+# That rule is pinned by `RunFileLineEndingsTest`; this file only governs the working tree.
 #
 # Rule of thumb: LF everywhere, CRLF only where Windows genuinely requires it.
 
@@ -23,16 +27,17 @@
 gradlew     text eol=lf
 
 # ---------------------------------------------------------------------------------------------------
-# Must be CRLF — Windows batch files. cmd.exe mis-parses LF-only .bat in some constructs (labels,
-# multi-line blocks), so pin them explicitly. This covers Gradle's wrapper scripts.
-# PowerShell is happy with LF, so .ps1 stays on the LF default.
+# Must be CRLF — Windows batch files. cmd.exe resolves a `goto`/`call` label by scanning the file, and
+# misses a label crossing a 512-byte boundary when no carriage return has reset its line counter, so an
+# LF-only .bat jumps into the wrong place or reports a label it can see as missing. This covers Gradle's
+# wrapper scripts. PowerShell is happy with LF, so .ps1 stays on the LF default.
 # ---------------------------------------------------------------------------------------------------
 *.bat       text eol=crlf
 
-# Exception: the start-script *templates* stay LF. They are copied verbatim into every generated server
-# pack, so their endings are the endings users receive — flipping them to CRLF would change generated
-# output, which is a product decision and not something a line-ending pin should make. Griefed's call:
-# keep shipping LF. Scoped to the directory so a future .bat template inherits the same rule.
+# Exception: the start-script *templates* stay LF, and it costs nothing — generation decides the endings
+# of what it writes, so a template's own endings never reach a user. Keeping them LF leaves that one
+# directory uniform and its diffs readable. Scoped to the directory so a future .bat template inherits
+# the same rule.
 # (Later rules win in .gitattributes, so this must stay below the `*.bat` line above.)
 serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/*.bat text eol=lf
 

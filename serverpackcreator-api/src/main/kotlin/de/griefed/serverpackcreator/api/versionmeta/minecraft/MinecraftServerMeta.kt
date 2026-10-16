@@ -24,8 +24,6 @@ import java.util.Collections
 /**
  * Meta containing information about Minecraft servers.
  *
- * @param minecraftClientMeta Instance of [MinecraftClientMeta].
- *
  * @author Griefed
  */
 internal class MinecraftServerMeta(private val minecraftClientMeta: MinecraftClientMeta) {

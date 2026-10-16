@@ -1,4 +1,5 @@
 import com.install4j.gradle.Install4jTask
+import de.griefed.common.gradle.BuildVersion
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.internal.os.OperatingSystem
@@ -16,6 +17,11 @@ plugins {
 // A real build script, so the type-safe accessor works here; the precompiled script plugins in
 // buildSrc have to read the same entry the long way round. One value either way.
 val javaLanguageLevel = IdeaLanguageLevel(libs.versions.java.get())
+
+// The root project applies no convention plugin, so it needs the same guard `java-conventions` gives
+// every module: `media` below hands `version.toString()` to install4j as the installer's release
+// number and as the `projectVersion` compiler variable.
+version = BuildVersion.of(project)
 
 idea {
     project {
@@ -178,7 +184,17 @@ tasks.register<Delete>("cleanLicenseReport") {
     delete(projectDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
+// Both ends of this task are GENERATED and gitignored -- `licenses/*` covers the source, and the
+// destination has its own .gitignore entry. Neither is committed, so a build never dirties the tree
+// and nobody can commit one developer's `-Pversion` into a document about what ships.
 tasks.register<Copy>("copyLicenseReport") {
+    // dependsOn, not just the `finalizedBy` below. A finalizer runs the copy AFTER the report, but it
+    // does not make the copy REQUIRE it -- and `processResources` depends on this task directly, so
+    // without this edge the copy can run with no source at all. A Gradle `Copy` whose source is absent
+    // reports NO-SOURCE and succeeds, which packaged a jar carrying no third-party notice and said
+    // nothing. Measured before this line existed: `:copyLicenseReport` -> `NO-SOURCE`, BUILD
+    // SUCCESSFUL, destination absent.
+    dependsOn(tasks.named("generateLicenseReport"))
     from(rootDir.resolve("licenses/LICENSE-AGREEMENT"))
     into(rootDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui"))
 }
@@ -209,7 +225,13 @@ install4j {
 }
 
 tasks.register<Install4jTask>("media") {
-    dependsOn(tasks.build)
+    // `generateLicenseReport` as well as `build`, because `spc.install4j` reads
+    // `licenses/LICENSE-AGREEMENT.txt` for the installer's licence screen and that file is generated
+    // and gitignored -- a checkout never carries it. `tasks.build` here is the ROOT project's build,
+    // which has no sources of its own and pulls in no subproject, so `-app`'s
+    // `build { dependsOn(":generateLicenseReport") }` does not reach this task. This edge is the only
+    // thing that puts the notice on disk before install4j reads it.
+    dependsOn(tasks.build, tasks.named("generateLicenseReport"))
     verbose = true
     release = version.toString()
     projectFile = file("spc.install4j")

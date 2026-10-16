@@ -57,7 +57,6 @@ class FabricIntermediaries(
     /**
      * Get a list of intermediaries from the manifest.
      *
-     * @return List of intermediaries.
      * @throws IOException when the manifest could not be read.
      * @author Griefed
      */
@@ -69,7 +68,6 @@ class FabricIntermediaries(
      * Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
      * that the given Minecraft version is supported.
      *
-     * @param minecraftVersion The Minecraft version to check for.
      * @return `true` if intermediaries are present.
      */
     fun isIntermediariesPresent(minecraftVersion: String) = getIntermediary(minecraftVersion).isPresent

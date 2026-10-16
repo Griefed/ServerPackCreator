@@ -7119,3 +7119,164 @@ Verified after both amends: `grep -rhE '^[[:space:]]*uses:' .forgejo/workflows/ 
 → **72**; `.forgejo` → **57**, `.github` → **15**; the strings `105 occurrences` and `78-odd` appear
 nowhere in the repository; every workflow in both directories still parses as YAML at every commit in
 `main..develop`.
+
+---
+
+# 2026-10-12 — audit of `9.1.0..develop`, iteration 1 of 3
+
+Range: `git log 9.1.0..develop` = **111 commits**. **39 of them are imported website history** and are
+not audited against these conventions: `git subtree add` leaves the source history unrewritten, so the
+website's own commits still touch `src/`, `Dockerfile` and `quasar.conf.js` at *their* root, carry
+2023–2026 dates, and interleave with ServerPackCreator's by date. A path test cannot separate them —
+`git merge-base --is-ancestor <commit> e96965ff1` can, and that is the split used here. The remaining
+**72** are the subject.
+
+They were authored before the merge as `claude-*` branches and are now on `develop` by fast-forward.
+
+## Convention compliance
+
+**No `refactor:` commit exists in the range** (`git log --format='%s' 9.1.0..develop | grep -c '^refactor'`
+→ 0), so the rule this project has broken three times — *`refactor:` is a claim about behaviour* — has
+nothing to violate here. Every commit is `docs:`, `fix:`, `feat:`, `build:`, `ci:`, `test:`, `chore:` or
+`perf:`.
+
+**Pin-before-fix held where it was reachable.** `test(api): KDocAttachmentTest misses a block separated by
+an annotation` lands red, and `fix(api): VersionMeta.update carried two KDoc blocks, one of them dropped`
+turns it green — the boundary the conventions ask for, in the shape they ask for it. Same for
+`test(clientside): pin that a boot which finished is not a timeout` →
+`fix(clientside,grinder): a boot that finished is not a boot that timed out`, and
+`test(frontend): pin DrawerLink's icon colour, which nothing guarded`, which pins a defect found by the
+vitest 5 bump rather than introduced by it.
+
+**One concern per commit holds, including where the file counts are alarming.** `docs: strip @param/@return
+that only repeat the prose above them` touches 74 files and `docs(clientside): present-tense comments in
+-clientside` touches 79, but each is a single mechanical concern applied broadly, which is the shape the
+Boy-Scout rule permits and the one-concern rule is indifferent to. File count is not scope.
+
+**`Add 'serverpackcreator-homepage/' from commit 'e96965ff1…'` is a merge commit importing 39 commits of
+foreign history, and that is deliberate** — `git subtree add` over a copy, so the website's provenance
+survives. Recorded here because it is the reason every commit-count in this range needs the ancestry split
+above before it means anything.
+
+## Findings
+
+No HIGH or MEDIUM convention violations. The defects this iteration found are **behavioural**, in code the
+range introduced, and are filed in `claude-docs/ANALYSIS-AUDIT.md` rather than here — they are not
+convention breaches, they are bugs.
+
+### LOW-1 — `CLAUDE.md`'s refactor-state counts drifted again
+
+The table's own header says *"Counts are a snapshot and go stale — re-derive them"*, and they have. Measured
+from `<module>/build/test-results/test/*.xml` after a green `./gradlew build` on `05a58f57f`:
+
+| Module | table says | actually |
+|---|---|---|
+| api | 503 | **504** |
+| app | 232 | **234** |
+| clientside | 673 | **680** |
+| grinder | 542 (27 skip) | **543 (27 skip)** |
+| web-frontend | 37 | **38** (15 files) |
+
+plugin-example 3, plugin-grinder 75, plugin-selfextract 17, plugin-servertest 112 (1 skip) are unchanged.
+Whole-repository total **2,206** (28 skipped), zero failures, zero compiler warnings.
+
+This is the *"cite names, not snapshots"* rule catching its own documented exception — the table is
+sanctioned to hold numbers because it is explicitly labelled a snapshot. Updating it is maintenance, not a
+convention fix.
+
+## Verified clean — do not re-litigate
+
+- **`./gradlew build` is green on `05a58f57f` with zero `w:` lines.** Not "no new warnings" — none at all.
+- **The eight-commit dependency sweep** (`kover`, `foojay-resolver-convention`, `eslint`, `kotlin`,
+  `miglayout-swing`, the Gradle wrapper, `@quasar/app-vite`, `vitest`) is one bump per commit throughout,
+  which is the shape that makes a bisect useful.
+- **`fix(build): stop tracking the generated third-party licence notice`** carries its guard in the
+  commit — a `doFirst` on `processResources`, which is the one hook that runs when `Copy` is NO-SOURCE.
+
+---
+
+# 2026-10-12 — audit of `9.1.0..develop`, iteration 2 of 3
+
+Same 72-commit subject. Iteration 1 found no convention violations and said so; this pass re-examined
+the claim against the commits most likely to hide one — the squashed series and the shipped-template
+changes — and then audited iteration 1's own fixes.
+
+## Findings
+
+Still no HIGH or MEDIUM convention violations. Two behavioural defects were found and are filed in
+`claude-docs/ANALYSIS-AUDIT.md` as H4 and H5.
+
+### Observation — the squashes keep their boundary, in the message rather than in the history
+
+`8f2ac90ce fix(api): forward a stop signal to the server in the bash start script` is a squash of four
+commits, and one of them is `test(api): pin that a stop signal reaches the server, red`. A squash
+normally destroys exactly what *"pin first means commit first"* exists to create: nobody can
+`git checkout <fix>^` and watch the pin go red.
+
+Here it does not, for two reasons worth recording so this is not re-flagged:
+
+- the squashed message reproduces every sub-commit **verbatim**, including the red-pin commit and its
+  measurement (`docker stop -t 5`: no trap → 5096 ms, exit 137; trap plus `wait` → 72 ms, exit 0), so
+  the ordering is still readable; and
+- the `claude-*` branches are kept as the detailed history, which is a recorded decision rather than an
+  accident.
+
+The boundary is weaker than an unsquashed series and it is not lost. Not a violation.
+
+## Verified clean — do not re-litigate
+
+- **Every `run:` block in `.forgejo/workflows` and `.forgejo/actions` is valid bash** — 65 extracted
+  through the YAML parser and checked with `bash -n`, 0 failures, 1 non-bash skipped. This is the check
+  that catches a heredoc terminator indented by a block scalar, which no YAML validator sees.
+- **`misc/ci-duplication-check.py` holds at 3 duplicated-and-unexplained, 4 allowlisted** across both
+  iterations' changes. The distinct-step count moves 103 → 105 for the two steps added, which is the
+  number to re-derive rather than trust.
+- **One bump per commit throughout the eight-commit dependency sweep**, which is what makes a bisect
+  across it useful.
+
+---
+
+# 2026-10-12 — audit of `9.1.0..develop`, iteration 3 of 3
+
+Same 72-commit subject. Third pass, aimed at the conventions this repository has written down because
+it keeps breaking them, and at the two earlier iterations' own fixes.
+
+## Findings
+
+**No convention violations in any of the three iterations.** The range is `docs:`, `fix:`, `feat:`,
+`build:`, `ci:`, `test:`, `chore:` and `perf:` — no `refactor:` commit exists in it, so the rule this
+project has broken three times had nothing to violate. The six defects the three passes found were all
+behavioural and are filed in `claude-docs/ANALYSIS-AUDIT.md`.
+
+### Observation — one convention was followed by a commit that could easily have broken it
+
+`build(grinder): measure what a restart pays to load the verdict store` adds a timing harness, which is
+exactly what `StoreWriteBenchTest` was before it was renamed for being a test that could not fail. This
+one is `StoreWriteBenchmark.measureLoadCost`, and the same commit adds a genuinely asserting `@Test`
+beside it that **skips rather than passes** when its precondition does not hold. Recorded because a
+convention being obeyed by the next instance of its own failure class is the evidence that it took.
+
+## Verified clean — do not re-litigate
+
+- **Both earlier iterations' fixes re-checked.** `misc/ci-duplication-check.py` holds at 3
+  duplicated-and-unexplained / 4 allowlisted across all nine commits; 65 bash run-blocks parse with 0
+  failures at the end as at the start; `dokkaGenerateHtml` is at 0 warnings project-wide against 17
+  before iteration 2.
+- **The audit range's own split is stable**: 111 commits, 39 imported website history (ancestors of
+  `e96965ff1`), 72 ServerPackCreator. Re-derive with `git merge-base --is-ancestor <commit> e96965ff1`
+  rather than by path — the subtree leaves the website's history unrewritten, so its commits still touch
+  `src/` and `Dockerfile` at *their* root and interleave by date.
+
+## What the three iterations cost and bought
+
+Nine commits: six `fix:`, three `docs:`. Six defects, of which **three would have broken the next
+release** (the assembler could not fetch, unpack or pull; the site never carried the release it was
+published for; a malformed tag could publish junk), one broke the continuous build's GitHub half, one
+removed documentation from a Maven-published class, and one was 156 lines of CI notes describing a
+pipeline that no longer exists.
+
+**Three of the six are the same shape — a fix or a fact that exists in one place and is needed in
+two.** The devbuild traceback fix landed on one of two call sites; the release-shape decision had three
+copies; `CI-NOTES.md` was a second, stale copy of what `claude-docs/CI-SECRETS.md` maintains. That shape
+now has five recorded instances in this repository. It is worth asking, of any fix that keys on a call
+site or a literal, which other spellings of it exist — before calling it done.

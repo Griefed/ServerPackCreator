@@ -184,8 +184,14 @@ jobs:
           ID=$(python3 -c 'import json;print(json.load(open("release.json"))["id"])')
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
           for f in continuous/*; do
-            curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
-              -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
+            HTTP=$(curl -s -o asset.out -w '%{http_code}' -X POST \
+                     "$API/releases/$ID/assets?name=$(basename "$f")" \
+                     -H "Authorization: token $TOKEN" -F "attachment=@$f")
+            if [ "$HTTP" != "201" ]; then
+              echo "::error::attaching $(basename "$f") to the Forgejo release answered HTTP $HTTP"
+              cat asset.out || true
+              exit 1
+            fi
             echo "Forgejo <- $(basename "$f")"
           done
 
@@ -195,13 +201,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          set -eu
+          # Same `pipefail` as the Forgejo step above, for the same reason: a `curl | python3` pipeline
+          # otherwise reports PYTHON's status and a curl that failed is invisible. The lookup keeps its
+          # `|| true` -- no release to delete is the ordinary case, not a failure.
+          set -eu -o pipefail
           ID=$(curl -s "https://api.github.com/repos/Griefed/ServerPackCreator/releases/tags/continuous" \
                  -H "Authorization: Bearer $GH_TOKEN" \
                 | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)
           if [ -n "$ID" ]; then
-            curl -sf -X DELETE "https://api.github.com/repos/Griefed/ServerPackCreator/releases/$ID" \
-              -H "Authorization: Bearer $GH_TOKEN"
+            HTTP=$(curl -s -o delete.out -w '%{http_code}' -X DELETE \
+                     "https://api.github.com/repos/Griefed/ServerPackCreator/releases/$ID" \
+                     -H "Authorization: Bearer $GH_TOKEN")
+            if [ "$HTTP" != "204" ]; then
+              echo "::error::deleting GitHub release $ID answered HTTP $HTTP"
+              cat delete.out || true
+              exit 1
+            fi
             echo "Deleted GitHub release $ID; the 'continuous' tag is untouched"
           else
             echo "No GitHub continuous release to delete"
@@ -211,16 +226,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          set -eu
-          ID=$(curl -sf -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
-                 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-                 -d '{"tag_name":"continuous","name":"continuous","prerelease":true,"body":"Mirrored from https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/continuous"}' \
-               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          set -eu -o pipefail
+          # NOT `curl -sf | python3`, for the reason spelled out on the Forgejo POST above: `-f` prints
+          # nothing on an HTTP error, so the API's own explanation is discarded and json.load reports
+          # `Expecting value: line 1 column 1` -- a traceback naming neither the status nor the reason.
+          cat > gh-release.json <<'JSON'
+          {"tag_name":"continuous","name":"continuous","prerelease":true,"body":"Mirrored from https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/continuous"}
+          JSON
+          HTTP=$(curl -s -o gh-release.out -w '%{http_code}' -X POST \
+                   "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
+                   -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+                   -d @gh-release.json)
+          if [ "$HTTP" != "201" ]; then
+            echo "::error::creating the GitHub continuous release answered HTTP $HTTP"
+            cat gh-release.out || true
+            exit 1
+          fi
+          ID=$(python3 -c 'import json;print(json.load(open("gh-release.out"))["id"])')
           for f in continuous/*; do
-            curl -sf -X POST \
-              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
-              -H "Authorization: Bearer $GH_TOKEN" -H 'Content-Type: application/octet-stream' \
-              --data-binary "@$f" > /dev/null
+            HTTP=$(curl -s -o gh-asset.out -w '%{http_code}' -X POST \
+                     "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
+                     -H "Authorization: Bearer $GH_TOKEN" -H 'Content-Type: application/octet-stream' \
+                     --data-binary "@$f")
+            if [ "$HTTP" != "201" ]; then
+              echo "::error::attaching $(basename "$f") to the GitHub release answered HTTP $HTTP"
+              cat gh-asset.out || true
+              exit 1
+            fi
             echo "GitHub <- $(basename "$f")"
           done
 

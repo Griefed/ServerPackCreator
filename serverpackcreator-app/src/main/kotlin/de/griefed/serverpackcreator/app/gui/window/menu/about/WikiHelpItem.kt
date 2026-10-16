@@ -30,7 +30,7 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class WikiHelpItem(private val webUtilities: WebUtilities) : JMenuItem(Translations.menubar_gui_menuitem_wiki_help.toString()) {
-    private val help = URI.create("https://help.serverpackcreator.de/help-topic.html")
+    private val help = URI.create("https://serverpackcreator.de/help/latest/help-topic.html")
 
     init {
         this.addActionListener { openHelp() }

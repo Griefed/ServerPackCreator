@@ -269,7 +269,6 @@ class ApiPlugins(
      * @param plugin             The plugin which contains the extension.
      * @param packConfig The configuration model with which the server pack is, or will be,
      * generated.
-     * @param extensionId        The ID of the extension about to be run.
      * @return A list of configurations for the specified extension of the specified plugin. May be
      * empty, if no configuration is available.
      * @author Griefed
@@ -456,7 +455,6 @@ class ApiPlugins(
      * Internal rather than private so the containment can be pinned against an extension that throws on
      * purpose, which no installed plugin does.
      *
-     * @param extension  The extension to ask for a tab.
      * @param pluginId   The plugin it came from, named in the log when it misbehaves.
      * @param tabbedPane The pane the tab is added to.
      */

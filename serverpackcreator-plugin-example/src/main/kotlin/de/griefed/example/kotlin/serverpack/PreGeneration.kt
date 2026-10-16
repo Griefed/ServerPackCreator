@@ -96,45 +96,24 @@ class PreGeneration : PreGenExtension {
      * Get the ID of this extension. Used by ServerPackCreator to determine which configuration, if
      * any, to provide to any given extension being run.
      *
-     * @return The ID of this extension.
      * @author Griefed
      */
     override val extensionId: String
         get() = "pregenexample"
 
-    /**
-     * Get the name of this addon.
-     *
-     * @return The name of this addon.
-     * @author Griefed
-     */
+    /** Shown in the GUI's plugin list. @author Griefed */
     override val name: String
         get() = "Example Pre Server Pack Generation Extension"
 
-    /**
-     * Get the description of this addon.
-     *
-     * @return The description of this addon.
-     * @author Griefed
-     */
+    /** Shown beside the name. @author Griefed */
     override val description: String
         get() = "An example for an extension which executes right before the generation of a server pack starts."
 
-    /**
-     * Get the author of this addon.
-     *
-     * @return The author of this addon.
-     * @author Griefed
-     */
+    /** Credited in the GUI. @author Griefed */
     override val author: String
         get() = "Griefed"
 
-    /**
-     * Get the version of this addon.
-     *
-     * @return The version of this addon.
-     * @author Griefed
-     */
+    /** Displayed as-is; SPC compares nothing against it. @author Griefed */
     override val version: String
         get() = "0.0.1-SNAPSHOT"
 }

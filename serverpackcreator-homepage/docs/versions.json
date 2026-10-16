@@ -1,0 +1,21 @@
+{
+  "comment": [
+    "Which ServerPackCreator versions this site serves documentation for, BESIDES the one being",
+    "released -- assemble-docs.sh folds that in from SPC_RELEASE_VERSION, so it is never listed here.",
+    "`latest` is what /help/latest and /api/latest point at on a build that is not a release.",
+    "It MUST appear in `versions`.",
+    "",
+    "A VERSION LISTED HERE NEEDS A PUBLISHED RELEASE, NOT MERELY A TAG. Its API reference is fetched",
+    "from the release's `serverpackcreator-api-<version>-dokka-html.zip` asset, and a tag carries no",
+    "assets. 9.2.0 was listed here and removed on 2026-10-12: the tag 0f5ef5a8c exists on Forgejo and",
+    "the release object does not, so both forges answer 404 for that asset and the build fails hard.",
+    "Check with: curl -sI <forge>/Griefed/ServerPackCreator/releases/download/<v>/serverpackcreator-api-<v>-dokka-html.zip",
+    "",
+    "MEASURED COST PER VERSION, 2026-10-12: the Dokka tree is 20 MB over 1,411 files and the webhelp",
+    "is 4.2 MB over 62, so ~24 MB on disk -- but ~3 MB of what anyone actually pulls, because both",
+    "are HTML and compress about 15:1 in a layer (the Dokka tree is 1.3 MB as a tar.gz, the webhelp",
+    "1.83 MB as its own zip). Prune this list for disk, not for download size."
+  ],
+  "latest": "9.2.1",
+  "versions": ["9.2.1", "9.1.0"]
+}

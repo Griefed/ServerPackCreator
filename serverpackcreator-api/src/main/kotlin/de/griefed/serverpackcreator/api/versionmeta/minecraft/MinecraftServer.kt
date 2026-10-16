@@ -36,7 +36,6 @@ import java.util.*
  * Representation of a Minecraft server, containing information about its Minecraft-version,
  * release-type, download-url and the java-version.
  *
- * @param minecraftVersion The Minecraft version of this server.
  * @param releaseType      The release-type of this server. Either [Type.RELEASE] or [Type.SNAPSHOT].
  * @param serverUrl        The URL to the download of these servers JAR-file.
  * @param utilities        Commonly used utilities across ServerPackCreator.
@@ -45,6 +44,11 @@ import java.util.*
  * @author Griefed
  */
 class MinecraftServer internal constructor(
+    /**
+     * The Minecraft release this server is for. It also names the per-version manifest this instance
+     * caches under [ApiProperties.minecraftServerManifestsDirectory], so two instances of one version
+     * share a file.
+     */
     val minecraftVersion: String,
     val releaseType: Type,
     @Suppress("MemberVisibilityCanBePrivate") val serverUrl: URL,
@@ -72,7 +76,6 @@ class MinecraftServer internal constructor(
     /**
      * Get the [URL] to the download of this Minecraft-servers JAR-file.
      *
-     * @return URL.
      * @author Griefed
      */
     fun url() =
@@ -125,13 +128,23 @@ class MinecraftServer internal constructor(
             lastDownloadAttempt = clock()
             utilities.webUtilities.downloadFile(manifestFile, serverUrl)
         }
-        serverJson = utilities.jsonUtilities.getJson(manifestFile)
+        serverJson = try {
+            utilities.jsonUtilities.getJson(manifestFile)
+        } catch (ex: Exception) {
+            // A cached manifest that can not be parsed -- a partial write left by a killed process is how one
+            // gets there -- would otherwise fail identically for ever, and every caller reads that failure as
+            // "this version declares no required Java". Discarding it puts the question back on the download
+            // path, where the cooldown above already bounds how often it is asked.
+            log.warn("Discarding $manifestFile for Minecraft $minecraftVersion: it can no longer be parsed.")
+            log.debug("Parsing $manifestFile failed.", ex)
+            manifestFile.delete()
+            throw ex
+        }
     }
 
     /**
      * Get the Java-version of this Minecraft-server.
      *
-     * @return Java version.
      * @author Griefed
      */
     fun javaVersion() =

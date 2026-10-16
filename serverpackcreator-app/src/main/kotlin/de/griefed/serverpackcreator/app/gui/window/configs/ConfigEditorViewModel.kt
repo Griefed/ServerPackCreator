@@ -27,12 +27,10 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Display-independent state-logic for the config-editor, extracted from the Swing-coupled
- * ConfigEditor (refactor Phase 2) so it can be unit-tested without a display. The Swing view
- * stays dumb: it reads the editor's field-values into a [PackConfig], asks this view-model
- * whether anything changed, which Java-version is required, whether a modloader-server can be
- * downloaded or what the pack is called, and updates its widgets accordingly.
- *
+ * Display-independent state-logic for the config-editor so it can be unit-tested without a display. The Swing
+ * view stays dumb: it reads the editor's field-values into a [PackConfig], asks this view-model whether
+ * anything changed, which Java-version is required, whether a modloader-server can be downloaded or what the
+ * pack is called, and updates its widgets accordingly.
  * @param versionMeta Minecraft/modloader version metadata.
  * @param configurationHandler Used to read a modpack's launcher-manifest for its name.
  * @param serverPackHandler Used to check whether a modloader-server installer is downloadable.

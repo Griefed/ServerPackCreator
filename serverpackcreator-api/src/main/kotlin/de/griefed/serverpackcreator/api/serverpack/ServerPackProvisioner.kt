@@ -20,9 +20,12 @@
 package de.griefed.serverpackcreator.api.serverpack
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.LineEnding
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import de.griefed.serverpackcreator.api.utilities.common.escapePath
+import de.griefed.serverpackcreator.api.utilities.common.withLineEndings
+import de.griefed.serverpackcreator.api.utilities.common.writeTextAtomically
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ExcludeFileFilter
@@ -37,10 +40,9 @@ import java.util.*
 import javax.imageio.ImageIO
 
 /**
- * Provisioner for everything a server pack needs besides the modpack-files themselves: the
- * server-icon, server.properties, start-scripts with variables.txt and HOW-TO-RUN.md, the
- * ZIP-archive, the improved Fabric-launcher, installer-availability checks and pre-/post-install
- * cleanups. Extracted from ServerPackHandler (refactor Phase 1d); ServerPackHandler remains the
+ * Provisioner for everything a server pack needs besides the modpack-files themselves: the server-icon,
+ * server.properties, start-scripts with variables.txt and HOW-TO-RUN.md, the ZIP-archive, the improved
+ * Fabric-launcher, installer-availability checks and pre-/post-install cleanups. ServerPackHandler remains the
  * facade through which consumers access these operations.
  */
 class ServerPackProvisioner(
@@ -65,7 +67,30 @@ class ServerPackProvisioner(
 
         /** Name of the operator-facing instructions written beside the start-scripts. */
         const val HOW_TO_RUN_NAME = "HOW-TO-RUN.md"
+
+        /**
+         * The file-extensions whose reader wants CRLF. Everything else a server pack carries is written LF.
+         *
+         * `cmd` is listed although nothing here generates one: the extension is `bat`'s synonym, run by the
+         * same interpreter, and a template may be registered under either. See [LineEnding.CRLF] for what
+         * cmd.exe does without the carriage returns.
+         */
+        private val CRLF_EXTENSIONS = setOf("bat", "cmd")
     }
+
+    /**
+     * The line ending [fileName] is written with, decided by its extension.
+     *
+     * Decided here rather than inherited from the template, because the templates are files an operator
+     * may edit with any editor on any platform — so what arrives at generation says nothing about what
+     * the generated file's reader needs.
+     */
+    private fun lineEndingFor(fileName: String): LineEnding =
+        if (fileName.substringAfterLast('.', "").lowercase() in CRLF_EXTENSIONS) {
+            LineEnding.CRLF
+        } else {
+            LineEnding.LF
+        }
 
     /**
      * The `variables.txt` content for a generated server pack, still carrying its `SPC_..._SPC` placeholders.
@@ -263,11 +288,12 @@ class ServerPackProvisioner(
             }
             try {
                 script = File(destination, name)
-                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
+                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings)
+                    .withLineEndings(lineEndingFor(name))
                 if (script.exists()) {
                     script.setWritable(true)
                 }
-                script.writeText(content)
+                script.writeTextAtomically(content)
                 scripts.add(script)
             } catch (ex: Exception) {
                 log.error("$key-File not accessible: $value.", ex)
@@ -282,11 +308,12 @@ class ServerPackProvisioner(
             }
             try {
                 script = File(destination, name)
-                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
+                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings)
+                    .withLineEndings(lineEndingFor(name))
                 if (script.exists()) {
                     script.setWritable(true)
                 }
-                script.writeText(content)
+                script.writeTextAtomically(content)
                 scripts.add(script)
             } catch (ex: Exception) {
                 log.error("$key-File not accessible: $value.", ex)
@@ -310,7 +337,10 @@ class ServerPackProvisioner(
                     variablesContent += "\n$varKey=$value"
                 }
             }
-            destinationVariables.writeText(variablesContent.replace("\r", ""))
+            if (destinationVariables.exists()) {
+                destinationVariables.setWritable(true)
+            }
+            destinationVariables.writeTextAtomically(variablesContent.withLineEndings(lineEndingFor(VARIABLES_NAME)))
             destinationVariables.setReadable(true)
             destinationVariables.setWritable(true)
             destinationVariables.setExecutable(false)
@@ -325,7 +355,9 @@ class ServerPackProvisioner(
             if (howToStartTheScriptReadme.exists()) {
                 howToStartTheScriptReadme.setWritable(true)
             }
-            howToStartTheScriptReadme.writeText(howToStartTheServer.replace("\r", ""))
+            howToStartTheScriptReadme.writeTextAtomically(
+                howToStartTheServer.withLineEndings(lineEndingFor(HOW_TO_RUN_NAME))
+            )
             howToStartTheScriptReadme.setExecutable(false)
             howToStartTheScriptReadme.setReadable(true)
             howToStartTheScriptReadme.setWritable(false)
@@ -439,9 +471,6 @@ class ServerPackProvisioner(
      * Check whether the installer for the given combination of Minecraft version, modloader and
      * modloader version is available/reachable.
      *
-     * @param mcVersion        The Minecraft version.
-     * @param modloader        The modloader.
-     * @param modloaderVersion The modloader version.
      * @return `true` if the installer can be downloaded.
      * @author Griefed
      */

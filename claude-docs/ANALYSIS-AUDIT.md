@@ -1427,3 +1427,326 @@ the two halves disagree only in a configuration nobody has. Recorded rather than
 - **`ServerTestTab.availableScripts` is read once at construction**, so changing the templates setting
   takes effect at the next tab build rather than live. Deliberate and documented in the module's
   `CLAUDE.md`; it is how every other setting a plugin reads behaves.
+
+---
+
+# 2026-10-12 — analysis of `9.1.0..develop`, iteration 1 of 3
+
+Subject: the **72** ServerPackCreator commits of that range (39 of the 111 are imported website history;
+see `claude-docs/REFACTOR-AUDIT.md` for the ancestry split that separates them). Baseline: `./gradlew build`
+green on `05a58f57f`, **2,206 tests**, 0 failures, 0 compiler warnings.
+
+Every finding below is in code this range *introduced* — the homepage merge and the workflow that drives
+it. All four were measured, not inferred.
+
+## HIGH
+
+### H1 — the documentation assembler fetches from a mirror that does not have the file
+
+`serverpackcreator-homepage/docs/assemble-docs.sh:34` defaults the release base to **github.com**, and
+`fetch` is deliberately fail-hard. But GitHub is the *outward mirror*, and this repository's own
+`.claude/rules/ci-workflows.md` records that the `mirror` job stalled on **5 of 12 releases — 9.2.1 among
+them**. Measured today:
+
+```
+github.com  …/download/9.2.1/serverpackcreator-api-9.2.1-dokka-html.zip -> 404 (9 bytes)
+git.griefed.de …/download/9.2.1/serverpackcreator-api-9.2.1-dokka-html.zip -> 200 (4,480,323 bytes)
+git.griefed.de …/download/9.1.0/serverpackcreator-api-9.1.0-dokka-html.zip -> 200 (4,480,480 bytes)
+```
+
+`9.2.1` is the **first** entry in `versions.json`, so `homepage-image` dies on its first loop iteration.
+The job that `fix(ci): publish the homepage image on every release` exists to make work cannot currently
+build at all.
+
+Forgejo is the canonical origin of every release — the root `CLAUDE.md` says so — so the mirror was the
+wrong source from the first commit. It is also the host the job runs on, which makes it the near side of
+the network rather than the far one.
+
+### H2 — the manifest advertises a version that has no release anywhere
+
+`versions.json` lists `9.2.0`. The **tag** exists on Forgejo (`0f5ef5a8c`), but no release *object* does:
+
+```
+Forgejo API /releases/tags/9.2.0 -> "The target couldn't be found."
+GitHub  API /releases/tags/9.2.0 -> "Not Found"
+Forgejo …/download/9.2.0/serverpackcreator-api-9.2.0-dokka-html.zip -> 404
+```
+
+So its API reference is unfetchable from either forge and the hard-fail fires a second time. A tag and a
+release are different objects, and `versions.json` was written against the tag list.
+
+(The help half is fine — `griefed/serverpackcreator-help` publishes `9.1.0`, `9.2.0` and `9.2.1`, all
+HTTP 200 on Docker Hub. Only the API half is missing, which is why this is a manifest fault rather than a
+release one.)
+
+### H3 — the image published for a release never contains that release's documentation
+
+`versions.json` is a **static, hand-curated file**, and `homepage-image` runs `docs/assemble-docs.sh
+docs-build` with no version argument. So releasing `9.2.2` publishes a site whose newest documentation is
+`9.2.1`, and whose `/help/latest` and `/api/latest` symlinks point at `9.2.1` — until somebody remembers to
+hand-edit the manifest and cut *another* release.
+
+The job already holds the answer: `needs.version.outputs.version`. Nothing reads it.
+
+This is the one that matters most against the stated goal, because it fails **silently and successfully** —
+a green pipeline, a published image, and documentation one release stale. H1 and H2 at least fail loudly.
+
+## MEDIUM
+
+### M1 — the assembler hard-requires `unzip`, which this runner is documented as not having
+
+`assemble-docs.sh:37` exits 1 without `unzip`. Twelve lines of `docs.yml` above the job that calls it, the
+*Check the API entry survived the build* step says in as many words:
+
+> `unzip` is NOT a given on this runner image — that is why the dokka job ships a tar.gz and why
+> Dockerfile.help has to `apk add unzip`. python3 is the fallback […]
+
+The established pattern in the same file is unzip → python3 → loud skip. The new script adopts none of it
+and converts a known-absent tool into a build failure. (It has not fired yet because H1 fails first.)
+
+### M2 — `serverpackcreator-homepage/CI-NOTES.md` documents a CI that no longer exists
+
+Imported with the subtree and never reconciled. It describes three workflows — `workflows/ci.yml`,
+`workflows/build.yml`, `workflows/packages.yml` — and `serverpackcreator-homepage/.forgejo` and
+`.github` **do not exist**: `ci(homepage): lift the website's CI to the root, drop what cannot work`
+removed them, and `fix(ci): publish the homepage image on every release` folded the remainder into
+`.forgejo/workflows/docs.yml`.
+
+It also lists nine credentials — `DOCKERHUB_REPO`, `GHCR_USER`, `GHCR_TOKEN`, `PACKAGES_TOKEN`,
+`GIT_USER`, `GIT_MAIL`, `RELEASE_USER`, `RELEASE_TOKEN` and `DOCKERHUB_TOKEN`. The jobs that exist use
+**three and one variable**: `secrets.DOCKERHUB_USER`, `secrets.DOCKERHUB_TOKEN`, `secrets.GH_TOKEN`,
+`vars.DOCKERHUB_HOMEPAGE_REPO`. Six of the nine are named nowhere in the repository.
+
+A secrets table is read by an operator provisioning a runner, which makes a wrong one worse than an absent
+one — it sends somebody to mint four tokens nothing will ever read. Against this repo's own rule that
+documentation describes the present tense, the whole file is past tense about a different repository.
+
+## LOW
+
+### L1 — the homepage carries an eslint 8 island nothing runs
+
+`serverpackcreator-homepage/` ships `.eslintrc.js`, `.eslintignore` and `eslint 8.37.0` with
+`@babel/eslint-parser`, and `package.json` declares `"lint": "eslint --ext .js,.vue ./"`. **No workflow
+invokes it** (`grep -rn homepage .forgejo/workflows/*.yml | grep -i lint` → nothing), and `"test"` is
+`echo "No test specified" && exit 0`.
+
+Meanwhile `build(deps-dev): bump eslint 9.39.5 -> 10.12.0` has just moved the *other* frontend to eslint 10
+flat config, and `serverpackcreator-web-frontend/CLAUDE.md` records that its legacy
+`.eslintrc.cjs`/`.eslintignore` "are gone". The repository now holds both generations, one of them unreachable.
+
+Recorded, not fixed: migrating it is a separate piece of work with its own verification, and an unrun
+linter is inert rather than wrong. It belongs in `BACKLOG.md`.
+
+## Verified clean — do not re-litigate
+
+- **A regex scan for dangling `@param`/`@return` tags was run and its output discarded as unsound.** It
+  reported 29 `@param`s naming non-existent parameters and 86 `@return`s on Unit functions; both lists are
+  false. `params_of` truncated the declaration at 40 lines, so `BootVerifier`'s long constructor looked
+  short, and the Unit test keyed on an absent `: Type`, which every expression-bodied function lacks.
+  **Do not re-run this scan; ask dokka.** Same failure mode as the name-based call graph that produced
+  depth-54 chains before `misc/call-depth.py` moved to bytecode.
+- **`KDocAttachmentTest` covers the whole repository**, not just `-api` — it walks from the directory
+  holding `settings.gradle.kts` over every `.kt`/`.kts`, skipping `build`, `.git`, `.gradle`,
+  `node_modules`, `dist`, `.idea`, and asserts it found >100 files so a mis-rooted scan fails loudly rather
+  than passing vacuously. It is green across the doc sweeps, which is the guard those 74- and 79-file
+  commits needed.
+- **`docs-build/` is correctly excluded from git and correctly included in the Docker context.**
+  `serverpackcreator-homepage/.gitignore` has `/docs-build/*` with `!/docs-build/.gitkeep`;
+  `.dockerignore` does **not** list it. So the assembled 25 MB/version tree is never committed and always
+  copied — the two files have to disagree for this to work, and they do.
+- **`ln -sfn "$LATEST"` writes a *relative* symlink**, which survives `COPY docs-build/ /config/www/`
+  intact. An absolute one would have pointed outside the image.
+- **The `:latest` tag guard in `Compute tags` is correct.** `*[!0-9.]*` matches any version containing a
+  character that is neither digit nor dot, so `9.2.2-alpha.1` takes the no-latest arm before `*.*.*` can
+  see it. Prereleases cannot become what a bare `docker pull` returns.
+- **`node -e` + `process.argv[1]` is right**, and is not the script-mode off-by-one it resembles: with
+  `-e` there is no script filename, so the first user argument *is* `argv[1]`.
+
+---
+
+# 2026-10-12 — analysis of `9.1.0..develop`, iteration 2 of 3
+
+Iteration 1 looked at the newest code (the homepage merge). This pass looked at the rest: the Kotlin
+and shell changes in the range, test depth, and security. Two findings, both fixed, plus a third found
+while confirming the second.
+
+## HIGH
+
+### H4 — a fix landed on one of the two call sites it was written for
+
+`fix(ci): make the continuous release say why it failed instead of printing a traceback` is **in this
+range**. Its message names two stacked blindfolds:
+
+> `curl -f` prints NOTHING on an HTTP error […] and the step ran under `set -eu` WITHOUT `pipefail`,
+> so a pipeline's status is python's: curl's non-zero exit was masked
+
+It fixed the **Forgejo** step. The **GitHub mirror** step, 35 lines below in the same file, still had
+both:
+
+```
+set -eu                                    # no pipefail
+ID=$(curl -sf -X POST .../releases ... | python3 -c '...json.load(sys.stdin)["id"]')
+```
+
+with the comment explaining why that is wrong sitting 42 lines above it. Two more `curl -sf` calls
+(the Forgejo asset upload, the GitHub release delete) and a fourth (the GitHub asset upload) could
+also fail without printing a reason.
+
+Fixed: all four capture status and body, both GitHub steps gained `-o pipefail`, and the create payload
+moved to a heredoc. Verified by extracting **every** `run:` block in `.forgejo/` through the YAML parser
+and running `bash -n` — 65 parse, 0 fail — which is what proves the heredoc terminator survives
+block-scalar dedenting instead of landing indented and never matching.
+
+This is the fourth recorded instance of *a fix written against one artifact is a fix for one artifact*.
+
+### H5 — a doc sweep left three exported properties undocumented in the published module
+
+`docs: strip @param/@return that only repeat the prose above them` touched 74 files. Dokka reports
+exactly three members as `Undocumented`, and all three trace to that commit:
+
+```
+- * @param minecraftVersion Minecraft version.          ForgeInstance
+- * @param forgeVersion     Forge version.              ForgeInstance
+- * @param minecraftVersion The Minecraft version of this server.   MinecraftServer
+```
+
+Each was the sole documentation of a **public property of a Maven-published class**. The tell is in the
+source without a tool: both blocks still carry `@param` for their *private* parameters while the public
+`val`s above them have none — the sweep kept the tags documenting what no reader of the reference can
+see and dropped the ones documenting what they can.
+
+The individual removals were defensible: `@param minecraftVersion Minecraft version.` really does only
+restate the signature. The conventions anticipate precisely this — *"A doc that only restates the
+signature is barely better than none — but silence is worse."* So they are **written, not restored**.
+
+Fixed; dokka goes 3 `w:` lines → 0 for `-api`.
+
+## Out of range, fixed anyway
+
+### 17 dokka warnings predating `9.1.0`
+
+Running dokka across all **eight** modules that apply the convention rather than only the published one
+turned 3 findings into 17: two unresolved links (`[selection]` in `LaunchablePack`, which meant
+`[StartScriptSelection]`) and fifteen undocumented members. `git log 9.1.0..develop -- <file>` returns
+nothing for every file involved, so none are this range's doing — fixed under *"a defect noticed in
+passing gets surfaced and fixed in its own commit, never deferred as out of scope."*
+
+Dokka now emits zero `w:` lines project-wide.
+
+## Verified clean — do not re-litigate
+
+- **`fix(api): forward a stop signal to the server in the bash start script` is exemplary**, and is the
+  model for this repository's riskiest change class. `test(api): pin that a stop signal reaches the
+  server, red` lands *before* the fix; both halves are mutation-verified (a handler forwarding nothing →
+  FAILED; `"$JAVA" ${1} &` without the fd-0 redirection → FAILED); the guard itself was repaired before
+  being trusted, because its first form read the console from a pipe the JDK closes at exit; and the
+  fish and PowerShell exclusions are **measured**, not assumed.
+- **The `spch.tree` href templating is guarded on both sides.** `grep -qF` before the `sed` (because
+  `sed` matching nothing exits 0 and would ship the Pages link silently), `grep -qF` after, and a
+  separate downstream step reads `HelpTOC.json` back out of the *built* zip. A `&` or `|` smuggled in
+  through a branch name would corrupt the replacement and then fail the post-check rather than publish
+  a wrong link.
+- **No secrets and no script-injection surface.** No hard-coded credential pattern in the added
+  homepage code or the workflows, and no interpolation of `github.event.*` title/body/message/name/ref
+  or `github.head_ref` into any shell — the fields an outside contributor can set.
+- **The `curl -sf` calls left in `release-build.yml` are the two documented carve-outs** (VirusTotal's
+  submissions, whose failure must not fail a published release), matching
+  `.claude/rules/ci-workflows.md` exactly. `qodana.yml`'s two are a notification webhook, same class.
+- **The app-vite 3 alias rename is complete.** No `from 'src/…'`, `'boot/…'`, `'stores/…'`,
+  `'components/…'`, `'layouts/…'`, `'pages/…'` or `'assets/…'` import survives anywhere in `src/` or
+  `test/`; the `~@/assets/…` template form and the `url("@/assets/…")` SCSS form are both present and
+  consistent; and **all nine referenced assets exist on disk**. Six assets are referenced by nothing
+  (`app.png`, `banner.png`, `fileID.webp`, `projectID.webp`, `prosper.webp`, `sad.svg`) — not from this
+  range, so not this audit's business.
+- **`9964e485a`'s `timedOut` contract change is recorded** in `claude-docs/API-BEHAVIOUR-CHANGES.md` by
+  `8cce5007e`, which is the process working.
+
+---
+
+# 2026-10-12 — analysis of `9.1.0..develop`, iteration 3 of 3
+
+Iteration 1 took the newest code, iteration 2 the rest of the range plus a project-wide dokka pass.
+This one took the two rules this repository has written down *because it keeps breaking them*, and
+aimed each at the range: **"a benchmark is not a test"**, **"a guard gated on something nobody supplies
+is absent, not gated"** — and then followed the thread the second one opened.
+
+## HIGH
+
+### H6 — `docs.yml` never called the action that exists to be the only caller of this decision
+
+`.forgejo/actions/resolve-version` opens with *"The one place that decides what a build calls itself"*,
+and its header records the exact failure it was created to end: the prerelease classification and the
+tag-shape rejection *"existed in only one of the two, so a malformed tag was caught and a malformed
+anything else was not."*
+
+`release-build.yml` and `devbuild.yml` use it. `docs.yml` did not — it hand-rolled
+
+```
+if [ "${{ github.ref_type }}" = "tag" ]; then V="${{ github.ref_name }}"; else V=<short sha>; fi
+```
+
+so the refusal never ran. Its trigger is `tags: ['*.*.*']`, which Forgejo compiles to `^.*\..*\..*$`,
+and that matches far more than a release:
+
+| tag | matches the trigger | `resolve-version` says |
+|---|---|---|
+| `9.2.2`, `9.2.2-alpha.1`, `9.2.2-beta.3` | yes | accept |
+| `v9.2.2`, `test.tag.x`, `release.candidate.1`, `9.2.2.1` | **yes** | **refuse** |
+
+Each of those four would have been taken verbatim as the version — publishing
+`serverpackcreator-help:<junk>` (that job pushes) and a help site whose API entry points at
+`/api/<junk>/index.html`. Measured by extracting the action's own script and running it against all
+seven.
+
+**And the question it answers was being re-answered twice more.** `Compute tags` decided "plain
+release?" with `case "$V" in *[!0-9.]*) ;; *.*.*)`, and `assemble-docs.sh` decided it again with
+`/^[0-9]+\.[0-9]+\.[0-9]+$/`. Three copies, two of them downstream of the one that is authoritative —
+the **fifth** recorded instance of duplicated knowledge drifting toward whichever copy is easier to
+reach.
+
+They could disagree, and `9.2.2.1` is exactly where: the `case` matches `*.*.*` and would have pushed
+`:latest`, while the regex requires three components and would have left `/help/latest` alone. That it
+is unreachable today is only because `resolve-version` refuses the tag — which is the argument for
+calling it, not for keeping the copies.
+
+Fixed: a tag goes through the action; the `version` job outputs `prerelease`; both former derivations
+are now reads. The script's regex is **deleted** rather than corrected, defaulting to `false` so a
+standalone run adds a version without promoting it.
+
+A branch build is still named by its short commit and deliberately does **not** use the action's
+`branch` mode, which needs `fetch-depth: 0` for `git describe`.
+
+## Verified clean — do not re-litigate
+
+- **`build(grinder): measure what a restart pays to load the verdict store` obeys the benchmark rule.**
+  The file is `StoreWriteBenchmark.kt`, the method is `measureLoadCost`, and the commit *also* adds a
+  real asserting `@Test` to `BootWorkspaceReaperTest` whose precondition is asserted after the sweep so
+  it **skips rather than passes** when it does not hold. This is the rule working, one iteration after
+  `StoreWriteBenchTest` was renamed for breaking it.
+- **Every skipped test has a named owner for its gate, or a stated reason for having none.** 28 skips:
+  `DockerJavaContainerEngineIT` (9) and `ContainerOwnershipIT` (3) are gated on `GRINDER_DOCKER_IT`,
+  which `grinder-container-it.yml` **sets** — and deliberately *not* `test.yml`, whose comment explains
+  that the repository-wide concurrency lock is the point. `CurseForgeCrawlLiveIT` (10),
+  `CatalogCrawlLiveIT` (3), `GrinderAuditIT` (1) and `ScriptTemplateMatrixIT` (1) are gated on
+  `GRINDER_CF_IT` / `GRINDER_LIVE_IT` / `GRINDER_AUDIT_IT` / `GRINDER_TEMPLATE_IT`, which nothing sets —
+  and `test.yml` says why in as many words: *"they need a live Modrinth/CurseForge API, a built image,
+  or a deployed grinder."* `RealPackBootTest` (1) is a real boot, run on purpose. **Nobody-sets-it with
+  a written reason is the answer the rule asks for**, not a finding.
+  *Method note:* a `grep -l` for the gate names reports `test.yml` as setting `GRINDER_DOCKER_IT`. It
+  does not — that is the comment saying it deliberately doesn't. Parse the YAML and read `env:`.
+- **The SPA really is built twice on a release**, once by `homepage-build` and once inside the
+  Dockerfile, and `homepage-image` consumes only the `dokka-html` artifact — never `homepage-spa`.
+  Deliberate: the Dockerfile builds from its own context so `docker build` works standalone, and
+  `homepage-build` exists to be the per-push check that gates the publish through `needs`. The uploaded
+  `homepage-spa` is a 7-day convenience copy that nothing consumes, like `test.yml`'s `build-artifacts`.
+- **No dangling references after the rewire.** No `steps.resolve.*` survives, and every one of the ten
+  `needs.version.outputs.*` reads belongs to a job that declares `needs: version`.
+- **Unused imports: none.** `./gradlew build` emits zero `w:` lines, and an unused Kotlin import is a
+  compiler warning — so the whole class is empty by construction rather than by scan.
+
+## Closing state
+
+`./gradlew build` **BUILD SUCCESSFUL**, 0 compiler warnings, **2,168 JVM tests + 38 frontend = 2,206**,
+0 failures, 28 skipped. `dokkaGenerateHtml` across all eight modules: **0 warnings**. 65 bash run-blocks
+parse. `misc/ci-duplication-check.py`: 3 duplicated-and-unexplained, 4 allowlisted — unchanged through
+all three iterations.

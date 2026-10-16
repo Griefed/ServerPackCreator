@@ -123,9 +123,8 @@ internal class SurvivedBootConfidenceTest {
      * **The premise this test used to hold has been deliberately reversed, and that is worth stating rather
      * than deleting quietly.**
      *
-     * It asserted that a clean boot must not overturn a client-only declaration — under the old model,
-     * `metadataClient` outranked a survived boot and the row stayed MEDIUM. The redesign inverts the
-     * precedence: *the console decides and the metadata only declares*, because a self-report is the
+     * It asserted that a clean boot must not overturn a client-only declaration, which the four-verdict
+     * model inverts: *the console decides and the metadata only declares*, because a self-report is the
      * unreliable half and is the entire reason a container is paid for. So a mod claiming client-only that
      * boots a server cleanly is now CLEAR, and its claim is recorded beside the verdict rather than
      * overriding it.
