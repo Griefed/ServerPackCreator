@@ -23,6 +23,7 @@ import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import java.io.File
 import java.io.IOException
+import java.util.Optional
 import java.util.jar.JarFile
 
 /**
@@ -36,6 +37,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
+    private val type = "type"
 
     /** The key a Forge/NeoForge dependency entry states its Maven version range under. */
     private val versionRange = "versionRange"
@@ -45,6 +47,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
 
     /** NeoForge's replacement for [mandatory] in `neoforge.mods.toml`: a `type` string, default `"required"`. */
     private val dependencyType = "type"
+
+    /** A dependency in a mods.toml only to state that it is incompatible with the parent mod. **/
+    private val incompatibleDependency = "incompatible"
 
     /**
      * The `type` values that do **not** oblige the pack to carry the dependency. `"incompatible"` is here
@@ -118,6 +123,10 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                 //check all dependencies in mod
                 for (declared in declaredDependencies) {
                     val dependencyModId = getModId(declared)
+                    val dependencyType = getType(declared)
+                    if (dependencyType.isPresent && dependencyType.get() == incompatibleDependency) {
+                        continue
+                    }
                     val side = getSide(declared)
                     val dependencySideness = if (side.uppercase().matches(client)) {
                         Sideness.CLIENT
@@ -242,6 +251,17 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
             return declaredType in notRequiredTypes
         }
         return config.valueMap()[mandatory]?.toString()?.trim()?.lowercase() == "false"
+    }
+
+    /**
+     * Whether [dependency] declares a type, such as `incompatible` in which case this dependency is irrelevant
+     * for our dependency-system.
+     *
+     * @author Griefed
+     */
+    private fun getType(dependency: CommentedConfig): Optional<String> {
+        val dependencyType = dependency.valueMap()[type] as String? ?: return Optional.empty()
+        return Optional.of(dependencyType.toString().lowercase())
     }
 
     /**
