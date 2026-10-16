@@ -1,3 +1,62 @@
+## [9.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.2.1...9.3.0) (2026-10-16)
+
+### 💎 Improvements
+
+* **Modscanning:** Skip dependencies which declare an incompatibility ([e4844fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4844fa5e7d9eee742d7e54d27108955967b2681))
+
+### 📔 Docs
+
+* close every gap dokka reports, across all eight modules ([7a05797](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a05797f0e9d99f126ec62ec4abe3b99f15e7b4b))
+* commit by goal, not by edit — Griefed's call, 2026-10-12 ([de03a2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/de03a2c9de30bfddf10ef9c0f78d9a38b1bd3922))
+* delete commented-out code and corrections of older comments ([1722c6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1722c6ea31665d67e245235414945f0953fd197b))
+* drop refactor-phase provenance from doc comments ([8c7ac27](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c7ac2719786e6ab7cf41f3fb0c2cf6a936e418c))
+* measure call depth from the public entry points, and fix the Swing rule ([a7f32be](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7f32bee1c010b3488d667b56cdcb342508e006b))
+* record the 9.1.0..develop audit, three iterations ([e5036e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5036e9636fd2d9171d0ecdd0dfc8c07726517d7))
+* remove doc references to symbols that no longer exist ([0f0851e](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f0851ebc6095e2779f31de7102be55581705d12))
+* state the reason in the present tense instead of the past ([f3a0b03](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3a0b03c80cbcc0fab4e008e905ba396201d6ed2))
+* strip @param/[@return](https://git.griefed.de/return) that only repeat the prose above them ([dd27037](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd27037ebfaa5535e833c5d4eb82a172cb6db6eb))
+* **api:** say what the plugin extension points do and when they fire ([21e4627](https://git.griefed.de/Griefed/ServerPackCreator/commit/21e4627f8eadcceaf3f593a31231c3d5cf0f5cbf))
+* **build:** the recorded configuration-cache count is stale, and one of them is ours ([4bdd0aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bdd0aa6465a5e130d36a6f5328d1cc342afd1fe))
+* **ci:** the media job's comment credited a mechanism that cannot happen ([b7ca73e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b7ca73e586f6ae68d92ef5709dd6870a2070c5b5))
+* **homepage:** pull the website subtree with --squash, or it reopens the changelog ([c18d38c](https://git.griefed.de/Griefed/ServerPackCreator/commit/c18d38cb74718b778085c7a692f1f951762a4fc5))
+
+### 📦 Other
+
+* **homepage:** import serverpackcreator.de as a subtree, squashed ([c11f0ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/c11f0ed3d34454788ae3e639d1e7b39f970137a5))
+* **Homepage:** Update CI for IDEA, add links for new help and api doc locations, update links to help ([d5ca59d](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5ca59d10f0b7b855bf88c46a04013f31a262a3b))
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump eslint 9.39.5 -> 10.12.0, and @eslint/js with it ([3d9e976](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d9e97633682f1d1a0365c37a361919e5c79e6c5)), closes [#1302](https://git.griefed.de/Griefed/ServerPackCreator/issues/1302) [#264](https://git.griefed.de/Griefed/ServerPackCreator/issues/264)
+* **deps:** bump foojay-resolver-convention 0.8.0 -> 1.0.0 ([23fd7fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/23fd7fd2504fcc7d3581b7d329de7ce0665a503e))
+* **deps:** bump kotlin 2.4.20 -> 2.4.21 ([9a66e55](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a66e555dfbdfcb3261e72aa539df379fc054b27))
+* **deps:** bump kover 0.9.9 -> 0.9.11 ([86d08af](https://git.griefed.de/Griefed/ServerPackCreator/commit/86d08afb0ceaaacb1ddc712ebc0b94bb7086417a))
+* **deps:** bump miglayout-swing 11.4.3 -> 11.5.1 ([a0aa154](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0aa154a6ed329631bcfef4c90aac1a26441cd1e)), closes [#94](https://git.griefed.de/Griefed/ServerPackCreator/issues/94) [#120](https://git.griefed.de/Griefed/ServerPackCreator/issues/120)
+* **deps:** bump the Gradle wrapper 9.7.1 -> 9.8.1 ([ce6148b](https://git.griefed.de/Griefed/ServerPackCreator/commit/ce6148bd897aca03815c24380f490194a2178fcc)), closes [#1304](https://git.griefed.de/Griefed/ServerPackCreator/issues/1304)
+* fold docker-test into test, so one workflow answers "did it pass?" ([8a45c0c](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a45c0c49fb8e1638bed611b48067d7d7caf534a))
+
+### 🧪 Tests
+
+* **api:** KDocAttachmentTest misses a block separated by an annotation ([c69baa4](https://git.griefed.de/Griefed/ServerPackCreator/commit/c69baa42b307e1c145973fd1edb1b836640ef35a))
+
+### 🚀 Features
+
+* **ci:** publish a homepage image per commit, like the help image ([025e847](https://git.griefed.de/Griefed/ServerPackCreator/commit/025e84743c4758d5eb2fca9f7a39d57fcb564e18))
+* **homepage:** serve the versioned help and API reference from serverpackcreator.de ([838b571](https://git.griefed.de/Griefed/ServerPackCreator/commit/838b571bc41b9c46d6b3cc8c00dc299cb66610e1))
+
+### 🛠 Fixes
+
+* **api:** a failed download destroyed the file it was replacing, and a killed one cached as complete ([84ccf4d](https://git.griefed.de/Griefed/ServerPackCreator/commit/84ccf4d1967343dc967870f93a7246aac6be1ac3))
+* **api:** a manifest that cannot be parsed ended every start, with no way out from inside the process ([fa4cf73](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa4cf7303941988329297d6a2df7d50a10aad0d8))
+* **api:** line endings and invisible characters can no longer break a server pack ([7680f7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/7680f7e8cc1669f091c12799cb0154e7787ce92a))
+* **api:** reading a dependency's `type` could cost the mod its whole descriptor ([4de7752](https://git.griefed.de/Griefed/ServerPackCreator/commit/4de775286de5cdf510bc4a49b7ddbdf91d0a1fe3))
+* **api:** VersionMeta.update carried two KDoc blocks, one of them dropped ([5e7507a](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e7507a9573e387c919931a4343ebbba53c9145b))
+* **build:** a branch name with a slash in it no longer breaks bootJar ([087e138](https://git.griefed.de/Griefed/ServerPackCreator/commit/087e138c591b8d3617dab3532913cfd472ebfc8a)), closes [#713](https://git.griefed.de/Griefed/ServerPackCreator/issues/713)
+* **build:** stop tracking the generated third-party licence notice ([1bcc034](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bcc0340f49370ee7b6fb330972327b6f1e119fa))
+* **build:** the install4j media never generated the licence it embeds ([57eadb9](https://git.griefed.de/Griefed/ServerPackCreator/commit/57eadb9b75d22d81b51f0ecc09e49e6db08391ad))
+* **ci:** the continuous build's GitHub half printed a traceback, not the reason ([b88175e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b88175ecfefeded3e57572f1a25dc02379033ca3))
+* **ci:** trigger the push-mirror sync instead of waiting for it ([9431eb6](https://git.griefed.de/Griefed/ServerPackCreator/commit/9431eb624ad33cf1cf7d6eba3be30cb18e231067))
+
 ## [9.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.2.0...9.2.1) (2026-10-11)
 
 ### ⏩ Performance
