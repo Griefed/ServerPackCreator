@@ -197,10 +197,15 @@ the "do not tidy that away, here is what it cost last time".
   (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
   Those constructs block project **isolation**, a different feature.
 
-  **Re-measured 2026-09-26 — our half is fixed, and only the third-party half is left.**
-  `./gradlew build --configuration-cache --dry-run` now reports **8 problems, 2 of which seem unique, all
-  of them `:generateLicenseReport`** holding a `Project` (jk1 gradle-license-report — not fixable here).
-  `./gradlew :serverpackcreator-app:test --configuration-cache` stores an entry with **no problems at all**.
+  **Re-measured 2026-10-16 on Gradle 9.8.1: `./gradlew build --configuration-cache --dry-run` reports
+  11 problems, 3 of which seem unique.** Two are `:generateLicenseReport` holding a `Project` (jk1
+  gradle-license-report — not fixable here) and the third is **`:serverpackcreator-app:processResources`
+  holding one**, which is ours and is new since the 2026-09-26 reading of *8 problems, 2 unique, all of
+  them `generateLicenseReport`*. Nothing in the slashed-`-Pversion` work caused it — `develop` and that
+  branch were measured against each other and are identical at 11/3 — so it arrived with some change
+  between those two dates and is worth a `git log -S` over `-app`'s `processResources`.
+  `./gradlew :serverpackcreator-app:test --configuration-cache` stored an entry with no problems at all
+  in September; re-run it rather than trusting that now.
 
   It used to be 20 problems, 13 unique, and the entry above used to name ours: the `filter { }` in
   `processTestResources` and a `doFirst { cleanup() }` in `test`, both capturing the enclosing script,
@@ -208,8 +213,9 @@ the "do not tidy that away, here is what it cost last time".
   `TestHome.prepare(File)`, a **compiled buildSrc class** that closes over nothing but the `File` handed
   to it, and `-app`'s duplicate `doFirst` was deleted once it was shown to be redundant.
 
-  So the ceiling *is* now `generateLicenseReport`: excluding that one task is the difference between 8
-  problems and zero, rather than merely "fewer". Re-run the command above before believing this
+  So the ceiling is `generateLicenseReport` **plus** whatever re-captured a `Project` in `-app`'s
+  `processResources`: only the first of those is third-party, which makes the second the one worth
+  chasing. Re-run the command above before believing this
   paragraph — it is the kind of fact that goes stale the moment a task action captures a script again.
 - **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
   that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`
