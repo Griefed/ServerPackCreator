@@ -17,7 +17,7 @@
     "@quasar/extras": "1.16.2",
     "@quasar/quasar-app-extension-qflashcard": "2.0.0-alpha.4",
     "axios": "1.3.4",
-    "core-js": "3.27.2",
+    "core-js": "3.50.0",
     "quasar": "2.11.10",
     "github-release-stats": "1.0.2"
   },
