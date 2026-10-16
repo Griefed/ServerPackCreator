@@ -62,6 +62,31 @@ commandAvailable() {
   command -v "$1" > /dev/null 2>&1
 }
 
+# loadVariables(path)
+# Reads the KEY=VALUE file $1 -- your variables.txt -- into this script's settings.
+#
+# This is the same function, for the same reasons, as the one in start.sh beside this script, which
+# explains them at length. In short: variables.txt can pick up Windows carriage returns or an invisible
+# byte-order mark on its way to a server, and either one stops settings from being read. Both are
+# repaired here in memory; your variables.txt on disk is never modified.
+#
+# This script reads variables.txt itself rather than relying on start.sh, because you can also run it on
+# its own. That means there are two copies of this function, and they have to be changed together.
+loadVariables() {
+  local settings
+
+  # Turn carriage returns into line breaks. Turn into, not delete: if a file's lines happen to be
+  # separated by carriage returns alone, deleting them would join the whole file into one single line.
+  settings="$(tr '\r' '\n' < "$1")"
+
+  # Drop the byte-order mark, if the file starts with one.
+  settings="${settings#$'\xEF\xBB\xBF'}"
+
+  # Why "eval" and not "source <(...)", which would read nicer: the bash that ships with macOS reads
+  # nothing at all that way, and says nothing about it, leaving every setting empty.
+  eval "$settings"
+}
+
 # installJabba
 # Downloads and installs Jabba, the software used to download and install Java for the Minecraft server.
 installJabba() {
@@ -82,7 +107,7 @@ if [[ ! -s "variables.txt" ]]; then
   exit 1
 fi
 
-source "./variables.txt"
+loadVariables "./variables.txt"
 
 # if ldd is not available, we may be on MacOS
 if commandAvailable ldd ; then

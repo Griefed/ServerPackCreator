@@ -97,9 +97,23 @@ end
 # to variables.txt and to .previousrun -- and exports each entry as a fish global. Comments (#) and
 # blank lines are skipped. This exists because fish cannot `source` a bash-syntax KEY=VALUE file
 # directly (bare `VAR=value` is not valid fish).
+#
+# It also repairs two things variables.txt can pick up on its way to a server -- uploading it with an
+# FTP client set to "ASCII" or "Auto", or editing it in a hosting panel's web editor or on Windows.
+# Both are repaired in memory; your variables.txt on disk is never modified.
+#
+#   Carriage returns, turned into line breaks before the file is read. Turned into, not deleted: `read`
+#   separates lines on line feeds alone, so a file whose lines are separated by carriage returns alone
+#   arrives as one single line, and the first setting on it swallows the whole file as its value.
+#
+#   A byte-order mark: three invisible bytes some Windows editors write at the very start of a file. It
+#   sticks to the FIRST setting's name, turning JAVA into a name nothing ever reads -- so your choice of
+#   Java is quietly ignored while every setting below it still works. `string trim` leaves it alone,
+#   because it is not whitespace, so it is removed on its own line below.
 function loadVariables --argument-names path
     while read -l line
         set -l trimmed (string trim -- $line)
+        set trimmed (string replace -r '^\x{feff}' '' -- $trimmed)
 
         if test -z "$trimmed"
             continue
@@ -116,7 +130,7 @@ function loadVariables --argument-names path
         set -l key $parts[1]
         set -l value (string trim -c '"' -- $parts[2])
         set -gx $key $value
-    end < $path
+    end < (tr '\r' '\n' < $path | psub)
 end
 
 # getJavaVersion

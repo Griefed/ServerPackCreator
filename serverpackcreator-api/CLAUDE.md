@@ -309,6 +309,71 @@
   same broken file and returned `Optional.empty()`, which every consumer reads as *this version declares no
   required Java* — `REQUIREMENT_UNKNOWN` masquerading as `JDK_NOT_BUNDLED`, permanently.
 
+- **LANDMINE — deleting `\r` is not a line-ending conversion, and the generated files do not all want the
+  same ending (2026-10-14).** Every run-file `ServerPackProvisioner.createServerRunFiles` writes goes through
+  `String.withLineEndings` (`FileUtilities.kt`), and the convention is picked by extension in
+  `lineEndingFor` — **LF for everything except `bat`/`cmd`, which get CRLF**. Do not reintroduce
+  `.replace("\r", "")`; it was at four call sites and wrong in two different ways.
+  - **Deleting the carriage return destroys a file whose lines are separated by lone CRs** — a classic-Mac
+    editor, or a conversion that ran halfway. The separator is removed instead of replaced, so the whole
+    template becomes one line. Measured: `#!/usr/bin/env bash\recho one\recho two\r` came out as
+    `#!/usr/bin/env bashecho oneecho two` — no shebang, no commands, and still a perfectly valid file.
+    Nothing reports it. `withLineEndings` normalises to LF first and expands afterwards, which also stops
+    the CRLF direction doubling an already-CRLF template into `\r\r\n`.
+  - **`start.bat` was shipped LF-only, which is a latent wrong-jump.** `cmd.exe` resolves a `goto`/`call`
+    label by scanning the file and misses a label crossing a 512-byte boundary when no carriage return has
+    reset its line counter — so the jump lands mid-line or reports a label that is visibly present as
+    missing ([DosTips](https://www.dostips.com/forum/viewtopic.php?t=8988), Dave Benham). Today's shipped
+    `default_template.bat` has no label at all, so nothing was broken; the templates are operator-editable,
+    which is what made it worth closing rather than noting. `serverpackcreator-plugin-selfextract`'s
+    `Stubs.batch` reached the same conclusion independently and joins its lines with `\r\n` — same fact,
+    two places, so change both or neither.
+  - **The template's own endings are not the answer and never were.** They are files an operator edits with
+    any editor on any platform, so generation decides. `.gitattributes` keeps the shipped templates LF in
+    the *working tree* only; its comment says so, and will go stale again if `lineEndingFor` moves.
+  - Pinned by `RunFileLineEndingsTest` (drives `createServerRunFiles` against fixture templates, mocking
+    `ApiProperties` rather than repointing the real template maps — those are backed by the shared test home
+    and would outlive the class) and `LineEndingTest`. Three of the four provisioner guards were observed
+    red first; the fourth pins the behaviour that was already correct so the change could not regress it.
+- **LANDMINE — `variables.txt` is read by FOUR shipped templates, each with its own loader, and writing it
+  correctly does not keep it correct (2026-10-16).** SPC writes it LF-only and without a byte-order mark,
+  and cannot keep it that way: it travels to a server, and an FTP client in ASCII/auto mode rewrites `.txt`
+  on upload, as do a hosting panel's web editor and an editor on Windows. The start script is the last
+  point of control, so every loader repairs **both** carriage returns and a leading byte-order mark before
+  reading — `loadVariables` in `default_template.sh`, `default_template.fish`, `default_java_template.sh`
+  and `default_java_template.fish`. **The installer templates are not covered by fixing the start
+  scripts**: they guard and read `variables.txt` themselves because they also run standalone. All four are
+  pinned by `VariablesFileLoadingTest`, which drives the real function out of each shipped template across
+  all six combinations of LF/CRLF/lone-CR and mark/no-mark.
+  - **A byte-order mark damages only the FIRST setting, which is what makes it hard to recognise.** The
+    three bytes stick to that name, so `JAVA` becomes a name nothing reads and the operator's Java choice
+    is ignored while every setting below it works normally. bash additionally prints
+    `﻿JAVA=java: command not found` — the line reads as a *command* rather than an assignment. A fixture
+    whose first line is a comment cannot catch this, so `VariablesFileLoadingTest` puts `JAVA` first
+    deliberately.
+  - **`${settings#$'\xEF\xBB\xBF'}` in bash, `string replace -r '^\x{feff}'` in fish.** Anchored in
+    both, never a bare delete: those bytes are a legal lead byte inside ordinary UTF-8, so removing them
+    anywhere would corrupt a value. fish's `string trim` does **not** remove the mark — it is not
+    whitespace — which is why it needs its own line even though trim handles the carriage return.
+  - **The two shells failed differently, which is why one fix is not the fix.** Measured: bash broke on
+    **both** CRLF and lone CR (`source` attaches the CR to every value — `JAVA=java\r` fails as
+    `java\r: command not found`, and a terminal rewinds its cursor over the message); fish already survived
+    CRLF, because `string trim` counts a carriage return as whitespace, and broke **only** on lone CR, which
+    its `read` hands over as one single line.
+  - **`eval "$(tr ...)"`, never `source <(tr ...)`.** bash 3.2 — what macOS ships — sets **no variable at
+    all** from a process substitution handed to `source`, and reports nothing: every value comes back empty
+    and the pack starts with its settings gone. Verified on 3.2.57 (silent) against 5.2.15 (works).
+  - **`tr '\r' '\n'`, never `tr -d '\r'`** — the same rule as `withLineEndings` above, for the same reason:
+    deleting the separator collapses a lone-CR file into one line. Turning it into a break costs a CRLF file
+    one blank line per entry, which both shells ignore.
+  - **The script comments are written for the operator, not for us — Griefed's call, 2026-10-16.**
+    These files ship inside every server pack and are write-protected but editable, so a user or a
+    contributor reading one has to be able to follow it. "Readability trumps professionalism": say what
+    goes wrong in plain words and what the line does, rather than naming the mechanism and moving on.
+  - **A fish probe must `functions --erase` between templates.** fish keeps a function defined when a later
+    `source` fails, so the first template's working copy silently graded the second's — the guard passed
+    against a deliberately corrupted installer template until that was added. Found by mutation, not by
+    reading, which is the only way this class shows up.
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI

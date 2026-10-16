@@ -577,6 +577,40 @@ fun File.writeTextAtomically(
 ) = writeAtomically(temporaryFile) { it.writeText(text) }
 
 /**
+ * How the lines of a generated text file are terminated, chosen by whatever has to read the file.
+ *
+ * @author Griefed
+ */
+enum class LineEnding(
+    /** The characters written between two lines. */
+    val sequence: String
+) {
+    /** Unix. What every POSIX shell, and everything else ServerPackCreator writes, expects. */
+    LF("\n"),
+
+    /**
+     * Windows. Wanted by `cmd.exe`, which resolves a `goto` or `call` label by scanning the file and can
+     * miss one that crosses a 512-byte boundary when no carriage return has reset its line counter.
+     */
+    CRLF("\r\n")
+}
+
+/**
+ * This text with every line terminated by [lineEnding], whichever convention it arrived in.
+ *
+ * Normalises to LF before expanding, so a carriage return is only ever *replaced* and never deleted:
+ * deleting it reads as a conversion while a file using lone carriage returns — a classic-Mac editor, or
+ * a half-finished conversion elsewhere — loses every line separator it had and becomes one long line
+ * that is still syntactically plausible. Normalising first is also what keeps [LineEnding.CRLF] from
+ * doubling the carriage returns of text that already had them.
+ *
+ * @param lineEnding The convention the returned text uses throughout.
+ * @author Griefed
+ */
+fun String.withLineEndings(lineEnding: LineEnding): String =
+    replace("\r\n", "\n").replace('\r', '\n').replace("\n", lineEnding.sequence)
+
+/**
  * Test whether files can be written to this file denoting a directory, by creating a throwaway file in it and
  * removing it again. The probe file's name is generated per call, never fixed: a shared name is defeated both by
  * anything already holding it and by a second probe deleting this one's file mid-check — measured at 34 of 64
