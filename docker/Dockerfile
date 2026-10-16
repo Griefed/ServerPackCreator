@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM eclipse-temurin:21-jdk-jammy@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b AS builder
 
 ARG VERSION=dev
 
@@ -13,7 +13,7 @@ RUN \
     build --info --full-stacktrace \
     -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
-FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
+FROM ghcr.io/linuxserver/baseimage-ubuntu:noble@sha256:94a6c41cbd36a3cdc38cf1f6d3ffd376e9349aabf8d9bbc825112e1a49f6c330
 
 ARG VERSION=dev
 
