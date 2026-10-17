@@ -233,3 +233,64 @@ beyond the one-goal commit that introduced the sanitiser.
 on its own in CI), at which point the workaround stops carrying its weight. Note the foojay asymmetry is the
 first thing to re-solve: an included build evaluates its settings standalone, so the resolver needs a version
 there, which is exactly what fails today under the root build.
+
+## 2026-10-17 — from merging the open renovate PRs
+
+### B49 — the homepage's Quasar toolchain caps below the `quasar` CVE fix, and the way out is Vite
+
+**What:** `serverpackcreator-homepage` cannot take PR #715 (`quasar` 2.11.10 → 2.32.2, closing
+CVE-2026-73647 / GHSA-3r53-75j5-3g7j, prototype pollution in `extend()`). The advisory's
+`first_patched_version` is **2.22.0**; the homepage's `@quasar/app` 3.3.3 cannot build anything
+above roughly 2.14.5. Fixing the CVE means migrating the build, and the only viable target is
+`@quasar/app-vite` — not `@quasar/app-webpack`.
+
+**Measured, so it does not need re-deriving:**
+
+- `@quasar/app` 3.3.3 + `quasar` 2.32.2 fails first in sass — `SassError: expected ")"` on
+  `&:has(+ :is(…))` in `quasar/dist/quasar.sass`, because 3.3.3 pins `sass` **1.32.12** (April 2021)
+  exactly. An npm `overrides` of `sass` clears it and reveals the real wall underneath.
+- The real wall is JS: `TypeError: importTransformation is not a function`, from 3.3.3's
+  `lib/webpack/loader.js.transform-quasar-imports.js`. Reproduced at `quasar` **2.17.0** and
+  **2.22.0**; **2.14.5** still builds. So the ceiling sits between 2.14.5 and 2.17.0, below the fix.
+- **`@quasar/app-webpack` 4.4.5 is not the way out**, even though its peer range (`quasar ^2.16.0`)
+  would allow 2.32.2. The site uses `<q-flashcard>` across the whole of `src/pages/Index.vue`, and
+  `@quasar/quasar-app-extension-qflashcard` ships **no webpack-4-compatible release**: 2.0.0-alpha.4
+  declares `@quasar/app-webpack ^3.0.0`, and 3.0.0 declares `peerDependencies: {"@quasar/app-vite":
+  ">=3.0.0"}`. The CLI refuses outright — *"Extension(@quasar/qflashcard): is not compatible with
+  @quasar/app-webpack v4.4.5. Required version: ^3.0.0"*.
+- Node is **not** a blocker, but it is tight. `@quasar/app-vite` 3.10.3 wants
+  `^30 || ^28 || ^26 || ^24 || ^22.22.0`, and all three places that build this site clear it only just:
+  `homepage-build` in `.forgejo/workflows/docs.yml` pins `node-version: '22'`, and the Dockerfile's
+  builder `griefed/gitlab-ci-cd:2.8.0` ships **Node v22.22.0 exactly** (verified with
+  `docker run --platform linux/amd64 … node -v`; it also carries a global `@quasar/cli` **v2.5.0**,
+  which is what its `RUN quasar build` actually invokes). One patch release of the floor breaks the
+  image build, so the migration should pin a newer Node in that stage rather than rely on it.
+
+**What a prototype of the Vite migration cost, and where it stopped.** Built in a throwaway worktree:
+`quasar.conf.js` → `quasar.config.js` in app-vite form; root `index.html` with
+`<!-- quasar:entry-point -->`; `.postcssrc.js` → ESM `postcss.config.js`; `babel.config.js` deleted;
+`quasar/wrappers` → `@quasar/app-vite` (`defineBoot`, `defineRouter`); every `~assets/…` and
+`url("~assets/…")` rewritten to the single `@` alias app-vite 3 generates; `import('layouts/…')` →
+`import('@/layouts/…')`; and the three `require(\`assets/serverpackcreator/cards/${…}.png\`)` sites
+in `Index.vue` — which Vite has no equivalent for — replaced with an `import.meta.glob` lookup.
+**`quasar build` goes green from there**, emits all nine card images and a `dist/spa/index.html`,
+and most of the page renders. It is still **not shippable**: the production build throws
+`cardImage is not a function` nine times, no flashcard receives the `styleTop`/`styleBottom` inline
+width, and `quasar dev` serves a **blank page**. The unresolved question is why the compiled render's
+`$options`-class accesses (`c.styleTop`, `c.hoverOver`, `c.cardImage` alike) do not resolve while
+`$data` and `$setup` ones do.
+
+**Why it waited.** Three reasons, in order of weight. It is a **webpack → Vite migration of the public
+website**, not the toolchain bump the PR looks like. The homepage has **no test suite** — `npm test` is
+`echo "No test specified" && exit 0`, and this module's `CLAUDE.md` says to treat a change to `src/` as
+verified only by looking at it — so the only gate is a human comparing the rendered site against
+serverpackcreator.de. And `serverpackcreator-homepage` is a **squashed subtree** of
+`Griefed/serverpackcreator-de`: a change of this size landed here and not upstream collides with the
+next `git subtree pull --squash`, so it belongs in the website's own repository, pulled back as one
+squashed commit.
+
+**Pick it up when** the site is worked on deliberately, in `Griefed/serverpackcreator-de`. It also closes
+B47, whose eslint-generation note is a symptom of the same staleness. Until then PR #715 stays open and
+the advisory stays open with it; the exposure is `extend()` prototype pollution in a **static marketing
+SPA with no user input**, which is why leaving it open for one deliberate migration is defensible rather
+than merely convenient.
