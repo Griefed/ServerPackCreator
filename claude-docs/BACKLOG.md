@@ -294,3 +294,50 @@ B47, whose eslint-generation note is a symptom of the same staleness. Until then
 the advisory stays open with it; the exposure is `extend()` prototype pollution in a **static marketing
 SPA with no user input**, which is why leaving it open for one deliberate migration is defensible rather
 than merely convenient.
+
+### B50 — the container has no seam for a remote debugger
+
+**What:** `docker/root/etc/s6-overlay/s6-rc.d/svc-spc/run` launches the jar with exactly one JVM
+flag (`-Djava.io.tmpdir`) and no passthrough for any other. There is no way to attach IntelliJ to
+the application running inside the image, because there is nowhere to put
+`-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005`. Adding a
+`JAVA_TOOL_OPTIONS`-style passthrough plus an opt-in `5005` publication on
+`docker-compose-dev.yml`'s `app` profile would close it.
+
+**Why it waited.** The dev loop that landed on 2026-10-17 debugs the application **in IntelliJ**
+against a containerised MongoDB, so the common case needs no container debugger at all. The
+remaining case is narrow but real: a defect that only reproduces under the image — the s6 init
+script, `overrides.properties` composition, the LSIO `PUID`/`PGID` remapping, the
+`server.tomcat.basedir` the script appends. Today the only tool for those is log statements.
+
+The change is also not free. `svc-spc/run` is one of the two files behind
+`docker/tests/init-spc-config-test.sh`'s sibling contract, and its argument order is already
+fragile: it is `java -jar -Djava.io.tmpdir=… <jar> -web --home …`, which works only because HotSpot
+keeps parsing VM options until the first non-option. Inserting a variable expansion into that line
+without a test is how the next silent container defect gets written, and shell templates are
+exactly the category the root `CLAUDE.md` requires to be pinned first.
+
+**Pick it up when** something has to be debugged inside the image. Write the guard into
+`docker/tests/` first — it already runs the real script in the production base image, so the
+pattern exists — and assert both that the flag appears when the variable is set and that the
+command is unchanged when it is not.
+
+### B51 — the image build OOMs at Docker Desktop's default memory limit
+
+**What:** `docker compose -f docker/docker-compose-dev.yml --profile app up --build`, and any plain
+`docker build -f docker/Dockerfile .`, cannot complete on a Docker Desktop configured with ~2 GB.
+Measured 2026-10-17 at 1.92 GB: the builder stage's Gradle daemon is killed at about 90 seconds
+with `Gradle build daemon disappeared unexpectedly` and BuildKit reports
+`cannot allocate memory`.
+
+**Why it waited.** It is a *host configuration* problem, not a repository one — CI builds this image
+fine — and raising Docker Desktop's limit restarts the daemon, which on this machine bounces the
+containers serving DNS. Nothing in the repository can fix it; what the repository can do is say so,
+which is what this entry is for.
+
+**Pick it up when** the image needs building locally. Two routes, and the first is cheaper: raise
+Docker Desktop's memory to 4 GB or more. Failing that, cap the daemon from inside — the builder
+stage has no `-Dorg.gradle.jvmargs`, so it inherits a default max heap sized from the *container's*
+view of host memory, and `--no-daemon` plus an explicit small heap may fit. If that route is taken
+it changes the production image build, so it needs the before/after measurement the build-logic
+convention requires.
