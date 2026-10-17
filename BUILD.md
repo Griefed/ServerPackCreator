@@ -227,11 +227,12 @@ not for iterating.
 **Resetting the database** is `down -v`: `init-mongo.js` runs only against an empty `/data/db`, so
 changing the credentials has no effect until the volume is gone.
 
-**If MongoDB will not start**, read its log. On a host kernel between 6.19.0 and 7.0.13 — which
-includes Docker Desktop's current linuxkit kernel — the image refuses to start, by design, over
-[SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912). The compose file tracks the same
-version as the deployment one on purpose; override it per machine from an untracked `docker/.env`
-rather than editing the file:
+**If MongoDB will not start**, read its log. On a host kernel between 6.19.0 and 7.0.13 the image
+refuses to start, by design, over [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912).
+Docker Desktop's linuxkit kernel crosses that range — 29.7.2 shipped 7.0.12 and is affected, 29.8.2
+ships 7.0.14 and is not — so the fix is usually to update Docker Desktop. If you cannot, the compose
+file tracks the same version as the deployment one on purpose; override it per machine from an
+untracked `docker/.env` rather than editing the file:
 
 ```
 SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204

@@ -26,12 +26,12 @@ services:
     # Kept in step with docker/docker-compose.yml deliberately: a dev database on a different
     # release than production tests the wrong thing.
     #
-    # This image does not start on a host kernel in the range 6.19.0 - 7.0.13, where it exits with
-    # "MongoDB cannot start: Linux kernel versions 6.19.0 through 7.0.13 have a known
-    # incompatibility" (https://jira.mongodb.org/browse/SERVER-121912 -- upstream TCMalloc violates
-    # the rseq ABI). Docker Desktop's linuxkit kernel is currently inside that range. The guard is
-    # the fix, not the bug: the releases without it start and then crash. To keep working until the
-    # kernel moves, override the tag from an untracked `docker/.env` rather than editing this file:
+    # This image refuses to start on a host kernel between 6.19.0 and 7.0.13, with "MongoDB cannot
+    # start: Linux kernel versions 6.19.0 through 7.0.13 have a known incompatibility"
+    # (https://jira.mongodb.org/browse/SERVER-121912 -- upstream TCMalloc violates the rseq ABI).
+    # The guard is the fix, not the bug: the releases without it start and then crash. Docker
+    # Desktop's linuxkit kernel crosses that range, so an older Docker Desktop cannot run this.
+    # Override the tag from an untracked `docker/.env` rather than editing this file:
     #
     #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
     image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204}
