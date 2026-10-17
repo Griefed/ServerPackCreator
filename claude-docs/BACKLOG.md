@@ -322,22 +322,44 @@ exactly the category the root `CLAUDE.md` requires to be pinned first.
 pattern exists — and assert both that the flag appears when the variable is set and that the
 command is unchanged when it is not.
 
-### B51 — the image build OOMs at Docker Desktop's default memory limit
+### B51 — the image build needs more than 3.9 GB, and `:generateLicenseReport` is where it peaks
 
-**What:** `docker compose -f docker/docker-compose-dev.yml --profile app up --build`, and any plain
-`docker build -f docker/Dockerfile .`, cannot complete on a Docker Desktop configured with ~2 GB.
-Measured 2026-10-17 at 1.92 GB: the builder stage's Gradle daemon is killed at about 90 seconds
-with `Gradle build daemon disappeared unexpectedly` and BuildKit reports
-`cannot allocate memory`.
+**What:** `docker compose -f docker/docker-compose-dev.yml --profile app build`, and any plain
+`docker build -f docker/Dockerfile .`, cannot complete on a Docker Desktop given 4 GB. The builder
+stage's Gradle run exhausts the VM and BuildKit reports `cannot allocate memory`.
 
-**Why it waited.** It is a *host configuration* problem, not a repository one — CI builds this image
-fine — and raising Docker Desktop's limit restarts the daemon, which on this machine bounces the
-containers serving DNS. Nothing in the repository can fix it; what the repository can do is say so,
-which is what this entry is for.
+**Measured 2026-10-17**, sampling `/proc/meminfo` from a privileged container every 5 s across a
+full attempt (79 samples): `MemTotal` 3917 MB, `MemAvailable` **3444 MB at the start and 10 MB at
+the trough** — a peak of 3907 MB of 3917 MB, with 10 MB of headroom left. It does not merely exceed
+the budget, it saturates it.
 
-**Pick it up when** the image needs building locally. Two routes, and the first is cheaper: raise
-Docker Desktop's memory to 4 GB or more. Failing that, cap the daemon from inside — the builder
-stage has no `-Dorg.gradle.jvmargs`, so it inherits a default max heap sized from the *container's*
-view of host memory, and `--no-daemon` plus an explicit small heap may fit. If that route is taken
-it changes the production image build, so it needs the before/after measurement the build-logic
-convention requires.
+**The task is consistent.** Three separate attempts after the `.forgejo` context fix all died at
+`:generateLicenseReport`, immediately after `:serverpackcreator-api:compileKotlin`. (A fourth,
+earlier attempt died at `:buildSrc:test`, for the unrelated `.dockerignore` reason that commit
+`fix(docker): excluding `.forgejo/` from the build context broke the image build` repaired.)
+
+**Capping the heap does NOT help — this was tested, and it is the useful part of this entry.** The
+obvious theory is `gradle.properties`' `org.gradle.jvmargs=-Xms128m -Xmx4096m`: a 4 GB heap request
+inside a 3.83 GB container, which cannot fit by construction. It is the wrong theory. A build with
+`-Dorg.gradle.jvmargs="-Xms128m -Xmx1280m" -Dkotlin.daemon.jvmargs="-Xmx768m"` failed at the
+**identical task** with the identical error, simply taking longer to get there (417 s against
+293 s) from the added GC pressure. So the consumption is not the Gradle JVM's Java heap, and a
+`docker/Dockerfile` heap flag buys nothing. Do not re-derive this; it costs seven minutes a run.
+
+`org.gradle.parallel` is not set and `org.gradle.daemon=false`, so this is not worker concurrency
+either. The remaining candidates, untested: the license-report plugin resolving every configuration
+in every module at once, the Node toolchain the frontend build downloads and runs, and BuildKit's
+own resident set — plausibly all three alive at the same moment.
+
+**Why it waited.** It is a *host configuration* problem as far as anyone can currently tell — CI
+builds this image on every push — and the local loop that matters does not need it: `./gradlew
+build` on the host completes in about two minutes, and `docker-compose-dev.yml` defaults to
+dependencies-only precisely so the image is never on the fast path. Raising Docker Desktop's memory
+again also restarts the daemon, which on this machine bounces the containers serving DNS.
+
+**Pick it up when** the image must be built locally. Start by giving Docker Desktop 8 GB and
+re-running the measurement above — the trough value tells you immediately whether the requirement
+is merely above 3.9 GB or far above it, which is the number this entry cannot supply. Only if 8 GB
+also fails is it worth attacking `:generateLicenseReport` itself, and in that case measure which of
+the three candidates above actually holds the memory before changing anything: two theories have
+already been wrong here.
