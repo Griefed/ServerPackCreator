@@ -1,14 +1,39 @@
-# dot-files and folders
-.github/
+# Keeps the build context small. `docker/Dockerfile` is the only image that builds from the
+# repository root, and its builder stage runs a full Gradle build -- so the context needs the
+# sources and nothing else: no history, no local build output, no editor state, and nothing
+# belonging to a build that has its own context.
+#
+# Patterns are `**/`-prefixed on purpose. A single-level `*/build` matches
+# `serverpackcreator-api/build` but not `buildSrc/build`.
+
+# History. Nothing in the build reads it -- `docker/Dockerfile` passes `-Pversion` explicitly.
+.git
+.gitattributes
+
+# Local build output. None of it is an input; `media/` alone is install4j's, and is the largest
+# thing in the tree.
+**/build
+**/out
+**/dist
+**/.quasar
+**/node
+**/node_modules
+**/tests/
 .gradle/
+media/
+
+# Editor and CI state.
 .idea/
-.runConfigurations/
+.run/
+.vscode/
+.github/
+.forgejo/
+.DS_Store
+
+# Has its own context and its own .dockerignore. `docker/Dockerfile` never touches the website,
+# and `settings.gradle.kts` does not include it.
+serverpackcreator-homepage/
+
+# These describe how to RUN the image; they are not inputs to building it.
 docker/docker-compose-dev.yml
 docker/docker-compose.yml
-*/build
-*/out
-*/.quasar
-*/dist
-*/node
-*/node_modules
-*/tests/
