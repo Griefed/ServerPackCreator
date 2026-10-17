@@ -133,7 +133,7 @@ a silent miss every run, never a failure.
 
 ## F — IDE and developer setup
 
-- [`.runConfigurations/Debug Fat Jar.run.xml`](../.runConfigurations/Debug%20Fat%20Jar.run.xml) —
+- [`.run/Debug Fat Jar.run.xml`](../.run/Debug%20Fat%20Jar.run.xml) —
   `ALTERNATIVE_JRE_PATH` is `temurin-21`
 - `.idea/misc.xml` — `languageLevel="JDK_21"`, `project-jdk-name="21"`. **Untracked**, so it is each
   developer's own and no bump commit touches it.

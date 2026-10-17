@@ -1,17 +1,16 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build without tests with version" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Test API" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$/serverpackcreator-api" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-Pversion=6.3.4 --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test" />
+      <option name="scriptParameters" value="--stacktrace --info" />
       <option name="taskDescriptions">
         <list />
       </option>
       <option name="taskNames">
         <list>
-          <option value="clean" />
-          <option value="build" />
+          <option value=":serverpackcreator-api:test" />
         </list>
       </option>
       <option name="vmOptions" />
@@ -19,7 +18,6 @@
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
-    <RunAsTest>false</RunAsTest>
     <method v="2" />
   </configuration>
 </component>
