@@ -673,7 +673,7 @@ the MongoDB with the required user, database and collection.
 ```yaml
 services:
   serverpackcreatordb:
-    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    image: mongodb/mongodb-community-server:8.0.34-ubuntu2204
     container_name: serverpackcreatordb
     restart: unless-stopped
     environment:
