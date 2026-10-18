@@ -1,3 +1,44 @@
+## [9.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.3.0...9.3.1) (2026-10-18)
+
+### :scissors: Refactor
+
+* **clientside:** organize the engine by feature instead of one flat package ([5658f62](https://git.griefed.de/Griefed/ServerPackCreator/commit/5658f621b15bb1a612e705d9ca42e5a7acb3732d))
+* **clientside:** two JSON readers shared the name `textOrNull` and are not duplicates ([6b8ceab](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b8ceab1993133dc7d4fc1641984008a24bebeb6))
+* **servertest:** split the `core` layer bucket into the `pack` and `session` features ([1c06536](https://git.griefed.de/Griefed/ServerPackCreator/commit/1c06536e72fda0158bd5111e01086a01f36e30ff))
+
+### 📔 Docs
+
+* **backlog:** B51 named the wrong cause and recommended a fix that does not work ([7220b35](https://git.griefed.de/Griefed/ServerPackCreator/commit/7220b358da4a885d369f72eb5bfbe5e700467507))
+* **backlog:** the homepage cannot take the quasar CVE fix without a Vite migration ([7509979](https://git.griefed.de/Griefed/ServerPackCreator/commit/7509979394c4bfccbebeaf25bc8c904699c070da)), closes [#715](https://git.griefed.de/Griefed/ServerPackCreator/issues/715)
+* **backlog:** the two things the dev-stack rewrite deliberately did not fix ([8c76766](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c76766effec05656e79b36131cd234d86330fbd))
+* **conventions:** organize code by business feature, not by global technical layer ([17f0b4a](https://git.griefed.de/Griefed/ServerPackCreator/commit/17f0b4a9fe1ab95554657557b541167ba1c57ca5))
+
+### 📦 Other
+
+* **config:** migrate config renovate.json ([b3b0da6](https://git.griefed.de/Griefed/ServerPackCreator/commit/b3b0da61cb3fb1db3c1361e1dc6131c5dd4a202f))
+
+### 🔩 Dependencies
+
+* **deps:** pin dependencies ([2eb5734](https://git.griefed.de/Griefed/ServerPackCreator/commit/2eb573478df1acba6dd167f8672bc83d19c42db7))
+* **deps:** update dependency @babel/eslint-parser to v7.29.9 ([3483cdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/3483cdfec946b25ec5beed9e8c1d1bfb5d9668d2))
+* **deps:** update dependency @quasar/cli to v5 ([64509ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/64509ace091f8b55ccddcdacda2912e4bc2fc67c))
+* **deps:** update dependency @quasar/extras to v1.18.0 ([a4a767a](https://git.griefed.de/Griefed/ServerPackCreator/commit/a4a767aff22531dd8920db4f672334e0256f3b65))
+* **deps:** update dependency axios to v1.20.0 ([377f997](https://git.griefed.de/Griefed/ServerPackCreator/commit/377f997c902cf20f863d16538dd4329d92f073d9))
+* **deps:** update dependency core-js to v3.50.0 ([c0b0cac](https://git.griefed.de/Griefed/ServerPackCreator/commit/c0b0cace95794b08273ff3308246974c81229b42))
+* **deps:** update dependency eslint to v8.57.1 ([dc51c0f](https://git.griefed.de/Griefed/ServerPackCreator/commit/dc51c0fb9729b8bbcac385951a062f2e59b15711))
+* **deps:** update dependency eslint-config-prettier to v8.10.2 ([87414b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/87414b3175c4a4f5a72d6685ce4face70c24a433))
+* **deps:** update dependency quasar to v2.35.1 ([815b128](https://git.griefed.de/Griefed/ServerPackCreator/commit/815b12831324b84a6060a7a77e5f4968ff26504d))
+* **deps:** update dependency typescript-eslint to ^8.71.1 ([69718fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/69718fd196fc2899b497cf17e5fd5ea65eddb216))
+* **deps:** update dependency vue to v3.5.44 ([b847981](https://git.griefed.de/Griefed/ServerPackCreator/commit/b847981e72e459e2522abca7034dc5c51e64b1c6))
+* **homepage:** take the transitive security updates dependabot PR [#1310](https://git.griefed.de/Griefed/ServerPackCreator/issues/1310) is really about ([08b8549](https://git.griefed.de/Griefed/ServerPackCreator/commit/08b8549f9fbb4d115850687b41c200688ec80637)), closes [#716](https://git.griefed.de/Griefed/ServerPackCreator/issues/716)
+
+### 🛠 Fixes
+
+* **docker:** docker-compose-dev built the production image instead of serving a dev loop ([ff9b20f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ff9b20fa2ecf9f3680759639008a0ebaa1c1fa44))
+* **docker:** excluding `.forgejo/` from the build context broke the image build ([7c256ae](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c256ae8da9da8a2135ce2b656d110d57e874ffb))
+* **docker:** the user-facing compose file pinned `latest` to a digest, freezing every copy of it ([7471aab](https://git.griefed.de/Griefed/ServerPackCreator/commit/7471aab2c24ea39826e2038a54717d3a54e9493d)), closes [#707](https://git.griefed.de/Griefed/ServerPackCreator/issues/707)
+* **ide:** the run configurations lived in a directory IntelliJ stopped reading ([a231541](https://git.griefed.de/Griefed/ServerPackCreator/commit/a231541cf101e04c3f0e9744fe192b238711d385))
+
 ## [9.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.2.1...9.3.0) (2026-10-16)
 
 ### 💎 Improvements
