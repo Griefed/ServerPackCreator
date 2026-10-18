@@ -18,9 +18,11 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.platform.LoaderNames
+import de.griefed.serverpackcreator.clientside.platform.ModFile
 
 /**
  * **A build variant of the same version is not a newer version, and some of them cannot boot alone.**

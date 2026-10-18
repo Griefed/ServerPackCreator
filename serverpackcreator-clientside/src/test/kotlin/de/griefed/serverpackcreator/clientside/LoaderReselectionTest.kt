@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.modscanning.LoaderDescriptors
 import org.junit.jupiter.api.Assertions
@@ -27,6 +26,18 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.platform.JarDownloader
+import de.griefed.serverpackcreator.clientside.metadata.JarSelfDeclaration
+import de.griefed.serverpackcreator.clientside.version.LoaderCompatibility
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionPolicy
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.platform.ModPlatform
+import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
 
 /**
  * Pins that a jar whose platform page ticked the **wrong loader** is verified under the loader its own

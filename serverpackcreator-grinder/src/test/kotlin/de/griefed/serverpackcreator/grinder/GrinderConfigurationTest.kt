@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File

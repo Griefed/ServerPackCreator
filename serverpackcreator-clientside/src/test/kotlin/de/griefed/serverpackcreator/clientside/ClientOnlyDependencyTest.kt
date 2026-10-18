@@ -18,9 +18,12 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.BootLogClassifier
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
 
 /**
  * **A hard dependency the loader itself refuses as client-only is evidence about the candidate, not an

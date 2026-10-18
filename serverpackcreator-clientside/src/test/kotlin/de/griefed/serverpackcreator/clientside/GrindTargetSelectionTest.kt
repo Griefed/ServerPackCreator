@@ -18,10 +18,13 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import de.griefed.serverpackcreator.api.config.SupportedModloaders
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.selection.MinecraftLinePolicy
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.platform.ReleaseChannel
 
 /**
  * Pins [BootCandidateSelector.pickGrindTargets] — one grind per Minecraft version-line, each under a single

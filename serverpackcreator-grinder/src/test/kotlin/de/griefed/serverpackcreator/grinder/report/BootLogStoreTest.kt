@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
-import de.griefed.serverpackcreator.clientside.BootArtifacts
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

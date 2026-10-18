@@ -18,9 +18,14 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.DefaultBootRules
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.MetadataFacts
+import de.griefed.serverpackcreator.clientside.verdict.RuleSource
 
 /**
  * Pins stage 3: **the sideness a mod's metadata declares is decided by rules too**, so an operator can

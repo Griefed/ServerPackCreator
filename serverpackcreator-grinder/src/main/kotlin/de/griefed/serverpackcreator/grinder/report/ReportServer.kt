@@ -23,8 +23,8 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
-import de.griefed.serverpackcreator.clientside.ConsoleRuleSet
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.GrinderStatus

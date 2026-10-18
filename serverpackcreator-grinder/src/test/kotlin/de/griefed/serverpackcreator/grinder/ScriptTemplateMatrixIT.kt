@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
 import de.griefed.serverpackcreator.grinder.container.BindMount
 import de.griefed.serverpackcreator.grinder.container.ContainerSpec
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine

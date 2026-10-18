@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

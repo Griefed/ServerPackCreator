@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.BootDecision
-import de.griefed.serverpackcreator.clientside.BootLogClassifier
-import de.griefed.serverpackcreator.clientside.BootResult
-import de.griefed.serverpackcreator.clientside.ConsoleRuleFile
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.BootLogClassifier
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleFile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File

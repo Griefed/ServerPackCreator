@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import de.griefed.serverpackcreator.grinder.source.CandidatePage
 import de.griefed.serverpackcreator.grinder.source.CandidateSource

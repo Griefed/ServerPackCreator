@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
-import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
+import de.griefed.serverpackcreator.clientside.boot.SuspendAwareDeadline
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

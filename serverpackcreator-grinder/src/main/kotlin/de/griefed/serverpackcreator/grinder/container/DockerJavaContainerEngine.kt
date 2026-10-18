@@ -25,8 +25,8 @@ import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
-import de.griefed.serverpackcreator.clientside.BootDeadline
-import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
+import de.griefed.serverpackcreator.clientside.boot.BootDeadline
+import de.griefed.serverpackcreator.clientside.boot.SuspendAwareDeadline
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
 import java.util.*

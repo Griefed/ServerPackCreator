@@ -18,9 +18,13 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.BootLogClassifier
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
+import de.griefed.serverpackcreator.clientside.verdict.DefaultBootRules
 
 /**
  * Pins the two decisive client-only signatures that shipped as *examples* instead of as defaults.

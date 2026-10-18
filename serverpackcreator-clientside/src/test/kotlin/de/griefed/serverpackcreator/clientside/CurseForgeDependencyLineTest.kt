@@ -18,13 +18,20 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.CurseForgePlatform
+import de.griefed.serverpackcreator.clientside.platform.HttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.JarDownloader
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionPolicy
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
 
 /**
  * Pins that a **CurseForge** dependency is found on a neighbouring patch release — the half of the

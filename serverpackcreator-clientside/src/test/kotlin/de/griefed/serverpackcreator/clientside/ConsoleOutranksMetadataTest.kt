@@ -18,9 +18,18 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.DefaultBootRules
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.MetadataFacts
+import de.griefed.serverpackcreator.clientside.verdict.RuleSource
+import de.griefed.serverpackcreator.clientside.verdict.StagingOutcome
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.VerdictPolicy
 
 /**
  * Pins the precedence between the two rule streams: **the console decides, the metadata only declares.**

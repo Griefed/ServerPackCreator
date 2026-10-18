@@ -1,9 +1,9 @@
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Declaration
-import de.griefed.serverpackcreator.clientside.DeclaredSupport
-import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File

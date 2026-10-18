@@ -14,6 +14,45 @@ see *The grind axis* below; it was per *loader* until 2026-09-11. Driven by the
 app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clientsideapply`) and the
 `clientside-*.yml` workflows — see `serverpackcreator-app/CLAUDE.md` for the verb wiring and CI.
 
+## Package layout
+
+Organized by **business feature**, per the root `CLAUDE.md`'s *Package structure* rule. Until
+2026-10-18 all 37 production files sat in one flat `clientside` package; the split below was derived
+from the actual reference graph rather than from names, and it is **acyclic** — that is the property
+to preserve, and the one a careless import silently destroys.
+
+| Package | What lives there | May depend on |
+|---|---|---|
+| *(root)* | the module's API and composition: `ClientsideVerifier` (the entry point), `ClientsideReportRenderer`, `ClientsideListEditor` | everything |
+| `boot` | stage a pack, run a server, keep the evidence: `BootVerifier`, `ServerRunner`/`HostProcessServerRunner`, `BootDeadline`, `SuspendAwareDeadline`, `AttemptDirectory`, `BootArtifacts`, `BootArtifactWriter`, `BootLoaderVersion` | all of the below |
+| `verdict` | evidence → conclusion: `Verdict`/`PreventionCause`/`VerdictPolicy`, `BootLogClassifier`/`BootDecision`, `BootRule`, `ConsoleRules`, `ClientsideReport` | `platform` |
+| `selection` | which builds get ground: `BootCandidateSelector` (+ `GrindTarget`), `MinecraftLinePolicy`, `VersionOfFile` | `platform`, `version` |
+| `platform` | Modrinth/CurseForge and the wire: `ModPlatform`/`HttpFetcher`/`JdkHttpFetcher`, `ModrinthPlatform`, `CurseForgePlatform`, `JarDownloader`, `PlatformDependencyDemand`, and the shared model `ModFile`/`ProjectFiles`/`DeclaredSupport`/`ReleaseChannel` | `metadata` |
+| `metadata` | what a jar says about itself: `MetadataScanner`, `JarSelfDeclaration`, `BundledJars`, `ModIdRegistry`, `LearnedModIds`, `FilenameStemDeriver` | `version` |
+| `dependency` | `DependencyAttribution`, `DependencyBacktrack` | `version` |
+| `version` | version and loader-compatibility arithmetic — the one genuinely cross-cutting package: `VersionConstraint`, `LoaderCompatibility`, `LoaderVersionDemand`, `LoaderVersionResolver` | nothing |
+
+- **`AttemptDirectory` stays in `boot` although `-grinder`'s `BootWorkspaceReaper` is its other caller.**
+  It names an attempt's staging directory, and the landmine about `nameFor`/`SUFFIX_PARTS` staying in
+  lockstep is unaffected by where the object lives.
+- **Eleven imports exist only so a KDoc `[Link]` resolves** and are referenced nowhere in code — e.g.
+  `version/VersionConstraint.kt` importing `platform.ModFile`. They create no bytecode dependency, so
+  the compile-level graph above is still acyclic, but a tool reading imports alone will report edges
+  that do not exist. Re-derive the real graph from *code* references, not from the import list.
+- **LANDMINE — `metadata/BundledJars` has its own `private fun JsonNode.textOrNull()`, a member of the
+  object, while `platform/ModPlatform` exports an `internal fun JsonNode.textOrNull(field: String)`.**
+  Same name, different arity, different file. Importing the platform one into `BundledJars` compiles
+  (they overload) and is silently unused, and it is the only thing that put a `metadata` → `platform`
+  cycle into the split. Two functions with one name is the duplication this project keeps paying for;
+  if either moves, collapse them rather than re-importing.
+
+**Tests mirror the package of their subject only where the subject is unambiguous.** A test whose name
+begins with a production file or symbol name moves with it (42 of 89); the remaining 47 are
+behaviour tests spanning several features — `UnmetDependencyReasonTest` exercises `platform`, `boot`
+and `dependency` at once — and they stay beside `ClientsideVerifier` in the root test package, which is
+the entry point they actually drive. Forcing those into one package would be the "rigid structure
+without a concrete benefit" the rule warns against.
+
 ## The grind axis is the Minecraft version-line (2026-09-11)
 
 `ClientsideVerifier.report` asks `BootCandidateSelector.pickGrindTargets` for one `GrindTarget` per Minecraft

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
-import de.griefed.serverpackcreator.clientside.LoaderVersionPolicy
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionPolicy
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

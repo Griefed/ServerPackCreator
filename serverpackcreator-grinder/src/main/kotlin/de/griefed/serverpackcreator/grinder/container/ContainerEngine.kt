@@ -260,7 +260,7 @@ data class ContainerSpec(
 /**
  * Raw result of a container run, before any clientside classification: the captured console [lines],
  * the container [exitCode] (`null` if it had to be force-killed) and whether the budget [timedOut]
- * before the ready-line appeared. Mirrors what `de.griefed.serverpackcreator.clientside.RunResult.Completed`
+ * before the ready-line appeared. Mirrors what `de.griefed.serverpackcreator.clientside.boot.RunResult.Completed`
  * needs, so the runner can map straight across and reuse the existing `BootLogClassifier`.
  *
  * @author Griefed

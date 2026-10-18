@@ -18,13 +18,20 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.platform.ModPlatform
+import de.griefed.serverpackcreator.clientside.verdict.PreventionCause
+import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
 
 /**
  * Pins that `BootVerifier.verify(project, target, …)` boots the combination the **caller** chose, rather

@@ -18,9 +18,32 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.verdict.ClientsideReport
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.DefaultBootRules
+import de.griefed.serverpackcreator.clientside.metadata.FilenameStemDeriver
+import de.griefed.serverpackcreator.clientside.verdict.GrindTargetVerdict
+import de.griefed.serverpackcreator.clientside.platform.JarDownloader
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.MetadataFacts
+import de.griefed.serverpackcreator.clientside.metadata.MetadataScanner
+import de.griefed.serverpackcreator.clientside.selection.MinecraftLinePolicy
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.platform.ModPlatform
+import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
+import de.griefed.serverpackcreator.clientside.verdict.RuleSource
+import de.griefed.serverpackcreator.clientside.verdict.StagingOutcome
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.VerdictAssessment
+import de.griefed.serverpackcreator.clientside.verdict.VerdictPolicy
 
 /**
  * Orchestrates the Phase-1 (metadata-only) clientside verdict: pick the hosting platform for the

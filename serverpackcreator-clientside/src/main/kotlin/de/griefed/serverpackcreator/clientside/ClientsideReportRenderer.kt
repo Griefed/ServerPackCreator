@@ -18,8 +18,10 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.griefed.serverpackcreator.clientside.verdict.ClientsideReport
+import de.griefed.serverpackcreator.clientside.verdict.GrindTargetVerdict
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 
 /**
  * Renders a [ClientsideReport] into the Markdown body posted as the issue-comment. The output is

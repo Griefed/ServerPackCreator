@@ -19,9 +19,9 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
-import de.griefed.serverpackcreator.clientside.BootArtifacts
-import de.griefed.serverpackcreator.clientside.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -32,7 +32,7 @@ import java.io.File
  * **Why staging is not that home.** `BootWorkspaceReaper` already keeps one `boot.log` per attempt
  * directory, but staging *wipes and re-creates* that directory, so the next re-grind of the same
  * `(platform, slug, loader)` destroys the console belonging to the verdict still being published. A crash is
- * the only outcome that reaches [de.griefed.serverpackcreator.clientside.Verdict.CONFIRMED], and its usual
+ * the only outcome that reaches [de.griefed.serverpackcreator.clientside.verdict.Verdict.CONFIRMED], and its usual
  * cause — a server loading a mod that reaches for a client-only class, `NoClassDefFoundError:
  * net/minecraft/client/…` — is legible from the console and from nothing else. So the crashing consoles are
  * copied out from under the sweep that produced them.

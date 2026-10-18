@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
