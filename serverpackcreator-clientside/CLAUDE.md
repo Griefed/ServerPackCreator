@@ -39,12 +39,26 @@ to preserve, and the one a careless import silently destroys.
   `version/VersionConstraint.kt` importing `platform.ModFile`. They create no bytecode dependency, so
   the compile-level graph above is still acyclic, but a tool reading imports alone will report edges
   that do not exist. Re-derive the real graph from *code* references, not from the import list.
-- **LANDMINE — `metadata/BundledJars` has its own `private fun JsonNode.textOrNull()`, a member of the
-  object, while `platform/ModPlatform` exports an `internal fun JsonNode.textOrNull(field: String)`.**
-  Same name, different arity, different file. Importing the platform one into `BundledJars` compiles
-  (they overload) and is silently unused, and it is the only thing that put a `metadata` → `platform`
-  cycle into the split. Two functions with one name is the duplication this project keeps paying for;
-  if either moves, collapse them rather than re-importing.
+- **LANDMINE — two JSON readers once shared the name `textOrNull`, and they are NOT duplicates.
+  Do not merge them; it was tried and both directions fail.** Renamed 2026-10-18, and **keeping the
+  rename instead of merging is Griefed's call, 2026-10-18** — asked for as a merge, re-decided on the
+  evidence below. Treat the question as settled rather than re-opening it.
+  - `platform.textOrNull(field)` takes a **field name** and renders whatever is there, refusing only
+    an absent field or an explicit JSON null. **It must stringify non-strings**: CurseForge serves
+    `modId` as a number, so `12345` has to read as `"12345"`. Narrowing it to `isTextual` fails five
+    tests — `CurseForgeDependencyLineTest` (×2), `LinkedDependencyTest`, `PinnedDependencyRefTest`
+    and `CurseForgePlatformTest`.
+  - `BundledJars.nonBlankStringOrNull()` takes **no argument** and refuses anything that is not a
+    non-blank string, because a Fabric/Quilt descriptor field that is not a string is not an id or a
+    range. Widening it to the lenient form fails
+    `BundledDemandTest.aRangeThatIsNotAPlainStringYieldsNoOpinion`.
+  - **The blank half was unpinned until this rename** — dropping `takeIf { it.isNotBlank() }` left all
+    680 tests green, so `aBlankRangeYieldsNoOpinion` now covers it, verified red against that mutation
+    (`expected: <[(other, null)]> but was: <[(other,    )]>`).
+  - The real defect was the shared *name*: one identifier meaning two predicates. Importing the
+    platform one into `BundledJars` compiled, because they overloaded, was silently unused, and was
+    the only thing putting a `metadata` → `platform` cycle into the split. The names now differ, so
+    neither can be reached by accident.
 
 **Tests mirror the package of their subject only where the subject is unambiguous.** A test whose name
 begins with a production file or symbol name moves with it (42 of 89); the remaining 47 are

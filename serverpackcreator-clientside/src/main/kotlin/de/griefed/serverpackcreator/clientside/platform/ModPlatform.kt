@@ -30,6 +30,11 @@ import java.time.Duration
  * `null` — unlike [JsonNode.asText] with a default, which yields the literal string `"null"` for a
  * JSON-null node and would defeat null-checks such as [ModFile.locked].
  *
+ * **A present non-string is rendered, not refused, and CurseForge depends on it:** `modId` arrives as
+ * a number there, so `12345` has to read as `"12345"`. Narrowing this to textual nodes fails five
+ * tests. The strict counterpart — only a non-blank string counts — is
+ * `BundledJars.nonBlankStringOrNull`, which asks a different question and is now named like one.
+ *
  * @author Griefed
  */
 internal fun JsonNode.textOrNull(field: String): String? {

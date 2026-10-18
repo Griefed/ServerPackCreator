@@ -161,13 +161,13 @@ object BundledJars {
     private fun dependsOf(descriptor: JsonNode): List<ModDependency> {
         val fabric = descriptor.path(DEPENDS).fields().asSequence()
             .filter { it.key.isNotBlank() }
-            .map { ModDependency(it.key, versionConstraint = it.value.textOrNull()) }
+            .map { ModDependency(it.key, versionConstraint = it.value.nonBlankStringOrNull()) }
             .toList()
         val quilt = descriptor.path(QUILT_LOADER).path(DEPENDS).mapNotNull { node ->
             when {
-                node.isTextual -> node.textOrNull()?.let { ModDependency(it) }
-                else -> node.path("id").textOrNull()
-                    ?.let { ModDependency(it, versionConstraint = node.path("versions").textOrNull()) }
+                node.isTextual -> node.nonBlankStringOrNull()?.let { ModDependency(it) }
+                else -> node.path("id").nonBlankStringOrNull()
+                    ?.let { ModDependency(it, versionConstraint = node.path("versions").nonBlankStringOrNull()) }
             }
         }
         return fabric + quilt
@@ -247,9 +247,9 @@ object BundledJars {
      * carrying a `file`, and Quilt's list of plain strings under `quilt_loader`.
      */
     private fun declaredNestedPaths(descriptor: JsonNode): List<String> {
-        val fabric = descriptor.path(FABRIC_JARS).mapNotNull { it.path("file").textOrNull() }
+        val fabric = descriptor.path(FABRIC_JARS).mapNotNull { it.path("file").nonBlankStringOrNull() }
         val quilt = descriptor.path(QUILT_LOADER).path(FABRIC_JARS).mapNotNull { node ->
-            if (node.isTextual) node.asText() else node.path("file").textOrNull()
+            if (node.isTextual) node.asText() else node.path("file").nonBlankStringOrNull()
         }
         return fabric + quilt
     }
@@ -282,19 +282,32 @@ object BundledJars {
     /** The version a nested descriptor states for itself, in either loader's spelling. */
     private fun versionOf(descriptor: JsonNode): String? {
         val loaderNode = if (descriptor.has(QUILT_LOADER)) descriptor.path(QUILT_LOADER) else descriptor
-        return loaderNode.path("version").textOrNull()
+        return loaderNode.path("version").nonBlankStringOrNull()
     }
 
     /** A descriptor's own id plus its `provides` aliases, in either loader's spelling. */
     private fun idsOf(descriptor: JsonNode): Set<String> {
         val loaderNode = if (descriptor.has(QUILT_LOADER)) descriptor.path(QUILT_LOADER) else descriptor
-        val id = loaderNode.path("id").textOrNull()
+        val id = loaderNode.path("id").nonBlankStringOrNull()
         val provides = loaderNode.path("provides").mapNotNull { node ->
-            if (node.isTextual) node.asText() else node.path("id").textOrNull()
+            if (node.isTextual) node.asText() else node.path("id").nonBlankStringOrNull()
         }
         return (listOfNotNull(id) + provides).filter { it.isNotBlank() }.toSet()
     }
 
-    /** `asText(null)` yields the literal `"null"` for a JSON null, which would read as a real id. */
-    private fun JsonNode.textOrNull(): String? = if (isTextual) asText().takeIf { it.isNotBlank() } else null
+    /**
+     * This node's text, but only if it really is a non-blank string.
+     *
+     * A Fabric/Quilt descriptor field that is not a string is not an id or a range, so both halves
+     * refuse rather than coerce: `asText()` renders a JSON null as the literal `"null"` and an array
+     * as `""`, either of which would read as a real value, and a blank string would hand
+     * `VersionConstraint` an empty pattern to satisfy instead of telling it there is nothing to.
+     *
+     * **Deliberately not [de.griefed.serverpackcreator.clientside.platform.textOrNull], which asks a
+     * different question** — that one takes a field name and *does* stringify numbers, because
+     * CurseForge serves `modId` as one. The two were named alike until 2026-10-18; the module's
+     * CLAUDE.md records what each mutation proves.
+     */
+    private fun JsonNode.nonBlankStringOrNull(): String? =
+        if (isTextual) asText().takeIf { it.isNotBlank() } else null
 }
