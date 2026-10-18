@@ -15,6 +15,11 @@ One extension point — `PostGenExtension` — and nothing else. No tab, no conf
 - `core/SelfExtractingArchive` — stub + payload, and the offset arithmetic.
 - `core/Stubs` — the two scripts, with the reason for each awkward part beside it.
 
+**Audited against the root `CLAUDE.md`'s *Package structure* rule on 2026-10-18 and left unchanged.**
+Five files, one feature, one extension point. The rule's own closing clause — do not impose rigid
+package structures without a concrete benefit — is what settles it in both directions: there is nothing
+to split, and flattening `core` into the root would buy nothing either.
+
 ## Why there is no configuration, and what would change that
 
 Every generated pack gets both artifacts, built from the pack that was just written. There is

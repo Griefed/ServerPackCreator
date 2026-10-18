@@ -66,7 +66,7 @@ class Grinder(
      * what turns the suspicion into evidence: grind the dependency alone and see whether it crashes.
      * Failure here is logged and dropped, because a queueing problem must not cost the verdicts just earned.
      */
-    private fun queueBlamedDependencies(report: de.griefed.serverpackcreator.clientside.ClientsideReport, candidate: GrindCandidate) {
+    private fun queueBlamedDependencies(report: de.griefed.serverpackcreator.clientside.verdict.ClientsideReport, candidate: GrindCandidate) {
         // Not `store`: this class already has one, of a different type, and shadowing it here made the two
         // reads three lines apart look like the same collaborator.
         val queue = requeue ?: return

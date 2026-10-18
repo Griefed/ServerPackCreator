@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 

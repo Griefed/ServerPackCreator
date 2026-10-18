@@ -18,9 +18,10 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.verdict.BootLogClassifier
+import de.griefed.serverpackcreator.clientside.verdict.DefaultBootRules
 
 /**
  * Pins that every rung of the ladder actually finds its pattern in `boot-rules.default.json`.

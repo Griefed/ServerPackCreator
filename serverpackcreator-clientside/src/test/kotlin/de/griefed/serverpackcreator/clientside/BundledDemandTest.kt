@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -26,6 +25,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import de.griefed.serverpackcreator.clientside.metadata.BundledJars
+import de.griefed.serverpackcreator.clientside.version.VersionConstraint
 
 /**
  * Pins [BundledJars.requirementsIn] and [BundledJars.minecraftDemandsIn] — what a **bundled** jar demands,
@@ -176,6 +177,27 @@ internal class BundledDemandTest {
             directory, "host.jar",
             """"id":"host","jars":[{"file":"META-INF/jars/lib.jar"}]""",
             mapOf("META-INF/jars/lib.jar" to """"id":"lib","depends":{"other":["1.0","2.0"]}""")
+        )
+
+        Assertions.assertEquals(
+            listOf("other" to null),
+            BundledJars.requirementsIn(host).map { it.modID to it.versionConstraint }
+        )
+    }
+
+    /**
+     * **A blank range is no opinion, not an empty constraint.** `""` is a string, so the `isTextual`
+     * guard above lets it through, and `VersionConstraint` would then be handed an empty pattern to
+     * satisfy rather than being told there is nothing to satisfy. Pinned separately because the two
+     * halves of [BundledJars]' reader fail differently: dropping the `isTextual` check breaks the
+     * sibling test above, and dropping the blank check broke nothing at all until this existed.
+     */
+    @Test
+    fun aBlankRangeYieldsNoOpinion(@TempDir directory: File) {
+        val host = jarWith(
+            directory, "host.jar",
+            """"id":"host","jars":[{"file":"META-INF/jars/lib.jar"}]""",
+            mapOf("META-INF/jars/lib.jar" to """"id":"lib","depends":{"other":"   "}""")
         )
 
         Assertions.assertEquals(

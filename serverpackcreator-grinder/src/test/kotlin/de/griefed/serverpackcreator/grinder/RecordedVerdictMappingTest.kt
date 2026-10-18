@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.BootDecision
-import de.griefed.serverpackcreator.clientside.Declaration
-import de.griefed.serverpackcreator.clientside.DeclaredSupport
-import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

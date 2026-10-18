@@ -1,0 +1,219 @@
+/* Copyright (C) 2026 Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.clientside.boot
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.io.File
+import java.time.Duration
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import de.griefed.serverpackcreator.clientside.verdict.BootLogClassifier
+
+/**
+ * Outcome of actually executing a prepared server pack, independent of *how* it was run (host process
+ * or — for the grinder — an isolated container). Kept raw on purpose: classification belongs to the
+ * caller so every runner is judged by the same [BootLogClassifier].
+ *
+ * @author Griefed
+ */
+sealed interface RunResult {
+    /** The pack could not be launched at all (e.g. no start script); carries why, for the report. */
+    data class NotStarted(
+        /** Why nothing was launched, in words a report can show a maintainer. */
+        val detail: String
+    ) : RunResult
+
+    /**
+     * The server ran to a terminal state. [lines] is the full console output, [exitCode] the process
+     * exit (or `null` if it had to be force-killed), [timedOut] whether the budget elapsed before the
+     * ready-line appeared.
+     */
+    data class Completed(
+        /** The whole console, in order. What the classifier reads — the console decides, not the exit code. */
+        val lines: List<String>,
+        /** The process exit status, or `null` when it could not be determined because the run was force-killed. */
+        val exitCode: Int?,
+        /** Whether the budget ran out before the ready-line appeared. Suspended host time does not count. */
+        val timedOut: Boolean
+    ) : RunResult
+}
+
+/**
+ * Runs a generated server pack and returns its raw console output + exit status, force-stopping the
+ * server once it is ready or once `timeout` elapses. The host-process implementation spawns `start.sh`
+ * directly; the planned grinder supplies a container-backed implementation that mounts the pack into an
+ * isolated, network-less container. Both feed the same [BootLogClassifier], so the verdict logic is
+ * shared.
+ *
+ * @author Griefed
+ */
+fun interface ServerRunner {
+    /**
+     * Boot [serverPack], stopping once the server is ready or [timeout] elapses. Returns the *raw*
+     * console lines + exit status; persisting and classifying them is the caller's concern
+     * ([BootVerifier.outcomeFor]).
+     *
+     * [onLine] is invoked for **every console line as it arrives**, so a caller can persist the boot log while
+     * the boot is still running. Without it the output only becomes visible once the run finishes, which makes a
+     * hung boot undiagnosable until its timeout fires — the whole point is that an operator can `tail -f` a boot
+     * in progress. Implementations must still return the complete line list; the sink is an addition, not a
+     * replacement, and must never be allowed to fail the boot (see the callers, which swallow sink errors).
+     */
+    fun run(serverPack: File, timeout: Duration, onLine: (String) -> Unit): RunResult
+}
+
+/**
+ * The default [ServerRunner]: boots the pack by spawning its `start.sh` as a host child-process,
+ * streaming stdout/stderr while watching for the vanilla ready-line, and force-killing the process once
+ * ready or timed out. This is the behaviour the clientside boot-verification has always used; the
+ * grinder swaps in a container-backed runner for isolation and parallelism.
+ *
+ * @author Griefed
+ */
+class HostProcessServerRunner : ServerRunner {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** The vanilla server's ready-line, watched while streaming the boot to stop early. */
+    private val readyLine = Regex("""Done \([^)]*\)! For help""")
+
+    override fun run(serverPack: File, timeout: Duration, onLine: (String) -> Unit): RunResult {
+        val startScript = File(serverPack, "start.sh")
+        if (!startScript.isFile) {
+            return RunResult.NotStarted("No start.sh in the generated server pack.")
+        }
+        File(serverPack, "eula.txt").writeText("eula=true\n")
+        startScript.setExecutable(true)
+
+        log.info("Booting server pack at ${serverPack.absolutePath}")
+        val process = ProcessBuilder("bash", startScript.name)
+            .directory(serverPack)
+            .redirectErrorStream(true)
+            .redirectInput(ProcessBuilder.Redirect.from(File("/dev/null")))
+            .start()
+
+        val lines = ArrayList<String>()
+        val ready = AtomicBoolean(false)
+        val readerThread = Thread {
+            process.inputStream.bufferedReader().useLines { sequence ->
+                for (line in sequence) {
+                    synchronized(lines) { lines.add(line) }
+                    onLine(line)
+                    if (readyLine.containsMatchIn(line)) {
+                        ready.set(true)
+                    }
+                }
+            }
+        }.apply { isDaemon = true; start() }
+
+        // The budget must not be spent while the host is asleep. A suspend freezes the server mid-boot and a
+        // wall-clock deadline then expires on a boot that never got the time — measured in the grinder, a laptop
+        // idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
+        // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. The container
+        // engine was fixed for this first; this path, which the `-verifyclientside` verb uses, had the same hole.
+        val deadline = SuspendAwareDeadline(timeout, POLL_INTERVAL_MILLIS) { gapMillis ->
+            log.warn(
+                "The host appears to have suspended for ~${gapMillis / 1000}s while booting; that time is not counted " +
+                    "against the boot's ${timeout.toMinutes()}-minute budget. A boot interrupted this way learns " +
+                    "nothing either way, so keep the machine awake (e.g. `caffeinate -ims` on macOS)."
+            )
+        }
+        while (process.isAlive && !ready.get() && deadline.hasTimeLeft()) {
+            Thread.sleep(POLL_INTERVAL_MILLIS)
+            deadline.tick()
+        }
+        // Read before the teardown below kills it, which would make every run look finished.
+        val timedOut = BootDeadline.timedOut(ready = ready.get(), stillRunning = process.isAlive)
+
+        if (process.isAlive) {
+            destroyTree(process)
+            process.waitFor(30, TimeUnit.SECONDS)
+        }
+        readerThread.join(5_000)
+        val exitCode = if (process.isAlive) null else runCatching { process.exitValue() }.getOrNull()
+
+        return RunResult.Completed(synchronized(lines) { ArrayList(lines) }, exitCode, timedOut)
+    }
+
+    /**
+     * Kill [process] and everything it started, descendants first.
+     *
+     * `start.sh` is a launcher: the Minecraft server is a `java` child of the shell, so SIGKILLing the shell
+     * alone reparents the server to init and leaves it holding the world directory, the port and its heap.
+     * SIGKILL cannot be trapped or forwarded, which is why the shell cannot be asked to clean up on our behalf.
+     *
+     * The descendant list is taken **before** anything is killed — once the shell dies its children are
+     * reparented and stop being its descendants, so collecting afterwards finds nothing. Everything is asked
+     * to exit first and forced only after one shared budget has elapsed, so a server still able to flush its
+     * world gets the chance; the budget is shared rather than per-process so a deep tree cannot multiply it.
+     *
+     * "Has exited" is [isStillRunning], not `isAlive`: a descendant left unreaped is finished as far as this
+     * teardown is concerned, and treating it otherwise burned the entire budget waiting for an exit that had
+     * already happened.
+     *
+     * Exit-code note: a descendant signalled this way makes the shell report 143 (SIGTERM) rather than 137
+     * (SIGKILL). [BootLogClassifier] treats both as "terminated from outside" and neither as a crash.
+     */
+    private fun destroyTree(process: Process) {
+        val descendants = process.toHandle().descendants().toList()
+        descendants.forEach { it.destroy() }
+        process.destroy()
+
+        // Polled rather than awaited: ProcessHandle.onExit never completes for a process nobody will reap,
+        // so a single such descendant used to spend the whole budget on something that had already stopped.
+        // One shared deadline for the tree, so a pack whose script nests several shells cannot multiply it.
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(GRACEFUL_TEARDOWN_SECONDS)
+        while (System.nanoTime() < deadline && descendants.any { isStillRunning(it) }) {
+            Thread.sleep(TEARDOWN_POLL_MILLIS)
+        }
+
+        if (process.isAlive) {
+            process.destroyForcibly()
+        }
+        descendants.filter { isStillRunning(it) }.forEach { it.destroyForcibly() }
+    }
+
+    /** The host runner's poll cadence, shared with the suspend-gap threshold it feeds. */
+    companion object {
+        /** How often the boot's liveness and ready-state are polled; also sets what counts as a suspend gap. */
+        internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * How long the whole process tree gets to exit on SIGTERM before it is forced. One shared budget, not
+         * one per process: a pack whose script nests several shells would otherwise multiply the teardown wait.
+         */
+        internal const val GRACEFUL_TEARDOWN_SECONDS = 5L
+
+        /** How often the tree is re-checked while it is being given its chance to exit on SIGTERM. */
+        internal const val TEARDOWN_POLL_MILLIS = 25L
+
+        /**
+         * Whether [handle] names a process teardown must still deal with — one that is *running*, not merely
+         * one whose PID is still in the table.
+         *
+         * `isAlive` answers the second question: it stays true for a process that has exited and not yet been
+         * reaped, and an orphan reparented to a PID 1 that is not an init is never reaped at all. Such a
+         * process holds no port, no world directory and no heap, so waiting on it or force-killing it
+         * achieves nothing. The command line is what separates the two states — the kernel drops it on exit
+         * while the PID lingers — and it is readable here because every handle teardown sees belongs to a
+         * process this JVM started, under the same user.
+         */
+        internal fun isStillRunning(handle: ProcessHandle): Boolean =
+            handle.isAlive && handle.info().command().isPresent
+    }
+}

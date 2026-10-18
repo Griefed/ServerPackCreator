@@ -1,0 +1,22 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="WebService (dev stack)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="serverpackcreator.serverpackcreator-app.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.griefed.serverpackcreator.app.web.WebService" />
+    <option name="WORKING_DIRECTORY" value="file://$ProjectFileDir$/serverpackcreator-app/tests" />
+    <!--
+      The URI is carried here rather than left to the home directory's serverpackcreator.properties:
+      that file is generated and untracked, and the copy the application writes for itself has no
+      credentials, while docker-compose-dev.yml's database requires them. A command-line argument
+      outranks every entry in WebService.configLocationArgument's chain.
+
+      The key is spring.mongodb.uri. spring.data.mongodb.uri is retired at error level in Spring
+      Boot 4 and binds nothing - see WebserviceConfig.DATABASE_URI_KEY. A log line naming
+      mongodb://localhost/test means the URI bound nowhere.
+    -->
+    <option name="PROGRAM_PARAMETERS" value="--spring.mongodb.uri=mongodb://root:1234567890@localhost:27017/serverpackcreatordb" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

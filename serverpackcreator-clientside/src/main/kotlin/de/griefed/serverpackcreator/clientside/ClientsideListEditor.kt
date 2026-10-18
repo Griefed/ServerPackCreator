@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 /**
  * Inserts approved clientside-list entries into the two files that ship the official fallback-list:
  * the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` and the backslash-continued

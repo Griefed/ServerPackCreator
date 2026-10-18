@@ -71,8 +71,9 @@ Gradle downloads one for you if you have none: the
 > version there fails with *"already on the classpath with an unknown version"*. If you touch either,
 > check both.
 
-**Nothing else.** Node.js is downloaded and managed by the build. Docker is only needed for the
-grinder's gated integration tests.
+**Nothing else.** Node.js is downloaded and managed by the build. Docker is needed only outside the
+build itself: for the grinder's gated integration tests, and for the webservice's MongoDB (see
+[Developing the webservice](#developing-the-webservice)).
 
 ---
 
@@ -184,6 +185,58 @@ installs npm dependencies, runs `npm run build` and — since 2026-08 — `npm r
 touching Kotlin you will still pay for this on a clean build.
 
 For frontend work, skip Gradle: `cd serverpackcreator-web-frontend && npm install && npx quasar dev`.
+
+---
+
+## Developing the webservice
+
+The webservice needs a MongoDB. `docker/docker-compose-dev.yml` supplies one — and nothing else, by
+default — so the application itself runs from your IDE, with the debugger and hot-swap intact:
+
+```
+docker compose -f docker/docker-compose-dev.yml up -d
+```
+
+That starts MongoDB and [mongo-express](http://localhost:8081) (`mexpress` / `mexpress`), and
+publishes `27017` on the host so both the IDE-run application and IntelliJ's Database tool window can
+reach it. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
+database URI as a command-line argument:
+
+```
+--spring.mongodb.uri=mongodb://root:1234567890@localhost:27017/serverpackcreatordb
+```
+
+It has to, because the dev home `serverpackcreator-app/tests/serverpackcreator.properties` is
+generated and untracked, and the copy the application writes for itself carries no credentials. The
+key is `spring.mongodb.uri`; `spring.data.mongodb.uri` is retired in Spring Boot 4 and binds nothing
+(see `WebserviceConfig.DATABASE_URI_KEY`).
+
+The frontend's dev server proxies `/api` to `localhost:8080`, so `npx quasar dev` works against the
+IDE-run backend with no further configuration.
+
+To run the **real image** instead — the only way to exercise the s6 init script and the
+`overrides.properties` it composes from the `SPC_*` variables — opt into the `app` profile:
+
+```
+docker compose -f docker/docker-compose-dev.yml --profile app up -d --build
+```
+
+Its builder stage runs a full Gradle build inside the container, so this is for testing the artifact,
+not for iterating.
+
+**Resetting the database** is `down -v`: `init-mongo.js` runs only against an empty `/data/db`, so
+changing the credentials has no effect until the volume is gone.
+
+**If MongoDB will not start**, read its log. On a host kernel between 6.19.0 and 7.0.13 the image
+refuses to start, by design, over [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912).
+Docker Desktop's linuxkit kernel crosses that range — 29.7.2 shipped 7.0.12 and is affected, 29.8.2
+ships 7.0.14 and is not — so the fix is usually to update Docker Desktop. If you cannot, the compose
+file tracks the same version as the deployment one on purpose; override it per machine from an
+untracked `docker/.env` rather than editing the file:
+
+```
+SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
+```
 
 ### Never do filesystem work in a task's configuration block
 

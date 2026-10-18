@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import de.griefed.serverpackcreator.clientside.ClientsideListEditor.Entry
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

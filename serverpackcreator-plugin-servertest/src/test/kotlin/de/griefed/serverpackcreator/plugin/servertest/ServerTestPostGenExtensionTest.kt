@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.plugin.servertest
 
 import com.electronwill.nightconfig.core.CommentedConfig
-import de.griefed.serverpackcreator.plugin.servertest.core.GenerationNotifier
+import de.griefed.serverpackcreator.plugin.servertest.pack.GenerationNotifier
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

@@ -18,10 +18,18 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRule
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.boot.RunResult
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 
 /**
  * Pins that a confirmation names the rule that **decided** it, not one that merely matched alongside.

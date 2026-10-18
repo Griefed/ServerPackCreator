@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
-import de.griefed.serverpackcreator.clientside.ConsoleRuleFile
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleFile
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE

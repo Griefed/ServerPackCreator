@@ -18,10 +18,12 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.platform.CurseForgePlatform
+import de.griefed.serverpackcreator.clientside.platform.HttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.ModrinthPlatform
 
 /**
  * Pins the two ways a dependency ref could go missing or be fabricated at the platform boundary.

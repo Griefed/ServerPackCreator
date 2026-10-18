@@ -18,9 +18,9 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
+import de.griefed.serverpackcreator.clientside.metadata.JarSelfDeclaration
 
 /**
  * **A Forge-family loader provides its own id, and nothing was saying so.**

@@ -21,8 +21,8 @@ package de.griefed.serverpackcreator.grinder.source
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.griefed.serverpackcreator.clientside.HttpFetcher
-import de.griefed.serverpackcreator.clientside.JdkHttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.HttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.JdkHttpFetcher
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.apache.logging.log4j.kotlin.cachedLoggerOf

@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.util.concurrent.TimeUnit
+import de.griefed.serverpackcreator.clientside.boot.HostProcessServerRunner
 
 /**
  * Pins that teardown's liveness test separates a *running* process from one that has already exited and

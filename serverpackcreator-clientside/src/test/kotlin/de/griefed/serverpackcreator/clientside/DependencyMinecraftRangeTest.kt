@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import de.griefed.serverpackcreator.api.ApiWrapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -27,6 +26,17 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.platform.JarDownloader
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionPolicy
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.platform.ModPlatform
+import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
+import de.griefed.serverpackcreator.clientside.version.VersionConstraint
 
 /**
  * Pins that a staged **dependency** whose own descriptor excludes the Minecraft version being booted is

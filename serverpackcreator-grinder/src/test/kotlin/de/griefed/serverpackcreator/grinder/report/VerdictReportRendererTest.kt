@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Declaration
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions

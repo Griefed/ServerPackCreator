@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.source
 
-import de.griefed.serverpackcreator.clientside.HttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.HttpFetcher
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

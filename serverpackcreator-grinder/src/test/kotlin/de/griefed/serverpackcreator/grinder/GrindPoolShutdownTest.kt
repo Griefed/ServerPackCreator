@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.ClientsideReport
+import de.griefed.serverpackcreator.clientside.verdict.ClientsideReport
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

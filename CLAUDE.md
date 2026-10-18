@@ -217,6 +217,19 @@ evidence consulted occasionally, not context every session needs.
   needs the Spring container to be tested is a design smell — flag it.
 - (Plugin-API stability is governed by the **API compatibility policy** above — don't duplicate it.)
 
+### Package structure (organize by feature, not by layer)
+
+- Organize code by business feature, not by global technical layer.
+- Create a dedicated package for each feature and keep its related classes together.
+- Introduce subpackages such as `ui`, `service`, `domain`, and `persistence` within a feature only when
+  they improve clarity.
+- Define explicit APIs and enforce clear dependency boundaries between features.
+- Minimize coupling and avoid unnecessary layers, abstractions, and indirection.
+- Use shared packages only for genuinely cross-cutting concerns.
+- Keep the architecture simple, cohesive, and maintainable. Do not impose rigid package structures
+  without a concrete benefit.
+- Follow these rules consistently for all newly created code and when modifying existing code.
+
 ### Refactor discipline (behavior-preserving by default)
 
 - **One commit per GOAL, not per edit — Griefed's call, 2026-10-12.** A commit is the unit at which

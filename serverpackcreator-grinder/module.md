@@ -20,7 +20,7 @@ service running for days to accumulate a list of suspected-clientside mods.
 ## What's here so far (the boot seam)
 
 - [ContainerServerRunner][de.griefed.serverpackcreator.grinder.container.ContainerServerRunner] — a
-  `de.griefed.serverpackcreator.clientside.ServerRunner` that boots a prepared server pack inside a
+  `de.griefed.serverpackcreator.clientside.boot.ServerRunner` that boots a prepared server pack inside a
   hardened container instead of as a host process. It drops straight into `BootVerifier` and feeds the
   same `BootLogClassifier`. Host-side staging (start-script check, eula, spec assembly) and result
   mapping live here; the container interaction is delegated so this is unit-testable.

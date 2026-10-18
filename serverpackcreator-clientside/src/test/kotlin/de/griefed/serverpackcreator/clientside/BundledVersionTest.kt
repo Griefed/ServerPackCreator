@@ -18,7 +18,6 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -26,6 +25,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.metadata.BundledJars
 
 /**
  * Pins [BundledJars.versionsIn] — the half of the jar-in-jar reader that answers *which build* of a bundled

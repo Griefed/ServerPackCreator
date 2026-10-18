@@ -18,12 +18,18 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.time.Duration
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.boot.RunResult
+import de.griefed.serverpackcreator.clientside.boot.ServerRunner
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 
 /**
  * Pins **every** path on which no container ever runs, because the four-verdict redesign fixed one of them

@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
-import de.griefed.serverpackcreator.plugin.servertest.core.PackVariables
-import de.griefed.serverpackcreator.plugin.servertest.core.ServerSession
+import de.griefed.serverpackcreator.plugin.servertest.pack.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.session.ServerSession
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import javax.swing.JTextArea

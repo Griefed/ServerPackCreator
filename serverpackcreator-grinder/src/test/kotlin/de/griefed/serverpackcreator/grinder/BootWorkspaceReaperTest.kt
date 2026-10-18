@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test

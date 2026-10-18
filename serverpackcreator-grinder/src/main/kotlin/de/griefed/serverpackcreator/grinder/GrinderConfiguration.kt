@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.BootResult
-import de.griefed.serverpackcreator.clientside.MinecraftLinePolicy
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.selection.MinecraftLinePolicy
 import de.griefed.serverpackcreator.grinder.report.ReportServer
 import java.io.File
 import java.time.Duration

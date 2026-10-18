@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.grinder
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import de.griefed.serverpackcreator.clientside.LearnedModIds
+import de.griefed.serverpackcreator.clientside.metadata.LearnedModIds
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.nio.file.AtomicMoveNotSupportedException

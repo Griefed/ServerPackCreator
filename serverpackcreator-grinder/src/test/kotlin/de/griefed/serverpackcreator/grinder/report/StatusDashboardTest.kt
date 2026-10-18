@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import de.griefed.serverpackcreator.clientside.ConsoleRuleSet
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms

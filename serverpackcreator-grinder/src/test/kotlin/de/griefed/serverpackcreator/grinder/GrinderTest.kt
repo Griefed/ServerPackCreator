@@ -19,9 +19,9 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.DeclaredSupport
-import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.report.VerdictField
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
@@ -84,7 +84,7 @@ internal class GrinderTest {
 
     /**
      * The clientside engine already decides both sidenesses and the jar scan, and the CLI report prints
-     * all three — but they stopped at [de.griefed.serverpackcreator.clientside.GrindTargetVerdict] and never
+     * all three — but they stopped at [de.griefed.serverpackcreator.clientside.verdict.GrindTargetVerdict] and never
      * reached the store, so the grinder's own report could not show what the platform declared versus what
      * the jar declared. Those two facts are what a human needs to judge a verdict.
      */

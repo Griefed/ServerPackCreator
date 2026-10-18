@@ -18,9 +18,12 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.platform.CurseForgePlatform
+import de.griefed.serverpackcreator.clientside.platform.HttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.platform.ModrinthPlatform
 
 /**
  * Pins that a file carries **every project its page links**, not only the ones marked required.

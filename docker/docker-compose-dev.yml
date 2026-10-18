@@ -1,13 +1,91 @@
-version: '3'
+# Local development stack.
+#
+#   docker compose -f docker/docker-compose-dev.yml up -d
+#
+# brings up only the DEPENDENCIES. ServerPackCreator itself runs from IntelliJ IDEA -- the
+# `WebService (dev stack)` run configuration in `.run/` -- so you keep the debugger and hot-swap.
+# That is why MongoDB publishes 27017: an IDE-run application, and IDEA's Database tool window,
+# reach it over the host's loopback.
+#
+# The application service is opt-in:
+#
+#   docker compose -f docker/docker-compose-dev.yml --profile app up -d --build
+#
+# which builds and runs the real production image. That is the only way to exercise the s6 init
+# script and the `overrides.properties` it composes from the SPC_* variables below.
+#
+# `docker/docker-compose.yml` is the deployment file users copy; this one is not. Resetting the
+# database means `down -v`, because `init-mongo.js` runs only against an empty /data/db.
+
+# The deployment compose file uses the same service names. Without a distinct project name the two
+# fight over the same containers.
+name: spc-dev
+
 services:
+  serverpackcreatordb:
+    # Kept in step with docker/docker-compose.yml deliberately: a dev database on a different
+    # release than production tests the wrong thing.
+    #
+    # This image refuses to start on a host kernel between 6.19.0 and 7.0.13, with "MongoDB cannot
+    # start: Linux kernel versions 6.19.0 through 7.0.13 have a known incompatibility"
+    # (https://jira.mongodb.org/browse/SERVER-121912 -- upstream TCMalloc violates the rseq ABI).
+    # The guard is the fix, not the bug: the releases without it start and then crash. Docker
+    # Desktop's linuxkit kernel crosses that range, so an older Docker Desktop cannot run this.
+    # Override the tag from an untracked `docker/.env` rather than editing this file:
+    #
+    #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204}
+    # Published so the IDE-run application can reach the database. Nothing in the fast loop runs
+    # inside this network.
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 1234567890
+      MONGO_INITDB_DATABASE: serverpackcreatordb
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
+      - spcdb-data:/data/db
+      - spcdb-conf:/data/configdb
+    # `depends_on` alone only orders starts, and the application treats a reachable database as
+    # optional at boot precisely so it survives losing that race. mongo-express does not: it exits.
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # Database browser at http://localhost:8081, basic auth mexpress/mexpress. IDEA Ultimate's
+  # Database tool window reads the same database over the published port if you prefer it.
+  serverpackcreator-mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    ports:
+      - "8081:8081"
+    depends_on:
+      serverpackcreatordb:
+        condition: service_healthy
+    environment:
+      # One URL rather than the SERVER/PORT/ADMINUSERNAME/ADMINPASSWORD quartet, because the
+      # image's entrypoint parses THIS variable to decide which host to wait for. Left unset it
+      # waits on `mongo`, which does not resolve here, and spends ten retries failing before the
+      # app -- which did read the quartet -- starts correctly anyway.
+      # authSource is admin: that is where MONGO_INITDB_ROOT_USERNAME creates the root user.
+      - ME_CONFIG_MONGODB_URL=mongodb://root:1234567890@serverpackcreatordb:27017/?authSource=admin
+      - ME_CONFIG_BASICAUTH_USERNAME=mexpress
+      - ME_CONFIG_BASICAUTH_PASSWORD=mexpress
+
+  # Opt-in: the real production image, built from this working tree. Slow -- its builder stage runs
+  # a full Gradle build inside the container -- so it is for testing the artifact, not for iterating.
   serverpackcreator:
-    container_name: serverpackcreator
+    profiles:
+      - app
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    restart: unless-stopped
     depends_on:
-      - serverpackcreatordb
+      serverpackcreatordb:
+        condition: service_healthy
     environment:
       - TZ=Europe/Berlin
       - PUID=1000
@@ -15,8 +93,8 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * *
-      # These three must match the db service's MONGO_INITDB_* below: init-mongo.js creates exactly one
-      # user, from MONGO_INITDB_ROOT_USERNAME/_PASSWORD, inside MONGO_INITDB_DATABASE - and a
+      # These three must match the db service's MONGO_INITDB_* above: init-mongo.js creates exactly
+      # one user, from MONGO_INITDB_ROOT_USERNAME/_PASSWORD, inside MONGO_INITDB_DATABASE - and a
       # connection-string's path segment doubles as its authSource.
       - SPC_DATABASE_PASSWORD=1234567890 # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
       - SPC_DATABASE_USERNAME=root # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
@@ -39,37 +117,10 @@ services:
       - modpacks:/app/serverpackcreator/modpacks
       - server-packs:/app/serverpackcreator/server-packs
       - logs:/app/serverpackcreator/logs
-  serverpackcreatordb:
-    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
-    container_name: serverpackcreatordb
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: 1234567890
-      MONGO_INITDB_DATABASE: serverpackcreatordb
-    volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
-#      - spcdb-data:/data/db
-#      - spcdb-conf:/data/configdb
-  # Database Manager
-  serverpackcreator-mongo-express:
-    container_name: mongo-express
-    restart: unless-stopped
-    image: mongo-express
-    ports:
-      - 8081:8081
-    depends_on:
-      - serverpackcreatordb
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=serverpackcreatordb
-      - ME_CONFIG_MONGODB_PORT=27017
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=1234567890
-      - ME_CONFIG_BASICAUTH_USERNAME=mexpress
-      - ME_CONFIG_BASICAUTH_PASSWORD=mexpress
+
 volumes:
-#  spcdb-data:
-#  spcdb-conf:
+  spcdb-data:
+  spcdb-conf:
   modpacks:
   server-packs:
   logs:

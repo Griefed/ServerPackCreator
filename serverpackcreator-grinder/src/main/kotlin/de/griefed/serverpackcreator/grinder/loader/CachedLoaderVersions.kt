@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
-import de.griefed.serverpackcreator.clientside.LoaderVersionPolicy
+import de.griefed.serverpackcreator.clientside.version.LoaderVersionPolicy
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**

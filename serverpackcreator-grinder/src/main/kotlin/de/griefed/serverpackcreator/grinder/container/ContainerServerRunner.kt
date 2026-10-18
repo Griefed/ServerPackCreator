@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
-import de.griefed.serverpackcreator.clientside.RunResult
-import de.griefed.serverpackcreator.clientside.ServerRunner
+import de.griefed.serverpackcreator.clientside.boot.RunResult
+import de.griefed.serverpackcreator.clientside.boot.ServerRunner
 import java.io.File
 import java.time.Duration
 

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.ModPlatforms.CURSEFORGE
 import de.griefed.serverpackcreator.grinder.ModPlatforms.MODRINTH
 import de.griefed.serverpackcreator.grinder.grindVerdict

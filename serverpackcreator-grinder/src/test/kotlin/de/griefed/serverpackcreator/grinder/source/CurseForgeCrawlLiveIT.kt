@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.grinder.source
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.griefed.serverpackcreator.clientside.JdkHttpFetcher
+import de.griefed.serverpackcreator.clientside.platform.JdkHttpFetcher
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable

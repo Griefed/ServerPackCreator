@@ -233,3 +233,150 @@ beyond the one-goal commit that introduced the sanitiser.
 on its own in CI), at which point the workaround stops carrying its weight. Note the foojay asymmetry is the
 first thing to re-solve: an included build evaluates its settings standalone, so the resolver needs a version
 there, which is exactly what fails today under the root build.
+
+## 2026-10-17 — from merging the open renovate PRs
+
+### B49 — the homepage's Quasar toolchain caps below the `quasar` CVE fix, and the way out is Vite
+
+**What:** `serverpackcreator-homepage` cannot take PR #715 (`quasar` 2.11.10 → 2.32.2, closing
+CVE-2026-73647 / GHSA-3r53-75j5-3g7j, prototype pollution in `extend()`). The advisory's
+`first_patched_version` is **2.22.0**; the homepage's `@quasar/app` 3.3.3 cannot build anything
+above roughly 2.14.5. Fixing the CVE means migrating the build, and the only viable target is
+`@quasar/app-vite` — not `@quasar/app-webpack`.
+
+**Measured, so it does not need re-deriving:**
+
+- `@quasar/app` 3.3.3 + `quasar` 2.32.2 fails first in sass — `SassError: expected ")"` on
+  `&:has(+ :is(…))` in `quasar/dist/quasar.sass`, because 3.3.3 pins `sass` **1.32.12** (April 2021)
+  exactly. An npm `overrides` of `sass` clears it and reveals the real wall underneath.
+- The real wall is JS: `TypeError: importTransformation is not a function`, from 3.3.3's
+  `lib/webpack/loader.js.transform-quasar-imports.js`. Reproduced at `quasar` **2.17.0** and
+  **2.22.0**; **2.14.5** still builds. So the ceiling sits between 2.14.5 and 2.17.0, below the fix.
+- **`@quasar/app-webpack` 4.4.5 is not the way out**, even though its peer range (`quasar ^2.16.0`)
+  would allow 2.32.2. The site uses `<q-flashcard>` across the whole of `src/pages/Index.vue`, and
+  `@quasar/quasar-app-extension-qflashcard` ships **no webpack-4-compatible release**: 2.0.0-alpha.4
+  declares `@quasar/app-webpack ^3.0.0`, and 3.0.0 declares `peerDependencies: {"@quasar/app-vite":
+  ">=3.0.0"}`. The CLI refuses outright — *"Extension(@quasar/qflashcard): is not compatible with
+  @quasar/app-webpack v4.4.5. Required version: ^3.0.0"*.
+- Node is **not** a blocker, but it is tight. `@quasar/app-vite` 3.10.3 wants
+  `^30 || ^28 || ^26 || ^24 || ^22.22.0`, and all three places that build this site clear it only just:
+  `homepage-build` in `.forgejo/workflows/docs.yml` pins `node-version: '22'`, and the Dockerfile's
+  builder `griefed/gitlab-ci-cd:2.8.0` ships **Node v22.22.0 exactly** (verified with
+  `docker run --platform linux/amd64 … node -v`; it also carries a global `@quasar/cli` **v2.5.0**,
+  which is what its `RUN quasar build` actually invokes). One patch release of the floor breaks the
+  image build, so the migration should pin a newer Node in that stage rather than rely on it.
+
+**What a prototype of the Vite migration cost, and where it stopped.** Built in a throwaway worktree:
+`quasar.conf.js` → `quasar.config.js` in app-vite form; root `index.html` with
+`<!-- quasar:entry-point -->`; `.postcssrc.js` → ESM `postcss.config.js`; `babel.config.js` deleted;
+`quasar/wrappers` → `@quasar/app-vite` (`defineBoot`, `defineRouter`); every `~assets/…` and
+`url("~assets/…")` rewritten to the single `@` alias app-vite 3 generates; `import('layouts/…')` →
+`import('@/layouts/…')`; and the three `require(\`assets/serverpackcreator/cards/${…}.png\`)` sites
+in `Index.vue` — which Vite has no equivalent for — replaced with an `import.meta.glob` lookup.
+**`quasar build` goes green from there**, emits all nine card images and a `dist/spa/index.html`,
+and most of the page renders. It is still **not shippable**: the production build throws
+`cardImage is not a function` nine times, no flashcard receives the `styleTop`/`styleBottom` inline
+width, and `quasar dev` serves a **blank page**. The unresolved question is why the compiled render's
+`$options`-class accesses (`c.styleTop`, `c.hoverOver`, `c.cardImage` alike) do not resolve while
+`$data` and `$setup` ones do.
+
+**Why it waited.** Three reasons, in order of weight. It is a **webpack → Vite migration of the public
+website**, not the toolchain bump the PR looks like. The homepage has **no test suite** — `npm test` is
+`echo "No test specified" && exit 0`, and this module's `CLAUDE.md` says to treat a change to `src/` as
+verified only by looking at it — so the only gate is a human comparing the rendered site against
+serverpackcreator.de. And `serverpackcreator-homepage` is a **squashed subtree** of
+`Griefed/serverpackcreator-de`: a change of this size landed here and not upstream collides with the
+next `git subtree pull --squash`, so it belongs in the website's own repository, pulled back as one
+squashed commit.
+
+**Pick it up when** the site is worked on deliberately, in `Griefed/serverpackcreator-de`. It also closes
+B47, whose eslint-generation note is a symptom of the same staleness. Until then PR #715 stays open and
+the advisory stays open with it; the exposure is `extend()` prototype pollution in a **static marketing
+SPA with no user input**, which is why leaving it open for one deliberate migration is defensible rather
+than merely convenient.
+
+**Dependabot PR #1310 is the same wall, and is not mergeable here either (checked 2026-10-18).** It is
+`build(deps): Bump the npm_and_yarn group across 1 directory with 20 updates`, against **`main`**, and
+its three direct bumps are `@quasar/cli` 5.0.4, `axios` 1.20.0 and `quasar` 2.32.2 — the first two of
+which renovate already merged into `develop` as #716 and #714. All it adds over `develop` is the quasar
+bump this entry exists to refuse. Its *lockfile* cannot be taken either, and that is the part worth
+recording: it is computed against `main`, so applying it to `develop` upgrades 57 packages and
+**downgrades 19**, among them `@quasar/extras` 1.18.0 → 1.16.2, `core-js` 3.50.0 → 3.27.2, `eslint`
+8.57.1 → 8.37.0 and `js-yaml` 4.3.2 → **4.1.0**, which is inside the advisory range `4.0.0 - 4.3.1`.
+Taking it would re-open a vulnerability to close others. The equivalent that *is* safe is regenerating
+`develop`'s own lockfile — done, see the commit of this entry.
+
+**Expect the same shape from every future npm PR raised against `main`.** `main` is three releases
+behind `develop` here, so a bot PR's lockfile is always rebased on the wrong base; read the direct-dep
+table against `develop`'s `package.json` before spending time on the lockfile. And `npm audit` says what
+this entry says, independently: `@quasar/app` is reported `critical`, `range=*`, **`fixAvailable=false`**
+— npm agrees there is no bump out of this, only the migration.
+
+### B50 — the container has no seam for a remote debugger
+
+**What:** `docker/root/etc/s6-overlay/s6-rc.d/svc-spc/run` launches the jar with exactly one JVM
+flag (`-Djava.io.tmpdir`) and no passthrough for any other. There is no way to attach IntelliJ to
+the application running inside the image, because there is nowhere to put
+`-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005`. Adding a
+`JAVA_TOOL_OPTIONS`-style passthrough plus an opt-in `5005` publication on
+`docker-compose-dev.yml`'s `app` profile would close it.
+
+**Why it waited.** The dev loop that landed on 2026-10-17 debugs the application **in IntelliJ**
+against a containerised MongoDB, so the common case needs no container debugger at all. The
+remaining case is narrow but real: a defect that only reproduces under the image — the s6 init
+script, `overrides.properties` composition, the LSIO `PUID`/`PGID` remapping, the
+`server.tomcat.basedir` the script appends. Today the only tool for those is log statements.
+
+The change is also not free. `svc-spc/run` is one of the two files behind
+`docker/tests/init-spc-config-test.sh`'s sibling contract, and its argument order is already
+fragile: it is `java -jar -Djava.io.tmpdir=… <jar> -web --home …`, which works only because HotSpot
+keeps parsing VM options until the first non-option. Inserting a variable expansion into that line
+without a test is how the next silent container defect gets written, and shell templates are
+exactly the category the root `CLAUDE.md` requires to be pinned first.
+
+**Pick it up when** something has to be debugged inside the image. Write the guard into
+`docker/tests/` first — it already runs the real script in the production base image, so the
+pattern exists — and assert both that the flag appears when the variable is set and that the
+command is unchanged when it is not.
+
+### B51 — the image build needs more than 3.9 GB, and `:generateLicenseReport` is where it peaks
+
+**What:** `docker compose -f docker/docker-compose-dev.yml --profile app build`, and any plain
+`docker build -f docker/Dockerfile .`, cannot complete on a Docker Desktop given 4 GB. The builder
+stage's Gradle run exhausts the VM and BuildKit reports `cannot allocate memory`.
+
+**Measured 2026-10-17**, sampling `/proc/meminfo` from a privileged container every 5 s across a
+full attempt (79 samples): `MemTotal` 3917 MB, `MemAvailable` **3444 MB at the start and 10 MB at
+the trough** — a peak of 3907 MB of 3917 MB, with 10 MB of headroom left. It does not merely exceed
+the budget, it saturates it.
+
+**The task is consistent.** Three separate attempts after the `.forgejo` context fix all died at
+`:generateLicenseReport`, immediately after `:serverpackcreator-api:compileKotlin`. (A fourth,
+earlier attempt died at `:buildSrc:test`, for the unrelated `.dockerignore` reason that commit
+`fix(docker): excluding `.forgejo/` from the build context broke the image build` repaired.)
+
+**Capping the heap does NOT help — this was tested, and it is the useful part of this entry.** The
+obvious theory is `gradle.properties`' `org.gradle.jvmargs=-Xms128m -Xmx4096m`: a 4 GB heap request
+inside a 3.83 GB container, which cannot fit by construction. It is the wrong theory. A build with
+`-Dorg.gradle.jvmargs="-Xms128m -Xmx1280m" -Dkotlin.daemon.jvmargs="-Xmx768m"` failed at the
+**identical task** with the identical error, simply taking longer to get there (417 s against
+293 s) from the added GC pressure. So the consumption is not the Gradle JVM's Java heap, and a
+`docker/Dockerfile` heap flag buys nothing. Do not re-derive this; it costs seven minutes a run.
+
+`org.gradle.parallel` is not set and `org.gradle.daemon=false`, so this is not worker concurrency
+either. The remaining candidates, untested: the license-report plugin resolving every configuration
+in every module at once, the Node toolchain the frontend build downloads and runs, and BuildKit's
+own resident set — plausibly all three alive at the same moment.
+
+**Why it waited.** It is a *host configuration* problem as far as anyone can currently tell — CI
+builds this image on every push — and the local loop that matters does not need it: `./gradlew
+build` on the host completes in about two minutes, and `docker-compose-dev.yml` defaults to
+dependencies-only precisely so the image is never on the fast path. Raising Docker Desktop's memory
+again also restarts the daemon, which on this machine bounces the containers serving DNS.
+
+**Pick it up when** the image must be built locally. Start by giving Docker Desktop 8 GB and
+re-running the measurement above — the trough value tells you immediately whether the requirement
+is merely above 3.9 GB or far above it, which is the number this entry cannot supply. Only if 8 GB
+also fails is it worth attacking `:generateLicenseReport` itself, and in that case measure which of
+the three candidates above actually holds the memory before changing anything: two theories have
+already been wrong here.

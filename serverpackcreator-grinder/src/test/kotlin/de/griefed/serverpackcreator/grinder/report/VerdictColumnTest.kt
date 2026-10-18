@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.BootArtifacts
-import de.griefed.serverpackcreator.clientside.BootResult
-import de.griefed.serverpackcreator.clientside.Declaration
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.Declaration
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

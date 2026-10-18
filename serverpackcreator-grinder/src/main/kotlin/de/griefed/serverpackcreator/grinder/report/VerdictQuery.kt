@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
-import de.griefed.serverpackcreator.clientside.Verdict
+import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import java.net.URLDecoder
 import java.net.URLEncoder

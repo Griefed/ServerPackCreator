@@ -18,9 +18,11 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.platform.CurseForgePlatform
+import de.griefed.serverpackcreator.clientside.platform.HttpFetcher
 
 /**
  * Pins that a dependency is looked for **at the Minecraft version being booted**, not in whatever the

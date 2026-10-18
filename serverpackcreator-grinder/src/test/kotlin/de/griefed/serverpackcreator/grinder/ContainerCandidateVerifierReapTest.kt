@@ -19,12 +19,12 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.AttemptDirectory
-import de.griefed.serverpackcreator.clientside.BootResult
-import de.griefed.serverpackcreator.clientside.BootVerifier
-import de.griefed.serverpackcreator.clientside.DeclaredSupport
-import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.GrindTargetVerdict
+import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
+import de.griefed.serverpackcreator.clientside.verdict.GrindTargetVerdict
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -80,7 +80,7 @@ internal class ContainerCandidateVerifierReapTest {
      * **A boot's evidence is kept as the boot finishes, because staging is about to be reused.** The attempt
      * directory is wiped and re-created by the *next attempt* — not merely the next re-grind — so a
      * re-check destroys the console of the boot it was checking. Retention is
-     * [de.griefed.serverpackcreator.clientside.BootArtifacts.worthKeeping]: a boot that reached its
+     * [de.griefed.serverpackcreator.clientside.boot.BootArtifacts.worthKeeping]: a boot that reached its
      * ready-line proves nothing about sideness and explains nothing either.
      */
     @Test

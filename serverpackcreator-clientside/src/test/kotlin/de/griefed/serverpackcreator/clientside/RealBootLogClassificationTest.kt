@@ -18,9 +18,12 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.verdict.BootDecision
+import de.griefed.serverpackcreator.clientside.verdict.BootLogClassifier
+import de.griefed.serverpackcreator.clientside.verdict.BootResult
+import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
 
 /**
  * Five **real** boot logs the deployed grinder published, sampled from

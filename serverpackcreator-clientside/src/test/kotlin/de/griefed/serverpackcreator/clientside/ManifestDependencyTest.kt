@@ -18,10 +18,17 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.metadata.KnownModIds
+import de.griefed.serverpackcreator.clientside.boot.ManifestDependencyPlan
+import de.griefed.serverpackcreator.clientside.platform.ModFile
+import de.griefed.serverpackcreator.clientside.metadata.ModIdMapping
+import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
+import de.griefed.serverpackcreator.clientside.boot.UnmetReason
 
 /**
  * Pins **which unmet dependencies may refuse a boot**, which is the decision that determines whether

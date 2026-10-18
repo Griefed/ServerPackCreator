@@ -20,6 +20,16 @@ plus a native view of the daemon's own dashboard.
 | `core` | Everything testable without Swing: `GrinderUrl`, `GrinderVerdict`, `GrinderClient` (+ `FetchResult`), `SelectionStore` (+ `SelectionPane`), `ClientsideEntryInjector`, `SelectionAttribution` |
 | `gui` | `GrinderTab` (the one tab, holding a nested `JTabbedPane`), `VerdictListPane`, `VerdictTableModel`, `DashboardPane`, `SettingsPane`, plus two pinned non-view units: `PlainTextRendering` and `StatusFormatting` |
 
+**Audited against the root `CLAUDE.md`'s *Package structure* rule on 2026-10-18 and left unchanged.**
+The whole module is one feature — bridge a grinder daemon to SPC — so `core`/`gui` is the within-feature
+`domain`/`ui` split the rule explicitly sanctions, not a global technical layering. `gui` depends on
+`core`, `core` on nothing, and the root holds the two pf4j extension points. Splitting `core` further
+would separate `GrinderClient` from the `GrinderVerdict` it parses for no reader's benefit.
+
+Contrast `-plugin-servertest`, whose `core` **was** split on the same date: there the bucket held two
+features that did not reference each other (what there is to launch, and running one). Ask whether the
+bucket holds one feature or several before reaching for the same change here.
+
 ## How the pieces connect (read this before changing any of them)
 
 - **`ApiPlugins` hands the *same* `CommentedConfig` instance to the tab and to the pre-generation

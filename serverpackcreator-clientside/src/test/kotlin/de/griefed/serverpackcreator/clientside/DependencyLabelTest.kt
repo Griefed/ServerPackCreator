@@ -18,9 +18,12 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 package de.griefed.serverpackcreator.clientside
-
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.platform.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
+import de.griefed.serverpackcreator.clientside.boot.UnmetReason
 
 /**
  * Pins that a refused boot names its missing dependencies in words a human can act on.

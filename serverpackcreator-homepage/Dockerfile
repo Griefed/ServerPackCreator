@@ -1,7 +1,7 @@
 # A Node + Quasar toolchain image. The name is a leftover from the GitLab era and is misleading --
 # nothing about this build is GitLab CI -- but it is the image that has the toolchain, so it stays
 # until something replaces it rather than being renamed in place.
-FROM griefed/gitlab-ci-cd:2.8.0 AS builder
+FROM griefed/gitlab-ci-cd:2.8.0@sha256:1461ae150d5803774398cc89af820c5e4b4cca92ebd74e8a17171e386de7b56d AS builder
 
 WORKDIR /tmp/serverpackcreator.de
 
@@ -22,7 +22,7 @@ RUN quasar build
 # 2022. Nothing here ships an nginx site-conf (the `latest` entry points are symlinks, deliberately,
 # because /config is a VOLUME seeded once), so the site-conf path move between the two LSIO
 # generations does not reach this image.
-FROM ghcr.io/linuxserver/nginx:1.30.4
+FROM ghcr.io/linuxserver/nginx:1.30.4@sha256:3486bc71c5983edc9e7c80713b5d762f317c4c77fb31842a40a1ce26cce9f1de
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 

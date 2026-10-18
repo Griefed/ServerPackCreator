@@ -33,13 +33,21 @@ rather than owning it: back it up, rewrite only the port lines, restore it when 
 
 # Package de.griefed.serverpackcreator.plugin.servertest
 
-The plugin's root: `ServerTestPlugin`, the entry class pf4j instantiates, and `ServerTestTabExtension`,
-the `TabExtension` SPC discovers and asks for the GUI tab.
+The plugin's root: `ServerTestPlugin`, the entry class pf4j instantiates, `ServerTestTabExtension`, the
+`TabExtension` SPC discovers and asks for the GUI tab, `ServerTestPostGenExtension`, and
+`ServerTestSettings` — the typed view over the configuration SPC owns, which lives here because it is a
+model the feature packages read rather than orchestration they must not.
 
-# Package de.griefed.serverpackcreator.plugin.servertest.core
+# Package de.griefed.serverpackcreator.plugin.servertest.pack
 
-Everything that works without a display: finding launchable packs, choosing the platform's start script,
-allocating a free port, borrowing and returning `server.properties`, and owning the running processes.
+What there is to launch: finding the packs in the server-packs directory, choosing the start script for
+the platform, borrowing and returning `server.properties`, and reading a pack's `variables.txt`. Depends
+on nothing else in the plugin.
+
+# Package de.griefed.serverpackcreator.plugin.servertest.session
+
+Running one: allocating a free port, launching through the pack's own start script, and owning the live
+processes and their state. Depends on `pack`.
 
 # Package de.griefed.serverpackcreator.plugin.servertest.gui
 

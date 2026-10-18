@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
-import de.griefed.serverpackcreator.clientside.RunResult
+import de.griefed.serverpackcreator.clientside.boot.RunResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
