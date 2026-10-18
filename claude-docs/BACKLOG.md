@@ -295,6 +295,23 @@ the advisory stays open with it; the exposure is `extend()` prototype pollution 
 SPA with no user input**, which is why leaving it open for one deliberate migration is defensible rather
 than merely convenient.
 
+**Dependabot PR #1310 is the same wall, and is not mergeable here either (checked 2026-10-18).** It is
+`build(deps): Bump the npm_and_yarn group across 1 directory with 20 updates`, against **`main`**, and
+its three direct bumps are `@quasar/cli` 5.0.4, `axios` 1.20.0 and `quasar` 2.32.2 — the first two of
+which renovate already merged into `develop` as #716 and #714. All it adds over `develop` is the quasar
+bump this entry exists to refuse. Its *lockfile* cannot be taken either, and that is the part worth
+recording: it is computed against `main`, so applying it to `develop` upgrades 57 packages and
+**downgrades 19**, among them `@quasar/extras` 1.18.0 → 1.16.2, `core-js` 3.50.0 → 3.27.2, `eslint`
+8.57.1 → 8.37.0 and `js-yaml` 4.3.2 → **4.1.0**, which is inside the advisory range `4.0.0 - 4.3.1`.
+Taking it would re-open a vulnerability to close others. The equivalent that *is* safe is regenerating
+`develop`'s own lockfile — done, see the commit of this entry.
+
+**Expect the same shape from every future npm PR raised against `main`.** `main` is three releases
+behind `develop` here, so a bot PR's lockfile is always rebased on the wrong base; read the direct-dep
+table against `develop`'s `package.json` before spending time on the lockfile. And `npm audit` says what
+this entry says, independently: `@quasar/app` is reported `critical`, `range=*`, **`fixAvailable=false`**
+— npm agrees there is no bump out of this, only the migration.
+
 ### B50 — the container has no seam for a remote debugger
 
 **What:** `docker/root/etc/s6-overlay/s6-rc.d/svc-spc/run` launches the jar with exactly one JVM
