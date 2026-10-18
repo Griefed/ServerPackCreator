@@ -31,6 +31,22 @@ base package's orchestration, only its domain models).
   plus `CatalogCrawler` (hands out the next slice per pass) and `CursorStore` / `InMemoryCursorStore` /
   `JsonCursorStore` (`CatalogCursor` = offset + completed sweeps + the source's opaque partition token).
 
+**Audited against the root `CLAUDE.md`'s *Package structure* rule on 2026-10-18 and left unchanged.**
+The four subpackages are features, and all three base-package residents that look like strays are not:
+
+- **`ContainerCandidateVerifier` cannot move into `container`.** It imports from `container`, `loader`
+  *and* `report`, and `loader` already imports `container` — so filing it under `container` makes
+  `container -> loader -> container`. It is the composition point that wires the three together, which
+  is what the base package is for, and the cycle is the proof rather than the assertion.
+- **`JsonLearnedModIds` argues its own placement in its KDoc** — neither a verdict nor a crawl position,
+  but composition-level state the daemon owns and hands to the engine.
+- **`BootWorkspaceReaper` imports only `clientside.boot.AttemptDirectory`**, so a `workspace` package
+  would be cycle-free — and would hold one file, which is the "rigid structure without a concrete
+  benefit" the rule itself rules out.
+
+Re-deriving the edges costs one grep over `^import de.griefed.serverpackcreator.grinder` per
+subpackage; do that before re-opening this, rather than reading the file names.
+
 ## Subsystem detail lives next to the code
 
 Each subpackage has its own `CLAUDE.md`, loaded only when you work in that directory — that is what keeps this
