@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
-import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
+import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
 import java.io.File
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScripts
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.FlowLayout

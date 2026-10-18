@@ -18,11 +18,23 @@ change. A launcher that built its own `java` command would not be testing what s
 
 ## Layout
 
-| Package | What lives there |
-|---|---|
-| *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless) and the two pf4j extension points: `ServerTestTabExtension` (the GUI tab) and `ServerTestPostGenExtension` (refreshes the list when a pack is generated) |
-| `core` | Everything testable without Swing: `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPackCatalog`/`LaunchablePack`, `PortAllocator`, `ServerPropertiesPatch`, `PackVariables`, `ServerSession`/`SessionState`, `SessionRegistry`, `ServerTestSettings`, **`ServerLauncher`/`LaunchOutcome`** — the launch sequence itself — and `GenerationNotifier`/`Subscription` |
-| `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus three pinned non-view units: `ConsoleHints`, `PlainTextRendering` and `Dialogs` |
+| Package | What lives there | May depend on |
+|---|---|---|
+| *(root)* | `ServerTestPlugin` (the `ServerPackCreatorPlugin`, stateless), the two pf4j extension points `ServerTestTabExtension` (the GUI tab) and `ServerTestPostGenExtension` (refreshes the list when a pack is generated), and `ServerTestSettings` | everything |
+| `pack` | what there is to launch: `ServerPackCatalog`/`LaunchablePack`, `Platform`/`StartScriptSelector`/`StartScriptSelection`, `ServerPropertiesPatch`, `PackVariables`, `GenerationNotifier`/`Subscription` | nothing |
+| `session` | running one: `PortAllocator`, **`ServerLauncher`/`LaunchOutcome`** — the launch sequence itself — `ServerSession`/`SessionState`, `SessionRegistry` | `pack` |
+| `gui` | `ServerTestTab` (the one tab, holding a nested `JTabbedPane`), `PackListPane`, `PackTableModel`/`PackRow`, `ConsolePane`, plus three pinned non-view units: `ConsoleHints`, `PlainTextRendering` and `Dialogs` | `pack`, `session`, the root model |
+
+Until 2026-10-18 `pack` and `session` were one `core` package, named for the *layer* ("everything
+testable without Swing") rather than for anything the plugin does — the shape the root `CLAUDE.md`'s
+*Package structure* rule rejects. `ServerPackCatalog` and `StartScriptSelector` reference each other, so
+they stay together; nothing in `pack` reaches into `session`, which is the property to preserve.
+
+**`ServerTestSettings` is at the root, with the plugin wiring, and that is deliberate.** It is a typed
+view over the `CommentedConfig` SPC owns — a *model*, not orchestration — and `-grinder`'s base package
+sets the precedent this follows: a subpackage may import the composition root's domain models and must
+not import its orchestration. Putting it in `session` would misstate its scope (`gui` reads
+`consoleScrollback` from it), and a package holding one file would be structure without a benefit.
 
 ## Zero API changes, and what that rests on
 

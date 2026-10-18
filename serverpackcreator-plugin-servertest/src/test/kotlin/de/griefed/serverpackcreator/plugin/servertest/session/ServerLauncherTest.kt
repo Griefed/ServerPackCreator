@@ -17,13 +17,16 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest.session
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.util.Random
+import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
+import de.griefed.serverpackcreator.plugin.servertest.pack.ServerPropertiesPatch
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScripts
 
 /**
  * Pins the order things are taken in, and that everything taken is given back exactly once.

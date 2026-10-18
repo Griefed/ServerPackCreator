@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest.pack
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger

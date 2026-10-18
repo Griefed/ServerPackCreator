@@ -17,10 +17,15 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest.session
 
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
+import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
+import de.griefed.serverpackcreator.plugin.servertest.pack.ServerPropertiesPatch
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScriptSelection
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScriptSelector
 
 /**
  * What came of asking to launch a pack.

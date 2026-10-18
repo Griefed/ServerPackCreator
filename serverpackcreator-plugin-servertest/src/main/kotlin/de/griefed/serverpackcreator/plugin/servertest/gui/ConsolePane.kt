@@ -19,9 +19,9 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
-import de.griefed.serverpackcreator.plugin.servertest.core.PackVariables
-import de.griefed.serverpackcreator.plugin.servertest.core.ServerSession
-import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
+import de.griefed.serverpackcreator.plugin.servertest.pack.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.session.ServerSession
+import de.griefed.serverpackcreator.plugin.servertest.session.SessionState
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Toolkit

@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest
 
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.core.file.FileNotFoundAction
@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.charset.StandardCharsets
+import de.griefed.serverpackcreator.plugin.servertest.session.PortAllocator
 
 /**
  * Pins the plugin's settings against the `config.toml` this module actually ships.

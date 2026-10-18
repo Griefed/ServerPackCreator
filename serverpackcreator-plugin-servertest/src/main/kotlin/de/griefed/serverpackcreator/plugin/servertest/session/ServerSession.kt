@@ -17,13 +17,14 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest.session
 
 import java.io.File
 import java.io.IOException
 import java.io.Writer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScriptSelector
 
 /**
  * One launched server pack: the process, its console, and the line into its standard input.

@@ -17,9 +17,10 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest
 
 import com.electronwill.nightconfig.core.CommentedConfig
+import de.griefed.serverpackcreator.plugin.servertest.session.PortAllocator
 
 /**
  * Reads the plugin's settings out of the `CommentedConfig` ServerPackCreator owns.

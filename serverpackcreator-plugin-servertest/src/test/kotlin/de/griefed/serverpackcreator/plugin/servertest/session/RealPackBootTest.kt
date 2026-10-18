@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugin.servertest.core
+package de.griefed.serverpackcreator.plugin.servertest.session
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions
@@ -27,6 +27,10 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.util.Collections
 import java.util.concurrent.TimeUnit
+import de.griefed.serverpackcreator.plugin.servertest.pack.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.pack.ServerPackCatalog
+import de.griefed.serverpackcreator.plugin.servertest.pack.ServerPropertiesPatch
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScripts
 
 /**
  * Boots a **real** server pack through its **real** start script, end to end.

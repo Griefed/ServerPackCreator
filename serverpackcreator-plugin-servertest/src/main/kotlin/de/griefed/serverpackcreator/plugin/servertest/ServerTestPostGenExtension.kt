@@ -25,7 +25,7 @@ import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.serverpackhandler.PostGenExtension
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
-import de.griefed.serverpackcreator.plugin.servertest.core.GenerationNotifier
+import de.griefed.serverpackcreator.plugin.servertest.pack.GenerationNotifier
 import org.pf4j.Extension
 import java.io.File
 import java.util.Optional

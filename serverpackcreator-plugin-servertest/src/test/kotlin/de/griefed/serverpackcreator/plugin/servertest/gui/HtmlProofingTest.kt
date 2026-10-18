@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
-import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
+import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScripts
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.awt.Container

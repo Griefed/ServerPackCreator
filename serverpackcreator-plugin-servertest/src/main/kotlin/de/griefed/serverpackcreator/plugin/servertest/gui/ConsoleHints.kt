@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
-import de.griefed.serverpackcreator.plugin.servertest.core.PackVariables
+import de.griefed.serverpackcreator.plugin.servertest.pack.PackVariables
 
 /**
  * Notes the console adds of its own accord, at the moment they are needed.

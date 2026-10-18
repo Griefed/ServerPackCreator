@@ -19,12 +19,12 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.gui
 
-import de.griefed.serverpackcreator.plugin.servertest.core.LaunchablePack
-import de.griefed.serverpackcreator.plugin.servertest.core.SessionState
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScript
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScripts
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelection
-import de.griefed.serverpackcreator.plugin.servertest.core.StartScriptSelector
+import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
+import de.griefed.serverpackcreator.plugin.servertest.session.SessionState
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScript
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScripts
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScriptSelection
+import de.griefed.serverpackcreator.plugin.servertest.pack.StartScriptSelector
 import javax.swing.table.AbstractTableModel
 
 /**
