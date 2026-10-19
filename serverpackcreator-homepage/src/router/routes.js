@@ -4,7 +4,11 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Index.vue') }
+      { path: '', component: () => import('pages/Index.vue') },
+      // The plugin listing, formerly its own Quasar project at
+      // griefed.github.io/ServerPackCreator-Addons-Overview. A child of '/' so it shares the one
+      // MainLayout instance rather than mounting a second copy of the header and footer.
+      { path: 'addons', component: () => import('pages/AddonIndex.vue') }
     ]
   },
 

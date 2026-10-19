@@ -42,6 +42,22 @@
           </q-item-section>
         </q-item>
 
+        <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
+          <q-item-section class="q-pa-md q-ml-none">
+            <q-item-label class="text-h6 text-teal-3 text-uppercase text-right">ServerPackCreator Addons</q-item-label>
+            <q-item-label class="text-blue-grey-10 text-right">
+              <strong>
+                <router-link to="/addons">
+                  Looking for plugins?
+                </router-link>
+              </strong>
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side :style="'background-color:' + secondaryColour" class="q-pa-sm q-mr-none text-white">
+            <q-icon name="fas fa-puzzle-piece" size="42px"/>
+          </q-item-section>
+        </q-item>
+
       </q-toolbar>
     </q-header>
 

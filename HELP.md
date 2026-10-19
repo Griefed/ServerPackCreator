@@ -632,7 +632,7 @@ Any given plugin has the chance to do various things:
 - Adding custom elements to the server pack configuration tab
 
 For a list of plugins, check out
-the [ServerPackCreator Addons Overview](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/)
+the [ServerPackCreator Addons Overview](https://serverpackcreator.de/addons)
 
 ### Installing a plugin
 
@@ -862,7 +862,7 @@ their own features as they see fit.
 
 #### Adding your own
 
-A curated list of officially acknowledged plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
+A curated list of officially acknowledged plugins can be found at [serverpackcreator.de/addons](https://serverpackcreator.de/addons) (also reachable as [addons.griefed.de](https://addons.griefed.de))
 
 How to get your own plugin into this list:
 

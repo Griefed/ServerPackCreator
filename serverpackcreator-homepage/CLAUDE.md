@@ -43,6 +43,25 @@ git tag -d $(git tag -l '1.[0-4].*')
 Nothing is lost by deleting them — the upstream repository is where those tags are looked up, and
 `git subtree pull --squash` re-fetches the recorded split by hash when it needs it.
 
+## The addons overview is a PAGE here, not a project
+
+`src/pages/AddonIndex.vue` is the curated plugin listing, reachable at `/addons`. It used to be its
+own Quasar repository (`Griefed/ServerPackCreator-Addons-Overview`, archived) and was briefly imported
+as a second subtree before being folded in here instead — the whole thing is one object literal of
+three entries and makes no HTTP request, so a second npm project, lockfile, CLI and CI job were all
+cost with no return. Adding a plugin is editing that literal.
+
+**`/addons` works only because `public/addons/index.html` exists.** The router is in `hash` mode, so
+the route itself is `/#/addons` and nginx would answer a bare `/addons` with a 404. That stub is a
+static file rather than an nginx rule for the reason `docs/assemble-docs.sh` already records about
+`/help/latest`: the LSIO base image declares `/config` a VOLUME and seeds its site-conf onto it once,
+so a redirect baked into the image works on a fresh volume and silently does nothing on the live host.
+Quasar copies `public/` to the site root, which is what puts the stub beside `help/` and `api/`.
+
+Two constraints on editing the page itself: `MainLayout.vue` already renders `<router-view/>` inside a
+`q-page`, so `AddonIndex.vue`'s root is a plain `<div>` and must stay one; and its info dialog needs
+the `Notify` plugin, which `quasar.conf.js` already enables.
+
 ## Where each fact already lives — read it there, don't restate it here
 
 - **How the image is built and why it fails without docs** → `Dockerfile`. Two stages: a Node
