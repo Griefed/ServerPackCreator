@@ -11,8 +11,9 @@
 # check then reports the SAME repeat twice: once as a stale entry and once as an unexplained
 # duplicate. Three entries went that way unnoticed when the `uses:` references were converted from
 # pinned SHAs to version tags, because that edit changed the body of every allowlisted step that
-# carries a `uses:`. Re-key in the SAME commit as the sweep, or the gate is red for reasons nobody
-# can tell apart from a real finding.
+# carries a `uses:` -- and nothing caught it, because this check did not run in CI at the time. It
+# does now (`test.yml`, *Verify the workflow conventions*), so the same sweep would fail the build
+# instead. Re-key in the SAME commit as the sweep.
 
 1dff9f0139e0: >-
   actions/checkout@v7 with fetch-depth: 0, in six jobs. Irreducible: a local composite action's own

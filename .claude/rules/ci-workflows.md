@@ -269,10 +269,11 @@ they pass it. A difference that has to exist is an **input**, never a second cop
 **`misc/ci-duplication-check.py` enforces it**, with `misc/ci-duplication-allowlist.yml` holding the
 repeats that genuinely cannot be shared, each with its reason. The allowlist is keyed by a hash of the
 step's normalised body, so editing an exempted step turns the check red and the exemption is re-argued
-rather than inherited. It is not yet a `test.yml` step — a gate that is red on every push is not a pin,
-it is a broken build — and becomes one when the count reaches zero. **It reached zero on 2026-10-19**
-(`0 duplicated and unexplained, 7 allowlisted`), so wiring it in is now a decision rather than a
-blocked one; it has not been wired in yet.
+rather than inherited. It was held out of CI while its count was non-zero — a gate that is red on every
+push is not a pin, it is a broken build — and **became a gate on 2026-10-19**, the day that count first
+reached zero. It runs in `test.yml`'s *Verify the workflow conventions* step, sharing one pyyaml install
+with `ci-env-reference-check.py`, before the long build. It fails on an unexplained duplicate and on an
+allowlist entry matching no step, both checked by exit code.
 
 **That keying has one failure mode worth planning for: a sweep across every workflow re-keys every
 entry it touches, and the check then reports each affected repeat TWICE** — once as a stale entry and

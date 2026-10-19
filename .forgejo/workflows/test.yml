@@ -97,12 +97,24 @@ jobs:
       - name: Verify the build logic
         run: ./gradlew help
 
-      # Seconds, and before the long build, for the same reason as the step above. It compares each
-      # workflow step's `env:` keys against the names its script actually reads, in both directions --
-      # the defect it pins went green for twelve days and cost every release its Discord announcement,
-      # because `WEBHOOK_URL:` was declared and `$NEWS_WEBHOOK_URL` was read and a shell resolves an
-      # undefined name to the empty string. Unlike `ci-duplication-check.py`, this one is at zero
-      # findings, which is what makes it a gate rather than a broken build.
+      # Seconds, and before the long build, for the same reason as the step above. TWO checks, one
+      # step, because both parse the workflows with pyyaml and the install below is the expensive half
+      # -- running them separately would pay for it twice and put two near-identical preambles in a
+      # file whose whole point is that steps are not written twice.
+      #
+      # `ci-env-reference-check.py` compares each workflow step's `env:` keys against the names its
+      # script actually reads, in both directions. The defect it pins went green for twelve days and
+      # cost every release its Discord announcement, because `WEBHOOK_URL:` was declared and
+      # `$NEWS_WEBHOOK_URL` was read and a shell resolves an undefined name to the empty string.
+      #
+      # `ci-duplication-check.py` fails when a step is written twice without a reason. It is a gate
+      # from 2026-10-19, the day its count first reached zero -- the condition
+      # `.claude/rules/ci-workflows.md` records for promoting it, because a check that is red on every
+      # push is not a pin, it is a broken build. It fails on an unexplained duplicate AND on an
+      # allowlist entry matching no step, both verified by exit code rather than assumed; the second
+      # direction is the one that matters here, because the allowlist is keyed by a hash of the step
+      # body, so a sweep that edits every workflow silently un-exempts everything it touches. That is
+      # how three entries went stale unnoticed while nothing ran this.
       #
       # LANDMINE -- `pip3 install` on this runner image FAILS, and the install is needed. pyyaml is not
       # in the standard library (every other python in these workflows gets by on `json` alone) and
@@ -115,12 +127,13 @@ jobs:
       # Measured in that exact image rather than reasoned about, after this step turned the build red
       # on its first real run: `import yaml` -> ModuleNotFoundError, then the install below -> pyyaml
       # 6.0.3, then the check runs clean against this repository.
-      - name: Verify the workflows' env references
+      - name: Verify the workflow conventions
         run: |
           set -eu
           python3 -c 'import yaml' 2>/dev/null \
             || pip3 install --quiet --disable-pip-version-check --break-system-packages pyyaml
           python3 misc/ci-env-reference-check.py
+          python3 misc/ci-duplication-check.py
 
       # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests live in
       # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them
