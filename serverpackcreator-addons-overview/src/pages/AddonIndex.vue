@@ -24,7 +24,7 @@
 
           <q-separator />
 
-          <q-item v-for="addon in addons" v-bind:key="addon" :class=
+          <q-item v-for="addon in addons" v-bind:key="addon.name" :class=
             "this.$q.dark.isActive ?
               (addon.index % 2 ? 'item-dark' : 'item-dark-alternative') :
               (addon.index % 2 ? 'item' : 'item-alternative')"
