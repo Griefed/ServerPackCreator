@@ -14,15 +14,15 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/extras": "1.16.6",
-    "core-js": "3.31.0",
-    "quasar": "2.7.7",
-    "vue": "3.2.47",
-    "vue-router": "4.2.2"
+    "@quasar/extras": "^1.18.0",
+    "core-js": "^3.51.0",
+    "quasar": "^2.35.2",
+    "vue": "^3.5.44",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.22.11",
-    "@quasar/app": "3.3.3",
+    "@quasar/app-webpack": "3.15.1",
     "eslint": "8.44.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-vue": "9.15.1",
