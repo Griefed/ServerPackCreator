@@ -10,12 +10,10 @@
 # The key is `<file>::<job>::<step>::<NAME>`; `python3 misc/ci-env-reference-check.py --list` prints
 # them ready to paste.
 
-".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_WEBHELP_ZIP":
-  "read by the child script the step runs -- assemble-docs.sh's WEBHELP_ZIP, and the one env key there that is mandatory (`:?`)"
-".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_RELEASE_VERSION":
-  "read by the same child script -- assemble-docs.sh's RELEASE_VERSION"
-".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_RELEASE_IS_LATEST":
-  "read by the same child script -- assemble-docs.sh's RELEASE_IS_LATEST"
+".forgejo/workflows/docs.yml::homepage-image::Assemble the documentation::SPC_WEBHELP_ZIP":
+  "read by the child script the step runs -- assemble-docs.sh's WEBHELP_ZIP, mandatory there (`:?`)"
+".forgejo/workflows/docs.yml::homepage-image::Assemble the documentation::SPC_DOKKA_TARGZ":
+  "read by the same child script -- assemble-docs.sh's DOKKA_TARGZ, mandatory there too"
 
 ".forgejo/workflows/grinder-container-it.yml::containers::Run the container integration tests::GRINDER_DOCKER_IT":
   "the JUnit gate, not the script: @EnabledIfEnvironmentVariable(named = \"GRINDER_DOCKER_IT\", matches = \"1\") on DockerJavaContainerEngineIT and ContainerOwnershipIT"

@@ -1,7 +1,7 @@
 # serverpackcreator-homepage — Claude Code context
 
-The Quasar/Vue single-page site served at **serverpackcreator.de**, plus the versioned
-documentation tree it hosts under `/help/<version>/` and `/api/<version>/`.
+The Quasar/Vue single-page site served at **serverpackcreator.de**, plus the documentation it
+hosts at `/help/latest` and `/api/latest`.
 
 Not a Gradle module — `settings.gradle.kts` does not mention it, and `./gradlew build` never
 touches it. It is built by `npm`/`quasar` and shipped as its own container image.
@@ -69,14 +69,12 @@ the `Notify` plugin, which `quasar.conf.js` already enables.
   build outright if `help/latest/config.json` or `api/latest/index.html` is missing.
 - **How the documentation tree is assembled** → `docs/assemble-docs.sh`, which is a script rather
   than Dockerfile steps so it can be run against a scratch directory and the result clicked. It must
-  run *before* `docker build`; the Dockerfile only `COPY`s `docs-build/`. It needs no Docker daemon
-  and `SPC_WEBHELP_ZIP` is **required** — the webhelp is handed to it, never fetched.
-- **What it guarantees** → `docs/assemble-docs.test.sh`, which runs it end to end against a loopback
-  `http.server` and a fixture webhelp zip. `npm test` is that script, and `docs.yml`'s
-  `homepage-build` job runs it before the Quasar build.
-- **Which SPC versions the site serves an API reference for, and what a version costs** →
-  `docs/versions.json`. A version listed there needs a published *release*, not merely a tag — its
-  API reference is a release asset.
+  run *before* `docker build`; the Dockerfile only `COPY`s `docs-build/`. Both archives are **handed
+  to it** — `SPC_WEBHELP_ZIP` and `SPC_DOKKA_TARGZ`, each required — so it fetches nothing and needs
+  no network, no Docker daemon and no credentials.
+- **What it guarantees** → `docs/assemble-docs.test.sh`, which runs it end to end against fixture
+  archives. `npm test` is that script, and `docs.yml`'s `homepage-build` job runs it before the
+  Quasar build.
 - **How CI wires the two together** → the `homepage-build` and `homepage-image` jobs in
   `.forgejo/workflows/docs.yml`.
 
@@ -93,15 +91,28 @@ part of this module with behaviour worth pinning. **There is still no test for `
 SPC's Gradle build reaches this module either, so treat a change to a `.vue` file as verified only by
 looking at it in `quasar dev`.
 
-## The help is not versioned; the API reference is
+## One version per image — the site archives nothing
 
-`/help/latest` is the only help URL the site offers, and it holds whatever the build that produced
-the image rendered. `/api/<version>/` is kept per version, because it is tied to a compile —
-somebody writing against `serverpackcreator-api` 9.1.0 needs 9.1.0's reference.
+`/help/latest` and `/api/latest` are the only documentation URLs the site has, and they hold what
+the build that produced the image rendered. **This image is tagged per release**, so the
+documentation inside it is that release's by construction; `latest` cannot drift, because there is
+nothing else in there for it to drift away from. An older release's documentation is read from the
+image tagged for it, and an older API reference is also a `dokka-html.zip` release asset.
 
-Until 2026-10-19 the help *was* per version, archived as a `serverpackcreator-help:<version>`
-container image that `assemble-docs.sh` extracted with `docker create` + `docker cp`. That image
-existed to host the help when GitLab Pages went away and Forgejo had no equivalent; once this site
-served the help, the image's only reader was the assembly step, which pulled 62 MB per version to
-take 4 MB out of it and deleted the rest. Nothing on the site ever linked a per-version help URL —
-`MainLayout.vue` links `/help/latest` and always has.
+Two things were removed on 2026-10-19 to get here, and both are worth knowing about because their
+shapes keep suggesting themselves:
+
+- **A `serverpackcreator-help:<version>` container per release**, which `assemble-docs.sh` extracted
+  with `docker create` + `docker cp`. It existed to host the help when GitLab Pages went away and
+  Forgejo had no equivalent; once this site served the help it had no reader but the assembly, which
+  pulled 62 MB per version to take 4 MB out of it. Docker Hub held **912 tags** of it. Nothing on
+  the site ever linked a per-version help URL — `MainLayout.vue` links `/help/latest` and always has.
+- **`docs/versions.json`**, a hand-edited manifest of which versions to serve, and the release-asset
+  downloads it drove. It was a second place for a release to be recorded, so it could be — and was —
+  stale: it still named 9.2.1 as latest after 9.3.0 and 9.3.1 had shipped. Griefed's call: the image
+  tag already carries that fact, so nothing should restate it.
+
+**Griefed's call is also why "add it back for just the API reference" is not an open question.** The
+asymmetry is tempting — a reference is tied to a compile in a way user documentation is not — and it
+was considered and declined: the release asset is where a specific version's reference lives, and
+the site is not a second distribution channel for it.

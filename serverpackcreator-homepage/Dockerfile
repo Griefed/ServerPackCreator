@@ -37,10 +37,11 @@ COPY --from=builder /tmp/serverpackcreator.de/dist/spa/ /config/www
 
 # The documentation, assembled BEFORE this build by `docs/assemble-docs.sh`.
 #
-# It cannot be assembled here: every version's API reference but the one being built is downloaded
-# from its release, and a Dockerfile has nowhere to put a download. So the script runs in the job,
-# writes `docs-build/`, and this copies the result. `docs-build/.gitkeep` is committed so the COPY
-# resolves even on a checkout where the script has not been run.
+# Done in a script rather than a RUN here so it can be executed against a scratch directory and the
+# result served and clicked -- which is what `docs/assemble-docs.test.sh` and `npm test` do, and
+# what a RUN buried in a multi-stage build could not. The serving stage also has no `unzip`. So the
+# script runs in the job, writes `docs-build/`, and this copies the result. `docs-build/.gitkeep` is
+# committed so the COPY resolves even on a checkout where the script has not been run.
 COPY docs-build/ /config/www/
 
 # Fail HERE rather than serve a site whose /help and /api are 404s. A docs-less build is what you get
