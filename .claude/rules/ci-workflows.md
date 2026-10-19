@@ -270,7 +270,15 @@ they pass it. A difference that has to exist is an **input**, never a second cop
 repeats that genuinely cannot be shared, each with its reason. The allowlist is keyed by a hash of the
 step's normalised body, so editing an exempted step turns the check red and the exemption is re-argued
 rather than inherited. It is not yet a `test.yml` step — a gate that is red on every push is not a pin,
-it is a broken build — and becomes one when the count reaches zero.
+it is a broken build — and becomes one when the count reaches zero. **It reached zero on 2026-10-19**
+(`0 duplicated and unexplained, 7 allowlisted`), so wiring it in is now a decision rather than a
+blocked one; it has not been wired in yet.
+
+**That keying has one failure mode worth planning for: a sweep across every workflow re-keys every
+entry it touches, and the check then reports each affected repeat TWICE** — once as a stale entry and
+once as an unexplained duplicate, which reads like two findings and is one. The `uses:` SHA-to-tag
+conversion did this to three entries and nobody noticed, because the gate runs on no push. Re-key in
+the same commit as the sweep.
 
 ### What Forgejo will and will not do, all of it checked rather than assumed
 

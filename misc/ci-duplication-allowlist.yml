@@ -6,9 +6,16 @@
 #
 # An entry here is a claim that sharing is IMPOSSIBLE or WORSE, not that nobody got round to it. A
 # repeat that merely has not been dealt with yet belongs in the report, where it is visible.
+#
+# LANDMINE -- a change that touches every workflow at once re-keys every entry it touches, and the
+# check then reports the SAME repeat twice: once as a stale entry and once as an unexplained
+# duplicate. Three entries went that way unnoticed when the `uses:` references were converted from
+# pinned SHAs to version tags, because that edit changed the body of every allowlisted step that
+# carries a `uses:`. Re-key in the SAME commit as the sweep, or the gate is red for reasons nobody
+# can tell apart from a real finding.
 
-8e11ca619330: >-
-  actions/checkout@v6 with fetch-depth: 0, in seven jobs. Irreducible: a local composite action's own
+1dff9f0139e0: >-
+  actions/checkout@v7 with fetch-depth: 0, in six jobs. Irreducible: a local composite action's own
   files arrive with the checkout, so the checkout can never be the thing inside one. Forgejo's own
   reference calls forgetting it "the most common mistake when using an action included in the
   repository under test".
@@ -21,14 +28,14 @@ de92b2337da4: >-
   a `RELEASE:` commit-message clause. A shared version with escape hatches for both is a guard nobody
   can evaluate by reading it.
 
-d8342dbff323: >-
+80fcca20e6f9: >-
   test.yml's `Build image` and `Build image (retry)`, in its `docker` job. The retry exists to re-run the identical
   build after waiting out ghcr's burst limiter, so its inputs are the same BY DEFINITION -- a version
-  that differed would not be a retry. See 5301067150ae for why the two files' retries are not shared
+  that differed would not be a retry. See 3c3b829cfd54 for why the two files' retries are not shared
   with each other either.
 
-5301067150ae: >-
-  release-build.yml's `Build and push` and `Build and push (retry)`. Same reason as d8342dbff323. The
+3c3b829cfd54: >-
+  release-build.yml's `Build and push` and `Build and push (retry)`. Same reason as 80fcca20e6f9. The
   pattern is deliberately NOT shared with test.yml's `docker` job: a composite would need six pass-through
   inputs (push, no-cache, platforms, build-args, tags, file) to share about 25 lines of shell, and the
   two differ in what they cost -- around 30 s there against roughly fifteen minutes here -- so a change
