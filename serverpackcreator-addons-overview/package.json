@@ -1,0 +1,49 @@
+{
+  "name": "serverpackcreator-addons-overview",
+  "version": "1.0.0",
+  "description": "Listing for all officially acknowledged addons/plugins for ServerPackCreator.",
+  "productName": "ServerPackCreator Addons Overview",
+  "author": "Griefed <griefed@griefed.de>",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.vue ./",
+    "format": "prettier --write \"**/*.{js,vue,,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0",
+    "clean": "quasar clean",
+    "dev": "quasar dev",
+    "build": "quasar build"
+  },
+  "dependencies": {
+    "@quasar/extras": "1.16.6",
+    "axios": "0.27.2",
+    "core-js": "3.31.0",
+    "quasar": "2.7.7",
+    "vue": "3.2.47",
+    "vue-router": "4.2.2"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "7.22.11",
+    "@quasar/app": "3.3.3",
+    "eslint": "8.44.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-vue": "9.15.1",
+    "eslint-webpack-plugin": "3.2.0",
+    "prettier": "2.7.1"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 16.9.1",
+    "npm": ">= 7.23.0",
+    "yarn": ">= 1.22.11"
+  }
+}

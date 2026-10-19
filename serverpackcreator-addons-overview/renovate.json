@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "extends": "config:base",
+      "matchPaths": ["package.json"]
+    }
+  ],
+  "labels": ["dependencies"],
+  "assignees": ["Griefed"]
+}

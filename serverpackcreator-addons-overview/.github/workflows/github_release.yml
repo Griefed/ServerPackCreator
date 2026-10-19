@@ -1,0 +1,81 @@
+name: Create GitHub Release after GitLab tag mirror
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # GET LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # EXTRACT TAG FROM PUSH
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+      - name: Use tag
+        run: echo ${{steps.tag.outputs.tag}}
+
+      # GENERATE CHANGELOG, RELEASE
+      - id: conventional_changelog
+        uses: ardalanamini/auto-changelog@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{steps.tag.outputs.tag}}
+          body: |
+            Automatic release of version: **${{steps.tag.outputs.tag}}**
+            **Changes in this release:**
+            ${{ steps.conventional_changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.6.0
+        with:
+          # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
+          node-version: '>= 16.9.1'
+          # Set this option if you want the action to check for the latest available version that satisfies the version spec
+          check-latest: false
+
+      - name: Install Quasar
+        run: npm install -g @quasar/cli
+
+      - name: Install packages
+        run: npm install
+
+      - name: Build project for NGINX release package
+        run: quasar build
+
+      - name: List files
+        run: pwd && ls -al *
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-quasar
+          path: dist/spa/
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
+      # NGINX Archives
+      - name: Create NGINX Archive tar.gz
+        run: |
+          echo "**** Creating archive of quasar build ****"
+          tar -cvzf spcao-NGINX-${{ steps.tag.outputs.tag }}.tar.gz dist/spa
+      - name: Create NGINX Archive zip
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/spa
+          recursive: true
+          dest: spcao-NGINX-${{ steps.tag.outputs.tag }}.zip
