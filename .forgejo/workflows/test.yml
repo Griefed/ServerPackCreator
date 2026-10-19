@@ -104,16 +104,22 @@ jobs:
       # undefined name to the empty string. Unlike `ci-duplication-check.py`, this one is at zero
       # findings, which is what makes it a gate rather than a broken build.
       #
-      # The `import yaml` probe is not belt-and-braces: pyyaml is NOT in the standard library, and
-      # every other python in these workflows gets by on `json` alone, so nothing here has ever
-      # proven the runner image carries it. Installing it only when it is missing costs nothing on an
-      # image that has it and keeps a missing one from turning this gate into a red build about the
-      # wrong thing.
+      # LANDMINE -- `pip3 install` on this runner image FAILS, and the install is needed. pyyaml is not
+      # in the standard library (every other python in these workflows gets by on `json` alone) and
+      # `ghcr.io/catthehacker/ubuntu:runner-latest` does not carry it, so the install is not optional;
+      # but that image is Ubuntu with Python 3.12.3 and pip 24.0, where a plain install is refused with
+      # `error: externally-managed-environment` under PEP 668. `--break-system-packages` is what the
+      # refusal itself names, and it is safe here for the reason the flag is otherwise frightening:
+      # the "system" is a job container that is destroyed when the job ends.
+      #
+      # Measured in that exact image rather than reasoned about, after this step turned the build red
+      # on its first real run: `import yaml` -> ModuleNotFoundError, then the install below -> pyyaml
+      # 6.0.3, then the check runs clean against this repository.
       - name: Verify the workflows' env references
         run: |
           set -eu
           python3 -c 'import yaml' 2>/dev/null \
-            || pip3 install --quiet --disable-pip-version-check pyyaml
+            || pip3 install --quiet --disable-pip-version-check --break-system-packages pyyaml
           python3 misc/ci-env-reference-check.py
 
       # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests live in
