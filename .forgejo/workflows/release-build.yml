@@ -611,35 +611,95 @@ jobs:
     name: "News on Discord"
     # One job for both channels: `prepare.outputs.prerelease` chooses the wording.
     #
-    # It announces the FORGEJO release -- the canonical one -- and therefore deliberately does NOT need
-    # `mirror`: a stalled push-mirror must not silence the announcement of a release that is complete
-    # here. It does wait for `maven` and `docker`, on the same reasoning `mirror` gives for its own
-    # `needs`: nobody should be pointed at a release whose artifacts and images do not exist yet.
-    # `virustotal` is left out because its own failures are explicitly tolerated and this announcement
-    # does not reproduce the release notes.
-    needs: [prepare, release, maven, docker]
+    # It announces the GITHUB release, and that is a deliberate reversal of what this job used to do.
+    # Downloads are meant to come from GitHub -- the twelve assets are the bulk of what this project
+    # serves, and every one fetched from git.griefed.de is bandwidth it pays for -- so the announcement
+    # must not exist before the release people are being sent to does. Hence `mirror` in `needs:`,
+    # which is the job that creates it.
+    #
+    # `mirror` is in `needs:` for ORDERING ONLY and pointedly not in the result checks below. Two
+    # reasons, both already on the record in .claude/rules/ci-workflows.md:
+    #
+    #   1. A red `mirror` does not mean an incomplete GitHub release. 9.0.0-alpha.6 uploaded all twelve
+    #      assets and only then died on a gitlab.com step that no longer exists, and the `push_mirrors-sync`
+    #      step is best-effort by design -- one dead remote returns 500 and masks a healthy one.
+    #   2. A SKIPPED job cannot be re-run on its own. The documented repair for a bad mirror is to re-run
+    #      that one job, because `maven` and `docker` are not idempotent, so `news` has to stay re-runnable
+    #      beside it rather than being skipped out of existence.
+    #
+    # So the verdict is not `mirror`'s result, it is the first step below ASKING GitHub. The four jobs
+    # whose failure really does mean there is nothing worth announcing are checked explicitly.
+    #
+    # `always()` rather than `!cancelled()`: `always()` is the form already in use here (qodana.yml's
+    # `notify`), and the result checks make the difference moot -- a cancelled run leaves them anything
+    # but `success`. An absent `needs` context evaluates the whole guard to false, so the failure
+    # direction is a skipped announcement, never an announcement of nothing.
+    needs: [prepare, release, maven, docker, mirror]
+    if: ${{ always()
+            && needs.prepare.result == 'success'
+            && needs.release.result == 'success'
+            && needs.maven.result == 'success'
+            && needs.docker.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
+
+      # "Is the release live on GitHub" asked of GitHub, rather than inferred from the mirror job's
+      # colour. It also yields the canonical `html_url`, so the announcement links a release that is
+      # known to exist instead of a URL assembled out of a version string.
+      - name: Require the release to be live on GitHub
+        id: gh
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -eu
+          API="https://api.github.com/repos/Griefed/ServerPackCreator"
+          # NOT a poll, and that is the honest shape here: `mirror` creates this release through the
+          # release API and the GET answers immediately afterwards, so a 404 means it was never created
+          # rather than not yet visible. Waiting would only delay saying so. -o/-w rather than -f,
+          # because -f discards the body, which is where GitHub says what is wrong.
+          STATUS="$(curl -sS -o gh-release.json -w '%{http_code}' "$API/releases/tags/$VERSION" \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json')"
+          if [ "$STATUS" != "200" ]; then
+            cat gh-release.json; echo
+            echo "::error::GitHub answered HTTP $STATUS for release $VERSION, so there is nothing to announce. 'Mirror release outward' is the job that creates it - read its log, repair it, re-run THAT JOB ALONE and then re-run this one. Do NOT re-run the whole workflow: maven and docker would re-publish a version that is already released."
+            exit 1
+          fi
+          URL="$(python3 -c 'import json;print(json.load(open("gh-release.json"))["html_url"])')"
+          COUNT="$(python3 -c 'import json;print(len(json.load(open("gh-release.json")).get("assets") or []))')"
+          # An announcement that sends people to GitHub for the download has to know the download is
+          # there. `mirror` uploads the assets AFTER creating the release, so a release carrying none
+          # is a half-finished mirror wearing the same green as a finished one.
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::The GitHub release for $VERSION exists but carries no assets, so the mirror's upload loop did not finish. Repair and re-run 'Mirror release outward' alone, then re-run this job."
+            exit 1
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "GitHub has $VERSION at $URL with $COUNT assets"
 
       # The payload is built by python, the way qodana.yml builds its own: fetching and executing a
       # third-party shell script for what is only a JSON builder is remote code execution by trust.
       # Every value reaches python through `env:` rather than being interpolated into the shell.
       - name: Post to Discord
         env:
-          WEBHOOK_URL: ${{ secrets.NEWS_WEBHOOK_URL }}
+          NEWS_WEBHOOK_URL: ${{ secrets.NEWS_WEBHOOK_URL }}
           VERSION: ${{ needs.prepare.outputs.version }}
           PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
           REPOSITORY: ${{ github.repository }}
           SERVER_URL: ${{ github.server_url }}
+          RELEASE_URL: ${{ steps.gh.outputs.url }}
         run: |
-          # A missing webhook is fine and exits cleanly; a webhook that IS configured and then fails to
-          # accept the post is a real failure and must not be swallowed -- hence set -e after the guard,
-          # exactly as in qodana.yml's post.
-          if [ -z "${NEWS_WEBHOOK_URL:-}" ]; then
-            echo "No NEWS_WEBHOOK_URL configured - skipping"
-            exit 0
-          fi
+          # An absent webhook FAILS here, where it used to skip and leave the job green. That tolerance
+          # is what hid a dead announcement for twelve days: the env key said WEBHOOK_URL while the
+          # script read NEWS_WEBHOOK_URL, so the guard was unconditionally true and every release
+          # printed "No NEWS_WEBHOOK_URL configured - skipping" and passed. A secret that is supposed
+          # to be configured and is not is an operator error, not a supported configuration, and the
+          # release pipeline must say so out loud.
           set -eu
+          if [ -z "${NEWS_WEBHOOK_URL:-}" ]; then
+            echo "::error::NEWS_WEBHOOK_URL is not configured, so release $VERSION cannot be announced. It is a Discord webhook URL for the news channel - see claude-docs/CI-SECRETS.md. It is NOT the same secret as WEBHOOK_URL, which qodana.yml uses."
+            exit 1
+          fi
           export RELEASED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           cat > news.py <<'NEWS_PY'
           import json, os
@@ -647,23 +707,34 @@ jobs:
           version = os.environ["VERSION"]
           repository = os.environ["REPOSITORY"]
           server = os.environ["SERVER_URL"].rstrip("/")
+          # The GitHub release's own `html_url`, read back from the API by the step above, so this
+          # cannot advertise a release that does not exist.
+          url = os.environ["RELEASE_URL"]
+          # The canonical notes live on Forgejo and are never truncated; GitHub's copy is cut at its
+          # own 125,000-character limit, which a beta or final release passes. So downloads point at
+          # GitHub and the notes link offers the complete text.
+          notes = f"{server}/{repository}/releases/tag/{version}"
           # `prepare` writes exactly "true" or "false" and refuses any tag that is neither shape, so this
           # comparison cannot silently mis-class a release.
           prerelease = os.environ["PRERELEASE"] == "true"
           noun = "pre-release" if prerelease else "release"
           headline = "Pre-Release" if prerelease else "Release"
-          url = f"{server}/{repository}/releases/tag/{version}"
           sentence = (f"There's been a new {noun} for {repository}. "
-                      f"The new version is {version} and is available at")
+                      f"The new version is {version} and is available on GitHub at")
+          # Said in the announcement rather than only in the docs, because this is the moment anybody
+          # is about to download: the installers and app-images are the bulk of what this project
+          # serves, and GitHub's bandwidth is free where git.griefed.de's is not.
+          ask = ("Please grab releases and their assets from **GitHub** - it keeps the load off "
+                 "Griefed's own servers.")
           payload = {
               "username": repository,
               "avatar_url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/prosper.png",
               # The angle brackets suppress Discord's own link unfurl in the message body, as the
               # original did -- the embed below is the preview.
-              "content": f"{sentence} <{url}>",
+              "content": f"{sentence} <{url}>\n{ask}",
               "embeds": [{
                   "title": f"New {repository} {headline}",
-                  "description": f"{sentence} {url}",
+                  "description": f"{sentence} {url}\n\n{ask}",
                   "url": url,
                   "color": 12648430,  # 0xC0FFEE, the colour used on main
                   "author": {
@@ -674,12 +745,13 @@ jobs:
                   "thumbnail": {"url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/app_128x128.png"},
                   "fields": [
                       {"name": "Author", "value": f"[Griefed]({server}/Griefed)", "inline": True},
-                      # Was "GitHub". Forgejo is where the release lives now and what `url` points at.
-                      {"name": "Platform", "value": f"[Forgejo]({server})", "inline": True},
+                      # Downloads, deliberately: this is the field a reader clicks.
+                      {"name": "Download", "value": f"[GitHub]({url})", "inline": True},
+                      {"name": "Full release notes", "value": f"[Forgejo]({notes})", "inline": True},
                   ],
                   "footer": {
                       "text": f"Released at {os.environ['RELEASED_AT']}",
-                      "icon_url": "https://git.griefed.de/Griefed/ServerPackCreator/ra",
+                      "icon_url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/app_128x128.png",
                   },
               }],
           }
@@ -693,4 +765,4 @@ jobs:
             cat posted.json
             exit 1
           fi
-          echo "Announced $VERSION at $SERVER_URL/$REPOSITORY/releases/tag/$VERSION"
+          echo "Announced $VERSION at $RELEASE_URL"

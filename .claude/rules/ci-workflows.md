@@ -545,11 +545,56 @@ is no longer frozen at April 2024 — it now carries tags through `9.1.0` (2026-
 than one that is stopped. Do not invent the mechanism for that: `GET /push_mirrors` prints `last_error`
 for it, the job now does so on every release, and that is the thing to read before changing anything.
 
-**Nothing else in the release should be gated on the mirror.** The `news` job — the Discord
-announcement recreated from `main`'s `github_release.yml`/`github-prerelease.yml` — needs
-`[prepare, release, maven, docker]` and pointedly **not** `mirror`, because it announces the Forgejo
-release, which is complete and correct in both incidents above. Gating it on the mirror would have
-silenced the announcement of two perfectly good releases.
+**The `news` job announces the GITHUB release, and asks GitHub rather than trusting `mirror`'s
+colour.** Griefed's call, 2026-10-19: downloads are to come from GitHub, because the twelve assets are
+the bulk of what this project serves and GitHub's bandwidth is free where git.griefed.de's is not. An
+announcement sending people somewhere therefore must not precede the release being there, so `mirror`
+is in `needs:` — reversing the earlier decision, which had `news` announce the Forgejo release and
+omit `mirror` so a stalled push-mirror could not silence a complete release.
+
+**That earlier concern is still right, which is why `mirror` is in `needs:` for ORDERING ONLY and is
+absent from the job's `if:`.** The `if:` is `always()` plus explicit `success` checks on `prepare`,
+`release`, `maven` and `docker` — the four whose failure really does mean there is nothing worth
+announcing. Two reasons `mirror`'s own result is not one of them, both already on this page: a red
+`mirror` does not mean an incomplete GitHub release (9.0.0-alpha.6 uploaded all twelve assets and then
+died on a step that no longer exists, and `push_mirrors-sync` is best-effort because one dead remote
+returns 500 and masks a healthy one); and a **skipped** job cannot be re-run on its own, so a plain
+`needs: mirror` would make the documented per-job repair — fix the mirror, re-run that job alone —
+leave the announcement permanently unsendable.
+
+**The guard was evaluated, not read** -- `needs.<job>.result` in a job-level `if:` had no precedent in
+this directory, and this repository has already shipped one guard (`github.event.created`) that was
+silently inert on Forgejo. Run against Forgejo's own act fork (`code.forgejo.org/forgejo/act` v1.37.0,
+`pkg/exprparser`, which declares its module path as `github.com/nektos/act` and therefore needs a
+`replace` directive to resolve):
+
+| `needs` results | guard |
+|---|---|
+| all five `success` | **true** |
+| `mirror` **failure**, other four `success` | **true** |
+| `mirror` `skipped`, other four `success` | **true** |
+| `maven`, `release` or `docker` `failure` | false |
+| everything `cancelled` | false |
+| **empty `needs` context** | false |
+
+The last row is the one worth having: an inert context fails the guard CLOSED, so the failure direction
+is a skipped announcement rather than an announcement of nothing.
+
+The verdict is the job's first step, `Require the release to be live on GitHub`: one
+`GET /releases/tags/<version>`, no poll, failing if the release is absent or carries zero assets. It
+is deliberately not a poll — `mirror` creates the release synchronously through the release API, so a
+404 means it was never created rather than not yet visible, and the error names the job to repair.
+The step also yields the release's own `html_url`, so the message cannot link a URL assembled from a
+version string.
+
+**LANDMINE — a step's `env:` key and the name its script reads are two separate things, and a
+mismatch fails GREEN.** `81adb1b3d` (*ci(News): use different URL for release news webhook*) changed
+`secrets.WEBHOOK_URL` → `secrets.NEWS_WEBHOOK_URL` and both shell reads, and left the `env:` **key**
+as `WEBHOOK_URL`. `${NEWS_WEBHOOK_URL:-}` was then unconditionally empty, so every release printed
+*"No NEWS\_WEBHOOK\_URL configured - skipping"* and exited 0. Twelve days, no announcement, no red run.
+The tolerance is what hid it, so an absent `NEWS_WEBHOOK_URL` now **fails** the job: a secret that is
+supposed to be configured and is not is an operator error, not a supported configuration.
+`misc/ci-env-reference-check.py` pins the defect by its own shape across both workflow directories.
 
 **Repairing one is per-job, not per-workflow.** Re-running the whole run would re-execute `maven` and
 `docker` for a version already published — `closeAndReleaseSonatypeStagingRepository` plus three registries
