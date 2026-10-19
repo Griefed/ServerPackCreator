@@ -1,66 +1,61 @@
 #!/usr/bin/env bash
 #
-# Assemble the versioned documentation tree the site serves.
+# Assemble the documentation tree the site serves.
 #
-#   docs/assemble-docs.sh <output-root> [versions.json]
+#   SPC_WEBHELP_ZIP=<webHelpSPCH2-all.zip> docs/assemble-docs.sh <output-root> [versions.json]
 #
-# produces, for every version in the manifest:
+# produces:
 #
-#   <output-root>/help/<version>/   the Writerside webhelp
-#   <output-root>/api/<version>/    the Dokka HTML API reference
+#   <output-root>/help/latest/      the Writerside webhelp -- ONE copy, this build's
+#   <output-root>/api/<version>/    the Dokka HTML API reference, one per version in the manifest
+#   <output-root>/api/latest        a symlink to the newest release's reference
 #
 # A SCRIPT RATHER THAN DOCKERFILE STEPS, because this is the part worth testing: it can be run
 # against a scratch directory and the result served and clicked, which a `RUN` buried in a
-# multi-stage build cannot. The Dockerfile calls it and does nothing else with the docs.
+# multi-stage build cannot. `assemble-docs.test.sh` does exactly that. The Dockerfile calls it and
+# does nothing else with the docs.
 #
-# THE TWO HALVES COME FROM DIFFERENT PLACES, and it is not an inconsistency.
+# THE TWO HALVES ARE VERSIONED DIFFERENTLY, and that asymmetry is the point.
 #
-# The API reference is a release asset, because it is a deliverable: somebody writing against
-# `serverpackcreator-api` 9.1.0 needs 9.1.0's reference, and every release publishes one.
+# The API reference is per-version, because it is a deliverable tied to a compile: somebody writing
+# against `serverpackcreator-api` 9.1.0 needs 9.1.0's reference, and every release publishes one as
+# a `serverpackcreator-api-<version>-dokka-html.zip` asset. `/api/<version>/` is the address that
+# reference is linked and bookmarked by, so every version the manifest lists has to keep answering.
 #
-# The webhelp is not, and is deliberately not going to be. It is HELP.md rendered as a browsable
-# site -- a convenience, not an artifact anybody downloads -- so publishing a second copy of it per
-# release would be a release asset nobody asks for. The per-version copy that already exists is the
-# layer inside `serverpackcreator-help:<version>`, and that is what this reads, with `docker create`
-# plus `docker cp`: the image is never RUN, so no emulation is paid for and no Java starts.
-#
-# That also means the API half is NOT taken from the help image even though the image carries one.
-# Until the `-Pversion` fix, every help image built its Dokka tree at `version=dev`, so for any
-# version released before it the image's `/api/` is mislabelled while the release asset is correct.
+# The webhelp is NOT per-version. It is HELP.md and its sibling topics rendered as a browsable site
+# -- user documentation, not an artifact tied to a compile -- and the site links exactly one entry
+# point to it, `/help/latest`. So it is taken from the build that is running, and no archive of
+# older renderings is kept anywhere.
 set -euo pipefail
 
-OUT="${1:?usage: assemble-docs.sh <output-root> [versions.json]}"
+OUT="${1:?usage: SPC_WEBHELP_ZIP=<zip> assemble-docs.sh <output-root> [versions.json]}"
 MANIFEST="${2:-$(dirname "$0")/versions.json}"
+# The Writerside bundle, handed over by whoever built it -- the `writerside` job's artifact in CI, a
+# local build or a downloaded one by hand. REQUIRED: the site's own Dockerfile refuses to build
+# without a help tree, and failing here names the cause rather than the symptom.
+WEBHELP_ZIP="${SPC_WEBHELP_ZIP:?SPC_WEBHELP_ZIP must point at the Writerside webhelp zip}"
 # The release being published, which is never in the checked-in manifest -- that file is edited
 # by hand and the tag is cut afterwards. Empty on an ordinary build.
 RELEASE_VERSION="${SPC_RELEASE_VERSION:-}"
-# Whether that release should become `/help/latest` and `/api/latest`. The CALLER decides, because
-# `resolve-version` already answers it for the whole pipeline and a regex here would be a third copy
-# of one question. Defaults to false, which is the conservative direction: a standalone run adds the
-# version to the site without promoting it over whatever the manifest names.
+# Whether that release should become `/api/latest`. The CALLER decides, because `resolve-version`
+# already answers it for the whole pipeline and a regex here would be a second copy of one question.
+# Defaults to false, which is the conservative direction: a standalone run adds the version to the
+# site without promoting it over whatever the manifest names.
 RELEASE_IS_LATEST="${SPC_RELEASE_IS_LATEST:-false}"
 RELEASES="${SPC_RELEASE_BASE:-https://git.griefed.de/Griefed/ServerPackCreator/releases/download}"
-HELP_IMAGE="${SPC_HELP_IMAGE:-griefed/serverpackcreator-help}"
-# `serverpackcreator-help` publishes linux/amd64 only, and `docker create` RESOLVES A MANIFEST FOR THE
-# HOST PLATFORM even though it starts nothing -- on an arm64 daemon it fails with
-# "no matching manifest for linux/arm64/v8" before `docker cp` is ever reached. Naming the platform
-# costs nothing on an amd64 runner and is the difference between this script running on the machine it
-# is written on and running only in CI. Nothing is executed, so no emulation is involved.
-HELP_PLATFORM="${SPC_HELP_PLATFORM:-linux/amd64}"
 
-command -v curl   >/dev/null || { echo "assemble-docs: curl is required"   >&2; exit 1; }
-command -v docker >/dev/null || { echo "assemble-docs: docker is required" >&2; exit 1; }
-command -v node   >/dev/null || { echo "assemble-docs: node is required"   >&2; exit 1; }
+command -v curl >/dev/null || { echo "assemble-docs: curl is required" >&2; exit 1; }
+command -v node >/dev/null || { echo "assemble-docs: node is required" >&2; exit 1; }
 
-# `unzip` is NOT a given on the Forgejo runner image -- it is why the dokka job ships a tar.gz and why
-# Dockerfile.help has to `apk add unzip`. python3 is the same fallback `docs.yml` already uses to read
-# HelpTOC.json out of the webhelp zip, so this is the established pattern rather than a new one.
+# `unzip` is NOT a given on the Forgejo runner image -- it is why the dokka job ships a tar.gz.
+# python3 is the same fallback `docs.yml` already uses to read HelpTOC.json out of the webhelp zip,
+# so this is the established pattern rather than a new one.
 if command -v unzip >/dev/null; then
   extract() { unzip -qq -o "$1" -d "$2"; }
 elif command -v python3 >/dev/null; then
   extract() { python3 -c 'import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' "$1" "$2"; }
 else
-  echo "assemble-docs: neither unzip nor python3 is available to unpack the API reference" >&2
+  echo "assemble-docs: neither unzip nor python3 is available to unpack an archive" >&2
   exit 1
 fi
 
@@ -85,7 +80,7 @@ read_manifest() {
     if (released) {
       if (!versions.includes(released)) versions.unshift(released);
       // A prerelease is browsable but never `latest`, for the same reason it never becomes the
-      // `:latest` image tag: `/help/latest` is what a reader reaches without asking for a version.
+      // `:latest` image tag: `/api/latest` is what a reader reaches without asking for a version.
       // Which it is was decided by `resolve-version` and handed down, not re-derived here.
       if (releasedIsLatest) latest = released;
     }
@@ -115,60 +110,45 @@ fetch() {
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# The help, from this build's own bundle. A real directory rather than a symlink into a versioned
+# one, because there is no versioned one: `/help/latest` is the only help URL the site offers.
+test -s "$WEBHELP_ZIP" || { echo "assemble-docs: $WEBHELP_ZIP is missing or empty" >&2; exit 1; }
+rm -rf "${OUT:?}/help/latest"; mkdir -p "$OUT/help/latest"
+extract "$WEBHELP_ZIP" "$OUT/help/latest"
+# `config.json` is the webhelp's own manifest. If it is absent the bundle layout moved and every
+# page below it will 404 at runtime, which is exactly the failure worth catching at build time.
+test -s "$OUT/help/latest/config.json"
+echo "assemble-docs: help/latest from $(basename "$WEBHELP_ZIP") -- $(find "$OUT/help/latest" -type f | wc -l | tr -d ' ') files"
+
 # Unquoted on purpose: this is the one place word splitting is wanted.
 # shellcheck disable=SC2086
 for V in $VERSIONS; do
-  echo "assemble-docs: $V"
-
-  # The API reference. An already-populated `api/<version>/` WINS over the release asset, and that is
-  # how the version being released gets its reference at all: `release-build.yml` uploads the asset
-  # from a different workflow on the same tag, so at this moment it may not exist yet. The caller
-  # unpacks this workflow's own `dokka` artifact there instead -- the same tree, built from the same
-  # commit, one job earlier. Older versions have no such artifact and are fetched.
+  # An already-populated `api/<version>/` WINS over the release asset, and that is how the version
+  # being released gets its reference at all: `release-build.yml` uploads the asset from a different
+  # workflow on the same tag, so at this moment it may not exist yet. The caller unpacks `docs.yml`'s
+  # own `dokka` artifact there instead -- the same tree, built from the same commit, one job earlier.
+  # Older versions have no such artifact and are fetched.
   if [ -s "$OUT/api/$V/index.html" ]; then
     echo "assemble-docs: api/$V supplied by the caller, not fetching"
-  else
-    # The zip unpacks FLAT -- index.html sits at its root, there is no wrapper directory -- so it
-    # unpacks straight into the versioned path.
-    fetch "$RELEASES/$V/serverpackcreator-api-$V-dokka-html.zip" "$TMP/api-$V.zip"
-    rm -rf "${OUT:?}/api/$V"; mkdir -p "$OUT/api/$V"
-    extract "$TMP/api-$V.zip" "$OUT/api/$V"
-    test -s "$OUT/api/$V/index.html"
+    continue
   fi
-
-  # The help, out of that version's published image. `create` + `cp` rather than `run`, so the
-  # image's own platform is irrelevant -- nothing executes.
-  rm -rf "${OUT:?}/help/$V"; mkdir -p "$OUT/help/$V"
-  IMAGE="$HELP_IMAGE:$V"
-  # Only pull what is not already here. A rebuild on a warm runner then costs nothing, and a version
-  # whose image is already local can be assembled without touching the network at all -- which is
-  # also what makes this script runnable on a developer machine.
-  if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-    docker pull -q --platform "$HELP_PLATFORM" "$IMAGE" >/dev/null
-  fi
-  CID="$(docker create --platform "$HELP_PLATFORM" "$IMAGE")"
-  docker cp "$CID:/config/www/." "$OUT/help/$V/" >/dev/null
-  docker rm -f "$CID" >/dev/null
-  # `config.json` is the webhelp's own manifest. If it is absent the image layout moved and every
-  # page below it will 404 at runtime, which is exactly the failure worth catching at build time.
-  test -s "$OUT/help/$V/config.json"
-
-  # The image merges the API tree into the help site at /api/. Here the canonical copy is
-  # /api/<version>/, taken from the release asset above, so the nested one is dropped: it is ~17 MB
-  # per version of the same files, and for anything released before the `-Pversion` fix it is the
-  # copy labelled `dev`.
-  rm -rf "$OUT/help/$V/api"
+  echo "assemble-docs: api/$V"
+  # The zip unpacks FLAT -- index.html sits at its root, there is no wrapper directory -- so it
+  # unpacks straight into the versioned path.
+  fetch "$RELEASES/$V/serverpackcreator-api-$V-dokka-html.zip" "$TMP/api-$V.zip"
+  rm -rf "${OUT:?}/api/$V"; mkdir -p "$OUT/api/$V"
+  extract "$TMP/api-$V.zip" "$OUT/api/$V"
+  test -s "$OUT/api/$V/index.html"
 done
 
-# `latest` is a SYMLINK, not an nginx redirect, and that is the whole reason this needs no nginx
+# `/api/latest` is a SYMLINK, not an nginx redirect, and that is the whole reason this needs no nginx
 # config at all. The site's base image declares `/config` a VOLUME and seeds its site-conf onto it
 # ONCE, so a conf baked into the image is silently ignored by any deployment that already has one --
 # the redirect would work on a fresh volume and quietly not work on the live host. A symlink is part
 # of the content, so it ships wherever the content ships. nginx follows it by default
-# (`disable_symlinks` is off), and `try_files $uri $uri/` resolves through it.
-ln -sfn "$LATEST" "$OUT/help/latest"
+# (`disable_symlinks` is off), and `try_files $uri $uri/` resolves through it. `/help/latest` needs
+# none of this: it is a real directory, because there is no versioned help for it to point at.
 ln -sfn "$LATEST" "$OUT/api/latest"
-test -s "$OUT/help/latest/config.json"
 test -s "$OUT/api/latest/index.html"
 
 printf '%s\n' "$LATEST" > "$OUT/.docs-latest"

@@ -1,20 +1,20 @@
-# Documentation: the Writerside webhelp bundle and its container images.
+# Documentation: the Writerside webhelp bundle, the Kotlin API reference, and the site that serves both.
 # Replaces GitLab's `Writerside Build` and the three `Writerside Docker*` jobs.
 #
-# GitLab Pages hosted the rendered site; Forgejo has no equivalent, so the webhelp ships as a container
-# image (`serverpackcreator-help`), which those Docker jobs were already publishing.
+# EVERYTHING THIS WORKFLOW RENDERS IS SERVED BY serverpackcreator.de, out of the `homepage-image` job
+# at the bottom -- the help at `/help/latest`, the API reference at `/api/<version>/`. There is no
+# `serverpackcreator-help` container any more: it was how the webhelp got hosted when GitLab Pages
+# went away and Forgejo had no equivalent, and once the homepage served the help it had no reader
+# left except the assembly step, which extracted a 62 MB image per version to take 4 MB out of it.
 #
-# The dokka HTML the GitLab `pages` job served now has THREE homes, and they are deliberately different
-# things rather than duplicates: a release asset (`release-build.yml`, versioned and downloadable), a
-# directory inside this image at `/api/` (the `dokka` job below), and GitHub Pages
-# (`.github/workflows/pages.yml`, the only publicly browsable copy -- Forgejo still has no Pages, and
-# Pages can only be deployed from GitHub, which is why that one workflow is GitHub-native).
+# The dokka HTML the GitLab `pages` job served has THREE homes, deliberately different things rather
+# than duplicates: a release asset (`release-build.yml`, versioned and downloadable), `/api/<version>/`
+# on the homepage (the `dokka` job below), and GitHub Pages (`.github/workflows/pages.yml`, which
+# exists because Pages can only be deployed from GitHub and Forgejo still has none).
 name: Documentation and homepage
 
-# GitLab had three Writerside Docker jobs: two for tags (`:<version>` and, for a full release, `:latest`)
-# and one with the *inverse* rules that published `:<short-sha>` on ordinary pipelines. All three are here;
-# the non-tag case is kept rather than dropped, because a docs image per commit is how the help site gets
-# previewed before a release.
+# The non-tag case is kept rather than dropped, because a site image per commit is how the documentation
+# gets previewed -- and now deployed against -- before a release.
 on:
   push:
     branches:
@@ -31,10 +31,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ONE definition of what this build calls itself, because three jobs need it and they must agree.
-  # It used to live only in `help-image`'s tag computation, which is why the Dokka tree inside the
-  # image was built with no `-Pversion` at all: the job that builds it cannot read another job's
-  # step outputs. An image tagged `9.2.1` whose API reference says `dev` is the result.
+  # ONE definition of what this build calls itself, because four jobs need it and they must agree.
+  # It used to live only in the tag computation of the job that published the help image, which is
+  # why the Dokka tree was built with no `-Pversion` at all: the job that builds it cannot read
+  # another job's step outputs. An artifact named `9.2.1` whose API reference says `dev` is the result.
   version:
     name: "Version"
     runs-on: ubuntu-latest
@@ -55,8 +55,8 @@ jobs:
       # `release-build.yml` and `devbuild.yml` both use it; this workflow hand-rolled `V=ref_name`
       # instead and so had no refusal at all. Its `tags: ['*.*.*']` filter compiles to
       # `^.*\..*\..*$`, which `v9.2.2`, `test.tag.x` and `release.candidate.1` all match -- each
-      # would have been taken verbatim as the version, publishing `serverpackcreator-help:<junk>`
-      # and a help site whose API link points at `/api/<junk>/`.
+      # would have been taken verbatim as the version, publishing a site image tagged `<junk>` whose
+      # help links an API reference at `/api/<junk>/`.
       - name: Resolve a tag
         id: tag
         if: ${{ github.ref_type == 'tag' }}
@@ -66,7 +66,8 @@ jobs:
 
       # A BRANCH BUILD IS NAMED BY ITS COMMIT, deliberately NOT by `resolve-version`'s `branch` mode:
       # that mode needs `fetch-depth: 0` for `git describe`, and this job exists to hand one short
-      # string to four others. A branch build publishes no image, so the name only has to be unique.
+      # string to three others. A branch build publishes `<short-sha>` rather than a version, which
+      # `Compute tags` relies on: only a `prerelease=false` build may ever become `:latest`.
       - name: Compose the version
         id: out
         env:
@@ -134,12 +135,14 @@ jobs:
       # relative or root-absolute one is client-side routed and dies on "TOC data error". The long
       # comment above that entry in `spch.tree` has the whole story.
       #
-      # It is absolute AND per-version here, because /help/<version>/ must link to /api/<version>/ --
-      # 9.1.0's help sending a reader to 9.2.1's reference is worse than no link.
+      # It is absolute AND per-version here. The help itself is not versioned -- serverpackcreator.de
+      # serves exactly one copy, at /help/latest -- but the reference it links IS, so the link has to
+      # name the version this bundle was rendered alongside. /help/latest sending a reader to a
+      # reference built from a different commit is worse than no link.
       #
       # The in-repo value stays the GitHub Pages URL, which is what `pages.yml` wants and is why that
-      # workflow needs no substitution at all. This rewrites it only for the bundle that ships in the
-      # help image, i.e. the one serverpackcreator.de serves.
+      # workflow needs no substitution at all. This rewrites it only for the bundle
+      # serverpackcreator.de serves.
       #
       # ASSERTED, because a wrong href is a dead click rather than a failed build: `sed` matching
       # nothing exits 0 and would ship the Pages link silently.
@@ -187,10 +190,10 @@ jobs:
           V: ${{ needs.version.outputs.version }}
         run: |
           set -eu
-          # `unzip` is NOT a given on this runner image -- that is why the dokka job ships a tar.gz
-          # and why Dockerfile.help has to `apk add unzip`. python3 is the fallback, and if neither
-          # is here the check SKIPS loudly rather than passing: a check that cannot run must not
-          # read as one that did.
+          # `unzip` is NOT a given on this runner image -- that is why the dokka job ships a tar.gz,
+          # and why `assemble-docs.sh` reaches for python3 the same way. python3 is the fallback here
+          # too, and if neither is present the check SKIPS loudly rather than passing: a check that
+          # cannot run must not read as one that did.
           if command -v unzip >/dev/null; then
             unzip -p "public/$ARTIFACT" HelpTOC.json > toc.json
           elif command -v python3 >/dev/null; then
@@ -214,11 +217,12 @@ jobs:
             public/report.json
           if-no-files-found: error
 
-  # The Kotlin API reference that ships INSIDE the help site, at `/api/`. Writerside cannot host a generated
-  # file tree of its own (WRS-1772 is open), so the merge happens in `docker/Dockerfile.help` instead and this
-  # job exists to produce the half Writerside cannot. A job of its own rather than a step in `writerside`:
-  # the two are independent, so they run in parallel, and the Writerside job stays checkout-plus-docker with
-  # no JDK in it. `release-build.yml` runs the same task for its `dokka-html.zip` release asset.
+  # The Kotlin API reference the site serves at `/api/<version>/`. Writerside cannot host a generated file
+  # tree of its own (WRS-1772 is open), which is why this is a separate tree beside the help rather than a
+  # page inside it, and why the help's TOC reaches it by absolute URL. A job of its own rather than a step
+  # in `writerside`: the two are independent, so they run in parallel, and the Writerside job stays
+  # checkout-plus-docker with no JDK in it. `release-build.yml` runs the same task for its
+  # `dokka-html.zip` release asset, which is where every version but this one is fetched from.
   dokka:
     name: "Dokka HTML"
     needs: version
@@ -237,7 +241,7 @@ jobs:
       # the Javadoc publication's `build/dokka/javadoc` does not survive alongside it -- which is why the
       # upload below can take the whole directory without picking up a second, differently-shaped tree.
       # `-Pversion` is not optional here. Without it the tree is built at `gradle.properties`'
-      # `version=dev`, so `serverpackcreator-help:9.2.1` shipped an API reference labelled `dev`.
+      # `version=dev`, so the 9.2.1 build shipped an API reference labelled `dev`.
       # `pages.yml` and `artifacts-reusable.yml` have always passed it; this job had not.
       - name: Build the Kotlin API reference
         run: ./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion="${{ needs.version.outputs.version }}" --full-stacktrace
@@ -246,9 +250,9 @@ jobs:
       # tree crosses the wire twice at 1411 requests a side; a single blob is one request each way.
       # Measured on this tree: 1411 files / 20,288 KiB raw -> 1,308 KiB as tar.gz.
       #
-      # tar.gz, NOT zip, for two reasons. `unzip` appears nowhere else in `.forgejo/workflows` and is not
-      # a given on the runner image -- `docker/Dockerfile.help` has to `apk add unzip` for exactly that
-      # reason -- whereas `tar` is present anywhere `actions/checkout` runs. And gzip compresses ACROSS
+      # tar.gz, NOT zip, for two reasons. `unzip` is not a given on the runner image -- which is why
+      # `writerside`'s TOC check can skip and why `assemble-docs.sh` carries a python3 fallback --
+      # whereas `tar` is present anywhere `actions/checkout` runs. And gzip compresses ACROSS
       # members where zip compresses each separately, which on a tree of near-identical HTML is the whole
       # difference: the same content zips to 4,376 KiB, 3.3x the tar.gz. The release asset stays a `.zip`
       # (`release-build.yml`) because that one is downloaded by humans on Windows; this one is read only
@@ -266,82 +270,10 @@ jobs:
           path: dokka-html.tar.gz
           if-no-files-found: error
 
-  help-image:
-    name: "Help image"
-    needs: [version, writerside, dokka]
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v7
-
-      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
-        with:
-          name: writerside-webhelp
-          path: public
-
-      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
-        with:
-          name: dokka-html
-          path: .
-
-      # `public/api` is exactly what `docker/Dockerfile.help` copies to `/config/www/api/`, and the path a
-      # reader reaches by URL. Changing it means changing both, and the absolute href in `spch.tree`.
-      # The `test -s` is the guard that matters: `COPY public/api/` would still succeed against a
-      # directory that unpacked empty, and the help site would ship with a 404 behind its API entry.
-      - name: Unpack the reference
-        run: |
-          set -e
-          mkdir -p public/api
-          tar -xzf dokka-html.tar.gz -C public/api
-          test -s public/api/index.html
-          echo "dokka: $(find public/api -type f | wc -l) files"
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      # A composite action cannot read `secrets`, so the three values are passed in.
-      - uses: ./.forgejo/actions/registry-login
-        with:
-          dockerhub-user: ${{ secrets.DOCKERHUB_USER }}
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          ghcr-token: ${{ secrets.GH_TOKEN }}
-
-      # One job replacing three. GitLab needed a separate job per tag set because its rules are per-job;
-      # here the tag list is computed, and `latest` is still reserved for a full release.
-      # Three GitLab jobs collapse into this one computation:
-      #   full release  -> :<version> and :latest
-      #   prerelease    -> :<version>
-      #   branch push   -> :<short-sha>   (what the inverse-rules job did)
-      - name: Compute tags
-        id: tags
-        run: |
-          set -eu
-          U="${{ secrets.DOCKERHUB_USER }}"
-          V="${{ needs.version.outputs.version }}"
-          TAGS="ghcr.io/$U/serverpackcreator-help:$V,index.docker.io/$U/serverpackcreator-help:$V"
-          if [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            TAGS="$TAGS,ghcr.io/$U/serverpackcreator-help:latest,index.docker.io/$U/serverpackcreator-help:latest"
-          fi
-          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
-
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/Dockerfile.help
-          platforms: linux/amd64
-          push: true
-          no-cache: true
-          build-args: VERSION=${{ needs.version.outputs.version }}
-          tags: ${{ steps.tags.outputs.tags }}
-
   # ------------------------------------------------------------------------------------------------
   # serverpackcreator.de. Here rather than in a workflow of its own because the site SERVES what the
-  # jobs above produce: `homepage-image` assembles /help/<version>/ and /api/<version>/ out of the
-  # help image `help-image` has just published, so the two cannot be allowed to race.
+  # jobs above produce: `homepage-image` assembles /help/latest and /api/<version>/ out of the
+  # `writerside` and `dokka` artifacts, which only exist inside this run.
   homepage-build:
     name: "Homepage: Quasar build"
     defaults:
@@ -366,6 +298,14 @@ jobs:
           cache-dependency-path: serverpackcreator-homepage/package-lock.json
 
       - run: npm install
+
+      # BEFORE the Quasar build, deliberately: this runs `docs/assemble-docs.test.sh`, which stands up
+      # a loopback http.server and exercises the assembly end to end in a couple of seconds, so a
+      # broken script fails here rather than after a four-minute SPA build. It needs no Docker daemon
+      # and no network, which is the whole reason the assembly stopped reading a container image.
+      - name: Verify the documentation assembly
+        run: npm test
+
       - run: rm -Rf dist
       - run: npx quasar build
 
@@ -394,15 +334,14 @@ jobs:
 
   homepage-image:
     name: "Homepage: image"
-    # The assembly pulls serverpackcreator-help:<version>, which `help-image` above publishes. Both
-    # used to trigger on the same tag in SEPARATE workflows, so they raced and the pull asked for an
-    # image that did not exist yet. That dependency is why these two are one workflow.
-    needs: [version, help-image, homepage-build]
+    # `writerside` and `dokka` are reached through `needs:` rather than only by artifact name: a
+    # download-artifact of a job this one does not depend on resolves against whatever the run
+    # happens to have finished, which on a cancelled or re-run job is nothing at all.
+    needs: [version, writerside, dokka, homepage-build]
     defaults:
       run:
         working-directory: serverpackcreator-homepage
-    # Published on every push, exactly like `help-image` and for the same reason this workflow's header
-    # already gives for that one: an image per commit is how the site gets previewed -- and now
+    # Published on every push: an image per commit is how the site gets previewed -- and now
     # deployed against -- before a release. The guard is the same new-ref one the rest of this workflow
     # carries, and nothing else here needed a branch/tag distinction:
     #
@@ -410,10 +349,10 @@ jobs:
     #   `resolve-version` hard-sets that true for every branch build. So a branch publishes
     #   `<branch>-<short-sha>` (`git describe` on main) and CANNOT produce `:latest`.
     #
-    #   `SPC_RELEASE_IS_LATEST` below reads that same answer, so `/help/latest` keeps naming the newest
-    #   RELEASE. This commit's documentation is browsable at `/help/<branch>-<short-sha>/` beside every
+    #   `SPC_RELEASE_IS_LATEST` below reads that same answer, so `/api/latest` keeps naming the newest
+    #   RELEASE. This commit's API reference is browsable at `/api/<branch>-<short-sha>/` beside every
     #   version `versions.json` lists, which is what makes a preview behave like production instead of
-    #   like a one-version stub.
+    #   like a one-version stub. The help is not versioned at all -- `/help/latest` is this build's.
     if: ${{ github.event_name != 'push' || !(startsWith(github.event.before, '0000000000000000') && (github.ref_name == 'alpha' || github.ref_name == 'beta')) }}
     runs-on: ubuntu-latest
     steps:
@@ -446,8 +385,7 @@ jobs:
 
       # This version's API reference, out of THIS workflow's dokka job rather than off a release
       # asset, and it is load-bearing on both paths. On a tag, `release-build.yml` uploads that asset
-      # from a separate workflow on the same tag, so at this moment it may not exist yet -- the same
-      # race `homepage-image` already avoids with `help-image`, one forge further out. On a branch
+      # from a separate workflow on the same tag, so at this moment it may not exist yet. On a branch
       # there is no release named `<branch>-<short-sha>` and never will be, so this artifact is the
       # ONLY source. `assemble-docs.sh` prefers an api/<version>/ that is already populated, which is
       # all it takes to serve both.
@@ -455,6 +393,14 @@ jobs:
         with:
           name: dokka-html
           path: ${{ github.workspace }}
+
+      # The help the site serves, straight from the job that rendered it. There is no archive of
+      # older renderings to fall back on and deliberately none: `/help/latest` is the only help URL
+      # the site offers, so the build that is running is the only source there needs to be.
+      - uses: https://code.forgejo.org/forgejo/download-artifact@v7  # Forgejo's GHES-patched fork
+        with:
+          name: writerside-webhelp
+          path: ${{ github.workspace }}/webhelp
 
       - name: Seed this version's API reference from the build
         env:
@@ -468,20 +414,18 @@ jobs:
           test -s "docs-build/api/$V/index.html"
           echo "seeded api/$V with $(find "docs-build/api/$V" -type f | wc -l) files"
 
-      # Assembled BEFORE the image build, because each version's webhelp is read out of that
-      # version's `serverpackcreator-help` image and a Dockerfile has no daemon to ask. The
-      # Dockerfile refuses to build without the result, so a skipped step here fails the build
-      # instead of publishing a site whose /help and /api are 404s.
-      #
-      # AFTER the login on purpose: it pulls one image per version, and an anonymous Docker Hub pull
-      # is rate-limited per source address. This runner has already lost builds to a registry 429.
+      # Assembled BEFORE the image build, because the API reference of every version but this one is
+      # fetched over the network and a Dockerfile has nowhere to put a download. The Dockerfile
+      # refuses to build without the result, so a skipped step here fails the build instead of
+      # publishing a site whose /help and /api are 404s.
       #
       # SPC_RELEASE_VERSION is what puts the release being published into the site at all: the
       # checked-in manifest is hand-edited and the tag is cut afterwards, so it can never name the
-      # version it is being built for. Without it every release shipped documentation one release
-      # stale, with `/help/latest` pointing at its predecessor -- and did so on a green pipeline.
+      # version it is being built for. Without it every release shipped an API reference one release
+      # stale, with `/api/latest` pointing at its predecessor -- and did so on a green pipeline.
       - name: Assemble the versioned documentation
         env:
+          SPC_WEBHELP_ZIP: ${{ github.workspace }}/webhelp/webHelpSPCH2-all.zip
           SPC_RELEASE_VERSION: ${{ needs.version.outputs.version }}
           # The third copy of "is this a plain release?", now a read rather than a derivation.
           SPC_RELEASE_IS_LATEST: ${{ needs.version.outputs.prerelease == 'false' }}

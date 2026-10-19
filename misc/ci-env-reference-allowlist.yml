@@ -3,16 +3,19 @@
 # Every entry is a name the check cannot see being used, because the consumer is NOT the step's own
 # script: Gradle, semantic-release, a JUnit gate or a child shell script reads it out of the
 # environment instead. That is the one honest reason for an `env:` key a script never mentions, and
-# each entry below names the file and line where the read actually happens, so the exemption can be
-# re-checked rather than inherited.
+# each entry below names the file and the SYMBOL that does the read, so the exemption can be
+# re-checked rather than inherited. Names, not line numbers: a cited line moves with the next edit
+# to the file it points into, and a stale citation is worse than none.
 #
 # The key is `<file>::<job>::<step>::<NAME>`; `python3 misc/ci-env-reference-check.py --list` prints
 # them ready to paste.
 
+".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_WEBHELP_ZIP":
+  "read by the child script the step runs -- assemble-docs.sh's WEBHELP_ZIP, and the one env key there that is mandatory (`:?`)"
 ".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_RELEASE_VERSION":
-  "read by the child script the step runs -- serverpackcreator-homepage/docs/assemble-docs.sh:36"
+  "read by the same child script -- assemble-docs.sh's RELEASE_VERSION"
 ".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_RELEASE_IS_LATEST":
-  "read by the same child script -- serverpackcreator-homepage/docs/assemble-docs.sh:41"
+  "read by the same child script -- assemble-docs.sh's RELEASE_IS_LATEST"
 
 ".forgejo/workflows/grinder-container-it.yml::containers::Run the container integration tests::GRINDER_DOCKER_IT":
   "the JUnit gate, not the script: @EnabledIfEnvironmentVariable(named = \"GRINDER_DOCKER_IT\", matches = \"1\") on DockerJavaContainerEngineIT and ContainerOwnershipIT"

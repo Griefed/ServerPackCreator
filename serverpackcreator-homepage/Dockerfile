@@ -17,11 +17,10 @@ RUN npm install
 COPY . .
 RUN quasar build
 
-# Matches docker/Dockerfile.help, which has been serving the help site on this tag for a while --
-# so the `/config/www` webroot this image writes to is proven on it, not assumed. 1.22.1 was from
-# 2022. Nothing here ships an nginx site-conf (the `latest` entry points are symlinks, deliberately,
-# because /config is a VOLUME seeded once), so the site-conf path move between the two LSIO
-# generations does not reach this image.
+# This tag served the help site for a while in an image of its own, so the `/config/www` webroot this
+# image writes to is proven on it, not assumed. Nothing here ships an nginx site-conf (`/api/latest`
+# is a symlink, deliberately, because /config is a VOLUME seeded once), so the site-conf path move
+# between LSIO generations does not reach this image.
 FROM ghcr.io/linuxserver/nginx:1.30.4@sha256:3486bc71c5983edc9e7c80713b5d762f317c4c77fb31842a40a1ce26cce9f1de
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
@@ -36,12 +35,12 @@ RUN \
 
 COPY --from=builder /tmp/serverpackcreator.de/dist/spa/ /config/www
 
-# The versioned documentation, assembled BEFORE this build by `docs/assemble-docs.sh`.
+# The documentation, assembled BEFORE this build by `docs/assemble-docs.sh`.
 #
-# It cannot be assembled here: the webhelp for each version comes out of that version's published
-# `serverpackcreator-help` image, and a Dockerfile has no Docker daemon to ask. So the script runs in
-# the job, writes `docs-build/`, and this copies the result. `docs-build/.gitkeep` is committed so
-# the COPY resolves even on a checkout where the script has not been run.
+# It cannot be assembled here: every version's API reference but the one being built is downloaded
+# from its release, and a Dockerfile has nowhere to put a download. So the script runs in the job,
+# writes `docs-build/`, and this copies the result. `docs-build/.gitkeep` is committed so the COPY
+# resolves even on a checkout where the script has not been run.
 COPY docs-build/ /config/www/
 
 # Fail HERE rather than serve a site whose /help and /api are 404s. A docs-less build is what you get

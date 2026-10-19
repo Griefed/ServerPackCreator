@@ -125,7 +125,7 @@ jobs:
             ./gradlew :serverpackcreator-api:dokkaGenerateHtml --full-stacktrace
           fi
 
-      # The same layout `docker/Dockerfile.help` produces: webhelp at the root, Dokka at `api/`. `spch.tree`
+      # Webhelp at the root, Dokka at `api/` -- the layout this deployment alone uses now. `spch.tree`
       # links to `api/index.html` RELATIVE to the site root, which is what makes one link serve both this
       # deployment (`/ServerPackCreator/api/`, a project subpath) and the container's (`/api/`). Verified by
       # serving the Dokka tree two levels deep: every asset on its deepest page resolves, because Dokka emits
