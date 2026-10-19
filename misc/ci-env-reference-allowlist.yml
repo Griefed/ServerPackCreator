@@ -1,0 +1,43 @@
+# Exemptions for `ci-env-reference-check.py`.
+#
+# Every entry is a name the check cannot see being used, because the consumer is NOT the step's own
+# script: Gradle, semantic-release, a JUnit gate or a child shell script reads it out of the
+# environment instead. That is the one honest reason for an `env:` key a script never mentions, and
+# each entry below names the file and line where the read actually happens, so the exemption can be
+# re-checked rather than inherited.
+#
+# The key is `<file>::<job>::<step>::<NAME>`; `python3 misc/ci-env-reference-check.py --list` prints
+# them ready to paste.
+
+".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_RELEASE_VERSION":
+  "read by the child script the step runs -- serverpackcreator-homepage/docs/assemble-docs.sh:36"
+".forgejo/workflows/docs.yml::homepage-image::Assemble the versioned documentation::SPC_RELEASE_IS_LATEST":
+  "read by the same child script -- serverpackcreator-homepage/docs/assemble-docs.sh:41"
+
+".forgejo/workflows/grinder-container-it.yml::containers::Run the container integration tests::GRINDER_DOCKER_IT":
+  "the JUnit gate, not the script: @EnabledIfEnvironmentVariable(named = \"GRINDER_DOCKER_IT\", matches = \"1\") on DockerJavaContainerEngineIT and ContainerOwnershipIT"
+
+".forgejo/workflows/release-build.yml::maven::Sign and publish::GITHUB_ACTOR":
+  "read by Gradle -- buildSrc/.../serverpackcreator.publishing-conventions.gradle.kts:38"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::GITHUB_TOKEN":
+  "read by Gradle, the GitHub Packages repository credential, beside GITHUB_ACTOR"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::FORGEJO_ACTOR":
+  "read by Gradle -- serverpackcreator.publishing-conventions.gradle.kts:51"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::FORGEJO_TOKEN":
+  "read by Gradle -- serverpackcreator.publishing-conventions.gradle.kts:52"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::GITLABCOM_TOKEN":
+  "read by Gradle as the gitlab.com Private-Token header -- serverpackcreator.publishing-conventions.gradle.kts:60"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::ORG_GRADLE_PROJECT_signingKey":
+  "the ORG_GRADLE_PROJECT_ prefix is Gradle's own environment-to-project-property mapping; read as findProperty(\"signingKey\")"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::ORG_GRADLE_PROJECT_signingPassword":
+  "same mapping -- findProperty(\"signingPassword\")"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::ORG_GRADLE_PROJECT_sonatypeUsername":
+  "same mapping -- the Sonatype Central Portal user token"
+".forgejo/workflows/release-build.yml::maven::Sign and publish::ORG_GRADLE_PROJECT_sonatypePassword":
+  "same mapping -- the Sonatype Central Portal user token"
+
+".forgejo/workflows/release-generate.yml::semantic-release::Run semantic-release::CI":
+  "read by semantic-release itself; without it it refuses to run outside a recognised CI"
+
+".github/workflows/clientside-report-reusable.yml::report::Run clientside verification::CURSEFORGE_API_KEY":
+  "read by the application under test -- ClientsideReportCommand and VerifyClientsideCommand take it from the environment, never from an argument"
