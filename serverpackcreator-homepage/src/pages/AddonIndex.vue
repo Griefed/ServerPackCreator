@@ -70,35 +70,57 @@ export default defineComponent({
   setup() {
     return {
       addons: {
-        serverPackCreatorExamplePlugin: {
+        /*
+        objectName: {
+          index: last one +1,
+          name: "Name of the plugin, usually repo-name",
+          owner: "Repo-Author on GitHub",
+          type: "GitHub,
+          branch: "main or master",
+          description: "Usually repo description, can be custom",
+          releasesLink: "Link to GitHub-repo/releases/latest",
+          repositoryLink: "Link To GitHub Repo"
+        }
+         */
+        grinder: {
           index: 1,
-          name: "ServerPackCreator Example Plugin",
+          name: "serverpackcreator-plugin-grinder",
           owner: "Griefed",
           type: "GitHub",
           branch: "main",
-          description: "An example plugin for ServerPackCreator for use in version 4.x. Provides examples for every available extension point, how to edit server pack specific extension configurations and how to edit global plugin configurations.",
+          description: "Bridges ServerPackCreator to a grinder daemon: browse its clientside-mod verdicts in a GUI tab, tick the mods you want excluded, and have those ticks folded into the clientside-mod exclusion list of every server pack you generate. Experimental \u2014 it ships with each ServerPackCreator release as an _experimental asset, so its behaviour and configuration may still change between releases.",
+          releasesLink: "https://github.com/Griefed/ServerPackCreator/releases/latest",
+          repositoryLink: "https://github.com/Griefed/ServerPackCreator/tree/main/serverpackcreator-plugin-grinder"
+        },
+        selfextract: {
+          index: 2,
+          name: "serverpackcreator-plugin-selfextract",
+          owner: "Griefed",
+          type: "GitHub",
+          branch: "main",
+          description: "Wraps every generated server pack in two self-extracting archives \u2014 a .bsx for Linux and macOS, a .cmd for Windows 10 1803 and newer \u2014 so a finished pack can be handed over and unpacked as a single file. Experimental \u2014 it ships with each ServerPackCreator release as an _experimental asset, so its behaviour and configuration may still change between releases.",
+          releasesLink: "https://github.com/Griefed/ServerPackCreator/releases/latest",
+          repositoryLink: "https://github.com/Griefed/ServerPackCreator/tree/main/serverpackcreator-plugin-selfextract"
+        },
+        example: {
+          index: 3,
+          name: "serverpackcreator-plugin-example",
+          owner: "Griefed",
+          type: "GitHub",
+          branch: "main",
+          description: "Demonstrates every extension point ServerPackCreator offers to pf4j plugins \u2014 configuration checks, pre- and post-generation hooks, and GUI tabs and panels. The place to start when writing your own plugin.",
           releasesLink: "https://github.com/Griefed/ServerPackCreator/releases/latest",
           repositoryLink: "https://github.com/Griefed/ServerPackCreator/tree/main/serverpackcreator-plugin-example"
         },
-        nekodetector: {
-          index: 2,
-          name: "NekoDetector",
+        servertest: {
+          index: 4,
+          name: "serverpackcreator-plugin-servertest",
           owner: "Griefed",
           type: "GitHub",
-          branch: "master",
-          description: "Automatically scan your modpack and server pack for Nekoclient infection(s) whilst using ServerPackCreator, using NekoDetector.",
-          releasesLink: "https://github.com/Griefed/spc-nekodetector-plugin/releases/latest",
-          repositoryLink: "https://github.com/Griefed/spc-nekodetector-plugin"
-        },
-        jneedle: {
-          index: 3,
-          name: "jNeedle",
-          owner: "Griefed",
-          type: "GitHub",
-          branch: "master",
-          description: "Automatically scan your modpack and server pack for malware infection(s) whilst using ServerPackCreator, using jNeedle.",
-          releasesLink: "https://github.com/Griefed/spc-jneedle-plugin/releases/latest",
-          repositoryLink: "https://github.com/Griefed/spc-jneedle-plugin"
+          branch: "main",
+          description: "Launches a generated server pack from inside ServerPackCreator, through the pack\u2019s own start scripts, and hands you that server\u2019s console together with a line into its standard input. Experimental \u2014 it ships with each ServerPackCreator release as an _experimental asset, so its behaviour and configuration may still change between releases.",
+          releasesLink: "https://github.com/Griefed/ServerPackCreator/releases/latest",
+          repositoryLink: "https://github.com/Griefed/ServerPackCreator/tree/main/serverpackcreator-plugin-servertest"
         }
       }
     };

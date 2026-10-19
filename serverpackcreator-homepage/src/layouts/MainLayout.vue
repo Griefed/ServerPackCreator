@@ -1,60 +1,60 @@
 <template>
   <q-layout :class="$q.dark.isActive ? 'background_dark' : 'background'" view="hHh Lpr lff">
     <q-header :class="$q.dark.isActive ? 'header_dark' : 'header_normal'" elevated reveal>
+
       <q-toolbar class="shadow-5 toolbar">
+        <router-link to="/" class="text-bold text-subtitle2 text-uppercase text-blue-12">
+          <img class="box-shadow q-pa-none q-ml-xs q-mr-xs" alt="header" src="~assets/serverpackcreator.webp" width="320">
+        </router-link>
+        <q-toolbar-title>
+
+        </q-toolbar-title>
 
         <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
           <q-item-section side :style="'background-color:' + secondaryColour" class="q-pa-sm q-mr-none text-white">
             <q-icon name="fab fa-readme" size="42px"/>
           </q-item-section>
           <q-item-section class="q-pa-md q-ml-none">
-            <q-item-label class="text-h6 text-teal-3 text-uppercase">ServerPackCreator Help</q-item-label>
+            <q-item-label class="text-bold text-subtitle1 text-teal-3 text-uppercase">ServerPackCreator Help</q-item-label>
             <q-item-label class="text-blue-grey-10">
               <strong>
-                <a href="/help/latest"
-                   rel="noopener" target="_blank">
-                  Need help or details about ServerPackCreators features?
-                </a>
+                <a class="text-bold text-subtitle2 text-uppercase text-blue-12" href="/help/latest" rel="noopener" target="_blank">-> Help, Tips, Tricks and more</a>
               </strong>
             </q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-toolbar-title>
-
-        </q-toolbar-title>
-        <img class="absolute-center" alt="header" src="~assets/serverpackcreator.webp" width="320">
+        <q-separator vertical color="secondary" spaced inset size="2px"/>
 
         <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
-          <q-item-section class="q-pa-md q-ml-none">
-            <q-item-label class="text-h6 text-teal-3 text-uppercase text-right">ServerPackCreator API docs</q-item-label>
-            <q-item-label class="text-blue-grey-10 text-right">
-              <strong>
-                <a href="/api/latest"
-                   rel="noopener" target="_blank">
-                  Need API documentation?
-                </a>
-              </strong>
-            </q-item-label>
-          </q-item-section>
           <q-item-section side :style="'background-color:' + secondaryColour" class="q-pa-sm q-mr-none text-white">
             <q-icon name="fas fa-code" size="42px"/>
           </q-item-section>
-        </q-item>
-
-        <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
           <q-item-section class="q-pa-md q-ml-none">
-            <q-item-label class="text-h6 text-teal-3 text-uppercase text-right">ServerPackCreator Addons</q-item-label>
+            <q-item-label class="text-bold text-subtitle1 text-teal-3 text-uppercase text-right">ServerPackCreator API docs</q-item-label>
             <q-item-label class="text-blue-grey-10 text-right">
               <strong>
-                <router-link to="/addons">
-                  Looking for plugins?
-                </router-link>
+                <a class="text-bold text-subtitle2 text-uppercase text-blue-12" href="/api/latest" rel="noopener" target="_blank">-> API JVM Docs</a>
               </strong>
             </q-item-label>
           </q-item-section>
+        </q-item>
+
+        <q-separator vertical color="secondary" spaced inset size="2px"/>
+
+        <q-item class="box-shadow q-pa-none q-ml-xs q-mr-xs">
           <q-item-section side :style="'background-color:' + secondaryColour" class="q-pa-sm q-mr-none text-white">
             <q-icon name="fas fa-puzzle-piece" size="42px"/>
+          </q-item-section>
+          <q-item-section class="q-pa-md q-ml-none">
+            <q-item-label class="text-bold text-subtitle1 text-teal-3 text-uppercase text-right">ServerPackCreator Addons</q-item-label>
+            <q-item-label class="text-blue-grey-10 text-right">
+              <strong>
+                <router-link to="/addons" class="text-bold text-subtitle2 text-uppercase text-blue-12">
+                  -> Overview of available plugins
+                </router-link>
+              </strong>
+            </q-item-label>
           </q-item-section>
         </q-item>
 
