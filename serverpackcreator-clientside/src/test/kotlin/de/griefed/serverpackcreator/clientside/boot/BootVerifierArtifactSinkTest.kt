@@ -124,11 +124,22 @@ internal class BootVerifierArtifactSinkTest {
         val source = File("src/main/kotlin/de/griefed/serverpackcreator/clientside/boot/BootVerifier.kt")
         Assertions.assertTrue(source.isFile, "BootVerifier.kt not found at ${source.absolutePath}")
 
-        val invocations = Regex("""(?<!fun )runPrepared\(""").findAll(source.readText()).count()
+        val invocations = Regex("""(?<!fun )runPrepared\(""").findAll(withoutComments(source.readText())).count()
 
         Assertions.assertEquals(
             1, invocations,
             "every boot attempt must go through BootVerifier.boot(...); found $invocations call sites"
         )
     }
+
+    /**
+     * [source] with its comments removed, so this guard reads code rather than prose.
+     *
+     * Without it the assertion is satisfied — or broken — by any comment that merely *names* what it
+     * checks, which makes it blind to the deletion it exists to catch. Same helper and same reasoning as
+     * `HtmlProofingTest.withoutComments`.
+     */
+    private fun withoutComments(source: String): String = source
+        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
+        .replace(Regex("""//.*"""), "")
 }

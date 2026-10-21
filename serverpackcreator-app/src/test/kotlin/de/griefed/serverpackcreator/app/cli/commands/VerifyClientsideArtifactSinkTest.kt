@@ -50,7 +50,7 @@ internal class VerifyClientsideArtifactSinkTest {
         Assertions.assertTrue(source.isFile, "VerifyClientsideCommand.kt not found at ${source.absolutePath}")
 
         Assertions.assertTrue(
-            source.readText().contains("bootArtifactSink"),
+            withoutComments(source.readText()).contains("bootArtifactSink"),
             "-verifyclientside constructs a BootVerifier with no bootArtifactSink, so BootArtifacts.collect " +
                 "is never called and every attempt's evidence is wiped by the next staging"
         )
@@ -63,7 +63,7 @@ internal class VerifyClientsideArtifactSinkTest {
      */
     @Test
     fun theEvidenceIsKeptOutsideTheDirectoryStagingWipes() {
-        val text = source.readText()
+        val text = withoutComments(source.readText())
 
         Assertions.assertTrue(
             text.contains("BootArtifactWriter"),
@@ -74,4 +74,15 @@ internal class VerifyClientsideArtifactSinkTest {
             "writing into <work>/boot means writing into the directory the next stageBootPack deletes"
         )
     }
+
+    /**
+     * [source] with its comments removed, so this guard reads code rather than prose.
+     *
+     * Without it the assertion is satisfied — or broken — by any comment that merely *names* what it
+     * checks, which makes it blind to the deletion it exists to catch. Same helper and same reasoning as
+     * `HtmlProofingTest.withoutComments`.
+     */
+    private fun withoutComments(source: String): String = source
+        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
+        .replace(Regex("""//.*"""), "")
 }

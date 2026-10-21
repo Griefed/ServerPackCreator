@@ -1750,3 +1750,245 @@ A branch build is still named by its short commit and deliberately does **not** 
 0 failures, 28 skipped. `dokkaGenerateHtml` across all eight modules: **0 warnings**. 65 bash run-blocks
 parse. `misc/ci-duplication-check.py`: 3 duplicated-and-unexplained, 4 allowlisted — unchanged through
 all three iterations.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, iteration 1 of 3
+
+Subject: the ~57 commits authored since the 2026-10-12 audit (17 of the range's 74 non-merge commits
+were cleared there and are not re-examined), plus test depth across the codebase at `77fdd27d6`.
+
+## MEDIUM
+
+### M1 — `writeAtomically`'s staging cleanup is unpinned, and the comment above it makes a claim no test checks
+
+`serverpackcreator-api/src/main/kotlin/.../utilities/common/FileUtilities.kt:564-568`
+
+```kotlin
+} catch (ex: Exception) {
+    // Never leave the staging behind: it is invisible to every reader and would otherwise accumulate one
+    // per failed attempt, beside the file it failed to become.
+    temporaryFile.delete()
+    throw ex
+}
+```
+
+`AtomicTextWriteTest` has four guards and they are good ones — the destination holds the whole text, no
+staging survives a *successful* write, a failed write leaves the previous contents intact, and each write
+stages into a file of its own. None of them reaches this `delete()`.
+
+The reason is the shape of the failure the third guard provokes: it points the staging file at
+`absent-directory/manifest.json.tmp`, so `write(temporaryFile)` throws while *creating* the file. The
+staging file never exists, and `temporaryFile.delete()` is a no-op on a path that was never written.
+
+**Mutation-verified.** Replacing `temporaryFile.delete()` with a comment and running
+`:serverpackcreator-api:test --tests '*AtomicTextWriteTest*'` → **BUILD SUCCESSFUL**. The branch can be
+deleted and nothing goes red.
+
+What it costs if it rots: exactly what the comment says — one invisible `.tmp` beside every manifest and
+every cached installer, per failed attempt, forever. The grinder is the reachable case, because it runs N
+workers against one shared installer cache.
+
+**Proposed test**, which fails against the mutation and passes against the code as written: let the
+staging file be created successfully and make the *move* the thing that fails, by handing
+`writeAtomically` a staging file that the lambda writes and then making the destination path
+un-moveable-onto — e.g. a destination that is an existing **directory**. Then assert the staging file no
+longer exists:
+
+```kotlin
+@Test
+fun aStagingFileIsRemovedWhenTheMoveFails(@TempDir tempDir: File) {
+    val destination = File(tempDir, "manifest.json").apply { mkdirs() } // a directory: the move cannot land
+    val staging = File(tempDir, "staged.tmp")
+
+    Assertions.assertThrows(Exception::class.java) {
+        destination.writeAtomically(staging) { it.writeText("""{"versions":["one"]}""") }
+    }
+
+    Assertions.assertFalse(
+        staging.exists(),
+        "a staging file that was written and could not be moved must not be left beside its destination"
+    )
+}
+```
+
+### M2 — the recorded "zero compiler warnings" baseline is a measurement artifact; the real figure is 40
+
+`claude-docs/REFACTOR-AUDIT.md`, 2026-10-12 iteration 1, *Verified clean*:
+
+> **`./gradlew build` is green on `05a58f57f` with zero `w:` lines.** Not "no new warnings" — none at all.
+
+That reading cannot fail. Measured on `77fdd27d6`:
+
+| command | `w:` lines |
+|---|---|
+| `./gradlew :…api:compileKotlin :…app:compileKotlin` (tasks UP-TO-DATE) | **0** |
+| the same four modules with `--rerun-tasks` | **40** |
+
+A Kotlin compile task that is UP-TO-DATE does not run the compiler, so it emits no warnings and a grep
+for `w:` returns zero whatever the source contains. The number is a statement about Gradle's task graph,
+not about the code — the same shape as the entries this repository already records under *a check that
+cannot run must skip, never pass*.
+
+The 40 are **not** a regression from this range's work and are not individually alarming: 31 are
+`Deprecated in Java` (the `Locale(String)` constructors, Jackson's `fields()` and `readTree(URL)`,
+night-config's `valueMap()`), 3 are `Unchecked cast of 'Any!' to 'List<File>'` in drag-and-drop handlers,
+4 are `@OptIn` delicate-API notices for `CoroutineStart.ATOMIC`, 1 is a redundant conversion call. Several
+are library-driven and would appear without any source change, which is precisely why attribution needs a
+baseline that was taken honestly.
+
+**Fix: record the real number and the command that produces it**, so *"no new compiler warnings"* in the
+Definition of done has something to compare against. `--rerun-tasks` is the measurement; anything else is
+reporting the cache.
+
+## LOW
+
+### L1 — `withLineEndings` has no empty-string case
+
+`LineEndingTest` covers CRLF→LF, lone CR, mixed conventions, LF→CRLF, no-doubling, idempotence and
+text without line breaks — genuinely good depth for a function this repository has shipped two silent
+template bugs through. `""` is covered only incidentally by the no-line-breaks case. Worth one line,
+because the function is reached for every generated run-file and an empty template is a reachable state
+(an operator may empty one).
+
+## Verified clean — do not re-litigate
+
+- **`writeAtomically` is safe against the cross-filesystem `ATOMIC_MOVE` failure by construction.** The
+  default staging path is `File(absoluteFile.parentFile, "$name.<uuid>.tmp")` — same directory, therefore
+  same filesystem. All five production call sites (`ServerPackProvisioner` ×4, `ManifestUpdater` ×1) use
+  that default; none passes a staging path of its own. `AtomicMoveNotSupportedException` is an
+  `IOException`, so even a future caller that got this wrong would land on the documented contract
+  (this file untouched) rather than a surprise.
+- **`withLineEndings` is correct for every ordering.** `replace("\r\n","\n").replace('\r','\n')
+  .replace("\n", sequence)` normalises before expanding, which is what stops a CRLF source doubling into
+  `\r\r\n` and what stops a lone-CR source collapsing into one line — the two failures this repository has
+  receipts for.
+- **The dead-code deletion left no unused imports or variables.** A forced recompile of all four Kotlin
+  modules reports zero `never used`/`unused` warnings, and none of the 40 warnings is in
+  `UpdateDialogs.kt`, `GuiSettings.kt` or `GlobalSettings.kt`.
+- **Zero unresolved KDoc references** across the published module after the 267-file documentation
+  rewrite — the check that matters for a change converting `@param x` into `[x]` prose links, because a
+  dangling link is silent.
+- **No `@Test` function in the repository lacks a reachable assertion**, 2,181 scanned; the three the
+  scan flagged are all its own false positives, verified by reading. Detail in
+  `claude-docs/REFACTOR-AUDIT.md` for the same date.
+- **Suite green at the tip**: 2,205 tests, 0 failures, 28 skipped, across all eight modules.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, iteration 2 of 3
+
+Same subject. Iteration 1 covered edge cases and test depth in the range's own code; this pass went at
+the **guards themselves** — the tests that assert against *source text* — and at iteration 1's fixes.
+
+## HIGH
+
+### H1 — six source-text guards do not strip comments, and one of them passes against the defect it exists to catch
+
+`HtmlProofingTest` reads source and strips comments before matching (`withoutComments`, a local helper).
+It is the only one of the seven that does:
+
+| guard | strips comments |
+|---|---|
+| `HtmlProofingTest` | yes |
+| `FabricQuiltStepDownTest` | **no** |
+| `BootVerifierArtifactSinkTest` | **no** |
+| `VerifyClientsideArtifactSinkTest` | **no** |
+| `GrinderConfigurationTest` | **no** |
+| `ClientsideReadmeFlagsTest` | **no** |
+| `GrindTestFixtures` (`grinderMainBody`) | **no** |
+
+`FabricQuiltStepDownTest.everyLoaderLineIsWiredIntoTheStepDown` is the dangerous one, because it asserts
+with `text.contains(wiring)` — so a comment **satisfies** it:
+
+```
+serverpackcreator-grinder/src/test/.../loader/FabricQuiltStepDownTest.kt:168
+    Assertions.assertTrue(text.contains(wiring), "a loader line lost its step-down; …")
+```
+
+**Mutation-verified.** `ContainerCandidateVerifier.kt:330` was changed from
+
+```kotlin
+        "Fabric" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.fabric.loaderVersions())
+```
+
+to the identical text **in a comment**, with the live branch replaced by `"Fabric" -> emptyList()`.
+`:serverpackcreator-grinder:test --tests '*FabricQuiltStepDownTest*'` → **BUILD SUCCESSFUL**.
+
+That is precisely the defect the guard was written for. `serverpackcreator-grinder/CLAUDE.md` describes
+the step-down's absence as *"that loader has no fallback when the newest build refuses to install, which
+is the defect this fixed"*, and records that Quilt `0.31.0-beta.3` / Minecraft 1.20.6 failed to install
+with nothing to fall back to, taking every candidate wanting that tuple with it. The guard cannot see it
+come back.
+
+`BootVerifierArtifactSinkTest.onlyOneCallSiteInvokesRunPrepared` fails in the other direction — it
+*counts* `runPrepared(` occurrences, so a doc comment mentioning the call inflates the count and reports
+"found 2 call sites" about a structure that did not change. It is currently at 1 and correct, but
+`BootVerifier.kt`'s doc comments were rewritten wholesale in `25dbe12df`, which is exactly the kind of
+change that trips it.
+
+**Fix: strip comments before matching, following `HtmlProofingTest`'s own precedent.** The repository
+already has the pattern and the reasoning written down; six guards simply do not use it.
+
+## Verified clean — do not re-litigate
+
+- **Every function the range added to a main source is reachable from a test.** 15 added (9 private);
+  the one name no test mentions is `BundledJars.nonBlankStringOrNull`, a private extension covered
+  behaviourally by `aBlankRangeYieldsNoOpinion` and `aRangeThatIsNotAPlainStringYieldsNoOpinion`.
+- **`ManifestIntegrity` has real depth**, and it is the piece most likely to be shallow because its
+  failure is a startup crash: truncated JSON restored, truncated XML restored, an intact manifest left
+  byte-identical, a broken manifest with no shipped copy removed, the ETag sidecar discarded with it, and
+  the restored file asking for the full upstream copy next time. Six guards, one per side effect.
+- **No hardcoded credential** in any tracked Kotlin, Gradle, YAML or properties file under the module
+  sources, `.forgejo`, `.github` or `buildSrc`. The CurseForge key is read from the environment only, and
+  travels as an `x-api-key` header that `JdkHttpFetcher` never logs.
+- **`writeAtomically`'s staging cleanup is now pinned** — iteration 1's `aStagingFileIsRemovedWhenTheMoveFails`,
+  observed red against the mutation that deletes the branch and green against the code as written.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, iteration 3 of 3
+
+Same subject. Aimed at the two guards iteration 2 left, at ground neither earlier pass covered, and at
+both iterations' own fixes.
+
+## MEDIUM
+
+### M1 — `grinderMainBody` brace-matches over raw source, so a comment can move the end of the window
+
+`serverpackcreator-grinder/src/test/.../GrindTestFixtures.kt:113`
+
+The helper cuts `main`'s body by counting braces from its opening one, over text that still contains
+comments. A `{` or `}` inside a comment in `GrinderApplication.main` therefore shifts where the window
+closes. Its own KDoc guards the *other* direction — it asserts the window stops before the declarations
+that follow `main`, "exactly how a guard built on it would keep passing while asserting nothing" — but a
+comment can end the window early just as silently, and five guards are built on it.
+
+The same read also carries iteration 2's H1: every consumer asserts with `contains()` over the result, so
+a comment naming a wiring satisfies a guard whose code was deleted.
+
+**Both fixed by stripping comments before the brace walk.** Mutation-verified through a consumer rather
+than on the helper: `GrinderApplication.kt:283`'s `host = bindHost` was replaced by
+`host = "127.0.0.1"` with the original line left beside it as a comment, and
+`ReportBindWiringTest` → **BUILD FAILED**, where the raw-text version passed.
+
+### M2 — a commented-out `@Option` counts as a declared flag
+
+`serverpackcreator-app/src/test/.../ClientsideReadmeFlagsTest.kt:56`
+
+`declaredFlags()` scrapes `names = [...]` out of each command's source to decide which long-form options
+the CLI really accepts, and cross-checks the README against them. A commented-out `@Option` is counted,
+so the guard would call a README mention of a removed flag legitimate — the exact phantom it exists to
+find. Fixed the same way.
+
+## Verified clean — do not re-litigate
+
+- **The frontend suite passes**: 38 tests, 15 files, vitest 5.0.3. Unrun by anything else this session,
+  and not covered by the Gradle suites.
+- **Six of six source-text guards strip comments now**, up from one of seven. Three proven by mutation to
+  catch what they previously missed.
+- **Iterations 1 and 2 fixes still green**: `aStagingFileIsRemovedWhenTheMoveFails`,
+  `emptyTextIsUnchanged`, and the four guards repaired in iteration 2.
+- **`(?<!:)//.*` rather than `//.*` where the source can hold URLs.** A bare line-comment strip mangles
+  `https://…` inside a string literal into `https:`; it is harmless for the tokens the iteration-2 guards
+  match and is not harmless for `main` or the CLI commands.

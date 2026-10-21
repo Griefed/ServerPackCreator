@@ -432,7 +432,16 @@ evidence consulted occasionally, not context every session needs.
 
 1. Tests written first and green (`./gradlew :<module>:test`).
 2. Documentation per **## Conventions** — as little as possible, as much as necessary; no restatements.
-3. No new compiler warnings; stale comments updated.
+3. No new compiler warnings; stale comments updated. **Measure with `--rerun-tasks`, or the number is
+   about Gradle's cache rather than the code** — an UP-TO-DATE Kotlin compile does not run the compiler, so
+   a grep for `w:` returns zero whatever the source says. That is how a "zero warnings, none at all"
+   reading reached `claude-docs/REFACTOR-AUDIT.md`. The honest baseline on `77fdd27d6`, from
+   `./gradlew :serverpackcreator-{api,app,clientside,grinder}:compileKotlin --rerun-tasks`, is **40**: 31
+   `Deprecated in Java` (the `Locale(String)` constructors, Jackson's `fields()`/`readTree(URL)`,
+   night-config's `valueMap()`), 3 unchecked casts in drag-and-drop handlers, 4 `@OptIn` delicate-API
+   notices for `CoroutineStart.ATOMIC`, 1 redundant conversion. Several are library-driven and move on a
+   dependency bump without a source change, which is the reason to compare against a number that was taken
+   the same way.
 4. CLAUDE.md "Refactor state" (and the relevant module `CLAUDE.md`) updated when an architectural
    step lands. Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`, not here.
 
@@ -443,13 +452,13 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-10-12).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-10-21).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 504           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 680           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| api            | 542           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 681           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 234           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |

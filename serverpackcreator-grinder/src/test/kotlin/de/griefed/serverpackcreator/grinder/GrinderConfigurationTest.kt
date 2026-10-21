@@ -146,7 +146,7 @@ internal class GrinderConfigurationTest {
         // declarations too and this guard would assert nothing. Add a reader here when you add one there --
         // the range-checking readers below were added exactly that way, and this line is what caught them.
         val readers = "text|optional|under|number|intIn|longAtLeast|capAtLeastZero"
-        val read = Regex("""(?:$readers)\("([A-Z_]+)"""").findAll(source.readText())
+        val read = Regex("""(?:$readers)\("([A-Z_]+)"""").findAll(withoutComments(source.readText()))
             .map { it.groupValues[1] }.toSet()
         val declared = GrinderConfiguration.KNOBS.map { it.name }.toSet() + "CURSEFORGE_API_KEY"
 
@@ -159,4 +159,15 @@ internal class GrinderConfigurationTest {
             "declared as a Knob but never actually read"
         )
     }
+
+    /**
+     * [source] with its comments removed, so this guard reads code rather than prose.
+     *
+     * Without it the assertion is satisfied — or broken — by any comment that merely *names* what it
+     * checks, which makes it blind to the deletion it exists to catch. Same helper and same reasoning as
+     * `HtmlProofingTest.withoutComments`.
+     */
+    private fun withoutComments(source: String): String = source
+        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
+        .replace(Regex("""//.*"""), "")
 }

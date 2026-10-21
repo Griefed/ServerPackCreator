@@ -53,7 +53,11 @@ internal class ClientsideReadmeFlagsTest {
     private fun declaredFlags(): Set<String> = commandSources
         .flatMap { source ->
             Assertions.assertTrue(source.isFile, "command source not found at ${source.absolutePath}")
+            // Comments stripped first: a commented-out @Option would otherwise count as a declared
+            // flag, and the README check would call a real phantom legitimate. `(?<!:)` spares URLs.
             val text = source.readText()
+                .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
+                .replace(Regex("""(?<!:)//.*"""), "")
             val explicit = optionNames.findAll(text)
                 .flatMap { match -> Regex("""["']([^"']+)["']""").findAll(match.groupValues[1]) }
                 .map { it.groupValues[1] }
