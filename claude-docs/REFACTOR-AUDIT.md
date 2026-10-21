@@ -7574,3 +7574,35 @@ build, module or source set it quietly excludes.
   skipped, reached through the `jar { finalizedBy(test) }` edge that is the only thing that runs this
   source set. Verified red against removing the two timeout assignments and green with them, so it is a
   pin rather than a passenger.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 6
+
+New ground: shared mutable state on the published surface.
+
+## Findings
+
+**No convention violations.** Round 6's defect is behavioural and is filed in
+`claude-docs/ANALYSIS-AUDIT.md` as M1, with its embedder-visible consequence recorded in
+`claude-docs/API-BEHAVIOUR-CHANGES.md` as the compatibility policy requires.
+
+### Observation — a fix that stopped one line short of its own sibling
+
+`clientsideModsRegex` and `modsWhitelistRegex` were fixed for clear-then-refill, pinned, and documented
+in both `serverpackcreator-api/CLAUDE.md` and the guard's own KDoc. The *source* lists those two are
+derived from — `clientsideMods` and `modsWhitelist` — kept the identical pattern in `UpdateConfig`, on a
+path reachable from a menu click rather than only at startup.
+
+This is the fourth shape in this session's six rounds where a correct fix was applied to the instance in
+hand rather than to the class: the Connector placeholder keyed on one file name, the timeout landmine
+grepped `-api` and `-app`, `HtmlProofingTest.withoutComments` stayed local to one of seven guards, and
+now this. The repository's own rule for it already exists — *"When a fix keys on a file name, ask which
+other spellings of that name exist before calling it done"* — and generalises cleanly: **ask which other
+call sites share the shape, not which other names share the spelling.**
+
+## Verified clean — do not re-litigate
+
+- **The live-collection getters are deliberate and were checked before being left alone**; a defensive
+  copy would have turned the fallback update into a no-op. Detail in the analysis file.
+- **The `fallback*` sets are never written through**, in any module.

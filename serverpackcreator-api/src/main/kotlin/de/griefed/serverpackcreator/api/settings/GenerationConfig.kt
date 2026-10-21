@@ -877,6 +877,7 @@ class GenerationConfig(private val store: PropertyStore) {
     /**
      * String-list of clientside-only mods to exclude from server packs.
      */
+    @Volatile
     var clientsideMods = TreeSet(fallbackMods)
         private set
 
@@ -884,6 +885,7 @@ class GenerationConfig(private val store: PropertyStore) {
      * String-list of mods to include if present, regardless whether a match was found through
      * [clientsideMods].
      */
+    @Volatile
     var modsWhitelist = TreeSet(fallbackModsWhitelist)
         private set
 
@@ -922,8 +924,8 @@ class GenerationConfig(private val store: PropertyStore) {
      * the merged list back to the store.
      */
     fun loadFallbackModsList() {
-        clientsideMods.addAll(
-            store.getList(FALLBACK_MODS_LIST_KEY, fallbackMods.joinToString(","))
+        replaceClientsideMods(
+            clientsideMods + store.getList(FALLBACK_MODS_LIST_KEY, fallbackMods.joinToString(","))
         )
         store.define(FALLBACK_MODS_LIST_KEY, clientsideMods.joinToString(","))
     }
@@ -933,10 +935,29 @@ class GenerationConfig(private val store: PropertyStore) {
      * back to the store.
      */
     fun loadFallbackWhitelist() {
-        modsWhitelist.addAll(
-            store.getList(MODS_WHITELIST_KEY, fallbackModsWhitelist.joinToString(","))
+        replaceModsWhitelist(
+            modsWhitelist + store.getList(MODS_WHITELIST_KEY, fallbackModsWhitelist.joinToString(","))
         )
         store.define(MODS_WHITELIST_KEY, fallbackModsWhitelist.joinToString(","))
+    }
+
+    /**
+     * Replace the clientside-mod list with [entries], in one assignment.
+     *
+     * A fresh set published to a `@Volatile` field, never `clear()` then `addAll()` on the live one:
+     * `TreeSet` is not thread-safe, the two-step is not atomic, and this list is read while it is being
+     * replaced — `updateFallback()` runs from the Edit menu on the event dispatch thread while a
+     * generation or a config-check tick reads it from a coroutine. A reader therefore sees the old list
+     * or the new one, never an empty or half-filled one, and a held reference is never emptied
+     * underneath its holder. Same fix, same reason, as [clientsideModsRegex] and [modsWhitelistRegex].
+     */
+    fun replaceClientsideMods(entries: Collection<String>) {
+        clientsideMods = TreeSet(entries)
+    }
+
+    /** Replace the mod-whitelist with [entries], in one assignment — see [replaceClientsideMods]. */
+    fun replaceModsWhitelist(entries: Collection<String>) {
+        modsWhitelist = TreeSet(entries)
     }
 
     /**

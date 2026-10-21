@@ -2134,3 +2134,60 @@ reason**; this is the one that does not, and it is swallowing `Exception` — wh
   which carries three lines explaining that a pathologically large server-icon must not take the GUI
   down with it and that the icon simply is not validated on that tick.
 - **No new silent skip, no new `!!`, no `TODO`/`FIXME`** anywhere in main sources.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 6
+
+New ground: shared mutable state and concurrency on the published surface — the defect class this
+module already carries two receipts for.
+
+## MEDIUM
+
+### M1 — `updateFallback()` empties the live clientside-mod list and refills it, on a list read from another thread
+
+`serverpackcreator-api/src/main/kotlin/.../settings/UpdateConfig.kt:146`
+
+```kotlin
+generationConfig.clientsideMods.clear()
+generationConfig.clientsideMods.addAll(newBlacklist.split(","))
+```
+
+This is the **same two-step** `GenerationConfigTest.regexVariantListsAreNotSharedBetweenReads` already
+pins against, in the one path that was not fixed when its siblings were. That guard's own doc states the
+reason: *"a caller holding an earlier result silently saw it emptied and rewritten under them, and
+because the mutation is not atomic a concurrent reader could observe the set mid-clear."*
+
+**It is reachable at runtime, not only at startup.** `UpdateDefaultModslistItem` wires
+`apiProperties.updateFallback()` to an Edit-menu `ActionListener`, so it runs on the event dispatch
+thread on a click — while `ConfigCheckTimer` validates from a coroutine every 500 ms after a keystroke
+and `ControlPanel.generate` builds a `PackConfig` on `guiProps.generationDispatcher`.
+
+`TreeSet` is not thread-safe, so the exposure is **not merely a stale read**: a structural modification
+during another thread's traversal is undefined, and the window spans a whole `split(",")` of the
+fallback list, not an instant.
+
+**Fix:** `replaceClientsideMods` / `replaceModsWhitelist` build the new set and publish it in one
+assignment to a now-`@Volatile` field, so a reader sees the old complete list or the new complete one.
+`loadFallbackModsList` / `loadFallbackWhitelist` were moved onto the same path. Pinned by
+`replacingAFallbackListPublishesANewSetInsteadOfEmptyingTheLiveOne`, which asserts **identity** —
+the property that makes the window impossible — and was verified red against restoring the two-step.
+
+Recorded in `claude-docs/API-BEHAVIOUR-CHANGES.md`: contents and declared type are unchanged, but an
+embedder holding a reference across an update now keeps the complete old set instead of watching it be
+rewritten.
+
+## Verified clean — do not re-litigate
+
+- **Returning copies from the fallback getters would have been wrong, and was checked before being
+  ruled out.** `ApiProperties.clientsideMods` / `modsWhitelist` hand out the live set by design —
+  `UpdateConfig` and `GenerationConfig.loadFallbackModsList` mutate through exactly that reference, so a
+  defensive copy would have made the fallback update a silent no-op. The fix had to be atomic
+  *publication*, not defensive copying.
+- **No caller mutates any `fallback*` set.** `fallbackDirectoriesInclusion`, `fallbackDirectoriesExclusion`,
+  `fallbackZipExclusions`, `fallbackPostInstallCleanupFiles`, `fallbackPreInstallCleanupFiles` and
+  `fallbackUpdateProtectedPaths` are handed out live but are never written through, in any module. Latent
+  exposure on published API, no active defect, and narrowing their declared types would be a
+  source-breaking change for no measured gain.
+- **`versionmeta`'s immutable-snapshot fix is intact** — ten classes publish fresh collections into
+  `@Volatile` fields, and the `@Volatile` count per file is unchanged from what the earlier work recorded.
