@@ -60,6 +60,20 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   possible without granting the boot one. `theContainersOwnHostnameResolvesWithoutANetwork` asserts it through
   `wget` (the same `getaddrinfo` the JVM calls) rather than by reading `/etc/hosts`, which would only show that
   a line was written.
+  - **LANDMINE — a guard that reads the ABSENCE of a string answers the wrong way round on an empty console,
+    and every test in this file is one `engine.run` away from an empty console.** `wget` reports an unresolved
+    name as `bad address`, so "resolved" was asserted as *not* containing it — which an empty console satisfies.
+    The console is therefore asserted non-empty **first**, and the message names
+    [ContainerRunOutput.timedOut], because a budget that expired and a resolver that answered are otherwise
+    indistinguishable downstream. The other two absence-reading tests here
+    (`detectsReadyLineAndStopsALongRunningContainerPromptly`, `aBootCanExecuteFromItsTmpfs…`) are safe only
+    because a *positive* assertion precedes their `none { }` — keep that ordering when adding one, and
+    re-derive the set with a scan for an `assertFalse(…contains` or `none {` that no earlier `any {` guards.
+  - **A tight budget on these tests is not sized by what the container does.** The console arrives on
+    docker-java's callback thread, not from the poll loop, so a local daemon fast enough to deliver the frames
+    during create/start/log-attach passes even a **1 ms** budget — which is why a starved budget cannot be
+    reproduced on a developer machine and must be sized against the loaded runner instead. Two minutes is the
+    figure the two self-exiting probes here use.
 - **The boot tmpfs is mounted `exec` (`TMPFS_OPTIONS`), and that is a decided trade-off, not an oversight.**
   Docker mounts a `--tmpfs` `nosuid,nodev,noexec` and the rootfs is read-only, so nothing inside a boot could
   write a shared object and map it executable. Griefed approved granting `exec` on 2026-08-24 once the cost was
