@@ -363,14 +363,17 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      */
     @Throws(IOException::class)
     fun getResponseAsString(url: URL): String {
-        val `in` = BufferedReader(InputStreamReader(openTimedStream(url)))
-        val response = StringBuilder()
-        var currentLine: String?
-        while (`in`.readLine().also { currentLine = it } != null) {
-            response.append(currentLine)
+        // `use` rather than a trailing close(): this method declares IOException and reads from a socket,
+        // so the throwing path is the documented one, and a close() written as the last happy-path
+        // statement is skipped exactly when it matters.
+        return BufferedReader(InputStreamReader(openTimedStream(url))).use { reader ->
+            val response = StringBuilder()
+            var currentLine: String?
+            while (reader.readLine().also { currentLine = it } != null) {
+                response.append(currentLine)
+            }
+            response.toString()
         }
-        `in`.close()
-        return response.toString()
     }
 
     /**

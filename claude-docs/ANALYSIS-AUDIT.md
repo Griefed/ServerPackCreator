@@ -1992,3 +1992,92 @@ find. Fixed the same way.
 - **`(?<!:)//.*` rather than `//.*` where the source can hold URLs.** A bare line-comment strip mangles
   `https://…` inside a string literal into `https:`; it is harmless for the tokens the iteration-2 guards
   match and is not harmless for `main` or the CLI commands.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 4
+
+New ground: resource lifetimes, discarded failure returns, and the skip gates. Rounds 1-3 covered
+conventions, test depth, source-text guards, secrets, boundaries and the frontend.
+
+## MEDIUM
+
+### M1 — `WebUtilities.getResponseAsString` leaks its stream on the path it documents as expected
+
+`serverpackcreator-api/src/main/kotlin/.../utilities/common/WebUtilities.kt:365`
+
+```kotlin
+@Throws(IOException::class)
+fun getResponseAsString(url: URL): String {
+    val `in` = BufferedReader(InputStreamReader(openTimedStream(url)))
+    ...
+    while (`in`.readLine().also { currentLine = it } != null) { response.append(currentLine) }
+    `in`.close()          // skipped whenever readLine() throws
+    return response.toString()
+}
+```
+
+`close()` is the last statement of the happy path, not a `finally`. The method is annotated
+`@Throws(IOException::class)` and `readLine()` over a network stream is exactly where one comes from,
+so the leak is on the path the signature advertises. What leaks is a socket and its connection, not a
+file handle.
+
+**It has zero callers inside the repository** — and that is what makes it worth fixing rather than
+deleting. `WebUtilities` is exported from `-api`, which publishes to Maven Central, so the only code
+that can reach this is an embedder's, and the compatibility policy keeps the signature for at least a
+major. Fix the body; leave the surface alone.
+
+### M2 — `JavaConfig.testJava` drains its process wrongly, prints to stdout, and leaks both on failure
+
+`serverpackcreator-api/src/main/kotlin/.../settings/JavaConfig.kt:254`
+
+```kotlin
+val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
+while (bufferedReader.readLine() != null && bufferedReader.readLine() != "null") {
+    println(bufferedReader.readLine())
+}
+bufferedReader.close()
+process.destroyForcibly()
+```
+
+Three defects in six lines:
+
+- **`readLine()` is called three times per iteration.** One line is tested for `null`, a second is
+  compared against the literal string `"null"`, and a *third* is printed — so two lines in three are
+  discarded and the printed one can itself be `null`. `java -version` emits three lines, so in practice
+  this prints the third or `null`.
+- **`println` writes to stdout from library code**, in a class that holds a logger. The four `println`s
+  in `ApiProperties` are a deliberate exception — that class *is* log4j's `ConfigurationFactory`, so
+  logging does not exist yet when they run — and this one is not in that category. It reaches the
+  console of every GUI and CLI user whose Java path is being validated.
+- **`close()` and `destroyForcibly()` are both skipped if `readLine()` throws.** The `catch (e:
+  IOException)` below logs and returns `false` without closing either, so a failing probe leaks a reader
+  *and* leaves the `java -version` process behind.
+
+The return value is unaffected by all three, which is why `JavaConfigTest.javaPathsAcceptOnlyValidInstallations`
+passes and will keep passing — it pins accept/reject, which is the contract. That is the finding: the
+contract is pinned and the body is not.
+
+## Verified clean — do not re-litigate
+
+- **`ThemeManager:222` is not a leak, checked in bytecode rather than assumed.**
+  `FlatLaf.setup(IntelliJTheme.createLaf(FileInputStream(themeFile)))` looks like a classic inline-stream
+  leak. `javap -c` on `flatlaf-3.7.2.jar` shows `IntelliJTheme(InputStream)` wrapping it in an
+  `InputStreamReader` inside try-with-resources — two `Reader.close()` call sites plus
+  `Throwable.addSuppressed` — so the `FileInputStream` is closed by the library.
+- **The other resource sites are correct**: `ServerPackProvisioner:441` uses `zip.use { }`, and
+  `ApiProperties.getXmlConfig` closes its stream explicitly.
+- **`ServerPropertiesPatch.restore` throwing cannot strand a port.** `ServerLauncher:132` calls it as
+  `runCatching { patch.restore() }` with `allocator.release(serverPort)` on the next line, so the
+  give-back completes either way. Leaving the backup behind on a failed restore is correct, not a leak —
+  its presence is the crash marker the next `borrow()` restores from.
+- **All 28 skipped tests map to documented gated integration classes**, and no new silent skip has
+  appeared: `CurseForgeCrawlLiveIT` 10, `DockerJavaContainerEngineIT` 9, `CatalogCrawlLiveIT` 3,
+  `ContainerOwnershipIT` 3, `GrinderAuditIT` 1, `ScriptTemplateMatrixIT` 1, `RealPackBootTest` 1. Each
+  appears in `serverpackcreator-grinder/CLAUDE.md`'s gate table or the servertest module's, with the
+  reason its gate is unset.
+- **The 44 discarded filesystem booleans were reviewed and are best-effort cleanup**, where a failure
+  changes nothing a caller could act on. The one with a real consequence —
+  `ManifestIntegrity.setLastModified(0)`, whose failure would strand a host on the shipped snapshot — is
+  immediately followed by the next refresh asking unconditionally anyway, and the file is already
+  restored by that point.

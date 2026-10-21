@@ -7498,3 +7498,40 @@ because `main` and the CLI commands do hold URLs.
   across 15 files**, matching the figure in `CLAUDE.md`'s table. Nothing earlier in this session had run
   it; the JVM suite does not cover it.
 - **Both earlier iterations' fixes re-checked** and still green at the end as at the start.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 4
+
+New ground: resource lifetimes, discarded failure returns, skip gates. Convention compliance was
+settled in rounds 1-3 and is not re-examined.
+
+## Findings
+
+**No convention violations.** Round 4's two defects are behavioural and are filed in
+`claude-docs/ANALYSIS-AUDIT.md` as M1 and M2.
+
+### Observation — a contract pinned, a body unpinned, and the guard that could not tell
+
+`JavaConfig.testJava` held three defects at once — a thrice-called `readLine()` discarding two lines in
+three, a `println` to stdout from library code, and a reader plus a live process leaked whenever the
+read threw. `JavaConfigTest.javaPathsAcceptOnlyValidInstallations` has covered this path all along and
+passes before and after, because every one of the three leaves the **return value** untouched.
+
+That is not a failure of the guard. It pins accept/reject, which is the contract, and it pins it well.
+It is a reminder that *a guard on the contract says nothing about the body*, and that the way to reach
+a body whose output is a side effect is to assert on the side effect — which is what the new
+`validatingAJavaPathPrintsNothingToStandardOut` does, by capturing `System.out` rather than by grepping
+the source. Verified red against restoring the `println`.
+
+The alternative — a source-text grep for `println` — was deliberately **not** written. Round 2 and 3
+spent their findings on source-text guards reading prose as code, and adding a seventh would have been
+the same trade: it would also have needed an exemption for the four legitimate `println`s in
+`ApiProperties`, which is a list that goes stale.
+
+## Verified clean — do not re-litigate
+
+- **`ThemeManager:222` is not a leak**, established from `flatlaf-3.7.2.jar`'s bytecode rather than from
+  the shape of the call. Detail in the analysis file.
+- **No new silent skip.** All 28 skipped tests map to documented gated integration classes.
+- **The 44 discarded filesystem booleans are best-effort cleanup**, reviewed individually.

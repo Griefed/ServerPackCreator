@@ -252,20 +252,27 @@ class JavaConfig(private val store: PropertyStore) {
      * @author Griefed
      */
     private fun testJava(pathToJava: String): Boolean {
+        var process: Process? = null
         val testSuccessful: Boolean = try {
             val processBuilder = ProcessBuilder(listOf(pathToJava, "-version"))
             processBuilder.redirectErrorStream(true)
-            val process = processBuilder.start()
-            val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-            while (bufferedReader.readLine() != null && bufferedReader.readLine() != "null") {
-                println(bufferedReader.readLine())
+            process = processBuilder.start()
+            // Drained one line at a time, and logged rather than printed. The output is only drained so the
+            // process cannot block on a full pipe - what is being tested is whether it starts at all.
+            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+                var line = reader.readLine()
+                while (line != null) {
+                    log.debug("$pathToJava -version: $line")
+                    line = reader.readLine()
+                }
             }
-            bufferedReader.close()
-            process.destroyForcibly()
             true
         } catch (e: IOException) {
             log.error("Invalid Java specified.")
             false
+        } finally {
+            // In the `finally`, because a throwing read would otherwise leave the probe process behind.
+            process?.destroyForcibly()
         }
         return testSuccessful
     }
