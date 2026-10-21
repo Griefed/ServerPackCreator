@@ -96,9 +96,8 @@ object LoaderDescriptors {
      * Empty is deliberately not an error, matching [ModScanner.scannerFor]'s `null`: the caller decides what
      * an unrecognised loader means, and the pre-boot gate treats it as "no opinion", which accepts.
      *
-     * @param modloader        Canonical modloader name, as
-     *                         [de.griefed.serverpackcreator.api.config.SupportedModloaders] spells it.
-     * @param minecraftVersion The Minecraft version being read for, which decides the descriptor era.
+     * [modloader] — Canonical modloader name, as [de.griefed.serverpackcreator.api.config.SupportedModloaders]
+     * spells it. [minecraftVersion] — The Minecraft version being read for, which decides the descriptor era.
      */
     fun descriptorsFor(modloader: String, minecraftVersion: String): Set<String> = when (modloader) {
         "Fabric" -> setOf(FABRIC)

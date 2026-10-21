@@ -22,13 +22,12 @@ package de.griefed.serverpackcreator.plugin.grinder.core
 /**
  * One selection, split across the two configuration keys it is stored under.
  *
- * @param confirmed Entries filed as proven findings.
- * @param other Entries filed as accepted-at-your-own-risk.
- *
  * @author Griefed
  */
 data class AttributedSelection(
+    /** Entries filed as proven findings. */
     val confirmed: Set<String>,
+    /** Entries filed as accepted-at-your-own-risk. */
     val other: Set<String>
 )
 
@@ -58,11 +57,9 @@ object SelectionAttribution {
      * accept a risk. An entry that is neither shown nor stored has no evidence behind it at all and goes
      * to [SelectionPane.OTHER] — the side that warns.
      *
-     * @param selected Everything currently ticked, across both panes.
-     * @param shownInConfirmed The entries the Confirmed pane is displaying.
-     * @param shownInOther The entries the Other Verdicts pane is displaying.
-     * @param storedConfirmed What was previously saved as confirmed.
-     * @param storedOther What was previously saved as other.
+     * [selected] is everything currently ticked across both panes; [shownInConfirmed] and [shownInOther]
+     * are what each pane is displaying; [storedConfirmed] and [storedOther] are what was previously saved
+     * under each key.
      */
     fun split(
         selected: Set<String>,

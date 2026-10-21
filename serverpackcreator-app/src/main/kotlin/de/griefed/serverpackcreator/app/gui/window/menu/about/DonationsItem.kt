@@ -37,6 +37,8 @@ class DonationsItem(private val webUtilities: WebUtilities) : JMenuItem(Translat
     }
 
     /**
+     * Opens the donations page in the user's browser.
+     *
      * @author Griefed
      */
     private fun openDonations() {

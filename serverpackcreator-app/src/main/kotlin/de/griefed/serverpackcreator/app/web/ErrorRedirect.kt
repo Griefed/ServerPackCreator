@@ -35,7 +35,8 @@ class ErrorRedirect : ErrorController {
     /**
      * Redirect all unknown paths to our 404-page.
      *
-     * @return Redirects the requester to our error page.
+     * Redirects the requester to our error page.
+     *
      * @author Griefed
      */
     @RequestMapping(value = ["/error"])

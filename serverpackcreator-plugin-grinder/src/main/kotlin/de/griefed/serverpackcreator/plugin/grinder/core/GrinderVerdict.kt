@@ -28,37 +28,42 @@ package de.griefed.serverpackcreator.plugin.grinder.core
  * no use for. Fields absent from a response stay absent here, so "the grinder said nothing" and "the
  * grinder said the empty string" remain distinguishable.
  *
- * @param slug The project's short name, as the platform spells it — the Name column.
- * @param projectUrl The project page, so a row can be opened rather than searched for.
- * @param platform Modrinth, CurseForge, or whatever a future daemon crawls.
- * @param loader The modloader this verdict was reached under — the one the grinder picked for this
- *               Minecraft line, not the project's only one.
- * @param minecraftLine The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null`
- *                      from a daemon that predates the line axis. **This is the row's identity**: a project
- *                      is ground once per line, so one project holds several rows and the same loader
- *                      routinely holds more than one of them.
- * @param verdict The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`, `LOCKED`,
- *                `UNVERIFIABLE`), kept as a string rather than an enum so a class added by a newer daemon
- *                still renders — which is what let `LOCKED` and `UNVERIFIABLE` arrive without a plugin
- *                release, since only `CONFIRMED` is compared against by name.
- * @param suggestedEntry The name-pattern the grinder proposes for the clientside-mod list.
- * @param fileName The published file name of the artifact the grinder sampled, verbatim — shown for
- *                 context, never used for exclusion.
- * @param detail Why the grinder decided what it did — the column that makes a verdict auditable.
- * @param scannedAt When it was verified, as the ISO-8601 string the feed carries.
- *
  * @author Griefed
  */
 data class GrinderVerdict(
+    /** The project's short name, as the platform spells it — the Name column. */
     val slug: String,
+    /** The project page, so a row can be opened rather than searched for. */
     val projectUrl: String,
+    /** Modrinth, CurseForge, or whatever a future daemon crawls. */
     val platform: String,
+    /**
+     * The modloader this verdict was reached under — the one the grinder picked for this Minecraft line,
+     * not the project's only one.
+     */
     val loader: String,
+    /**
+     * The Minecraft version-line this verdict is about (`1.12`, `1.20`, `26.2`), or `null` from a daemon
+     * that predates the line axis. **This is the row's identity**: a project is ground once per line, so
+     * one project holds several rows and the same loader routinely holds more than one of them.
+     */
     val minecraftLine: String? = null,
+    /**
+     * The verdict's own name (`CONFIRMED`, `CLEAR`, `ERROR`, `INCONCLUSIVE`, `LOCKED`, `UNVERIFIABLE`),
+     * kept as a string rather than an enum so a class added by a newer daemon still renders — only
+     * `CONFIRMED` is ever compared against by name.
+     */
     val verdict: String,
+    /** The name-pattern the grinder proposes for the clientside-mod list. */
     val suggestedEntry: String?,
+    /**
+     * The published file name of the artifact the grinder sampled, verbatim — shown for context, never
+     * used for exclusion.
+     */
     val fileName: String?,
+    /** Why the grinder decided what it did — the column that makes a verdict auditable. */
     val detail: String,
+    /** When it was verified, as the ISO-8601 string the feed carries. */
     val scannedAt: String,
     /**
      * What the mod says about itself, folded from the platform's declaration and the jar's own descriptor:

@@ -91,9 +91,9 @@ class WebService(private val api: ApiWrapper) {
          * silently goes missing here is a property-file that is never read, which for the database URI
          * is a hard startup failure and for everything else is a setting that quietly does nothing.
          *
-         * @param propertiesFile   ServerPackCreator's own properties file, from its home directory.
-         * @param overridesFile    The overrides file from that same home directory.
-         * @param userHome         The user's home directory, which contributes two more locations.
+         * [propertiesFile] — ServerPackCreator's own properties file, from its home directory. [overridesFile] —
+         * The overrides file from that same home directory. [userHome] — The user's home directory, which
+         * contributes two more locations.
          */
         fun configLocationArgument(propertiesFile: File, overridesFile: File, userHome: File): String =
             "--spring.config.location=classpath:/application.properties," +
@@ -113,7 +113,8 @@ class WebService(private val api: ApiWrapper) {
          * Boot application context is available yet, it will be created and the Spring Boot application
          * will be started with the given arguments.
          *
-         * @param args CLI arguments to pass to Spring Boot when it has not yet been started.
+         * [args] — CLI arguments to pass to Spring Boot when it has not yet been started.
+         *
          * @author Griefed
          */
         @Synchronized

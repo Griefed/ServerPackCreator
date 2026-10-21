@@ -37,8 +37,10 @@ private const val FILE = "file:"
  *
  * In any case the returned file will give you access to the JAR-file which contains class from which this method was called,
  * unless the class itself is nested more than one layer deep.
- * @param tempDir The directory to which a nested JAR-file will be extracted to. If not specified, your systems default
- * temp-directory will be used.
+ *
+ * [tempDir] — The directory to which a nested JAR-file will be extracted to. If not specified, your systems
+ * default temp-directory will be used.
+ *
  * @author Griefed
  */
 @Throws(JarAccessException::class)

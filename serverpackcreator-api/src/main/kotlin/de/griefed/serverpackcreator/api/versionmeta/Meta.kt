@@ -107,8 +107,8 @@ interface Meta {
     /**
      * Check whether a URL to an installer is available for the specified version.
      *
-     * @param version The modloader version for which to check for installer availability.
-     * @return `true` if available.
+     * [version] — The modloader version for which to check for installer availability.
+     *
      * @author Griefed
      */
     fun isInstallerUrlAvailable(version: String): Boolean
@@ -116,8 +116,8 @@ interface Meta {
     /**
      * Get the URL to the installer for the specified version, wrapped in an Optional.
      *
-     * @param version The modloader version for which to get the installer.
-     * @return The URL to the installer, wrapped in an Optional.
+     * [version] — The modloader version for which to get the installer.
+     *
      * @author Griefed
      */
     fun getInstallerUrl(version: String): Optional<URL>
@@ -125,7 +125,6 @@ interface Meta {
     /**
      * Check whether the specified version is available/correct/valid.
      *
-     * @return `true` if the specified version is available/correct/valid.
      * @author Griefed
      */
     fun isVersionValid(version: String): Boolean
@@ -133,8 +132,8 @@ interface Meta {
     /**
      * Check whether the given Minecraft version is supported by this modloader.
      *
-     * @param minecraftVersion The Minecraft version for which to check for support.
-     * @return `true` if the specified Minecraft version is supported.
+     * [minecraftVersion] — The Minecraft version for which to check for support.
+     *
      * @author Griefed
      */
     fun isMinecraftSupported(minecraftVersion: String): Boolean

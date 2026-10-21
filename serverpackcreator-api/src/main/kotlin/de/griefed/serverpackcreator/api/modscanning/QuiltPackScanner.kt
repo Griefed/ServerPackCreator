@@ -33,12 +33,11 @@ import java.io.File
  *
  * The Quilt entry is the one kept whenever the two agree, so a mod carrying both descriptors is
  * reported with the id and dependencies Quilt declares.
- *
- * @param quiltScanner  Reads `quilt.mod.json`.
- * @param fabricScanner Reads `fabric.mod.json`.
  */
 class QuiltPackScanner(
+    /** Reads `quilt.mod.json`. */
     private val quiltScanner: QuiltScanner,
+    /** Reads `fabric.mod.json`. */
     private val fabricScanner: FabricScanner
 ) : ModJarScanner {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

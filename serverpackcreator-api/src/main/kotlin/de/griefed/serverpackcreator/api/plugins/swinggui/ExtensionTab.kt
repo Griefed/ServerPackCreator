@@ -36,22 +36,27 @@ import javax.swing.SwingUtilities
 
 /**
  * Class to extend from if you want to add your own tabs to the ServerPackCreator GUI.
- *
- * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
- * LegacyFabric and Quilt versions.
- * @param apiProperties Instance of [ApiProperties] The current configuration of ServerPackCreator,
- * like the default list of clientside-only mods, the server pack directory etc.
- * @param utilities             Instance of [Utilities] commonly used across ServerPackCreator.
- * @param pluginConfig          Plugin specific configuration conveniently provided by ServerPackCreator. This is the
- * global configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
- * @param configFile            The config-file corresponding to the ID of the plugin, wrapped in an Optional.
  */
 @Suppress("unused")
 abstract class ExtensionTab protected constructor(
+    /**
+     * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and Quilt
+     * versions.
+     */
     protected val versionMeta: VersionMeta,
+    /**
+     * Instance of [ApiProperties] The current configuration of ServerPackCreator, like the default list of
+     * clientside-only mods, the server pack directory etc.
+     */
     protected val apiProperties: ApiProperties,
+    /** Instance of [Utilities] commonly used across ServerPackCreator. */
     protected val utilities: Utilities,
+    /**
+     * Plugin specific configuration conveniently provided by ServerPackCreator. This is the global
+     * configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
+     */
     protected val pluginConfig: Optional<CommentedConfig>,
+    /** The config-file corresponding to the ID of the plugin, wrapped in an Optional. */
     protected val configFile: Optional<File>
 ) : JPanel() {
     protected val log: Logger = LogManager.getLogger("AddonsLogger")

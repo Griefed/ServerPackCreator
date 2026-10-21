@@ -52,18 +52,17 @@ import javax.swing.JTabbedPane
  * [PostGenExtension] so they can then be run during server pack generation and during
  * initialization of the GUI.
  *
- * @param tomlParser    To read plugin-configurations, so they can be provided to extensions.
- * @param apiProperties ServerPackCreator settings to be provided to extensions.
- * @param versionMeta   Version meta to be provided to extensions.
- * @param utilities     Utilities to be provided to extensions.
- *
  * @author Griefed
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ApiPlugins(
+    /** To read plugin-configurations, so they can be provided to extensions. */
     private val tomlParser: TomlParser,
+    /** ServerPackCreator settings to be provided to extensions. */
     private val apiProperties: ApiProperties,
+    /** Version meta to be provided to extensions. */
     private val versionMeta: VersionMeta,
+    /** Utilities to be provided to extensions. */
     private val utilities: Utilities
 ) : JarPluginManager(apiProperties.pluginsDirectory.toPath()) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -90,7 +89,6 @@ class ApiPlugins(
      *  - `serverPackHandler`'s lazy initialiser needs `apiPlugins`, and Kotlin's `SynchronizedLazyImpl` is
      *     re-entrant on one thread, so reaching it from here ran *this* initialiser a second time.
      *
-     *
      * Idempotent through pf4j: `loadPlugins` skips what is already resolved and `startPlugins` what is
      * already started, so a caller that runs setup twice does not double-register anything.
      */
@@ -116,8 +114,8 @@ class ApiPlugins(
      * added to a map with the plugins ID, which in turn will be accessed when extensions are run, to
      * retrieve said configuration and pass it to any extensions.
      *
-     * @param tomlParser Toml parser to read the config into a [CommentedConfig], mapped to the
-     * plugins ID.
+     * [tomlParser] — Toml parser to read the config into a [CommentedConfig], mapped to the plugins ID.
+     *
      * @author Griefed
      */
     private fun extractPluginConfigs(tomlParser: TomlParser) {
@@ -198,9 +196,9 @@ class ApiPlugins(
     /**
      * Parse and register a config.toml of a plugin mapped to the plugins ID.
      *
-     * @param tomlParser  Toml parser to parse the config into a [CommentedConfig].
-     * @param pluginId    The plugins ID to map the config to.
-     * @param pluginConfig The global configuration file corresponding to the plugins ID.
+     * [tomlParser] — Toml parser to parse the config into a [CommentedConfig]. [pluginId] — The plugins ID to map
+     * the config to. [pluginConfig] — The global configuration file corresponding to the plugins ID.
+     *
      * @author Griefed
      */
     private fun registerPluginConfig(tomlParser: TomlParser, pluginId: String, pluginConfig: File) {
@@ -252,8 +250,8 @@ class ApiPlugins(
      * on using a global configuration for your plugin, make sure to check whether it is present before
      * trying to use it!
      *
-     * @param pluginId The plugin ID of the...well...plugin.
-     * @return The global plugin configuration, wrapped in an Optional.
+     * [pluginId] — The plugin ID of the...well...plugin.
+     *
      * @author Griefed
      */
     fun getPluginConfig(pluginId: String) = Optional.ofNullable(pluginConfigs[pluginId])
@@ -266,15 +264,12 @@ class ApiPlugins(
      * being run, the configuration is added to the list and provided to the extension by
      * ServerPackCreator.
      *
-     * @param plugin             The plugin which contains the extension.
-     * @param packConfig The configuration model with which the server pack is, or will be,
-     * generated.
-     * @return A list of configurations for the specified extension of the specified plugin. May be
-     * empty, if no configuration is available.
      * @author Griefed
      */
     private fun getExtensionSpecificConfigs(
+        /** The plugin which contains the extension. */
         plugin: PluginWrapper,
+        /** The configuration model with which the server pack is, or will be, generated. */
         packConfig: PackConfig,
         extensionId: String
     ): ArrayList<CommentedConfig> {
@@ -296,13 +291,12 @@ class ApiPlugins(
      * Get all available extension configurations from the passed ConfigurationModel for the specified
      * plugin.
      *
-     * @param plugin             The plugin for which to acquire the list of extension-configurations.
-     * @param packConfig The configuration model which holds the extension configurations.
-     * @return A list of available extension-configurations, if any.
      * @author Griefed
      */
     private fun getExtensionConfigs(
+        /** The plugin for which to acquire the list of extension-configurations. */
         plugin: PluginWrapper,
+        /** The configuration model which holds the extension configurations. */
         packConfig: PackConfig
     ): ArrayList<CommentedConfig> {
         val configs: ArrayList<CommentedConfig> = ArrayList(10)
@@ -317,9 +311,9 @@ class ApiPlugins(
      * Run any and all Pre-Server Pack-Generation extensions, using the passed configuration model and
      * the destination at which the server pack is to be generated and stored at.
      *
-     * @param packConfig The configuration model from which to create the server pack.
-     * @param destination        The destination at which the server pack will be generated and stored
-     * at.
+     * [packConfig] — The configuration model from which to create the server pack. [destination] — The destination
+     * at which the server pack will be generated and stored at.
+     *
      * @author Griefed
      */
     fun runPreGenExtensions(packConfig: PackConfig, destination: String) {
@@ -356,9 +350,9 @@ class ApiPlugins(
      * Run any and all Pre-ZIP-archive creation extensions, using the passed configuration model and
      * the destination at which the server pack is to be generated and stored at.
      *
-     * @param packConfig The configuration model from which to create the server pack.
-     * @param destination        The destination at which the server pack will be generated and stored
-     * at.
+     * [packConfig] — The configuration model from which to create the server pack. [destination] — The destination
+     * at which the server pack will be generated and stored at.
+     *
      * @author Griefed
      */
     fun runPreZipExtensions(packConfig: PackConfig, destination: String) {
@@ -395,9 +389,9 @@ class ApiPlugins(
      * Run any and all Post-server pack-generation extensions, using the passed configuration model
      * and the destination at which the server pack is to be generated and stored at.
      *
-     * @param packConfig The configuration model from which to create the server pack.
-     * @param destination        The destination at which the server pack will be generated and stored
-     * at.
+     * [packConfig] — The configuration model from which to create the server pack. [destination] — The destination
+     * at which the server pack will be generated and stored at.
+     *
      * @author Griefed
      */
     fun runPostGenExtensions(packConfig: PackConfig, destination: String) {
@@ -435,7 +429,8 @@ class ApiPlugins(
      * this to add tabs to your own [JTabbedPane], if you so desire. Could be pretty awesome to
      * have your plugins extra tabs in a separate window!
      *
-     * @param tabbedPane The tabbed pane to which the additional panels should be added to as tabs.
+     * [tabbedPane] — The tabbed pane to which the additional panels should be added to as tabs.
+     *
      * @author Griefed
      */
     fun addTabExtensionTabs(tabbedPane: JTabbedPane) {
@@ -455,8 +450,8 @@ class ApiPlugins(
      * Internal rather than private so the containment can be pinned against an extension that throws on
      * purpose, which no installed plugin does.
      *
-     * @param pluginId   The plugin it came from, named in the log when it misbehaves.
-     * @param tabbedPane The pane the tab is added to.
+     * [pluginId] — The plugin it came from, named in the log when it misbehaves. [tabbedPane] — The pane the tab
+     * is added to.
      */
     internal fun addTabExtensionTab(extension: TabExtension, pluginId: String, tabbedPane: JTabbedPane) {
         try {
@@ -493,10 +488,8 @@ class ApiPlugins(
      * fields and methods for their own operations. A given server pack config tab needs to add the
      * panels which are returned by this method, so a user may make their configurations accordingly.
      *
-     * @param serverPackConfigTab The server pack configuration tab to which the config panels are to
-     * be added.
-     * @return A list of config panels specifically created for the passed server pack
-     * configuration-tab.
+     * [serverPackConfigTab] — The server pack configuration tab to which the config panels are to be added.
+     *
      * @author Griefed
      */
     fun getConfigPanels(serverPackConfigTab: ServerPackConfigTab): List<ExtensionConfigPanel> {
@@ -535,16 +528,15 @@ class ApiPlugins(
      * Run any and all configuration-check extensions, using the passed configuration model and the
      * destination at which the server pack is to be generated and stored at.
      *
-     * @param packConfig The configuration model containing the server pack and plugin
-     * configurations to check.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return `true` if any custom check detected an error with the configuration.
-     * **Only** return `false` when not a **single** check
-     * errored.
+     * Returns `true` if any custom check detected an error with the configuration. **Only** return `false` when
+     * not a **single** check errored.
+     *
      * @author Griefed
      */
     fun runConfigCheckExtensions(
+        /** The configuration model containing the server pack and plugin configurations to check. */
         packConfig: PackConfig,
+        /** Collection of encountered errors, if any, for convenient result-checks. */
         configCheck: ConfigCheck = ConfigCheck()
     ): ConfigCheck {
         for (plugin in getPlugins()) {
@@ -586,8 +578,9 @@ class ApiPlugins(
      * plugins settings. If you intend on using a global configuration, make sure to check whether the
      * file is present, before moving on!
      *
-     * @param pluginId The plugin ID with which to identify the correct config-file to return.
-     * @return The config-file corresponding to the ID of the plugin, wrapped in an Optional.
+     * [pluginId] — The plugin ID with which to identify the correct config-file to return. Returns the config-file
+     * corresponding to the ID of the plugin, wrapped in an Optional.
+     *
      * @author Griefed
      */
     fun getPluginConfigFile(pluginId: String) = Optional.ofNullable(pluginConfigFiles[pluginId])

@@ -162,9 +162,9 @@ class JavaConfig(private val store: PropertyStore) {
      * passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
      * is considered invalid, the system default is acquired and returned.
      *
-     * @param pathToJava The path to check for whether it is a valid Java installation.
-     * @return Returns the path to the Java installation. If user input was incorrect, SPC will try to
-     * acquire the path automatically.
+     * [pathToJava] — The path to check for whether it is a valid Java installation. Returns returns the path to
+     * the Java installation. If user input was incorrect, SPC will try to acquire the path automatically.
+     *
      * @author Griefed
      */
     fun acquireJavaPath(pathToJava: String? = null): String {
@@ -202,8 +202,8 @@ class JavaConfig(private val store: PropertyStore) {
     /**
      * Check whether the given path is a valid Java specification.
      *
-     * @param pathToJava Path to the Java executable
-     * @return `true` if the path is valid.
+     * [pathToJava] — Path to the Java executable.
+     *
      * @author Griefed
      */
     private fun checkJavaPath(pathToJava: String?): Boolean {
@@ -246,8 +246,9 @@ class JavaConfig(private val store: PropertyStore) {
      * Test for a valid Java specification by trying to run `java -version`. If the command goes
      * through without errors, it is considered a correct specification.
      *
-     * @param pathToJava Path to the java executable/binary.
-     * @return `true` if the specified file is a valid Java executable/binary.
+     * [pathToJava] — Path to the java executable/binary. Returns `true` if the specified file is a valid Java
+     * executable/binary.
+     *
      * @author Griefed
      */
     private fun testJava(pathToJava: String): Boolean {
@@ -273,7 +274,6 @@ class JavaConfig(private val store: PropertyStore) {
      * Whether a viable path to a Java executable or binary has been configured for
      * ServerPackCreator.
      *
-     * @return `true` if a viable path has been set.
      * @author Griefed
      */
     fun javaAvailable() = checkJavaPath(javaPath)
@@ -282,8 +282,8 @@ class JavaConfig(private val store: PropertyStore) {
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
      *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
+     * [javaVersion] — The Java version to acquire the path for.
+     *
      * @author Griefed
      */
     fun javaPath(javaVersion: Int) =
@@ -299,8 +299,8 @@ class JavaConfig(private val store: PropertyStore) {
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
      *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
+     * [javaVersion] — The Java version to acquire the path for.
+     *
      * @author Griefed
      */
     fun javaPath(javaVersion: String) = javaPath(javaVersion.toInt())

@@ -32,7 +32,7 @@ import javax.xml.parsers.ParserConfigurationException
 /**
  * Commonly used XML utilities.
  *
- * @param documentBuilderFactory used for parsing XML-files.
+ * [documentBuilderFactory] — used for parsing XML-files.
  *
  * @author Griefed
  */
@@ -42,8 +42,8 @@ class XmlUtilities(private val documentBuilderFactory: DocumentBuilderFactory = 
     /**
      * Reads the file into a [Document] and [Document.normalize] it.
      *
-     * @param manifest The xml-file to parse into a Document.
-     * @return The parsed and normalized document.
+     * [manifest] — The xml-file to parse into a Document. Returns the parsed and normalized document.
+     *
      * @throws ParserConfigurationException indicates a serious configuration error.
      * @throws IOException                  if any IO errors occur.
      * @throws SAXException                 if any parse errors occur.
@@ -55,8 +55,8 @@ class XmlUtilities(private val documentBuilderFactory: DocumentBuilderFactory = 
     /**
      * Reads the string into a [Document] and [Document.normalize] it.
      *
-     * @param string The xml-string to parse into a Document.
-     * @return The parsed and normalized document.
+     * [string] — The xml-string to parse into a Document. Returns the parsed and normalized document.
+     *
      * @throws ParserConfigurationException indicates a serious configuration error.
      * @throws IOException                  if any IO errors occur.
      * @throws SAXException                 if any parse errors occur.
@@ -74,8 +74,8 @@ class XmlUtilities(private val documentBuilderFactory: DocumentBuilderFactory = 
     /**
      * Reads the input-stream into a [Document] and [Document.normalize] it.
      *
-     * @param manifest The xml-input-stream to parse into a Document.
-     * @return The parsed and normalized document.
+     * [manifest] — The xml-input-stream to parse into a Document. Returns the parsed and normalized document.
+     *
      * @throws ParserConfigurationException indicates a serious configuration error.
      * @throws IOException                  if any IO errors occur.
      * @throws SAXException                 if any parse errors occur.

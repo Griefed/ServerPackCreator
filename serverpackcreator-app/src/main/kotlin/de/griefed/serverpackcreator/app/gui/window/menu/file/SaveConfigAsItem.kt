@@ -37,6 +37,8 @@ class SaveConfigAsItem(
     }
 
     /**
+     * Saves the selected configuration under a new name.
+     *
      * @author Griefed
      */
     private fun saveAs() {

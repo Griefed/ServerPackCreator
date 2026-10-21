@@ -43,19 +43,21 @@ import de.griefed.serverpackcreator.plugin.servertest.pack.StartScriptSelector
  * Knows nothing about Swing. Callbacks arrive on the reader thread, so a GUI caller marshals them to the
  * event dispatch thread itself — which is also what lets this be tested headless against a real script.
  *
- * @param workingDirectory The server pack; the script is run with this as its working directory.
- * @param command          The argv to spawn, from [StartScriptSelector].
- * @param onLine           Called for every console line as it arrives, on the reader thread.
- * @param onState          Called on every state transition, on the reader thread.
- * @param onClosed         Called exactly once after the process is gone, for giving back the port and the
- *                         borrowed `server.properties`. Runs however the session ended, including a crash.
  * @author Griefed
  */
 class ServerSession(
+    /** The server pack; the script is run with this as its working directory. */
     private val workingDirectory: File,
+    /** The argv to spawn, from [StartScriptSelector]. */
     private val command: List<String>,
+    /** Called for every console line as it arrives, on the reader thread. */
     private val onLine: (String) -> Unit,
+    /** Called on every state transition, on the reader thread. */
     private val onState: (SessionState) -> Unit,
+    /**
+     * Called exactly once after the process is gone, for giving back the port and the borrowed
+     * `server.properties`. Runs however the session ended, including a crash.
+     */
     private val onClosed: () -> Unit
 ) {
 

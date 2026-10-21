@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 package de.griefed.example.kotlin.configcheck
 
@@ -47,32 +46,35 @@ class ConfigurationCheck : ConfigCheckExtension {
     private var tomlWriter: TomlWriter = TomlWriter()
 
     /**
-     * @param versionMeta         Instance of [VersionMeta] so you can work with available
-     * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-     * @param apiProperties       Instance of [ApiProperties] The current configuration of
-     * ServerPackCreator, like the default list of clientside-only mods,
-     * the server pack directory etc.
-     * @param utilities           Instance of [Utilities] commonly used across
-     * ServerPackCreator.
-     * @param packConfig  The configuration to check.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @param pluginConfig         Configuration for this addon, conveniently provided by
-     * ServerPackCreator.
-     * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
-     * conveniently provided by ServerPackCreator.
-     * @return `true` if an error was encountered. `false` if the checks were
-     * successful.
+     * Runs this example check, reporting `true` when it encountered an error.
+     *
      * @throws Exception if any unexpected error is encountered during the execution of this method.
      * @author Griefed
      */
     @Throws(Exception::class)
     override fun runCheck(
+        /**
+         * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+         * Quilt versions.
+         */
         versionMeta: VersionMeta,
+        /**
+         * Instance of [ApiProperties] The current configuration of ServerPackCreator, like the default list of
+         * clientside-only mods, the server pack directory etc.
+         */
         apiProperties: ApiProperties,
+        /** Instance of [Utilities] commonly used across ServerPackCreator. */
         utilities: Utilities,
+        /** The configuration to check. */
         packConfig: PackConfig,
+        /** Collection of encountered errors, if any, for convenient result-checks. */
         configCheck: ConfigCheck,
+        /** Configuration for this addon, conveniently provided by ServerPackCreator. */
         pluginConfig: Optional<CommentedConfig>,
+        /**
+         * Modpack and server pack specific configurations for this addon, conveniently provided by
+         * ServerPackCreator.
+         */
         packSpecificConfigs: ArrayList<CommentedConfig>
     ): Boolean {
         var bool = false

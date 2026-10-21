@@ -50,8 +50,6 @@ interface LoaderVersionPolicy {
 /**
  * The default [LoaderVersionPolicy]: always boot the newest known build, so `preferredVersion` and
  * `latestVersion` are the same answer and [BootVerifier]'s crash re-check never has anything to re-check.
- *
- * @param versionMeta SPC's cached version manifests (from [de.griefed.serverpackcreator.api.ApiWrapper]).
  */
 class LoaderVersionResolver(private val versionMeta: VersionMeta) : LoaderVersionPolicy {
 

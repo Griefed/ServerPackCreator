@@ -27,15 +27,19 @@ import java.nio.charset.Charset
 
 /**
  * Read this input stream to a string.
- * @param charset Charset to use for reading. Default is [Charsets.UTF_8]
- * @return The text contained in this input stream.
+ *
+ * [charset] — Charset to use for reading. Default is [Charsets.UTF_8]. Returns the text contained in this input
+ * stream.
+ *
  * @author Griefed
  */
 fun InputStream.readText(charset: Charset = Charsets.UTF_8) = this.bufferedReader(charset).use { it.readText() }
 
 /**
  * Write this input stream to a text-file.
- * @param charset Charset to use for reading. Default is [Charsets.UTF_8]
+ *
+ * [charset] — Charset to use for reading. Default is [Charsets.UTF_8].
+ *
  * @author Griefed
  */
 fun InputStream.writeTextToFile(file: File, charset: Charset = Charsets.UTF_8) =

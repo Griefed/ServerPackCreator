@@ -45,41 +45,48 @@ enum class JarScan {
  * The verdict for one Minecraft version-line: the suggested list-entry plus every signal that produced
  * the [verdict].
  *
- * @param loader            Canonical loader-name (Forge, Fabric, …) — the one loader this Minecraft line was
- *                          ground under, chosen by `BootCandidateSelector.LOADER_PRIORITY`. A *choice*,
- *                          not the verdict's identity; see `minecraftLine` for that.
- * @param suggestedEntry    Derived clientside-list entry (file-name stem), or `null` if not derivable.
- * @param declaredClientSide Platform-declared client support (Modrinth; UNKNOWN for CurseForge).
- * @param declaredServerSide Platform-declared server support (Modrinth; UNKNOWN for CurseForge).
- * @param jarScan           DeclaredSupport read from the jar metadata via SPC's scanners.
- * @param bootResult        Outcome of the server-boot test, or `null` when boot was not run.
- * @param bootedLoader      Which loader actually produced [bootResult], or `null` when no boot ran. Usually
- *                          [loader]; it differs when a cross-loader crash re-check decided the outcome, and
- *                          the difference is load-bearing — only a loader's *own* clean boot may disprove
- *                          another loader's crash (see `ClientsideVerifier.targetDisprovingTheCrash`).
- * @param bootCrashExcerpt  The slice of the crashed console a maintainer reads to judge *why* it crashed, or
- *                          `null` when the boot did not crash. Kept even when a later pass strips the crash of
- *                          its standing: the server did crash, and that is still worth diagnosing.
- * @param sampleFile        The **published file name** of the artifact this verdict sampled, verbatim.
- *                          Narrower than [suggestedEntry], which is the common prefix over the project's
- *                          *whole* history and must stay broad enough for the published `startsWith` list:
- *                          a project that renamed its files — iris shipped `iris-mc1.16.5-…` before
- *                          `iris-fabric-…` — collapses that prefix to something with no loader in it, so
- *                          this is what says which artifact was looked at. On a Quilt row it names a Fabric
- *                          build, because Quilt boots those and this describes the file, not the row.
- * @param note              Optional caveat (e.g. a metadata/jar-scan contradiction, or a boot detail).
  * @author Griefed
  */
 data class GrindTargetVerdict(
+    /**
+     * Canonical loader-name (Forge, Fabric, …) — the one loader this Minecraft line was ground under,
+     * chosen by `BootCandidateSelector.LOADER_PRIORITY`. A *choice*, not the verdict's identity; see
+     * [minecraftLine] for that.
+     */
     val loader: String,
+    /** Derived clientside-list entry (file-name stem), or `null` if not derivable. */
     val suggestedEntry: String?,
+    /** Platform-declared client support (Modrinth; UNKNOWN for CurseForge). */
     val declaredClientSide: DeclaredSupport,
+    /** Platform-declared server support (Modrinth; UNKNOWN for CurseForge). */
     val declaredServerSide: DeclaredSupport,
+    /** DeclaredSupport read from the jar metadata via SPC's scanners. */
     val jarScan: JarScan,
+    /** Outcome of the server-boot test, or `null` when boot was not run. */
     val bootResult: BootResult?,
+    /**
+     * Which loader actually produced [bootResult], or `null` when no boot ran. Usually [loader]; it
+     * differs when a cross-loader crash re-check decided the outcome, and the difference is load-bearing —
+     * only a loader's *own* clean boot may disprove another loader's crash (see
+     * `ClientsideVerifier.targetDisprovingTheCrash`).
+     */
     val bootedLoader: String?,
+    /**
+     * The slice of the crashed console a maintainer reads to judge *why* it crashed, or `null` when the
+     * boot did not crash. Kept even when a later pass strips the crash of its standing: the server did
+     * crash, and that is still worth diagnosing.
+     */
     val bootCrashExcerpt: String?,
+    /**
+     * The **published file name** of the artifact this verdict sampled, verbatim. Narrower than
+     * [suggestedEntry], which is the common prefix over the project's *whole* history and must stay broad
+     * enough for the published `startsWith` list: a project that renamed its files — iris shipped
+     * `iris-mc1.16.5-…` before `iris-fabric-…` — collapses that prefix to something with no loader in it,
+     * so this is what says which artifact was looked at. On a Quilt row it names a Fabric build, because
+     * Quilt boots those and this describes the file, not the row.
+     */
     val sampleFile: String?,
+    /** Optional caveat (e.g. a metadata/jar-scan contradiction, or a boot detail). */
     val note: String?,
     /**
      * The id of the operator console rule that decided or annotated this loader's boot, or `null` when the
@@ -148,21 +155,21 @@ data class GrindTargetVerdict(
  * Markdown by [ClientsideReportRenderer.renderMarkdown] for the issue-comment, with the raw data
  * embedded as JSON for the acceptance-workflow to read back.
  *
- * @param platform         "Modrinth" or "CurseForge".
- * @param slug             Project-slug.
- * @param projectUrl       Original issue-link.
- * @param phase            Which signals were collected ("metadata-only" in Phase 1).
- * @param suggestedEntries Distinct list-entries across all loaders.
- * @param perTarget        Per-loader verdicts.
- * @param fileNames        Every published file-name, so the maintainer can sanity-check the stems.
  * @author Griefed
  */
 data class ClientsideReport(
+    /** "Modrinth" or "CurseForge". */
     val platform: String,
+    /** Project-slug. */
     val slug: String,
+    /** Original issue-link. */
     val projectUrl: String,
+    /** Which signals were collected ("metadata-only" in Phase 1). */
     val phase: String,
+    /** Distinct list-entries across all loaders. */
     val suggestedEntries: List<String>,
+    /** Per-loader verdicts. */
     val perTarget: List<GrindTargetVerdict>,
+    /** Every published file-name, so the maintainer can sanity-check the stems. */
     val fileNames: List<String>
 )

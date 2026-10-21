@@ -35,7 +35,6 @@ class FabricLibrary internal constructor() {
     /**
      * The URL to this library.
      *
-     * @return Library-URL as a String.
      * @author Griefed
      */
     val url: String? = null

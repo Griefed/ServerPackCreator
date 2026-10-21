@@ -30,7 +30,8 @@ class InvalidFileTypeException
 /**
  * Throw a new exception indicating that the specified file type is incorrect.
  *
- * @param message Message indicating what exactly went wrong.
+ * [message] — Message indicating what exactly went wrong.
+ *
  * @author Griefed
  */
     (message: String?) : Exception(message)

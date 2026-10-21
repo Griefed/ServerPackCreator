@@ -52,23 +52,14 @@ class Panel : ConfigPanelExtension {
      * serverpackcreator.conf, and could be used in any of the [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler]
      * extension-points, which would then download the version you specified via this here panel.
      *
-     * @param versionMeta         Instance of [VersionMeta] so you can work with available
-     * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-     * @param apiProperties       Instance of [ApiProperties] The current configuration of
-     * ServerPackCreator, like the default list of clientside-only mods,
-     * the server pack directory etc.
-     * @param utilities           Instance of [Utilities] commonly used across
-     * ServerPackCreator.
-     * @param serverPackConfigTab Instance of [ServerPackConfigTab] to give you access to the
-     * various fields inside it, like the modpack directory, selected
-     * Minecraft, modloader and modloader versions, etc.
-     * @param pluginConfig         Addon specific configuration conveniently provided by
-     * ServerPackCreator. This is the global configuration of the addon
-     * which provides the ConfigPanelExtension to ServerPackCreator.
-     * @param extensionName       The name the titled border of this ConfigPanel will get.
-     * @param pluginID            The same as the PluginId.
-     * @return A ConfigPanel allowing users to further customize their ServerPackCreator experience
-     * when using an addon.
+     * Every parameter is handed over by ServerPackCreator: [versionMeta] for the available Minecraft,
+     * Forge, Fabric, LegacyFabric and Quilt versions; [apiProperties] for the current configuration,
+     * such as the default clientside-only mods and the server pack directory; [utilities] for the
+     * helpers used across ServerPackCreator; [serverPackConfigTab] for the fields of the configuration
+     * tab, like the modpack directory and the selected Minecraft and modloader versions;
+     * [pluginConfig] for your plugin's own global configuration; [extensionName] for this panel's
+     * titled border; and [pluginID], which is your plugin's id.
+     *
      * @author Griefed
      */
     override fun getPanel(

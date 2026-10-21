@@ -658,6 +658,8 @@ class GuiProps(private val apiProperties: ApiProperties) {
     }
 
     /**
+     * A GUI setting, read from the shared properties under this class's own key prefix.
+     *
      * @author Griefed
      */
     fun getGuiProperty(key: String, default: String? = null): String? {
@@ -665,6 +667,8 @@ class GuiProps(private val apiProperties: ApiProperties) {
     }
 
     /**
+     * Stores a GUI setting in the shared properties under this class's own key prefix.
+     *
      * @author Griefed
      */
     fun storeGuiProperty(key: String, value: String) {
@@ -672,6 +676,8 @@ class GuiProps(private val apiProperties: ApiProperties) {
     }
 
     /**
+     * Applies the stored font size to the look-and-feel defaults, falling back to 12 when none is stored.
+     *
      * @author Griefed
      */
     fun initFont() {

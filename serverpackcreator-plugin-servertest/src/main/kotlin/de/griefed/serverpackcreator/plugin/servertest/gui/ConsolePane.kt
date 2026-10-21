@@ -47,16 +47,16 @@ import javax.swing.SwingUtilities
  * marshalled with [SwingUtilities.invokeLater]. ServerPackCreator's own `LogTailer` appends from the tailer's
  * thread instead; that is not a pattern to copy.
  *
- * @param session    The server this pane drives.
- * @param port       The port the server was given, shown as the address to connect to.
- * @param variables  The pack's `RESTART` / `WAIT_FOR_USER_INPUT` settings, warned about up front.
- * @param scrollback How many console lines to keep on screen.
  * @author Griefed
  */
 class ConsolePane(
+    /** The server this pane drives. */
     private val session: ServerSession,
+    /** The port the server was given, shown as the address to connect to. */
     port: Int,
+    /** The pack's `RESTART` / `WAIT_FOR_USER_INPUT` settings, warned about up front. */
     private val variables: PackVariables,
+    /** How many console lines to keep on screen. */
     private val scrollback: Int
 ) : JPanel(BorderLayout()) {
 

@@ -27,17 +27,16 @@ package de.griefed.serverpackcreator.api.modscanning
  * the call-sites, so a pack's mod list and the clientside engine's metadata signal cannot disagree
  * about what a jar declared.
  *
- * @param forgeAnnotationScanner For scanning `fml-cache-annotation.json`
- * @param fabricScanner     For scanning `fabric.mod.json`
- * @param quiltScanner      For scanning `quilt.mod.json`
- * @param forgeTomlScanner       For scanning `mods.toml`
- *
  * @author Griefed
  */
 class ModScanner(
+    /** For scanning `fml-cache-annotation.json` */
     val forgeAnnotationScanner: ForgeAnnotationScanner,
+    /** For scanning `fabric.mod.json` */
     val fabricScanner: FabricScanner,
+    /** For scanning `quilt.mod.json` */
     val quiltScanner: QuiltScanner,
+    /** For scanning `mods.toml` */
     val forgeTomlScanner: ForgeTomlScanner,
     /** Scanner for NeoForge jars, which moved the descriptor and so cannot reuse Forge's path. */
     val neoForgeTomlScanner: NeoForgeTomlScanner
@@ -52,8 +51,8 @@ class ModScanner(
      * A `null` is deliberately not an error: the caller decides what an unknown loader means, and
      * both of them keep every mod rather than silently producing an empty result.
      *
-     * @param modloader        Canonical modloader name, as [de.griefed.serverpackcreator.api.config.SupportedModloaders] spells it.
-     * @param minecraftVersion The pack's Minecraft version, which decides the descriptor era.
+     * [modloader] — Canonical modloader name, as [de.griefed.serverpackcreator.api.config.SupportedModloaders]
+     * spells it. [minecraftVersion] — The pack's Minecraft version, which decides the descriptor era.
      */
     fun scannerFor(modloader: String, minecraftVersion: String): ModJarScanner? = when (modloader) {
         "LegacyFabric", "Fabric" -> fabricScanner

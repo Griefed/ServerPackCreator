@@ -37,7 +37,10 @@ class CollapsiblePanel(
 ) : JPanel() {
 
     /**
+     * Collapses or expands the panel when its titled border is clicked.
+     *
      * @author rgd
+     * @author Griefed
      */
     private var titleListener: MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent) {
@@ -54,7 +57,10 @@ class CollapsiblePanel(
     }
 
     /**
+     * Keeps the border title's arrow in step with the content's visibility.
+     *
      * @author rgd
+     * @author Griefed
      */
     private var contentComponentListener: ComponentListener = object : ComponentAdapter() {
         override fun componentShown(e: ComponentEvent) {
@@ -66,9 +72,6 @@ class CollapsiblePanel(
         }
     }
 
-    /**
-     * @author rgd
-     */
     override fun add(comp: Component): Component {
         comp.addComponentListener(contentComponentListener)
         val r = super.add(comp)
@@ -76,9 +79,6 @@ class CollapsiblePanel(
         return r
     }
 
-    /**
-     * @author rgd
-     */
     override fun add(name: String, comp: Component): Component {
         comp.addComponentListener(contentComponentListener)
         val r = super.add(name, comp)
@@ -86,9 +86,6 @@ class CollapsiblePanel(
         return r
     }
 
-    /**
-     * @author rgd
-     */
     override fun add(comp: Component, index: Int): Component {
         comp.addComponentListener(contentComponentListener)
         val r = super.add(comp, index)
@@ -96,44 +93,29 @@ class CollapsiblePanel(
         return r
     }
 
-    /**
-     * @author rgd
-     */
     override fun add(comp: Component, constraints: Any) {
         comp.addComponentListener(contentComponentListener)
         super.add(comp, constraints)
         updateBorderTitle()
     }
 
-    /**
-     * @author rgd
-     */
     override fun add(comp: Component, constraints: Any, index: Int) {
         comp.addComponentListener(contentComponentListener)
         super.add(comp, constraints, index)
         updateBorderTitle()
     }
 
-    /**
-     * @author rgd
-     */
     override fun remove(index: Int) {
         val comp = getComponent(index)
         comp.removeComponentListener(contentComponentListener)
         super.remove(index)
     }
 
-    /**
-     * @author rgd
-     */
     override fun remove(comp: Component) {
         comp.removeComponentListener(contentComponentListener)
         super.remove(comp)
     }
 
-    /**
-     * @author rgd
-     */
     override fun removeAll() {
         for (c in components) {
             c.removeComponentListener(contentComponentListener)
@@ -142,7 +124,10 @@ class CollapsiblePanel(
     }
 
     /**
+     * Shows or hides every child component, defaulting to whichever state the panel is not currently in.
+     *
      * @author rgd
+     * @author Griefed
      */
     fun toggleVisibility(visible: Boolean = hasInvisibleComponent()) {
         for (c in components) {
@@ -152,7 +137,10 @@ class CollapsiblePanel(
     }
 
     /**
+     * Rewrites the border title so its arrow reflects whether the content is currently shown.
+     *
      * @author rgd
+     * @author Griefed
      */
     fun updateBorderTitle() {
         var arrow = ""
@@ -164,7 +152,10 @@ class CollapsiblePanel(
     }
 
     /**
+     * Whether any child component is currently hidden, which is what decides the default toggle direction.
+     *
      * @author rgd
+     * @author Griefed
      */
     private fun hasInvisibleComponent(): Boolean {
         for (c in components) {

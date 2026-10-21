@@ -38,7 +38,8 @@ import java.io.File
  * The CurseForge API-key is read from the `CURSEFORGE_API_KEY` environment-variable; it is only
  * required for CurseForge links.
  *
- * @param apiWrapper Provides the mod-scanner and download utilities.
+ * [apiWrapper] — Provides the mod-scanner and download utilities.
+ *
  * @author Griefed
  */
 @CommandLine.Command(

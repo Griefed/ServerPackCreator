@@ -42,10 +42,6 @@ open class ResizeIndicatorScrollPane(
     var handleBarPosition: Rectangle? = null
         private set
 
-    /**
-     * @author Rob Camick
-     * @author Griefed
-     */
     override fun paint(g: Graphics?) {
         super.paint(g)
         paintComponents(g)
@@ -63,6 +59,8 @@ open class ResizeIndicatorScrollPane(
     }
 
     /**
+     * Focuses the wrapped view and draws attention to it, for reporting a validation problem.
+     *
      * @author Griefed
      */
     @Suppress("unused")

@@ -95,19 +95,22 @@ const val MAX_PARALLEL_STOPS = 64
  * Prefer [forLimits] (or [forCpus]) over setting [cpuQuota] and [memoryBytes] by hand: cores and gibibytes
  * are the units an operator thinks in, and the quota only means anything relative to [cpuPeriod].
  *
- * @param memoryBytes Hard memory limit (`--memory`); the server's heap must fit inside this.
- * @param cpuQuota    CFS CPU quota in microseconds per [cpuPeriod] (`200_000` at the default period =
- *                    ~2 cores). `0` disables the quota entirely, which is docker's own "no limit".
- * @param cpuPeriod   CFS scheduling period in microseconds the quota is measured against
- *                    (`--cpu-period`). Stated rather than inherited, so the cores-to-quota arithmetic
- *                    cannot be silently invalidated by a daemon or kernel default.
- * @param pidsLimit   Maximum process/thread count (`--pids-limit`), guarding against fork-bombs.
  * @author Griefed
  */
 data class ContainerResources(
+    /** Hard memory limit (`--memory`); the server's heap must fit inside this. */
     val memoryBytes: Long = 3L * 1024 * 1024 * 1024,
+    /**
+     * CFS CPU quota in microseconds per [cpuPeriod] (`200_000` at the default period = ~2 cores). `0` disables
+     * the quota entirely, which is docker's own "no limit".
+     */
     val cpuQuota: Long = 200_000,
+    /**
+     * CFS scheduling period in microseconds the quota is measured against (`--cpu-period`). Stated rather than
+     * inherited, so the cores-to-quota arithmetic cannot be silently invalidated by a daemon or kernel default.
+     */
     val cpuPeriod: Long = 100_000,
+    /** Maximum process/thread count (`--pids-limit`), guarding against fork-bombs. */
     val pidsLimit: Long = 512
 ) {
     /**
@@ -207,12 +210,16 @@ data class ContainerResources(
 /**
  * A host-path → container-path bind mount.
  *
- * @param hostPath      Absolute path on the host (the generated server pack, or a cached loader tree).
- * @param containerPath Mount point inside the container.
- * @param readOnly      Whether the container may write through the mount.
  * @author Griefed
  */
-data class BindMount(val hostPath: String, val containerPath: String, val readOnly: Boolean)
+data class BindMount(
+    /** Absolute path on the host (the generated server pack, or a cached loader tree). */
+    val hostPath: String,
+    /** Mount point inside the container. */
+    val containerPath: String,
+    /** Whether the container may write through the mount. */
+    val readOnly: Boolean
+)
 
 /**
  * Everything needed to launch one isolated boot container. The defaults are the security posture for
@@ -223,37 +230,42 @@ data class BindMount(val hostPath: String, val containerPath: String, val readOn
  * The one deliberate concession is that the tmpfs is **executable** ([TMPFS_OPTIONS]); everything else above
  * is unchanged, `nosuid` and `nodev` included.
  *
- * @param image            The runtime image (a JRE + the ServerStarterJar + a fixed entrypoint).
- * @param command          The command to run inside the container (e.g. `bash start.sh`).
- * @param workingDir       Working directory inside the container (where the pack is mounted).
- * @param mounts           Bind mounts (at minimum the generated server pack).
- * @param resources        CPU/memory/pid caps.
- * @param networkMode      Docker network mode; `none` for an untrusted boot.
- * @param readonlyRootfs   Whether the root filesystem is read-only.
- * @param dropAllCapabilities Whether to drop all Linux capabilities.
- * @param noNewPrivileges  Whether to forbid privilege escalation (`no-new-privileges`).
- * @param user             The `uid:gid` to run as (non-root). The default matches the image's own `USER`;
- *                         callers that bind-mount a host directory pass the host owner (see `ContainerUser`).
- * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only. Mounted
- *                         **executable** — see [TMPFS_OPTIONS] for what that grants and why.
- * @param hostName         The container's own hostname, which the engine also makes resolvable. A *networked*
- *                         container gets an `<ip> <hostname>` line in `/etc/hosts` from the daemon; `none` has
- *                         no address, so nothing resolves it and `InetAddress.getLocalHost()` throws — see
- *                         [CONTAINER_HOST_NAME].
  * @author Griefed
  */
 data class ContainerSpec(
+    /** The runtime image (a JRE + the ServerStarterJar + a fixed entrypoint). */
     val image: String,
+    /** The command to run inside the container (e.g. `bash start.sh`). */
     val command: List<String>,
+    /** Working directory inside the container (where the pack is mounted). */
     val workingDir: String,
+    /** Bind mounts (at minimum the generated server pack). */
     val mounts: List<BindMount>,
+    /** CPU/memory/pid caps. */
     val resources: ContainerResources = ContainerResources(),
+    /** Docker network mode; `none` for an untrusted boot. */
     val networkMode: String = "none",
+    /** Whether the root filesystem is read-only. */
     val readonlyRootfs: Boolean = true,
+    /** Whether to drop all Linux capabilities. */
     val dropAllCapabilities: Boolean = true,
+    /** Whether to forbid privilege escalation (`no-new-privileges`). */
     val noNewPrivileges: Boolean = true,
+    /**
+     * The `uid:gid` to run as (non-root). The default matches the image's own `USER`; callers that bind-mount a
+     * host directory pass the host owner (see `ContainerUser`).
+     */
     val user: String = "1000:1000",
+    /**
+     * Writable tmpfs mount points, needed because the rootfs is read-only. Mounted **executable** — see
+     * [TMPFS_OPTIONS] for what that grants and why.
+     */
     val tmpfsMounts: List<String> = listOf("/tmp"),
+    /**
+     * The container's own hostname, which the engine also makes resolvable. A *networked* container gets an
+     * `<ip> <hostname>` line in `/etc/hosts` from the daemon; `none` has no address, so nothing resolves it and
+     * `InetAddress.getLocalHost()` throws — see [CONTAINER_HOST_NAME].
+     */
     val hostName: String = CONTAINER_HOST_NAME
 )
 

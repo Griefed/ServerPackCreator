@@ -44,18 +44,14 @@ import javax.swing.Icon
 @Extension
 class Tab : TabExtension {
     /**
-     * @param versionMeta   Instance of [VersionMeta] so you can work with available Minecraft,
-     * Forge, Fabric, LegacyFabric and Quilt versions.
-     * @param apiProperties Instance of [ApiProperties] The current configuration of
-     * ServerPackCreator, like the default list of clientside-only mods, the
-     * server pack directory etc.
-     * @param utilities     Instance of [Utilities] commonly used across ServerPackCreator.
-     * @param pluginConfig   Addon specific configuration conveniently provided by ServerPackCreator.
-     * This is the global configuration of the addon which provides the
-     * ConfigPanelExtension to ServerPackCreator.
-     * @param configFile    The config-file corresponding to the ID of the addon, wrapped in an
-     * Optional.
-     * @return Component to add to the ServerPackCreator GUI as a tab.
+     * The component ServerPackCreator adds to its GUI as a tab.
+     *
+     * Every parameter is handed over by ServerPackCreator: [versionMeta] for the available Minecraft,
+     * Forge, Fabric, LegacyFabric and Quilt versions; [apiProperties] for the current configuration,
+     * such as the default clientside-only mods and the server pack directory; [utilities] for the
+     * helpers used across ServerPackCreator; [pluginConfig] for your plugin's own global
+     * configuration; and [configFile] for the config-file corresponding to your plugin's id.
+     *
      * @author Griefed
      */
     override fun getTab(
@@ -66,27 +62,24 @@ class Tab : TabExtension {
     }
 
     /**
-     * Get the [Icon] for this tab to display to the ServerPackCreator GUI.
+     * The [Icon] this tab displays in the ServerPackCreator GUI.
      *
-     * @return Icon to be used by the added tab.
      * @author Griefed
      */
     override val icon: Icon?
         get() = null
 
     /**
-     * Get the title of this tab to display in the ServerPackCreator GUI.
+     * The title this tab displays in the ServerPackCreator GUI.
      *
-     * @return The title of this addon's tabbed pane.
      * @author Griefed
      */
     override val title: String
         get() = Example.example_tab_title.toString()
 
     /**
-     * Get the tooltip for this tab to display in the ServerPackCreator GUI.
+     * The tooltip this tab displays in the ServerPackCreator GUI.
      *
-     * @return The tooltip of this addon's tabbed pane.
      * @author Griefed
      */
     override val tooltip: String

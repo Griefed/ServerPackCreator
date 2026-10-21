@@ -39,9 +39,6 @@ import java.util.*
  * - A list of [Source].
  *
  * @author Griefed
- * @param releaseDate The date at which this release was published/release.
- * @param assets Available release-assets for this update/release, if any.
- * @param sources Available source-archives for this update/release.
  *
  * @author Griefed
  */
@@ -50,8 +47,11 @@ class Update(
     private val version: String,
     private val description: String?,
     private val link: URL,
+    /** The date at which this release was published/release. */
     private val releaseDate: LocalDate,
+    /** Available release-assets for this update/release, if any. */
     private val assets: List<ReleaseAsset>?,
+    /** Available source-archives for this update/release. */
     private val sources: List<Source>
 ) {
     /**
@@ -65,7 +65,6 @@ class Update(
     /**
      * Get the description of this update/release, wrapped in an [Optional].
      * @author Griefed
-     * @return The description of this update/release, wrapped in an [Optional].
      */
     fun description(): Optional<String> {
         return Optional.ofNullable(description)
@@ -74,7 +73,6 @@ class Update(
     /**
      * Get the [URL] to this release for use in your browser.
      * @author Griefed
-     * @return [URL] to this release for use in your browser.
      */
     fun url(): URL {
         return link
@@ -83,7 +81,6 @@ class Update(
     /**
      * Get the [LocalDate] at which this release was published.
      * @author Griefed
-     * @return [LocalDate] at which this release was published.
      */
     fun releaseDate(): LocalDate {
         return releaseDate
@@ -92,7 +89,6 @@ class Update(
     /**
      * Get the [ReleaseAsset]-list of available assets for this update/release, wrapped in an [Optional].
      * @author Griefed
-     * @return [ReleaseAsset]-list of available assets for this update/release, wrapped in an [Optional].
      */
     fun assets(): Optional<List<ReleaseAsset>> {
         return Optional.ofNullable(assets)
@@ -101,7 +97,6 @@ class Update(
     /**
      * Get the [Source]-list of available source-archives for this update/release.
      * @author Griefed
-     * @return [Source]-list of available source-archives for this update/release.
      */
     fun sources(): List<Source> {
         return sources
@@ -110,7 +105,6 @@ class Update(
     /**
      * Get the ZIP-archive-source of this update.
      * @author Griefed
-     * @return [Source] of [ArchiveType.ZIP] of this update.
      */
     fun sourceZip(): Source? {
         for (source in sources) {
@@ -124,7 +118,6 @@ class Update(
     /**
      * Get the tar.gz-archive-source of this update.
      * @author Griefed
-     * @return [Source] of [ArchiveType.TAR_GZ] of this update.
      */
     fun sourceTarGz(): Source? {
         for (source in sources) {
@@ -139,7 +132,6 @@ class Update(
      * Get the tar-archive-source of this update. A tar-archive is usually only available for GitLab updates. GitHub typically
      * only provides zip- and tar.gz-archives.
      * @author Griefed
-     * @return [Source] of [ArchiveType.TAR] of this update, wrapped in an [Optional].
      */
     fun sourceTar(): Optional<Source> {
         for (source in sources) {
@@ -154,7 +146,6 @@ class Update(
      * Get the tar.bz2-archive-source of this update. A tar.bz2-archive is usually only available for GitLab updates. GitHub typically
      * only provides zip- and tar.gz-archives.
      * @author Griefed
-     * @return [Source] of [ArchiveType.TAR_BZ2] of this update, wrapped in an [Optional].
      */
     fun sourceTarBz2(): Optional<Source> {
         for (source in sources) {
@@ -168,7 +159,6 @@ class Update(
     /**
      * Get a specific release-asset for a given name of said release.
      * @author Griefed
-     * @return [ReleaseAsset] for the given name, wrapped in an [Optional].
      */
     fun getReleaseAsset(releaseName: String): Optional<ReleaseAsset> {
         if (assets == null) {

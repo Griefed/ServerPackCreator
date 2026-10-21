@@ -57,8 +57,10 @@ class GitHubChecker : VersionChecker {
     /**
      * Constructs a GitHub checker with the given `user/repository` combination to allow for version checks as
      * well as version and URL acquisition.
+     *
+     * [gitHubUserRepository] — GitHub `user/repository`-combination. For example `Griefed/ServerPackCreator`.
+     *
      * @author Griefed
-     * @param gitHubUserRepository GitHub `user/repository`-combination. For example `Griefed/ServerPackCreator`
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
     constructor(gitHubUserRepository: String) {
@@ -69,9 +71,11 @@ class GitHubChecker : VersionChecker {
     /**
      * Constructs a GitHub checker with the given `user/repository` combination to allow for version checks as
      * well as version and URL acquisition.
+     *
+     * [user] — GitHub-user and owner of the repository. [repository] — GitHub repository owned by the
+     * aforementioned user.
+     *
      * @author Griefed
-     * @param user GitHub-user and owner of the repository.
-     * @param repository GitHub repository owned by the aforementioned user.
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
     constructor(user: String, repository: String) {
@@ -96,11 +100,12 @@ class GitHubChecker : VersionChecker {
     /**
      * Check whether an update/newer version is available for the given version. If you want to check for PreReleases, too,
      * then make sure to pass `true` for `checkForPreReleases`.
+     *
+     * [currentVersion] — The current version of the app. [checkForPreReleases] — `false` if you do not want to
+     * check for PreReleases. `true` if you want to check for PreReleases as well. Returns [Update]-instance,
+     * wrapped in an [Optional], containing information about the available update.
+     *
      * @author Griefed
-     * @param currentVersion The current version of the app.
-     * @param checkForPreReleases `false` if you do not want to check for PreReleases. `true`
-     * if you want to check for PreReleases as well.
-     * @return [Update]-instance, wrapped in an [Optional], containing information about the available update.
      */
     override fun check(currentVersion: String, checkForPreReleases: Boolean): Optional<Update> {
         log.debug("Current version: $currentVersion")
@@ -162,9 +167,11 @@ class GitHubChecker : VersionChecker {
 
     /**
      * Gather a list of all available versions for the given repository.
+     *
+     * Returns a list of all available versions. If an error occurred, or no versions are available, `null`
+     * is returned.
+     *
      * @author Griefed
-     * @return Returns a list of all available versions. If an error occurred, or no versions are available,
-     * `null` is returned.
      */
     public override fun allVersions(): List<String>? {
         val versions: MutableList<String> = ArrayList(1000)
@@ -186,9 +193,10 @@ class GitHubChecker : VersionChecker {
 
     /**
      * Get the latest regular release, or pre-release if `checkForPreRelease` is `true`.
+     *
+     * [checkForPreRelease] — Whether to include alpha and beta releases for latest release versions.
+     *
      * @author Griefed
-     * @param checkForPreRelease Whether to include alpha and beta releases for latest release versions.
-     * @return Returns the latest regular release. If no regular release is available, `no_release` is returned.
      */
     public override fun latestVersion(checkForPreRelease: Boolean): String? {
         if (latest != null) {

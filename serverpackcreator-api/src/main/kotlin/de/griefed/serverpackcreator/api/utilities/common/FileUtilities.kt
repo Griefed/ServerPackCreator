@@ -55,8 +55,9 @@ class FileUtilities {
         /**
          * Move a file from source to destination, and replace the destination file if it exists.
          *
-         * @param destinationFile The destination file to be replaced by the source file.
-         * @return  Returns true if the file was successfully replaced.
+         * [destinationFile] — The destination file to be replaced by the source file. Returns returns true if the
+         * file was successfully replaced.
+         *
          * @throws IOException Thrown if an error occurs when the file is moved.
          * @author Griefed
          */
@@ -73,8 +74,9 @@ class FileUtilities {
         /**
          * Unzips the downloaded modpack ZIP-archive to the specified directory.
          *
-         * @param zipFile              The path to the ZIP-archive which we want to unzip.
-         * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
+         * [zipFile] — The path to the ZIP-archive which we want to unzip. [destinationDirectory] — The directory
+         * into which the ZIP-archive will be unzipped into.
+         *
          * @author Griefed
          */
         // Deliberately NOT @Throws(IOException::class). Kotlin propagates the exception either way; the
@@ -94,8 +96,6 @@ class FileUtilities {
          * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
          * symlink.
          *
-         * @return The type of the given file. Either [FileType.FILE], [FileType.LINK] or
-         * [FileType.SYMLINK]
          * @author Griefed
          */
         fun checkFileType(file: String): FileType {
@@ -107,8 +107,6 @@ class FileUtilities {
          * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
          * symlink.
          *
-         * @return The type of the given file. Either [FileType.FILE], [FileType.LINK] or
-         * [FileType.SYMLINK]
          * @author Griefed
          */
         fun checkFileType(file: File): FileType {
@@ -140,7 +138,6 @@ class FileUtilities {
         /**
          * Check if the given file is a UNIX symlink or Windows lnk.
          *
-         * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
         fun isLink(file: String) = isLink(File(file))
@@ -148,7 +145,6 @@ class FileUtilities {
         /**
          * Check if the given file is a UNIX symlink or Windows lnk.
          *
-         * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
         fun isLink(file: File) = file.name.endsWith(LNK) || try {
@@ -162,9 +158,9 @@ class FileUtilities {
         /**
          * Resolve a given link/symlink to its source.
          *
-         * @param link The link you want to resolve.
-         * @return Path to the source of the link. If the specified file is not a link, the path to the
-         * passed file is returned.
+         * [link] — The link you want to resolve. Returns path to the source of the link. If the specified file is
+         * not a link, the path to the passed file is returned.
+         *
          * @throws IOException              if the link could not be parsed.
          * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
          * @author Griefed
@@ -175,9 +171,9 @@ class FileUtilities {
         /**
          * Resolve a given link/symlink to its source.
          *
-         * @param link The link you want to resolve.
-         * @return Path to the source of the link. If the specified file is not a link, the path to the
-         * passed file is returned.
+         * [link] — The link you want to resolve. Returns path to the source of the link. If the specified file is
+         * not a link, the path to the passed file is returned.
+         *
          * @throws IOException              if the link could not be parsed.
          * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
          * @author Griefed
@@ -221,10 +217,6 @@ class FileUtilities {
          *
          * Huge shoutout to [Codebling](https://stackoverflow.com/users/675721/codebling)
          *
-         * @param file     The file of which to acquire the source.
-         * @param fileType The link-type. Either [FileType.LINK] for Windows, or
-         * [FileType.SYMLINK] for UNIX systems.
-         * @return The path to the source of the given link.
          * @throws InvalidFileTypeException if the specified [FileType] is invalid.
          * @throws InvalidLinkException     if the specified file is not a valid Windows link.
          * @throws ShellLinkException       if the specified file could not be parsed as a Windows link.
@@ -233,7 +225,9 @@ class FileUtilities {
          */
         @Throws(InvalidFileTypeException::class, IOException::class, InvalidLinkException::class, ShellLinkException::class)
         private fun resolveLink(
+            /** The file of which to acquire the source. */
             file: File,
+            /** The link-type. Either [FileType.LINK] for Windows, or [FileType.SYMLINK] for UNIX systems. */
             fileType: FileType
         ) = when (fileType) {
             FileType.SYMLINK -> file.toPath().toRealPath().toString()
@@ -244,7 +238,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @return `true` if both read- and write-permissions are set.
+         * Returns `true` if both read- and write-permissions are set.
+         *
          * @author Griefed
          */
         fun isReadWritePermissionSet(fileOrDirectory: Path) =
@@ -253,7 +248,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @return `true` if read-permissions are set.
+         * Returns `true` if read-permissions are set.
+         *
          * @author Griefed
          */
         fun isReadPermissionSet(fileOrDirectory: Path): Boolean {
@@ -272,7 +268,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @return `true` if write-permissions are set.
+         * Returns `true` if write-permissions are set.
+         *
          * @author Griefed
          */
         fun isWritePermissionSet(fileOrDirectory: Path): Boolean {
@@ -291,7 +288,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @return `true` if read-permissions are set.
+         * Returns `true` if read-permissions are set.
+         *
          * @author Griefed
          */
         fun isReadPermissionSet(fileOrDirectory: String) = isReadPermissionSet(Paths.get(fileOrDirectory))
@@ -299,7 +297,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for read-permission.
          *
-         * @return `true` if read-permissions are set.
+         * Returns `true` if read-permissions are set.
+         *
          * @author Griefed
          */
         fun isReadPermissionSet(fileOrDirectory: File) = isReadPermissionSet(fileOrDirectory.toPath())
@@ -307,7 +306,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @return `true` if write-permissions are set.
+         * Returns `true` if write-permissions are set.
+         *
          * @author Griefed
          */
         fun isWritePermissionSet(fileOrDirectory: String) = isReadPermissionSet(Paths.get(fileOrDirectory))
@@ -315,7 +315,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for write-permission.
          *
-         * @return `true` if write-permissions are set.
+         * Returns `true` if write-permissions are set.
+         *
          * @author Griefed
          */
         fun isWritePermissionSet(fileOrDirectory: File) = isReadPermissionSet(fileOrDirectory.toPath())
@@ -323,7 +324,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @return `true` if both read- and write-permissions are set.
+         * Returns `true` if both read- and write-permissions are set.
+         *
          * @author Griefed
          */
         fun isReadWritePermissionSet(fileOrDirectory: String) =
@@ -332,7 +334,8 @@ class FileUtilities {
         /**
          * Check the given file or directory for read- and write-permission.
          *
-         * @return `true` if both read- and write-permissions are set.
+         * Returns `true` if both read- and write-permissions are set.
+         *
          * @author Griefed
          */
         fun isReadWritePermissionSet(fileOrDirectory: File) =
@@ -409,7 +412,6 @@ class FileUtilities {
  * * No exceptions are thrown if an error occurs
  * * No information is carried outside should an exception occur, meaning you have no information about why the deletion, if it failed
  *
- * @return `true` if, and only if, the file or directory was deleted.
  * @author Griefed
  */
 fun File.deleteQuietly(): Boolean =
@@ -433,7 +435,6 @@ fun File.deleteQuietly(): Boolean =
  * Acquire the size of this file or directory in bytes. If this file-object denotes a directory, then the size of all
  * files in the directory will be checked and the sum of them returned.
  *
- * @return The filesize of this file, or sum of sizes of all files in this directory.
  * @author Griefed
  */
 fun File.size(): Double {
@@ -452,9 +453,10 @@ fun File.size(): Double {
 /**
  * Walk this directory and return all file-objects which match any of the regular expressions in the provided list.
  *
- * @param filters List of regular expressions to use for filtering.
- * @param direction The direction in which to walk the directory. Default is [FileWalkDirection.TOP_DOWN].
- * @return All files inside this directory which matched the given filters.
+ * [filters] — List of regular expressions to use for filtering. [direction] — The direction in which to walk the
+ * directory. Default is [FileWalkDirection.TOP_DOWN]. Returns all files inside this directory which matched the
+ * given filters.
+ *
  * @author Griefed
  */
 fun File.regexWalk(filters: List<Regex>, direction: FileWalkDirection): MutableList<File> =
@@ -463,15 +465,18 @@ fun File.regexWalk(filters: List<Regex>, direction: FileWalkDirection): MutableL
 /**
  * Walk this directory and return all file-objects which match the specified filter-type using the passed list of filters.
  *
- * @param filters List of Strings to use for filtering
- * @param filterType Whether to filter by [FilterType.CONTAINS] (default), [FilterType.ENDS_WITH] or [FilterType.STARTS_WITH].
- * @param direction The direction in which to walk the directory. Default is [FileWalkDirection.TOP_DOWN].
- * @return All files inside this directory which matched the given filters.
+ * Returns all files inside this directory which matched the given filters.
+ *
  * @author Griefed
  */
 fun File.filteredWalk(
+    /** List of Strings to use for filtering */
     filters: List<String>,
+    /**
+     * Whether to filter by [FilterType.CONTAINS] (default), [FilterType.ENDS_WITH] or [FilterType.STARTS_WITH].
+     */
     filterType: FilterType = FilterType.CONTAINS,
+    /** The direction in which to walk the directory. Default is [FileWalkDirection.TOP_DOWN]. */
     direction: FileWalkDirection = FileWalkDirection.TOP_DOWN,
     recursive: Boolean = true
 ): MutableList<File> =
@@ -509,8 +514,10 @@ fun File.filteredWalk(
  *
  * [createFileOrDir] without [asDirectory] will result in this file being created as a file.
  *
- * @param createFileOrDir Whether the file or directory should be created. If left to `false`, then [asDirectory] won't have any effect.
- * @param asDirectory true to create a directory, false to create a file. Requires [createFileOrDir] to be true
+ * [createFileOrDir] — Whether the file or directory should be created. If left to `false`, then [asDirectory]
+ * won't have any effect. [asDirectory] — true to create a directory, false to create a file. Requires
+ * [createFileOrDir] to be true.
+ *
  * @author Griefed
  */
 fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) {
@@ -540,14 +547,14 @@ fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) 
  * [temporaryFile] is a parameter purely so the failure can be exercised — provoking a partial write is not
  * something a test can do, but pointing the staging somewhere unusable reaches the same question.
  *
- * @param temporaryFile Where the new contents are staged before being moved into place.
- * @param write         Fills the staging file. Anything it throws leaves this file untouched.
  * @throws IOException if the contents could not be staged or moved, in which case this file is untouched.
  * @author Griefed
  */
 @Throws(IOException::class)
 fun File.writeAtomically(
+    /** Where the new contents are staged before being moved into place. */
     temporaryFile: File = File(absoluteFile.parentFile, "$name.${UUID.randomUUID()}.tmp"),
+    /** Fills the staging file. Anything it throws leaves this file untouched. */
     write: (File) -> Unit
 ) {
     absoluteFile.toPath().createParentDirectories()
@@ -565,14 +572,14 @@ fun File.writeAtomically(
 /**
  * Replace this file's contents with [text], completely or not at all — [writeAtomically] for a string.
  *
- * @param text          The contents this file should hold once the write has completed.
- * @param temporaryFile Where the contents are staged before being moved into place.
  * @throws IOException if the contents could not be staged or moved, in which case this file is untouched.
  * @author Griefed
  */
 @Throws(IOException::class)
 fun File.writeTextAtomically(
+    /** The contents this file should hold once the write has completed. */
     text: String,
+    /** Where the contents are staged before being moved into place. */
     temporaryFile: File = File(absoluteFile.parentFile, "$name.${UUID.randomUUID()}.tmp")
 ) = writeAtomically(temporaryFile) { it.writeText(text) }
 
@@ -604,7 +611,8 @@ enum class LineEnding(
  * that is still syntactically plausible. Normalising first is also what keeps [LineEnding.CRLF] from
  * doubling the carriage returns of text that already had them.
  *
- * @param lineEnding The convention the returned text uses throughout.
+ * [lineEnding] — The convention the returned text uses throughout.
+ *
  * @author Griefed
  */
 fun String.withLineEndings(lineEnding: LineEnding): String =

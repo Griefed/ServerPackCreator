@@ -41,7 +41,6 @@ fun interface JarDownloader {
  * end of the line, since the author opted out of third-party distribution and nothing here works around
  * it. Such a project is verified from Modrinth instead, where files carry a URL.
  *
- * @param webUtilities SPC's download helper (from [de.griefed.serverpackcreator.api.ApiWrapper]).
  * @author Griefed
  */
 class HttpJarDownloader(private val webUtilities: WebUtilities) : JarDownloader {

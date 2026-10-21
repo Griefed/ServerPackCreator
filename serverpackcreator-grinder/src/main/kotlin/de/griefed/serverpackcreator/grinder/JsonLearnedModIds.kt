@@ -48,10 +48,12 @@ import java.nio.file.StandardCopyOption
  * It lives in the base package rather than `report` or `source` because it is neither a verdict nor a crawl
  * position — it is composition-level state the daemon owns and hands to the engine.
  *
- * @param file The JSON document backing the map; its parent directories are created on first write.
  * @author Griefed
  */
-class JsonLearnedModIds(private val file: File) {
+class JsonLearnedModIds(
+    /** The JSON document backing the map; its parent directories are created on first write. */
+    private val file: File
+) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 

@@ -32,17 +32,16 @@ import javax.xml.parsers.ParserConfigurationException
 /**
  * Quilt meta containing information about available Quilt versions and installers.
  *
- * @param quiltManifest          Quilt manifest file.
- * @param quiltInstallerManifest Quilt-installer manifest file.
- * @param fabricIntermediaries   Fabric-Intermediaries for further compatibility tests.
- * @param utilities              Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 class QuiltMeta(
+    /** Quilt manifest file. */
     quiltManifest: File,
+    /** Quilt-installer manifest file. */
     quiltInstallerManifest: File,
+    /** Fabric-Intermediaries for further compatibility tests. */
     private val fabricIntermediaries: FabricIntermediaries,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
     installerCacheDirectory: File
 ) : Meta {

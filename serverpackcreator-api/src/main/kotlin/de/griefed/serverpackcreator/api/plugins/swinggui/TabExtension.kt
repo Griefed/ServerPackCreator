@@ -44,29 +44,37 @@ interface TabExtension : ExtensionInformation {
      * plugin rather than propagated, so a failing tab costs its own tab and not the window. [icon] and
      * [title] name it in the tab bar.
      *
-     * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
-     * LegacyFabric and Quilt versions.
-     * @param apiProperties Instance of [ApiProperties] The current configuration of ServerPackCreator,
-     * like the default list of clientside-only mods, the server pack directory etc.
-     * @param utilities             Instance of [Utilities] commonly used across ServerPackCreator.
-     * @param pluginConfig          Plugin specific configuration conveniently provided by ServerPackCreator. This is
-     * the global configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
-     * @param configFile            The config-file corresponding to the ID of the plugin, wrapped in an Optional.
-     * @return Component to add to the ServerPackCreator GUI as a tab.
+     * Returns the component to add to the ServerPackCreator GUI as a tab.
+     *
      * @author Griefed
      */
     fun getTab(
+        /**
+         * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+         * Quilt versions.
+         */
         versionMeta: VersionMeta,
+        /**
+         * Instance of [ApiProperties] The current configuration of ServerPackCreator, like the default list of
+         * clientside-only mods, the server pack directory etc.
+         */
         apiProperties: ApiProperties,
+        /** Instance of [Utilities] commonly used across ServerPackCreator. */
         utilities: Utilities,
+        /**
+         * Plugin specific configuration conveniently provided by ServerPackCreator. This is the global
+         * configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
+         */
         pluginConfig: Optional<CommentedConfig>,
+        /** The config-file corresponding to the ID of the plugin, wrapped in an Optional. */
         configFile: Optional<File>
     ): ExtensionTab
 
     /**
      * Get the [Icon] for this tab to display to the ServerPackCreator GUI.
      *
-     * @return Icon to be used by the added tab.
+     * Returns the icon to be used by the added tab.
+     *
      * @author Griefed
      */
     val icon: Icon?
@@ -74,7 +82,8 @@ interface TabExtension : ExtensionInformation {
     /**
      * Get the title of this tab to display in the ServerPackCreator GUI.
      *
-     * @return The title of this plugin's tabbed pane.
+     * Returns the title of this plugin's tabbed pane.
+     *
      * @author Griefed
      */
     val title: String
@@ -82,7 +91,8 @@ interface TabExtension : ExtensionInformation {
     /**
      * Get the tooltip for this tab to display in the ServerPackCreator GUI.
      *
-     * @return The tooltip of this plugin's tabbed pane.
+     * Returns the tooltip of this plugin's tabbed pane.
+     *
      * @author Griefed
      */
     val tooltip: String

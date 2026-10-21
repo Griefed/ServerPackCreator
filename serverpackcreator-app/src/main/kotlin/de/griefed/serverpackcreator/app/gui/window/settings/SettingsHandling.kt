@@ -35,6 +35,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 /**
+ * The save, revert and reset controls shared by every settings editor.
+ *
  * @author Griefed
  */
 class SettingsHandling(

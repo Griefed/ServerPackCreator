@@ -29,7 +29,8 @@ import com.electronwill.nightconfig.toml.TomlParser
  * `META-INF/mods.toml`** and is therefore read by [ForgeTomlScanner], which is why this scanner sees only
  * the newer era.
  *
- * @param tomlParser To parse .toml-files.
+ * [tomlParser] — To parse .toml-files.
+ *
  * @Griefed
  */
 class NeoForgeTomlScanner(tomlParser: TomlParser): ForgeTomlScanner(tomlParser) {

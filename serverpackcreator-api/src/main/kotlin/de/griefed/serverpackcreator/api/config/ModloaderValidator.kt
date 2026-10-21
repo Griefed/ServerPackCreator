@@ -39,8 +39,8 @@ class ModloaderValidator(private val versionMeta: VersionMeta) {
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.
      *
-     * @param modloader Check as case-insensitive for Forge or Fabric.
-     * @return `true` if the specified modloader is either Forge or Fabric. False if neither.
+     * [modloader] — Check as case-insensitive for Forge or Fabric.
+     *
      * @author Griefed
      */
     fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck {
@@ -59,13 +59,11 @@ class ModloaderValidator(private val versionMeta: VersionMeta) {
     /**
      * Check the given Minecraft and modloader versions for the specified modloader.
      *
-     * @param modloader        The passed modloader which determines whether the check for Forge or
-     * Fabric is called.
-     * @param modloaderVersion The version of the modloader which is checked against the corresponding
-     * modloader's manifest.
-     * @param minecraftVersion The version of Minecraft used for checking the Forge version.
-     * @return `true` if the specified modloader version was found in the corresponding
-     * manifest.
+     * [modloader] — The passed modloader which determines whether the check for Forge or Fabric is called.
+     * [modloaderVersion] — The version of the modloader which is checked against the corresponding modloader's
+     * manifest. [minecraftVersion] — The version of Minecraft used for checking the Forge version. Returns `true`
+     * if the specified modloader version was found in the corresponding manifest.
+     *
      * @author Griefed
      */
     fun checkModloaderVersion(

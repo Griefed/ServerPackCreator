@@ -127,14 +127,14 @@ case "${TARGET_ARCH}" in
         BUILD_ARCH=x86_64
         JDK_ARCH=x64
         # Measured for jdk-21.0.12.1+1/x64: GLIBC_2.15, set by lib/libjava.so and lib/server/libjvm.so.
-        # A March 2012 floor.
+        # An ancient floor, so effectively every live distribution satisfies it.
         JDK_MAX_GLIBC="2.15"
         ;;
     aarch64|arm64)
         BUILD_ARCH=aarch64
         JDK_ARCH=aarch64
         # Measured for jdk-21.0.12.1+1/aarch64: GLIBC_2.17. That is not Temurin being careless -- 2.17 is
-        # the FIRST glibc with an AArch64 port at all (released 2012-12-25), so no aarch64 glibc binary can
+        # the FIRST glibc with an AArch64 port at all, so no aarch64 glibc binary can
         # have a lower floor and 2.15 is unreachable on this architecture by construction.
         JDK_MAX_GLIBC="2.17"
         ;;
@@ -510,7 +510,7 @@ chmod +x "$APP_DIR/AppRun"
 
 # Build the AppImage. ARCH is what makes a foreign target work: appimagetool supplies the runtime for
 # the architecture named there rather than for its own, so a natively-running tool emits a foreign
-# AppImage. Verified 2026-08-22 by running the aarch64 appimagetool with ARCH=x86_64 -- `file` reported
+# AppImage. Verified by running the aarch64 appimagetool with ARCH=x86_64 -- `file` reported
 # the output as "ELF 64-bit LSB pie executable, x86-64", and identically with an explicit
 # --runtime-file, so the flag is not needed. ARCH is also not optional: without it appimagetool guesses
 # from the ELFs in the AppDir, and that guess is the bundled JDK's architecture only by luck.

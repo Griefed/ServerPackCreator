@@ -62,22 +62,27 @@ import java.util.*
  * * [ApiPlugins.runPreZipExtensions]} and
  * * [ApiPlugins.runPostGenExtensions].
  *
- * @param apiProperties Base settings of ServerPackCreator needed for server pack generation, such as access to the
- * directories, script templates and so on.
- * @param versionMeta   Meta for modloader and version specific checks and information gathering, such as modloader
- * installer downloads.
- * @param utilities     Common utilities used across ServerPackCreator.
- * @param apiPlugins    Any addons which a user may want to execute during the generation of a server pack.
- * @param modScanner    In case a user enabled automatic sideness detection, this will exclude clientside-only mods
- * from a server pack.
- *
  * @author Griefed
  */
 class ServerPackHandler(
+    /**
+     * Base settings of ServerPackCreator needed for server pack generation, such as access to the directories,
+     * script templates and so on.
+     */
     private val apiProperties: ApiProperties,
+    /**
+     * Meta for modloader and version specific checks and information gathering, such as modloader installer
+     * downloads.
+     */
     private val versionMeta: VersionMeta,
+    /** Common utilities used across ServerPackCreator. */
     private val utilities: Utilities,
+    /** Any addons which a user may want to execute during the generation of a server pack. */
     private val apiPlugins: ApiPlugins,
+    /**
+     * In case a user enabled automatic sideness detection, this will exclude clientside-only mods from a server
+     * pack.
+     */
     private val modScanner: ModScanner
 ) {
 
@@ -174,8 +179,9 @@ class ServerPackHandler(
      * Powershell scripts. Powershell throws a complete fit if the path contains spaces....so, we
      * remove them. Better safe than sorry.
      *
-     * @param packConfig Model containing the modpack directory of the modpack from which the
-     * server pack will be generated.
+     * [packConfig] — Model containing the modpack directory of the modpack from which the server pack will be
+     * generated.
+     *
      * @author Griefed
      */
     fun getServerPackDestination(packConfig: PackConfig): String {
@@ -192,10 +198,9 @@ class ServerPackHandler(
     /**
      * Create a server pack from a given instance of [PackConfig].
      *
-     * @param packConfig An instance of [PackConfig] which contains the
-     * configuration of the modpack from which the server pack is to be
-     * created.
-     * @return `true` if the server pack was successfully generated.
+     * [packConfig] — An instance of [PackConfig] which contains the configuration of the modpack from which the
+     * server pack is to be created. Returns `true` if the server pack was successfully generated.
+     *
      * @author Griefed
      */
     fun run(packConfig: PackConfig): ServerPackGeneration =
@@ -208,7 +213,7 @@ class ServerPackHandler(
      * generation does with it, is otherwise unobservable: a scan over a clean fixture returns nothing,
      * so a test cannot tell a finding that was routed correctly from one that was never produced.
      *
-     * @param scan The scan to run over the finished server pack; defaults to the real Nekodetector.
+     * [scan] — The scan to run over the finished server pack; defaults to the real Nekodetector.
      */
     internal fun run(packConfig: PackConfig, scan: (Path) -> List<String>): ServerPackGeneration {
         val files : ArrayList<File> = ArrayList(10000)
@@ -443,8 +448,9 @@ class ServerPackHandler(
      * newly generated server pack is as clean as possible. This will completely empty the server pack
      * directory, so use with caution!
      *
-     * @param deleteZip   Whether to delete the server pack ZIP-archive.
-     * @param destination The destination at which to clean up in.
+     * [deleteZip] — Whether to delete the server pack ZIP-archive. [destination] — The destination at which to
+     * clean up in.
+     *
      * @author Griefed
      */
     fun cleanupEnvironment(deleteZip: Boolean, destination: String) {

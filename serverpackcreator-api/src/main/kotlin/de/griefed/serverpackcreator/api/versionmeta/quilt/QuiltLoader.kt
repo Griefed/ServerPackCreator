@@ -31,13 +31,12 @@ import java.util.Collections
 /**
  * Information about releases of the Quilt loader.
  *
- * @param manifest  The manifest used when updating available versions.
- * @param utilities Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 internal class QuiltLoader(
+    /** The manifest used when updating available versions. */
     private val manifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities
 ) {
 

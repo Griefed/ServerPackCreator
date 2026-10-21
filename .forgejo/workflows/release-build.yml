@@ -35,10 +35,10 @@ jobs:
           mode: tag
 
   # EVERY ARTIFACT, from the one definition `devbuild.yml` also calls. There is no `winimage` or
-  # `assets` job here any more: they were a second copy of that definition, and the copy is what broke
-  # the 2026-10-07 release -- the Windows half passed a `-JarPath` sourced from a step output that a
-  # PowerShell encoding bug silently emptied, while the dev build passed none, so only the shape nobody
-  # rehearses was wrong. The value that cannot be wrong is the one nobody passes.
+  # `assets` job here any more: they were a second copy of that definition, and a copy is what breaks a
+  # release -- the Windows half passed a `-JarPath` sourced from a step output that a PowerShell
+  # encoding bug silently empties, while the dev build passes none, so only the shape nobody rehearses
+  # was wrong. The value that cannot be wrong is the one nobody passes.
   #
   # Byte-identity of the released jar is preserved and no longer costs a serialisation: `winimage` used
   # to run AFTER `assets` so it could package the released jar, where the shared definition builds
@@ -689,12 +689,10 @@ jobs:
           SERVER_URL: ${{ github.server_url }}
           RELEASE_URL: ${{ steps.gh.outputs.url }}
         run: |
-          # An absent webhook FAILS here, where it used to skip and leave the job green. That tolerance
-          # is what hid a dead announcement for twelve days: the env key said WEBHOOK_URL while the
-          # script read NEWS_WEBHOOK_URL, so the guard was unconditionally true and every release
-          # printed "No NEWS_WEBHOOK_URL configured - skipping" and passed. A secret that is supposed
-          # to be configured and is not is an operator error, not a supported configuration, and the
-          # release pipeline must say so out loud.
+          # An absent webhook FAILS here rather than skipping. A tolerated absence is indistinguishable
+          # from a misspelt `env:` key -- the guard reads empty either way, the job stays green, and no
+          # release is announced. A secret that is supposed to be configured and is not is an operator
+          # error, not a supported configuration, and the release pipeline must say so out loud.
           set -eu
           if [ -z "${NEWS_WEBHOOK_URL:-}" ]; then
             echo "::error::NEWS_WEBHOOK_URL is not configured, so release $VERSION cannot be announced. It is a Discord webhook URL for the news channel - see claude-docs/CI-SECRETS.md. It is NOT the same secret as WEBHOOK_URL, which qodana.yml uses."

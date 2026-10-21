@@ -37,24 +37,28 @@ import java.util.concurrent.atomic.AtomicInteger
  * (re-)ground, so a continuous grind re-checks projects as mods, loader versions and Minecraft support
  * evolve, without redoing fresh work every pass.
  *
- * @param verifier    The boot pipeline (faked in tests; container-backed in production).
- * @param store       Where verdicts accumulate.
- * @param reverifyTtl How long a verdict stays fresh before the project is re-ground.
- * @param clock       Supplies the verdict timestamp and the freshness "now" (injectable for tests).
- * @param status      Live activity record for the report server's `/status`, updated around each candidate.
- *                    Optional so the orchestration stays testable without it.
- * @param requeue     Where a dependency blamed for a candidate's crash is queued for its own verification.
- *                    Optional for the same reason. **This is the point of attribution:** the blame itself is
- *                    a string match and is never allowed to move a verdict, so the suspicion is settled by
- *                    grinding the dependency and seeing whether it crashes alone.
  * @author Griefed
  */
 class Grinder(
+    /** The boot pipeline (faked in tests; container-backed in production). */
     private val verifier: CandidateVerifier,
+    /** Where verdicts accumulate. */
     private val store: VerdictStore,
+    /** How long a verdict stays fresh before the project is re-ground. */
     private val reverifyTtl: Duration = Duration.ofDays(30),
+    /** Supplies the verdict timestamp and the freshness "now" (injectable for tests). */
     private val clock: () -> Instant = Instant::now,
+    /**
+     * Live activity record for the report server's `/status`, updated around each candidate. Optional so the
+     * orchestration stays testable without it.
+     */
     private val status: GrinderStatus? = null,
+    /**
+     * Where a dependency blamed for a candidate's crash is queued for its own verification. Optional for the
+     * same reason. **This is the point of attribution:** the blame itself is a string match and is never
+     * allowed to move a verdict, so the suspicion is settled by grinding the dependency and seeing whether it
+     * crashes alone.
+     */
     private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -212,12 +216,12 @@ enum class GrindOutcome {
  * Parallelism should be sized to the host (≈ RAM / per-boot-memory), since each in-flight grind holds
  * a booting container.
  *
- * @param grinder     Grinds a single candidate.
- * @param workerCount Number of parallel workers (and therefore concurrent container boots).
  * @author Griefed
  */
 class GrindPool(
+    /** Grinds a single candidate. */
     private val grinder: Grinder,
+    /** Number of parallel workers (and therefore concurrent container boots). */
     private val workerCount: Int
 ) {
     /** Set by [requestStop]; workers finish their current candidate and then stop taking new ones. */

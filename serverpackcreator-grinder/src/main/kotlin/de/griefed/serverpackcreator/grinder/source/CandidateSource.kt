@@ -63,20 +63,25 @@ interface CandidateSource {
  * same region later). Conflating the two would silently reset a deep crawl to the top of the catalog on any
  * transient HTTP error.
  *
- * @param candidates    The projects in this slice, most-downloaded first.
- * @param nextOffset    Offset the next slice should start at. Normally `offset + candidates.size`, i.e. only
- *                      what was actually handed out is treated as consumed — but for a partitioned source it
- *                      is the offset *within* [nextPartition], which resets whenever a slice crosses a
- *                      partition boundary.
- * @param endOfCatalog  `true` only when the platform genuinely ran out of results — for a partitioned source,
- *                      when the *last* partition ran out. Never on a failed request.
- * @param nextPartition The source's opaque traversal token to hand back on the next call (`null` when the
- *                      source does not partition, or to restart at the beginning of its plan).
  * @author Griefed
  */
 data class CandidatePage(
+    /** The projects in this slice, most-downloaded first. */
     val candidates: List<GrindCandidate>,
+    /**
+     * Offset the next slice should start at. Normally `offset + candidates.size`, i.e. only what was actually
+     * handed out is treated as consumed — but for a partitioned source it is the offset *within*
+     * [nextPartition], which resets whenever a slice crosses a partition boundary.
+     */
     val nextOffset: Int,
+    /**
+     * `true` only when the platform genuinely ran out of results — for a partitioned source, when the *last*
+     * partition ran out. Never on a failed request.
+     */
     val endOfCatalog: Boolean,
+    /**
+     * The source's opaque traversal token to hand back on the next call (`null` when the source does not
+     * partition, or to restart at the beginning of its plan).
+     */
     val nextPartition: String? = null
 )

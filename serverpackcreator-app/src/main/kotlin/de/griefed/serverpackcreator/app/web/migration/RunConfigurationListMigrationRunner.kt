@@ -39,15 +39,16 @@ import org.springframework.stereotype.Component
  * Safe to run repeatedly: documents already in the new shape are skipped without a write, so a restart
  * costs one collection read and nothing else. Failures are logged and swallowed for the same reason —
  * an instance that cannot migrate should still serve what it can rather than refuse to boot.
- *
- * @param store The database operations, behind [MigrationStore] so this class's safety decisions —
- * rewrite before dropping, never drop when nothing was rewritten, keep going when one drop fails — can be
- * asserted without a database. They are the decisions that can lose data if wrong.
- * @param migration The per-document transformation.
  */
 @Component
 class RunConfigurationListMigrationRunner(
+    /**
+     * The database operations, behind [MigrationStore] so this class's safety decisions — rewrite before
+     * dropping, never drop when nothing was rewritten, keep going when one drop fails — can be asserted without
+     * a database. They are the decisions that can lose data if wrong.
+     */
     private val store: MigrationStore,
+    /** The per-document transformation. */
     private val migration: RunConfigurationListMigration
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

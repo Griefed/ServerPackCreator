@@ -36,19 +36,17 @@ import java.time.Duration
  */
 sealed interface FetchResult<out T> {
 
-    /**
-     * The grinder answered and the answer parsed.
-     *
-     * @param value What was read.
-     */
-    data class Ok<T>(val value: T) : FetchResult<T>
+    /** The grinder answered and the answer parsed. */
+    data class Ok<T>(
+        /** What was read. */
+        val value: T
+    ) : FetchResult<T>
 
-    /**
-     * Nothing usable came back.
-     *
-     * @param reason A sentence fit to show a user, naming what went wrong rather than where.
-     */
-    data class Failed(val reason: String) : FetchResult<Nothing>
+    /** Nothing usable came back. */
+    data class Failed(
+        /** A sentence fit to show a user, naming what went wrong rather than where. */
+        val reason: String
+    ) : FetchResult<Nothing>
 }
 
 /**
@@ -58,16 +56,17 @@ sealed interface FetchResult<out T> {
  * working against a daemon newer than itself: a field nobody here has heard of is simply not read. The
  * two endpoints it knows are `/verdicts.json` and `/status`, both derived through [GrinderUrl].
  *
- * @param objectMapper The mapper to parse with. ServerPackCreator hands its own to every extension, so
- *                     the plugin adds no JSON dependency of its own.
- * @param timeout How long a single request may take, applied to both connect and response.
- * @param httpClient The client to send with; injectable so a test can shorten its connect timeout.
- *
  * @author Griefed
  */
 class GrinderClient(
+    /**
+     * The mapper to parse with. ServerPackCreator hands its own to every extension, so the plugin adds no
+     * JSON dependency of its own.
+     */
     private val objectMapper: ObjectMapper,
+    /** How long a single request may take, applied to both connect and response. */
     private val timeout: Duration = Duration.ofSeconds(15),
+    /** The client to send with; injectable so a test can shorten its connect timeout. */
     private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(timeout).build()
 ) {
 

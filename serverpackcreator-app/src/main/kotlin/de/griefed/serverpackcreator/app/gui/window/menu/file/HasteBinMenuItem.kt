@@ -54,10 +54,10 @@ abstract class HasteBinMenuItem(
     /**
      * Display the given URL in a text pane.
      *
-     * @param urlToHasteBin   The URL, as a String, to display.
      * @author Griefed
      */
     fun displayUploadUrl(
+        /** The URL, as a String, to display. */
         urlToHasteBin: String,
         displayTextPane: JTextPane
     ) {

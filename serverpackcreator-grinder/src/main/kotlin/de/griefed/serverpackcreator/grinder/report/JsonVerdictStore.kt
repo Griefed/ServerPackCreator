@@ -62,13 +62,15 @@ import java.util.concurrent.atomic.AtomicLong
  * The default is **write-through** ([Duration.ZERO]) on purpose: coalescing is opted into at the composition
  * root, so no existing caller silently loses the durability it was written against.
  *
- * @param file The JSON document backing the store (its parent directory is created on first write).
- * @param flushInterval How often buffered verdicts reach the disk. [Duration.ZERO] (the default) writes
- *        through on every [record] and starts no thread at all.
  * @author Griefed
  */
 class JsonVerdictStore(
+    /** The JSON document backing the store (its parent directory is created on first write). */
     private val file: File,
+    /**
+     * How often buffered verdicts reach the disk. [Duration.ZERO] (the default) writes through on every
+     * [record] and starts no thread at all.
+     */
     private val flushInterval: Duration = Duration.ZERO
 ) : VerdictStore, AutoCloseable {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

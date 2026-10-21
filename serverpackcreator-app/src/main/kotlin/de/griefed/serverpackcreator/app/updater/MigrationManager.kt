@@ -40,7 +40,6 @@ import java.util.*
  * in order to ensure a users environment is up-to-date, even when skipping multiple versions when
  * updating.
  *
- *
  * This does not guarantee a safe update when updating between major versions, as major versions
  * tend to contain breaking changes, and depending on those changes there will still be a need for
  * the user to ensure they can safely update. One example would be major version 3 to major version
@@ -48,15 +47,12 @@ import java.util.*
  * later.<br></br> Aas this is not something ServerPackCreator can take care of, it is a good example for
  * a migration which this manager can not take care of.
  *
- *
  * Other migrations, such as updating the `log4j2.xml` and the logs-directory inside said file
  * can and will be taken care of.
- *
  *
  * Some migrations will require the user to restart ServerPackCreator for the executed migrations to
  * take full effect. A given migration method which executes such migrations should register a
  * migration message informing the user about the need to restart SPC.
- *
  *
  * Migration messages are displayed in a dialog when using the GUI as well as printed to the
  * serverpackcreator.log.
@@ -132,10 +128,8 @@ class MigrationManager(
     }
 
     /**
-     * Check if the first version is older than the second one.
+     * Whether [old] is an older version than [checkAgainst], the version currently in use.
      *
-     * @param checkAgainst The current version being used.
-     * @return `true` if the current version is older than the previously used version.
      * @author Griefed
      */
     private fun isOlder(old: String, checkAgainst: String): Boolean {
@@ -145,10 +139,9 @@ class MigrationManager(
     }
 
     /**
-     * Acquire the list of migration-methods to execute based on the current version being used. All
-     * methods which match a version newer than the passed one are executed.
+     * The migration-methods to execute for a move from [oldVersion] to [currentVersion]: every method
+     * matching a version newer than the one passed.
      *
-     * @return Methods to execute to ensure proper migration between version updates.
      * @author Griefed
      */
     private fun getMigrationMethods(oldVersion: String, currentVersion: String): List<Method?> {
@@ -175,9 +168,8 @@ class MigrationManager(
     }
 
     /**
-     * Convert a text-based version to a semantic representation, usable in version comparisons.
+     * [textVersion] converted to a semantic representation, usable in version comparisons.
      *
-     * @param textVersion The text-based version to convert to the semantic format.
      * @author Griefed
      */
     private fun toSemantic(textVersion: String): String {
@@ -207,12 +199,8 @@ class MigrationManager(
     }
 
     /**
-     * Compare two integer arrays of semantic version against each other and determine whether we have
-     * an old version at hand.
+     * Whether the semantic version numbers [checkAgainst] represent an older version than [old].
      *
-     * @param old          The old version numbers.
-     * @param checkAgainst The new version numbers to check whether they represent an older version.
-     * @return `true` if the version numbers checked against represent an older version.
      * @author Griefed
      */
     private fun older(old: IntArray, checkAgainst: IntArray): Boolean {
@@ -229,10 +217,8 @@ class MigrationManager(
     }
 
     /**
-     * Get the major, minor and patch numbers of a version.
+     * The major, minor and patch numbers of [version].
      *
-     * @param version The version of which to get the major, minor and patch number array.
-     * @return Array containing the major, minor and patch numbers.
      * @author Griefed
      */
     private fun semantics(version: String): IntArray {
@@ -240,11 +226,9 @@ class MigrationManager(
     }
 
     /**
-     * Check if the first version is newer than the second one.
+     * Whether [checkAgainst], the version a migration-method represents, is newer than [old], the
+     * version currently in use.
      *
-     * @param old          The current version being used.
-     * @param checkAgainst The version the migration-method represents.
-     * @return `true` if the migration-method version is newer than the current version.
      * @author Griefed
      */
     private fun isNewer(old: String, checkAgainst: String): Boolean {
@@ -254,11 +238,8 @@ class MigrationManager(
     }
 
     /**
-     * Check if the first version is older than or the same as the second one.
+     * Whether [old] is the same version as [checkAgainst], the version currently in use, or older.
      *
-     * @param checkAgainst The current version being used.
-     * @return `true` if the current version is older than or the same as the previously used
-     * version.
      * @author Griefed
      */
     private fun isOlderOrSame(old: String, checkAgainst: String): Boolean {
@@ -268,12 +249,8 @@ class MigrationManager(
     }
 
     /**
-     * Compare two integer arrays of semantic version against each other and determine whether we have
-     * a new version at hand.
+     * Whether the semantic version numbers [checkAgainst] represent a newer version than [old].
      *
-     * @param old          The old version numbers.
-     * @param checkAgainst The new version numbers to check whether they represent a newer version.
-     * @return `true` if the version numbers checked against represent a newer version.
      * @author Griefed
      */
     private fun newer(old: IntArray, checkAgainst: IntArray): Boolean {
@@ -290,13 +267,9 @@ class MigrationManager(
     }
 
     /**
-     * Compare two integer arrays of semantic version against each other and determine whether we have
-     * an old version or the same one at hand.
+     * Whether the semantic version numbers [checkAgainst] represent the same version as [old] or an
+     * older one.
      *
-     * @param old          The old version numbers.
-     * @param checkAgainst The new version numbers to check whether they represent an older version.
-     * @return `true` if the version numbers checked against represent an older version or the
-     * same.
      * @author Griefed
      */
     private fun oldOrSame(old: IntArray, checkAgainst: IntArray): Boolean {
@@ -304,12 +277,8 @@ class MigrationManager(
     }
 
     /**
-     * Check if the first version is newer than or the same as the second one.
+     * Whether [current] is the same version as [checkAgainst] or newer.
      *
-     * @param current      The old version used.
-     * @param checkAgainst The current version being used.
-     * @return `true` if the current version is newer than or the same as the previously used
-     * version.
      * @author Griefed
      */
     private fun isNewerOrSame(current: String, checkAgainst: String): Boolean {
@@ -317,13 +286,9 @@ class MigrationManager(
     }
 
     /**
-     * Compare two integer arrays of semantic version against each other and determine whether we have
-     * a new version or the same one at hand.
+     * Whether the semantic version numbers [checkAgainst] represent the same version as [current] or
+     * a newer one.
      *
-     * @param current      The old version numbers.
-     * @param checkAgainst The new version numbers to check whether they represent an older version.
-     * @return `true` if the version numbers checked against represent a newer version or the
-     * same.
      * @author Griefed
      */
     private fun newOrSame(current: IntArray, checkAgainst: IntArray): Boolean {
@@ -333,7 +298,6 @@ class MigrationManager(
     /**
      * Convert a semantic version to text-based representation.
      *
-     * @return The semantic version converted to text-based representation.
      * @author Griefed
      */
     private fun toText(version: String): String {

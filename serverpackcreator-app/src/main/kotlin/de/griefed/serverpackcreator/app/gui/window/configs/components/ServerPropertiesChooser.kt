@@ -25,6 +25,8 @@ import java.awt.Dimension
 import java.io.File
 
 /**
+ * A file chooser restricted to `server.properties` files.
+ *
  * @author Griefed
  */
 class ServerPropertiesChooser(current: File?, dimension: Dimension) : BaseFileChooser() {

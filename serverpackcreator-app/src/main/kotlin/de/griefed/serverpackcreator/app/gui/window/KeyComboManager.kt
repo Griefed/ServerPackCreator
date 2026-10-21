@@ -57,6 +57,8 @@ class KeyComboManager(
     }
 
     /**
+     * Registers the keyboard shortcut that closes the current configuration tab.
+     *
      * @author Griefed
      */
     private fun addCloseTabCombo() {
@@ -77,6 +79,8 @@ class KeyComboManager(
     }
 
     /**
+     * Registers the keyboard shortcut that opens a new configuration tab.
+     *
      * @author Griefed
      */
     private fun addNewTabCombo() {
@@ -93,6 +97,8 @@ class KeyComboManager(
     }
 
     /**
+     * Registers the keyboard shortcut that saves the current configuration tab.
+     *
      * @author Griefed
      */
     private fun addSaveCurrentTabCombo() {
@@ -109,6 +115,8 @@ class KeyComboManager(
     }
 
     /**
+     * Registers the keyboard shortcut that saves every open configuration tab.
+     *
      * @author Griefed
      */
     private fun addSaveAllTabsCombo() {
@@ -125,6 +133,8 @@ class KeyComboManager(
     }
 
     /**
+     * Registers the keyboard shortcut that opens the configuration-loading dialog.
+     *
      * @author Griefed
      */
     private fun addLoadConfigsCombo() {
@@ -141,6 +151,8 @@ class KeyComboManager(
     }
 
     /**
+     * Registers the keyboard shortcut that starts a server pack generation.
+     *
      * @author Griefed
      */
     private fun addStartGenerationCombo() {

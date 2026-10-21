@@ -191,11 +191,11 @@ object VerdictPolicy {
      * declared client mod is already excludable from its metadata and costs nothing to find, while the ones
      * worth a container are those coded unclean, claiming the server and calling the client.
      *
-     * @param staging         Whether a pack reached the container, and why not when it did not.
-     * @param boot            What the classifier made of the boot, or `null` when none was observed despite
-     *                        staging succeeding.
-     * @param confirmedByRule Id of the console rule that proved exclusion-worthiness, or `null` if none matched.
-     * @param declared        What the mod claims about itself; carried for the report, never for the verdict.
+     * [staging] says whether a pack reached the container, and why not when it did not; [boot] is what the
+     * classifier made of the boot, or `null` when none was observed despite staging succeeding;
+     * [confirmedByRule] is the id of the console rule that proved exclusion-worthiness, or `null` when none
+     * matched; [declared] is what the mod claims about itself, carried for the report and never for the
+     * verdict.
      */
     fun decide(
         staging: StagingOutcome,

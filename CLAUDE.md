@@ -379,11 +379,18 @@ evidence consulted occasionally, not context every session needs.
   not single letters. The one carve-out is the throwaway loop counter; it generalises only to a
   small, closed set of established Kotlin idioms whose meaning is universal and whose scope is a few
   lines. The line is "would a newcomer have to scroll up to learn what this is?" — if yes, name it.
-- **Documentation — comment everything:** every function, method and exported constant carries a
-  doc comment — unexported ones too. State briefly WHAT it's for and HOW it achieves it, not a
-  restatement of the signature. One or two sentences is the target; needing more is a sign the unit
-  is doing too much (KISS). Keep comments truthful as code changes — a stale comment is worse than
-  none.
+- **Documentation — as little as possible, as much as necessary.** Document at the **class, method or
+  function level**. Add an **inline** comment only where it explains complex logic, non-obvious
+  behaviour, an assumption, a constraint, a side effect, or a design decision that cannot readily be
+  inferred from the code. Before writing a comment, ask whether an experienced developer could
+  reasonably infer it from the code — if yes, omit it. Prefer clear naming and simple structure over
+  explanatory prose. Never restate self-explanatory code, and never add a redundant, obvious or purely
+  descriptive comment. Where a doc comment *is* warranted, state briefly WHAT the unit is for and HOW
+  it achieves it; one or two sentences is the target, and needing more is a sign the unit is doing too
+  much (KISS). Preserve existing documentation that carries meaning; remove or update what is
+  redundant, misleading or outdated whenever you touch the code — a stale comment is worse than none.
+  **This supersedes the former "comment everything" rule**, which required a doc comment on every
+  function, method and exported constant including unexported ones.
 - **Documentation describes the present tense — Griefed's call, 2026-10-02.** A doc comment says what the
   code is and does, for a reader who has never seen any other version of it. It does not say what the code
   *used to* be, which CI run made it change, what an earlier comment got wrong, or why today's shape is
@@ -408,17 +415,23 @@ evidence consulted occasionally, not context every session needs.
   not — it is the enabling change. Keep it to the declaration being documented, and verify the obvious: parameter
   names, types, order and defaults must survive untouched. The alternative, a class-level `@param` block, leaves the
   properties themselves undocumented as far as dokka is concerned.
-- **A doc that only restates the signature is barely better than none — but silence is worse.** For a pure accessor
-  over a well-named field there is often nothing to add, and dokka flags the omission either way. Put the shared
-  meaning where it belongs: `ServerPackConfigTab`'s accessors were labels until the *interface* doc explained that
-  they read live tab state rather than the saved configuration, which is the fact every one of them depends on.
-  Prefer one honest paragraph on the type over forty restatements on its members.
+- **A doc that only restates the signature is omitted, not written.** For a pure accessor over a well-named
+  field there is usually nothing to add, so add nothing. Put the shared meaning where it belongs instead:
+  `ServerPackConfigTab`'s accessors were labels until the *interface* doc explained that they read live tab
+  state rather than the saved configuration, which is the fact every one of them depends on. One honest
+  paragraph on the type beats forty restatements on its members — and beats forty silences too, because the
+  paragraph is the part a reader cannot infer.
+  - **The build agrees: `reportUndocumented` is `false` in
+    `buildSrc/src/main/kotlin/serverpackcreator.dokka-conventions.gradle.kts`.** It warns for every public,
+    protected or package-visible declaration without KDoc, which is the opposite of this rule, so a doc
+    deliberately left off no longer costs a dokka warning. Do not set it back to `true` without changing
+    the policy above first — the two have to say the same thing.
 - **Errors:** always handle, never ignore with `_` unless intentional (comment why).
 
 ## Definition of done (per change)
 
 1. Tests written first and green (`./gradlew :<module>:test`).
-2. Doc comments per **## Conventions** on every new/changed unit.
+2. Documentation per **## Conventions** — as little as possible, as much as necessary; no restatements.
 3. No new compiler warnings; stale comments updated.
 4. CLAUDE.md "Refactor state" (and the relevant module `CLAUDE.md`) updated when an architectural
    step lands. Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`, not here.

@@ -32,8 +32,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  * [FabricFamilyScanner], which Fabric shares; only Quilt's `depends`-block shape is specific to this
  * scanner.
  *
- * @param objectMapper For JSON-parsing.
- * @param utilities    Common utilities used across ServerPackCreator.
+ * [objectMapper] — For JSON-parsing. [utilities] — Common utilities used across ServerPackCreator.
  *
  * @author Griefed
  */

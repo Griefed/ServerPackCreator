@@ -38,17 +38,16 @@ concurrency:
 
 jobs:
   # ONE definition of what this build calls itself, because two jobs need it and they must agree.
-  # It used to live only in the tag computation of the job that published the help image, which is
-  # why the Dokka tree was built with no `-Pversion` at all: the job that builds it cannot read
-  # another job's step outputs. An artifact named `9.2.1` whose API reference says `dev` is the result.
+  # A job cannot read another job's step outputs, so a version computed inside one of them reaches the
+  # Dokka build as no `-Pversion` at all -- an artifact named `9.2.1` whose API reference says `dev`.
   version:
     name: "Version"
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.out.outputs.version }}
       # Whether this build is a prerelease, decided ONCE here and read by everything downstream.
-      # It used to be re-derived twice -- a `case` in `Compute tags` and a regex in
-      # `assemble-docs.sh` -- which is two copies of a question `resolve-version` already answers.
+      # `resolve-version` already answers it, so re-deriving it in `Compute tags` or in
+      # `assemble-docs.sh` would be a second copy of one question, free to drift from this one.
       prerelease: ${{ steps.out.outputs.prerelease }}
     steps:
       # Needed only because `resolve-version` is a local action: a local action's files arrive with

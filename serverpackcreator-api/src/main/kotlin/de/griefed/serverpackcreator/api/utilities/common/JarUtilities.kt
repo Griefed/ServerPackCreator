@@ -48,16 +48,16 @@ class JarUtilities {
          * * `copyFileFromJar(File("log4j2.xml"))` will result in the log4j2.xml file from inside the JAR-file to be
          * copied to the outside of the JAR-file as `log4j2.xml`
          *
-         * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
-         * @param replaceIfExists Whether to replace the file, if it already exists.
-         * @param classToCopyFrom The class of the JAR from which you want to copy from.
-         * @param directory       The directory where the file should be copied to.
          * @author Griefed
          */
         fun copyFileFromJar(
+            /** The source-file in the JAR you wish to copy outside the JAR. */
             fileToCopy: String,
+            /** Whether to replace the file, if it already exists. */
             replaceIfExists: Boolean,
+            /** The class of the JAR from which you want to copy from. */
             classToCopyFrom: Class<*>,
+            /** The directory where the file should be copied to. */
             directory: String
         ) {
             if (replaceIfExists) {
@@ -74,9 +74,9 @@ class JarUtilities {
          * * `copyFileFromJar(File("log4j2.xml"))` will result in the log4j2.xml file from inside the JAR-file to be
          * copied to the outside of the JAR-file as `log4j2.xml`
          *
-         * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
-         * @param identifierClass The class of the JAR from which to get the resource.
-         * @return `true` if the file was created, `false` otherwise.
+         * [fileToCopy] — The source-file in the JAR you wish to copy outside the JAR. [identifierClass] — The
+         * class of the JAR from which to get the resource.
+         *
          * @author Griefed
          */
         fun copyFileFromJar(fileToCopy: String, identifierClass: Class<*>, directory: String) =
@@ -114,15 +114,15 @@ class JarUtilities {
          * * `copyFileFromJar(File("log4j2.xml"))` will result in the log4j2.xml file from inside the JAR-file to be copied
          * to the outside of the JAR-file as `log4j2.xml`
          *
-         * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
-         * @param identifierClass The class of the JAR from which to get the resource.
-         * @param replaceIfExists Whether to replace the file, if it already exists.
          * @author Griefed
          */
         fun copyFileFromJar(
+            /** The source-file in the JAR you wish to copy outside the JAR. */
             fileToCopy: String,
             destinationFile: File,
+            /** Whether to replace the file, if it already exists. */
             replaceIfExists: Boolean,
+            /** The class of the JAR from which to get the resource. */
             identifierClass: Class<*>
         ) {
             if (replaceIfExists) {
@@ -139,9 +139,9 @@ class JarUtilities {
          * * `copyFileFromJar(File("log4j2.xml"))` will result in the log4j2.xml file from inside the JAR-file to be copied
          * to the outside of the JAR-file as `log4j2.xml`
          *
-         * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
-         * @param identifierClass The class of the JAR from which to get the resource.
-         * @return `true` if the file was created, `false` otherwise.
+         * [fileToCopy] — The source-file in the JAR you wish to copy outside the JAR. [identifierClass] — The
+         * class of the JAR from which to get the resource.
+         *
          * @author Griefed
          */
         fun copyFileFromJar(fileToCopy: String, destinationFile: File, identifierClass: Class<*>) =
@@ -175,37 +175,34 @@ class JarUtilities {
          * Copy a folder from inside a JAR-file to the host filesystem. The specified folder will be
          * copied, along with all resources inside it, recursively, to the specified destination.<br>
          *
-         * @param classToRetrieveHomeFor Path to either the JAR-file from which to copy a folder from, or
-         *                               to the class when running in a dev-environment. This parameter
-         *                               decides whether
-         *                               {@link #copyFolderFromJar(Class, String, String, String)} or
-         *                               {@link #copyFolderFromJar(JarFile, String, String, String,
-         *                               String)} is called.<br> Example for JAR-file:
-         *                               {@code /home/griefed/serverpackcreator/serverpackcreator.jar}
-         *                               <br>
-         *                               Example for dev-environment:
-         *                               {@code G:/GitLab/ServerPackCreator/build/classes/java/main }<br>
-         *                               See {@link ServerPackCreator#main(String[])} source code for an
-         *                               example on how this is acquired automatically.
-         * @param directoryToCopy        Path to the directory inside the JAR-file you want to copy.
-         * @param destinationDirectory   Path to the destination directory you want to copy source to.
-         * @param jarDirectoryPrefix     A prefix to remove when checking for existence of source inside
-         *                               the JAR-file. For example, the ServerPackCreator files inside
-         *                               it's JAR-File are located in {@code BOOT-INF/classes} due to
-         *                               SpringBoot. In order to correctly scan for source, we need to
-         *                               remove that prefix, so we receive a path that looks like a
-         *                               regular path inside a JAR-file.
-         * @param fileEnding             The file-ending to filter for.
          * @throws IOException Exception thrown if a file can not be accessed, found or otherwise worked
          *                     with.
          * @author Griefed
          */
         @Throws(IOException::class)
         fun copyFolderFromJar(
+            /**
+             * Path to either the JAR-file from which to copy a folder from, or to the class when running in a
+             * dev-environment. This parameter decides whether {@link #copyFolderFromJar(Class, String, String,
+             * String)} or {@link #copyFolderFromJar(JarFile, String, String, String, String)} is called.<br>
+             * Example for JAR-file: {@code /home/griefed/serverpackcreator/serverpackcreator.jar} <br> Example
+             * for dev-environment: {@code G:/GitLab/ServerPackCreator/build/classes/java/main }<br> See {@link
+             * ServerPackCreator#main(String[])} source code for an example on how this is acquired
+             * automatically.
+             */
             classToRetrieveHomeFor: Class<*>,
+            /** Path to the directory inside the JAR-file you want to copy. */
             directoryToCopy: String,
+            /** Path to the destination directory you want to copy source to. */
             destinationDirectory: String,
+            /**
+             * A prefix to remove when checking for existence of source inside the JAR-file. For example, the
+             * ServerPackCreator files inside it's JAR-File are located in {@code BOOT-INF/classes} due to
+             * SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive a
+             * path that looks like a regular path inside a JAR-file.
+             */
             jarDirectoryPrefix: String,
+            /** The file-ending to filter for. */
             fileEnding: Regex,
             tempDir: File = File(System.getProperty("user.home"),".spc")
         ) {
@@ -244,18 +241,18 @@ class JarUtilities {
          * are not wrapped in a JAR-file, but instead exist as regular files on the host filesystem, thus
          * enabling us to iterate through 'em.
          *
-         * @param classToCopyFrom Class in the JAR from which to copy, to identify the JAR.
-         * @param dirToCopy       The source-directory in the JAR-file you wish to copy.
-         * @param destination     The destination where the source-file should be copied to.
-         * @param fileEnding      The file-ending to filter for.
          * @throws NullPointerException When the specified resource can not be found.
          * @author Griefed
          */
         @Throws(NullPointerException::class)
         private fun copyFolderFromDevEnv(
+            /** Class in the JAR from which to copy, to identify the JAR. */
             classToCopyFrom: Class<*>,
+            /** The source-directory in the JAR-file you wish to copy. */
             dirToCopy: String,
+            /** The destination where the source-file should be copied to. */
             destination: String,
+            /** The file-ending to filter for. */
             fileEnding: Regex
         ) {
             val filesFromJar: MutableList<String> = ArrayList(1000)
@@ -311,28 +308,29 @@ class JarUtilities {
          * copied, along with all resources inside it, recursively, to the specified destination.<br> This
          * method is used when we are running in a JAR-file.
          *
-         * @param jarToCopyFrom        The JAR-file to copy directoryToCopy to destinationDirectory from.
-         * @param directoryToCopy      Path to the directory inside the JAR-file you want to copy.
-         * @param destinationDirectory Path to the destination directory you want to copy source to.
-         * @param jarDirectoryPrefix   A prefix to remove when checking for existence of source inside the
-         *                             JAR-file. For example, the ServerPackCreator files inside it's
-         *                             JAR-File are located in {@code BOOT-INF/classes} due to SpringBoot.
-         *                             In order to correctly scan for source, we need to remove that
-         *                             prefix, so we receive a path that looks like a regular path inside
-         *                             a JAR-file.
-         * @param fileEnding           The file-ending to filter for. If you want to filter for multiple
-         *                             file-endings, separate them using {@code |}. Do not include the
-         *                             {@code .}.
          * @throws IOException Thrown if no streams of the files can be created, indicating that they are
          *                     inaccessible for some reason.
          * @author Griefed
          */
         @Throws(IOException::class)
         private fun copyFolderFromJar(
+            /** The JAR-file to copy directoryToCopy to destinationDirectory from. */
             jarToCopyFrom: JarFile,
+            /** Path to the directory inside the JAR-file you want to copy. */
             directoryToCopy: String,
+            /** Path to the destination directory you want to copy source to. */
             destinationDirectory: String,
+            /**
+             * A prefix to remove when checking for existence of source inside the JAR-file. For example, the
+             * ServerPackCreator files inside it's JAR-File are located in {@code BOOT-INF/classes} due to
+             * SpringBoot. In order to correctly scan for source, we need to remove that prefix, so we receive a
+             * path that looks like a regular path inside a JAR-file.
+             */
             jarDirectoryPrefix: String,
+            /**
+             * The file-ending to filter for. If you want to filter for multiple file-endings, separate them
+             * using {@code |}. Do not include the {@code .}.
+             */
             fileEnding: Regex,
         ) {
             val entries: Enumeration<JarEntry> = jarToCopyFrom.entries()
@@ -376,8 +374,8 @@ class JarUtilities {
          * * osName - Name of the operating system.
          * * osVersion - Version of the operating system.
          *
-         * @param classInJar Class for which to acquire information about its JAR-file and system.
-         * @return A hashmap containing key-value-pairs with information about the JAR-file and system.
+         * [classInJar] — Class for which to acquire information about its JAR-file and system.
+         *
          * @author Griefed
          */
         fun jarInformation(classInJar: Class<*>): HashMap<String, String> {

@@ -46,7 +46,8 @@ class ListUtilities {
          * Encapsulate every element of the passed String List in quotes. Returns the list as
          * `["element1","element2","element3"` etc.
          *
-         * @return Returns a concatenated String with all elements of the passed list encapsulated.
+         * Returns a concatenated String with all elements of the passed list encapsulated.
+         *
          * @author Griefed
          */
         fun encapsulateListElements(listToEncapsulate: List<String>): String {
@@ -68,7 +69,8 @@ class ListUtilities {
          * Prompts the user to enter the values which will make up a String List in the new configuration
          * file. If the user enters an empty line, the method is exited and the String List returned.
          *
-         * @return Returns the list of values entered by the user.
+         * Returns the list of values entered by the user.
+         *
          * @author whitebear60
          */
         fun readStringList(): List<String> {
@@ -89,9 +91,9 @@ class ListUtilities {
          * Clean a given String List of any entry consisting only of whitespace or a length of
          * `0 `.
          *
-         * @param listToCleanUp The list from which to delete all entries consisting only of whitespace or
-         * with a length of zero.
-         * @return Returns the cleaned up list.
+         * [listToCleanUp] — The list from which to delete all entries consisting only of whitespace or with a
+         * length of zero. Returns returns the cleaned up list.
+         *
          * @author Griefed
          */
         fun cleanList(listToCleanUp: MutableList<String>): MutableList<String> {
@@ -103,14 +105,14 @@ class ListUtilities {
          * Print a list to console in chunks. If a chunk size of 5 is set for a list with 20 entries, the
          * result would be 4 lines printed, with 5 entries each.
          *
-         * @param prefix       A prefix to add to each line printed to the console.
-         * @param printIndexes Whether to print the indexes of the entries.
          * @author Griefed
          */
         fun printListToConsoleChunked(
             list: List<String>,
             chunkSize: Int,
+            /** A prefix to add to each line printed to the console. */
             prefix: String,
+            /** Whether to print the indexes of the entries. */
             printIndexes: Boolean
         ) = forEachChunkedLine(list, chunkSize, prefix, printIndexes) { line -> println(line) }
 
@@ -118,14 +120,14 @@ class ListUtilities {
          * Print a list to our log at info level, in chunks. If a chunk size of 5 is set for a list with
          * 20 entries, the result would be 4 lines printed, with 5 entries each.
          *
-         * @param prefix       A prefix to add to each line printed to the log.
-         * @param printIndexes Whether to print the indexes of the entries.
          * @author Griefed
          */
         fun printListToLogChunked(
             list: List<String>,
             chunkSize: Int,
+            /** A prefix to add to each line printed to the log. */
             prefix: String,
+            /** Whether to print the indexes of the entries. */
             printIndexes: Boolean
         ) = forEachChunkedLine(list, chunkSize, prefix, printIndexes) { line -> log.info { line } }
 
@@ -178,7 +180,9 @@ class ListUtilities {
 
 /**
  * Check whether any entry in this list ends with the given string.
- * @param string The text to check entries with.
+ *
+ * [string] — The text to check entries with.
+ *
  * @author Griefed
  */
 fun List<String>.endsWith(string: String): Boolean {
@@ -193,7 +197,9 @@ fun List<String>.endsWith(string: String): Boolean {
 
 /**
  * Check whether any entry in this list starts with the given string.
- * @param string The text to check entries with.
+ *
+ * [string] — The text to check entries with.
+ *
  * @author Griefed
  */
 fun List<String>.startsWith(string: String): Boolean {

@@ -41,8 +41,8 @@ import javax.net.ssl.HttpsURLConnection
  * `file:` URL yields a `FileURLConnection` whose cast would throw `ClassCastException` — which is not an
  * `IOException`, and so escapes callers' error handling. Callers needing `responseCode` cast themselves.
  *
- * @param connectTimeout Milliseconds to wait for the connection. `0` is the JDK's "wait forever".
- * @param readTimeout Milliseconds a single read may block. `0` is the JDK's "wait forever".
+ * [connectTimeout] — Milliseconds to wait for the connection. `0` is the JDK's "wait forever". [readTimeout] —
+ * Milliseconds a single read may block. `0` is the JDK's "wait forever".
  */
 @Throws(IOException::class)
 fun URL.timedConnection(connectTimeout: Int, readTimeout: Int): URLConnection {
@@ -55,7 +55,7 @@ fun URL.timedConnection(connectTimeout: Int, readTimeout: Int): URLConnection {
 /**
  * Utility-class revolving around interactions with web-resources.
  *
- * @param apiProperties API configuration of this instance.
+ * [apiProperties] — API configuration of this instance.
  *
  * @author Griefed
  */
@@ -93,9 +93,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * throws `ClassCastException`, which is not an `IOException` and so escapes every caller's error
      * handling. Callers needing `responseCode` cast for themselves, exactly as they did before.
      *
-     * @param readTimeout Milliseconds a single read may block. Pass
-     * [ApiProperties.networkDownloadReadTimeout] for file-downloads.
-     * @return The opened, timeout-carrying connection.
+     * [readTimeout] — Milliseconds a single read may block. Pass [ApiProperties.networkDownloadReadTimeout] for
+     * file-downloads.
      */
     @Throws(IOException::class)
     fun openTimedConnection(url: URL, readTimeout: Int = apiProperties.networkReadTimeout): URLConnection =
@@ -105,9 +104,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * Opens an input-stream on [url] with the configured timeouts applied — the timeout-carrying
      * replacement for `URL.openStream()`, which inherits the JDK's unbounded default.
      *
-     * @param url The URL to read from.
-     * @param readTimeout Milliseconds a single read may block.
-     * @return The response body's stream. Closing it releases the connection.
+     * [url] — The URL to read from. [readTimeout] — Milliseconds a single read may block. Returns the response
+     * body's stream. Closing it releases the connection.
      */
     @Throws(IOException::class)
     fun openTimedStream(url: URL, readTimeout: Int = apiProperties.networkReadTimeout): InputStream =
@@ -118,15 +116,17 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * already exists. The destination should end in a valid filename. Any directories up to the
      * specified file will be created.
      *
-     * @param fileDestination The file to store the web-resource in. Examples:
-     * * /tmp/some_folder/foo.bar
-     * * C:/temp/some_folder/bar.foo
-     * @param downloadURL     The URL to the file you want to download.
-     * @return Boolean. Returns true if the file could be found on the hosts' filesystem.
+     * Returns boolean. Returns true if the file could be found on the hosts' filesystem.
+     *
      * @author Griefed
      */
     fun downloadAndReplaceFile(
+        /**
+         * The file to store the web-resource in. Examples: * /tmp/some_folder/foo.bar *
+         * C:/temp/some_folder/bar.foo
+         */
         fileDestination: File,
+        /** The URL to the file you want to download. */
         downloadURL: URL
     ): Boolean {
         fileDestination.deleteQuietly()
@@ -137,16 +137,18 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * Download the file from the specified URL to the specified destination. The destination should
      * end in a valid filename. Any directories up to the specified file will be created.
      *
-     * @param file The destination where the file should be stored. Must include the filename as well. Examples:
-     * * /tmp/some_folder/foo.bar
-     * * C:/temp/some_folder/bar.foo
-     * @param downloadURL     The URL to the file you want to download.
-     * @return true if **this call** wrote the file. A failure answers `false` whether or not a file is there,
+     * Returns true if **this call** wrote the file. A failure answers `false` whether or not a file is there,
      * because every caller reads a `true` as "I now have this artifact".
+     *
      * @author Griefed
      */
     fun downloadFile(
+        /**
+         * The destination where the file should be stored. Must include the filename as well. Examples: *
+         * /tmp/some_folder/foo.bar * C:/temp/some_folder/bar.foo
+         */
         file: File,
+        /** The URL to the file you want to download. */
         downloadURL: URL
     ): Boolean {
         return try {
@@ -172,7 +174,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     /**
      * Open the given url in a browser.
      *
-     * @param url The URI to the website you want to open.
+     * [url] — The URI to the website you want to open.
+     *
      * @author Griefed
      */
     fun openLinkInBrowser(url: URL) {
@@ -186,7 +189,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     /**
      * Open the given uri in a browser.
      *
-     * @param uri The URI to the website you want to open.
+     * [uri] — The URI to the website you want to open.
+     *
      * @author Griefed
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -203,8 +207,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     /**
      * Checks the filesize of the given file whether it is smaller or bigger than 10 MB.
      *
-     * @param fileToCheck The file or directory to check.
-     * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
+     * [fileToCheck] — The file or directory to check.
+     *
      * @author Griefed
      */
     fun hasteBinPreChecks(fileToCheck: File): Boolean {
@@ -271,9 +275,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * and edited to use HasteBin fork [zneix/haste-server](https://github.com/zneix/haste-server). My fork of kaimu-kun's
      * hastebin.java is available at [Griefed/hastebin.java](https://github.com/Griefed/hastebin.java).
      *
-     * @param text The file which will be read into a String of which then to create a HasteBin
-     * post of.
-     * @return String. Returns a String containing the URL to the newly created HasteBin post.
+     * [text] — The file which will be read into a String of which then to create a HasteBin post of.
+     *
      * @author [kaimu-kun/hastebin.java](https://github.com/kaimu-kun)
      * @author Griefed
      */
@@ -342,9 +345,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * and edited to use HasteBin fork [zneix/haste-server](https://github.com/zneix/haste-server). My fork of kaimu-kun's
      * hastebin.java is available at [Griefed/hastebin.java](https://github.com/Griefed/hastebin.java).
      *
-     * @param textFile The file which will be read into a String of which then to create a HasteBin
-     * post of.
-     * @return String. Returns a String containing the URL to the newly created HasteBin post.
+     * [textFile] — The file which will be read into a String of which then to create a HasteBin post of.
+     *
      * @author [kaimu-kun/hastebin.java](https://github.com/kaimu-kun)
      * @author Griefed
      */
@@ -355,7 +357,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     /**
      * Get the response of a call to a URL as a string.
      *
-     * @param url The URL you want to get the response from
+     * [url] — The URL you want to get the response from.
+     *
      * @throws IOException if the URL could not be called or a communication error occurred.
      */
     @Throws(IOException::class)
@@ -373,7 +376,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     /**
      * Get the response-code of a call to a URL as an integer.
      *
-     * @param url The URL you want to get the response from
+     * [url] — The URL you want to get the response from.
+     *
      * @throws IOException if the URL could not be called or a communication error occurred.
      */
     @Throws(IOException::class)
@@ -390,8 +394,6 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * Check the availability of the host of the given URL and whether the URL gives a status code of
      * 200. Only when both the host is available and the URL returns a status code of 200 does this
      * method return `true`.
-     *
-     * @return `true` if, and only if, the host is available and the URL returns the status code 200.
      */
     fun isReachable(url: URL): Boolean {
         var available: Boolean

@@ -33,10 +33,12 @@ import java.util.concurrent.atomic.AtomicInteger
  * worker threads and read from the HTTP threads, so every field is concurrent and [snapshot] is a point-in-time
  * copy rather than a live view.
  *
- * @param clock Supplies "now" for uptimes and durations (injectable so tests need no sleeping).
  * @author Griefed
  */
-class GrinderStatus(private val clock: () -> Instant = Instant::now) {
+class GrinderStatus(
+    /** Supplies "now" for uptimes and durations (injectable so tests need no sleeping). */
+    private val clock: () -> Instant = Instant::now
+) {
     private val startedAt = clock()
 
     @Volatile

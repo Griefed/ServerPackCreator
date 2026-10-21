@@ -68,6 +68,8 @@ class MainMenuBar(
     }
 
     /**
+     * Shows the migration messages collected during startup.
+     *
      * @author Griefed
      */
     fun displayMigrationMessages() {
@@ -75,6 +77,8 @@ class MainMenuBar(
     }
 
     /**
+     * Tells the user that the fallback clientside-mod list was updated.
+     *
      * @author Griefed
      */
     fun showFallbacksUpdatedMessage() {
@@ -82,6 +86,8 @@ class MainMenuBar(
     }
 
     /**
+     * Shows the tip-of-the-day dialog.
+     *
      * @author Griefed
      */
     fun showTip() {

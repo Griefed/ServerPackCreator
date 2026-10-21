@@ -42,10 +42,8 @@ import javax.swing.text.JTextComponent
  *
  * The ScriptSettings provides some extensions to the default JTable
  *
- *
  * 1) Select All editing - when a text related cell is placed in editing mode the text is selected.
  * Controlled by invoking a "setSelectAll..." method.
- *
  *
  * 2) reorderColumns - static convenience method for reodering table columns
  *
@@ -183,7 +181,6 @@ abstract class ConvenientJTable(
      * `KEY`, column 2 (Value) will be mapped to the maps `VALUE`. Rows are ignored of
      * they do not contain values for both columns.
      *
-     * @return A map containing the data of the table.
      * @author Griefed
      */
     fun getData(): HashMap<String, String> {
@@ -256,6 +253,8 @@ abstract class ConvenientJTable(
         }
 
         /**
+         * Empties every cell of the given model row, leaving the row itself in place.
+         *
          * @author Griefed
          */
         fun clearRow(tableModel: DefaultTableModel, modelRow: Int) {
@@ -314,9 +313,6 @@ abstract class ConvenientJTable(
             editButton.border = focusBorder
         }
 
-        /**
-         * @author Griefed
-         */
         override fun getTableCellEditorComponent(
             table: JTable,
             value: Any?,
@@ -328,16 +324,10 @@ abstract class ConvenientJTable(
             return editButton
         }
 
-        /**
-         * @author Griefed
-         */
         override fun getCellEditorValue(): Any? {
             return editorValue
         }
 
-        /**
-         * @author Griefed
-         */
         override fun getTableCellRendererComponent(
             table: JTable,
             value: Any?,
@@ -376,9 +366,6 @@ abstract class ConvenientJTable(
             action.actionPerformed(event)
         }
 
-        /**
-         * @author Griefed
-         */
         override fun mouseClicked(e: MouseEvent) {}
 
         /**
@@ -394,9 +381,6 @@ abstract class ConvenientJTable(
             }
         }
 
-        /**
-         * @author Griefed
-         */
         override fun mouseReleased(e: MouseEvent) {
             if (isButtonColumnEditor && this@ConvenientJTable.isEditing) {
                 this@ConvenientJTable.cellEditor.stopCellEditing()
@@ -404,14 +388,8 @@ abstract class ConvenientJTable(
             isButtonColumnEditor = false
         }
 
-        /**
-         * @author Griefed
-         */
         override fun mouseEntered(e: MouseEvent) {}
 
-        /**
-         * @author Griefed
-         */
         override fun mouseExited(e: MouseEvent) {}
 
 

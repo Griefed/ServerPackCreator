@@ -34,13 +34,14 @@ class ModpackDirectoryValidator {
     /**
      * Check the passed directory for existence and whether it is a directory, rather than a file.
      *
-     * @param modpackDir The modpack directory.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return `true` if the directory exists.
+     * Returns `true` if the directory exists.
+     *
      * @author Griefed
      */
     fun checkModpackDir(
+        /** The modpack directory. */
         modpackDir: String,
+        /** Collection of encountered errors, if any, for convenient result-checks. */
         configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
     ): ConfigCheck {

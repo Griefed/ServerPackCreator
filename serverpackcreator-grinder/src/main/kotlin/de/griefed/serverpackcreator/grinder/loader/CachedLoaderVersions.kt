@@ -39,16 +39,18 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  * HIGH-confidence clientside mod. `BootVerifier.recheckCrashOnNewestVersion` re-boots such a crash on the
  * newest build before letting it stand, so the reuse can only ever cost one extra boot, never a wrong verdict.
  *
- * @param newest            The authoritative policy (SPC's `LoaderVersionResolver`) — always consulted for the newest.
- * @param cache             The install cache whose contents become the preference.
- * @param availableVersions All known builds for a `(loader, Minecraft)` pair, newest first, used only to step down
- *                          from a build whose install the cache is refusing. Defaults to none, which keeps the
- *                          previous behaviour; the grinder supplies SPC's version metadata.
  * @author Griefed
  */
 class CachedLoaderVersions(
+    /** The authoritative policy (SPC's `LoaderVersionResolver`) — always consulted for the newest. */
     private val newest: LoaderVersionPolicy,
+    /** The install cache whose contents become the preference. */
     private val cache: LoaderCache,
+    /**
+     * All known builds for a `(loader, Minecraft)` pair, newest first, used only to step down from a build
+     * whose install the cache is refusing. Defaults to none, which keeps the previous behaviour; the grinder
+     * supplies SPC's version metadata.
+     */
     private val availableVersions: (loader: String, minecraftVersion: String) -> List<String> = { _, _ -> emptyList() }
 ) : LoaderVersionPolicy {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

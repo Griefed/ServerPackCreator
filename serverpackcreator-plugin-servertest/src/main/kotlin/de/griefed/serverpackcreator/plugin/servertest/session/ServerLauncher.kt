@@ -62,18 +62,20 @@ sealed interface LaunchOutcome {
  * registering the session before it starts, and releasing all of that exactly once however the run ends.
  * Every branch is therefore reachable headless.
  *
- * @param allocator  Hands out ports and takes them back.
- * @param registry   Owns the running sessions, and refuses a second one for the same pack.
- * @param patchFor   Builds the `server.properties` borrower for a pack.
- * @param sessionFor Builds the session. Injectable so a guard can hold the close callback this class
- *                   wired and invoke it, which is the only way to reach the give-back without spawning a
- *                   real server — the parameters mirror [ServerSession]'s constructor exactly.
  * @author Griefed
  */
 class ServerLauncher(
+    /** Hands out ports and takes them back. */
     private val allocator: PortAllocator,
+    /** Owns the running sessions, and refuses a second one for the same pack. */
     private val registry: SessionRegistry,
+    /** Builds the `server.properties` borrower for a pack. */
     private val patchFor: (File) -> ServerPropertiesPatch = { ServerPropertiesPatch(it) },
+    /**
+     * Builds the session. Injectable so a guard can hold the close callback this class wired and invoke
+     * it, which is the only way to reach the give-back without spawning a real server — the parameters
+     * mirror [ServerSession]'s constructor exactly.
+     */
     private val sessionFor: (
         workingDirectory: File,
         command: List<String>,

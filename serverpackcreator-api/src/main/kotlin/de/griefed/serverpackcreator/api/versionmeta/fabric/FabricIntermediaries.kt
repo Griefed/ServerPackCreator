@@ -28,14 +28,13 @@ import java.util.*
 /**
  * Intermediaries for Fabric.
  *
- * @param intermediaryManifest Fabric Intermediary manifest-file.
- * @param objectMapper         Object mapper for JSON parsing.
- *
  * @author Griefed
  */
 @Suppress("unused")
 class FabricIntermediaries(
+    /** Fabric Intermediary manifest-file. */
     private val intermediaryManifest: File,
+    /** Object mapper for JSON parsing. */
     private val objectMapper: ObjectMapper
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
@@ -67,16 +66,12 @@ class FabricIntermediaries(
     /**
      * Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
      * that the given Minecraft version is supported.
-     *
-     * @return `true` if intermediaries are present.
      */
     fun isIntermediariesPresent(minecraftVersion: String) = getIntermediary(minecraftVersion).isPresent
 
     /**
      * Get a specific intermediary, wrapped in an [Optional].
      *
-     * @param minecraftVersion Minecraft version.
-     * @return A specific intermediary, wrapped in an [Optional].
      * @author Griefed
      */
     fun getIntermediary(minecraftVersion: String) = Optional.ofNullable(intermediaries[minecraftVersion])

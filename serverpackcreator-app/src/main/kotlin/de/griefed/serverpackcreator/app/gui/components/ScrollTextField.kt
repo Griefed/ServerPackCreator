@@ -129,6 +129,8 @@ open class ScrollTextField(
     }
 
     /**
+     * Focuses this field and draws attention to it, for reporting a validation problem.
+     *
      * @author Griefed
      */
     fun highlight() {
@@ -136,6 +138,8 @@ open class ScrollTextField(
     }
 
     /**
+     * Registers a listener on the underlying document, so callers need no handle on the text field itself.
+     *
      * @author Griefed
      */
     fun addDocumentListener(listener: DocumentListener) {

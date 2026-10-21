@@ -35,12 +35,11 @@ import java.util.Collections
 /**
  * Information about the Fabric installer.
  *
- * @param utilities         Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 internal class FabricInstaller(
     private val installerManifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
@@ -143,7 +142,6 @@ internal class FabricInstaller(
     /**
      * Acquire the URL for the given Fabric version.
      *
-     * @return URL to the installer for the given Fabric version.
      * @throws MalformedURLException if the URL could not be formed.
      * @author Griefed
      */
@@ -183,13 +181,12 @@ internal class FabricInstaller(
      * Get the [URL] to the improved Fabric launcher for the given Minecraft and Fabric
      * versions.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param fabricVersion    Fabric version.
-     * @return URL to the improved Fabric launcher, wrapped in an [Optional].
      * @author Griefed
      */
     fun improvedLauncherUrl(
+        /** Minecraft version. */
         minecraftVersion: String,
+        /** Fabric version. */
         fabricVersion: String
     ): URL = URI(
         improvedLauncherUrlTemplate.format(

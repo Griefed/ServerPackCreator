@@ -30,12 +30,12 @@ import java.util.Collections
  * [LegacyFabricLoader] to store and provide version information for game and loader
  * versions.
  *
- * @param manifest  The manifest holding the version information for this LegacyFabric type.
- * @param utilities Commonly used utilities across ServerPackCreator.
  * @author Griefed
  */
 internal abstract class LegacyFabricVersioning(
+    /** The manifest holding the version information for this LegacyFabric type. */
     private val manifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities
 ) {
     /**

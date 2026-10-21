@@ -28,6 +28,6 @@ class JsonException
 /**
  * Throw a new exception indicating that the specified JSON value could not be parsed.
  *
- * @param errorMessage Message indicating what exactly went wrong.
+ * [errorMessage] — Message indicating what exactly went wrong.
  */
     (errorMessage: String?) : Exception(errorMessage)

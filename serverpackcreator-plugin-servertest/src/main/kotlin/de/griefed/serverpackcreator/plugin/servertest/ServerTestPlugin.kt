@@ -34,7 +34,6 @@ import de.griefed.serverpackcreator.api.plugins.ServerPackCreatorPlugin
  * The class itself carries no state. Its identity, name and version come from the `plugin.toml` the
  * superclass reads out of this jar, and the running servers are owned by the tab's session registry.
  *
- * @param context Plugin context provided by ServerPackCreator.
  * @author Griefed
  */
 @Suppress("unused")

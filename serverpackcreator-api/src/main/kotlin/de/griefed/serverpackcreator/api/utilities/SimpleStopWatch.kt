@@ -72,7 +72,8 @@ class SimpleStopWatch {
      *
      * to retrieve the elapsed time.
      *
-     * @return This instance of SimpleStopWatch
+     * Returns this instance of SimpleStopWatch.
+     *
      * @author Griefed
      */
     fun start(): SimpleStopWatch {
@@ -88,7 +89,8 @@ class SimpleStopWatch {
      * The stopwatch must have been started before calling this method, otherwise an
      * [IllegalStateException] will be thrown. Call [.start] first!
      *
-     * @return This instance of SimpleStopWatch
+     * Returns this instance of SimpleStopWatch.
+     *
      * @throws IllegalStateException if the watch was not started.
      * @author Griefed
      */
@@ -109,7 +111,6 @@ class SimpleStopWatch {
      * [.getTime]. If any of the aforementioned methods are called, but the stopwatch
      * was not started and stopped yet first, an [IllegalStateException] will be thrown.
      *
-     * @return The elapsed time of a stopwatch run, formatted using `%2d:%02d:%02d`.
      * @throws IllegalStateException if the watch was not started.
      * @author Griefed
      */
@@ -124,10 +125,10 @@ class SimpleStopWatch {
      * [toString]. If any of the aforementioned methods are called, but the stopwatch was not
      * started and stopped yet first, an [IllegalStateException] will be thrown.
      *
-     * @param unit Unit to use in duration representation.
-     * @param decimals The number of digits after decimal point to show. The value must be non-negative.
-     * No more than 12 decimals will be shown, even if a larger number is requested.
-     * @return The elapsed time, formatted with the provided formatting.
+     * [unit] — Unit to use in duration representation. [decimals] — The number of digits after decimal point to
+     * show. The value must be non-negative. No more than 12 decimals will be shown, even if a larger number is
+     * requested. Returns the elapsed time, formatted with the provided formatting.
+     *
      * @throws IllegalStateException if the watch was not started.
      * @author Griefed
      */

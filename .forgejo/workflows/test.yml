@@ -9,9 +9,9 @@
 #
 # WHAT THAT TRADES, stated plainly because it is a real cost: a tag is mutable. Upstream can repoint
 # `v6` and the next push runs different code with no commit here, and `data.forgejo.org` is a mirror,
-# so it is also trusting the mirror to stay in step. Griefed's call, 2026-10-03, after measuring that
-# every major tag was already AHEAD of the commit it replaced -- i.e. the SHA pins had silently frozen
-# eight actions at older releases, which is the other half of the same trade.
+# so it is also trusting the mirror to stay in step. The trade is deliberate: a SHA pin freezes an
+# action at whatever release it carried when it was pinned, and immutability nobody revisits is
+# staleness -- which is the other half of the same trade.
 #
 # FOUR REFERENCES ARE NOT A BARE MAJOR, each for its own checked reason:
 #   - tiyee/action-ssh@v1.0.1 and nogsantos/scp-deploy@v1.3.0 publish NO `v1` tag or branch at all;
@@ -108,9 +108,9 @@ jobs:
       # `$NEWS_WEBHOOK_URL` was read and a shell resolves an undefined name to the empty string.
       #
       # `ci-duplication-check.py` fails when a step is written twice without a reason. It is a gate
-      # from 2026-10-19, the day its count first reached zero -- the condition
-      # `.claude/rules/ci-workflows.md` records for promoting it, because a check that is red on every
-      # push is not a pin, it is a broken build. It fails on an unexplained duplicate AND on an
+      # only because its count is zero -- the condition `.claude/rules/ci-workflows.md` records for
+      # promoting one, because a check that is red on every push is not a pin, it is a broken build.
+      # It fails on an unexplained duplicate AND on an
       # allowlist entry matching no step, both verified by exit code rather than assumed; the second
       # direction is the one that matters here, because the allowlist is keyed by a hash of the step
       # body, so a sweep that edits every workflow silently un-exempts everything it touches. That is

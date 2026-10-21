@@ -38,6 +38,8 @@ class PluginsLogItem(
     }
 
     /**
+     * Opens the plugins log in the system's text editor.
+     *
      * @author Griefed
      */
     private fun openPluginsLog() {

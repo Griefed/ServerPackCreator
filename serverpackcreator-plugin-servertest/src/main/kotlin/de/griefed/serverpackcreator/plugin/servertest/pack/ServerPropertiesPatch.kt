@@ -39,7 +39,6 @@ import java.io.File
  * and the backup beside it; the next [borrow] restores from that backup before doing anything else, so a
  * user's real port can never be overwritten by a previous run's borrowed one.
  *
- * @param packDirectory The server pack whose properties are being borrowed.
  * @author Griefed
  */
 class ServerPropertiesPatch(private val packDirectory: File) {

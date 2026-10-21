@@ -32,14 +32,13 @@ import java.net.URL
  */
 class Source
 /**
- * Create a new source from an [ArchiveType] and the download-[URL] to this archive.
+ * Create a new source from the [ArchiveType] [archiveType] and the download-[URL] to this archive.
+ *
  * @author Griefed
- * @param archiveType Archive type of this source.
  */(private val archiveType: ArchiveType?, private val archiveUrl: URL) {
     /**
      * Get the [ArchiveType] of this source.
      * @author Griefed
-     * @return [ArchiveType] of this source.
      */
     fun type(): ArchiveType? {
         return archiveType
@@ -48,7 +47,6 @@ class Source
     /**
      * Get the download-[URL] for this source.
      * @author Griefed
-     * @return Download-[URL] for this source.
      */
     fun url(): URL {
         return archiveUrl

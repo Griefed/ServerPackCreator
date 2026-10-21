@@ -12,8 +12,8 @@ java = "21"
 # https://kotlinlang.org/docs/releases.html#release-details
 # ONE version for everything JetBrains ships out of the Kotlin release train: the compiler plugin,
 # the allopen/jpa/spring compiler plugins, and the stdlib/reflect/test libraries. JetBrains versions
-# these together, so splitting them only ever produced skew — this was four entries until
-# 2026-08-16, with the compiler on 2.3.20 and the libraries on 2.4.10.
+# these together, so splitting them only ever produces skew — a compiler reading metadata from a newer
+# stdlib fails hard, and nothing warns as the gap widens.
 kotlin = "2.4.21"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin

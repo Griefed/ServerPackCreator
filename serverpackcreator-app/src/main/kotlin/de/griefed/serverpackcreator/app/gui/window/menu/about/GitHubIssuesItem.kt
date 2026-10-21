@@ -37,6 +37,8 @@ class GitHubIssuesItem(private val webUtilities: WebUtilities) : JMenuItem(Trans
     }
 
     /**
+     * Opens the issue tracker in the user's browser.
+     *
      * @author Griefed
      */
     private fun openIssues() {

@@ -31,15 +31,14 @@ import java.util.Collections
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
  *
- * @param loaderManifest Node containing information about available Forge versions.
- * @param utilities      Commonly used utilities across ServerPackCreator.
- * @param minecraftMeta  Meta for retroactively updating the previously passed meta.
- *
  * @author Griefed
  */
 internal class ForgeLoader(
+    /** Node containing information about available Forge versions. */
     private val loaderManifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
+    /** Meta for retroactively updating the previously passed meta. */
     private val minecraftMeta: MinecraftMeta
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

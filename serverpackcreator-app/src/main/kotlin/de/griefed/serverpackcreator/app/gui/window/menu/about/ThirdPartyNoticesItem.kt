@@ -60,6 +60,8 @@ class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiPro
     }
 
     /**
+     * Shows the bundled third-party licence notices.
+     *
      * @author Griefed
      */
     private fun displayThirdPartyNotices() {

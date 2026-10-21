@@ -40,12 +40,12 @@ package de.griefed.serverpackcreator.clientside.selection
  * 3.06, i.e. **1.25x**. A bare "every line" would be 7.38, or 2.41x, which would break the sizing rule that
  * `SPC_GRINDER_REVERIFY_TTL_DAYS` must outlast a full sweep.
  *
- * @param newestCount How many of the project's own newest lines are always ground.
- * @param anchors     Lines always ground **when the project publishes for them**, as version-lines.
  * @author Griefed
  */
 data class MinecraftLinePolicy(
+    /** How many of the project's own newest lines are always ground. */
     val newestCount: Int = DEFAULT_NEWEST_COUNT,
+    /** Lines always ground **when the project publishes for them**, as version-lines. */
     val anchors: Set<String> = DEFAULT_ANCHORS
 ) {
 

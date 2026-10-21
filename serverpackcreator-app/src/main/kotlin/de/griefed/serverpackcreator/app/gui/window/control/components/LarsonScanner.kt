@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 package de.griefed.serverpackcreator.app.gui.window.control.components
 
@@ -36,15 +35,12 @@ import kotlin.math.roundToInt
  * A Larson Scanner which some may or may not know from the Cylons from Battlestar Galactica or Kitt
  * from Knight Rider.
  *
- *
  * The Larson Scanner is named after Glen A. Larson, who produced the Battlestar Galactica and
  * Knight Rider series, and is responsible for introducing scanning red light effects to the sci-fi
  * TV viewing population of the 1970s and 80s.
  *
- *
  * Basically, a Larson Scanner is a red light which runs from left to right, to left, to right
  * etc. with, usually, a nice fading effect. It's so simple, but oh so awesome!
- *
  *
  * A user by the name of [Kreezxil](https://github.com/kreezxil) made a [request](https://github.com/Griefed/ServerPackCreator/issues/338) for [ServerPackCreator](https://github.com/Griefed/ServerPackCreator) to have some sort of
  * progress-/thinking bar to indicate that ServerPackCreator is currently busy doing server pack
@@ -86,10 +82,9 @@ class LarsonScanner : JPanel {
     }
 
     /**
-     * Convenience constructor allowing you to specify the interval at which the position changes. For
-     * more information regarding possible settings, see [LarsonScanner].
+     * Convenience constructor scrolling every [updateInterval] milliseconds. For more information
+     * regarding possible settings, see [LarsonScanner].
      *
-     * @param updateInterval Interval in milliseconds at which to scroll.
      * @author Griefed
      */
     constructor(updateInterval: Short) : super() {
@@ -102,12 +97,10 @@ class LarsonScanner : JPanel {
     }
 
     /**
-     * Convenience constructor allowing you to specify the interval at which the position changes, as
-     * well as the background colours for the scanner and the eye. For more information regarding
-     * possible settings, see [LarsonScanner].
+     * Convenience constructor scrolling every [interval] milliseconds, with [backgroundColor] behind
+     * both the scanner and the eye. For more information regarding possible settings, see
+     * [LarsonScanner].
      *
-     * @param interval Interval in milliseconds at which to scroll.
-     * @param backgroundColor The background colour for the scanner and the eye.
      * @author Griefed
      */
     constructor(interval: Short, backgroundColor: Color) : super() {
@@ -120,12 +113,10 @@ class LarsonScanner : JPanel {
     }
 
     /**
-     * Convenience constructor allowing you to specify the interval at which the position changes, the
-     * background colours for the scanner and the eye, and the color of the eye. For more information
-     * regarding possible settings, see [LarsonScanner].
+     * Convenience constructor scrolling every [interval] milliseconds, with [backgroundColor] behind
+     * both the scanner and the eye and [eyeColor] for the eye itself. For more information regarding
+     * possible settings, see [LarsonScanner].
      *
-     * @param interval Interval in milliseconds at which to scroll.
-     * @param backgroundColor The background colour for the scanner and the eye.
      * @author Griefed
      */
     constructor(interval: Short, backgroundColor: Color, eyeColor: Color) : super() {
@@ -243,7 +234,6 @@ class LarsonScanner : JPanel {
     /**
      * Whether the shape is currently set to oval.
      *
-     * @return `true` if oval, false otherwise.
      * @author Griefed
      */
     val isShapeOval: Boolean
@@ -252,7 +242,6 @@ class LarsonScanner : JPanel {
     /**
      * Whether to draw the eye using gradients. Set to `true` to use gradients, `false`
      * to use solid colours. Depending on the shape, gradients are drawn in two ways:
-     *
      *
      * * Oval shapes: Gradients are created from the center of element `n` to the
      * height of element `n`. This is most beautiful when forcing the aspect ratio,
@@ -282,7 +271,6 @@ class LarsonScanner : JPanel {
      * Whether the eye is currently being drawn using gradients or solid colours. For more
      * information, see [useGradient].
      *
-     * @return `true` when the eye is drawn using gradients.
      * @author Griefed
      */
     val isGradientActive: Boolean
@@ -319,7 +307,6 @@ class LarsonScanner : JPanel {
      * Whether the divider is currently being used. See [useDivider] for more
      * information about the divider and how it works.
      *
-     * @return `true` if the divider is being used.
      * @author Griefed
      */
     val isDividerActive: Boolean
@@ -357,7 +344,6 @@ class LarsonScanner : JPanel {
      * left, thus creating the illusion of the elements coalescing.
      *
      * @author Griefed
-     * @param useCylonAnimation `true` to use the Cylon animation.
      */
     fun useCylonAnimation(useCylonAnimation: Boolean) {
         eye.cylonAnimation = useCylonAnimation
@@ -378,7 +364,6 @@ class LarsonScanner : JPanel {
      * more information, see [LarsonScanner.useCylonAnimation].
      *
      * @author Griefed
-     * @return `true` if the eye is being animated as a Cylon-eye.
      */
     val isCylonAnimation: Boolean
         get() = eye.cylonAnimation
@@ -388,7 +373,6 @@ class LarsonScanner : JPanel {
      * be drawn with a 1:1 aspect ratio, turning ovals into circles and rectangles into squares. The
      * aspect ratio is being enforced by de-/increasing the height of the eye in the scanner to the
      * width of one element, resulting in a nice and sexy 1:1 ratio.
-     *
      *
      * If you plan on using different scanner and eye background colours, you should make use of
      * this setting, otherwise the eye background colour will also prevail.
@@ -415,7 +399,6 @@ class LarsonScanner : JPanel {
      * Whether the aspect ratio is currently being enforced. See [forceAspectRatio]
      * for more information about an aspect ratio enforcement.
      *
-     * @return `true` if the aspect ratio is being enforced.
      * @author Griefed
      */
     val isAspectRatioForced: Boolean
@@ -434,10 +417,9 @@ class LarsonScanner : JPanel {
      *
      * Default setting: `0.4f, 1.0f`
      *
-     * @param fractionOne Fraction to distribute colour across a radial gradient.
-     * Ranging from 0.0f to 1.0f, smaller than `fractionTwo`.
-     * @param fractionTwo Fraction to distribute colour across a radial gradient.
-     * Ranging from 0.0f to 1.0f, bigger than `fractionOne`.
+     * [fractionOne] and [fractionTwo] each distribute colour across a radial gradient, both ranging
+     * from 0.0f to 1.0f, the first smaller than the second.
+     *
      * @throws IllegalArgumentException if fractionOne is smaller than 0.0f, if fractionOne is bigger
      * or equal to 1.0f, if fractionOne is bigger than fractionTwo, or if fractionTwo is bigger
      * than 1.0f.
@@ -475,7 +457,6 @@ class LarsonScanner : JPanel {
     /**
      * The currently set fractions for use in radial gradient creation. See [setFractions] for more information.
      *
-     * @return Two fractions currently set.
      * @author Griefed
      */
     val fractions: FloatArray
@@ -538,7 +519,6 @@ class LarsonScanner : JPanel {
     /**
      * Divider with which the position of the eye is being in-/decremented. For more
      * information on how the divider affects the eye, see [useDivider].
-     *
      *
      * Default setting: `25`
      *
@@ -916,7 +896,6 @@ class LarsonScanner : JPanel {
         /**
          * Number of elements in th eye. For more information, see [LarsonScanner.numberOfElements].
          *
-         * @return This configurations' number of elements in the eye.
          * @author Griefed
          */
         var numberOfElements: Byte = 5
@@ -993,55 +972,79 @@ class LarsonScanner : JPanel {
         /**
          * Create a Larson Scanner configuration with custom settings.
          *
-         * @param qualitySetting The quality preset to use. Either [LOW], [MEDIUM] or [HIGH]. For more information,
-         * see [LarsonScanner.setQualityLow]. [LarsonScanner.setQualityMedium] and [LarsonScanner.setQualityHigh].
-         * @param alphaValues Alpha values for the elements in the eye. Length of
-         * array must equal number of elements in the eye. For more information, see [alphas].
-         * @param intervalInMillis The interval in milliseconds at which to update and
-         * redraw the eye. For more information, see [interval].
-         * @param divider The divider with which to in-/decrement the position of the eye.
-         * For more information, see [LarsonScanner.useGradient].
-         * @param numberOfElements The number of elements to draw in the eye. For more
-         * information, see [LarsonScanner.numberOfElements].
-         * @param fractions Fractions to use for radial gradient colour
-         * distribution. For more information, see [LarsonScanner.setFractions].
-         * @param gapPercent The percentage of the width of the gap between two
-         * rectangular elements. For more information, see [gapPercent].
-         * @param partitionDivider The number with which to divide the width of the
-         * Larson Scanner to set the width of the eye. For more information, see [partitionDivider].
-         * @param forceAspectRatio Whether to force an aspect ratio on the eye. For more
-         * information, see [LarsonScanner.forceAspectRatio].
-         * @param ovalShaped Whether to draw the elements using oval or rectangular
-         * shapes. For more information, see [LarsonScanner.drawOval].
-         * @param useGradients Whether to draw the eye using gradients. For more
-         * information, see [LarsonScanner.useGradient].
-         * @param useDivider Whether to use a divider to in-/decrement across the width
-         * of the Larson Scanner. For more information, see [LarsonScanner.useDivider].
-         * @param cylonAnimation Whether to animate the Larson Scanner as a Cylon-eye or
-         * Kitt-eye. For more information, see [LarsonScanner.useCylonAnimation].
-         * @param eyeColours One colour for each element in the eye. For
-         * more information, see [eyeColours].
-         * @param scannerBackgroundColour The background colour of the Larson Scanner.
-         * @param eyeBackgroundColour The background colour of the eye in the Larson
-         * Scanner.
          * @author Griefed
          */
         constructor(
+            /**
+             * The quality preset to use. Either [LOW], [MEDIUM] or [HIGH]. For more information, see
+             * [LarsonScanner.setQualityLow]. [LarsonScanner.setQualityMedium] and
+             * [LarsonScanner.setQualityHigh].
+             */
             qualitySetting: Int,
+            /**
+             * Alpha values for the elements in the eye. Length of array must equal number of elements in the
+             * eye. For more information, see [alphas].
+             */
             alphaValues: ShortArray,
+            /**
+             * The interval in milliseconds at which to update and redraw the eye. For more information, see
+             * [interval].
+             */
             intervalInMillis: Short,
+            /**
+             * The divider with which to in-/decrement the position of the eye. For more information, see
+             * [LarsonScanner.useGradient].
+             */
             divider: Short,
+            /**
+             * The number of elements to draw in the eye. For more information, see
+             * [LarsonScanner.numberOfElements].
+             */
             numberOfElements: Byte,
+            /**
+             * Fractions to use for radial gradient colour distribution. For more information, see
+             * [LarsonScanner.setFractions].
+             */
             fractions: FloatArray,
+            /**
+             * The percentage of the width of the gap between two rectangular elements. For more information,
+             * see [gapPercent].
+             */
             gapPercent: Float,
+            /**
+             * The number with which to divide the width of the Larson Scanner to set the width of the eye. For
+             * more information, see [partitionDivider].
+             */
             partitionDivider: Double,
+            /**
+             * Whether to force an aspect ratio on the eye. For more information, see
+             * [LarsonScanner.forceAspectRatio].
+             */
             forceAspectRatio: Boolean,
+            /**
+             * Whether to draw the elements using oval or rectangular shapes. For more information, see
+             * [LarsonScanner.drawOval].
+             */
             ovalShaped: Boolean,
+            /**
+             * Whether to draw the eye using gradients. For more information, see [LarsonScanner.useGradient].
+             */
             useGradients: Boolean,
+            /**
+             * Whether to use a divider to in-/decrement across the width of the Larson Scanner. For more
+             * information, see [LarsonScanner.useDivider].
+             */
             useDivider: Boolean,
+            /**
+             * Whether to animate the Larson Scanner as a Cylon-eye or Kitt-eye. For more information, see
+             * [LarsonScanner.useCylonAnimation].
+             */
             cylonAnimation: Boolean,
+            /** One colour for each element in the eye. For more information, see [eyeColours]. */
             eyeColours: Array<Color>,
+            /** The background colour of the Larson Scanner. */
             scannerBackgroundColour: Color,
+            /** The background colour of the eye in the Larson Scanner. */
             eyeBackgroundColour: Color
         ) {
             this.qualitySetting = qualitySetting
@@ -1063,12 +1066,9 @@ class LarsonScanner : JPanel {
         }
 
         /**
-         * Set this configurations' fractions. For more information, see [LarsonScanner.setFractions].
+         * Set this configuration's colour-distribution fractions to [fractionOne] and [fractionTwo].
+         * For more information, see [LarsonScanner.setFractions].
          *
-         * @param fractionOne First fraction for colour distribution for this
-         * configuration.
-         * @param fractionTwo Second fraction for colour distribution for this
-         * configuration.
          * @author Griefed
          */
         @Throws(IllegalArgumentException::class)
@@ -1111,11 +1111,9 @@ class LarsonScanner : JPanel {
         }
 
         /**
-         * Set whether this configurations' aspect ratio enforcing should be enabled. For more
+         * Set whether this configuration enforces its aspect ratio, per [forceAspectRatio]. For more
          * information, see [LarsonScanner.forceAspectRatio].
          *
-         * @param forceAspectRatio Whether this configuration should enforce aspect
-         * ratio.
          * @author Griefed
          */
         fun setForceAspectRatio(forceAspectRatio: Boolean) {
@@ -1143,11 +1141,9 @@ class LarsonScanner : JPanel {
         }
 
         /**
-         * Set whether the position for this configuration in-/decrements using a divider. For more
-         * information, see [LarsonScanner.useDivider].
+         * Set whether this configuration's position in-/decrements using a divider, per [useDivider].
+         * For more information, see [LarsonScanner.useDivider].
          *
-         * @param useDivider Whether the position for this configuration should be
-         * in-/decrement using a divider.
          * @author Griefed
          */
         fun setUseDivider(useDivider: Boolean) {
@@ -1180,7 +1176,6 @@ class LarsonScanner : JPanel {
         /**
          * Get the current status of the animation, whether it is paused or not.
          *
-         * @return Status of the animation. `false` if it is paused, true otherwise.
          * @author Griefed
          */
         @get:Synchronized
@@ -1230,10 +1225,8 @@ class LarsonScanner : JPanel {
         }
 
         /**
-         * Convenience constructor for an eye. This allows you to set the interval in ms at which the
-         * eye is being drawn.
+         * Convenience constructor for an eye drawn every [updateInterval] milliseconds.
          *
-         * @param updateInterval Interval in milliseconds at which to scroll.
          * @author Griefed
          */
         constructor(updateInterval: Short) : super() {
@@ -1245,10 +1238,8 @@ class LarsonScanner : JPanel {
 
         /**
          * Convenience constructor for an eye. This allows you to set the interval in ms at which the
-         * eye is being drawn as well as the background of the eye.
+         * eye is being drawn every [updateInterval] milliseconds, on [backgroundColor].
          *
-         * @param updateInterval Interval in milliseconds at which to scroll.
-         * @param backgroundColor The background colour for the scanner and the eye.
          * @author Griefed
          */
         constructor(updateInterval: Short, backgroundColor: Color) : super() {
@@ -1260,11 +1251,8 @@ class LarsonScanner : JPanel {
 
         /**
          * Convenience constructor for an eye. This allows you to set the interval in ms at which the
-         * eye is being drawn, the background of the eye, as well as the colour of the eye.
+         * eye is being drawn every [updateInterval] milliseconds, on [backgroundColor], in [eyeColor].
          *
-         * @param updateInterval Interval in milliseconds at which to scroll.
-         * @param backgroundColor The background colour for the scanner and the eye.
-         * @param eyeColor The color of the eye.
          * @author Griefed
          */
         constructor(updateInterval: Short, backgroundColor: Color, eyeColor: Color) : super() {
@@ -1325,9 +1313,7 @@ class LarsonScanner : JPanel {
         /**
          * Toggle the current state of the animation.
          *
-         *
          * If the animation is paused, then invoking this will unpause it.
-         *
          *
          * If the animation is not paused, then invoking this will pause it.
          *
@@ -1342,9 +1328,9 @@ class LarsonScanner : JPanel {
          * Draw the eye! Depending on whether oval shape is selected or gradients are to be used, the
          * eye is drawn in different ways. However, all draw calls come from here. I guess you could say
          * that this is the heart and soul of the eye itself. The eyeball, mayhaps? For details on how
-         * each animation behaves, see [LarsonScanner.useCylonAnimation].
+         * each animation behaves, see [LarsonScanner.useCylonAnimation]. [g] is the `Graphics` object
+         * to protect.
          *
-         * @param g the `Graphics` object to protect
          * @author Griefed
          */
         override fun paint(g: Graphics) {
@@ -1419,9 +1405,8 @@ class LarsonScanner : JPanel {
         }
 
         /**
-         * Set the same colour for every element in the eye.
+         * Set [color] for every element in the eye.
          *
-         * @param color The color to set for each element in the eye.
          * @author Griefed
          */
         fun setEyeColour(color: Color) {
@@ -1435,12 +1420,10 @@ class LarsonScanner : JPanel {
         /**
          * Update the width, height, partitioning and element width.
          *
-         *
          * If the aspect ratio is being enforced, then the height of the eye are set to the width of
          * one element, resulting in a 1:1 aspect ratio.<br></br>
          * Otherwise, the width and height of the eye are set to the width and height of the
          * encompassing Larson Scanner.
-         *
          *
          * If a change in width or height was detected, the size of the eye, the partitioning and the
          * element width are updated.
@@ -1493,9 +1476,9 @@ class LarsonScanner : JPanel {
         /**
          * Draw our elements in oval shape. If `useGradient` is set, then gradients are used
          * for painting, otherwise our ovals are painted with solid colours. For details on how this
-         * animation behaves, see [LarsonScanner.useCylonAnimation].
+         * animation behaves, see [LarsonScanner.useCylonAnimation]. [g2d] is what to fill and draw
+         * with.
          *
-         * @param g2d To fill and draw with.
          * @author Griefed
          */
         private fun drawCylonOval(g2d: Graphics2D) {
@@ -1515,11 +1498,9 @@ class LarsonScanner : JPanel {
         /**
          * Calculate the Y-coordinate of the center of the element currently being drawn.
          *
+         * Divide the width of an element by two and add that to [start], the play point of the current
+         * element being drawn.
          *
-         * Divide the width of an element by two and add that to the play of the current element
-         * being drawn.
-         *
-         * @param start The play point of the element currently being drawn.
          * @author Griefed
          */
         private fun getCenter(start: Double): Double {
@@ -1542,9 +1523,9 @@ class LarsonScanner : JPanel {
          * To put this into relation along the width of the whole LarsonScanner, we need to subtract that value from the
          * current position along the Larson Scanners total width.
          *
-         * @param element The number of the currently being drawn element, ranging from 0
-         * to the amount of elements in the eye.
-         * @return The X-coordinate where the current element starts.
+         * [element] is the number of the element currently being drawn, ranging from 0 to the amount of
+         * elements in the eye; the result is the X-coordinate where that element starts.
+         *
          * @author Griefed
          */
         @Suppress("SameParameterValue", "SameParameterValue")
@@ -1559,11 +1540,9 @@ class LarsonScanner : JPanel {
         /**
          * Create the radial gradient for the currently being drawn, oval-shaped, element. Radial
          * gradients extend from the 2D center point of the current element to the height of one
-         * element.
+         * element. [element] is the number of the element currently being drawn and [centerX] the
+         * X-coordinate of its center.
          *
-         * @param element The number of the element currently being drawn.
-         * @param centerX The X-coordinate of the center of the element currently being
-         * drawn.
          * @author Griefed
          */
         private fun cylonRadialGradient(
@@ -1579,9 +1558,9 @@ class LarsonScanner : JPanel {
         /**
          * Draw our element in rectangular shape. If `useGradient` is set, then gradients are
          * used for painting, otherwise our rectangles are painted with solid colours. For details on
-         * how this animation behaves, see [LarsonScanner.useCylonAnimation].
+         * how this animation behaves, see [LarsonScanner.useCylonAnimation]. [g2d] is what to fill and
+         * draw with.
          *
-         * @param g2d Fill and draw with.
          * @author Griefed
          */
         private fun drawCylonRect(g2d: Graphics2D) {
@@ -1605,7 +1584,6 @@ class LarsonScanner : JPanel {
 
         /**
          * Calculate the play of an element in rectangular shape. Steps are:
-         *
          *
          * * **Calculate the width of a gap:**
          *
@@ -1637,9 +1615,8 @@ class LarsonScanner : JPanel {
          * element currently being drawn
          * * Subtract that from the current position in the eye being drawn at
          *
+         * Returns the X-coordinate where the current element starts.
          *
-         *
-         * @return The X-coordinate where the current element starts.
          * @author Griefed
          */
         private fun calcCylonRectStart(element: Byte): Double {
@@ -1675,9 +1652,9 @@ class LarsonScanner : JPanel {
          * width of one element.
          * * `Y-coordinate:` Half of the height of one element.
          *
-         * @param element The number of the current element being drawn.
-         * @param startX The X-coordinate where the current element starts.
-         * @return The gradient with which to draw the current element.
+         * [element] — The number of the current element being drawn. [startX] — The X-coordinate where the
+         * current element starts. Returns the gradient with which to draw the current element.
+         *
          * @author Griefed
          */
         private fun ascCylonRectGradient(element: Byte, startX: Double): GradientPaint {
@@ -1709,9 +1686,9 @@ class LarsonScanner : JPanel {
          * width of one element.
          * * `Y-coordinate:` Half of the height of one element.
          *
-         * @param element The number of the current element being drawn.
-         * @param startX The X-coordinate where the current element starts.
-         * @return The gradient with which to draw the current element.
+         * [element] — The number of the current element being drawn. [startX] — The X-coordinate where the
+         * current element starts. Returns the gradient with which to draw the current element.
+         *
          * @author Griefed
          */
         private fun descCylonRectGradient(element: Byte, startX: Double): GradientPaint {
@@ -1732,7 +1709,8 @@ class LarsonScanner : JPanel {
          * painting, otherwise our ovals are painted with solid colours. For details on how this
          * animation behaves, see [LarsonScanner.useCylonAnimation].
          *
-         * @param g2d Fill and draw with.
+         * [g2d] — Fill and draw with.
+         *
          * @author Griefed
          */
         private fun drawKittOval(g2d: Graphics2D) {
@@ -1817,10 +1795,9 @@ class LarsonScanner : JPanel {
         /**
          * Helper method to slightly cleanup [drawKittOval].
          *
-         * @param g2d Fill and draw with.
-         * @param startOfElement The play of the current element along the Larson
-         * Scanner.
-         * @param element The element we are currently drawing.
+         * [g2d] — Fill and draw with. [startOfElement] — The play of the current element along the Larson
+         * Scanner. [element] — The element we are currently drawing.
+         *
          * @author Griefed
          */
         private fun addKittOval(g2d: Graphics2D, startOfElement: Double, element: Byte) {
@@ -1838,34 +1815,28 @@ class LarsonScanner : JPanel {
          * Calculate the play of an element in oval shape when animating in Kitt-style and moving from
          * left to right, or right to left, depending on the direction.
          *
-         *
          * **left to right:**
-         *
          *
          * * Multiply the element currently being drawn with the width of one element
          * * add the previous to the current position from which we are drawing
-         *
          *
          * The element width multiplied with the element currently being drawn, then added on top of the
          * current position in the Larson Scanner, results in the starting point along the X-axis from
          * which to draw the current element.
          *
-         *
          * **right to left**
-         *
          *
          * * Multiply the element currently being drawn, plus 1, with the width of one element
          * * subtract the previous from the current position from which we are drawing
-         *
          *
          * The element width multiplied with the element currently being drawn, plus 1 because we want
          * the element right from the leftmost one, then subtracted from the current position in the
          * Larson Scanner, results in the starting point along the X-axis from which to draw the current
          * element.
          *
-         * @param element The number of the currently being drawn element, ranging from 0
-         * to the amount of elements in the eye.
-         * @return The X-coordinate where the current element starts.
+         * [element] — The number of the currently being drawn element, ranging from 0 to the amount of elements
+         * in the eye. Returns the X-coordinate where the current element starts.
+         *
          * @author Griefed
          */
         private fun calcKittOvalStart(element: Byte): Double {
@@ -1882,9 +1853,9 @@ class LarsonScanner : JPanel {
          * to the height of one element. As the alpha decreases in the Kitt-style animation, we work
          * with percentages of 255, where an alpha value of 255 equals 0 transparency.
          *
-         * @param element The number of the element currently being drawn.
-         * @param centerX The X-coordinate of the center of the element currently being
-         * drawn.
+         * [element] — The number of the element currently being drawn. [centerX] — The X-coordinate of the
+         * center of the element currently being drawn.
+         *
          * @author Griefed
          */
         private fun kittRadialGradient(element: Byte, centerX: Double, color: Color): RadialGradientPaint {
@@ -1902,7 +1873,8 @@ class LarsonScanner : JPanel {
          * used for painting, otherwise our rectangles are painted with solid colours. For details on
          * how this animation behaves, see [LarsonScanner.useCylonAnimation].
          *
-         * @param g2d Fill and draw with.
+         * [g2d] — Fill and draw with.
+         *
          * @author Griefed
          */
         @Suppress("SameParameterValue")
@@ -2003,8 +1975,9 @@ class LarsonScanner : JPanel {
          * * multiply with the number of the current element
          * * subtract the result from the current position along the X-axis.
          *
-         * @param element The number of the element currently being drawn.
-         * @return The X-coordinate where the current element starts.
+         * [element] — The number of the element currently being drawn. Returns the X-coordinate where the
+         * current element starts.
+         *
          * @author Griefed
          */
         private fun calcKittRectStart(element: Byte): Double {
@@ -2034,9 +2007,9 @@ class LarsonScanner : JPanel {
          * width of one element.
          * * `Y-coordinate:` Half of the height of one element.
          *
-         * @param element The number of the current element being drawn.
-         * @param startX The X-coordinate where the current element starts.
-         * @return The gradient with which to draw the current element.
+         * [element] — The number of the current element being drawn. [startX] — The X-coordinate where the
+         * current element starts. Returns the gradient with which to draw the current element.
+         *
          * @author Griefed
          */
         private fun kittRectGradient(element: Byte, startX: Double): GradientPaint {
@@ -2064,9 +2037,9 @@ class LarsonScanner : JPanel {
          * Set the alpha value for the current colour of the current element being drawn. The alpha
          * value must be a number in the range of `0` to `255`.
          *
-         * @param alpha Alpha value to set with the given colour. Ranging from `0` to `255`.
-         * @param color Color of the element currently being drawn.
-         * @return The color of the element currently being drawn with an alpha value set.
+         * [alpha] — Alpha value to set with the given colour. Ranging from `0` to `255`. [color] — Color of the
+         * element currently being drawn.
+         *
          * @throws IllegalArgumentException if the specified alpha-value is smaller than `0`
          * or greater than `255`.
          * @author Griefed

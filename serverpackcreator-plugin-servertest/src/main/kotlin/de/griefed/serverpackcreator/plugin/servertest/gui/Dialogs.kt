@@ -39,10 +39,8 @@ import javax.swing.JOptionPane
 object Dialogs {
 
     /**
-     * Warn the user about something they need to act on, showing [message] exactly as given.
-     *
-     * @param parent  The component the dialog is centred on.
-     * @param message The text to show, treated as literal text however it looks.
+     * Warn the user about something they need to act on, centred on [parent] and showing [message] as
+     * literal text however it looks.
      */
     fun warn(parent: Component?, message: String) {
         JOptionPane.showMessageDialog(

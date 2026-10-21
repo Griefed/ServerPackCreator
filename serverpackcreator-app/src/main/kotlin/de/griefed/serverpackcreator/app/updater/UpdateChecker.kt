@@ -82,10 +82,10 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return
      * the update.
      *
-     * @param preReleaseCheck Whether to check pre-releasesDescending as well. Use `true` to
-     * check pre-releasesDescending as well, `false` to only check with
-     * regular releases.
-     * @return The update, if available, as well as the download URL.
+     * [preReleaseCheck] — Whether to check pre-releasesDescending as well. Use `true` to check pre-
+     * releasesDescending as well, `false` to only check with regular releases. Returns the update, if available,
+     * as well as the download URL.
+     *
      * @author Griefed
      */
     fun checkForUpdate(version: String, preReleaseCheck: Boolean): Optional<Update> {
@@ -101,7 +101,8 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      * Check for update-availability. If an update is present, information about said update is
      * printed to the console.
      *
-     * @param logToConsole Whether to log update information to console or to logs.
+     * [logToConsole] — Whether to log update information to console or to logs.
+     *
      * @author Griefed
      */
     fun updateCheck(logToConsole: Boolean = false): Boolean {

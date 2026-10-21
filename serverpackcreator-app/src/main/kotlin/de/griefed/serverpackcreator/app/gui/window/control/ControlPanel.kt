@@ -97,6 +97,8 @@ class ControlPanel(
     }
 
     /**
+     * Starts a server pack generation on the generation dispatcher and re-arms the controls once it ends.
+     *
      * @author Griefed
      */
     // CoroutineStart.ATOMIC is itself a delicate API (a started generation must not be cancellable
@@ -188,6 +190,8 @@ class ControlPanel(
     }
 
     /**
+     * Runs a generation for the given configuration and reports its outcome in the status panel.
+     *
      * @author Griefed
      */
     private fun generateServerPack(packConfig: PackConfig) {
@@ -234,6 +238,8 @@ class ControlPanel(
     }
 
     /**
+     * Reports a failed generation, listing the errors that stopped it.
+     *
      * @author Griefed
      */
     private fun generationFailed(encounteredErrors: List<String>) {

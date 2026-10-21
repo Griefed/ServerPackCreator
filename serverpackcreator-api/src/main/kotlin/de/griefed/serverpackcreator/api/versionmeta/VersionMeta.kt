@@ -47,19 +47,6 @@ import javax.xml.parsers.ParserConfigurationException
 /**
  * VersionMeta containing available versions and important details for Minecraft, Fabric and Forge.
  *
- * @param minecraftManifest             Minecraft manifest file.
- * @param forgeManifest                 Forge manifest file.
- * @param fabricManifest                Fabric manifest file.
- * @param fabricIntermediariesManifest  Fabric Intermediary manifest-file.
- * @param fabricInstallerManifest       Fabric-installer manifest file.
- * @param quiltManifest                 Quilt manifest file.
- * @param quiltInstallerManifest        Quilt-installer manifest file.
- * @param objectMapper                  Object mapper-instance for JSON parsing.
- * @param legacyFabricGameManifest      Fabric Legacy Game manifest file.
- * @param legacyFabricLoaderManifest    Fabric Legacy Loader manifest file.
- * @param legacyFabricInstallerManifest Fabric Legacy Installer manifest file.
- * @param utilities                     Commonly used utilities across ServerPackCreator.
- * @param apiProperties                 ServerPackCreator settings.
  * @throws ParserConfigurationException indicates a serious configuration error.
  * @throws IOException                  if any IO errors occur.
  * @throws SAXException                 if any parse errors occur.
@@ -67,20 +54,33 @@ import javax.xml.parsers.ParserConfigurationException
  * @author Griefed
  */
 class VersionMeta(
+    /** Minecraft manifest file. */
     private val minecraftManifest: File,
+    /** Forge manifest file. */
     private val forgeManifest: File,
     private val oldNeoForgeManifest: File,
     private val newNeoForgeManifest: File,
+    /** Fabric manifest file. */
     private val fabricManifest: File,
+    /** Fabric-installer manifest file. */
     private val fabricInstallerManifest: File,
+    /** Fabric Intermediary manifest-file. */
     private val fabricIntermediariesManifest: File,
+    /** Quilt manifest file. */
     private val quiltManifest: File,
+    /** Quilt-installer manifest file. */
     private val quiltInstallerManifest: File,
+    /** Fabric Legacy Game manifest file. */
     private val legacyFabricGameManifest: File,
+    /** Fabric Legacy Loader manifest file. */
     private val legacyFabricLoaderManifest: File,
+    /** Fabric Legacy Installer manifest file. */
     private val legacyFabricInstallerManifest: File,
+    /** Object mapper-instance for JSON parsing. */
     objectMapper: ObjectMapper,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
+    /** ServerPackCreator settings. */
     apiProperties: ApiProperties
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -283,15 +283,15 @@ class VersionMeta(
      * Run [update], and if it fails, repair whichever of [manifests] can no longer be parsed and run it once
      * more.
      *
-     * A manifest is seeded from the jar only when it is **absent**, so an unreadable one that exists was
-     * previously unrecoverable from inside the process: a grinder host whose `forge-manifest.json` had been
-     * truncated mid-write died here on every start, through `ApiWrapper.setup()` and straight out of `main`,
-     * naming neither the file nor a remedy. A failure that repaired nothing is rethrown unchanged — there is
+     * A manifest is seeded from the jar only when it is **absent**, so without this an unreadable one that
+     * exists is unrecoverable from inside the process: a mid-write truncation kills every start here, through
+     * `ApiWrapper.setup()` and straight out of `main`, naming neither the file nor a remedy. A failure that
+     * repaired nothing is rethrown unchanged — there is
      * no data to work with, and hiding that would leave every lookup answering about an empty meta, which is
      * how an engine defect gets published as a statement about a mod.
      *
-     * @param manifests The manifest files this meta is built from.
-     * @param update    Re-reads the meta from those files.
+     * [manifests] — The manifest files this meta is built from. [update] — Re-reads the meta from those files.
+     *
      * @author Griefed
      */
     private fun updateOrRepair(vararg manifests: File, update: () -> Unit) {
@@ -415,13 +415,16 @@ class VersionMeta(
     /**
      * Check a given manifest for updates, delegating to [ManifestUpdater] which owns the refresh.
      *
-     * @param urlToManifest   The URL to the manifest.
-     * @param manifestType    The type of the manifest, either [Type.MINECRAFT], [Type.FORGE], [Type.FABRIC] or [Type.FABRIC_INSTALLER].
      * @author Griefed
      */
     private fun checkManifest(
         manifestToCheck: File,
+        /** The URL to the manifest. */
         urlToManifest: URL,
+        /**
+         * The type of the manifest, either [Type.MINECRAFT], [Type.FORGE], [Type.FABRIC] or
+         * [Type.FABRIC_INSTALLER].
+         */
         manifestType: Type
     ) = manifestUpdater.checkManifest(manifestToCheck, urlToManifest, manifestType)
 

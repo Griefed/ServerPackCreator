@@ -64,7 +64,6 @@ data class LaunchablePack(
  * **Nothing here throws.** It runs from the tab's constructor, which `ApiPlugins.addTabExtensionTabs` calls
  * outside its own try-block — an exception would take the whole GUI's tab assembly with it.
  *
- * @param objectMapper SPC's mapper, used only to read manifests.
  * @author Griefed
  */
 class ServerPackCatalog(objectMapper: ObjectMapper) {

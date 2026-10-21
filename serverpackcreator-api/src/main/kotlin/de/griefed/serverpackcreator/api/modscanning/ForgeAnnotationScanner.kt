@@ -30,8 +30,7 @@ import java.util.*
 /**
  * `fml-cache-annotation.json`-based scanning of Forge-Minecraft mods of older versions.
  *
- * @param objectMapper For JSON-parsing.
- * @param utilities    Common utilities used across ServerPackCreator.
+ * [objectMapper] — For JSON-parsing. [utilities] — Common utilities used across ServerPackCreator.
  *
  * @author Griefed
  */
@@ -72,8 +71,8 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
      * If `clientSideOnly` specifies `"value": "true"`, and the mod is not listed as a dependency of
      * another mod, it is later excluded from the server pack.
      *
-     * @param modJar The jar whose annotation cache to read.
-     * @return What this mod declared.
+     * [modJar] — The jar whose annotation cache to read. Returns what this mod declared.
+     *
      * @author Griefed
      */
     override fun read(modJar: File): ScannedMod {
@@ -274,7 +273,8 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     /**
      * Get the id of the mod currently being checked.
      *
-     * @param jsonNode The JSON node containing the modId.
+     * [jsonNode] — The JSON node containing the modId.
+     *
      * @throws NullPointerException if the JSON node does not contain the modId.
      * @author Griefed
      */
@@ -301,8 +301,9 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     /**
      * Get the id of a dependency.
      *
-     * @param dependency The full text of a dependency previously acquired from a JSON node.
-     * @return The pure id of the dependency.
+     * [dependency] — The full text of a dependency previously acquired from a JSON node. Returns the pure id of
+     * the dependency.
+     *
      * @author Griefed
      */
     private fun getDependency(dependency: String): String {
@@ -315,8 +316,8 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
      * Check whether the passed mod id is present as a dependency in any of the mods dependencies. If
      * it is, then the mod of the modId is required.
      *
-     * @param child The child-JSON node containing dependency information.
-     * @return `true` if the modId is a dependency.
+     * [child] — The child-JSON node containing dependency information.
+     *
      * @author Griefed
      */
     private fun additionalDependenciesDepend(child: JsonNode, modId: String): Boolean {
@@ -341,9 +342,9 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
      * Check whether the passed mod id is present as a dependency. If it is, then the mod of the modId
      * is required.
      *
-     * @param child The child-JSON node containing dependency information.
-     * @param modId The ID of the mod for which to check for dependencies.
-     * @return `true` if the modId is a dependency.
+     * [child] — The child-JSON node containing dependency information. [modId] — The ID of the mod for which to
+     * check for dependencies.
+     *
      * @author Griefed
      */
     private fun additionalDependencyDepends(child: JsonNode, modId: String): Boolean {
@@ -363,9 +364,8 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     /**
      * Check whether the additional mod is a clientside-only mod.
      *
-     * @param node            The JSON-node containing information about the additional mod.
-     * @param additionalModId The ID of the additional mod
-     * @return `true` if the additional mod is clientside-only.
+     * [node] — The JSON-node containing information about the additional mod.
+     *
      * @author Griefed
      */
     private fun isAdditionalModClientSide(node: JsonNode, additionalModId: String): Boolean {

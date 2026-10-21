@@ -35,7 +35,6 @@ import de.griefed.serverpackcreator.api.plugins.ServerPackCreatorPlugin
  * superclass reads out of this jar, and everything that does hold state — the configured URL and the
  * ticked entries — lives in the `CommentedConfig` ServerPackCreator hands to each extension.
  *
- * @param context Plugin context provided by ServerPackCreator.
  * @author Griefed
  */
 @Suppress("unused")

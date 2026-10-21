@@ -62,15 +62,15 @@ import java.nio.charset.StandardCharsets
  * `popularity`), so a mis-sorted page would only change *which* projects get fetched, never the grind order.
  * [warnIfMisordered] surfaces that case instead of letting it pass silently.
  *
- * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
- * @param objectMapper Jackson mapper for the JSON responses.
- * @param pageSize     Hits per call (CurseForge caps a page at 50).
  * @author Griefed
  */
 class CurseForgeCandidateSource(
     private val apiKey: String,
+    /** HTTP boundary, swapped for canned JSON in tests. */
     private val httpFetcher: HttpFetcher = JdkHttpFetcher(),
+    /** Jackson mapper for the JSON responses. */
     private val objectMapper: ObjectMapper = ObjectMapper(),
+    /** Hits per call (CurseForge caps a page at 50). */
     private val pageSize: Int = 50
 ) : CandidateSource {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

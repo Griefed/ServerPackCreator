@@ -84,8 +84,8 @@ class ModListCompiler(
      * here rather than spelled out at each site — three copies of it had drifted apart in formatting
      * already.
      *
-     * @param filter The matching mode, read once by the caller.
-     * @param entries Every list entry to be compared against, so their regexes can be compiled up front.
+     * [filter] — The matching mode, read once by the caller. [entries] — Every list entry to be compared against,
+     * so their regexes can be compiled up front.
      */
     private class FilterMatcher(private val filter: ExclusionFilter, entries: Collection<String>) {
         private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -128,10 +128,10 @@ class ModListCompiler(
      * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
      * active, they will be excluded, too.
      *
-     * @param packConfig The configurationModel containing the modpack directory, list of
-     * clientside-only mods to exclude, Minecraft version used by the
-     * modpack and server pack and the modloader used by the modpack and
+     * [packConfig] — The configurationModel containing the modpack directory, list of clientside-only mods to
+     * exclude, Minecraft version used by the modpack and server pack and the modloader used by the modpack and
      * server pack.
+     *
      * @author Griefed
      */
     @Suppress("unused")
@@ -148,19 +148,21 @@ class ModListCompiler(
      * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
      * active, they will be excluded, too.
      *
-     * @param modsDir The mods-directory of the modpack of which to generate a list of all its contents.
-     * @param clientsideModsList A list of all clientside-only mods.
-     * @param modWhitelist A list of mods to include regardless if a match was found in [clientsideModsList].
-     * @param minecraftVersion The Minecraft version the modpack uses. When the modloader is Forge, this determines
-     * whether Annotations or Tomls are scanned.
-     * @param modloader The modloader the modpack uses.
      * @author Griefed
      */
     fun compileModList(
+        /** The mods-directory of the modpack of which to generate a list of all its contents. */
         modsDir: String,
+        /** A list of all clientside-only mods. */
         clientsideModsList: List<String>,
+        /** A list of mods to include regardless if a match was found in [clientsideModsList]. */
         modWhitelist: List<String>,
+        /**
+         * The Minecraft version the modpack uses. When the modloader is Forge, this determines whether
+         * Annotations or Tomls are scanned.
+         */
         minecraftVersion: String,
+        /** The modloader the modpack uses. */
         modloader: String
     ): Pair<List<File>,List<File>> {
         log.info("Preparing a list of mods to include in server pack...")

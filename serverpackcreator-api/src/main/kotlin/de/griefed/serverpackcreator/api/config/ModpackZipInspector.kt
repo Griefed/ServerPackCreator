@@ -58,7 +58,8 @@ class ModpackZipInspector(
      * Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
      * contains neither the mods nor the config directories, consider it invalid.
      *
-     * @param pathToZip         Path to the ZIP-file to check.
+     * [pathToZip] — Path to the ZIP-file to check.
+     *
      * @author Griefed
      */
     fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck {
@@ -122,8 +123,8 @@ class ModpackZipInspector(
      * Update the destination to which the ZIP-archive will the extracted to, based on whether a
      * directory of the same name already exists.
      *
-     * @param destination The destination to where the ZIP-archive was about to be extracted to.
-     * @return The destination where the ZIP-archive will be extracted to.
+     * [destination] — The destination to where the ZIP-archive was about to be extracted to.
+     *
      * @author Griefed
      */
     @Suppress("unused")
@@ -144,8 +145,8 @@ class ModpackZipInspector(
     /**
      * Acquire a list of directories in the base-directory of a ZIP-file.
      *
-     * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All directories in the base-directory of the ZIP-file.
+     * [zipFile] — The ZIP-archive to get the list of files from.
+     *
      * @author Griefed
      */
     @Throws(
@@ -185,7 +186,8 @@ class ModpackZipInspector(
     /**
      * Acquire a list of all files and directories in a ZIP-file.
      *
-     * @param zipFile The ZIP-archive to get the list of files from.
+     * [zipFile] — The ZIP-archive to get the list of files from.
+     *
      * @author Griefed
      */
     @Throws(
@@ -214,7 +216,8 @@ class ModpackZipInspector(
     /**
      * Acquire a list of all directories in a ZIP-file. The resulting list excludes files.
      *
-     * @param zipFile The ZIP-archive to get the list of files from.
+     * [zipFile] — The ZIP-archive to get the list of files from.
+     *
      * @author Griefed
      */
     @Throws(
@@ -239,7 +242,8 @@ class ModpackZipInspector(
     /**
      * Acquire a list of all files in a ZIP-file. The resulting list excludes directories.
      *
-     * @param zipFile The ZIP-archive to get the list of files from.
+     * [zipFile] — The ZIP-archive to get the list of files from.
+     *
      * @author Griefed
      */
     @Throws(

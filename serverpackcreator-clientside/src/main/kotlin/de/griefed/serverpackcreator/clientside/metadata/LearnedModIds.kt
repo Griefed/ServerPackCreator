@@ -127,9 +127,8 @@ class LearnedModIds(
      * and it outranks the hand-written table too — the table is a snapshot of what somebody looked up once,
      * while a learned ref is a descriptor read from the project it names. Trying it *afterwards* costs one
      * resolve on the path that was already failing and is the only route left for an id whose projects have
-     * all been ground but none of which fits.
-     *
-     * @param orElse The unlearned answers, normally [KnownModIds.mappingsFor] bound to this platform.
+     * all been ground but none of which fits. [orElse] supplies the unlearned answers, normally
+     * [KnownModIds.mappingsFor] bound to this platform.
      */
     fun mappingsFor(
         modId: String,

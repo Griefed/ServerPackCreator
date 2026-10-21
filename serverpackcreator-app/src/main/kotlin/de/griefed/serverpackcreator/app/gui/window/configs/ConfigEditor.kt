@@ -596,6 +596,8 @@ class ConfigEditor(
     }
 
     /**
+     * Persists the suggestions gathered from this editor's text fields, including whatever is currently typed.
+     *
      * @author Griefed
      */
     private fun saveSuggestions() {
@@ -656,6 +658,8 @@ class ConfigEditor(
     }
 
     /**
+     * Applies the icon picked in the quick-select box, doing nothing while the placeholder entry is selected.
+     *
      * @author Griefed
      */
     private fun setIcon() {
@@ -670,6 +674,9 @@ class ConfigEditor(
     }
 
     /**
+     * Applies the server.properties file picked in the quick-select box, doing nothing while the placeholder entry
+     * is selected.
+     *
      * @author Griefed
      */
     private fun setProperties() {
@@ -758,6 +765,8 @@ class ConfigEditor(
     fun resolvePackName(): String = viewModel.packName(getModpackDirectory())
 
     /**
+     * Marks the tab as modified when the editor's current state differs from the configuration it was loaded from.
+     *
      * @author Griefed
      */
     fun compareSettings() {
@@ -838,7 +847,7 @@ class ConfigEditor(
      * Set the modloader version combobox model depending on the currently selected modloader, with
      * the specified Minecraft version.
      *
-     * @param minecraftVersion The Minecraft version to work with in the GUI update.
+     * [minecraftVersion] — The Minecraft version to work with in the GUI update.
      *
      * @author Griefed
      */
@@ -856,6 +865,8 @@ class ConfigEditor(
     }
 
     /**
+     * Fills the modloader-version box from the given model and sets the accompanying status icon.
+     *
      * @author Griefed
      */
     private fun setModloaderVersions(
@@ -869,6 +880,8 @@ class ConfigEditor(
     }
 
     /**
+     * Refreshes the Fabric version box for the given Minecraft version, reporting when Fabric does not support it.
+     *
      * @author Griefed
      */
     private fun updateFabricModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
@@ -884,6 +897,8 @@ class ConfigEditor(
     }
 
     /**
+     * Refreshes the Forge version box for the given Minecraft version, reporting when Forge does not support it.
+     *
      * @author Griefed
      */
     private fun updateForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
@@ -903,6 +918,9 @@ class ConfigEditor(
     }
 
     /**
+     * Refreshes the NeoForge version box for the given Minecraft version, reporting when NeoForge does not support
+     * it.
+     *
      * @author Griefed
      */
     private fun updateNeoForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
@@ -922,6 +940,8 @@ class ConfigEditor(
     }
 
     /**
+     * Refreshes the Quilt version box for the given Minecraft version, reporting when Quilt does not support it.
+     *
      * @author Griefed
      */
     private fun updateQuiltModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
@@ -937,6 +957,9 @@ class ConfigEditor(
     }
 
     /**
+     * Refreshes the LegacyFabric version box for the given Minecraft version, reporting when LegacyFabric does not
+     * support it.
+     *
      * @author Griefed
      */
     private fun updateLegacyFabricModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
@@ -1096,7 +1119,7 @@ class ConfigEditor(
      * Get the configurations of the available ExtensionConfigPanel as a hashmap, so we can store them
      * in our serverpackcreator.conf.
      *
-     * @return Map containing lists of CommentedConfigs mapped to the corresponding pluginID.
+     * Returns a map containing lists of CommentedConfigs mapped to the corresponding pluginID.
      *
      * @author Griefed
      */
@@ -1180,6 +1203,9 @@ class ConfigEditor(
     }
 
     /**
+     * Re-reads the Java version this Minecraft version requires and shows it, hiding the field when it cannot be
+     * determined.
+     *
      * @author Griefed
      */
     private fun updateRequiredJavaVersion() {
@@ -1238,7 +1264,6 @@ class ConfigEditor(
      * "No" is selected, the user is warned about the consequences of not setting the
      * Javapath.<br></br><br></br>
      *
-     *
      * If the installer for the current combination of the aforementioned versions can not be reached,
      * or is otherwise unavailable, the user is informed about SPC not being able to install it, thus
      * clearing the selection of the checkbox.
@@ -1247,19 +1272,17 @@ class ConfigEditor(
      * checked for validity, as well as the current combination of Minecraft version, modloader and
      * modloader version server-installer is available.<br></br><br></br>
      *
-     *
      * If the checkbox is ticked and no Java is available, a message is displayed, warning the user
      * that Javapath needs to be defined for the modloader-server installation to work. If "Yes" is
      * clicked, a filechooser will open where the user can select their Java-executable/binary. If
      * "No" is selected, the user is warned about the consequences of not setting the
      * Javapath.<br></br><br></br>
      *
-     *
      * If the installer for the current combination of the aforementioned versions can not be reached,
      * or is otherwise unavailable, the user is informed about SPC not being able to install it, thus
      * clearing the selection of the checkbox.
      *
-     * @return `true` if, and only if, no problem was encountered.
+     * Returns `true` if, and only if, no problem was encountered.
      *
      * @author Griefed
      */
@@ -1303,8 +1326,6 @@ class ConfigEditor(
      * defined for the modloader-server installation to work. If "Yes" is clicked, a filechooser will
      * open where the user can select their Java-executable/binary. If "No" is selected, the user is
      * warned about the consequences of not setting the Javapath.
-     *
-     * @return `true` if Java is available or was configured by the user.
      *
      * @author Griefed
      */

@@ -44,7 +44,8 @@ class BooleanUtilities {
          * or `FALSE`. This prevents any non-boolean values from being written to the new
          * configuration file.
          *
-         * @return True or False, depending on user input.
+         * Returns true or False, depending on user input.
+         *
          * @author Griefed
          */
         fun readBoolean(): Boolean {
@@ -81,10 +82,10 @@ class BooleanUtilities {
          * * Language Key `cli.input.no`
          * * Language Key `cli.input.no.short`
          *
-         * @param stringBoolean The string which should be converted to boolean if it matches certain
-         * patterns.
-         * @return Returns the corresponding boolean if match with pattern was found. If no match is
-         * found, assume and return false.
+         * [stringBoolean] — The string which should be converted to boolean if it matches certain patterns.
+         * Returns the corresponding boolean if match with pattern was found. If no match is found, assume
+         * and return false.
+         *
          * @author Griefed
          */
         @Suppress("MemberVisibilityCanBePrivate")

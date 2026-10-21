@@ -37,6 +37,8 @@ class WikiHelpItem(private val webUtilities: WebUtilities) : JMenuItem(Translati
     }
 
     /**
+     * Opens the help documentation in the user's browser.
+     *
      * @author Griefed
      */
     private fun openHelp() {

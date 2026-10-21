@@ -56,29 +56,31 @@ import java.time.Duration
  * Integration-only: a live daemon, the runtime image and a real `ApiWrapper` are required, so this is
  * exercised end-to-end, not unit-tested; the pieces it composes are individually tested.
  *
- * @param apiWrapper      SPC resolution + generation + version metadata.
- * @param loaderCache     The per-tuple install cache (its installer boots-with-network on a miss).
- * @param containerEngine The container runtime the mod-boots use.
- * @param runtimeImage    The image carrying the JDKs + SPC's shell tooling.
- * @param imageJava       The image's supported-Java gate + per-version JDK resolution.
- * @param workDirectory   Scratch root for verification + boot staging.
- * @param bootTimeout     Per-boot budget.
- * @param resources       CPU/memory/pid caps per mod-boot container.
- * @param curseForgeApiKey CurseForge key (CF resolution); Modrinth needs none.
- * @param containerUser   The `uid:gid` every boot container runs as; must own the staged pack, or the
- *                        mod-boot cannot write into it. Resolved from the host by `ContainerUser`.
  * @author Griefed
  */
 class ContainerCandidateVerifier(
+    /** SPC resolution + generation + version metadata. */
     private val apiWrapper: ApiWrapper,
+    /** The per-tuple install cache (its installer boots-with-network on a miss). */
     private val loaderCache: LoaderCache,
+    /** The container runtime the mod-boots use. */
     private val containerEngine: ContainerEngine,
+    /** The image carrying the JDKs + SPC's shell tooling. */
     private val runtimeImage: String,
+    /** The image's supported-Java gate + per-version JDK resolution. */
     private val imageJava: ImageJavaRuntimes,
+    /** Scratch root for verification + boot staging. */
     private val workDirectory: File,
+    /** Per-boot budget. */
     private val bootTimeout: Duration = Duration.ofMinutes(15),
+    /** CPU/memory/pid caps per mod-boot container. */
     private val resources: ContainerResources = ContainerResources(),
+    /** CurseForge key (CF resolution); Modrinth needs none. */
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
+    /**
+     * The `uid:gid` every boot container runs as; must own the staged pack, or the mod-boot cannot write into
+     * it. Resolved from the host by `ContainerUser`.
+     */
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT,
     private val crashLogs: BootLogStore? = null,
     private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },

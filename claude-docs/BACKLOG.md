@@ -10,12 +10,80 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B49**, with the reason it waited and enough context to pick
+Add the next item under a dated section, starting at **B52**, with the reason it waited and enough context to pick
 it up cold. **B47 is issued and gone** — `resolve-version`'s `branch` mode carrying a branch's slashes into the
 version it outputs, closed 2026-10-16 in the same pass that found it; see `REFACTOR-LOG.md`. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
+
+## 2026-10-20 — from the documentation-policy pass
+
+Three dormant GUI features were kept alive as commented-out code — 21 blocks, 270 lines across three
+files — which the root `CLAUDE.md` has always forbidden and which the new documentation policy forbids
+again. The code is **deleted**; what it was and how to revive it is recorded here, per *the history is
+not lost, it moves to where it is looked up*. Recover any of it with
+`git log -S'<symbol>' -- <path>` on the commit that removed it.
+
+### B49 — the install4j in-app updater in `UpdateDialogs`
+
+`serverpackcreator-app/.../gui/window/UpdateDialogs.kt` carried **10 commented blocks, 200 lines**:
+three `i4J*` state flags and six private functions — `checkForUpdateI4J`, `isI4JUpdatable`,
+`checkForUpdateWithApi`, `downloadAndUpdate`, `setProgressText`, `executeUpdate` — plus the three live
+call sites that would have branched on them (the dialog's button label, the `0 ->` action, and the
+`checkForUpdate` entry point). What ships instead is the one surviving branch:
+`webUtilities.openLinkInBrowser(update.get().url().toURI())`.
+
+It launched install4j's *Standalone update downloader* (`ApplicationLauncher.launchApplication("442", …)`)
+and its updater application (`"380"`), read `sys.updatesUrl` through `Variables.getCompilerVariable`, and
+gated itself on `Files.getFileStore(installationDir).isReadOnly` plus `Util.isWindows()/isMacOS()/isLinux()
+&& !isArchive()`.
+
+**Why it waited:** it only ever works for users who installed from install4j **media**, which is one of
+four distribution shapes this project ships — the AppImages, the Windows app-image and the plain jar
+cannot use it, and the AppImage is explicitly excluded by that `!Util.isArchive()` check. Reviving it
+means deciding what the other three do, and the fallback it would replace (open the release page in a
+browser) already works for all four.
+
+**To pick it up cold:** `media` needs install4j installed locally and is not part of the dev loop, so
+there is no way to rehearse this without a licensed build — which is also why the code sat commented
+rather than behind a feature flag. The two application ids above are the install4j *Installer → Screens
+& Actions* ids, found with the IDE's "Show IDs" toggle; they are the only part not re-derivable from
+install4j's own documentation.
+
+### B50 — the font-family picker in `GuiSettings`
+
+`serverpackcreator-app/.../gui/window/settings/GuiSettings.kt` carried **7 blocks, 39 lines**: the
+`fontIcon`/`fontLabel`/`fontSetting`/`fontRevert`/`fontReset` widget row over
+`GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames`, its `loadFontProperties()`
+loader, its `panel.add(…)` layout rows, its `saveSettings` write of
+`FontUIResource(fontSetting.selectedItem.toString(), font.size, font.style)`, and its clause in the
+dirty-check.
+
+**Why it waited:** the setting is half-present in the shipped product. `guiProps.fontSize` is live and
+adjustable; only the *family* is not, and the reset button hard-coded `"JetBrains Mono"` as the default
+rather than reading it from `GuiProps`. The translation keys `settings_gui_font_family_label` and
+`settings_gui_font_family_tooltip` still exist, so the UI strings are already written.
+
+**To pick it up cold:** the open question is whether changing font family needs the restart warning the
+neighbouring `manualEditSetting` shows (`settings_gui_restart_manualedit`), since Swing's `FontUIResource`
+is applied through the look-and-feel defaults and existing components do not all re-read it.
+
+### B51 — the Java-executable path setting in `GlobalSettings`
+
+`serverpackcreator-app/.../gui/window/settings/GlobalSettings.kt` carried **4 blocks, 31 lines**: the
+`javaIcon`/`javaLabel`/`javaSetting`/`javaRevert`/`javaReset`/`javaChoose` row over
+`ScrollTextFileField` and `JavaChooser`, its layout rows, its validation (file exists, readable,
+executable → `settings_check_java`), and its clause in the dirty-check.
+
+**Why it waited:** `ApiProperties.javaPath` and `acquireJavaPath()` are live and still back the setting;
+only the GUI for overriding it is absent, and the server packs resolve Java through the start scripts'
+own `install_java` path at runtime, which is the mechanism that made the override less load-bearing than
+it looks. `JavaChooser` and the `settings_global_java_*` translation keys all still exist.
+
+**To pick it up cold:** decide whether this setting is global at all — the start-script templates track
+Mojang's per-Minecraft `requiredJavaVersion` (see `misc/Java-References.md`), so one global Java path can
+be wrong for a given pack, which is the reason to prefer the scripts' own resolution over an override.
 
 ## 2026-10-11 — from the documentation and call-depth pass
 

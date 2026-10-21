@@ -1,9 +1,9 @@
 # THE ONE DEFINITION OF WHAT A SERVERPACKCREATOR BUILD PRODUCES.
 #
 # `devbuild.yml` and `release-build.yml` both call this and differ only in what they pass. That is the
-# whole point: a release failed on 2026-10-07 because the Windows job existed twice with two different
-# invocation shapes and only the rehearsed one worked, and the same audit found the dev build shipping
-# install4j media built at `version=dev`. Every such difference is now an INPUT or it does not exist.
+# whole point: a second copy of a job drifts into a second invocation shape, and only the rehearsed
+# shape gets exercised -- that is how the Windows job shipped a broken `-JarPath` and the dev build
+# shipped install4j media built at `version=dev`. Every such difference is an INPUT or it does not exist.
 #
 # THE CONTRACT IS THE `release-assets` ARTIFACT, produced by `stage`. Both callers consume exactly that
 # and nothing else, so neither has a collection step of its own to drift.
@@ -68,10 +68,10 @@ jobs:
       - name: Build the API reference
         run: ./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion="${{ inputs.version }}" --info
 
-      # Zipped HERE rather than in `stage`, because this is the only job with the generated tree. It
-      # used to be zipped by the release's collection step behind `if [ -d ... ]`, which FAILS OPEN: the
-      # dev build never ran dokka, so that branch was skipped on every rehearsal and executed for the
-      # first time on release day. Unconditional, and it fails if the directory is missing.
+      # Zipped HERE rather than in `stage`, because this is the only job with the generated tree.
+      # Unconditional, and it fails if the directory is missing: a collection step guarded by
+      # `if [ -d ... ]` FAILS OPEN, so a branch the dev build never reaches would execute for the first
+      # time on release day.
       - name: Zip the API reference
         run: |
           set -eu
@@ -327,8 +327,8 @@ jobs:
 
       # `-Pversion` IS NOT OPTIONAL: the root build's `media` task sets install4j's `release` from
       # `version.toString()`, which otherwise falls back to gradle.properties' `version=dev` and names
-      # every artifact after it. Measured in the published `continuous` release of 2026-10-07,
-      # `ServerPackCreator-dev-Installer-Mac.dmg` beside `serverpackcreator-api-9.2.0.jar`.
+      # every artifact after it -- `ServerPackCreator-dev-Installer-Mac.dmg` shipping beside
+      # `serverpackcreator-api-9.2.0.jar` is what that looks like in a release.
       #
       # WHAT THIS JOB PACKAGES COMES FROM THE ARTIFACT ABOVE, NOT FROM GRADLE. `media` dependsOn
       # `tasks.build`, which is the ROOT project's build -- that project has no sources and reaches no

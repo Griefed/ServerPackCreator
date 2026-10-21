@@ -181,6 +181,9 @@ class SelectedInclusionDetails(
 
 
     /**
+     * Gives the component focus once Swing has finished laying the dialog out; an immediate request is lost to the
+     * dialog's own focus handling.
+     *
      * @author Griefed
      */
     private fun requestFocus(component: JComponent) {
@@ -192,6 +195,8 @@ class SelectedInclusionDetails(
     }
 
     /**
+     * Asks for a literal string and selects its next occurrence.
+     *
      * @author Griefed
      */
     private fun searchDialog() {
@@ -226,6 +231,8 @@ class SelectedInclusionDetails(
     }
 
     /**
+     * Asks for a regular expression and selects its next match.
+     *
      * @author Griefed
      */
     private fun searchRegexDialog() {

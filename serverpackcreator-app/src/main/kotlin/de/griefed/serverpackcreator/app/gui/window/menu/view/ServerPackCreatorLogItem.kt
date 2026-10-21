@@ -38,6 +38,8 @@ class ServerPackCreatorLogItem(
     }
 
     /**
+     * Opens ServerPackCreator's main log in the system's text editor.
+     *
      * @author Griefed
      */
     private fun openServerPackCreatorLog() {

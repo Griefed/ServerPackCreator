@@ -261,6 +261,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Rebuilds the tip shown for the current selection, disabling the detail panels while it is being assembled.
+     *
      * @author Griefed
      */
     private fun updateTip() {
@@ -339,6 +341,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Selects the first entry and re-enables the inputs, unless the list selection is still settling.
+     *
      * @author Griefed
      */
     fun updateIndex() {
@@ -356,6 +360,9 @@ class InclusionsEditor(
     }
 
     /**
+     * Applies an edit of the source field to the selected inclusion, debounced so that each keystroke does not re-
+     * validate the whole entry.
+     *
      * @author Griefed
      */
     fun sourceWasEdited() {
@@ -377,6 +384,9 @@ class InclusionsEditor(
     }
 
     /**
+     * Applies an edit of the destination field to the selected inclusion, refusing text containing invalid path
+     * characters.
+     *
      * @author Griefed
      */
     fun destinationWasEdited() {
@@ -393,6 +403,9 @@ class InclusionsEditor(
     }
 
     /**
+     * Applies an edit of the inclusion-filter field to the selected inclusion, refusing a pattern that is not a
+     * valid regular expression.
+     *
      * @author Griefed
      */
     fun inclusionFilterWasEdited() {
@@ -416,6 +429,9 @@ class InclusionsEditor(
     }
 
     /**
+     * Applies an edit of the exclusion-filter field to the selected inclusion, refusing a pattern that is not a
+     * valid regular expression.
+     *
      * @author Griefed
      */
     fun exclusionFilterWasEdited() {
@@ -439,6 +455,9 @@ class InclusionsEditor(
     }
 
     /**
+     * Loads the newly selected inclusion into the detail fields, ignoring events fired while the selection is
+     * still adjusting.
+     *
      * @author Griefed
      */
     private fun selectionOccurred(event: ListSelectionEvent) {
@@ -464,6 +483,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Shows or hides the expert inclusion settings together with the selected-inclusion details.
+     *
      * @author Griefed
      */
     private fun toggleVisibility() {
@@ -477,6 +498,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Replaces the list with one [InclusionSpecification] per entry in the given list.
+     *
      * @author Griefed
      */
     private fun setInclusionsFromStringList(entries: List<String>) {
@@ -488,6 +511,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Replaces the list with the given specifications, skipping any whose source is already present.
+     *
      * @author Griefed
      */
     fun setServerFiles(entries: List<InclusionSpecification>) {
@@ -509,6 +534,8 @@ class InclusionsEditor(
     }
 
     /**
+     * The inclusion specifications currently held by the list.
+     *
      * @author Griefed
      */
     fun getServerFiles(): MutableList<InclusionSpecification> {
@@ -516,6 +543,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Adds the given path as an inclusion, resolved against the modpack directory first.
+     *
      * @author Griefed
      */
     @Suppress("SameParameterValue")
@@ -524,6 +553,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Appends the given specification to the list and selects it.
+     *
      * @author Griefed
      */
     fun addEntry(entry: InclusionSpecification) {
@@ -536,6 +567,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Removes the inclusion at the given index and returns it, keeping the list's selection valid.
+     *
      * @author Griefed
      */
     private fun removeEntry(index: Int): InclusionSpecification {
@@ -565,6 +598,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Opens the chooser for picking inclusion sources, rooted at the modpack directory when there is a usable one.
+     *
      * @author Griefed
      */
     private fun selectInclusions() {
@@ -605,6 +640,9 @@ class InclusionsEditor(
     }
 
     /**
+     * An [InclusionSpecification] for the given file, stored relative to the modpack directory when it lies inside
+     * it.
+     *
      * @author Griefed
      */
     fun createInclusionSpec(sourceFile: File): InclusionSpecification {
@@ -617,6 +655,8 @@ class InclusionsEditor(
     }
 
     /**
+     * Restores the inclusions from the last saved configuration and re-validates the editor.
+     *
      * @author Griefed
      */
     private fun revertInclusions() {
@@ -628,6 +668,9 @@ class InclusionsEditor(
     }
 
     /**
+     * Persists the suggestions gathered from the source, destination, inclusion-filter and exclusion-filter
+     * fields.
+     *
      * @author Griefed
      */
     fun saveSuggestions() {

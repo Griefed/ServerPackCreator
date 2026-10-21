@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.app.gui.components
 import com.formdev.flatlaf.util.SystemFileChooser
 
 /**
+ * Shared base for this application's file choosers, carrying the common look and behaviour.
+ *
  * @author Griefed
  */
 abstract class BaseFileChooser: SystemFileChooser() {

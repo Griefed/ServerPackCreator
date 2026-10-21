@@ -36,6 +36,8 @@ class PluginsDirItem(private val apiProperties: ApiProperties) :
     }
 
     /**
+     * Opens the plugins directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openPluginsDir() {

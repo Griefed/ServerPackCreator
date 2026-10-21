@@ -4,7 +4,7 @@
 #
 #   deps    Does CurseForge honour ?gameVersion= on /v1/mods/{id}/files, and does it publish the file a
 #           refusal claims is missing? (the original probe; needs CURSEFORGE_API_KEY)
-#   build   Do the INSTALLED jars actually carry the 2026-09-07/08 fixes? (run on the grinder host)
+#   build   Do the INSTALLED jars actually carry the dependency-resolution fixes? (run on the grinder host)
 #   health  Is the daemon behaving after a deploy — and specifically, has the false-conflict storm stopped?
 #
 # ---------------------------------------------------------------------------------------------------
@@ -20,13 +20,13 @@
 # `./cf-dependency-probe.sh health`.
 # ---------------------------------------------------------------------------------------------------
 #
-# WHY THIS EXISTS. On 2026-09-07 the live daemon published 47 ERROR verdicts reading "Required dependency
+# WHY THIS EXISTS. The live daemon published 47 ERROR verdicts reading "Required dependency
 # unavailable" for files that exist — 245 of them by the next morning, across 273 projects. Cause: a
 # CurseForge `ModFile.version` is the author-typed `displayName`, and `VersionConstraint.numbersOf` read
 # `Balm 26.2.0.7` as [0,2,0,7], so DependencyBacktrack demoted nearly every CurseForge dependency until
 # each project's file list was exhausted.
 #
-# MEASURED 2026-09-07 against the live API, all four projects: the filter WORKS and was never the bug.
+# MEASURED against the live API, all four projects: the filter WORKS and was never the bug.
 #   thermal-foundation 1.20.1  filtered total=6  (unfiltered 52)  newest tagged [.,NeoForge,1.20.1,Forge,.]
 #   create-fabric      1.20.1  filtered total=10 (unfiltered 67)  newest tagged [.,Fabric,1.20.1,.,Quilt]
 #   balm               26.2    filtered total=14 (unfiltered 558) balm-fabric-26.2-26.2.0.7.jar present
@@ -132,7 +132,7 @@ cmd_deps() {
 
 # ----------------------------------------------------------------------------- build
 
-# Symbols the 2026-09-07/08 fixes introduced. Grepped out of the class constant pool rather than read
+# Symbols the dependency-resolution fixes introduced. Grepped out of the class constant pool rather than read
 # with javap, so this works on a host with a JRE and no JDK.
 cmd_build() {
     prefix="${1:-$PREFIX}"
@@ -210,13 +210,12 @@ cmd_health() {
 
     echo "== staging refusals in the journal, last ${minutes}m"
     if journal=$(journalctl -u "$UNIT" --since "${minutes} min ago" --no-pager 2>/dev/null); then
-        # `re-staging ... without it` is DependencyBacktrack demoting. Before the fix the live daemon
-        # logged ~1014 of these in a DAY against 4 real staging failures; a handful per hour is normal,
-        # dozens means something is manufacturing conflicts again.
+        # `re-staging ... without it` is DependencyBacktrack demoting. A handful per hour is normal;
+        # dozens means something is manufacturing conflicts again -- the pathological case logs ~1014
+        # in a day against 4 real staging failures.
         printf '   %-52s %s\n' "re-staging ... without it (demotions)" "$(printf '%s' "$journal" | grep -c 're-staging .* without it')"
-        # The refusal reasons, which only exist since 2026-09-08 -- the OLD message was
-        # "publishes no <loader> file for Minecraft <mc>", so grepping for that now finds nothing and
-        # would read as "fixed" whatever the truth is. Match the reasons instead.
+        # Match the refusal reasons below, never a message wording: a grep for a phrasing the daemon
+        # no longer emits finds nothing and would read as "fixed" whatever the truth is.
         for reason in \
             "every usable build was dropped resolving a version conflict" \
             "nothing published for this loader and Minecraft version" \

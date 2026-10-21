@@ -51,7 +51,6 @@ class SystemUtilities {
         /**
          * Automatically acquire the path to the systems default Java installation.
          *
-         * @return String. The path to the systems default Java installation.
          * @author Griefed
          */
         fun acquireJavaPathFromSystem(): String {

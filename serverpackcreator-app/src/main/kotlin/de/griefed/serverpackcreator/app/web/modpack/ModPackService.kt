@@ -244,7 +244,8 @@ class ModPackService @Autowired constructor(
     /**
      * Retrieve the archive of a previously uploaded modpack.
      *
-     * @return The modpack-zip, wrapped in an [Optional]
+     * Returns the modpack-zip, wrapped in an [Optional].
+     *
      * @throws IOException If an I/O error occurs writing to or creating the file.
      * @throws IllegalArgumentException If the modpack doesn't have data to export.
      * @author Griefed

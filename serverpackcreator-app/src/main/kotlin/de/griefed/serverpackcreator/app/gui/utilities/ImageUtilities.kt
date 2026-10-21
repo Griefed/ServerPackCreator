@@ -112,6 +112,8 @@ fun ImageIcon.getAspectRatioScaledInstance(size: Int, scaleBy: ScaleBy = ScaleBy
 }
 
 /**
+ * Which dimension a scaling operation keeps fixed.
+ *
  * @author Griefed
  */
 enum class ScaleBy {

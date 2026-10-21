@@ -23,7 +23,9 @@ import net.lingala.zip4j.ZipFile
 
 /**
  * Check whether this ZipFile denotes an invalid ZipFile.
- * @return true if this ZipFile is invalid, false otherwise.
+ *
+ * Returns true if this ZipFile is invalid, false otherwise.
+ *
  * @author Griefed
  */
 fun ZipFile.isNotValidZipFile(): Boolean {

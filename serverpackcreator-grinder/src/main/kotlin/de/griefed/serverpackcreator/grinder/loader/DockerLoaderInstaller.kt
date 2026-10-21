@@ -38,22 +38,24 @@ const val INSTALL_LOG = "install.log"
  * the runtime image, and a real `ApiWrapper` behind the generator — so it is not unit-tested; the
  * error-prone pieces it leans on ([InstallLayerSnapshot], [PackVariables], [ImageJavaRuntimes]) are.
  *
- * @param image          The runtime image (must carry the JDKs + SPC's shell tooling).
- * @param packGenerator  Produces the mod-less pack for the tuple.
- * @param imageJava      Resolves the bundled JDK for the tuple's Minecraft version.
- * @param installTimeout Budget for the install boot (downloads + first server start).
- * @param resources      CPU/memory/pid caps for the install container.
- * @param containerUser  The `uid:gid` the install runs as; must own the generated pack, or the installer
- *                       cannot save `server.jar` and the install produces no library layer.
  * @author Griefed
  */
 class DockerLoaderInstaller(
     private val engine: ContainerEngine,
+    /** The runtime image (must carry the JDKs + SPC's shell tooling). */
     private val image: String,
+    /** Produces the mod-less pack for the tuple. */
     private val packGenerator: VanillaPackGenerator,
+    /** Resolves the bundled JDK for the tuple's Minecraft version. */
     private val imageJava: ImageJavaRuntimes,
+    /** Budget for the install boot (downloads + first server start). */
     private val installTimeout: Duration = Duration.ofMinutes(20),
+    /** CPU/memory/pid caps for the install container. */
     private val resources: ContainerResources = ContainerResources(),
+    /**
+     * The `uid:gid` the install runs as; must own the generated pack, or the installer cannot save `server.jar`
+     * and the install produces no library layer.
+     */
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT
 ) : LoaderInstaller {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

@@ -27,6 +27,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 /**
+ * A tab title that can additionally show error, warning and modified indicators.
+ *
  * @author Griefed
  */
 open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {

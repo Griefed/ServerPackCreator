@@ -47,13 +47,12 @@ import javax.swing.table.TableRowSorter
  * A `JTable` rather than a column of checkboxes because a mature grinder holds thousands of verdicts,
  * which is also why filtering goes through a [TableRowSorter] instead of rebuilding the model.
  *
- * @param warning A banner to show above the list, or `null` for none.
- * @param onSelectionChanged Called when the user ticks or unticks anything, with the new full selection.
- *
  * @author Griefed
  */
 class VerdictListPane(
+    /** A banner to show above the list, or `null` for none. */
     warning: String? = null,
+    /** Called when the user ticks or unticks anything, with the new full selection. */
     onSelectionChanged: (Set<String>) -> Unit
 ) : JPanel(BorderLayout(0, 6)) {
 

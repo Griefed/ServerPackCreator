@@ -31,14 +31,14 @@ import java.nio.charset.StandardCharsets
  * whose author forbade third-party distribution arrive with a `null` download-URL and are flagged
  * [ModFile.locked] for the browser-downloader.
  *
- * @param apiKey       The CurseForge API-key (from the `CURSEFORGE_API_KEY` environment-variable).
- * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
- * @param objectMapper Jackson mapper for parsing the JSON responses.
  * @author Griefed
  */
 class CurseForgePlatform(
+    /** The CurseForge API-key (from the `CURSEFORGE_API_KEY` environment-variable). */
     private val apiKey: String,
+    /** HTTP boundary, swapped for canned JSON in tests. */
     private val httpFetcher: HttpFetcher = JdkHttpFetcher(),
+    /** Jackson mapper for parsing the JSON responses. */
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ModPlatform {
 

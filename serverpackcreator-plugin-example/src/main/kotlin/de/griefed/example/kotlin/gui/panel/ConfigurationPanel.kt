@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 package de.griefed.example.kotlin.gui.panel
 
@@ -45,33 +44,36 @@ import javax.swing.JTextField
 /**
  * Custom configuration panel for configuration of custom values. Such custom values could be used during configuration
  * checks or server pack creations.
- * @param versionMeta         Instance of {@link VersionMeta} so you can work with available
- *                            Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
- * @param apiProperties       Instance of {@link ApiProperties} The current configuration of
- *                            ServerPackCreator, like the default list of clientside-only mods,
- *                            the server pack directory etc.
- * @param utilities           Instance of {@link Utilities} commonly used across
- *                            ServerPackCreator.
- * @param serverPackConfigTab Instance of {@link ServerPackConfigTab} to give you access to the
- *                            various fields inside it, like the modpack directory, selected
- *                            Minecraft, modloader and modloader versions, etc.
- * @param addonConfig         Addon specific configuration conveniently provided by
- *                            ServerPackCreator. This is the global configuration of the addon
- *                            which provides the ConfigPanelExtension to ServerPackCreator.
- * @param extensionName       The name the titled border of this ConfigPanel will get.
- * @param pluginID            The ID of the addon providing this extension implementation. The
- *                            pluginID determines which extension specific configurations are
- *                            provided to this panel, and how they are stored in a given
- *                            serverpackcreator.conf.
  * @author Griefed
  */
 class ConfigurationPanel(
+    /** Available Minecraft, Forge, Fabric, LegacyFabric and Quilt versions. */
     versionMeta: VersionMeta,
+    /**
+     * The current configuration of ServerPackCreator, like the default list of clientside-only mods
+     * and the server pack directory.
+     */
     apiProperties: ApiProperties,
+    /** Helpers commonly used across ServerPackCreator. */
     utilities: Utilities,
+    /**
+     * Access to the configuration tab's fields: the modpack directory, the selected Minecraft version,
+     * the modloader and its version, and so on.
+     */
     serverPackConfigTab: ServerPackConfigTab,
+    /**
+     * The global configuration of the addon providing this ConfigPanelExtension, conveniently handed
+     * over by ServerPackCreator.
+     */
     addonConfig: Optional<CommentedConfig>?,
-    extensionName: String, pluginID: String
+    /** The name the titled border of this ConfigPanel will get. */
+    extensionName: String,
+    /**
+     * The ID of the addon providing this extension implementation. It determines which extension
+     * specific configurations reach this panel, and how they are stored in a given
+     * serverpackcreator.conf.
+     */
+    pluginID: String
 ) : ExtensionConfigPanel(
     versionMeta, apiProperties, utilities, serverPackConfigTab, addonConfig!!,
     extensionName, pluginID
@@ -139,11 +141,10 @@ class ConfigurationPanel(
     }
 
     /**
-     * Retrieve this extensions server pack specific configuration. When no configuration with configs
-     * for this extension has been loaded yet, the returned list is empty. Fill it with life!
+     * This extension's server pack specific configuration, for use in subsequent server pack
+     * generation runs by various other extensions. Empty until a configuration carrying configs for
+     * this extension has been loaded — fill it with life!
      *
-     * @return Config list to be used in subsequent server pack generation runs, by various other
-     * extensions.
      * @author Griefed
      */
     override fun serverPackExtensionConfig(): ArrayList<CommentedConfig> {
@@ -179,11 +180,10 @@ class ConfigurationPanel(
      * Pass the extension configuration to the configuration panel, so it can then, in turn, load the
      * available configurations and make them editable, if so desired.
      *
-     * @param serverPackExtensionConfig The list of extension configurations to pass to the
-     * configuration panel.
      * @author Griefed
      */
     override fun setServerPackExtensionConfig(
+        /** The list of extension configurations to pass to the configuration panel. */
         serverPackExtensionConfig: ArrayList<CommentedConfig>
     ) {
         pluginsLog.info("Setting $panelName configuration.")

@@ -137,6 +137,8 @@ class MigrationInfoItem(
     }
 
     /**
+     * Appends text to the migration window's pane.
+     *
      * @author Griefed
      */
     private fun addText(text: String) {
@@ -144,6 +146,8 @@ class MigrationInfoItem(
     }
 
     /**
+     * Appends the requested number of line breaks to the migration window's pane.
+     *
      * @author Griefed
      */
     private fun addLineBreak(amount: Int = 1) {

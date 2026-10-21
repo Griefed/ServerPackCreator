@@ -37,6 +37,8 @@ class EditIconItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     }
 
     /**
+     * Opens the selected configuration's server icon in the system's image editor.
+     *
      * @author Griefed
      */
     private fun openIcon() {

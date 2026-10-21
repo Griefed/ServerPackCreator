@@ -41,7 +41,8 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all modloader versions that are not forge.
      *
-     * @return Returns a list of all available Fabric versions.
+     * Returns a list of all available Fabric versions.
+     *
      * @author Griefed
      */
     @GetMapping("/all", produces = ["application/json"])
@@ -62,7 +63,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available Minecraft versions.
      *
-     * @return Returns a list of all available Minecraft verions.
      * @author Griefed
      */
     @GetMapping("/minecraft", produces = ["application/json"])
@@ -75,8 +75,8 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available Forge versions for a specific Minecraft version.
      *
-     * @param minecraftVersion The Minecraft version you want to get a list of Forge versions for.
-     * @return Returns a list of all available Forge versions for the specified Minecraft version.
+     * [minecraftVersion] — The Minecraft version you want to get a list of Forge versions for.
+     *
      * @author Griefed
      */
     @GetMapping("/forge/{minecraftversion}", produces = ["application/json"])
@@ -94,7 +94,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available NeoForge versions.
      *
-     * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
     @GetMapping("/forge", produces = ["application/json"])
@@ -107,7 +106,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available NeoForge versions.
      *
-     * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
     @GetMapping("/neoforge", produces = ["application/json"])
@@ -120,7 +118,6 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     /**
      * Get a list of all available NeoForge versions.
      *
-     * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
     @GetMapping("/neoforge/{minecraftversion}", produces = ["application/json"])

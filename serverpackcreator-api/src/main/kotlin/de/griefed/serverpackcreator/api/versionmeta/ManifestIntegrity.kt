@@ -28,12 +28,12 @@ import java.io.File
  * Repairs a locally stored manifest that can no longer be parsed.
  *
  * ServerPackCreator seeds every manifest from the jar, but only ever when the file is **absent** — so a
- * manifest that exists and is unreadable is the one manifest nothing in the process can replace. A grinder
- * host hit exactly that: a truncated `forge-manifest.json` ended every start in `ForgeLoader.update`, and the
- * only remedy was deleting the file by hand. This asks the cheap question the metas never got to ask — *does
- * this file still parse?* — and answers a "no" with the copy the jar carries.
+ * manifest that exists and is unreadable is the one manifest nothing else in the process can replace, and a
+ * truncated one ends every start inside its meta's `update` with no remedy short of deleting the file by
+ * hand. This asks the cheap question — *does this file still parse?* — and answers a "no" with the copy the
+ * jar carries.
  *
- * @param utilities Commonly used utilities across ServerPackCreator.
+ * [utilities] — Commonly used utilities across ServerPackCreator.
  */
 internal class ManifestIntegrity(private val utilities: Utilities) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -52,8 +52,9 @@ internal class ManifestIntegrity(private val utilities: Utilities) {
      * cleared: it is the shipped snapshot, and the conditional request must ask for the whole current manifest
      * rather than be told that "now" is newer than anything upstream has.
      *
-     * @param manifest The manifest to check and, if it cannot be read, repair.
-     * @return `true` if [manifest] was restored or removed, `false` if it parses and was left alone.
+     * [manifest] — The manifest to check and, if it cannot be read, repair. Returns `true` if [manifest] was
+     * restored or removed, `false` if it parses and was left alone.
+     *
      * @author Griefed
      */
     fun restoreIfUnreadable(manifest: File): Boolean {

@@ -25,17 +25,19 @@ package de.griefed.serverpackcreator.grinder.source
  * `index + pageSize > 10 000`, so the catalog cannot be enumerated as one sequence — it is covered as many
  * slices that each fit under that cap (see [CurseForgePartitions] for the traversal).
  *
- * @param gameVersion    `gameVersion` filter, or `null` for the unfiltered catalog.
- * @param categoryId     `categoryId` filter, or `null` for all categories.
- * @param modLoaderType  `modLoaderType` filter (see [CurseForgePartitions.FORGE] etc.), or `null` for all.
- * @param ascending      `true` to sort least-downloaded first, reaching the *bottom* of a slice that is too
- *                       big to page through from the top.
  * @author Griefed
  */
 data class CurseForgePartition(
+    /** `gameVersion` filter, or `null` for the unfiltered catalog. */
     val gameVersion: String?,
+    /** `categoryId` filter, or `null` for all categories. */
     val categoryId: Int?,
+    /** `modLoaderType` filter (see [CurseForgePartitions.FORGE] etc.), or `null` for all. */
     val modLoaderType: Int?,
+    /**
+     * `true` to sort least-downloaded first, reaching the *bottom* of a slice that is too big to page through
+     * from the top.
+     */
     val ascending: Boolean
 ) {
     /**
