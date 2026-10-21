@@ -7645,3 +7645,24 @@ table of what each candidate does. All of it is in B52.
   `serverpackcreator-api/CLAUDE.md` claims. A grep for the literal `SERVER_EXIT_CODE` finds it only in
   bash and reads as a gap; fish spells it `server_exit_code` and PowerShell `$ServerExitCode`. Three
   conventions, one behaviour — do not re-report it.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 8
+
+New ground: `@Suppress` annotations, the duplicate pairs behind them, and the published API spec.
+
+## Findings
+
+**None — no convention violations and no behavioural defects.** This is the first of the eight rounds
+to find nothing, which is the stopping condition it was run to establish.
+
+## Verified clean — do not re-litigate
+
+- **The ten acknowledged `DuplicatedCode` pairs have not drifted** — differences are local variable and
+  field names only. Detail and the per-pair diffs are in `claude-docs/ANALYSIS-AUDIT.md`.
+- **No suppression is hiding a flagged problem**; the two self-flagging ones are deliberate.
+- **`Writerside/api-docs.yaml` has zero stale schema references.**
+- **A spec-vs-controller endpoint count was inconclusive by tooling and is not a finding.** Composing
+  Spring paths by parsing annotations got a real path wrong; the repository's own instruction is to
+  regenerate the spec rather than hand-compare it.

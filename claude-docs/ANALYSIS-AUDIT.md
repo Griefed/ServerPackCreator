@@ -2273,3 +2273,49 @@ experiment and its outcome.
   spells it `server_exit_code` (a lowercase local) and PowerShell `$ServerExitCode` from
   `$LASTEXITCODE`. Three naming conventions, one behaviour. `start.bat` does not propagate it and is
   not claimed to.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 8
+
+New ground: `@Suppress` annotations and the acknowledged duplicate pairs behind them, plus the
+published API spec.
+
+## Findings
+
+**None.** Every check in this round came back clean or inconclusive-by-tooling; nothing was changed.
+
+## Verified clean — do not re-litigate
+
+- **The ten `@Suppress("DuplicatedCode")` pairs have not drifted.** This is the shape with a receipt —
+  four prompt loops were copies, two carried the annotation, and *"the annotation was sitting on the copy
+  holding the worst bug."* Each acknowledged pair was extracted and diffed with the loader name
+  normalised away:
+  - `FabricLoader` vs `QuiltLoader`: differ only in a field name (`loaderManifest` / `manifest`) and two
+    blank lines.
+  - `FabricInstaller` vs `QuiltInstaller` vs `LegacyFabricInstaller`: differ only in local variable
+    names (`latestNodeChildren` / `latestChildren`, `nextInstallers` / `nextAllVersions`).
+
+    No behavioural difference in any pair.
+- **No `@Suppress` is hiding a flagged problem.** The 243 suppressions in main sources are dominated by
+  `unused` (106) and `MemberVisibilityCanBePrivate` (68); 52 of the `unused` are in `-api`, where an
+  exported symbol having no internal caller is the normal state for a published module. The two
+  self-flagging ones (`RedundantSuppression`, `RedundantNullableReturnType`) are deliberate and
+  annotated as such.
+- **The published API spec carries no stale schema references.** `Writerside/api-docs.yaml` mentions
+  `StartArgument`, `ClientMod` and `WhitelistedMod` **zero** times, and none of those classes exists in
+  the source any more — the drift an earlier audit caught has stayed fixed.
+
+## Inconclusive, and why it is recorded rather than reported as a finding
+
+A count of spec operations (44) against controller method-level mappings (46) looked like two
+undocumented endpoints. It is **not** evidence: reconstructing a Spring path means composing a
+class-level `@RequestMapping` with a method-level one and normalising the inline regex constraints
+(`{id:[0-9a-zA-Z]+}` → `{id}`), and the parser written for this got that wrong — it reported
+`/api/v2/modpacksbyserverpack/{id}` as missing from the spec when the controller's real path is
+`/api/v2/modpacks/byserverpack/{id}`, which the spec documents correctly.
+
+The repository already says what to do here instead, and it is not a hand-comparison: *"springdoc is
+wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency in
+`serverpackcreator-app/build.gradle.kts` … Regenerate it rather than patching it."* Any real answer
+about spec drift comes from a regeneration, not from parsing annotations.
