@@ -7535,3 +7535,42 @@ the same trade: it would also have needed an exemption for the four legitimate `
   the shape of the call. Detail in the analysis file.
 - **No new silent skip.** All 28 skipped tests map to documented gated integration classes.
 - **The 44 discarded filesystem booleans are best-effort cleanup**, reviewed individually.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 5
+
+New ground: swallowed exceptions, and I/O in **build logic** — which every earlier audit of the
+timeout rule scoped itself out of by name.
+
+## Findings
+
+**No convention violations in the commit history.** Round 5's two defects are behavioural and are filed
+in `claude-docs/ANALYSIS-AUDIT.md` as M1 and M2. Both sit in the same two lines of `buildSrc`.
+
+### Observation — a landmine's own scope is part of the landmine
+
+`serverpackcreator-api/CLAUDE.md`'s timeout landmine is unusually careful. It names the two sanctioned
+routes, lists the two benign exceptions, and warns that an earlier version of itself *overstated* its
+coverage — *"A landmine that overstates its coverage is worse than none: the next reader trusts it and
+stops looking."* It then tells the next reader to grep `-api` and `-app`.
+
+That instruction is what left the hole. `buildSrc` is a separate build, cannot depend on the modules,
+and therefore cannot use either sanctioned route — so it is the one place guaranteed to need its own
+answer, and the one place the grep never reaches. The single network call in it was unbounded.
+
+The generalisation, which is new and worth keeping: **a rule that names where to look has told you
+where it does not apply.** The earlier instances of this family are about duplicated *knowledge*
+drifting; this is about a stated *scope* becoming a blind spot. Ask of any audit instruction which
+build, module or source set it quietly excludes.
+
+## Verified clean — do not re-litigate
+
+- **The silent-catch convention is kept, 38 of 39.** The raw count looks alarming and is not: every one
+  but the `buildSrc` line states why it discards its exception, including the `OutOfMemoryError` in
+  `ConfigCheckTimer:76`, which carries three lines explaining that a pathologically large server-icon
+  must not take the GUI down and that the icon simply is not validated on that tick.
+- **`buildSrc` now has a second test class, and it ran** — `LicenseAgreementRendererTest`, 1 test, 0
+  skipped, reached through the `jar { finalizedBy(test) }` edge that is the only thing that runs this
+  source set. Verified red against removing the two timeout assignments and green with them, so it is a
+  pin rather than a passenger.

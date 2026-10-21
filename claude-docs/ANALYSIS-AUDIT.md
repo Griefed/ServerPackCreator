@@ -2081,3 +2081,56 @@ contract is pinned and the body is not.
   `ManifestIntegrity.setLastModified(0)`, whose failure would strand a host on the shipped snapshot — is
   immediately followed by the next refresh asking unconditionally anyway, and the file is already
   restored by that point.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 5
+
+New ground: swallowed exceptions and unbounded I/O in **build logic**, which every earlier audit of this
+rule explicitly scoped itself out of.
+
+## MEDIUM
+
+### M1 — the build makes an unbounded network call, and the landmine that forbids it audited only `-api` and `-app`
+
+`buildSrc/src/main/kotlin/de/griefed/common/gradle/LicenseAgreementRenderer.kt:144`
+
+```kotlin
+if (!license.url.isNullOrBlank() && license.url.endsWith(".txt", true) && Files.maybeLicenseUrl(license.url)) {
+    try {
+        text = append(text, URI(license.url).toURL().readText() + "\n")
+    } catch (_: Exception) {}
+}
+```
+
+`URL.readText()` opens a stream with the JDK's defaults, and `serverpackcreator-api/CLAUDE.md` states
+what those are: *"The JDK's default connect- and read-timeout is infinite, so `url.openConnection()` or
+`url.openStream()` written anywhere else is a hang waiting to happen."* That landmine closed twelve call
+sites and ends by telling the next reader to *"grep for `openStream()`/`openConnection()` across `-api`
+and `-app`"* — which is exactly the blind spot: **`buildSrc` is a separate build and was never in that
+grep.**
+
+It is the only network call in `buildSrc`'s main source, and `generateLicenseReport` is on the build
+path (`build.gradle.kts:197`). A POM licence URL ending in `.txt` whose host accepts the connection and
+then never answers stalls the build with no timeout and no output — on a developer machine and on CI
+alike. The `catch` cannot help: a hang never throws.
+
+**Fix:** a bounded read local to `buildSrc`. It cannot use `-api`'s `URL.timedConnection`, because
+buildSrc is a separate build that does not depend on the modules — which is the same reason the landmine
+gives for that function existing at all.
+
+### M2 — the one silent catch in the repository with no stated reason
+
+Same line. The convention is explicit: *"**Errors:** always handle, never ignore with `_` unless
+intentional (comment why)."* Measured across every main source: **38 of 39 silent catches carry their
+reason**; this is the one that does not, and it is swallowing `Exception` — which includes the
+`IOException` the unbounded read above would produce if it ever did fail rather than hang.
+
+## Verified clean — do not re-litigate
+
+- **The convention on silent catches is being kept**, which is worth recording because the raw count
+  looks alarming. 39 `catch` blocks in main sources discard their exception; **38 state why**, including
+  the one that looks worst out of context — `ConfigCheckTimer:76` swallowing an `OutOfMemoryError`,
+  which carries three lines explaining that a pathologically large server-icon must not take the GUI
+  down with it and that the icon simply is not validated on that tick.
+- **No new silent skip, no new `!!`, no `TODO`/`FIXME`** anywhere in main sources.
