@@ -2191,3 +2191,85 @@ rewritten.
   source-breaking change for no measured gain.
 - **`versionmeta`'s immutable-snapshot fix is intact** — ten classes publish fresh collections into
   `@Volatile` fields, and the `@Volatile` count per file is unchanged from what the earlier work recorded.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 7
+
+New ground: equality contracts, and cross-shell consistency of the shipped start-script templates.
+
+## HIGH
+
+### H1 — `start.fish` swallows every stop request, so a fish-started pack is SIGKILLed with its world unsaved
+
+`serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/default_template.fish`
+
+The bash template traps `TERM` and forwards it to the server, and says exactly why:
+
+> *"Without this the signal dies here. A pack run under docker or systemd has this script as PID 1, and
+> the kernel discards a signal aimed at PID 1 unless a handler is installed for it — so the request is
+> lost, the stop window expires, and the server is SIGKILLed with its world unsaved."*
+
+**The fish template has no handler at all** — no `trap`, no `--on-signal`, and it runs the server in the
+*foreground*, so there is nothing to forward from. `stopServer` is the only function present in
+`default_template.sh` and absent from `default_template.fish` (18 vs 17 functions).
+
+**Reproduced, not reasoned about.** fish as PID 1 in `alpine:latest`, the template's own
+`runJavaCommand` verbatim, a stand-in server that traps `TERM` and announces it:
+
+```
+before SIGTERM:  CHILD-UP
+after  SIGTERM:  CHILD-UP          ← the child never heard it
+container still running: yes
+```
+
+`docker stop` would wait out its whole window and then SIGKILL. The recorded bash measurement for the
+same shape is *5096 ms, exit 137* against *72 ms, exit 0* once forwarding works.
+
+`start.bat` has no handler either; Windows signal semantics differ enough that it is a separate
+question. `start.ps1` likewise.
+
+### H1a — the obvious fix is wrong, and that is the finding worth keeping
+
+Four shapes were executed against a real fish in a container. **Each satisfies one half of the
+contract and breaks the other:**
+
+| shape | forwards SIGTERM | preserves the server's exit code |
+|---|---|---|
+| foreground (today's template) | **no** | yes (42) |
+| background + `wait` | **no** — fish does not dispatch `--on-signal` while blocked in `wait` | untested |
+| background + poll loop | **yes** (`CHILD-GOT-TERM`, ~1 s) | **no** — `$status` comes back `0`, not `42` |
+| background + poll + status file | untested for signal (handler did not fire) | yes (42) |
+
+The exit code is not optional: the fish template captures `$status` immediately after `runJavaCommand`
+into `server_exit_code` and exits with it, and `serverpackcreator-api/CLAUDE.md` records why — *"a
+crashed server is distinguishable from a clean shutdown by anything reading the exit code — systemd,
+Docker restart policies, CI, and the grinder's boot classifier."* A fix that forwards the signal and
+silently zeroes the exit code trades one silent defect for another.
+
+Two facts established along the way that a future session should not have to rediscover:
+
+- **fish does not run an `--on-signal` handler while blocked in `wait`.** A poll loop between commands
+  does let it fire; `wait` does not. This is why bash's trap-plus-`wait` shape does not translate.
+- **fish does not redirect a background job's stdin to `/dev/null`.** bash does, which is why the bash
+  template needs `0<&0`; the fish equivalent does not, and the console survives backgrounding
+  (`CHILD-STDIN:say hello` observed in every backgrounded shape).
+
+**Not fixed in this round, deliberately.** This is a shipped artifact in the area this repository has
+the most receipts for — *"these fail silently: a wrong branch or a mis-sliced version produces a
+plausible value, not an error"* — and no shape has yet been executed that satisfies both halves.
+Shipping one now would be the guess that convention exists to prevent. Filed as **B52** with every
+experiment and its outcome.
+
+## Verified clean — do not re-litigate
+
+- **All eight manual `equals`/`hashCode` pairs agree on their field sets** — `InclusionSpecification`,
+  `ModPack`, `ZipResponse`, `ServerPack`, `RunConfiguration`, `ErrorEntry`, `QueueEvent`, `TaskDetail`.
+  No class overrides one without the other. A first scan reported five disagreements and was a false
+  positive of its own regex, which matched `==` and not `!=`; the implementations use the
+  `if (a != other.a) return false` form.
+- **Exit-code propagation IS present in all three templates CLAUDE.md claims it for** — `.sh`, `.fish`
+  and `.ps1`. A grep for the literal `SERVER_EXIT_CODE` finds it only in bash and reads as a gap; fish
+  spells it `server_exit_code` (a lowercase local) and PowerShell `$ServerExitCode` from
+  `$LASTEXITCODE`. Three naming conventions, one behaviour. `start.bat` does not propagate it and is
+  not claimed to.

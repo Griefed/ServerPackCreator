@@ -10,12 +10,67 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B52**, with the reason it waited and enough context to pick
+Add the next item under a dated section, starting at **B53**, with the reason it waited and enough context to pick
 it up cold. **B47 is issued and gone** — `resolve-version`'s `branch` mode carrying a branch's slashes into the
 version it outputs, closed 2026-10-16 in the same pass that found it; see `REFACTOR-LOG.md`. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
+
+## 2026-10-21 — from the seven-round audit
+
+### B52 — `start.fish` swallows every stop request, and the obvious fix breaks the exit code
+
+`serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/default_template.fish`
+
+The bash template traps `TERM` and forwards it to the server; **fish has no handler at all** and runs
+the server in the foreground, so there is nothing to forward from. `stopServer` is the only function in
+`default_template.sh` that is absent from `default_template.fish`. The consequence is the one bash's own
+comment spells out: under docker or systemd the script is PID 1, the kernel discards an unhandled signal
+aimed at PID 1, the stop window expires, and **the server is SIGKILLed with its world unsaved**.
+
+**Reproduced** with fish as PID 1 in `alpine:latest`, the template's own `runJavaCommand` verbatim and a
+stand-in server that traps `TERM`: after `docker kill -s TERM`, the child never heard it and the
+container was still running. The recorded bash figures for the same shape are *5096 ms, exit 137*
+against *72 ms, exit 0* once forwarding works.
+
+**Why it waited:** four shapes were executed against a real fish and **each satisfies one half of the
+contract and breaks the other**:
+
+| shape | forwards SIGTERM | preserves the server's exit code |
+|---|---|---|
+| foreground (today) | no | yes (42) |
+| background + `wait` | no — the handler does not run while fish is blocked in `wait` | untested |
+| background + poll loop | **yes** (`CHILD-GOT-TERM`, ~1 s) | **no** — `$status` is `0`, not `42` |
+| background + poll + status file | handler did not fire | yes (42) |
+
+The exit code is not optional: `runJavaCommand`'s `$status` becomes `server_exit_code`, and
+`serverpackcreator-api/CLAUDE.md` records why — systemd, Docker restart policies, CI and the grinder's
+boot classifier all read it. A fix that forwards the signal and zeroes the exit code swaps one silent
+defect for another, which is exactly what the shell-template convention exists to prevent.
+
+**To pick it up cold**, two facts are already established and need not be rediscovered:
+
+- **fish does not dispatch an `--on-signal` handler while blocked in `wait`.** A poll loop between
+  commands does let it fire. This is why bash's trap-plus-`wait` shape does not translate.
+- **fish does not redirect a background job's stdin to `/dev/null`**, unlike bash — so the fish fix
+  needs no equivalent of bash's `0<&0`, and the console survives backgrounding (verified in every
+  backgrounded shape).
+
+The open question is a shape that forwards the signal *and* returns the child's real status. Candidates
+not yet executed: `$last_pid` semantics for a `begin ... end &` block (the status-file shape's handler
+did not fire, and whether that is a wrong pid or a dispatch problem was not isolated); fish's
+`--on-process-exit`; or capturing the status inside the handler rather than after the loop.
+
+The harness is reproducible in about a minute:
+`docker run -d -i -v <dir>:/t alpine:latest sh -c 'apk add --no-cache fish && exec fish /t/harness.fish'`,
+then `docker kill -s TERM <id>` and read `docker logs`. Run the container **without** `--rm` or the exit
+evidence is removed with it. `ScriptTemplateContentTest.theBashTemplateForwardsATerminationSignalToTheServerAndKeepsItsConsole`
+is the executed guard to mirror; `TemplateInterpreterRunner` is how this repository reaches fish when it
+is not installed locally.
+
+**`start.bat` and `start.ps1` have no handler either**, and are deliberately out of this item's scope:
+Windows does not deliver SIGTERM, so the equivalent question there is a different one.
 
 ## 2026-10-20 — from the documentation-policy pass
 

@@ -7606,3 +7606,42 @@ call sites share the shape, not which other names share the spelling.**
 - **The live-collection getters are deliberate and were checked before being left alone**; a defensive
   copy would have turned the fallback update into a no-op. Detail in the analysis file.
 - **The `fallback*` sets are never written through**, in any module.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 7
+
+New ground: equality contracts and cross-shell consistency of the shipped templates.
+
+## Findings
+
+**No convention violations.** Round 7's defect is behavioural, filed in
+`claude-docs/ANALYSIS-AUDIT.md` as H1 and deferred as **B52** — the first finding in seven rounds that
+is reported rather than fixed.
+
+### Why B52 was not fixed, which is itself a convention being followed
+
+The repository's rule for this exact area is explicit: *"Shell templates, manifests and version parsing
+get their test written and observed failing FIRST. Not because the rule is different there, but because
+these fail silently — a wrong branch or a mis-sliced version produces a plausible value, not an error."*
+
+Four candidate shapes were executed against a real fish in a container, and each satisfies one half of
+the contract while breaking the other: the shape that forwards the stop signal returns `0` where the
+server exited `42`, and the shape that preserves the exit code never fires the handler. Shipping either
+would replace a silent defect with a different silent defect — in a file that goes out inside every
+generated server pack.
+
+What the round produced instead is the thing that makes the fix cheap next time: a reproducible
+one-minute harness, the two fish semantics that make bash's shape untranslatable (`--on-signal` does not
+dispatch while blocked in `wait`; fish does not send a background job's stdin to `/dev/null`), and a
+table of what each candidate does. All of it is in B52.
+
+## Verified clean — do not re-litigate
+
+- **All eight manual `equals`/`hashCode` pairs agree on their field sets.** A first scan reported five
+  disagreements and was a false positive of its own regex — it matched `==` and the implementations use
+  `if (a != other.a) return false`.
+- **Exit-code propagation is present in `.sh`, `.fish` and `.ps1`**, which is exactly what
+  `serverpackcreator-api/CLAUDE.md` claims. A grep for the literal `SERVER_EXIT_CODE` finds it only in
+  bash and reads as a gap; fish spells it `server_exit_code` and PowerShell `$ServerExitCode`. Three
+  conventions, one behaviour — do not re-report it.
