@@ -49,7 +49,7 @@ services:
     # the database will not come up there. That is the guard working: the releases without it
     # start and then crash. Run the container on a 7.0.14+ or pre-6.19 kernel rather than
     # downgrading to an unguarded image.
-    image: mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:0acefb70f51f292dd5aad95a55f97a1ad484cdf68306d53fbaad3f17f2e4a9cf
+    image: mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:62ef75015134236c8821ef194402444fb4f44af95364b835d509fdf8413277f5
     container_name: serverpackcreatordb
     restart: unless-stopped
     environment:
