@@ -937,7 +937,7 @@ Huge shoutout and thank you!**
 
 ### Sponsors
 
-<!-- sponsors --><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https:&#x2F;&#x2F;github.com&#x2F;kreezxil.png" width="60px" alt="User avatar: kreezxil" /></a><a href="https://github.com/thrasos-dev"><img src="https:&#x2F;&#x2F;github.com&#x2F;thrasos-dev.png" width="60px" alt="User avatar: Thrasos" /></a><a href="https://github.com/Calmingstorm"><img src="https:&#x2F;&#x2F;github.com&#x2F;Calmingstorm.png" width="60px" alt="User avatar: Aaron Charpentier" /></a><a href="https://github.com/kiinbi"><img src="https:&#x2F;&#x2F;github.com&#x2F;kiinbi.png" width="60px" alt="User avatar: kiinbi" /></a><a href="https://github.com/lavii-bit"><img src="https:&#x2F;&#x2F;github.com&#x2F;lavii-bit.png" width="60px" alt="User avatar: " /></a><!-- sponsors -->
 
 ### Contributors
 
