@@ -56,24 +56,38 @@ services:
       retries: 12
       start_period: 10s
 
-  # Database browser at http://localhost:8081, basic auth mexpress/mexpress. IDEA Ultimate's
-  # Database tool window reads the same database over the published port if you prefer it.
-  serverpackcreator-mongo-express:
-    image: mongo-express:1.0.2-20-alpine3.19@sha256:1aae0077525133249133d42980ba23998712a1077e02ac0ac295b50a7a79d550
+  # Database browser at http://localhost:8081. IDEA Ultimate's Database tool window reads the same
+  # database over the published port if you prefer it -- Community Edition has no such tool, which
+  # is why this stays a browser-based viewer rather than being dropped.
+  #
+  # Mongoku rather than mongo-express: mongo-express's Docker Official Image is DEPRECATED and has
+  # not been rebuilt since 2024-11-21, so its newest tag ships Node 20 on Alpine 3.19, both EOL.
+  # The mongo-express project itself is alive, but it publishes no image of its own -- no releases
+  # on `mongo-express-docker`, nothing on ghcr -- so there is no maintained build to move to.
+  serverpackcreator-mongoku:
+    image: huggingface/mongoku:2.11.3@sha256:99486754b32cabd2d9c3d98318cccfdccdfb6822976f23a066d41c77d1b219c7
+    # Bound to the loopback address, NOT published on every interface: Mongoku has no authentication
+    # of its own, where mongo-express had basic auth. That auth was `mexpress`/`mexpress` committed
+    # in this file, so it kept nobody out who could read the repository; refusing the LAN entirely
+    # is the stronger guarantee, and it costs a dev-only tool nothing.
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:3100"
     depends_on:
       serverpackcreatordb:
         condition: service_healthy
     environment:
-      # One URL rather than the SERVER/PORT/ADMINUSERNAME/ADMINPASSWORD quartet, because the
-      # image's entrypoint parses THIS variable to decide which host to wait for. Left unset it
-      # waits on `mongo`, which does not resolve here, and spends ten retries failing before the
-      # app -- which did read the quartet -- starts correctly anyway.
-      # authSource is admin: that is where MONGO_INITDB_ROOT_USERNAME creates the root user.
-      - ME_CONFIG_MONGODB_URL=mongodb://root:1234567890@serverpackcreatordb:27017/?authSource=admin
-      - ME_CONFIG_BASICAUTH_USERNAME=mexpress
-      - ME_CONFIG_BASICAUTH_PASSWORD=mexpress
+      # One connection URL, the same shape mongo-express took. authSource is admin: that is where
+      # MONGO_INITDB_ROOT_USERNAME creates the root user.
+      - MONGOKU_DEFAULT_HOST=mongodb://root:1234567890@serverpackcreatordb:27017/?authSource=admin
+      # Required for EDITING, not just for links. Mongoku compares the request's origin against
+      # this value and silently serves a read-only UI when they differ -- and they do differ by
+      # construction here, because it listens on 3100 inside the container and is reached on 8081.
+      # Left unset, the banner reads "To enable write operations, set the MONGOKU_SERVER_ORIGIN
+      # environment variable" and every write is refused. Keep it in step with the published port.
+      - MONGOKU_SERVER_ORIGIN=http://127.0.0.1:8081
+      # No volume on purpose. Mongoku persists only its *list of servers*, to
+      # MONGOKU_DATABASE_FILE ($HOME/.mongoku.db), and MONGOKU_DEFAULT_HOST re-seeds that on every
+      # start -- so a volume would buy nothing and keep stale hosts after this file changes.
 
   # Opt-in: the real production image, built from this working tree. Slow -- its builder stage runs
   # a full Gradle build inside the container -- so it is for testing the artifact, not for iterating.

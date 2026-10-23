@@ -197,9 +197,9 @@ default — so the application itself runs from your IDE, with the debugger and 
 docker compose -f docker/docker-compose-dev.yml up -d
 ```
 
-That starts MongoDB and [mongo-express](http://localhost:8081) (`mexpress` / `mexpress`), and
-publishes `27017` on the host so both the IDE-run application and IntelliJ's Database tool window can
-reach it. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
+That starts MongoDB and [Mongoku](http://localhost:8081), a database browser with no login, bound to
+`127.0.0.1` so only this machine can reach it. It also publishes `27017` on the host so both the
+IDE-run application and IntelliJ Ultimate's Database tool window can reach the database directly. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
 database URI as a command-line argument:
 
 ```
