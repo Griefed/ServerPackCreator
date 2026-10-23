@@ -53,10 +53,21 @@ jobs:
           PROBE="$(mktemp)"
           # NOT `curl -sf`: -f prints nothing on an HTTP error, and GraphQL answers 200 with an `errors`
           # array for a scope rejection anyway, so the body is the only place the cause ever appears.
+          #
+          # The query below is the sponsors action's OWN query, field for field -- `src/template.ts` in
+          # JamesIves/github-sponsors-readme-action, reproduced rather than reduced. A smaller probe
+          # proves only that a smaller question is answerable: on 2026-10-23 a probe asking for nothing
+          # but `totalCount` passed while the action reported "No sponsorship data was found… ❌",
+          # which is its message for `data.viewer.sponsorshipsAsMaintainer` being absent, NOT for a
+          # sponsor count of zero (that logs "Found 0 matching sponsors… 😢" instead). The two cannot
+          # both be true of one query, so the difference lived in the fields the probe was not asking
+          # for -- and the action never prints the response, because it does `return data.json()` and
+          # reads the `errors` array nowhere. Keep this query identical to the action's when bumping it.
           curl -sS -X POST https://api.github.com/graphql \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H 'Content-Type: application/json' \
-            -d '{"query":"query { viewer { login sponsorshipsAsMaintainer(first: 1, activeOnly: false) { totalCount } } }"}' \
+            -H 'Accept: application/json' \
+            -d '{"query":"query { viewer { login sponsorshipsAsMaintainer(first: 100, orderBy: {field: CREATED_AT, direction: ASC}, includePrivate: false, activeOnly: false) { totalCount pageInfo { endCursor } nodes { sponsorEntity { ... on Organization { name login url websiteUrl } ... on User { name login url websiteUrl } } createdAt privacyLevel tier { monthlyPriceInCents } } } } }"}' \
             > "$PROBE"
           PROBE="$PROBE" python3 - <<'PROBE_PY'
           import json
@@ -64,18 +75,47 @@ jobs:
           import sys
 
           response = json.load(open(os.environ['PROBE']))
+
+          # Printed before anything is judged: a partial GraphQL failure answers 200 with BOTH `data`
+          # and `errors`, so an error here is not necessarily fatal and is not necessarily visible
+          # anywhere else. `path` is what says which field was refused.
           for error in response.get('errors', []):
-              print(f"::error::GitHub GraphQL: {error.get('message')}")
+              path = '.'.join(str(p) for p in error.get('path', [])) or '<root>'
+              print(f"::error::GitHub GraphQL [{error.get('type', 'ERROR')}] at {path}: "
+                    f"{error.get('message')}")
+
+          # A transport-level rejection (401/403) answers with GitHub's REST-shaped body -- a bare
+          # `message`, no `errors` and no `data` -- so it would otherwise reach the failure below with
+          # nothing printed to explain it.
+          if 'data' not in response and 'message' in response:
+              print(f"::error::GitHub refused the request: {response['message']}")
 
           maintainer = (response.get('data') or {}).get('viewer') or {}
           sponsorships = maintainer.get('sponsorshipsAsMaintainer')
           if sponsorships is None:
-              print('::error::GH_TOKEN cannot read sponsorships. A classic PAT needs the read:user '
-                    'scope, plus read:org for an organization account.')
+              # Exactly the condition the action tests before logging "No sponsorship data was found".
+              print('::error::`data.viewer.sponsorshipsAsMaintainer` is absent, which is the state the '
+                    'sponsors action reports as "No sponsorship data was found" and then writes an '
+                    'empty block for. A classic PAT needs the read:user scope, plus read:org for an '
+                    'organization account; the errors above, if any, name the actual refusal.')
               sys.exit(1)
 
-          print(f"{maintainer.get('login')} has {sponsorships['totalCount']} sponsorships "
-                'visible to this token.')
+          nodes = sponsorships.get('nodes') or []
+          renderable = [n for n in nodes if n and n.get('privacyLevel') != 'PRIVATE']
+          print(f"{maintainer.get('login')} has {sponsorships['totalCount']} sponsorships visible to "
+                f"this token; {len(nodes)} returned, {len(renderable)} of them public.")
+          for node in renderable:
+              entity = node.get('sponsorEntity') or {}
+              print(f"  - {entity.get('login') or '<no login>'} ({node.get('privacyLevel')})")
+
+          # `include-private` is false, so the action renders exactly `renderable`. Zero of them means
+          # the next step overwrites the sponsor block with nothing -- which is how four sponsors were
+          # lost on 2026-10-05. For this account that is never a legitimate answer, so it fails here
+          # rather than being committed.
+          if not renderable:
+              print('::error::No PUBLIC sponsorships came back, so the sponsors action would write an '
+                    'empty block over whatever README.md currently holds. Refusing to continue.')
+              sys.exit(1)
           PROBE_PY
 
       - name: Add GitHub Sponsors to Readme
