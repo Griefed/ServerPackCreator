@@ -222,7 +222,9 @@ docker compose -f docker/docker-compose-dev.yml --profile app up -d --build
 ```
 
 Its builder stage runs a full Gradle build inside the container, so this is for testing the artifact,
-not for iterating.
+not for iterating. The **Dev stack (with app)** run configuration in `.run/` is the same thing from
+the IDE; plain **Dev stack** is the dependencies-only path above, which is why it does not build the
+application image.
 
 **Resetting the database** is `down -v`: `init-mongo.js` runs only against an empty `/data/db`, so
 changing the credentials has no effect until the volume is gone.
