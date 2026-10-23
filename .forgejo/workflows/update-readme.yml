@@ -79,7 +79,7 @@ jobs:
           PROBE_PY
 
       - name: Add GitHub Sponsors to Readme
-        uses: https://github.com/JamesIves/github-sponsors-readme-action@v1
+        uses: https://github.com/JamesIves/github-sponsors-readme-action@v1.6.1
         with:
           token: ${{ secrets.GH_TOKEN }}
           active-only: false
