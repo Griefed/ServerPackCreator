@@ -5062,3 +5062,157 @@ escapes `read()` and `DescriptorScanner` flattens the jar to the never-read-anyt
 loses its whole descriptor, and the result is indistinguishable from a jar belonging to another loader.
 The field now has exactly one reader. *A fix and its own reader are written in the same pass, so the reader
 gets the least review of anything in the commit.*
+
+## 2026-10-23 — the webservice download mechanism
+
+Reported symptom: a download from the web service "is shown as finished shortly after it is displayed as
+started", because the file lands in browser memory before it is written to disk. That was exactly right,
+and it was one line in each of two pages — `responseType: 'arraybuffer'`, then `new Blob([response.data])`
+and an object URL. The archive travelled through JavaScript, so the transfer the user watched had already
+finished by the time the browser's save began, a pack larger than the tab's heap could not be fetched at
+all (the shipped upload limit is 5000MB), and the browser's download manager never saw the request, so an
+interrupted transfer could not resume. Both pages now hand the browser a real anchor and get out of the way.
+
+**The backend was already right, and that is worth knowing before anyone "fixes" it.** The controllers
+return `ResponseEntity<Resource>` over a `FileSystemResource`, which Spring writes with
+`StreamUtils.copy` — nothing buffers. Two further properties were *verified rather than assumed*: there is
+no `ShallowEtagHeaderFilter` and no compression configured, so nothing wraps the stream; and **Spring
+answers `Range` requests over a `Resource` return value itself**, inside
+`AbstractMessageConverterMethodProcessor` — read out of the pinned `spring-webmvc-7.0.9` with `javap`, then
+pinned by a 206 + `Content-Range` assertion through MockMvc. An exploratory pass had reported Range support
+as absent on the strength of a repo-wide grep for `ResourceRegion` and `HttpRange`, which is a search of
+*our* source for a behaviour that lives in the framework. **A grep over the code you own cannot rule out a
+behaviour the code you call provides** — the jar, or a running request, is the only thing that can.
+
+**Three real defects surfaced underneath it, none of which the reported symptom pointed at.**
+
+- `ServerPack.fileName` held `serverPackZipOld.absolutePath`, and the controller appended `_server_pack.zip`
+  to a name `zipBuilder` had already suffixed. Every downloader was told to save
+  `/srv/.../My Pack_server_pack.zip_server_pack.zip`, and the same field is serialised into
+  `/api/v2/serverpacks/{id}`, so the server's filesystem layout was in the public API too. **The SPA hid it
+  by overriding the name client-side** — which is why switching to a browser-native download had to be
+  preceded by fixing it, and why nobody had reported it. `downloadServerPackStreamsArchive` asserted that
+  whole header and had been green for months on a fixture of `"My Pack"`, a value no production row ever
+  held: *a fixture that cannot occur in production is not a pin*, and this is the second instance of that
+  lesson in this file.
+- `FileSystemStorageService.load` found the stored file by scanning the root for any entry whose **path**
+  contained the id. `ConfigurationHandler.isZip` extracts an archive into a sibling directory named after
+  it, so the root holds both `anId.zip` and `anId/`, `exists()` is true for both, and whichever the listing
+  yielded first was served. The new guard reproduced it on the first run rather than arguing it. It also
+  scanned the entire storage root on every download.
+- The GridFS fallback — which runs *inside the request*, before the first byte — copied the archive out of
+  the database and then read the whole file again to SHA-256 it, for a hash its only caller discards. The
+  overload had one call site and no test.
+
+**What the real runtime added over the tests, and what it could not.** The component tests pin the negative
+that matters (no XHR for `download/`, `createObjectURL` never called) and the MockMvc tests pin the headers
+and the 206. Neither can say what *Chrome* does. Serving the production bundle same-origin beside a stub
+that trickled 24 MiB out over twelve seconds answered that: the archive transferred in full with **0 XHR
+requests and 0 `createObjectURL` calls** instrumented on the page, and it **did not appear in the tab's
+network log at all** — an absence that is the whole point, since the request is no longer the page's. That
+absence is better evidence than any positive assertion available in-page.
+
+**An A/B saved a wrong diagnosis.** The built download page hung on its loading spinner in that harness and
+never fetched its metadata, which read as a regression in the rewritten page. Rebuilding the *unmodified*
+pages from a stash reproduced it exactly, so the change was innocent. **When a verification harness reports a
+failure, run the unmodified code through the same harness before believing it.**
+
+**The spinner was a real bug, and guessing at it was wrong.** This entry first recorded the likeliest cause
+as the stub serving `index.html` for unimplemented API paths. Asked to check it against the real backend, it
+reproduced there too — see *the production build shipped a web UI that renders and does nothing*, below. The
+stub was innocent; the second-cheapest explanation was simply the wrong one, and the only thing that settled
+it was running the real server. The dev server is separately broken (`process is not defined`, filed as B53),
+and that is a third, independent fault of the same upgrade.
+
+## 2026-10-23 — the production build shipped a web UI that renders and does nothing
+
+Asked to check whether the download page's stuck loading spinner also happened against the real backend
+rather than the stub. It did, and the cause was four levels away from the download mechanism.
+
+`@quasar/app-vite` 3 defaults `build.vueOptionsAPI` to **false**, in its own defaults block beside
+`vueRouterMode`, and compiles that into `__VUE_OPTIONS_API__ = "false"`, which tree-shakes `applyOptions`
+out of Vue. Every SFC in `src/` is Options API. So in any production build the whole application loses
+`methods`, `computed`, `data` and every lifecycle hook, while `setup()` keeps working — **every page
+renders, nothing throws, and the SPA never makes a single HTTP request.** The scaffolded
+`// vueOptionsAPI: false,` line is app-vite **2**'s comment, from when the default was the other way
+round, so the 2.4 -> 3.10 upgrade inverted a default nothing here stated explicitly. One line fixes it.
+
+**The diagnosis is the transferable part, because almost every signal pointed the wrong way.**
+
+- `isMounted` was `true` on the page component — which proves nothing. Vue sets it in `setupRenderEffect`
+  *before* the queued post-render `mounted` hooks run. The hooks here were never **registered**:
+  `instance.m === null`.
+- There were no console errors, no failed requests and no stalled scheduler (`$nextTick` resolved), so
+  every "something crashed" hypothesis was wrong. A tree-shaken feature flag fails silently by design.
+- `showTextLoading()` worked perfectly *when called by hand* from the live instance, which is what
+  finally separated "the function is broken" from "nothing ever called it".
+- The honest refutation came from **absence in the server's own log**: after visiting three different
+  pages the Tomcat access log held zero `/api/v2/*` entries, while a `fetch()` typed into the same page
+  reached the server and was logged. That ruled out the network, the origin, the boot file and the
+  axios instances in one measurement, and made "the app never asks" the only survivor.
+- `typeof instance.proxy.someMethod === "undefined"` for a `methods` entry is the one-line confirmation,
+  once you suspect it.
+
+**No test could have caught this, and none of ours did.** Vitest does not apply the build's `define`s, so
+43 green tests ran against component logic that the shipped bundle does not execute. The guard added
+(`test/config/quasar-config.test.js`) therefore asserts the *config flag*, which is the only artefact a
+unit test can see. It was first written under `test/build/`, where the repo-wide `**/build/` ignore rule
+would have meant it was never committed and never run — **a guard nothing runs is not a guard**, caught
+only because `git status` did not list it.
+
+**Two process notes.** Booting the app with `bootRun` makes the module directory its home, and
+`ApiWrapper.setup()` then writes the shipped root documents into it — overwriting the *tracked*
+`serverpackcreator-app/README.md` and leaving nine generated directories in the working tree. The home
+flag is `--home`, two dashes; `-home` is silently ignored. Run the probe from a scratch directory with
+`SPC_PREFERENCES_NODE` set, or it also writes the resolved home into the user's real preferences node.
+
+**What the same session then verified against that real stack**, on a deliberately legacy-shaped row whose
+stored `fileName` was `/srv/spc/server-packs/My Cool Pack_server_pack.zip`: the JSON reported
+`My Cool Pack_server_pack.zip`, `Content-Disposition` carried the same with no path and no doubled suffix,
+`Range: bytes=100-199` answered **206** with `Content-Range: bytes 100-199/6291691`, and clicking the
+page's anchor transferred all 6,291,691 bytes with **0 XHR requests and 0 `createObjectURL` calls** while
+the download counter incremented. One consequence worth knowing: `updateDownloadStats` runs before the
+body is written and is not Range-aware, so a resuming download manager counts more than once.
+
+## 2026-10-23 — auditing the app-vite 2.4 -> 3.10 upgrade on purpose
+
+Two of that upgrade's breakages had been found by accident, so the rest of it was audited
+deliberately. A third turned up, of the same shape; nothing else did.
+
+**`src/router/index.ts` read `process.env.SERVER` / `VUE_ROUTER_MODE` / `VUE_ROUTER_BASE`, and
+app-vite 3 defines no `process.env` replacements at all** — a grep of its `lib/` for `'process.env`
+returns nothing, while `quasar-config-file.js` defines `import.meta.env.QUASAR_*`, router mode and
+base among them. Dev died loudly (`ReferenceError: process is not defined`, before the router
+existed). The build failed *quietly*, which is the interesting half: the reads collapse to
+`undefined`, `undefined === 'history'` is just false, so the hash branch was taken regardless of
+configuration and `vueRouterBase`/`publicPath` were ignored. It worked only because `'hash'` is what
+this project configures — **the broken expression's fallback happened to equal the intended value**,
+which is the most durable way for a defect to survive. Proven by building with
+`vueRouterMode: 'history'` and reading the rendered drawer hrefs: `#/`, `#/downloads` before the fix,
+`/`, `/downloads` after.
+
+**What the audit checked and cleared**, so nobody re-walks it: `build.rawDefine` and
+`polyfillModulePreload` appear only in commented-out scaffold lines; no `#q-app` imports survive; no
+App Extension API use (`api.engine`/`hasVite`/`hasLint`); `typescript.strict`/`vueShim`, `distDir` and
+`allowOutsideProjectDistDir` are all stated explicitly rather than inherited; browser and node targets
+are explicit; and the Node floor is satisfied — app-vite 3 wants `^22.22 || ^24 || ...` and
+`buildSrc/.../quasar-conventions.gradle.kts` pins **24.18.1**. The `__VUE_I18N_LEGACY_API__: 'false'`
+default is moot here because i18n is unused scaffolding: no `$t(`, no `useI18n`, and `src/i18n` still
+holds the generated `failed`/`success` example strings.
+
+**Then the whole SPA was exercised against the real backend, because it never had been.** While the
+Options API was off nothing in it ran, so "it worked before" was not a fact anyone held. Every page
+(`#/`, `#/submissions`, `#/downloads`, `#/history`, `#/about`) rendered with **zero console errors and
+zero failed requests**, and the Pinia settings store came back fully populated from the real API — 547
+clientside mods, 5 modloaders, Aikar's flags — which exercises boot file, store, HTTP and render in one
+assertion. *Rendering without errors is not the same as working*: a page that fetches nothing also
+renders without errors, which is exactly how the `vueOptionsAPI` defect hid, so the store contents are
+the part of that check worth keeping.
+
+**The generalisable lesson is about what the upgrade's own verification could see.** It recorded
+"15 files / 37 tests, matching the pre-branch baseline exactly; `quasar build` succeeds; `vue-tsc`
+clean; `eslint` clean" — all true, all passed, and none of it able to observe any of the three
+defects, because every one of them lives in a compile-time `define` that Vitest does not apply and a
+type-checker cannot see. **A dependency upgrade that changes build-time defaults is not verified by a
+green build; it is verified by running the artifact.** The cheapest honest check for this project is
+one `quasar dev` boot plus one page load against a real backend.

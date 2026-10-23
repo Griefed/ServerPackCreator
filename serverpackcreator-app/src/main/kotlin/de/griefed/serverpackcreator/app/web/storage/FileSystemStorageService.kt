@@ -90,9 +90,16 @@ class FileSystemStorageService(
         }
     }
 
-    /** Copy a file out of GridFS onto the filesystem, for an installation migrating away from database storage. */
+    /**
+     * Copy a file out of GridFS onto the filesystem, for an installation migrating away from database
+     * storage, and report where it landed.
+     *
+     * Reports the path and nothing else because this runs on the download route, inside the request and
+     * before any byte reaches the client: hashing the copy here is a second full pass over an archive
+     * whose hash the only caller discards.
+     */
     @Throws(StorageException::class)
-    fun store(file: GridFSFile, resource: GridFsResource): Optional<SavedFile> {
+    fun cache(file: GridFSFile, resource: GridFsResource): Optional<Path> {
         try {
             val id = file.objectId.toString()
             val destinationFilePath: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
@@ -102,16 +109,7 @@ class FileSystemStorageService(
             }
             FileUtils.copyToFile(resource.inputStream, destinationFilePath.toFile())
             log.debug("Stored file to $destinationFilePath.")
-            val sha256 = sha256Of(destinationFilePath.toFile())
-            return Optional.of(
-                SavedFile(
-                    id,
-                    sha256,
-                    destinationFilePath,
-                    file.filename,
-                    destinationFilePath.toFile().length()
-                )
-            )
+            return Optional.of(destinationFilePath)
         } catch (e: IOException) {
             log.error("Error storing file: ", e)
             return Optional.empty()
@@ -143,16 +141,29 @@ class FileSystemStorageService(
         return String(Hex.encode(digest.digest()))
     }
 
-    /** The stored file for an id, empty when there is none. */
+    /**
+     * The stored file for an id, empty when there is none.
+     *
+     * Resolves `$id.zip`, which is the name both [store] overloads write and [delete] removes. The scan
+     * this replaced matched any entry whose whole *path* contained the id, so it returned the directory
+     * `ConfigurationHandler.isZip` extracts beside the archive as readily as the archive -- `exists()`
+     * is true for both, and the download route wrapped whichever came first in a `FileSystemResource`
+     * -- and it listed the entire storage root on every download. The fallback keeps files predating
+     * that naming readable, matching on the entry's own name and only ever on a regular file.
+     */
     fun load(id: String): Optional<File> {
-        val file =
-            rootLocation.listDirectoryEntries().find { path -> path.toString().contains(id) }?.normalize()?.toFile()
-        return if (file != null && file.exists()) {
-            Optional.of(file)
-        } else {
-            log.warn("Filesystem does not contain a file for $id.")
-            Optional.empty()
+        val archive = rootLocation.resolve("$id.zip").normalize().toFile()
+        if (archive.isFile) {
+            return Optional.of(archive)
         }
+        val legacy = rootLocation.listDirectoryEntries()
+            .find { path -> path.fileName.toString().contains(id) && path.toFile().isFile }
+            ?.normalize()?.toFile()
+        if (legacy != null) {
+            return Optional.of(legacy)
+        }
+        log.warn("Filesystem does not contain a file for $id.")
+        return Optional.empty()
     }
 
     /** Delete one stored file. A file that is already gone is not an error. */

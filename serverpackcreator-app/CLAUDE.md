@@ -202,6 +202,48 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   silently ignored (set it to `1`, every test in both classes fails with `no failure or success message
   after 1ms`), because a silently-ignored key is this module's recurring failure mode.
 
+## The download route streams, and four things keep it that way (2026-10-23)
+
+`ModPackController.downloadModpack` / `ServerPackController.downloadServerPack` return
+`ResponseEntity<Resource>` over a `FileSystemResource`. Spring writes that with `StreamUtils.copy`, so
+nothing buffers — and `ArchiveStreamingTest` pins it by asserting the body is **not** a `ByteArrayResource`.
+Keep the return type.
+
+- **Spring handles `Range` itself for a `Resource` return value — do not add `ResourceRegion` code.**
+  `AbstractMessageConverterMethodProcessor` sets `Accept-Ranges: bytes`, converts to regions on a `Range`
+  header, answers 206 with `Content-Range` and 416 when unsatisfiable. Read out of the pinned
+  `spring-webmvc-7.0.9` with `javap` and pinned by
+  `ServerPackControllerTest.aRangeRequestIsAnsweredWithThatRangeSoADownloadCanResume`. **A grep of this
+  repo will find none of it**, because it is the framework's, which is exactly how an audit once concluded
+  Range support was absent. That support is what lets a multi-gigabyte download resume.
+- **Nothing may wrap the response stream.** There is no `ShallowEtagHeaderFilter` (it buffers the whole
+  body in memory to hash it), no `server.compression.*`, and no `WebMvcConfigurer` anywhere in the module.
+  Adding any of the three silently undoes the streaming the test above thinks it is guarding — the body
+  would still not be a `ByteArrayResource`, so the guard would stay green.
+- **`FileSystemStorageService.load` resolves `$id.zip`; do not restore the substring scan.** It used to
+  `find` any entry whose whole path contained the id. `ConfigurationHandler.isZip` extracts an archive into
+  a sibling directory named after it, so the root holds `anId.zip` **and** `anId/`, `exists()` is true for
+  both, and the download served whichever the listing yielded first. The legacy fallback that remains is
+  restricted to regular files and matches the entry's own name, not its path.
+- **`cache(GridFSFile, GridFsResource)` deliberately does not hash.** It is the GridFS fallback, on the
+  download route, inside the request: it used to re-read the whole archive to SHA-256 it for a hash
+  `StorageSystem.cacheFile` discards. Pinned by `recoveringAnArchiveFromGridFsDoesNotHashItOnTheWayOut`,
+  which also asserts the bytes still arrive, so "never hashes" cannot be met by never working.
+
+**LANDMINE — `ServerPack.fileName` is a name, never a path, and its getter enforces that.** Generation
+stored `serverPackZipOld.absolutePath` until 2026-10-23, and the controller appended `_server_pack.zip` to
+a value `zipBuilder` had already suffixed, so the header read
+`attachment; filename="/srv/.../My Pack_server_pack.zip_server_pack.zip"` — the server's filesystem layout,
+doubled suffix, handed to every downloader and to every reader of `/api/v2/serverpacks/{id}`, where the
+field is serialised. The write site now stores `.name`; the getter reports `File(it).name` so rows written
+before that stop exposing one without rewriting stored documents. The controller must **not** re-append a
+suffix. Nothing reported this for as long as it existed because the SPA overrode the name client-side with
+its own `download` attribute — **a guard rail in one adapter is a reason a bug stays unreported**, the same
+shape this repo already recorded for "Update Server Packs".
+  - Its happy-path test asserted that whole header and stayed green throughout, because its fixture was a
+    bare `"My Pack"`. **A fixture that cannot occur in production is not a pin** — the fixture is now
+    production-shaped.
+
 ## The web module's mod-lists are embedded, not referenced (2026-08-17)
 
 - `RunConfiguration.startArgs` / `clientMods` / `whitelistedMods` are `MutableList<String>` **embedded

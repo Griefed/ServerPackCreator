@@ -71,7 +71,7 @@ class ServerPackController @Autowired constructor(
                     .header(
                         HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()
-                            .filename("${serverPack.get().fileName}_server_pack.zip")
+                            .filename(downloadName(serverPack.get()))
                             .build().toString()
                     )
                     .contentLength(archive.get().length())
@@ -81,6 +81,17 @@ class ServerPackController @Autowired constructor(
             ResponseEntity.notFound().build()
         }
     }
+
+    /**
+     * What the browser is told to save the archive as.
+     *
+     * `ServerPack.fileName` already carries the `_server_pack.zip` suffix `zipBuilder` gave the archive,
+     * so appending another one served it as `..._server_pack.zip_server_pack.zip`. A row that never got
+     * a name falls back to its id, because the header is what the browser writes to disk and
+     * `"null_server_pack.zip"` is a real filename a user would end up with.
+     */
+    private fun downloadName(serverPack: ServerPack): String =
+        serverPack.fileName?.takeIf { it.isNotBlank() } ?: "${serverPack.id}_server_pack.zip"
 
     /**
      * Download a server pack by the modpack and run-configuration ID.

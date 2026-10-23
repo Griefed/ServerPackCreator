@@ -54,7 +54,13 @@ export default defineConfig((ctx) => {
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
-      // vueOptionsAPI: false,
+
+      // Required, not decorative. Every SFC in src/ is Options API, and @quasar/app-vite 3
+      // defaults this to false -- which compiles __VUE_OPTIONS_API__ = "false" and tree-shakes
+      // applyOptions out of Vue. setup() still runs, so every page renders and nothing errors,
+      // but no mounted hook fires and no methods/computed exist: the SPA renders and fetches
+      // nothing. Guarded by test/config/quasar-config.test.js.
+      vueOptionsAPI: true,
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 

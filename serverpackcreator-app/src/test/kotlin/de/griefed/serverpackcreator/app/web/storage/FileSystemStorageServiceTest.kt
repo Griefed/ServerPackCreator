@@ -104,6 +104,32 @@ class FileSystemStorageServiceTest {
         Assertions.assertTrue(storage.load("651f3c0e9a1b2c3d4e5f6071").isPresent)
     }
 
+    /**
+     * `ConfigurationHandler.isZip` extracts an archive into a sibling directory named after it, so the
+     * storage root holds both `anId.zip` and `anId/`. A `load` that matched on *substring* could return
+     * the directory -- which `exists()` reports as present -- and the download route then wrapped a
+     * directory in a `FileSystemResource`. This is the case where the archive has already been swept
+     * and only the extraction is left, so the wrong answer is the only answer a scan can give.
+     */
+    @Test
+    fun loadNeverReturnsTheExtractedDirectoryInPlaceOfTheArchive() {
+        val root = tempDir.resolve("storage").also { it.createDirectories() }
+        root.resolve("anId").createDirectories()
+
+        Assertions.assertTrue(service(root).load("anId").isEmpty)
+    }
+
+    /** With both present, the archive is the answer -- whatever order the directory happens to list in. */
+    @Test
+    fun loadPrefersTheArchiveOverTheDirectoryExtractedBesideIt() {
+        val root = tempDir.resolve("storage").also { it.createDirectories() }
+        val storage = service(root)
+        root.resolve("anId").createDirectories()
+        storage.store(sourceFile("whatever.zip"), "anId")
+
+        Assertions.assertEquals(root.resolve("anId.zip").toFile(), storage.load("anId").get())
+    }
+
     @Test
     fun loadIsEmptyForAnUnknownId() {
         Assertions.assertTrue(service().load("nothingStoredUnderThis").isEmpty)

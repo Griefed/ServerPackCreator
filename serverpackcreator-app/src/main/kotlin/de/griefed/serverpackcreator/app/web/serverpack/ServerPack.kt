@@ -25,6 +25,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
+import java.io.File
 import java.util.*
 
 /**
@@ -51,8 +52,16 @@ class ServerPack {
     var dateCreated: Date = Date(System.currentTimeMillis())
     /** The stored archive's name on disk. */
     var fileID: String? = null
-    /** The name the archive is served under, which need not match [fileID]. */
+    /**
+     * The name the archive is served under, which need not match [fileID].
+     *
+     * Reports the base name even for a row written before generation stopped storing the archive's
+     * absolute path here, because this value reaches clients twice over -- in this entity's JSON and in
+     * the download's `Content-Disposition`. Normalised on read rather than migrated: it is never used
+     * as a path, so rewriting the stored documents would buy nothing.
+     */
     var fileName: String? = null
+        get() = field?.let { File(it).name }
     /**
      * SHA256 of the archive.
      *

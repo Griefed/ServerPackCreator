@@ -10,8 +10,10 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B53**, with the reason it waited and enough context to pick
-it up cold. **B47 is issued and gone** — `resolve-version`'s `branch` mode carrying a branch's slashes into the
+Add the next item under a dated section, starting at **B54**, with the reason it waited and enough context to pick
+it up cold. **B53 is issued and gone** — `quasar dev` dying on `process is not defined`, closed
+2026-10-23 together with the production half of the same defect (`vueRouterMode` silently ignored); see
+`REFACTOR-LOG.md`. **B47 is issued and gone** — `resolve-version`'s `branch` mode carrying a branch's slashes into the
 version it outputs, closed 2026-10-16 in the same pass that found it; see `REFACTOR-LOG.md`. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
 see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
