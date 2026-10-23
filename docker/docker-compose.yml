@@ -2,7 +2,7 @@ version: '3'
 services:
   serverpackcreator:
     container_name: serverpackcreator
-    image: griefed/serverpackcreator:9.3.0 # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
+    image: griefed/serverpackcreator:9.3.0@sha256:0edae87d3def5efdf3e12e91d66094f8490f2b5548a90e157ceec4bc7a5371c5 # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
     restart: unless-stopped
     depends_on:
       - serverpackcreatordb
@@ -49,7 +49,7 @@ services:
     # the database will not come up there. That is the guard working: the releases without it
     # start and then crash. Run the container on a 7.0.14+ or pre-6.19 kernel rather than
     # downgrading to an unguarded image.
-    image: mongodb/mongodb-community-server:8.0.34-ubuntu2204
+    image: mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:0acefb70f51f292dd5aad95a55f97a1ad484cdf68306d53fbaad3f17f2e4a9cf
     container_name: serverpackcreatordb
     restart: unless-stopped
     environment:

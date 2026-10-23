@@ -34,7 +34,7 @@ services:
     # Override the tag from an untracked `docker/.env` rather than editing this file:
     #
     #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
-    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204}
+    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:0acefb70f51f292dd5aad95a55f97a1ad484cdf68306d53fbaad3f17f2e4a9cf}
     # Published so the IDE-run application can reach the database. Nothing in the fast loop runs
     # inside this network.
     ports:
@@ -59,7 +59,7 @@ services:
   # Database browser at http://localhost:8081, basic auth mexpress/mexpress. IDEA Ultimate's
   # Database tool window reads the same database over the published port if you prefer it.
   serverpackcreator-mongo-express:
-    image: mongo-express:1.0.2-20-alpine3.19
+    image: mongo-express:1.0.2-20-alpine3.19@sha256:1aae0077525133249133d42980ba23998712a1077e02ac0ac295b50a7a79d550
     ports:
       - "8081:8081"
     depends_on:
