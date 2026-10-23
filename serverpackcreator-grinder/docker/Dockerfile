@@ -17,7 +17,7 @@
 # Build:   docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 # Running is driven by ContainerServerRunner (command: `bash start.sh`, workdir: /srv/pack).
 
-FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+FROM debian:bookworm-slim@sha256:7ff6ba31527b9e336162fa061746c366c4b2032f4d2cff2078bea43f78efe3f8
 
 # Tools the SPC start.sh template invokes: bash, curl (wget as fallback), gawk, tar/gzip, and
 # ca-certificates/gnupg for HTTPS downloads + the Adoptium apt key.
