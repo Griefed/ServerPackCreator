@@ -292,18 +292,35 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # The published image's builder stage ships Node 22 and compiles this tree cleanly, so 22
-          # is the verified-good version rather than the optimistic one.
+          # @quasar/app-vite's floor is a hard process.exit(1) at 22.22.0, and the image's builder
+          # stage is pinned to node:22-bookworm-slim, so 22 keeps the two verified against the same
+          # major rather than optimistically ahead of it.
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: serverpackcreator-homepage/package-lock.json
 
-      - run: npm install
+      # `ci`, not `install`: the lockfile is committed and setup-node already keys its cache on it,
+      # so resolving a different tree here than the one that was tested is pure downside.
+      - run: npm ci
+
+      # Generates .quasar/tsconfig.json, which is gitignored -- vue-tsc has nothing to extend on a
+      # fresh checkout without it.
+      - run: npx quasar prepare
+
+      # The three gates this job never had. Cheap, and they run BEFORE the SPA build so a type error
+      # fails in seconds rather than after it.
+      - run: npm run lint
+      - run: npm run type-check
+      - name: Verify the SPA
+        run: npm run test:unit
 
       # BEFORE the Quasar build, deliberately: this runs `docs/assemble-docs.test.sh`, which stands up
       # a loopback http.server and exercises the assembly end to end in a couple of seconds, so a
       # broken script fails here rather than after a four-minute SPA build. It needs no Docker daemon
       # and no network, which is the whole reason the assembly stopped reading a container image.
+      #
+      # `npm test` is that script and NOT the unit suite -- the two are separate scripts on purpose,
+      # so neither gate can silently swallow the other.
       - name: Verify the documentation assembly
         run: npm test
 

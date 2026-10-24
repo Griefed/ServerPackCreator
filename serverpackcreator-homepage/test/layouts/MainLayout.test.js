@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import MainLayout from 'layouts/MainLayout.vue'
+import MainLayout from '@/layouts/MainLayout.vue'
 
 describe('MainLayout', () => {
   // The three header tiles (Help, API docs, Addons) each colour their icon panel with

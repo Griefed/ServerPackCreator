@@ -11,7 +11,7 @@ vi.mock('github-release-stats', () => ({
   },
 }))
 
-const { default: Index } = await import('pages/Index.vue')
+const { default: Index } = await import('@/pages/Index.vue')
 
 // The flashcards resolve their images with webpack's `require()` inside the template. Vitest injects
 // a real CJS require that resolves through Node rather than through Vite's aliases, so rendering

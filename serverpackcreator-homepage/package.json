@@ -5,8 +5,10 @@
   "productName": "ServerPackCreator Homepage",
   "author": "Griefed <griefed@griefed.de>",
   "private": true,
+  "type": "module",
   "scripts": {
-    "lint": "eslint --ext .js,.vue ./",
+    "lint": "eslint -c ./eslint.config.js \"./src/**/*.{js,ts,vue}\" \"./test/**/*.{js,ts}\" \"./*.js\"",
+    "type-check": "vue-tsc --noEmit -p tsconfig.json",
     "test": "bash docs/assemble-docs.test.sh",
     "test:unit": "vitest run",
     "clean": "quasar clean",
@@ -14,25 +16,28 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/cli": "5.0.4",
     "@quasar/extras": "1.18.0",
-    "@quasar/quasar-app-extension-qflashcard": "2.0.0-alpha.4",
-    "axios": "1.20.0",
-    "core-js": "3.50.0",
+    "@quasar/quasar-ui-qflashcard": "3.0.0",
     "github-release-stats": "1.0.2",
-    "quasar": "2.11.10"
+    "quasar": "2.35.2"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.29.9",
-    "@quasar/app": "3.3.3",
+    "@eslint/js": "10.0.1",
+    "@quasar/app-vite": "3.10.3",
+    "@quasar/quasar-app-extension-qflashcard": "3.0.0",
+    "@quasar/vite-plugin": "2.0.2",
     "@vitejs/plugin-vue": "6.0.10",
     "@vue/test-utils": "2.5.1",
-    "eslint": "8.57.1",
-    "eslint-config-prettier": "8.10.2",
-    "eslint-plugin-vue": "9.8.0",
-    "eslint-webpack-plugin": "4.0.0",
+    "autoprefixer": "10.6.1",
+    "eslint": "10.13.0",
+    "eslint-plugin-vue": "10.11.1",
+    "globals": "17.13.0",
     "happy-dom": "21.0.4",
-    "vitest": "5.0.5"
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.72.0",
+    "vite-plugin-checker": "0.14.5",
+    "vitest": "5.0.5",
+    "vue-tsc": "3.3.13"
   },
   "browserslist": [
     "last 10 Chrome versions",
@@ -46,8 +51,7 @@
     "last 5 Opera versions"
   ],
   "engines": {
-    "node": ">= 16.9.1",
-    "npm": ">= 7.21.1",
-    "yarn": ">= 1.22.11"
+    "node": ">= 22.22.0",
+    "npm": ">= 10"
   }
 }

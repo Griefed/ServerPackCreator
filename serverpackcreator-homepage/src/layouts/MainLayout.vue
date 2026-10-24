@@ -4,7 +4,7 @@
 
       <q-toolbar class="shadow-5 toolbar">
         <router-link to="/" class="text-bold text-subtitle2 text-uppercase text-blue-12">
-          <img class="box-shadow q-pa-none q-ml-xs q-mr-xs" alt="header" src="~assets/serverpackcreator.webp" width="320">
+          <img class="box-shadow q-pa-none q-ml-xs q-mr-xs" alt="header" src="~@/assets/serverpackcreator.webp" width="320">
         </router-link>
         <q-toolbar-title>
 
@@ -81,19 +81,19 @@
   </q-layout>
 </template>
 
-<script>
-import {getCssVar} from "quasar"
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { getCssVar } from 'quasar'
 
-export default {
+export default defineComponent({
   name: 'MainLayout',
   setup() {
-    let year = new Date().getFullYear();
     return {
-      year,
+      year: new Date().getFullYear(),
       secondaryColour: getCssVar('secondary')
     }
   }
-}
+})
 </script>
 
 <!--suppress CssReplaceWithShorthandSafely -->
@@ -103,7 +103,7 @@ export default {
 }
 
 .page {
-  background-image: url("~assets/background.webp");
+  background-image: url("@/assets/background.webp");
   background-repeat: repeat;
   background-attachment: fixed;
 }
@@ -117,20 +117,20 @@ export default {
 }
 
 .header_normal {
-  background: url("~assets/tile.webp");
+  background: url("@/assets/tile.webp");
   background-repeat: repeat-x;
   background-color: linear-gradient(150deg,rgb(50, 83, 88) 15%,#76cead 70%);
 }
 
 .header_dark {
-  background: url("~assets/tile.webp");
+  background: url("@/assets/tile.webp");
   background-repeat: repeat-x;
   background-color: linear-gradient(200deg,rgb(26, 44, 39) 15%,#0b3c6a 70%);
 }
 
 .footer {
   border-top: #c0ffee 1px solid;
-  background: url("~assets/tile.webp");
+  background: url("@/assets/tile.webp");
   background-repeat: repeat-x;
   background-color: linear-gradient(150deg, rgb(50, 83, 88) 15%, #76cead 70%);
 }

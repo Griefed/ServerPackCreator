@@ -1,7 +1,8 @@
-# A Node + Quasar toolchain image. The name is a leftover from the GitLab era and is misleading --
-# nothing about this build is GitLab CI -- but it is the image that has the toolchain, so it stays
-# until something replaces it rather than being renamed in place.
-FROM griefed/gitlab-ci-cd:2.8.0@sha256:1461ae150d5803774398cc89af820c5e4b4cca92ebd74e8a17171e386de7b56d AS builder
+# The Quasar CLI comes from this tree's own lockfile, so the builder only has to supply Node. The
+# version floor is real and is a hard exit, not a warning: @quasar/app-vite's node-version-check
+# compares against 22.22.0 and calls process.exit(1), so a base image that moves backwards breaks
+# this build with an error naming Node rather than Quasar.
+FROM node:22-bookworm-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS builder
 
 WORKDIR /tmp/serverpackcreator.de
 
@@ -15,7 +16,9 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
-RUN quasar build
+# `--no-install` keeps this honest: without it npx silently downloads a Quasar CLI when the local one
+# is missing, which is how this stage used to build the site with a toolchain the lockfile never named.
+RUN npx --no-install quasar build
 
 # This tag served the help site for a while in an image of its own, so the `/config/www` webroot this
 # image writes to is proven on it, not assumed. Nothing here ships an nginx site-conf (`/api/latest`
