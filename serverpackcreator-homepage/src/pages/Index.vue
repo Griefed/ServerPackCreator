@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh lpr lFf">
+  <div class="index">
     <q-carousel
       animated
       v-model="slide"
@@ -134,7 +134,8 @@
           <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #ec982f">
-              <div class="text-h6 text-center">
+              <div :class="about_heading_3" :style="'color: ' + about_heading_color_3"
+                   class="text-h6 text-center">
                 FILES
               </div>
             </q-card-section>
@@ -164,10 +165,11 @@
           </q-card>
         </div>
         <div class="col-lg-3 col-md-3 col-xs-12 col-sm-6 q-px-lg">
-          <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
+          <q-card @mouseover="hoverOver(4)" @mouseout="hoverOutTimeout(4)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #f4655f">
-              <div class="text-h6 text-center">
+              <div :class="about_heading_4" :style="'color: ' + about_heading_color_4"
+                   class="text-h6 text-center">
                 MODLOADERS
               </div>
             </q-card-section>
@@ -199,10 +201,11 @@
           </q-card>
         </div>
         <div class="col-lg-3 col-md-3 col-xs-12 col-sm-6 q-px-lg">
-          <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
+          <q-card @mouseover="hoverOver(5)" @mouseout="hoverOutTimeout(5)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white q-pa-md" style="background: #8b3bbd">
-              <div class="text-h6 text-center">
+              <div :class="about_heading_5" :style="'color: ' + about_heading_color_5"
+                   class="text-h6 text-center">
                 ADVANCED
               </div>
             </q-card-section>
@@ -234,10 +237,11 @@
           </q-card>
         </div>
         <div class="col-lg-3 col-md-3 col-xs-12 col-sm-6 q-px-lg">
-          <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
+          <q-card @mouseover="hoverOver(6)" @mouseout="hoverOutTimeout(6)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #3b97d1">
-              <div class="text-h6 text-center">
+              <div :class="about_heading_6" :style="'color: ' + about_heading_color_6"
+                   class="text-h6 text-center">
                 PLUGINS
               </div>
             </q-card-section>
@@ -673,7 +677,7 @@
         ServerPackCreator-website.
       </div>
     </div>
-  </q-layout>
+  </div>
 </template>
 
 <script>
@@ -692,24 +696,23 @@ export default {
     return {
       slide: 1,
       reviewSlide: '1',
-      bg_color: 'rgb(0, 163, 82)',
       hover: false,
       active: false,
       primaryColour: getCssVar('primary'),
       secondaryColour: getCssVar('secondary'),
-      warningColour: getCssVar('warning'),
-      accentColour: getCssVar('accent'),
-      darkColour: getCssVar('dark '),
-      positiveColour: getCssVar('positive'),
-      negativeColour: getCssVar('negative'),
-      infoColour: getCssVar('info  '),
       background_style: 'background-color:rgba(0, 163, 82, 0.7);',
       about_heading_1: [],
       about_heading_2: [],
       about_heading_3: [],
+      about_heading_4: [],
+      about_heading_5: [],
+      about_heading_6: [],
       about_heading_color_1: '#f7f7f7',
       about_heading_color_2: '#f7f7f7',
-      about_heading_color_3: '#f7f7f7'
+      about_heading_color_3: '#f7f7f7',
+      about_heading_color_4: '#f7f7f7',
+      about_heading_color_5: '#f7f7f7',
+      about_heading_color_6: '#f7f7f7'
     }
   },
   setup() {

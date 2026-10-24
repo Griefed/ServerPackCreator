@@ -8,6 +8,7 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
     "test": "bash docs/assemble-docs.test.sh",
+    "test:unit": "vitest run",
     "clean": "quasar clean",
     "dev": "quasar dev",
     "build": "quasar build"
@@ -18,16 +19,20 @@
     "@quasar/quasar-app-extension-qflashcard": "2.0.0-alpha.4",
     "axios": "1.20.0",
     "core-js": "3.50.0",
-    "quasar": "2.11.10",
-    "github-release-stats": "1.0.2"
+    "github-release-stats": "1.0.2",
+    "quasar": "2.11.10"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.29.9",
     "@quasar/app": "3.3.3",
+    "@vitejs/plugin-vue": "6.0.10",
+    "@vue/test-utils": "2.5.1",
     "eslint": "8.57.1",
     "eslint-config-prettier": "8.10.2",
     "eslint-plugin-vue": "9.8.0",
-    "eslint-webpack-plugin": "4.0.0"
+    "eslint-webpack-plugin": "4.0.0",
+    "happy-dom": "21.0.4",
+    "vitest": "5.0.5"
   },
   "browserslist": [
     "last 10 Chrome versions",

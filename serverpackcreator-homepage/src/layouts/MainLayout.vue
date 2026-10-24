@@ -82,12 +82,15 @@
 </template>
 
 <script>
+import {getCssVar} from "quasar"
+
 export default {
   name: 'MainLayout',
   setup() {
     let year = new Date().getFullYear();
     return {
-      year
+      year,
+      secondaryColour: getCssVar('secondary')
     }
   }
 }
