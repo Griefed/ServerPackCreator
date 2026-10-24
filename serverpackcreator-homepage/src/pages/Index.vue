@@ -134,7 +134,7 @@
           <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #ec982f">
-              <div :class="headingAnimation[3]" :style="'color: ' + headingColour[3]"
+              <div :class="headingAnimation[3]"
                    class="text-h6 text-center">
                 FILES
               </div>
@@ -168,7 +168,7 @@
           <q-card @mouseover="hoverOver(4)" @mouseout="hoverOutTimeout(4)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #f4655f">
-              <div :class="headingAnimation[4]" :style="'color: ' + headingColour[4]"
+              <div :class="headingAnimation[4]"
                    class="text-h6 text-center">
                 MODLOADERS
               </div>
@@ -204,7 +204,7 @@
           <q-card @mouseover="hoverOver(5)" @mouseout="hoverOutTimeout(5)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white q-pa-md" style="background: #8b3bbd">
-              <div :class="headingAnimation[5]" :style="'color: ' + headingColour[5]"
+              <div :class="headingAnimation[5]"
                    class="text-h6 text-center">
                 ADVANCED
               </div>
@@ -240,7 +240,7 @@
           <q-card @mouseover="hoverOver(6)" @mouseout="hoverOutTimeout(6)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #3b97d1">
-              <div :class="headingAnimation[6]" :style="'color: ' + headingColour[6]"
+              <div :class="headingAnimation[6]"
                    class="text-h6 text-center">
                 PLUGINS
               </div>
@@ -354,10 +354,10 @@
 
               <q-card-section>
                 <div class="text-overline text-orange-9">EJ TECHNOLOGIES</div>
-                <div :class="headingAnimation[1]" :style="'color: ' + headingColour[1]"
+                <div :class="headingAnimation[1]" :style="headingTint(1)"
                      class="about_heading_1 text-h6 q-mt-sm q-mb-xs">INSTALL4J
                 </div>
-                <div :class="headingAnimation[1]" :style="'color: ' + headingColour[1]"
+                <div :class="headingAnimation[1]" :style="headingTint(1)"
                      class="about_heading_1 q-mt-sm q-mb-xs">
                   <code><strong>
                     install4j is a powerful multi-platform Java installer builder that generates native installers
@@ -379,7 +379,7 @@
               <img src="~@/assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
             </q-flashcard-section>
             <q-card @mouseover="hoverOver(2)" @mouseout="hoverOutTimeout(2)"
-                    :style="'color: ' + headingColour[2]" style="border: none;"
+                    :style="headingTint(2)" style="border: none;"
                     class="my-card text-center box-shadow" flat bordered>
               <a href="https://www.jetbrains.com/idea/" rel="noopener" target="_blank">
                 <q-img src="~@/assets/idea.png" alt=""/>
@@ -387,10 +387,10 @@
 
               <q-card-section>
                 <div class="text-overline text-orange-9">JETBRAINS</div>
-                <div :class="headingAnimation[2]" :style="'color: ' + headingColour[2]"
+                <div :class="headingAnimation[2]" :style="headingTint(2)"
                      class="text-h6 q-mt-sm q-mb-xs">INTELLIJ IDEA
                 </div>
-                <div :class="headingAnimation[2]" :style="'color: ' + headingColour[2]"
+                <div :class="headingAnimation[2]" :style="headingTint(2)"
                      class="about_heading_1 q-mt-sm q-mb-xs">
                   <code><strong>
                     IntelliJ IDEA is used to develop the backend and Swing-GUI of ServerPackCreator. It's an
@@ -714,10 +714,8 @@ export default defineComponent({
       // numbered properties because the handlers address them dynamically, which no amount of
       // typing can express against `this`.
       headingAnimation: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] } as Record<number, string[]>,
-      headingColour: {
-        1: RESTING_HEADING_COLOUR, 2: RESTING_HEADING_COLOUR, 3: RESTING_HEADING_COLOUR,
-        4: RESTING_HEADING_COLOUR, 5: RESTING_HEADING_COLOUR, 6: RESTING_HEADING_COLOUR
-      } as Record<number, string | null>
+      /** The heading currently under the pointer, which is the only one that may be tinted. */
+      hoveredHeading: null as number | null
     }
   },
   setup() {
@@ -756,12 +754,21 @@ export default defineComponent({
     cardImage(number: number): string | undefined {
       return cardImages[`../assets/serverpackcreator/cards/${number}.png`];
     },
+    /**
+     * The colour of a heading that tints while hovered. Only the two sponsor headings use it: they
+     * sit on the dark panel, where the accent reads. The Features Excerpt headings sit on saturated
+     * orange, salmon, purple and blue bands and keep their white, which the accent does not survive.
+     */
+    headingTint(index: number): string {
+      const colour = this.hoveredHeading === index ? this.secondaryColour : RESTING_HEADING_COLOUR;
+      return `color: ${colour}`;
+    },
     hoverOver(index: number) {
-      this.headingColour[index] = this.secondaryColour;
+      this.hoveredHeading = index;
       this.headingAnimation[index] = ['animated', 'bounceIn'];
     },
     hoverOutTimeout(index: number) {
-      this.headingColour[index] = RESTING_HEADING_COLOUR;
+      this.hoveredHeading = null;
       // Delayed so the bounce finishes before the heading snaps back.
       setTimeout(() => {
         this.headingAnimation[index] = [];

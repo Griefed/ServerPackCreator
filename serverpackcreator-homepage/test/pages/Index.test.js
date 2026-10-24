@@ -13,21 +13,11 @@ vi.mock('@/services/downloads/downloadTotal', () => ({
 
 const { default: Index } = await import('@/pages/Index.vue')
 
-// The flashcards resolve their images with webpack's `require()` inside the template. Vitest injects
-// a real CJS require that resolves through Node rather than through Vite's aliases, so rendering
-// those slots throws "Cannot find module". Stubbing the two components without a <slot /> keeps the
-// call sites unevaluated; the cards under test here are plain q-cards elsewhere on the page. The
-// Vite migration replaces `require()` with import.meta.glob and these stubs become unnecessary.
-const flashcardStubs = {
-  QFlashcard: { template: '<div />' },
-  QFlashcardSection: { template: '<div />' },
-}
-
 describe('Index — the download chip', () => {
   // Asserts the RENDERED text, not the value handed to the component: a chip that printed the raw
   // number, or 'undefined', or a spinner that never stops, would all satisfy a prop-level check.
   it('shows the download total, thousands-separated, with no spinner', () => {
-    const wrapper = mount(Index, { global: { stubs: flashcardStubs } })
+    const wrapper = mount(Index)
 
     const chip = wrapper.findAll('.q-chip').find((c) => c.text().includes('Downloads'))
     expect(chip).toBeDefined()
@@ -39,10 +29,33 @@ describe('Index — the download chip', () => {
   })
 
   it('no longer claims the figure is GitHub-only', () => {
-    const wrapper = mount(Index, { global: { stubs: flashcardStubs } })
+    const wrapper = mount(Index)
 
     const chip = wrapper.findAll('.q-chip').find((c) => c.text().includes('Downloads'))
     expect(chip.text()).not.toContain('GitHub')
+  })
+})
+
+describe('Index — the sponsor cards', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  // These headings sit on the dark panel, where the accent reads. Dropping the tint from the
+  // Features Excerpt cards must not take theirs with it.
+  it('tints its heading while hovered and restores it on leaving', async () => {
+    const wrapper = mount(Index)
+
+    const sponsor = wrapper.findAll('.q-card').find((card) => card.text().includes('INSTALL4J'))
+    expect(sponsor).toBeDefined()
+
+    const heading = () => sponsor.findAll('div').find((d) => d.text().trim() === 'INSTALL4J')
+    expect(heading().attributes('style')).toContain('#f7f7f7')
+
+    await sponsor.trigger('mouseover')
+    expect(heading().attributes('style')).toContain('#54a896') // the accent
+
+    await sponsor.trigger('mouseout')
+    expect(heading().attributes('style')).toContain('#f7f7f7')
   })
 })
 
@@ -55,7 +68,7 @@ describe('Index — the Features Excerpt cards', () => {
   // Each card animates its OWN heading. Asserting per-card is the whole point: a single shared
   // animation target looks identical to a working one if you only ever hover one card.
   it('animates the hovered card and only the hovered card', async () => {
-    const wrapper = mount(Index, { global: { stubs: flashcardStubs } })
+    const wrapper = mount(Index)
 
     const cards = wrapper.findAll('.my-other-card')
     expect(cards.length).toBe(4)
@@ -72,6 +85,13 @@ describe('Index — the Features Excerpt cards', () => {
         card.element.contains(animated[0].element),
         `hovering card ${position + 1} should animate a heading inside that card`,
       ).toBe(true)
+
+      // The heading sits on a saturated colour band and must keep its white: the accent that the
+      // sponsor headings tint to does not survive orange, salmon, purple or blue.
+      expect(
+        animated[0].attributes('style') ?? '',
+        `card ${position + 1} should bounce without being tinted`,
+      ).not.toContain('color')
 
       await card.trigger('mouseout')
       vi.advanceTimersByTime(1000)
