@@ -5216,3 +5216,76 @@ defects, because every one of them lives in a compile-time `define` that Vitest 
 type-checker cannot see. **A dependency upgrade that changes build-time defaults is not verified by a
 green build; it is verified by running the artifact.** The cheapest honest check for this project is
 one `quasar dev` boot plus one page load against a real backend.
+
+---
+
+## 2026-10-24 — the homepage: off webpack, onto TypeScript, and counting four forges instead of one
+
+**What was asked for:** drop the `github-release-stats` dependency, count downloads from every place
+ServerPackCreator is published, and write it portably enough for someone else to reuse. Doing that in
+strict TypeScript with real tests meant bringing the toolchain with it, which turned out to be
+**B49** — already scoped, already prototyped, already stalled.
+
+### B49's unresolved question had an answer sitting in the sister module
+
+B49 recorded a throwaway-worktree prototype that got `quasar build` green and then stopped: nine
+`cardImage is not a function` throws, no flashcard receiving its `styleTop`/`styleBottom` width, and a
+blank page under `quasar dev`. Its open question was *"why the compiled render's `$options`-class
+accesses do not resolve while `$data` and `$setup` ones do"*.
+
+That asymmetry **is** the answer. `@quasar/app-vite` 3 defaults `build.vueOptionsAPI` to false and
+compiles `__VUE_OPTIONS_API__ = "false"`, tree-shaking `applyOptions` out of Vue — so `methods` and
+`computed` vanish while `data` and `setup`, which are neither, survive.
+`serverpackcreator-web-frontend/CLAUDE.md` had documented the landmine at length a day earlier, from
+its own 2.4 → 3.10 upgrade. **Two modules hit the identical defect and the second one re-derived it
+from scratch**, because the first wrote it down where only its own module would look. The lesson is
+not "read more"; it is that a landmine belonging to a *dependency's default*, rather than to a
+module's code, belongs somewhere both consumers of that dependency will pass.
+
+### The guard that mattered most was about a parameter name
+
+Gitea and Forgejo page with `limit`, capped at 50. They do not reject GitHub's `per_page` — they
+**ignore** it and fall back to the instance's own `DEFAULT_PAGING_NUM`, measured at 10 on gitea.com
+and 30 on git.griefed.de. So a counter ported from the GitHub code reads one short page, concludes it
+has reached the end, and returns a confident number. Measured against the live forges by mutating that
+one constant:
+
+| | `limit=50` | `per_page=50` |
+|---|---|---|
+| gitea | 6,385 (343 releases) | 907 (10 releases) |
+| forgejo | 8,546 (387 releases) | 2,008 (30 releases) |
+| total | **189,691** | 177,675 |
+
+No error, no warning, no symptom — a 7x and a 4.3x undercount that looks exactly like a correct
+answer. This is the shell-template/manifest/version-parsing class the conventions already name, in a
+new place: **the failure mode of an ignored parameter is a plausible value, so the guard has to assert
+the request, not the result.**
+
+### Three further things worth keeping
+
+- **A dependency upgrade retired a workaround that had already been designed.** The plan called for a
+  tsconfig `paths` redirect around `@quasar/quasar-ui-qflashcard`, whose alpha shipped a `.d.ts`
+  containing `import { String | StringArray } from './types'` — three TS *parse* errors, which neither
+  `skipLibCheck` nor an ambient `declare module` suppresses. The app extension's 3.0.0 both supports
+  app-vite 3 and ships valid typings, so the whole workaround evaporated. Check whether the thing you
+  are working around has moved before building the scaffolding.
+- **Where the counting runs was the real design decision**, and it is not a performance tweak. Node has
+  no CORS, so git.griefed.de — which sends no `Access-Control-Allow-Origin`, Forgejo's default — is
+  countable at build time and **not** from a page. Counting in the browser would have silently dropped
+  a forge, on top of charging every visitor ~20 requests against GitHub's 60-per-hour-per-IP ceiling.
+  The same library runs in both places; only the moment changed, and the moment is what made the number
+  complete.
+- **`claude-docs/BACKLOG.md` had four reused IDs** (B38, B49, B50, B51), repaired here. The cause is
+  structural and was left in place to be seen: its sections are **not in date order**, so reading down
+  the file for the highest ID finds 2026-10-11 and misses the three later passes sitting below it. A
+  file whose numbering rule depends on reading order needs its order enforced, or the rule needs to stop
+  depending on it — `grep -n '^### B'` is now the documented way to find the highest.
+
+### Griefed's call on where this was authored
+
+Over B49's own recommendation that a change this size belongs upstream in
+`Griefed/serverpackcreator-de`: it was authored in ServerPackCreator instead, because the same work
+changes `.forgejo/workflows/docs.yml` and this file, neither of which is in the subtree, and the
+migration had to be verified against both build paths. The accepted cost is that the next
+`git subtree pull --squash` will conflict across ~15 files; the module's `CLAUDE.md` records that this
+directory is now the source of truth.

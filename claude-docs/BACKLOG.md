@@ -10,14 +10,31 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B54**, with the reason it waited and enough context to pick
-it up cold. **B53 is issued and gone** — `quasar dev` dying on `process is not defined`, closed
+Add the next item under a dated section, starting at **B57**.
+
+> **FOUR IDS WERE REUSED, and they have been repaired — 2026-10-24.** The 2026-10-20 section issued B49, B50
+> and B51, all three of which the 2026-10-16 and 2026-10-17 sections already held, and B38 named two unrelated
+> items at once. The cause is structural and still present: **the sections are not in date order** — 2026-10-12,
+> -16 and -17 sit *below* 2026-09-11 — so reading down the file for the highest ID finds 2026-10-11 and misses
+> three later passes entirely. The three 2026-10-20 entries were renumbered (install4j → **B54**, the font-family
+> picker → **B55**, the Java-executable path → **B56**), because they were the later issue and nothing outside
+> this file cited them — checked across `claude-docs/`, `.claude/` and every module `CLAUDE.md`. Use
+> `grep -n '^### B' claude-docs/BACKLOG.md` rather than reading down the file, and take the highest number it
+> prints.
+
+**B49 is issued and gone** — the homepage's Quasar toolchain capping below the `quasar` CVE fix, closed
+2026-10-24 by the webpack → `@quasar/app-vite` migration; its one unresolved question (why `cardImage`,
+`styleTop` and `hoverOver` did not resolve in the prototype's build) was `build.vueOptionsAPI` defaulting to
+false. **B38 is issued and gone** — the homepage's eslint 8 island, closed 2026-10-24 in the same branch; note
+the header below already listed a *different* B38, the Qodana work, which is the collision described above.
+**B53 is issued and gone** — `quasar dev` dying on `process is not defined`, closed
 2026-10-23 together with the production half of the same defect (`vueRouterMode` silently ignored); see
 `REFACTOR-LOG.md`. **B47 is issued and gone** — `resolve-version`'s `branch` mode carrying a branch's slashes into the
 version it outputs, closed 2026-10-16 in the same pass that found it; see `REFACTOR-LOG.md`. **B36 is issued and gone** — Sinytra Connector as a boot strategy, dropped 2026-09-12 when the
 per-line axis made the shim cost a whole Minecraft line and the placeholder was redirected to Fabric instead;
-see `REFACTOR-LOG.md`. **B38, B39 and B40 are issued and gone** — the Qodana work, all three closed
-2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`.
+see `REFACTOR-LOG.md`. **B39 and B40 are issued and gone** — the Qodana work, closed
+2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`. (That pass closed a
+B38 as well; the B38 this file carried until 2026-10-24 was a second, unrelated item under the same number.)
 
 ## 2026-10-21 — from the seven-round audit
 
@@ -82,7 +99,7 @@ again. The code is **deleted**; what it was and how to revive it is recorded her
 not lost, it moves to where it is looked up*. Recover any of it with
 `git log -S'<symbol>' -- <path>` on the commit that removed it.
 
-### B49 — the install4j in-app updater in `UpdateDialogs`
+### B54 — the install4j in-app updater in `UpdateDialogs`
 
 `serverpackcreator-app/.../gui/window/UpdateDialogs.kt` carried **10 commented blocks, 200 lines**:
 three `i4J*` state flags and six private functions — `checkForUpdateI4J`, `isI4JUpdatable`,
@@ -108,7 +125,7 @@ rather than behind a feature flag. The two application ids above are the install
 & Actions* ids, found with the IDE's "Show IDs" toggle; they are the only part not re-derivable from
 install4j's own documentation.
 
-### B50 — the font-family picker in `GuiSettings`
+### B55 — the font-family picker in `GuiSettings`
 
 `serverpackcreator-app/.../gui/window/settings/GuiSettings.kt` carried **7 blocks, 39 lines**: the
 `fontIcon`/`fontLabel`/`fontSetting`/`fontRevert`/`fontReset` widget row over
@@ -126,7 +143,7 @@ rather than reading it from `GuiProps`. The translation keys `settings_gui_font_
 neighbouring `manualEditSetting` shows (`settings_gui_restart_manualedit`), since Swing's `FontUIResource`
 is applied through the look-and-feel defaults and existing components do not all re-read it.
 
-### B51 — the Java-executable path setting in `GlobalSettings`
+### B56 — the Java-executable path setting in `GlobalSettings`
 
 `serverpackcreator-app/.../gui/window/settings/GlobalSettings.kt` carried **4 blocks, 31 lines**: the
 `javaIcon`/`javaLabel`/`javaSetting`/`javaRevert`/`javaReset`/`javaChoose` row over
@@ -309,33 +326,6 @@ would be a guess at demand, and a name-only match that skipped the confirm step 
 **Pick it up when** a refusal names an id that none of the four routes above reach. The confirm step is not
 optional: `askLinkedProjects` is the template — never trust a name, download and read the id.
 
-## 2026-10-12 — from the `9.1.0..develop` audit, iteration 1
-
-### B38 — the homepage's eslint 8 island, which nothing runs
-
-**What:** `serverpackcreator-homepage/` carries `.eslintrc.js`, `.eslintignore` and `eslint 8.37.0` with
-`@babel/eslint-parser`, `eslint-config-prettier 8.6.0`, `eslint-plugin-vue 9.8.0` and
-`eslint-webpack-plugin 4.0.0`, plus a `"lint": "eslint --ext .js,.vue ./"` script. Migrate it to the flat
-config and the eslint the rest of the repository is on, or decide deliberately that the homepage is not
-linted and delete the config, the script and the five dependencies.
-
-**Why it waited.** It is **inert, not wrong**. No workflow invokes it — `grep -rn homepage
-.forgejo/workflows/*.yml | grep -i lint` finds nothing — and `"test"` is
-`echo "No test specified" && exit 0`, so neither can fail a build or mislead a reader the way the deleted
-`CI-NOTES.md` could. The audit iteration it was found in was fixing things that break the release, and
-this breaks nothing.
-
-It is worth doing because the repository now holds **both** eslint generations:
-`build(deps-dev): bump eslint 9.39.5 -> 10.12.0, and @eslint/js with it` has just moved
-`serverpackcreator-web-frontend` to eslint 10 flat config, and that module's `CLAUDE.md` records that its
-legacy `.eslintrc.cjs`/`.eslintignore` "are gone". Two generations of one tool, one of them unreachable,
-is the duplicated-knowledge shape this project has paid for four times.
-
-**Pick it up when** the homepage SPA is touched for anything else, or when a dependency alert names one of
-those five packages — at which point the honest answer is the migration rather than a bump of a linter
-nobody runs. Note the homepage is Quasar 1 / webpack (`quasar.conf.js`, `babel.config.js`), not the
-app-vite 3 the other frontend uses, so its flat config is not a copy of that one.
-
 ## 2026-10-16 — from the slashed-`-Pversion` fix
 
 ### B48 — move `buildSrc/` to a `build-logic` included build
@@ -360,82 +350,6 @@ first thing to re-solve: an included build evaluates its settings standalone, so
 there, which is exactly what fails today under the root build.
 
 ## 2026-10-17 — from merging the open renovate PRs
-
-### B49 — the homepage's Quasar toolchain caps below the `quasar` CVE fix, and the way out is Vite
-
-**What:** `serverpackcreator-homepage` cannot take PR #715 (`quasar` 2.11.10 → 2.32.2, closing
-CVE-2026-73647 / GHSA-3r53-75j5-3g7j, prototype pollution in `extend()`). The advisory's
-`first_patched_version` is **2.22.0**; the homepage's `@quasar/app` 3.3.3 cannot build anything
-above roughly 2.14.5. Fixing the CVE means migrating the build, and the only viable target is
-`@quasar/app-vite` — not `@quasar/app-webpack`.
-
-**Measured, so it does not need re-deriving:**
-
-- `@quasar/app` 3.3.3 + `quasar` 2.32.2 fails first in sass — `SassError: expected ")"` on
-  `&:has(+ :is(…))` in `quasar/dist/quasar.sass`, because 3.3.3 pins `sass` **1.32.12** (April 2021)
-  exactly. An npm `overrides` of `sass` clears it and reveals the real wall underneath.
-- The real wall is JS: `TypeError: importTransformation is not a function`, from 3.3.3's
-  `lib/webpack/loader.js.transform-quasar-imports.js`. Reproduced at `quasar` **2.17.0** and
-  **2.22.0**; **2.14.5** still builds. So the ceiling sits between 2.14.5 and 2.17.0, below the fix.
-- **`@quasar/app-webpack` 4.4.5 is not the way out**, even though its peer range (`quasar ^2.16.0`)
-  would allow 2.32.2. The site uses `<q-flashcard>` across the whole of `src/pages/Index.vue`, and
-  `@quasar/quasar-app-extension-qflashcard` ships **no webpack-4-compatible release**: 2.0.0-alpha.4
-  declares `@quasar/app-webpack ^3.0.0`, and 3.0.0 declares `peerDependencies: {"@quasar/app-vite":
-  ">=3.0.0"}`. The CLI refuses outright — *"Extension(@quasar/qflashcard): is not compatible with
-  @quasar/app-webpack v4.4.5. Required version: ^3.0.0"*.
-- Node is **not** a blocker, but it is tight. `@quasar/app-vite` 3.10.3 wants
-  `^30 || ^28 || ^26 || ^24 || ^22.22.0`, and all three places that build this site clear it only just:
-  `homepage-build` in `.forgejo/workflows/docs.yml` pins `node-version: '22'`, and the Dockerfile's
-  builder `griefed/gitlab-ci-cd:2.8.0` ships **Node v22.22.0 exactly** (verified with
-  `docker run --platform linux/amd64 … node -v`; it also carries a global `@quasar/cli` **v2.5.0**,
-  which is what its `RUN quasar build` actually invokes). One patch release of the floor breaks the
-  image build, so the migration should pin a newer Node in that stage rather than rely on it.
-
-**What a prototype of the Vite migration cost, and where it stopped.** Built in a throwaway worktree:
-`quasar.conf.js` → `quasar.config.js` in app-vite form; root `index.html` with
-`<!-- quasar:entry-point -->`; `.postcssrc.js` → ESM `postcss.config.js`; `babel.config.js` deleted;
-`quasar/wrappers` → `@quasar/app-vite` (`defineBoot`, `defineRouter`); every `~assets/…` and
-`url("~assets/…")` rewritten to the single `@` alias app-vite 3 generates; `import('layouts/…')` →
-`import('@/layouts/…')`; and the three `require(\`assets/serverpackcreator/cards/${…}.png\`)` sites
-in `Index.vue` — which Vite has no equivalent for — replaced with an `import.meta.glob` lookup.
-**`quasar build` goes green from there**, emits all nine card images and a `dist/spa/index.html`,
-and most of the page renders. It is still **not shippable**: the production build throws
-`cardImage is not a function` nine times, no flashcard receives the `styleTop`/`styleBottom` inline
-width, and `quasar dev` serves a **blank page**. The unresolved question is why the compiled render's
-`$options`-class accesses (`c.styleTop`, `c.hoverOver`, `c.cardImage` alike) do not resolve while
-`$data` and `$setup` ones do.
-
-**Why it waited.** Three reasons, in order of weight. It is a **webpack → Vite migration of the public
-website**, not the toolchain bump the PR looks like. The homepage has **no test suite** — `npm test` is
-`echo "No test specified" && exit 0`, and this module's `CLAUDE.md` says to treat a change to `src/` as
-verified only by looking at it — so the only gate is a human comparing the rendered site against
-serverpackcreator.de. And `serverpackcreator-homepage` is a **squashed subtree** of
-`Griefed/serverpackcreator-de`: a change of this size landed here and not upstream collides with the
-next `git subtree pull --squash`, so it belongs in the website's own repository, pulled back as one
-squashed commit.
-
-**Pick it up when** the site is worked on deliberately, in `Griefed/serverpackcreator-de`. It also closes
-B47, whose eslint-generation note is a symptom of the same staleness. Until then PR #715 stays open and
-the advisory stays open with it; the exposure is `extend()` prototype pollution in a **static marketing
-SPA with no user input**, which is why leaving it open for one deliberate migration is defensible rather
-than merely convenient.
-
-**Dependabot PR #1310 is the same wall, and is not mergeable here either (checked 2026-10-18).** It is
-`build(deps): Bump the npm_and_yarn group across 1 directory with 20 updates`, against **`main`**, and
-its three direct bumps are `@quasar/cli` 5.0.4, `axios` 1.20.0 and `quasar` 2.32.2 — the first two of
-which renovate already merged into `develop` as #716 and #714. All it adds over `develop` is the quasar
-bump this entry exists to refuse. Its *lockfile* cannot be taken either, and that is the part worth
-recording: it is computed against `main`, so applying it to `develop` upgrades 57 packages and
-**downgrades 19**, among them `@quasar/extras` 1.18.0 → 1.16.2, `core-js` 3.50.0 → 3.27.2, `eslint`
-8.57.1 → 8.37.0 and `js-yaml` 4.3.2 → **4.1.0**, which is inside the advisory range `4.0.0 - 4.3.1`.
-Taking it would re-open a vulnerability to close others. The equivalent that *is* safe is regenerating
-`develop`'s own lockfile — done, see the commit of this entry.
-
-**Expect the same shape from every future npm PR raised against `main`.** `main` is three releases
-behind `develop` here, so a bot PR's lockfile is always rebased on the wrong base; read the direct-dep
-table against `develop`'s `package.json` before spending time on the lockfile. And `npm audit` says what
-this entry says, independently: `@quasar/app` is reported `critical`, `range=*`, **`fixAvailable=false`**
-— npm agrees there is no bump out of this, only the migration.
 
 ### B50 — the container has no seam for a remote debugger
 

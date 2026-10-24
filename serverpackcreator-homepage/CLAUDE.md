@@ -43,6 +43,22 @@ git tag -d $(git tag -l '1.[0-4].*')
 Nothing is lost by deleting them — the upstream repository is where those tags are looked up, and
 `git subtree pull --squash` re-fetches the recorded split by hash when it needs it.
 
+### Griefed's call, 2026-10-24: this directory is now authored HERE, and upstream will conflict
+
+The webpack → Vite migration, the TypeScript conversion and the download counter were all written in
+ServerPackCreator rather than upstream, deliberately, and over B49's own recommendation that a change
+of that size "belongs in the website's own repository, pulled back as one squashed commit". The reason
+the recommendation lost: the same work also changes `.forgejo/workflows/docs.yml` and
+`claude-docs/BACKLOG.md`, which are **not** in the subtree, so an upstream-first route cannot verify
+the migration against this repository's CI or its Dockerfile — and those are the two build paths it
+had to be proven against.
+
+**The cost is real and was accepted:** `Griefed/serverpackcreator-de` still holds a webpack tree that
+no longer reflects the deployed site, so the next `git subtree pull --squash` will conflict across
+roughly fifteen files. Treat this directory as the source of truth and replay outward
+(`git subtree push`) rather than pulling inward, or retire the upstream repository. **Do not resolve
+that conflict by taking upstream's side** — it is three major versions of toolchain behind.
+
 ## The addons overview is a PAGE here, not a project
 
 `src/pages/AddonIndex.vue` is the curated plugin listing, reachable at `/addons`. It used to be its
@@ -81,15 +97,108 @@ the `Notify` plugin, which `quasar.conf.js` already enables.
 ## Local development
 
 ```
-npm install && npx quasar dev     # dev server
-npx quasar build                  # production build into dist/spa
-npm run lint                      # eslint
+npm ci && npx quasar dev          # dev server
+npm run build                     # collect-downloads, then quasar build into dist/spa
+npm run lint                      # eslint 10, flat config
+npm run type-check                # vue-tsc --noEmit
+npm run test:unit                 # vitest
+npm test                          # docs/assemble-docs.test.sh -- NOT the unit suite
+npm run collect-downloads         # writes src/generated/download-counts.json
 ```
 
-`npm test` runs `docs/assemble-docs.test.sh` and nothing else: the documentation assembly is the
-part of this module with behaviour worth pinning. **There is still no test for `src/`** — nothing in
-SPC's Gradle build reaches this module either, so treat a change to a `.vue` file as verified only by
-looking at it in `quasar dev`.
+**`npm test` and `npm run test:unit` are deliberately two scripts.** `.forgejo/workflows/docs.yml`'s
+*Verify the documentation assembly* step runs `npm test`, and folding Vitest into it — which is what
+copying `serverpackcreator-web-frontend`'s `package.json` does — silently drops that gate.
+
+`src/` has a test suite now (Vitest + Vue Test Utils + happy-dom, `test/`), but it covers logic, not
+appearance: nothing in it can see a layout regression, and nothing in SPC's Gradle build reaches this
+module. **A change to a `.vue` file is still verified by looking at it in `quasar dev`.**
+
+## Toolchain — `@quasar/app-vite` 3, TypeScript, and three landmines
+
+Migrated off `@quasar/app` 3.3.3 (the pre-rename **webpack** CLI) on 2026-10-24, which is what closed
+B49 and CVE-2026-73647. All of `src/` is TypeScript. One path alias, `@` → `src/`; in templates an
+asset is `~@/assets/x` and in SCSS `url("@/assets/x")`.
+
+- **LANDMINE — `build.vueOptionsAPI: true` in `quasar.config.js` is load-bearing.** app-vite 3
+  defaults it to **false**, which compiles `__VUE_OPTIONS_API__ = "false"` and tree-shakes
+  `applyOptions` out of Vue. Every SFC here is Options API, so without it every page still renders and
+  nothing throws — the page just loses `data`, `methods`, `computed` and every lifecycle hook. That is
+  precisely what stalled B49's prototype (`cardImage is not a function` ×9, no flashcard width, blank
+  dev page) and it went undiagnosed because the symptoms look like a bundling fault.
+  `test/config/quasar-config.test.js` pins the flag, which is all a unit test can reach — Vitest does
+  not apply the build's `define`s, so only a production bundle shows the real thing. The same landmine
+  is documented at length in `serverpackcreator-web-frontend/CLAUDE.md`; this is the pointer, not a
+  second copy.
+- **LANDMINE — `process.env.*` does not exist in `src/`.** It is `import.meta.env.QUASAR_*`, a rename
+  and not a relocation. A read is a `ReferenceError` under `quasar dev` and **silently `undefined` in a
+  build**. `test/config/no-process-env.test.js` pins it for all of `src/`. `QUASAR_SERVER` is
+  substituted as a boolean literal — never compare it to `'false'`.
+- **LANDMINE — a page's root must not be `<q-layout>`.** `MainLayout.vue` already provides one, and
+  Quasar supplies QLayout by injection, so a nested one shadows the outer for its whole subtree.
+  `Index.vue` carried this for years and was fixed on 2026-10-24; `AddonIndex.vue` and `Error404.vue`
+  are plain `<div>`s and must stay that way.
+
+`@quasar/extras` is pinned at **1.18.0 on purpose**: 2.x's `exports` map has no `fontawesome-v5` or
+`mdi-v5`, both of which `quasar.config.js` requests. 1.18.0 already ships the v7 sets, so the
+rename-and-bump is available whenever someone wants it — as one change, not as a side effect.
+
+The qflashcard app extension must stay at **3.0.0 or newer**: 2.0.0-alpha.4 refuses app-vite 3
+outright (`compatibleWith('@quasar/app-vite', '^1.0.0-alpha.0')`), and its shipped
+`dist/types/index.d.ts` contained `import { String | StringArray } from './types'` — three TS *parse*
+errors, which neither `skipLibCheck` nor an ambient `declare module` can suppress, because both gate
+semantic checking while the file is still resolved and parsed.
+
+## The download counter is a library, and it is counted at BUILD time
+
+`src/services/downloads/` counts release-asset downloads across **GitHub, Gitea and Forgejo**. It
+hard-codes no URL — `countPlatformDownloads(platform, repositoryUrl)` derives everything from the URL,
+and `countAllDownloads(owner, repository, { hosts })` falls back to `DEFAULT_HOSTS`. SPC's own
+repositories are in `src/config/repositories.ts`, which is site configuration, not library content.
+
+- **LANDMINE — Gitea and Forgejo page with `limit` (max 50), NOT `per_page`, and sending the wrong
+  one fails silently.** They ignore an unknown paging parameter and fall back to the instance's
+  `DEFAULT_PAGING_NUM` — 10 on gitea.com, 30 on git.griefed.de — returning a short page with no error,
+  so the counter stops early and reports a confident fraction. Measured against the live forges:
+  gitea **6,385 → 907** and forgejo **8,546 → 2,008** from that one constant.
+  `test/services/downloads/gitea-counter.test.js` is the guard.
+- **GitLab is not supported and must not be "added".** It publishes no release-asset download counts
+  at all — `assets.links[]` carries `id, name, url, direct_asset_url, link_type` and nothing else, and
+  [gitlab#327317](https://gitlab.com/gitlab-org/gitlab/-/issues/327317) has been open since 2021-04-09.
+  `counterFor('gitlab')` raises `UnknownPlatformError` saying so. Counting it as zero would be
+  indistinguishable from a repository nobody downloads.
+- **Why build time.** Node has no CORS, so `git.griefed.de` is countable there and **not** from a
+  browser: it sends no `Access-Control-Allow-Origin`, which is Forgejo's `[cors] ENABLED = false`
+  default (Codeberg, same major, sends `*`). Build-time counting also spares each visitor ~20 requests
+  and several MB, and spares GitHub's 60-per-hour-per-IP anonymous ceiling, which the old
+  `github-release-stats` chip burned on every page load. `refreshDownloadTotal()` then updates the
+  figure in the background at most once a day per visitor.
+- **`src/generated/download-counts.json` is gitignored and must stay so.** A committed copy is a second
+  place a total is recorded and goes stale — the mistake `docs/versions.json` made. The collector is
+  fail-soft and always exits 0: with every forge unreachable it writes `{"total": null}` and the chip
+  renders "many", because no forge reachable is a different fact from nobody downloading anything.
+
+To let the browser refresh include Forgejo, git.griefed.de needs CORS enabled. **That is host
+configuration and is not done.** Nothing breaks without it; the baked figure already includes Forgejo.
+
+```ini
+[cors]
+ENABLED = true
+; omit ALLOW_DOMAIN to keep the default `*`, which is what gitea.com and codeberg.org send
+```
+
+or, in docker-compose, `FORGEJO__cors__ENABLED=true`.
+
+**`ALLOW_DOMAIN` takes ORIGINS, not domains, and a bare hostname silently matches nothing.** The
+field is passed straight to go-chi/cors as `AllowedOrigins`
+(`routers/api/shared/middleware.go`), and its own declaration carries the admission:
+*"this option is from legacy code, it actually works as AllowedOrigins"*
+(`modules/setting/cors.go`). An `Origin` header always carries a scheme, so the value must be
+`https://serverpackcreator.de`. Restricting it also costs a `Vary: Origin`, which any caching proxy
+in front of the instance then has to honour. `SCHEME` and `ALLOW_SUBDOMAIN` no longer exist.
+
+The middleware is registered **only on the API routes** and only behind `if
+setting.CORSConfig.Enabled`, so enabling it changes nothing about the web UI.
 
 ## One version per image — the site archives nothing
 
