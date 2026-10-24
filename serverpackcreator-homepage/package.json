@@ -13,12 +13,12 @@
     "test:unit": "vitest run",
     "clean": "quasar clean",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "collect-downloads": "tsx scripts/collect-downloads.ts",
+    "build": "npm run collect-downloads && quasar build"
   },
   "dependencies": {
     "@quasar/extras": "1.18.0",
     "@quasar/quasar-ui-qflashcard": "3.0.0",
-    "github-release-stats": "1.0.2",
     "quasar": "2.35.2"
   },
   "devDependencies": {
@@ -33,6 +33,7 @@
     "eslint-plugin-vue": "10.11.1",
     "globals": "17.13.0",
     "happy-dom": "21.0.4",
+    "tsx": "4.23.15",
     "typescript": "5.8.3",
     "typescript-eslint": "8.72.0",
     "vite-plugin-checker": "0.14.5",

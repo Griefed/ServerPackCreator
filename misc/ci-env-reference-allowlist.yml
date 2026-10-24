@@ -10,6 +10,10 @@
 # The key is `<file>::<job>::<step>::<NAME>`; `python3 misc/ci-env-reference-check.py --list` prints
 # them ready to paste.
 
+".forgejo/workflows/docs.yml::homepage-build::Collect the download counts::GITHUB_TOKEN":
+  "read by Node, not by the step's shell -- scripts/collect-downloads.ts passes process.env.GITHUB_TOKEN
+   to countAllDownloads as its bearer token, which raises GitHub's 60-per-hour anonymous ceiling"
+
 ".forgejo/workflows/docs.yml::homepage-image::Assemble the documentation::SPC_WEBHELP_ZIP":
   "read by the child script the step runs -- assemble-docs.sh's WEBHELP_ZIP, mandatory there (`:?`)"
 ".forgejo/workflows/docs.yml::homepage-image::Assemble the documentation::SPC_DOKKA_TARGZ":

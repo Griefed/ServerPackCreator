@@ -307,6 +307,16 @@ jobs:
       # fresh checkout without it.
       - run: npx quasar prepare
 
+      # Counts the forges and writes src/generated/download-counts.json, which is gitignored and
+      # which the SPA imports -- so this has to precede the type-check, not just the build. It is
+      # fail-soft and always exits 0: a forge being unreachable writes a null total and the page
+      # falls back to counting in the browser, which must not fail a site build.
+      - name: Collect the download counts
+        run: npm run collect-downloads
+        env:
+          # Raises GitHub's 60-per-hour anonymous ceiling. Optional; absent is fine.
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
       # The three gates this job never had. Cheap, and they run BEFORE the SPA build so a type error
       # fails in seconds rather than after it.
       - run: npm run lint

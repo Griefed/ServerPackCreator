@@ -306,19 +306,9 @@
             </p>
             <span>
               <q-chip color="secondary" size="xl" text-color="white">
-                <q-avatar color="primary" icon="mdi-github"/>
-                <b>GitHub Downloads:&nbsp;</b>
-                <b v-if="downloads === 0">
-                  <q-circular-progress
-                    indeterminate
-                    rounded
-                    color="lime"
-                    class="q-ma-md"
-                  />
-                </b>
-                <b v-else>
-                  {{ downloads }}
-                </b>
+                <q-avatar color="primary" icon="mdi-download"/>
+                <b>Downloads:&nbsp;</b>
+                <b>{{ downloads }}</b>
               </q-chip>
             </span>
             <span class="row flex flex-center" style="margin-top: 45px;">
@@ -683,11 +673,19 @@
 <script lang="ts">
 import {getCssVar} from "quasar"
 import {QFlashcard, QFlashcardSection} from '@quasar/quasar-ui-qflashcard'
-import { GithubStats } from 'github-release-stats';
 import { defineComponent, ref } from 'vue';
+import { readDownloadTotal, refreshDownloadTotal } from '@/services/downloads/downloadTotal';
 
 /** The headings' colour while nothing is hovering them. */
 const RESTING_HEADING_COLOUR = '#f7f7f7';
+
+/**
+ * Render a total for the chip. A null total means no forge could be counted, which is a different
+ * thing from nobody having downloaded anything and must not read as zero.
+ */
+function formatDownloads(total: number | null): string {
+  return total === null ? 'many' : new Intl.NumberFormat().format(total);
+}
 
 
 // Vite has no `require`. The nine flashcard images are collected at build time and looked up by
@@ -723,12 +721,11 @@ export default defineComponent({
     }
   },
   setup() {
-    const gh = new GithubStats('Griefed', 'ServerPackCreator');
-    let year = new Date().getFullYear();
+    // The build-time figure, so the chip is correct on first paint with no request and no spinner.
+    const baked = readDownloadTotal();
     return {
-      year,
-      gh,
-      downloads: ref(0)
+      year: new Date().getFullYear(),
+      downloads: ref(formatDownloads(baked.total))
     }
   },
   computed: {
@@ -772,12 +769,15 @@ export default defineComponent({
     }
   },
   mounted() {
-    this.gh.getTotalDownloads().then(count => {
-      this.downloads = count
-      console.log('Total downloads: ' + count);
-    }).catch(error => {
-      console.error(error.message);
-    });
+    // Best-effort, and at most once a day per visitor. A forge that is unreachable from a browser
+    // -- git.griefed.de sends no CORS header -- changes nothing: the baked figure already has it.
+    refreshDownloadTotal()
+      .then(snapshot => {
+        this.downloads = formatDownloads(snapshot.total);
+      })
+      .catch(() => {
+        // Keep showing the figure that is already on screen.
+      });
   }
 })
 </script>

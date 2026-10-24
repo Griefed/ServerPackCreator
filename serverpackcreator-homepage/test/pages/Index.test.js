@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-// The page counts downloads on mount. That is not what these tests are about, and letting it run
-// would put a real request in a unit test.
-vi.mock('github-release-stats', () => ({
-  GithubStats: class {
-    getTotalDownloads() {
-      return Promise.resolve(0)
-    }
-  },
+// The page refreshes its download total on mount. That is not what these tests are about, and
+// letting it run would put a real request in a unit test.
+vi.mock('@/services/downloads/downloadTotal', () => ({
+  readDownloadTotal: () => ({ total: 189691, generatedAt: '2026-10-24T12:00:00.000Z' }),
+  refreshDownloadTotal: () => Promise.resolve({
+    total: 189691,
+    generatedAt: '2026-10-24T12:00:00.000Z',
+  }),
 }))
 
 const { default: Index } = await import('@/pages/Index.vue')
@@ -22,6 +22,29 @@ const flashcardStubs = {
   QFlashcard: { template: '<div />' },
   QFlashcardSection: { template: '<div />' },
 }
+
+describe('Index — the download chip', () => {
+  // Asserts the RENDERED text, not the value handed to the component: a chip that printed the raw
+  // number, or 'undefined', or a spinner that never stops, would all satisfy a prop-level check.
+  it('shows the download total, thousands-separated, with no spinner', () => {
+    const wrapper = mount(Index, { global: { stubs: flashcardStubs } })
+
+    const chip = wrapper.findAll('.q-chip').find((c) => c.text().includes('Downloads'))
+    expect(chip).toBeDefined()
+    expect(chip.text()).toContain(new Intl.NumberFormat().format(189691))
+    expect(chip.text()).not.toContain('undefined')
+    expect(chip.text()).not.toContain('NaN')
+    // The old chip conflated loading, failure and a genuine zero into one permanent spinner.
+    expect(chip.find('.q-circular-progress').exists()).toBe(false)
+  })
+
+  it('no longer claims the figure is GitHub-only', () => {
+    const wrapper = mount(Index, { global: { stubs: flashcardStubs } })
+
+    const chip = wrapper.findAll('.q-chip').find((c) => c.text().includes('Downloads'))
+    expect(chip.text()).not.toContain('GitHub')
+  })
+})
 
 describe('Index — the Features Excerpt cards', () => {
   // `hoverOutTimeout` clears the animation a second after the pointer leaves, so the clock has to

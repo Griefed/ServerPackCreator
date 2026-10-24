@@ -13,12 +13,14 @@ WORKDIR /tmp/serverpackcreator.de
 # `.dockerignore` keeps the host's node_modules, a stale dist and the CI
 # definitions out of the context.
 COPY package.json package-lock.json ./
-RUN npm install
+# `ci`, not `install`: the lockfile is copied right above precisely so the build is reproducible.
+RUN npm ci
 
 COPY . .
-# `--no-install` keeps this honest: without it npx silently downloads a Quasar CLI when the local one
-# is missing, which is how this stage used to build the site with a toolchain the lockfile never named.
-RUN npx --no-install quasar build
+# `npm run build`, not a bare `quasar build`: the script collects the download counts into
+# src/generated/ before invoking Quasar, and npm puts node_modules/.bin first on PATH, so the CLI
+# is the lockfile's own rather than whatever the base image happens to carry.
+RUN npm run build
 
 # This tag served the help site for a while in an image of its own, so the `/config/www` webroot this
 # image writes to is proven on it, not assumed. Nothing here ships an nginx site-conf (`/api/latest`
