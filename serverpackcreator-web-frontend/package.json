@@ -21,9 +21,9 @@
     "@quasar/extras": "^2.0.0",
     "axios": "^1.16.0",
     "pinia": "^3.0.4",
-    "quasar": "^2.19.3",
+    "quasar": "^2.35.2",
     "vue": "^3.5.27",
-    "vue-i18n": "^11.1.12",
+    "vue-i18n": "^11.4.15",
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "eslint": "10.12.0",
     "eslint-plugin-vue": "10.11.1",
     "globals": "16.5.0",
-    "happy-dom": "20.14.6",
+    "happy-dom": "21.0.4",
     "prettier": "3.9.10",
     "typescript": "5.8.3",
     "typescript-eslint": "8.71.1",
