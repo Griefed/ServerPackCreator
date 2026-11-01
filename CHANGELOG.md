@@ -1,3 +1,79 @@
+## [9.4.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.3.1...9.4.0) (2026-11-01)
+
+### 📔 Docs
+
+* adopt the as-little-as-necessary documentation policy, and apply it ([25dbe12](https://git.griefed.de/Griefed/ServerPackCreator/commit/25dbe12dffe85542a2fd7c1fe6551d414c0cc6ae))
+* **audit:** round 8 found nothing, which is the stopping condition ([9759999](https://git.griefed.de/Griefed/ServerPackCreator/commit/9759999ed0d5a0b8067aeda355993e01bcb92b6d))
+* **backlog:** B52 — start.fish swallows every stop request, and the obvious fix breaks the exit code ([0168e01](https://git.griefed.de/Griefed/ServerPackCreator/commit/0168e016e49c15ecf53057208681f5fc6cc6b1f2))
+* **homepage:** record the app-vite landmines, close B49 and B38, and repair four reused backlog ids ([e102832](https://git.griefed.de/Griefed/ServerPackCreator/commit/e1028325140a4cba48ed1cd40b25887dd8c7c64c))
+
+### 📦 Other
+
+* Remove no longer useful fluff from README ([4782e40](https://git.griefed.de/Griefed/ServerPackCreator/commit/4782e4012edd68b6bee397e922a032cc869fad45))
+* Update sponsors and contributors ([163a6bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/163a6bd4bc27a3d80eca4dca00ce0e1299e0db21))
+* **addons:** drop the upstream repository's own CI and infrastructure ([84efdf7](https://git.griefed.de/Griefed/ServerPackCreator/commit/84efdf7f4e40e37b9b4bd8c8c8765deeaad5b19a))
+* **addons:** import ServerPackCreator-Addons-Overview as a subtree, squashed ([90e12f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/90e12f2d079a45c45688b0985e7388cf8884e3fb))
+
+### 🔩 Dependencies
+
+* **deps:** pin dependencies ([30f8657](https://git.griefed.de/Griefed/ServerPackCreator/commit/30f8657b9aa09469162c79406c834ce2694666c6))
+* **deps:** update debian:bookworm-slim docker digest to 7ff6ba3 ([9c1e842](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c1e84291ec7b902bc25f4b406e0c4cf8cf53ff2))
+* **deps:** update eclipse-temurin:21-jdk-jammy docker digest to 742daac ([c092bc1](https://git.griefed.de/Griefed/ServerPackCreator/commit/c092bc15524607d910f28bb272be9b0ebd3e6920))
+* **deps:** update ghcr.io/linuxserver/baseimage-ubuntu:noble docker digest to 81fe487 ([1c0404a](https://git.griefed.de/Griefed/ServerPackCreator/commit/1c0404a3d721e49aa41329a628008bbe39260e6e))
+* **deps:** update ghcr.io/linuxserver/nginx:1.30.4 docker digest to c6c300b ([38341dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/38341dc48e2d5f4b6efb897a53908b40ecee24ad))
+* **web-frontend:** Update dependencies - Closes [#738](https://git.griefed.de/Griefed/ServerPackCreator/issues/738) [#737](https://git.griefed.de/Griefed/ServerPackCreator/issues/737) [#736](https://git.griefed.de/Griefed/ServerPackCreator/issues/736) [#735](https://git.griefed.de/Griefed/ServerPackCreator/issues/735) [#734](https://git.griefed.de/Griefed/ServerPackCreator/issues/734) [#729](https://git.griefed.de/Griefed/ServerPackCreator/issues/729) [#728](https://git.griefed.de/Griefed/ServerPackCreator/issues/728) [#727](https://git.griefed.de/Griefed/ServerPackCreator/issues/727) ([eeaed36](https://git.griefed.de/Griefed/ServerPackCreator/commit/eeaed3672add876e0e83fbb7ded03eaa6978fc09))
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump autoprefixer in /serverpackcreator-web-frontend ([b91a663](https://git.griefed.de/Griefed/ServerPackCreator/commit/b91a663c252d88c4daec74e5de930e845ce26984))
+* **deps-dev:** bump happy-dom in /serverpackcreator-web-frontend ([be7f8f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/be7f8f8c8eaa94b0459c6536f71f779c500c6132))
+* **deps-dev:** bump vitest in /serverpackcreator-web-frontend ([45fa1eb](https://git.griefed.de/Griefed/ServerPackCreator/commit/45fa1eb1a05a84df01e82cadb857d02a8be0f69a))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([26fea51](https://git.griefed.de/Griefed/ServerPackCreator/commit/26fea51532f41d11e262ca53a6e97089f18784fc))
+* **deps:** bump com.miglayout:miglayout-swing from 11.5.1 to 11.5.2 ([c395c4f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c395c4fafb0363349b604504929d08d80206905a))
+* **deps:** bump debian in /serverpackcreator-grinder/docker ([323f570](https://git.griefed.de/Griefed/ServerPackCreator/commit/323f570a62989477b59729383ed1433d1723d53e))
+* **deps:** bump eclipse-temurin in /docker ([c81d171](https://git.griefed.de/Griefed/ServerPackCreator/commit/c81d17137372c707911d67dd342c5e0ab20026ba))
+* **deps:** bump jackson from 2.22.3 to 2.22.4 ([ac9519c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac9519cf006c9fac9b89a4687b2ebbc45fd9224f))
+* **deps:** bump linuxserver/baseimage-ubuntu in /docker ([dc65e8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/dc65e8b1fab7d37ec12ddbf2bd2b800ec1f638a0))
+* **deps:** bump org.springdoc:springdoc-openapi-starter-webmvc-ui ([8c6eae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c6eae71bc947f4ef34ba607bd2760c9a3bc34d7))
+* **deps:** bump org.springframework.boot from 4.1.1 to 4.1.2 ([4e5f2e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e5f2e86b02b293d121f5d9df328910b6dfe6b1e))
+* **deps:** bump springBoot from 4.1.1 to 4.1.2 ([7f2e9ae](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f2e9ae33d0bd437da49b304d453c9bf91a2f25f))
+* **deps:** bump vue-i18n in /serverpackcreator-web-frontend ([652e3ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/652e3efaf0bf59ebd1661394930f2c7941b067ec))
+* **homepage:** migrate the build to @quasar/app-vite and TypeScript ([8521241](https://git.griefed.de/Griefed/ServerPackCreator/commit/8521241b1ea6f7eeca3d46727369364de7780efc))
+* **docs:** serve one version of the documentation, the one the image is tagged for ([0fe3d57](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fe3d57318a49ce214c2583d634c178a21e64988))
+* **docs:** stop publishing the help image, now that the homepage serves the help ([3d6b8dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d6b8dc2c7e4a7c8c5180aed3a69450ab4610cdb))
+* **Readme:** Explicitly use 1.6.1 ([363b203](https://git.griefed.de/Griefed/ServerPackCreator/commit/363b20354f7ab924fb856bde1542d288469980c7))
+* **test:** make the step-duplication check a gate, now that it is at zero ([8442287](https://git.griefed.de/Griefed/ServerPackCreator/commit/84422876d90204acc7f9ec9b2da0af4305c8299b))
+
+### 🧪 Tests
+
+* give four guards teeth, from three audit passes over 9.2.1..develop ([da99bab](https://git.griefed.de/Griefed/ServerPackCreator/commit/da99bab5c8d2e09028c295892362c51353885df4))
+* **ci:** pin that a step's env key and the name its script reads must agree, red ([f5c9e81](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5c9e819d91155efa8f6490422dbeb193dd2b09c))
+
+### 🚀 Features
+
+* **dev:** a run configuration for the opt-in app profile ([6438e17](https://git.griefed.de/Griefed/ServerPackCreator/commit/6438e17fe54c8f072ce32d244f939a44bb5d2974))
+* **homepage:** count downloads across GitHub, Gitea and Forgejo without github-release-stats ([109b06b](https://git.griefed.de/Griefed/ServerPackCreator/commit/109b06bdb116d8edbcd4d2379b1bb0c0c7bc133d)), closes [gitlab-org/gitlab#327317](https://git.griefed.de/gitlab-org/gitlab/issues/327317)
+* **homepage:** list the four plugins that actually ship, and rework the header ([bb9d42b](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb9d42b1ca9972691942521a5f17b9909407edb7))
+* **homepage:** serve the addons overview at /addons, as a page rather than a project ([0fb39f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fb39f24cb9ccaa92d19d1a7950e064c216d61a3))
+
+### 🛠 Fixes
+
+* **addons:** take the build CLI off its deprecated package and the last 5 criticals with it ([f311343](https://git.griefed.de/Griefed/ServerPackCreator/commit/f31134314dce8e25bf297e6ed023debb97e338a6)), closes [#122](https://git.griefed.de/Griefed/ServerPackCreator/issues/122)
+* **addons:** the imported tree shipped 12 critical advisories, and axios it never used ([11d9043](https://git.griefed.de/Griefed/ServerPackCreator/commit/11d90434ec12352d27319308652a4af6bdafe570)), closes [#108](https://git.griefed.de/Griefed/ServerPackCreator/issues/108) [#63](https://git.griefed.de/Griefed/ServerPackCreator/issues/63) [#63](https://git.griefed.de/Griefed/ServerPackCreator/issues/63)
+* **api:** a Java probe that printed to stdout, and two streams closed only on success ([d5d9796](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5d9796245e7e268c92d4115dfceff58bec13e27))
+* **api:** the fallback-list update emptied a list other threads were reading ([d2108de](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2108dedc8851b95436731582ce26594e47374a3))
+* **build:** the licence report could hang the build, and swallowed the only error that says so ([9f94959](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f9495975689a95cb915854f204e0b39facd3876))
+* **ci:** the duplication allowlist had been keyed to steps that no longer exist ([9990d95](https://git.griefed.de/Griefed/ServerPackCreator/commit/9990d95fc8297cbd8e3045baf1f961d1451a4ea5))
+* **ci:** the env-reference gate could not install pyyaml, and failed the whole build ([5860bca](https://git.griefed.de/Griefed/ServerPackCreator/commit/5860bcaecc105a6ef1b5133743608ba15bf4d3bf))
+* **ci:** the release announcement never fired, and now announces the GitHub release ([5d1b962](https://git.griefed.de/Griefed/ServerPackCreator/commit/5d1b962701d48becb2915395c3f4ecb7713b8841))
+* **ci:** the sponsors probe asked a smaller question than the action, and passed where it fails ([ab95db7](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab95db72ef8db5d7884de8932a4546181fe13673))
+* **docker:** [#726](https://git.griefed.de/Griefed/ServerPackCreator/issues/726) pinned a mongodb digest that no longer exists ([d65c331](https://git.griefed.de/Griefed/ServerPackCreator/commit/d65c3313ed760d3d7c25cc0c3bf71bd486950c1d))
+* **docker:** the dev stack's database browser was a deprecated image, two years unbuilt ([92d0049](https://git.griefed.de/Griefed/ServerPackCreator/commit/92d0049c759c76c58fdd35644cfee7590b7be4ea))
+* **grinder:** the hostname guard read an empty console as a resolved name ([97fca09](https://git.griefed.de/Griefed/ServerPackCreator/commit/97fca093a015d73296e1cfe502a56199162a2156))
+* **homepage:** pin and repair the SPA before migrating its build ([3f0f223](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f0f2232b448c3f49e8d00729c2bf6ad36e775ca))
+* **homepage:** the Features Excerpt headings keep their white on hover ([db025e5](https://git.griefed.de/Griefed/ServerPackCreator/commit/db025e5313b1abf59e974fa5a7585208069af141)), closes [#54a896](https://git.griefed.de/Griefed/ServerPackCreator/issues/54a896) [#ec982f](https://git.griefed.de/Griefed/ServerPackCreator/issues/ec982f) [#f4655f](https://git.griefed.de/Griefed/ServerPackCreator/issues/f4655f) [#9c27b0](https://git.griefed.de/Griefed/ServerPackCreator/issues/9c27b0) [#3b97d1](https://git.griefed.de/Griefed/ServerPackCreator/issues/3b97d1) [#54a896](https://git.griefed.de/Griefed/ServerPackCreator/issues/54a896) [#f7f7f7](https://git.griefed.de/Griefed/ServerPackCreator/issues/f7f7f7)
+* **web:** stream webservice downloads, and repair what that uncovered ([8e224d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/8e224d62e3354feb9bf3d5da91f0c0e5fb3961d9))
+
 ## [9.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.3.0...9.3.1) (2026-10-18)
 
 ### :scissors: Refactor
