@@ -2,7 +2,7 @@
 # version floor is real and is a hard exit, not a warning: @quasar/app-vite's node-version-check
 # compares against 22.22.0 and calls process.exit(1), so a base image that moves backwards breaks
 # this build with an error naming Node rather than Quasar.
-FROM node:22-bookworm-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS builder
+FROM node:22-bookworm-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS builder
 
 WORKDIR /tmp/serverpackcreator.de
 
