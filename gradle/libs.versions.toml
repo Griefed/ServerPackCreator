@@ -79,7 +79,7 @@ tipoftheday = "0.6.0"
 # tests, no Docker. The `spring4x` artifact is the Spring Boot 4 line; `spring3x` against Boot 4 is what
 # flapdoodle issue #77 was, and it fails on the changed Mongo autoconfiguration.
 flapdoodleEmbedMongo = "4.33.0"
-springBoot = "4.1.1"
+springBoot = "4.1.2"
 # https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
 # spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
 springdoc = "3.1.1"
