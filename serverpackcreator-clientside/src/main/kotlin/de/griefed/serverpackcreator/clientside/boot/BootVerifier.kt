@@ -60,47 +60,52 @@ import de.griefed.serverpackcreator.clientside.version.VersionConstraint
  * generation + the ServerStarterJar (which self-installs the loader server on first run), so no
  * loader-installer machinery is reinvented here.
  *
- * @param apiWrapper            Generation + config + version-meta + properties.
- * @param platform             The hosting platform, for recursive dependency resolution.
- * @param httpDownloader       Downloads freely-distributable files.
- * @param loaderVersionPolicy  Picks the loader-version to install. A policy may prefer an older build it
- *                             already has installed (the grinder does, to reuse its install cache); a crash on
- *                             such a build is re-checked against the policy's newest before it counts.
- * @param workDirectory        Scratch root for the synthetic modpack and generated server pack.
- * @param serverRunner         Executes the prepared pack; defaults to the host-process runner, swapped
- *                             for a container-backed one by the grinder.
- * @param packPostProcessor    Optional hook invoked on the staged pack **after** preparation and
- *                             **before** the boot — e.g. the grinder overlays the cached loader install
- *                             and sets the offline-boot levers. A thrown hook is reported INCONCLUSIVE.
- * @param minecraftAcceptable  Extra gate on the Minecraft version to boot, AND-ed into selection.
- *                             Defaults to accept-all (the host process can run whatever Java it has);
- *                             the grinder passes its image's supported-Java check so a version whose
- *                             JDK the runtime image lacks is never selected (and thus never mis-scored).
- * @param bootTimeout          Budget for install + boot before declaring the run inconclusive.
- * @param otherVersionRecheckLimit How many *other* versions of the mod may be booted to disprove a crash
- *                             that contradicts a declared server support. Each one is a full boot, so this
- *                             is a hard budget; `0` switches the second re-check off entirely.
- * @param consoleRules         Supplies the operator's console rules, asked **per attempt** so a rule file
- *                             edited during a run takes effect on the next boot rather than the next
- *                             restart. Defaults to none, i.e. the built-in ladder alone.
- * @param bootArtifactSink     Optional hook handed every attempt's staged pack and its classified outcome,
- *                             **per attempt** — staging wipes the attempt directory, so this is the only
- *                             point at which a re-check's evidence still exists. A thrown sink is logged
- *                             and ignored: keeping evidence must never fail a boot that already ran. Kept
- *                             **last** so a caller can pass it as a trailing lambda.
  * @author Griefed
  */
 class BootVerifier(
+    /** Generation + config + version-meta + properties. */
     private val apiWrapper: ApiWrapper,
+    /** The hosting platform, for recursive dependency resolution. */
     private val platform: ModPlatform,
+    /** Downloads freely-distributable files. */
     private val httpDownloader: JarDownloader,
+    /**
+     * Picks the loader-version to install. A policy may prefer an older build it already has installed
+     * (the grinder does, to reuse its install cache); a crash on such a build is re-checked against the
+     * policy's newest before it counts.
+     */
     private val loaderVersionPolicy: LoaderVersionPolicy,
+    /** Scratch root for the synthetic modpack and generated server pack. */
     private val workDirectory: File,
+    /**
+     * Executes the prepared pack; defaults to the host-process runner, swapped for a container-backed one
+     * by the grinder.
+     */
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
+    /**
+     * Optional hook invoked on the staged pack **after** preparation and **before** the boot — e.g. the
+     * grinder overlays the cached loader install and sets the offline-boot levers. A thrown hook is
+     * reported INCONCLUSIVE.
+     */
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
+    /**
+     * Extra gate on the Minecraft version to boot, AND-ed into selection. Defaults to accept-all (the host
+     * process can run whatever Java it has); the grinder passes its image's supported-Java check so a
+     * version whose JDK the runtime image lacks is never selected, and thus never mis-scored.
+     */
     private val minecraftAcceptable: (String) -> Boolean = { true },
+    /** Budget for install + boot before declaring the run inconclusive. */
     private val bootTimeout: Duration = Duration.ofMinutes(12),
+    /**
+     * How many *other* versions of the mod may be booted to disprove a crash that contradicts a declared
+     * server support. Each one is a full boot, so this is a hard budget; `0` switches the second re-check
+     * off entirely.
+     */
     private val otherVersionRecheckLimit: Int = 2,
+    /**
+     * Supplies the operator's console rules, asked **per attempt** so a rule file edited during a run takes
+     * effect on the next boot rather than the next restart. Defaults to none, i.e. the built-in ladder alone.
+     */
     private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
     private val learnedModIds: LearnedModIds = LearnedModIds(),
     /**
@@ -1778,9 +1783,9 @@ class BootVerifier(
          * a refusal needs *every* mapping to have failed, and even then only an alias may raise one — the
          * reason quoted is the first alias's, since that is the project a reader will go and look up.
          *
-         * @param mappingsFor Everything worth trying for a mod id, best first, each carrying how much it can
-         *                    be trusted.
-         * @param resolveRef  The project behind a ref, or `null` when the platform does not carry it.
+         * [mappingsFor] offers everything worth trying for a mod id, best first, each carrying how far it
+         * can be trusted; [resolveRef] yields the project behind a ref, or `null` when the platform does
+         * not carry it.
          */
         internal fun planManifestDependency(
             requirement: ModDependency,
@@ -2303,9 +2308,8 @@ internal enum class UnmetReason {
      * into a string. Neither can reach that value today, so both would print the
      * literal `null` only after some later edit, with nothing to warn them. Whether a reason is worth
      * *appending to a refusal* is a rendering decision, and it now lives in the renderer
-     * (`refuseForMissingDependencies`) rather than in a nullable return.
-     *
-     * @param platformName Where to look the project up, which is only worth saying for an opt-out.
+     * (`refuseForMissingDependencies`) rather than in a nullable return. [platformName] is where to look
+     * the project up, which is only worth saying for an opt-out.
      */
     fun explain(platformName: String): String = when (this) {
         UNRESOLVED -> "unresolved on $platformName"

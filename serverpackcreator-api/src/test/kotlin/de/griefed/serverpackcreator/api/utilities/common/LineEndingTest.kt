@@ -88,4 +88,15 @@ internal class LineEndingTest {
         Assertions.assertEquals("JAVA=java", "JAVA=java".withLineEndings(LineEnding.LF))
         Assertions.assertEquals("JAVA=java", "JAVA=java".withLineEndings(LineEnding.CRLF))
     }
+
+    /**
+     * An empty template is a reachable state — the start-script templates are operator-editable and can be
+     * emptied — and every generated run-file goes through this function, so it must hand back the empty
+     * string rather than a stray separator.
+     */
+    @Test
+    fun emptyTextIsUnchanged() {
+        Assertions.assertEquals("", "".withLineEndings(LineEnding.LF))
+        Assertions.assertEquals("", "".withLineEndings(LineEnding.CRLF))
+    }
 }

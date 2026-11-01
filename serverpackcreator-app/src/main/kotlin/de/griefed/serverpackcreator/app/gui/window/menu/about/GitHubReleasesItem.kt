@@ -38,6 +38,8 @@ class GitHubReleasesItem(private val webUtilities: WebUtilities) :
     }
 
     /**
+     * Opens the releases page in the user's browser.
+     *
      * @author Griefed
      */
     private fun openReleases() {

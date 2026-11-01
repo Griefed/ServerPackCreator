@@ -46,7 +46,8 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : Convenient
      * Clear and load the provided hashmap into the table. They `KEY` is placed into column 1
      * (Placeholder) , the `VALUE` is placed into column 2 (Value).
      *
-     * @param data The map containing the data to load into the table.
+     * [data] — The map containing the data to load into the table.
+     *
      * @author Griefed
      */
     override fun loadData(data: HashMap<String, String>, clearDataBeforeLoad: Boolean) {

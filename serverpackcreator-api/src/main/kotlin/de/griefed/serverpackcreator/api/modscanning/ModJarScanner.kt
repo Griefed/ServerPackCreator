@@ -39,7 +39,7 @@ interface ModJarScanner {
     /**
      * Read every jar in [jarFiles] and report what each declared.
      *
-     * @return One entry per input jar, in input order — never fewer, whatever a jar contained.
+     * Returns one entry per input jar, in input order — never fewer, whatever a jar contained.
      */
     fun scan(jarFiles: Collection<File>): List<ScannedMod>
 }

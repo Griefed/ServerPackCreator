@@ -26,7 +26,6 @@
  * Rob
  *
  * #####################################################################################################################
- *
  */
 package de.griefed.serverpackcreator.app.gui.components
 
@@ -49,22 +48,25 @@ import kotlin.math.roundToInt
  *
  * Create a CompoundIcon specifying all the properties.
  *
- * @param axis       the axis used to lay out the icons for painting Must be one of the Axis
- * enums: X_AXIS, Y_AXIS, Z_Axis.
- * @param gap        the gap between the icons
- * @param alignmentX the X alignment of the icons. Common values are LEFT, CENTER, RIGHT. Can be
- * any value between 0.0 and 1.0
- * @param alignmentY the Y alignment of the icons. Common values are TOP, CENTER, BOTTOM. Can be
- * any value between 0.0 and 1.0
- * @param icons      the Icons to be painted as part of the CompoundIcon
  * @author Rob Camick
  */
 @Suppress("unused")
 class CompoundIcon(
+    /** the Icons to be painted as part of the CompoundIcon */
     private val icons: Array<Icon>,
+    /** the gap between the icons */
     private val gap: Int = 12,
+    /**
+     * the axis used to lay out the icons for painting Must be one of the Axis enums: X_AXIS, Y_AXIS, Z_Axis.
+     */
     private val axis: Axis = Axis.X_AXIS,
+    /**
+     * the X alignment of the icons. Common values are LEFT, CENTER, RIGHT. Can be any value between 0.0 and 1.0
+     */
     private var alignmentX: Float = 0.5f,
+    /**
+     * the Y alignment of the icons. Common values are TOP, CENTER, BOTTOM. Can be any value between 0.0 and 1.0
+     */
     private var alignmentY: Float = 0.5f
 ) : Icon {
 
@@ -76,17 +78,16 @@ class CompoundIcon(
     /**
      * Paint the icons of this compound icon at the specified location
      *
-     * @param c The component on which the icon is painted
-     * @param g The graphics context
-     * @param xCoord The X coordinate of the icon's top-left corner
-     * @param yCoord The Y coordinate of the icon's top-left corner
-     *
      * @author Rob Camick
      */
     override fun paintIcon(
+        /** The component on which the icon is painted */
         c: Component,
+        /** The graphics context */
         g: Graphics,
+        /** The X coordinate of the icon's top-left corner */
         xCoord: Int,
+        /** The Y coordinate of the icon's top-left corner */
         yCoord: Int
     ) {
         var x = xCoord
@@ -126,8 +127,6 @@ class CompoundIcon(
     /**
      * Gets the width of this icon.
      *
-     * @return The width of the icon in pixels.
-     *
      * @author Rob Camick
      */
     override fun getIconWidth(): Int {
@@ -151,8 +150,6 @@ class CompoundIcon(
 
     /**
      * Gets the height of this icon.
-     *
-     * @return The height of the icon in pixels.
      *
      * @author Rob Camick
      */
@@ -191,7 +188,10 @@ class CompoundIcon(
     }
 
     /**
+     * The axis along which the icons of a compound icon are laid out.
+     *
      * @author Rob Camick
+     * @author Griefed
      */
     enum class Axis {
         X_AXIS, Y_AXIS, Z_AXIS

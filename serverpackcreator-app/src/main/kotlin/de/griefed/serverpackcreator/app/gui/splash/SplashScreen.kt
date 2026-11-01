@@ -53,6 +53,8 @@ class SplashScreen(version: String) {
     }
 
     /**
+     * Disposes the splash window.
+     *
      * @author Griefed
      */
     fun close() {
@@ -60,6 +62,8 @@ class SplashScreen(version: String) {
     }
 
     /**
+     * Advances the progress bar and draws the next reticulating-splines line.
+     *
      * @author Griefed
      */
     fun update(progress: Int) {

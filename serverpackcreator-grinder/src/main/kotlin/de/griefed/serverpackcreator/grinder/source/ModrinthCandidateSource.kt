@@ -41,14 +41,14 @@ import java.nio.charset.StandardCharsets
  * counts ~71 000 projects, so the whole catalog is reachable today; should it ever pass 100 000, the tail
  * becomes unreachable and looks exactly like the end of the catalog — the crawl would silently wrap early.
  *
- * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
- * @param objectMapper Jackson mapper for the JSON responses.
- * @param pageSize     How many hits to request per call (Modrinth caps a page at 100).
  * @author Griefed
  */
 class ModrinthCandidateSource(
+    /** HTTP boundary, swapped for canned JSON in tests. */
     private val httpFetcher: HttpFetcher = JdkHttpFetcher(),
+    /** Jackson mapper for the JSON responses. */
     private val objectMapper: ObjectMapper = ObjectMapper(),
+    /** How many hits to request per call (Modrinth caps a page at 100). */
     private val pageSize: Int = 100
 ) : CandidateSource {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

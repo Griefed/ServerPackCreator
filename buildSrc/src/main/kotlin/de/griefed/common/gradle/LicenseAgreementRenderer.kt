@@ -26,6 +26,7 @@ import com.github.jk1.license.util.Files
 import org.gradle.api.Project
 import java.io.File
 import java.net.URI
+import java.net.URLConnection
 
 /**
  * Custom made license renderer for https://github.com/jk1/Gradle-License-Report to generate a decent license
@@ -141,8 +142,12 @@ class LicenseAgreementRenderer(private val fileName: String = "LICENSE-AGREEMENT
                 text = append(text,"URL: ${license.url}\n\n")
                 if (!license.url.isNullOrBlank() && license.url.endsWith(".txt",ignoreCase = true) && Files.maybeLicenseUrl(license.url)) {
                     try {
-                        text = append(text, URI(license.url).toURL().readText() + "\n")
-                    } catch (_: Exception) {}
+                        text = append(text, readBounded(URI(license.url).toURL().openConnection()) + "\n")
+                    } catch (_: Exception) {
+                        // A licence text that cannot be fetched must not fail the build: the entry still
+                        // carries the licence name and its URL, which is what the agreement needs. Bounded
+                        // above, so this is a refusal rather than a hang - the catch cannot help with one.
+                    }
                 }
             }
         }
@@ -151,5 +156,29 @@ class LicenseAgreementRenderer(private val fileName: String = "LICENSE-AGREEMENT
 
     private fun append(toAppendTo: String, text: String): String {
         return "$toAppendTo\n$text"
+    }
+
+    /**
+     * [connection]'s body, read with both timeouts set, because the JDK defaults to waiting for ever.
+     *
+     * This is `buildSrc`, a separate build that cannot reach `-api`'s `URL.timedConnection` - which is the
+     * same reason that function exists. Without the bounds a licence host that accepts the connection and
+     * then says nothing stalls `generateLicenseReport`, and with it the whole build, silently.
+     *
+     * Takes the connection rather than the URL so the timeouts can be asserted without a server.
+     */
+    internal fun readBounded(
+        connection: URLConnection,
+        connectMillis: Int = TIMEOUT_MILLIS,
+        readMillis: Int = TIMEOUT_MILLIS
+    ): String {
+        connection.connectTimeout = connectMillis
+        connection.readTimeout = readMillis
+        return connection.getInputStream().use { it.reader().readText() }
+    }
+
+    internal companion object {
+        /** Long enough for a slow licence host, short enough that a dead one cannot hold a build. */
+        internal const val TIMEOUT_MILLIS = 5_000
     }
 }

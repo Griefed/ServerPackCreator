@@ -78,6 +78,8 @@ class MainFrame(
     }
 
     /**
+     * Makes the window visible.
+     *
      * @author Griefed
      */
     fun show() {
@@ -85,6 +87,8 @@ class MainFrame(
     }
 
     /**
+     * Shows the migration messages collected during startup.
+     *
      * @author Griefed
      */
     fun displayMigrationMessages() {
@@ -92,6 +96,8 @@ class MainFrame(
     }
 
     /**
+     * Tells the user that the fallback clientside-mod list was updated.
+     *
      * @author Griefed
      */
     fun showFallbacksUpdatedMessage() {
@@ -99,6 +105,8 @@ class MainFrame(
     }
 
     /**
+     * Shows the tip-of-the-day dialog.
+     *
      * @author Griefed
      */
     fun showTip() {
@@ -114,6 +122,8 @@ class MainFrame(
     }
 
     /**
+     * Brings the window to the front, de-iconifying it first so a minimised window actually surfaces.
+     *
      * @author Griefed
      */
     fun toFront() {
@@ -128,6 +138,8 @@ class MainFrame(
     }
 
     /**
+     * Starts the step-by-step guide through a server pack configuration.
+     *
      * @author Griefed
      */
     fun stepByStepGuide() {

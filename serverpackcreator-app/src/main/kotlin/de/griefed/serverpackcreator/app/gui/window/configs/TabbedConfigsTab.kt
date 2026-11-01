@@ -244,7 +244,7 @@ class TabbedConfigsTab(
      * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
      * ServerPackCreator.
      *
-     * @param configFile The configuration file to parse and load into the GUI.
+     * [configFile] — The configuration file to parse and load into the GUI.
      *
      * @author Griefed
      */

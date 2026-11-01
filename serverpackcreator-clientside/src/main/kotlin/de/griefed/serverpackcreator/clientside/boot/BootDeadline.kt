@@ -45,10 +45,9 @@ object BootDeadline {
      *
      * Reading the clock here instead misreports the second case as the third whenever the setup around the
      * wait outlasts the budget, which costs the console all of its evidence: `BootLogClassifier` branches on
-     * a timeout before it looks at a single line, and returns INCONCLUSIVE.
-     *
-     * @param ready Whether the console produced the ready line.
-     * @param stillRunning Whether the process or container was still running when the wait ended.
+     * a timeout before it looks at a single line, and returns INCONCLUSIVE. [ready] is whether the console
+     * produced the ready line, [stillRunning] whether the process or container was still running when the
+     * wait ended.
      */
     fun timedOut(ready: Boolean, stillRunning: Boolean): Boolean = !ready && stillRunning
 }

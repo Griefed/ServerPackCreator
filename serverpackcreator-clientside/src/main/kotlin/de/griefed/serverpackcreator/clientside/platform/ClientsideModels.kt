@@ -121,22 +121,23 @@ enum class ReleaseChannel {
  * (CurseForge `allowModDistribution=false`); such [locked] files can only be fetched through the
  * project's website download-flow (see the browser-downloader in the boot phase).
  *
- * @param fileName             The exact file-name as published, case preserved (the clientside-list
- *                             matches file-names with `startsWith`, so case matters).
- * @param loaders              Canonical SPC loader-names this file targets (Forge, NeoForge, Fabric,
- *                             Quilt, LegacyFabric).
- * @param minecraftVersions    Minecraft versions this file targets.
- * @param downloadUrl          Direct download-URL, or `null` when distribution is locked.
- * @param pageUrl              The project/file webpage, used by the browser-downloader for locked files.
- * @param requiredDependencies Platform-native references (ids/slugs) of mods required by this file.
  * @author Griefed
  */
 data class ModFile(
+    /**
+     * The exact file-name as published, case preserved (the clientside-list matches file-names with
+     * `startsWith`, so case matters).
+     */
     val fileName: String,
+    /** Canonical SPC loader-names this file targets (Forge, NeoForge, Fabric, Quilt, LegacyFabric). */
     val loaders: Set<String>,
+    /** Minecraft versions this file targets. */
     val minecraftVersions: Set<String>,
+    /** Direct download-URL, or `null` when distribution is locked. */
     val downloadUrl: String?,
+    /** The project/file webpage, used by the browser-downloader for locked files. */
     val pageUrl: String?,
+    /** Platform-native references (ids/slugs) of mods required by this file. */
     val requiredDependencies: List<String>,
     /**
      * The version the platform published this file under (Modrinth's `version_number`, CurseForge's
@@ -172,20 +173,20 @@ data class ModFile(
  * The resolved view of a hosting-platform project: its declared sideness (Modrinth only) and the
  * complete list of its [files] across every loader and Minecraft version.
  *
- * @param platform    Human-readable platform name ("Modrinth" or "CurseForge").
- * @param slug        The project-slug taken from the issue-link.
- * @param projectUrl  The original project-link from the issue.
- * @param clientSide  Platform-declared client support; [DeclaredSupport.UNKNOWN] for CurseForge.
- * @param serverSide  Platform-declared server support; [DeclaredSupport.UNKNOWN] for CurseForge.
- * @param files       Every published file of the project.
  * @author Griefed
  */
 data class ProjectFiles(
+    /** Human-readable platform name ("Modrinth" or "CurseForge"). */
     val platform: String,
+    /** The project-slug taken from the issue-link. */
     val slug: String,
+    /** The original project-link from the issue. */
     val projectUrl: String,
+    /** Platform-declared client support; [DeclaredSupport.UNKNOWN] for CurseForge. */
     val clientSide: DeclaredSupport,
+    /** Platform-declared server support; [DeclaredSupport.UNKNOWN] for CurseForge. */
     val serverSide: DeclaredSupport,
+    /** Every published file of the project. */
     val files: List<ModFile>
 ) {
     /** All distinct canonical loader-names this project ships for. */

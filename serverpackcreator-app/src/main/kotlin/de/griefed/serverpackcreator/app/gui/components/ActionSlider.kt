@@ -23,6 +23,8 @@ import javax.swing.JSlider
 import javax.swing.event.ChangeListener
 
 /**
+ * A slider that reports every value change to the listener it was built with.
+ *
  * @author Griefed
  */
 class ActionSlider(min: Int, max: Int, value: Int, listener: ChangeListener) : JSlider(min, max, value) {

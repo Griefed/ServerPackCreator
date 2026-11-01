@@ -23,6 +23,8 @@ import tokyo.northside.tipoftheday.tips.DefaultTip
 import javax.swing.ImageIcon
 
 /**
+ * A tip-of-the-day entry that carries its own illustration.
+ *
  * @author Griefed
  */
 class CustomTip(name: String, tip: Any, private val imageResource: String): DefaultTip(name,tip) {

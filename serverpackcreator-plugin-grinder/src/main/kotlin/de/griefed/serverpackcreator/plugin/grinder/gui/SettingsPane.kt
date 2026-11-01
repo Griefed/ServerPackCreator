@@ -35,17 +35,16 @@ import javax.swing.SpinnerNumberModel
  * Where the grinder to read is configured: its address, how often the Dashboard polls it, and a button
  * to find out whether it answers before leaving the tab.
  *
- * @param initialUrl The stored address, shown exactly as it was typed.
- * @param initialInterval The stored poll interval in seconds.
- * @param onSave Called with the address and interval when the user saves; the caller persists and reloads.
- * @param onTest Called when the user asks to test the typed address, and answers with a line to display.
- *
  * @author Griefed
  */
 class SettingsPane(
+    /** The stored address, shown exactly as it was typed. */
     initialUrl: String,
+    /** The stored poll interval in seconds. */
     initialInterval: Int,
+    /** Called with the address and interval when the user saves; the caller persists and reloads. */
     private val onSave: (url: String, intervalSeconds: Int) -> Unit,
+    /** Called when the user asks to test the typed address, and answers with a line to display. */
     private val onTest: (url: String, report: (Boolean, String) -> Unit) -> Unit
 ) : JPanel(BorderLayout()) {
 

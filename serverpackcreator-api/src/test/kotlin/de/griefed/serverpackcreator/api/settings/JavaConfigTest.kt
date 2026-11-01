@@ -44,6 +44,36 @@ internal class JavaConfigTest {
     }
 
     /**
+     * Pins that validating a Java path prints nothing to stdout.
+     *
+     * `testJava` drains `java -version` so the probe cannot block on a full pipe, and it used to
+     * `println` every third line of that output — reaching the console of every GUI and CLI user whose
+     * Java path was being checked, and printing the literal `null` when the third read ran past the end.
+     * The four `println`s in `ApiProperties` are the deliberate exception, because that class *is*
+     * log4j's `ConfigurationFactory` and has no logger yet; this one was not.
+     *
+     * Asserted on stdout rather than by grepping the source, so it pins the behaviour rather than the
+     * spelling.
+     */
+    @Test
+    fun validatingAJavaPathPrintsNothingToStandardOut() {
+        val original = System.out
+        val captured = java.io.ByteArrayOutputStream()
+        try {
+            System.setOut(java.io.PrintStream(captured, true))
+            JavaConfig(PropertyStore()).javaPaths =
+                hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to runningJava)
+        } finally {
+            System.setOut(original)
+        }
+
+        Assertions.assertEquals(
+            "", captured.toString().trim(),
+            "validating a Java path must not write to stdout; it has a logger"
+        )
+    }
+
+    /**
      * Pins that a java-path can be retrieved per version, wrapped in an Optional, and that
      * unknown versions yield an empty Optional.
      */

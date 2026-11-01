@@ -54,7 +54,6 @@ import javax.swing.JScrollPane
  * you, thank you, thank you so very much! You seriously made my day here.
  *
  * Rob, you rule.
- *
  */
 @Suppress("unused")
 class BackgroundPanel(
@@ -85,7 +84,8 @@ class BackgroundPanel(
     /**
      * Setter the style used to paint the background image.
      *
-     * @param style Sets the style with which the image should be painted.
+     * [style] — Sets the style with which the image should be painted.
+     *
      * @author Rob Camick
      */
     private fun setStyle(style: Int) {
@@ -96,7 +96,8 @@ class BackgroundPanel(
     /**
      * Setter for the horizontal alignment of the image when using ACTUAL style.
      *
-     * @param alignmentX Sets the alignment along the x-axis.
+     * [alignmentX] — Sets the alignment along the x-axis.
+     *
      * @author Rob Camick
      */
     private fun setImageAlignmentX(alignmentX: Float) {
@@ -107,7 +108,8 @@ class BackgroundPanel(
     /**
      * Setter for the horizontal alignment of the image when using ACTUAL style.
      *
-     * @param alignmentY Sets the alignment along the y-axis.
+     * [alignmentY] — Sets the alignment along the y-axis.
+     *
      * @author Rob Camick
      */
     private fun setImageAlignmentY(alignmentY: Float) {
@@ -118,12 +120,12 @@ class BackgroundPanel(
     /**
      * Override method so we can make the component transparent.
      *
-     * @param component   JComponent to add to the panel.
-     * @param constraints Constraints with which the panel should be added.
      * @author Rob Camick
      */
     fun addComponent(
+        /** JComponent to add to the panel. */
         component: JComponent,
+        /** Constraints with which the panel should be added. */
         constraints: Any? = null
     ) {
         if (isTransparentAdd) {
@@ -155,7 +157,8 @@ class BackgroundPanel(
      * Controls whether components added to this panel should automatically be made transparent. That
      * is, setOpaque(false) will be invoked. The default is set to true.
      *
-     * @param isTransparentAdd Whether to automatically make components transparent.
+     * [isTransparentAdd] — Whether to automatically make components transparent.
+     *
      * @author Rob Camick
      */
     fun setTransparentAdd(isTransparentAdd: Boolean) {
@@ -165,7 +168,8 @@ class BackgroundPanel(
     /**
      * Add custom painting.
      *
-     * @param g Received from parent.
+     * [g] — Received from parent.
+     *
      * @author Rob Camick
      */
     override fun paintComponent(g: Graphics) {
@@ -180,7 +184,8 @@ class BackgroundPanel(
     /**
      * Override to provide a preferred size equal to the image size.
      *
-     * @return Returns the dimension of the passed image.
+     * Returns the dimension of the passed image.
+     *
      * @author Rob Camick
      */
     override fun getPreferredSize(): Dimension {
@@ -190,7 +195,8 @@ class BackgroundPanel(
     /**
      * Custom painting code for drawing TILED images as the background.
      *
-     * @param g Received from parent.
+     * [g] — Received from parent.
+     *
      * @author Rob Camick
      */
     private fun drawTiled(g: Graphics) {
@@ -216,7 +222,8 @@ class BackgroundPanel(
      * Custom painting code for drawing the ACTUAL image as the background. The image is positioned in
      * the panel based on the horizontal and vertical alignments specified.
      *
-     * @param g Received from parent.
+     * [g] — Received from parent.
+     *
      * @author Rob Camick
      */
     private fun drawActual(g: Graphics) {
@@ -232,7 +239,8 @@ class BackgroundPanel(
     /**
      * Custom painting code for drawing a SCALED image as the background.
      *
-     * @param g Received from parent.
+     * [g] — Received from parent.
+     *
      * @author Rob Camick
      */
     private fun drawScaled(g: Graphics) {

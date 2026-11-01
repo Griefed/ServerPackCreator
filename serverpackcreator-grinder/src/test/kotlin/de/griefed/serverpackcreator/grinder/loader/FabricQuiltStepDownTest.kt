@@ -157,7 +157,7 @@ internal class FabricQuiltStepDownTest {
     fun everyLoaderLineIsWiredIntoTheStepDown() {
         val source = File("src/main/kotlin/de/griefed/serverpackcreator/grinder/ContainerCandidateVerifier.kt")
         Assertions.assertTrue(source.isFile, "expected to read ${'$'}{source.absolutePath}")
-        val text = source.readText()
+        val text = withoutComments(source.readText())
 
         listOf(
             "\"Fabric\" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.fabric.loaderVersions())",
@@ -178,4 +178,15 @@ internal class FabricQuiltStepDownTest {
             )
         }
     }
+
+    /**
+     * [source] with its comments removed, so this guard reads code rather than prose.
+     *
+     * Without it the assertion is satisfied — or broken — by any comment that merely *names* what it
+     * checks, which makes it blind to the deletion it exists to catch. Same helper and same reasoning as
+     * `HtmlProofingTest.withoutComments`.
+     */
+    private fun withoutComments(source: String): String = source
+        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
+        .replace(Regex("""//.*"""), "")
 }

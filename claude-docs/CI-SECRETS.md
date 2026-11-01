@@ -56,7 +56,8 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `SPCUPLOAD_KEY` | OpenSSH **private** key, **no passphrase** — the action cannot answer a prompt | devbuild |
 | `SPCUPLOAD_TARGET` | remote directory the `continuous` folder is copied into | devbuild |
 | `GIT_USER` / `GIT_MAIL` | committer identity for the automated commits (semantic-release's `RELEASE:` + changelog, and the sponsors/contributors refresh). Not credentials, but passed via `env:` rather than interpolated into a command, like every other value | release-generate, update-readme |
-| `WEBHOOK_URL` | Discord webhook — the Qodana result post and the release announcement (`news`). **Optional in both**: each step exits cleanly when unset | qodana, release-build |
+| `WEBHOOK_URL` | Discord webhook — the Qodana result post, and **only** that. **Optional**: the step exits cleanly when unset | qodana |
+| `NEWS_WEBHOOK_URL` | Discord webhook for the **news/announcements** channel — the release announcement (`news`). A different channel from `WEBHOOK_URL`'s, hence a different secret. **REQUIRED**: unlike the Qodana post, the step fails when it is unset, because a silent skip here is exactly what hid a dead announcement for twelve days. Forgejo rejects the `FORGEJO_`/`GITEA_`/`GITHUB_` prefixes and this name matches none of them | release-build |
 | `VT_API_KEY` | VirusTotal API key — profile → API key | release-build |
 | `INSTALL4J_LICENSE` | install4j license key, for the major version the workflows pin (`version:` on the setup-install4j step, kept in step with `install4j` in `gradle/libs.versions.toml`). **a major-version bump needs a key valid for that version** — ej-technologies issues an upgraded key, free if the release falls in your support period — or both jobs fail at the media step | release-build, devbuild |
 
@@ -90,7 +91,7 @@ rather than the release:
 | `docker` | `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO`, `GH_TOKEN` (ghcr login) |
 | `virustotal` | `VT_API_KEY`, `FJ_TOKEN` (appends the scan links to the release) |
 | `mirror` | `GH_TOKEN`, `FJ_TOKEN` (triggers the push-mirror sync, then reads the release notes back off Forgejo). **No `GITLABCOM_TOKEN`** since 2026-08-23 — GitHub is the only forge that gets a mirrored *release*, though the sync pushes refs to every mirror the repository has |
-| `news` | `WEBHOOK_URL` only, and optionally — a release with no Discord webhook configured announces nothing and stays green. Announces the **Forgejo** release, so it does not wait for `mirror` |
+| `news` | `NEWS_WEBHOOK_URL` (**required** — the job fails without it) and `GH_TOKEN` (reads the GitHub release back to confirm it is live and to get its `html_url`). Announces the **GitHub** release, so it waits for `mirror` — for ordering only; `mirror`'s own result is not checked, see `.claude/rules/ci-workflows.md` |
 
 `FJ_TOKEN` is therefore the one secret four separate jobs depend on — it is the first thing to check
 when a release half-happens.

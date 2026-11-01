@@ -114,9 +114,7 @@ internal class CachedLoaderVersionsTest {
 
     /** A half-installed tuple is not a usable cache entry, so it must not be offered as a preference. */
     @Test
-    fun ignoresTuplesWhoseInstallNeverCompleted()
-
-    {
+    fun ignoresTuplesWhoseInstallNeverCompleted() {
         val cache = LoaderCache(tempDir.toFile(), installer)
         cache.baseDirFor("Forge", "52.1.16", "1.21.1").mkdirs() // no completion marker
         val newest = FakeNewest(mapOf(("Forge" to "1.21.1") to "52.1.20"))

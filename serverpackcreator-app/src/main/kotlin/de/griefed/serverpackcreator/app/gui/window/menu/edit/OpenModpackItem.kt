@@ -39,6 +39,8 @@ class OpenModpackItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     }
 
     /**
+     * Opens the selected configuration's modpack directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openModpack() {

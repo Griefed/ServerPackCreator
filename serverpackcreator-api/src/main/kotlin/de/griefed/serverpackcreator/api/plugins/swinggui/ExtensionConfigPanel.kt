@@ -32,28 +32,39 @@ import javax.swing.JPanel
 /**
  * Template ConfigPanel for use in {@link ConfigPanelExtension} extensions.
  *
- * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
- * LegacyFabric and Quilt versions.
- * @param apiProperties         Instance of [Properties] The current configuration of ServerPackCreator, like the
- * default list of clientside-only mods, the server pack directory etc.
- * @param utilities             Instance of [Utilities] commonly used across ServerPackCreator.
- * @param serverPackConfigTab   Instance of [ServerPackConfigTab] to give you access to the various fields inside it,
- * like the modpack directory, selected Minecraft, modloader and modloader versions, etc.
- * @param pluginConfig          Plugin specific configuration conveniently provided by ServerPackCreator. This is the
- * global configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
- * @param extensionName         The name the titled border of this ConfigPanel will get.
- * @param pluginID              The ID of the plugin providing this extension implementation. The pluginID determines
- * which extension specific configurations are provided to this panel, and how they are stored in a given serverpackcreator.conf.
  * @author Griefed
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 abstract class ExtensionConfigPanel protected constructor(
+    /**
+     * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and Quilt
+     * versions.
+     */
     protected val versionMeta: VersionMeta,
+    /**
+     * Instance of [Properties] The current configuration of ServerPackCreator, like the default list of
+     * clientside-only mods, the server pack directory etc.
+     */
     protected val apiProperties: ApiProperties,
+    /** Instance of [Utilities] commonly used across ServerPackCreator. */
     protected val utilities: Utilities,
+    /**
+     * Instance of [ServerPackConfigTab] to give you access to the various fields inside it, like the modpack
+     * directory, selected Minecraft, modloader and modloader versions, etc.
+     */
     protected val serverPackConfigTab: ServerPackConfigTab,
+    /**
+     * Plugin specific configuration conveniently provided by ServerPackCreator. This is the global
+     * configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
+     */
     protected var pluginConfig: Optional<CommentedConfig>,
+    /** The name the titled border of this ConfigPanel will get. */
     val extensionName: String,
+    /**
+     * The ID of the plugin providing this extension implementation. The pluginID determines which extension
+     * specific configurations are provided to this panel, and how they are stored in a given
+     * serverpackcreator.conf.
+     */
     val pluginID: String
 ) : JPanel() {
     protected val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -65,8 +76,8 @@ abstract class ExtensionConfigPanel protected constructor(
      * Retrieve this extensions' server pack specific configuration. When no configuration with configs
      * for this extension has been loaded yet, the returned list is empty. Fill it with life!
      *
-     * @return Config list to be used in subsequent server pack generation runs, by various other
-     * extensions.
+     * Returns the config list to be used in subsequent server pack generation runs, by various other extensions.
+     *
      * @author Griefed
      */
     abstract fun serverPackExtensionConfig(): ArrayList<CommentedConfig>
@@ -75,11 +86,10 @@ abstract class ExtensionConfigPanel protected constructor(
      * Pass the extension configuration to the configuration panel, so it can then, in turn, load the
      * available configurations and make them editable, if so desired.
      *
-     * @param serverPackExtensionConfig The list of extension configurations to pass to the
-     * configuration panel.
      * @author Griefed
      */
     abstract fun setServerPackExtensionConfig(
+        /** The list of extension configurations to pass to the configuration panel. */
         serverPackExtensionConfig: ArrayList<CommentedConfig>
     )
 

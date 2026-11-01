@@ -42,7 +42,6 @@ class ReleaseAsset(private val assetName: String, private val assetUrl: URL) {
     /**
      * Get the download-[URL] to this asset.
      * @author Griefed
-     * @return Download-[URL] to this asset.
      */
     fun url(): URL {
         return assetUrl

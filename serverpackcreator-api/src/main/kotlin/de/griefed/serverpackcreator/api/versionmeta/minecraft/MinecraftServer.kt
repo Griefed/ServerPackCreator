@@ -36,10 +36,9 @@ import java.util.*
  * Representation of a Minecraft server, containing information about its Minecraft-version,
  * release-type, download-url and the java-version.
  *
- * @param releaseType      The release-type of this server. Either [Type.RELEASE] or [Type.SNAPSHOT].
- * @param serverUrl        The URL to the download of these servers JAR-file.
- * @param utilities        Commonly used utilities across ServerPackCreator.
- * @param apiProperties    ServerPackCreator settings.
+ * [releaseType] — The release-type of this server. Either [Type.RELEASE] or [Type.SNAPSHOT]. [serverUrl] — The URL
+ * to the download of these servers JAR-file. [utilities] — Commonly used utilities across ServerPackCreator.
+ * [apiProperties] — ServerPackCreator settings.
  *
  * @author Griefed
  */

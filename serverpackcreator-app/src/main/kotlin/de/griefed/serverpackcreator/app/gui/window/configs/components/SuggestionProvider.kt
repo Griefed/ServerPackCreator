@@ -121,6 +121,8 @@ class SuggestionProvider(
     }
 
     /**
+     * Re-runs the suggestion lookup on every document change, unless suggestions are currently being applied.
+     *
      * @author Griefed
      */
     private val documentListener = object : DocumentChangeListener {
@@ -163,8 +165,10 @@ class SuggestionProvider(
     }
 
     /**
-     * @author Griefed
+     * Replaces the popup's contents with the given suggestions and displays it beneath the caret.
+     *
      * @author LogicBig (https://www.logicbig.com/)
+     * @author Griefed
      */
     private fun showPopup(suggestions: List<String>) {
         suggestionListModel.clear()
@@ -181,8 +185,11 @@ class SuggestionProvider(
     }
 
     /**
-     * @author Griefed
+     * Where the popup should appear for the component's current caret position, or `null` when that position
+     * cannot be mapped.
+     *
      * @author LogicBig (https://www.logicbig.com/)
+     * @author Griefed
      */
     private fun getPopupLocation(component: JTextComponent): Point? {
         val caretPosition = component.caretPosition
@@ -197,8 +204,10 @@ class SuggestionProvider(
     }
 
     /**
-     * @author Griefed
+     * Replaces the word under the caret with the chosen suggestion.
+     *
      * @author LogicBig (https://www.logicbig.com/)
+     * @author Griefed
      */
     private fun setSelectedText(component: JTextComponent, selectedValue: String) {
         val textAt = component.caretPosition
@@ -221,8 +230,10 @@ class SuggestionProvider(
     }
 
     /**
-     * @author Griefed
+     * The suggestions matching the word currently under the component's caret.
+     *
      * @author LogicBig (https://www.logicbig.com/)
+     * @author Griefed
      */
     private fun getSuggestions(component: JTextComponent): List<String> {
         try {
@@ -252,6 +263,8 @@ class SuggestionProvider(
     }
 
     /**
+     * The suggestions starting with the given text, capped at the number the popup shows.
+     *
      * @author Griefed
      */
     private fun truncatedSuggestions(text: String): List<String> {

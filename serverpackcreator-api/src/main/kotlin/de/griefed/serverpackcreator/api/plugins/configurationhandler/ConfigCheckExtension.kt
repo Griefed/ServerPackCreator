@@ -48,31 +48,35 @@ interface ConfigCheckExtension : ExtensionInformation {
      * Returning `true` marks the whole configuration as failed; add the reason to [configCheck] as well,
      * or the user is told only that something is wrong.
      *
-     * @param versionMeta           Instance of [VersionMeta] so you can work with available
-     * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-     * @param apiProperties Instance of [ApiProperties] The current
-     * configuration of ServerPackCreator, like the default list of
-     * clientside-only mods, the server pack directory etc.
-     * @param utilities             Instance of [Utilities] commonly used across
-     * ServerPackCreator.
-     * @param packConfig    The configuration to check.
-     * @param configCheck Contains all encountered errors during the check of the passed configuration.
-     * @param pluginConfig           Configuration for this plugin, conveniently provided by
-     * ServerPackCreator.
-     * @param packSpecificConfigs   Modpack and server pack specific configurations for this plugin,
-     * conveniently provided by ServerPackCreator.
-     * @return `true` if an error was encountered. `false` if the checks were successful.
+     * Returns `true` if an error was encountered. `false` if the checks were successful.
+     *
      * @throws ExtensionException if any unexpected error is encountered during the execution of this method.
      * @author Griefed
      */
     @Throws(ExtensionException::class)
     fun runCheck(
+        /**
+         * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+         * Quilt versions.
+         */
         versionMeta: VersionMeta,
+        /**
+         * Instance of [ApiProperties] The current configuration of ServerPackCreator, like the default list of
+         * clientside-only mods, the server pack directory etc.
+         */
         apiProperties: ApiProperties,
+        /** Instance of [Utilities] commonly used across ServerPackCreator. */
         utilities: Utilities,
+        /** The configuration to check. */
         packConfig: PackConfig,
+        /** Contains all encountered errors during the check of the passed configuration. */
         configCheck: ConfigCheck = ConfigCheck(),
+        /** Configuration for this plugin, conveniently provided by ServerPackCreator. */
         pluginConfig: Optional<CommentedConfig>,
+        /**
+         * Modpack and server pack specific configurations for this plugin, conveniently provided by
+         * ServerPackCreator.
+         */
         packSpecificConfigs: ArrayList<CommentedConfig>
     ): Boolean
 }

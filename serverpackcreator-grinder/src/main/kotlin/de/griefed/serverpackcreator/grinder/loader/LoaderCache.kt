@@ -53,18 +53,20 @@ fun interface LoaderInstaller {
  * (see [ensureInstalled], which stamps a tuple as used on every hit), because each one costs ~150 MB and a
  * long sweep keeps minting new ones as loaders ship builds.
  *
- * @param cacheRoot       Root directory under which per-tuple base trees live.
- * @param installer       Performs the one-off, network-using install on a cache miss.
- * @param failureCooldown How long a *failed* tuple is left alone before another install is attempted. Without
- *                        this, an upstream artefact that 404s costs a full download-and-boot for every candidate
- *                        that wants it, for the rest of the sweep.
- * @param clock           Supplies "now" for the cooldown (injectable for tests).
  * @author Griefed
  */
 class LoaderCache(
+    /** Root directory under which per-tuple base trees live. */
     private val cacheRoot: File,
+    /** Performs the one-off, network-using install on a cache miss. */
     private val installer: LoaderInstaller,
+    /**
+     * How long a *failed* tuple is left alone before another install is attempted. Without this, an upstream
+     * artefact that 404s costs a full download-and-boot for every candidate that wants it, for the rest of the
+     * sweep.
+     */
     private val failureCooldown: Duration = Duration.ofHours(1),
+    /** Supplies "now" for the cooldown (injectable for tests). */
     private val clock: () -> Instant = Instant::now,
     private val templateProvenance: () -> String? = { null }
 ) {

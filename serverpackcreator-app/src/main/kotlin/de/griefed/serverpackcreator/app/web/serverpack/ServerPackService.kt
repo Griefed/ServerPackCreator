@@ -84,7 +84,8 @@ class ServerPackService @Autowired constructor(
      * Increment the download counter for a given server pack entry in the database identified by the
      * database id.
      *
-     * @param serverPack The server pack for which to update the download counter.
+     * [serverPack] — The server pack for which to update the download counter.
+     *
      * @author Griefed
      */
     @Suppress("unused")
@@ -96,10 +97,10 @@ class ServerPackService @Autowired constructor(
     /**
      * Either upvote or downvote a given server pack.
      *
-     * @param id The database id of the server pack.
-     * @param vote Either "up" or "down".
-     * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or
-     * not found if the server pack could not be found.
+     * [id] — The database id of the server pack. [vote] — Either "up" or "down". Returns returns ok if the vote
+     * went through, bad request if the passed vote was malformed, or not found if the server pack could not be
+     * found.
+     *
      * @author Griefed
      */
     fun voteForServerPack(id: String, vote: String): ResponseEntity<Any> {
@@ -167,7 +168,8 @@ class ServerPackService @Autowired constructor(
     /**
      * Deletes a server pack with the given id.
      *
-     * @param serverPack The serverpack to delete.
+     * [serverPack] — The serverpack to delete.
+     *
      * @author Griefed
      */
     @Suppress("unused")
@@ -188,8 +190,9 @@ class ServerPackService @Autowired constructor(
     /**
      * Get the ZIP-archive of a server pack.
      *
-     * @param serverPack The serverpack to be stored to disk from the database
-     * @return The modpack-file, wrapped in an [Optional]
+     * [serverPack] — The serverpack to be stored to disk from the database. Returns the modpack-file, wrapped in
+     * an [Optional].
+     *
      * @author Griefed
      */
     fun getServerPackArchive(serverPack: ServerPack): Optional<File> {

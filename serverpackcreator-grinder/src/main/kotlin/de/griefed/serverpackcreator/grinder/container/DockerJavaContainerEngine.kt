@@ -46,13 +46,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  * tested lives in [ContainerServerRunner] behind the [ContainerEngine] seam. This class is the thin,
  * imperative docker-java translation only.
  *
- * @param client The docker-java client; defaults to one built from the ambient Docker environment.
- * @param shutdownGrace How long a container gets to exit on its own during [close] before it is killed.
- *                      A parameter so a test can shorten it; production always takes [SHUTDOWN_GRACE].
  * @author Griefed
  */
 class DockerJavaContainerEngine(
+    /** The docker-java client; defaults to one built from the ambient Docker environment. */
     private val client: DockerClient = defaultClient(),
+    /**
+     * How long a container gets to exit on its own during [close] before it is killed. A parameter so a test
+     * can shorten it; production always takes [SHUTDOWN_GRACE].
+     */
     private val shutdownGrace: Duration = SHUTDOWN_GRACE
 ) : ContainerEngine {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

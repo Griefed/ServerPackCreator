@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.app.gui.window.settings.components
 
 /**
+ * What every settings editor must offer: loading from, saving to, and validating against the stored settings.
+ *
  * @author Griefed
  */
 interface SettingsEditor {

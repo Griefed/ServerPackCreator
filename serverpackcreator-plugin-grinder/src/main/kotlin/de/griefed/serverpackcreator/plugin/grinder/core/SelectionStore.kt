@@ -24,12 +24,15 @@ import com.electronwill.nightconfig.core.CommentedConfig
 /**
  * The two lists a user ticks in, kept apart because they carry different risk.
  *
- * @param key The key this pane's selection is stored under in the plugin configuration. It is part of
- *            the on-disk format, so renaming one orphans every user's saved selection.
- *
  * @author Griefed
  */
-enum class SelectionPane(val key: String) {
+enum class SelectionPane(
+    /**
+     * The key this pane's selection is stored under in the plugin configuration. It is part of the
+     * on-disk format, so renaming one orphans every user's saved selection.
+     */
+    val key: String
+) {
 
     /** Verdicts the grinder proved by crashing a server with the mod in place. */
     CONFIRMED("selectedConfirmed"),
@@ -49,8 +52,6 @@ enum class SelectionPane(val key: String) {
  *
  * Every read tolerates a damaged value. The config is a file a user may hand-edit, and this object is
  * constructed on the generation path, where throwing over a typo would abort somebody's server pack.
- *
- * @param config The plugin configuration provided by ServerPackCreator.
  *
  * @author Griefed
  */

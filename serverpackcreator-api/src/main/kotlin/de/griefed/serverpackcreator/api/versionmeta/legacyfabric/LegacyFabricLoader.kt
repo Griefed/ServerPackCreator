@@ -25,11 +25,11 @@ import java.io.File
 /**
  * Create a new instance holding information about LegacyFabric loader versions.
  *
- * @param manifest  The manifest containing game version information.
- * @param utilities Commonly used utilities across ServerPackCreator.
  * @author Griefed
  */
 internal class LegacyFabricLoader(
+    /** The manifest containing game version information. */
     manifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     utilities: Utilities
 ) : LegacyFabricVersioning(manifest, utilities)

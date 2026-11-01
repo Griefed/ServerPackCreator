@@ -165,11 +165,10 @@ class ServerPackProvisioner(
      * Download and provide the improved Fabric Server Launcher, if it is available for the given
      * Minecraft and Fabric version.
      *
-     * @param minecraftVersion The Minecraft version the modpack uses and the Fabric Server Launcher
-     * should be downloaded for.
-     * @param fabricVersion    The modloader version the modpack uses and the Fabric Server Launcher
-     * should be downloaded for.
-     * @param destination      The destination of the server pack.
+     * [minecraftVersion] — The Minecraft version the modpack uses and the Fabric Server Launcher should be
+     * downloaded for. [fabricVersion] — The modloader version the modpack uses and the Fabric Server Launcher
+     * should be downloaded for. [destination] — The destination of the server pack.
+     *
      * @author Griefed
      */
     fun getImprovedFabricLauncher(minecraftVersion: String, fabricVersion: String, destination: String) {
@@ -196,8 +195,9 @@ class ServerPackProvisioner(
      * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
      * resolution of 64x64 pixels.
      *
-     * @param destination      The destination where the icon should be copied to.
-     * @param pathToServerIcon The path to the custom server-icon.
+     * [destination] — The destination where the icon should be copied to. [pathToServerIcon] — The path to the
+     * custom server-icon.
+     *
      * @author Griefed
      */
     fun copyIcon(destination: String, pathToServerIcon: String) {
@@ -239,8 +239,9 @@ class ServerPackProvisioner(
     /**
      * Copies the server.properties into server pack.
      *
-     * @param destination            The destination where the properties should be copied to.
-     * @param pathToServerProperties The path to the custom server.properties.
+     * [destination] — The destination where the properties should be copied to. [pathToServerProperties] — The
+     * path to the custom server.properties.
+     *
      * @author Griefed
      */
     fun copyProperties(destination: String, pathToServerProperties: String) {
@@ -261,18 +262,18 @@ class ServerPackProvisioner(
      * Create start-scripts for the generated server pack using the templates the user has defined for
      * their instance of ServerPackCreator.
      *
-     * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
-     * replaced with its value.
-     * @param destination    The destination where the scripts should be created in.
-     * @param isLocal        Whether the start scripts should be created for a locally usable server
-     * pack. Use `false` if the start scripts should be created for a
-     * server pack about to be zipped.
      * @author Griefed
      */
     @JvmOverloads
     fun createServerRunFiles(
+        /** Key-value pairs to replace in the script. A given key in the script is replaced with its value. */
         scriptSettings: HashMap<String, String>,
+        /** The destination where the scripts should be created in. */
         destination: String,
+        /**
+         * Whether the start scripts should be created for a locally usable server pack. Use `false` if the
+         * start scripts should be created for a server pack about to be zipped.
+         */
         isLocal: Boolean,
         preserve: (String) -> Boolean = { false }
     ) {
@@ -389,23 +390,26 @@ class ServerPackProvisioner(
      * must be configured accordingly. The created ZIP-archive will be stored alongside the specified
      * destination, with `_server_pack.zip` appended to its name.
      *
-     * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
-     * from the ZIP-archive if the modloader is Forge.
-     * @param destination               The destination where the ZIP-archive should be created in.
-     * @param modloader                 The modloader the modpack and server pack use.
-     * @param modloaderVersion          The modloader version the modpack and server pack use.
-     * @param isExcluded                Answers, for a file in the server pack, whether it must stay
-     * out of the archive regardless of the configured exclusions. Used by an update to keep a
-     * running server's world and player-data out of something meant to be shared; defaults to
-     * excluding nothing.
      * @author Griefed
      */
     @JvmOverloads
     fun zipBuilder(
+        /**
+         * Determines the name of the Minecraft server JAR to exclude from the ZIP-archive if the modloader is
+         * Forge.
+         */
         minecraftVersion: String,
+        /** The destination where the ZIP-archive should be created in. */
         destination: String,
+        /** The modloader the modpack and server pack use. */
         modloader: String,
+        /** The modloader version the modpack and server pack use. */
         modloaderVersion: String,
+        /**
+         * Answers, for a file in the server pack, whether it must stay out of the archive regardless of the
+         * configured exclusions. Used by an update to keep a running server's world and player-data out of
+         * something meant to be shared; defaults to excluding nothing.
+         */
         isExcluded: (File) -> Boolean = { false }
     ) : Optional<File> {
         log.info("Creating zip archive of serverpack...")
@@ -450,7 +454,8 @@ class ServerPackProvisioner(
     /**
      * Delete files and folders from previous installations to prevent errors during server installation due to already
      * existing files.
-     * @param destination The folder in which to perform the cleanup operations.
+     *
+     * [destination] — The folder in which to perform the cleanup operations.
      *
      * @author Griefed
      */
@@ -471,7 +476,8 @@ class ServerPackProvisioner(
      * Check whether the installer for the given combination of Minecraft version, modloader and
      * modloader version is available/reachable.
      *
-     * @return `true` if the installer can be downloaded.
+     * Returns `true` if the installer can be downloaded.
+     *
      * @author Griefed
      */
     fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String) = when (modloader) {
@@ -507,7 +513,8 @@ class ServerPackProvisioner(
      * Cleans up the server_pack directory by deleting left-over files from modloader installations
      * and version checking.
      *
-     * @param destination      The destination where we should clean up in.
+     * [destination] — The destination where we should clean up in.
+     *
      * @author Griefed
      */
     @Suppress("unused")
@@ -527,8 +534,8 @@ class ServerPackProvisioner(
      * Replace placeholders for script settings in the given [content] with their respective values, both provided via the
      * HashMap [scriptSettings].
      *
-     * @param isLocal Whether the start scripts should be created for a locally usable server pack. Use false if the
-     * start scripts should be created for a server pack about to be zipped
+     * [isLocal] — Whether the start scripts should be created for a locally usable server pack. Use false if the
+     * start scripts should be created for a server pack about to be zipped.
      *
      * @author Griefed
      */

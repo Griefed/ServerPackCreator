@@ -1,0 +1,8 @@
+export * from './types'
+export { parseRepositoryUrl } from './repositoryReference'
+export { releasesEndpoint } from './apiEndpoints'
+export type { ReleaseDownloadCounter } from './ReleaseDownloadCounter'
+export { GitHubDownloadCounter, GITHUB_PAGE_SIZE } from './GitHubDownloadCounter'
+export { GiteaDownloadCounter, GITEA_PAGE_PARAMETER, GITEA_PAGE_SIZE } from './GiteaDownloadCounter'
+export { counterFor, isPlatform, DEFAULT_HOSTS, SUPPORTED_PLATFORMS } from './counterRegistry'
+export { countPlatformDownloads, countAllDownloads, type CountAllOptions } from './countDownloads'

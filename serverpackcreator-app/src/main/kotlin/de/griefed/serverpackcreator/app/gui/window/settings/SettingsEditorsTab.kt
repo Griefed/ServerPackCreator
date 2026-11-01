@@ -36,6 +36,8 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.TableModelListener
 
 /**
+ * The tab holding every settings editor, one per area of configuration.
+ *
  * @author Griefed
  */
 class SettingsEditorsTab(

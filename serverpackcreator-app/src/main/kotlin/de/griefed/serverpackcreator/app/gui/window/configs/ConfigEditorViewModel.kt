@@ -31,13 +31,13 @@ import java.util.concurrent.ConcurrentHashMap
  * view stays dumb: it reads the editor's field-values into a [PackConfig], asks this view-model whether
  * anything changed, which Java-version is required, whether a modloader-server can be downloaded or what the
  * pack is called, and updates its widgets accordingly.
- * @param versionMeta Minecraft/modloader version metadata.
- * @param configurationHandler Used to read a modpack's launcher-manifest for its name.
- * @param serverPackHandler Used to check whether a modloader-server installer is downloadable.
  */
 class ConfigEditorViewModel(
+    /** Minecraft/modloader version metadata. */
     private val versionMeta: VersionMeta,
+    /** Used to read a modpack's launcher-manifest for its name. */
     private val configurationHandler: ConfigurationHandler,
+    /** Used to check whether a modloader-server installer is downloadable. */
     private val serverPackHandler: ServerPackHandler
 ) {
 

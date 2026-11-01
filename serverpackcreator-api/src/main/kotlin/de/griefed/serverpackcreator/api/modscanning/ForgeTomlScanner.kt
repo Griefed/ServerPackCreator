@@ -28,7 +28,8 @@ import java.util.jar.JarFile
 /**
  * `mods.toml`-based scanning of Forge-Minecraft mods for Minecraft 1.16.5 and newer.
  *
- * @param tomlParser To parse .toml-files.
+ * [tomlParser] — To parse .toml-files.
+ *
  * @Griefed
  */
 open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScanner() {
@@ -82,8 +83,8 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * dependency instead. A mod declaring no dependencies at all is treated as server-side, to
      * prevent false positives.
      *
-     * @param modJar The jar whose `mods.toml` to read.
-     * @return What this mod declared.
+     * [modJar] — The jar whose `mods.toml` to read. Returns what this mod declared.
+     *
      * @author Griefed
      */
     override fun read(modJar: File): ScannedMod {
@@ -167,7 +168,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /**
      * Acquire the base toml-config of a mod.
      *
-     * @return Config read from the toml in the mod.
      * @throws IOException if the mods.toml file could not be read.
      * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a
      * jar belonging to another loader, not a failure.
@@ -189,9 +189,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * mod is allowed to depend on nothing, and treating that as a failure aborted the read and threw
      * away the mod id it had already parsed.
      *
-     * @param config Base-config toml of the mod which contains all * information.
-     * @return Map of dependencies for the passed mod config, String keys are mapped to ArrayLists of
-     * CommentedConfigs. Empty when the mod declares none.
+     * [config] — Base-config toml of the mod which contains all * information. Returns map of dependencies for the
+     * passed mod config, String keys are mapped to ArrayLists of CommentedConfigs. Empty when the mod declares
+     * none.
      */
     private fun getMapOfDependencyLists(config: CommentedConfig): Map<String, ArrayList<CommentedConfig>> {
         if (config.valueMap()[dependencies] == null) {
@@ -220,8 +220,8 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /**
      * Acquire the modId from the passed config.
      *
-     * @param config Mod- or dependency-config which contains the modId.
-     * @return `modId` from the passed config, in lower-case letters.
+     * [config] — Mod- or dependency-config which contains the modId. Returns `modId` from the passed config, in
+     * lower-case letters.
      */
     private fun getModId(config: CommentedConfig) = config.valueMap()[modId].toString().lowercase()
 
@@ -266,8 +266,8 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /**
      * Acquire the side of the passed dependency.
      *
-     * @param config Mod- or dependency-config which may state a `side`.
-     * @return `side` from the passed config, in upper-case letters, or `BOTH` when it states none.
+     * [config] — Mod- or dependency-config which may state a `side`. Returns `side` from the passed config, in
+     * upper-case letters, or `BOTH` when it states none.
      */
     private fun getSide(config: CommentedConfig): String {
         return if (config.valueMap()[side] != null) {

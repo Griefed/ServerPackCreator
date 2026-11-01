@@ -47,6 +47,8 @@ class ConfigToHasteBinItem(
     }
 
     /**
+     * Uploads the selected configuration to HasteBin and offers the resulting link.
+     *
      * @author Griefed
      */
     private fun uploadConfig() {

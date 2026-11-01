@@ -9,9 +9,9 @@
 #
 # WHAT THAT TRADES, stated plainly because it is a real cost: a tag is mutable. Upstream can repoint
 # `v6` and the next push runs different code with no commit here, and `data.forgejo.org` is a mirror,
-# so it is also trusting the mirror to stay in step. Griefed's call, 2026-10-03, after measuring that
-# every major tag was already AHEAD of the commit it replaced -- i.e. the SHA pins had silently frozen
-# eight actions at older releases, which is the other half of the same trade.
+# so it is also trusting the mirror to stay in step. The trade is deliberate: a SHA pin freezes an
+# action at whatever release it carried when it was pinned, and immutability nobody revisits is
+# staleness -- which is the other half of the same trade.
 #
 # FOUR REFERENCES ARE NOT A BARE MAJOR, each for its own checked reason:
 #   - tiyee/action-ssh@v1.0.1 and nogsantos/scp-deploy@v1.3.0 publish NO `v1` tag or branch at all;
@@ -96,6 +96,44 @@ jobs:
       # instead of after the frontend.
       - name: Verify the build logic
         run: ./gradlew help
+
+      # Seconds, and before the long build, for the same reason as the step above. TWO checks, one
+      # step, because both parse the workflows with pyyaml and the install below is the expensive half
+      # -- running them separately would pay for it twice and put two near-identical preambles in a
+      # file whose whole point is that steps are not written twice.
+      #
+      # `ci-env-reference-check.py` compares each workflow step's `env:` keys against the names its
+      # script actually reads, in both directions. The defect it pins went green for twelve days and
+      # cost every release its Discord announcement, because `WEBHOOK_URL:` was declared and
+      # `$NEWS_WEBHOOK_URL` was read and a shell resolves an undefined name to the empty string.
+      #
+      # `ci-duplication-check.py` fails when a step is written twice without a reason. It is a gate
+      # only because its count is zero -- the condition `.claude/rules/ci-workflows.md` records for
+      # promoting one, because a check that is red on every push is not a pin, it is a broken build.
+      # It fails on an unexplained duplicate AND on an
+      # allowlist entry matching no step, both verified by exit code rather than assumed; the second
+      # direction is the one that matters here, because the allowlist is keyed by a hash of the step
+      # body, so a sweep that edits every workflow silently un-exempts everything it touches. That is
+      # how three entries went stale unnoticed while nothing ran this.
+      #
+      # LANDMINE -- `pip3 install` on this runner image FAILS, and the install is needed. pyyaml is not
+      # in the standard library (every other python in these workflows gets by on `json` alone) and
+      # `ghcr.io/catthehacker/ubuntu:runner-latest` does not carry it, so the install is not optional;
+      # but that image is Ubuntu with Python 3.12.3 and pip 24.0, where a plain install is refused with
+      # `error: externally-managed-environment` under PEP 668. `--break-system-packages` is what the
+      # refusal itself names, and it is safe here for the reason the flag is otherwise frightening:
+      # the "system" is a job container that is destroyed when the job ends.
+      #
+      # Measured in that exact image rather than reasoned about, after this step turned the build red
+      # on its first real run: `import yaml` -> ModuleNotFoundError, then the install below -> pyyaml
+      # 6.0.3, then the check runs clean against this repository.
+      - name: Verify the workflow conventions
+        run: |
+          set -eu
+          python3 -c 'import yaml' 2>/dev/null \
+            || pip3 install --quiet --disable-pip-version-check --break-system-packages pyyaml
+          python3 misc/ci-env-reference-check.py
+          python3 misc/ci-duplication-check.py
 
       # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests live in
       # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them

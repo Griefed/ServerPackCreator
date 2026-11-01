@@ -39,12 +39,12 @@ import javax.xml.parsers.ParserConfigurationException
 /**
  * API wrapper, allowing you to conveniently initialize, setup and use the different aspects of ServerPackCreator.
  *
- * @param properties serverpackcreator.properties-file containing settings and configurations to load the API with.
- * @param runSetup   Whether to run the file-setup during API inizialization.
  * @author Griefed
  */
 class ApiWrapper private constructor(
+    /** serverpackcreator.properties-file containing settings and configurations to load the API with. */
     val properties: File = File("serverpackcreator.properties"),
+    /** Whether to run the file-setup during API inizialization. */
     runSetup: Boolean = true
 ) {
     /** Matches the manifest files seeded from the jar, so setup can copy exactly those and nothing else. */
@@ -58,7 +58,8 @@ class ApiWrapper private constructor(
      * This instances settings used across ServerPackCreator, such as the working-directories, files
      * and other settings.
      *
-     * @return applicationProperties used across this ServerPackCreator-instance.
+     * Returns applicationProperties used across this ServerPackCreator-instance.
+     *
      * @author Griefed
      */
     @get:Synchronized
@@ -87,8 +88,6 @@ class ApiWrapper private constructor(
      *  * enabled: [DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY]
      *  * enabled: [JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS]
      *
-     *
-     * @return Json-ObjectMapper to parse and read JSON.
      * @author Griefed
      */
     @get:Synchronized
@@ -179,7 +178,6 @@ class ApiWrapper private constructor(
      * This instances ConfigurationHandler for checking a given [de.griefed.serverpackcreator.api.config.PackConfig] for
      * validity, so a server pack can safely be created from it.
      *
-     * @return Handler for config checking.
      * @throws IOException                  When the [VersionMeta] had to be instantiated, but
      * an error occurred during the parsing of a manifest.
      * @throws ParserConfigurationException When the [VersionMeta] had to be instantiated, but
@@ -216,7 +214,8 @@ class ApiWrapper private constructor(
     /**
      * This instances ServerPackHandler used to turn a [de.griefed.serverpackcreator.api.config.PackConfig] into a server pack.
      *
-     * @return The ServerPackHandler with which config models can be used to create server packs.
+     * Returns the ServerPackHandler with which config models can be used to create server packs.
+     *
      * @throws IOException                  When the [VersionMeta] had to be instantiated, but
      * an error occurred during the parsing of a manifest.
      * @throws ParserConfigurationException When the [VersionMeta] had to be instantiated, but
@@ -293,7 +292,6 @@ class ApiWrapper private constructor(
      * This instances toml scanner to determine the sideness of NeoForge mods for Minecraft 1.20.5 and
      * newer.
      *
-     * @return Scanner to determine the sideness of Forge mods for Minecraft 1.20.5 and newer.
      * @author Griefed
      */
     @get:Synchronized
@@ -313,15 +311,20 @@ class ApiWrapper private constructor(
         /**
          * Acquire a new instance of the ServerPackCreator API.
          *
-         * @param properties A ServerPackCreator properties-file to use for API initialization. This files may contain
-         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://serverpackcreator.de/help/latest/settings-and-configs.html).
-         * @param runSetup Whether to run the initial setup, creating and copying all required files to the filesystem and
-         * ensuring the home-directory is properly set up and available to the API.
          * @author Griefed
          */
         @Synchronized
         fun api(
+            /**
+             * A ServerPackCreator properties-file to use for API initialization. This files may contain
+             * configurations for the home-directory and many other settings. For details, see the
+             * [Wiki](https://serverpackcreator.de/help/latest/settings-and-configs.html).
+             */
             properties: File = File("serverpackcreator.properties"),
+            /**
+             * Whether to run the initial setup, creating and copying all required files to the filesystem and
+             * ensuring the home-directory is properly set up and available to the API.
+             */
             runSetup: Boolean = true
         ): ApiWrapper {
             api?.let { return it }
@@ -542,9 +545,9 @@ class ApiWrapper private constructor(
     /**
      * Check whether the specified server-files file exists and create it if it doesn't.
      *
-     * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
-     * should be created.
-     * @return `true` if the file was generated.
+     * [fileToCheckFor] — The file which is to be checked for whether it exists and if it doesn't, should be
+     * created. Returns `true` if the file was generated.
+     *
      * @author Griefed
      */
     fun checkServerFilesFile(fileToCheckFor: File) = JarUtilities.copyFileFromJar(
@@ -557,8 +560,9 @@ class ApiWrapper private constructor(
      * Overwrite the specified server-files file, even when it exists. Used to ensure files like the
      * default script templates are always up-to-date.
      *
-     * @param fileToOverwrite The file which is to be overwritten. If it exists. it is first deleted,
-     * then extracted from our JAR-file.
+     * [fileToOverwrite] — The file which is to be overwritten. If it exists. it is first deleted, then extracted
+     * from our JAR-file.
+     *
      * @author Griefed
      */
     fun overwriteServerFilesFile(fileToOverwrite: File) {

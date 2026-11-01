@@ -81,6 +81,8 @@ class MainPanel(
     }
 
     /**
+     * Saves what is open, shuts the application down and exits.
+     *
      * @author Griefed
      */
     fun closeAndExit() {
@@ -127,6 +129,8 @@ class MainPanel(
     }
 
     /**
+     * Starts the step-by-step guide on the first configuration tab.
+     *
      * @author Griefed
      */
     fun stepByStepGuide() {

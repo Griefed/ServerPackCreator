@@ -32,7 +32,6 @@ import de.griefed.serverpackcreator.plugin.servertest.session.PortAllocator
  * while the tab is, where throwing over a typo would take the GUI's whole tab assembly with it. A missing or
  * unusable value falls back to the shipped default rather than being reported.
  *
- * @param config The plugin configuration provided by ServerPackCreator.
  * @author Griefed
  */
 class ServerTestSettings(private val config: CommentedConfig) {

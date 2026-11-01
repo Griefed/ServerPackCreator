@@ -36,6 +36,8 @@ class ServerFilesDirItem(private val apiProperties: ApiProperties) :
     }
 
     /**
+     * Opens the server-files directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openServerFilesDir() {

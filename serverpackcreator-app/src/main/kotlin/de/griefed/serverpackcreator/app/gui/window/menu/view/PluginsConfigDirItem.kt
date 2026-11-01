@@ -36,6 +36,8 @@ class PluginsConfigDirItem(private val apiProperties: ApiProperties) :
     }
 
     /**
+     * Opens the plugin-configurations directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openPluginsConfigsDir() {

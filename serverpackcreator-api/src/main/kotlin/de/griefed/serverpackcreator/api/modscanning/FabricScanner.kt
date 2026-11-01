@@ -31,8 +31,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  * is later excluded from the server pack. Sideness and id reading live in [FabricFamilyScanner],
  * which Quilt shares; only Fabric's `depends`-block shape is specific to this scanner.
  *
- * @param objectMapper For JSON-parsing.
- * @param utilities    Common utilities used across ServerPackCreator.
+ * [objectMapper] — For JSON-parsing. [utilities] — Common utilities used across ServerPackCreator.
  *
  * @author Griefed
  */

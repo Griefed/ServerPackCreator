@@ -38,10 +38,12 @@ import java.util.concurrent.ConcurrentHashMap
  * A corrupt or unreadable file is logged and treated as empty: losing the position costs one extra sweep
  * (whose fresh verdicts are skipped anyway), whereas refusing to start costs the whole service.
  *
- * @param file The JSON document backing the store (its parent directories are created on first write).
  * @author Griefed
  */
-class JsonCursorStore(private val file: File) : CursorStore {
+class JsonCursorStore(
+    /** The JSON document backing the store; its parent directories are created on first write. */
+    private val file: File
+) : CursorStore {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     private val mapper = jacksonObjectMapper()

@@ -25,6 +25,8 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 
 /**
+ * Shared base for a settings editor: a scroll pane carrying its own tab title.
+ *
  * @author Griefed
  */
 abstract class Editor(name: String, guiProps : GuiProps) : JScrollPane(), SettingsEditor {

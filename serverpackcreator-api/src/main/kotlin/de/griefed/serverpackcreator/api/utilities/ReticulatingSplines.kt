@@ -145,6 +145,8 @@ class ReticulatingSplines {
         )
 
         /**
+         * The verbs the splash screen cycles through while ServerPackCreator starts.
+         *
          * @author Griefed
          */
         @Suppress("SpellCheckingInspection", "MemberVisibilityCanBePrivate")
@@ -503,7 +505,8 @@ class ReticulatingSplines {
         /**
          * Retrieve a random message from [reticulatingSplines].
          *
-         * @return String. Returns a random message.
+         * Returns string. Returns a random message.
+         *
          * @author Griefed
          */
         fun reticulate() = reticulatingSplines[(reticulatingSplines.indices).random()]
@@ -511,8 +514,9 @@ class ReticulatingSplines {
         /**
          * Retrieve a random message from [splines]. Kinda like a random Name generator.
          *
-         * @param wordCount The number of words the resulting string should be made up of.
-         * @return String. Returns a randomly selected three-word long string from [.SPLINES].
+         * [wordCount] — The number of words the resulting string should be made up of. Returns string. Returns a
+         * randomly selected three-word long string from [.SPLINES].
+         *
          * @author Griefed
          */
         @Suppress("unused")

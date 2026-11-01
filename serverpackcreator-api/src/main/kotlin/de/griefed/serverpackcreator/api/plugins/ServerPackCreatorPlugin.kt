@@ -45,7 +45,7 @@ import java.net.URI
  *
  * For details on `pf4j`, the library used to realize the plugin-functionality in ServerPackCreator, visit [pf4j.org](https://pf4j.org)
  *
- * @param context PluginWrapper provided by ServerPackCreator. Do not touch unless you know what you are doing.
+ * [context] — PluginWrapper provided by ServerPackCreator. Do not touch unless you know what you are doing.
  *
  * @author Griefed
  */

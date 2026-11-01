@@ -53,6 +53,8 @@ class EditMenu(
     }
 
     /**
+     * Tells the user that the fallback clientside-mod list was updated.
+     *
      * @author Griefed
      */
     fun showFallbacksUpdatedMessage() {

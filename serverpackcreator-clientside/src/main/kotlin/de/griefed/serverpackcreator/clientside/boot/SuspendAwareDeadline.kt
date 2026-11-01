@@ -34,17 +34,19 @@ import java.time.Duration
  *
  * Not thread-safe: one instance belongs to one boot loop.
  *
- * @param timeout             The budget the boot is given, excluding any time the host spends suspended.
- * @param pollIntervalMillis  How often the caller polls, which sets what counts as an impossible gap.
- * @param now                 Millisecond clock, injected so tests can move it by hand.
- * @param onSuspendDetected   Called once per detected suspend with its length in millis, for operator-facing
- *                            logging. Defaults to doing nothing so a caller that does not care stays simple.
  * @author Griefed
  */
 class SuspendAwareDeadline(
+    /** The budget the boot is given, excluding any time the host spends suspended. */
     timeout: Duration,
+    /** How often the caller polls, which sets what counts as an impossible gap. */
     private val pollIntervalMillis: Long,
+    /** Millisecond clock, injected so tests can move it by hand. */
     private val now: () -> Long = System::currentTimeMillis,
+    /**
+     * Called once per detected suspend with its length in millis, for operator-facing logging. Defaults to
+     * doing nothing so a caller that does not care stays simple.
+     */
     private val onSuspendDetected: (Long) -> Unit = {}
 ) {
     private var deadlineMillis: Long = now() + timeout.toMillis()

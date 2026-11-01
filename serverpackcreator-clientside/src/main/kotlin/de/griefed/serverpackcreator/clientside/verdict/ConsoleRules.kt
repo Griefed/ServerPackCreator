@@ -117,13 +117,15 @@ data class ConsoleRuleSet(
  * missed. Closing that would mean hashing the content on every call, which defeats the point; the tradeoff
  * is stated rather than hidden.
  *
- * @param file The rules document; absent means [ConsoleRuleSet.EMPTY], which is the normal install.
- * @param undecidedVerdict What a rule stating no verdict means. `null` (the default) leaves it to the
- *        built-in ladder; [BootResult.INCONCLUSIVE] opts into the conservative reading.
  * @author Griefed
  */
 class ConsoleRuleFile(
+    /** The rules document; absent means [ConsoleRuleSet.EMPTY], which is the normal install. */
     private val file: File,
+    /**
+     * What a rule stating no verdict means. `null` (the default) leaves it to the built-in ladder;
+     * [BootResult.INCONCLUSIVE] opts into the conservative reading.
+     */
     private val undecidedVerdict: BootResult? = null
 ) {
 

@@ -29,14 +29,13 @@ import java.util.*
 /**
  * Forge meta containing information about available Forge releases.
  *
- * @param forgeManifest The manifest from which to acquire version information.
- * @param utilities     Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 @Suppress("unused")
 class ForgeMeta(
+    /** The manifest from which to acquire version information. */
     private val forgeManifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
     installerCacheDirectory: File
 ) {
@@ -51,7 +50,8 @@ class ForgeMeta(
      * Update this instances [ForgeLoader] with new information. Usually called after the Forge
      * manifest has been refreshed.
      *
-     * @param injectedMinecraftMeta Minecraft manifest file.
+     * [injectedMinecraftMeta] — Minecraft manifest file.
+     *
      * @throws IOException if the manifest could not be parsed into a
      * [com.fasterxml.jackson.databind.JsonNode].
      * @author Griefed
@@ -77,9 +77,6 @@ class ForgeMeta(
     /**
      * Check whether the given Minecraft and Forge versions are valid/supported/available.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param forgeVersion     Forge version.
-     * @return `true` if the given Minecraft and Forge versions are valid/supported/available.
      * @author Griefed
      */
     fun isForgeAndMinecraftCombinationValid(minecraftVersion: String, forgeVersion: String) =
@@ -88,7 +85,6 @@ class ForgeMeta(
     /**
      * Check whether a given Minecraft version is valid/supported/available.
      *
-     * @return `true` if the given Minecraft version is valid/supported/available.
      * @author Griefed
      */
     fun isMinecraftVersionSupported(minecraftVersion: String) =
@@ -97,7 +93,6 @@ class ForgeMeta(
     /**
      * Check whether a given Forge version is valid/supported/available.
      *
-     * @return `true` if the given Forge version is valid/supported/available.
      * @author Griefed
      */
     fun isForgeVersionValid(forgeVersion: String) =
@@ -106,7 +101,6 @@ class ForgeMeta(
     /**
      * Check whether Forge is available for a given Forge- and Minecraft version.
      *
-     * @return `true` if Forge is available for the given Forge- and Minecraft version.
      * @author Griefed
      */
     fun isForgeInstanceAvailable(minecraftVersion: String, forgeVersion: String) =
@@ -116,8 +110,6 @@ class ForgeMeta(
      * Get a [ForgeInstance] for a given Minecraft and Forge version, wrapped in an
      * [Optional].
      *
-     * @return Forge instance for the given Minecraft and Forge version, wrapped in an
-     * [Optional]
      * @author Griefed
      */
     fun getForgeInstance(minecraftVersion: String, forgeVersion: String) =
@@ -126,7 +118,6 @@ class ForgeMeta(
     /**
      * Check whether Forge is available for a given Forge version
      *
-     * @return `true` if Forge is available for the given Forge version.
      * @author Griefed
      */
     fun isForgeInstanceAvailable(forgeVersion: String) = getForgeInstance(forgeVersion).isPresent
@@ -134,7 +125,6 @@ class ForgeMeta(
     /**
      * Get a [ForgeInstance] for a given Forge version, wrapped in an [Optional].
      *
-     * @return Forge instance for the given Forge version, wrapped in an [Optional]
      * @author Griefed
      */
     fun getForgeInstance(forgeVersion: String) =
@@ -151,7 +141,6 @@ class ForgeMeta(
      * Get a list of all available [ForgeInstance] for a given Minecraft version, wrapped in an
      * [Optional]
      *
-     * @return Forge instance-list for the given Minecraft version.
      * @author Griefed
      */
     fun getForgeInstances(minecraftVersion: String): Optional<List<ForgeInstance>> {
@@ -173,7 +162,6 @@ class ForgeMeta(
     /**
      * Latest Forge version for a given Minecraft version, wrapped in [Optional]
      *
-     * @return Latest Forge version for the given Minecraft version, wrapped in an [Optional]
      * @author Griefed
      */
     fun newestForgeVersion(minecraftVersion: String) =
@@ -189,7 +177,6 @@ class ForgeMeta(
     /**
      * Oldest Forge version for a given Minecraft version, wrapped in [Optional]
      *
-     * @return Oldest Forge version for the given Minecraft version, wrapped in [Optional]
      * @author Griefed
      */
     fun oldestForgeVersion(minecraftVersion: String) =
@@ -213,7 +200,6 @@ class ForgeMeta(
     /**
      * Get a list of available Forge version for a given Minecraft version in ascending order.
      *
-     * @return List of available Forge versions for the given Minecraft version in ascending order.
      * @author Griefed
      */
     fun supportedForgeVersions(minecraftVersion: String) =
@@ -222,7 +208,6 @@ class ForgeMeta(
     /**
      * Get the Minecraft version for a given Forge version, wrapped in an [Optional].
      *
-     * @return Minecraft version for the given Forge version, wrapped in an [Optional].
      * @author Griefed
      */
     fun minecraftVersion(forgeVersion: String) =
@@ -238,7 +223,6 @@ class ForgeMeta(
     /**
      * Get the Forge server installer URL for a given Forge version, wrapped in an [Optional].
      *
-     * @return Forge server installer URL for the given Forge version, wrapped in an [Optional].
      * @author Griefed
      */
     fun installerUrl(forgeVersion: String) =

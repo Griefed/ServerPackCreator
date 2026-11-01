@@ -34,8 +34,8 @@ import java.io.IOException
  * Extends [IOException] so the `@Throws` contract of the descriptor readers is unchanged and an
  * existing `catch (IOException)` keeps working.
  *
- * @param descriptor Path of the descriptor that was looked for, e.g. `META-INF/mods.toml`.
- * @param jar        The jar it was looked for in.
+ * [descriptor] — Path of the descriptor that was looked for, e.g. `META-INF/mods.toml`. [jar] — The jar it was
+ * looked for in.
  */
 class MissingDescriptorException(val descriptor: String, val jar: File) :
     IOException("${jar.name} contains no $descriptor.")

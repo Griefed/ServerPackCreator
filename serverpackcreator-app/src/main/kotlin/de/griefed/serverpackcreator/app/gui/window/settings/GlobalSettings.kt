@@ -40,6 +40,9 @@ import javax.swing.JOptionPane
 import javax.swing.event.TableModelListener
 
 /**
+ * The settings editor for ServerPackCreator's global configuration — home and server-pack directories, exclusions,
+ * Aikar's flags and the rest.
+ *
  * @author Griefed
  */
 class GlobalSettings(
@@ -70,20 +73,6 @@ class GlobalSettings(
             }
         }
     }
-
-    /*
-    private val javaIcon = StatusIcon(guiProps, Translations.settings_global_java_tooltip.toString())
-    private val javaLabel = ElementLabel(Translations.settings_global_java_label.toString())
-    private val javaSetting = ScrollTextFileField(guiProps, File(apiProperties.javaPath).absoluteFile, changeListener)
-    private val javaRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaSetting.file = File(apiProperties.javaPath).absoluteFile }
-    private val javaReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { javaSetting.file = File(apiProperties.acquireJavaPath()).absoluteFile }
-    private val javaChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_global_java_executable.toString(), guiProps) {
-        val javaChooser = JavaChooser(apiProperties,Translations.settings_global_java_chooser.toString())
-        if (javaChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            javaSetting.file = javaChooser.selectedFile.absoluteFile
-        }
-    }
-    */
 
     private val serverPacksIcon = StatusIcon(guiProps, Translations.settings_global_serverpacks_tooltip.toString())
     private val serverPacksLabel = ElementLabel(Translations.settings_global_serverpacks_label.toString())
@@ -250,16 +239,6 @@ class GlobalSettings(
         panel.add(homeRevert, "cell 3 0")
         panel.add(homeReset, "cell 4 0")
         panel.add(homeChoose, "cell 5 0")
-
-        /*
-        y++
-        panel.add(javaIcon, "cell 0 $y")
-        panel.add(javaLabel, "cell 1 $y")
-        panel.add(javaSetting, "cell 2 $y, grow")
-        panel.add(javaRevert, "cell 3 $y")
-        panel.add(javaReset, "cell 4 $y")
-        panel.add(javaChoose, "cell 5 $y")
-        */
 
         y++
         panel.add(serverPacksIcon, "cell 0 $y")
@@ -531,15 +510,6 @@ class GlobalSettings(
             homeIcon.info()
         }
 
-        /*
-        if (!javaSetting.file.absoluteFile.isFile || !javaSetting.file.absoluteFile.canRead() || !javaSetting.file.absoluteFile.canExecute()) {
-          javaIcon.error(Translations.settings_check_java.toString())
-          errors.add(Translations.settings_check_java.toString())
-        } else {
-          javaIcon.info()
-        }
-        */
-
         if (!serverPacksSetting.file.absoluteFile.isDirectory || !serverPacksSetting.file.absoluteFile.canWrite()) {
             serverPacksIcon.error(Translations.settings_check_serverpacks.toString())
             errors.add(Translations.settings_check_serverpacks.toString())
@@ -608,7 +578,6 @@ class GlobalSettings(
         val javaScriptTemplates = javaScriptSetting.getData()
         javaScriptTemplates.remove("placeholder")
         val changes = homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||
-        /*javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||*/
         serverPacksSetting.file.absolutePath != apiProperties.serverPacksDirectory.absolutePath ||
         zipSetting.text != apiProperties.zipArchiveExclusions.joinToString(", ") ||
         inclusionsSetting.text != apiProperties.directoriesToInclude.joinToString(", ") ||

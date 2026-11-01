@@ -37,6 +37,8 @@ class OpenPropertiesDirectory(private val apiProperties: ApiProperties) :
     }
 
     /**
+     * Opens the properties directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openProperties() {

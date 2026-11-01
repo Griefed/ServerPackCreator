@@ -61,16 +61,14 @@ abstract class VersionChecker {
         private set
 
     /**
-     * Check whether an update/newer version is available for the given version. If you want to check for PreReleases, too,
-     * then make sure to pass `true` for `checkForPreReleases`.
+     * A sentence saying whether an update is available for [currentVersion], counting alpha and beta
+     * releases only when [checkForPreReleases] is `true`. One of:
+     *
+     * - `No updates available.`
+     * - `Current version: 2.0.0. A new release is available: 2.1.1. Download available at: https://github.com/Griefed/ServerPackCreator/releases/tag/2.1.1`
+     * - `Current version: 2.0.0. A new PreRelease is available: 3.0.0-alpha.14. Download available at: https://github.com/Griefed/ServerPackCreator/releases/tag/3.0.0-alpha.14`
+     *
      * @author Griefed
-     * @param currentVersion The current version of the app.
-     * @param checkForPreReleases `false` if you do not want to check for PreReleases. `true`
-     * if you want to check for PreReleases as well.
-     * @return Returns a concatenated String whether an update is available or not. Examples:<br></br>
-     * No update available: `No updates available.`<br></br>
-     * New release available: `Current version: 2.0.0. A new release is available: 2.1.1. Download available at: https://github.com/Griefed/ServerPackCreator/releases/tag/2.1.1`
-     * New prerelease available: `Current version: 2.0.0. A new PreRelease is available: 3.0.0-alpha.14. Download available at: https://github.com/Griefed/ServerPackCreator/releases/tag/3.0.0-alpha.14`
      */
     fun checkForUpdate(currentVersion: String, checkForPreReleases: Boolean): String {
         log.debug("Current version: $currentVersion")
@@ -88,13 +86,11 @@ abstract class VersionChecker {
     }
 
     /**
-     * Check for new versions in beta, alpha and regular release channels. If `checkForPreRelease` is false,
-     * only regular releases are checked.
+     * The version available as an update to [currentVersion], or `up_to_date` when there is none.
+     * Beta and alpha channels are consulted only when [checkForPreReleases] is `true`; otherwise just
+     * regular releases.
+     *
      * @author Griefed
-     * @param currentVersion The current version of the app.
-     * @param checkForPreReleases `false` if you do not want to check for PreReleases. `true`
-     * if you want to check for PreReleases as well.
-     * @return Returns the available update version. If no update is available, then `up_to_date` is returned.
      */
     protected fun isUpdateAvailable(currentVersion: String, checkForPreReleases: Boolean): String? {
         if (checkForPreReleases) {
@@ -116,10 +112,9 @@ abstract class VersionChecker {
     }
 
     /**
-     * Check for a new alpha version.
+     * Whether a newer alpha release than [currentVersion] exists.
+     *
      * @author Griefed
-     * @param currentVersion The current version to check against available alpha versions.
-     * @return Returns true if a new alpha release is found.
      * @throws NumberFormatException Thrown if the passed `currentVersion` can not be
      * parsed into integers.
      */
@@ -144,10 +139,9 @@ abstract class VersionChecker {
     }
 
     /**
-     * Check for a new beta version.
+     * Whether a newer beta release than [currentVersion] exists.
+     *
      * @author Griefed
-     * @param currentVersion The current version to check against available beta versions.
-     * @return Returns true if a new beta release is found.
      * @throws NumberFormatException Thrown if the passed `currentVersion` can not be
      * parsed into integers.
      */
@@ -177,9 +171,6 @@ abstract class VersionChecker {
      * numeric accident — `alpha.5` would not be offered `beta.3`, because `3 > 5` is false.
      *
      * @author Griefed
-     * @param currentVersion The current version for which we want to check for newer versions availability.
-     * @param newVersion The new version with which we want to check if it is indeed newer than the current version.
-     * @return True if the new version is a newer pre-release.
      */
     private fun isPreReleaseNewer(currentVersion: String, newVersion: String): Boolean {
         val channelDifference = preReleaseChannel(newVersion) - preReleaseChannel(currentVersion)
@@ -192,11 +183,10 @@ abstract class VersionChecker {
 
     /**
      * Rank of [version]'s pre-release channel, so the channels can be ordered: alpha, then beta, then
-     * a plain release, which supersedes every pre-release of the same version.
+     * a plain release, which supersedes every pre-release of the same version: `0` for an alpha, `1`
+     * for a beta, `2` for anything else.
      *
      * @author Griefed
-     * @param version The version whose channel to rank.
-     * @return `0` for an alpha, `1` for a beta, `2` for anything else.
      */
     private fun preReleaseChannel(version: String) = when {
         version.contains("alpha") -> 0
@@ -212,8 +202,6 @@ abstract class VersionChecker {
      * outranks anything numbered.
      *
      * @author Griefed
-     * @param version The version whose pre-release number to read.
-     * @return The pre-release number, or `0` when the version carries none.
      */
     private fun preReleaseNumber(version: String) =
         version.substringAfter('-', "").substringAfter('.', "").toIntOrNull() ?: 0
@@ -227,9 +215,6 @@ abstract class VersionChecker {
      * version that restarted its count, so `3.2.0-beta.1` lost to `3.1.0-beta.3`.
      *
      * @author Griefed
-     * @param current The version to beat.
-     * @param candidate The version being considered.
-     * @return True if the candidate supersedes the current one.
      */
     private fun isVersionNewer(current: String, candidate: String) = when {
         SemanticVersionComparator.compareSemantics(current, candidate, Comparison.NEW) -> true
@@ -238,10 +223,9 @@ abstract class VersionChecker {
     }
 
     /**
-     * Gather all beta versions in a list.
+     * Every beta version available for this repository, or `null` when it publishes none.
+     *
      * @author Griefed
-     * @return Returns a list of all available beta versions. If no beta releases are available for the given
-     * repository, `null` is returned.
      */
     private fun allBetaVersions(): List<String>? {
         val betaVersions: MutableList<String> = ArrayList(1000)
@@ -262,10 +246,9 @@ abstract class VersionChecker {
     }
 
     /**
-     * Gather all alpha versions in a list.
+     * Every alpha version available for this repository, or `null` when it publishes none.
+     *
      * @author Griefed
-     * @return Returns a list of all available alpha versions. If no alpha releases are available for the given
-     * repository, `null` is returned.
      */
     private fun allAlphaVersions(): List<String>? {
         val alphaVersions: MutableList<String> = ArrayList(1000)
@@ -288,7 +271,6 @@ abstract class VersionChecker {
     /**
      * Get the latest beta release.
      * @author Griefed
-     * @return Returns the latest beta release. If no beta release is available, `no_betas` is returned.
      * @throws NumberFormatException Thrown if a version can not be parsed into integers.
      */
     @Throws(NumberFormatException::class)
@@ -310,7 +292,6 @@ abstract class VersionChecker {
     /**
      * Get the latest alpha release.
      * @author Griefed
-     * @return Returns the latest alpha release. If no alpha release is available, `no_alphas` is returned.
      * @throws NumberFormatException Thrown if a versions can not be parsed into integers.
      */
     @Throws(NumberFormatException::class)
@@ -364,10 +345,9 @@ abstract class VersionChecker {
     protected abstract fun allVersions(): List<String>?
     /**
      * Re-read the repository's version list, so subsequent checks see releases published since the
-     * last call.
+     * last call. Returns this checker, for chaining.
      *
      * @author Griefed
-     * @return This checker, for chaining.
      * @throws IOException if the repository could not be reached.
      */
     @Throws(IOException::class)
@@ -382,12 +362,11 @@ abstract class VersionChecker {
     protected abstract fun setRepository()
     /**
      * The available update for [currentVersion] as a repository-specific [Update], carrying the
-     * release's own metadata (description, assets) rather than just a version string.
+     * release's own metadata (description, assets) rather than just a version string. Alpha and beta
+     * releases count as updates only when [checkForPreReleases] is set; empty when [currentVersion] is
+     * already the newest.
      *
      * @author Griefed
-     * @param currentVersion The current version of the app.
-     * @param checkForPreReleases Whether alpha and beta releases count as updates.
-     * @return The update, or empty when the current version is the newest.
      */
     abstract fun check(currentVersion: String, checkForPreReleases: Boolean): Optional<Update>
 }

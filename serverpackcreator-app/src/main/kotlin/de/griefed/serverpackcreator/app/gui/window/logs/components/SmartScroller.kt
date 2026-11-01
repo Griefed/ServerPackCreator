@@ -55,7 +55,6 @@ import javax.swing.text.JTextComponent
  *
  *  Seriously, give this man an award, because this class is a **BEAST**.
  *
- *
  * Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank you, thank you,
  * thank you so very much! You seriously made my day here.
  *
@@ -116,7 +115,7 @@ class SmartScroller @JvmOverloads constructor(
     /**
      * Analyze every adjustment event to determine when the viewport needs to be repositioned.
      *
-     * @param e Adjustment event to analyse
+     * [e] — Adjustment event to analyse.
      *
      * @author Rob Camick
      */
@@ -168,7 +167,10 @@ class SmartScroller @JvmOverloads constructor(
 }
 
 /**
+ * Which scrollbar the smart scroller follows.
+ *
  * @author Rob Camick
+ * @author Griefed
  */
 enum class ScrollDirection {
     HORIZONTAL,
@@ -176,7 +178,10 @@ enum class ScrollDirection {
 }
 
 /**
+ * Where the viewport is pinned when new content arrives.
+ *
  * @author Rob Camick
+ * @author Griefed
  */
 enum class ViewPortPosition {
     START,

@@ -143,8 +143,7 @@ class UpdateConfig(
             val currentBlacklist = store.properties.getProperty(GenerationConfig.FALLBACK_MODS_LIST_KEY)
             if (newBlacklist != null && currentBlacklist != newBlacklist) {
                 store.define(GenerationConfig.FALLBACK_MODS_LIST_KEY, newBlacklist)
-                generationConfig.clientsideMods.clear()
-                generationConfig.clientsideMods.addAll(newBlacklist.split(","))
+                generationConfig.replaceClientsideMods(newBlacklist.split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: ${generationConfig.clientsideMods}")
                 fallbackUpdated = true
             }
@@ -153,8 +152,7 @@ class UpdateConfig(
             val currentWhitelist = store.properties.getProperty(GenerationConfig.MODS_WHITELIST_KEY)
             if (newWhitelist != null && currentWhitelist != newWhitelist) {
                 store.define(GenerationConfig.MODS_WHITELIST_KEY, newWhitelist)
-                generationConfig.modsWhitelist.clear()
-                generationConfig.modsWhitelist.addAll(newWhitelist.split(","))
+                generationConfig.replaceModsWhitelist(newWhitelist.split(","))
                 log.info("The fallback-list for whitelisted mods has been updated to: ${generationConfig.modsWhitelist}")
                 fallbackUpdated = true
             }

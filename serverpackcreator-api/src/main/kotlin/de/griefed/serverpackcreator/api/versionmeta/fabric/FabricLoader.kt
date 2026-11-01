@@ -31,13 +31,12 @@ import java.util.Collections
 /**
  * Information about releases of the Fabric loader.
  *
- * @param loaderManifest The manifest used when updating available versions.
- * @param utilities      Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 internal class FabricLoader(
+    /** The manifest used when updating available versions. */
     private val loaderManifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")

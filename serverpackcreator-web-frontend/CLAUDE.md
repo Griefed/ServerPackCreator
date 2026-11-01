@@ -110,6 +110,66 @@ exist. In `.vue` templates the asset form is `~@/assets/x`, and in SCSS it is `u
   guarded at the populate path. A data-shape assertion there would only re-assert the axios mock, which is
   the very defect this entry is about.
 
+## Build-time config comes from `import.meta.env.QUASAR_*` (2026-10-23)
+
+`@quasar/app-vite` 3 defines **no** `process.env` replacements — grep its `lib/` for `'process.env`
+and you get nothing. What it defines is `import.meta.env.QUASAR_*`: `QUASAR_DEV`, `QUASAR_PROD`,
+`QUASAR_MODE`, `QUASAR_CLIENT`, `QUASAR_SERVER`, `QUASAR_VUE_ROUTER_MODE`, `QUASAR_VUE_ROUTER_BASE`.
+Note the **`QUASAR_` prefix**: the old names are not merely relocated, they are renamed.
+
+- Reading `process.env.X` in `src/` is a `ReferenceError` under `quasar dev` and **silently
+  `undefined` in a build**. That cost this project its router mode: `undefined === 'history'` is
+  false, so `vueRouterMode` was ignored in production and only looked correct because `'hash'` was
+  both the configured value and the fallback.
+- `test/config/no-process-env.test.js` pins it for all of `src/`. It strips comments first, so prose
+  naming the old API is fine.
+- **`QUASAR_SERVER` is a boolean**, not a string: app-vite substitutes the literal `false`, so
+  `import.meta.env.QUASAR_SERVER ? ... : ...` behaves. Do not compare it to `'false'`.
+
+## LANDMINE — `vueOptionsAPI: true` is load-bearing (2026-10-23)
+
+`quasar.config.js` must keep `build.vueOptionsAPI: true`. `@quasar/app-vite` 3 defaults it to **false**
+and compiles that into `__VUE_OPTIONS_API__ = "false"`, tree-shaking `applyOptions` out of Vue. Every SFC
+in `src/` is Options API, so without the flag a production build loses `methods`, `computed`, `data` and
+every lifecycle hook. `setup()` still runs, so **every page renders and nothing throws — the SPA simply
+never makes an HTTP request.** The scaffolded `// vueOptionsAPI: false,` comment is app-vite 2's, where
+the default was the opposite; the 2.4 -> 3.10 upgrade inverted it.
+
+- **Nothing in the test suite can see this.** Vitest does not apply the build's `define`s, so the suite is
+  green either way. `test/config/quasar-config.test.js` pins the flag itself, which is the only part a
+  unit test can reach; the real symptom needs a production build served by the real backend.
+- **How to recognise it**, because the obvious signals mislead: `isMounted` is `true` (Vue sets it before
+  the queued `mounted` hooks run), there are no console errors, and `$nextTick` resolves. The tells are
+  `instance.m === null` and `typeof instance.proxy.<aMethodName> === 'undefined'`. The cheapest proof is
+  the server's access log holding **no** API requests while a `fetch()` typed into the same page is logged.
+- A test file that needs `@vitest-environment node` works because `test/install-quasar.ts` skips itself
+  without a DOM. Do not put such a test under `test/build/` — `.gitignore` has a repo-wide `**/build/`.
+
+## Downloads are the browser's, not the page's (2026-10-23)
+
+`ModPackDownload.vue` / `ServerPackDownload.vue` hand the browser a real anchor — `q-btn type="a" :href`,
+with `startDownload()` clicking it for the five-second countdown — and never touch the bytes.
+
+- **Never fetch an archive through axios.** Both pages used
+  `get('download/' + id, { responseType: 'arraybuffer' })` and then `createObjectURL(new Blob([...]))`,
+  which buffered the whole pack in the tab before the save began. That is the reported bug: the download
+  reads as finished moments after it starts, because by then it is. It also costs a copy (usually two) of
+  an archive whose upload limit ships at **5000MB**, and the browser's download manager never sees the
+  request, so nothing can resume. Pinned in both page tests by the negative — no XHR for `download/`, and
+  `createObjectURL` never called.
+- **The href comes from the boot module's `baseURL`**, so the API path is written in exactly one place
+  (`src/boot/axios.ts`). Page tests must therefore include `defaults: { baseURL: ... }` in their
+  `vi.mock('@/boot/axios')`.
+- **The saved filename is the server's**, from `Content-Disposition`, which wins over the `download`
+  attribute for a same-origin response. The attribute stays only as a fallback for a response without the
+  header. Do not reintroduce client-side renaming: the backend owns that name, and it was fixed to produce
+  a correct one (see `serverpackcreator-app/CLAUDE.md`).
+- Testing these pages needs `mount`, not `shallowMount`, to see the anchor at all, plus the QPage
+  passthrough stub this file already documents.
+- **Verified end-to-end against the real backend** (Spring Boot `-web` + MongoDB, production bundle):
+  clicking the anchor transferred all 6,291,691 bytes of a seeded pack with **0 XHR requests and 0
+  `createObjectURL` calls**, and the server answered a `Range` request with 206.
+
 ## Refactor state — moved out of the root `CLAUDE.md` on 2026-09-11
 
 > It lived in that file's always-loaded *Refactor state* table, where it cost every session in

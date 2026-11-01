@@ -89,12 +89,9 @@
         </q-list>
         <q-separator vertical />
         <q-card-actions vertical class="justify-around">
-          <q-btn size="xl" flat round color="positive" icon="download" :loading="loading"
-                 @click="downloadWithAxios($route.params.id);count = false; canceled = true;">
-            <template v-slot:loading>
-              <q-spinner-hourglass/>
-            </template>
-          </q-btn>
+          <q-btn ref="downloadButton" size="xl" flat round color="positive" icon="download"
+                 type="a" :href="downloadHref" :download="name"
+                 @click="count = false; started = true" />
           <q-btn size="xl" flat round color="info" icon="share" @click="copyToClipboard(current())" />
         </q-card-actions>
       </q-card-section>
@@ -102,11 +99,14 @@
       <q-card-section>
         <q-item>
           <q-item-section>
-            <q-item-label overline v-if="canceled">
+            <q-item-label overline v-if="started">
+              Downloading &mdash; your browser is saving the file.
+            </q-item-label>
+            <q-item-label overline v-else-if="canceled">
               Download aborted...
             </q-item-label>
             <q-item-label overline v-else>
-              {{ counter === 0 ? 'Downloading...' : 'Download starting in ' + counter }}
+              Download starting in {{ counter }}
             </q-item-label>
             <q-item-label>
               <q-linear-progress :value="counter / 100 * 20" rounded class="q-mt-md" animation-speed="200" />
@@ -131,6 +131,14 @@ export default defineComponent({
   computed: {
     date() {
       return date;
+    },
+    /**
+     * The archive's own URL, built from the boot module's `baseURL` so the API path stays written in
+     * exactly one place. The browser fetches this itself; nothing about the archive passes through
+     * JavaScript.
+     */
+    downloadHref(): string {
+      return `${modpacks.defaults.baseURL ?? ''}download/${encodeURIComponent(String(this.$route.params.id))}`;
     }
   },
   setup() {
@@ -162,7 +170,7 @@ export default defineComponent({
       status: ref(''),
       versionID: ref(''),
       canceled: ref(false),
-      loading: ref(false),
+      started: ref(false),
       count,
       counter
     };
@@ -190,31 +198,17 @@ export default defineComponent({
         }, 1000);
       } else if (this.counter === 0 && this.count && !this.canceled) {
         this.count = false;
-        this.downloadWithAxios(this.$route.params.id)
+        this.startDownload()
       }
     },
-    downloadWithAxios(id: string | string[] | undefined) {
-      this.loading = true
-      modpacks.get('download/' + id, {
-        responseType: 'arraybuffer'
-      }).then(response => {
-        const url = window.URL.createObjectURL(new Blob([response.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', this.name)
-        document.body.appendChild(link)
-        link.click()
-        this.loading = false
-      }).catch(error => {
-        this.$q.notify({
-          timeout: 5000,
-          progress: true,
-          icon: 'error',
-          color: 'negative',
-          message: 'Could not retrieve modpack: ' + error
-        });
-        this.loading = false
-      });
+    /**
+     * Fires the download link the countdown was counting towards. Clicks the real anchor rather than
+     * fetching the archive: the browser then streams it straight to disk, with its own progress, its
+     * own resume on an interrupted transfer, and no copy of a multi-gigabyte pack in the tab.
+     */
+    startDownload() {
+      (this.$refs.downloadButton as { $el?: HTMLAnchorElement } | undefined)?.$el?.click();
+      this.started = true
     }
   },
   mounted() {

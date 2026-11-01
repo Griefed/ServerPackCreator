@@ -28,7 +28,8 @@ class InvalidTypeException
 /**
  * Throw new exception indicating that the specified type is incorrect.
  *
- * @param message Cause or reason for why this exception was thrown.
+ * [message] — Cause or reason for why this exception was thrown.
+ *
  * @author Griefed
  */
     (message: String) : Exception(message)

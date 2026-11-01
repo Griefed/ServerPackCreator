@@ -305,8 +305,7 @@ object BundledJars {
      *
      * **Deliberately not [de.griefed.serverpackcreator.clientside.platform.textOrNull], which asks a
      * different question** — that one takes a field name and *does* stringify numbers, because
-     * CurseForge serves `modId` as one. The two were named alike until 2026-10-18; the module's
-     * CLAUDE.md records what each mutation proves.
+     * CurseForge serves `modId` as one. The module's CLAUDE.md records what each mutation proves.
      */
     private fun JsonNode.nonBlankStringOrNull(): String? =
         if (isTextual) asText().takeIf { it.isNotBlank() } else null

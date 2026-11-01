@@ -30,7 +30,8 @@ class FabricDetails internal constructor() {
     /**
      * Fabric loader ID, in the format of `fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION `.
      *
-     * @return The Fabric loader ID for the requested Minecraft and Fabric versions.
+     * Returns the Fabric loader ID for the requested Minecraft and Fabric versions.
+     *
      * @author Griefed
      */
     val id: String? = null
@@ -45,7 +46,8 @@ class FabricDetails internal constructor() {
     /**
      * The date at which this loader was released.
      *
-     * @return The release date of this Fabric loader.
+     * Returns the release date of this Fabric loader.
+     *
      * @author Griefed
      */
     val releaseTime: Date? = null
@@ -54,7 +56,8 @@ class FabricDetails internal constructor() {
      * Probably the same as [.getReleaseTime]. Not sure. It's a field in the JSON you receive
      * from Fabric. - Griefed.
      *
-     * @return The date of this Fabric loader.
+     * Returns the date of this Fabric loader.
+     *
      * @author Griefed
      */
     val time: Date? = null
@@ -76,7 +79,6 @@ class FabricDetails internal constructor() {
     /**
      * [FabricArguments] used by this Fabric loader.
      *
-     * @return Arguments of this Fabric loader.
      * @author Griefed
      */
     val arguments: FabricArguments? = null
@@ -84,7 +86,6 @@ class FabricDetails internal constructor() {
     /**
      * [FabricLibrary]-list used by this Fabric loader.
      *
-     * @return Library-list used by this Fabric loader.
      * @author Griefed
      */
     val libraries: List<FabricLibrary>? = null

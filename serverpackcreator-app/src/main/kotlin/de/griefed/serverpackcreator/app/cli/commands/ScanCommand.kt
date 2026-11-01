@@ -33,7 +33,8 @@ import java.io.File
  * primitive behind the clientside-verification workflow — `java -jar … -scan <dir> --loader Forge
  * --minecraft 1.20.1` answers "which of these mods declare themselves client-only?".
  *
- * @param apiWrapper Provides the [de.griefed.serverpackcreator.api.modscanning.ModScanner].
+ * [apiWrapper] — Provides the [de.griefed.serverpackcreator.api.modscanning.ModScanner].
+ *
  * @author Griefed
  */
 @CommandLine.Command(

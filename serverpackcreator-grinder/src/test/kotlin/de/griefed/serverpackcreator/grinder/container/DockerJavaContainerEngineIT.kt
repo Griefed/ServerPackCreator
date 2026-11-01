@@ -296,16 +296,28 @@ internal class DockerJavaContainerEngineIT {
      * Asserted through `wget`, which calls the same `getaddrinfo` the JVM does, against a port nothing listens
      * on: a resolved name reaches the connect and is refused, an unresolved one never gets that far and reports
      * a bad address. Reading `/etc/hosts` would only show that a line was written, not that the resolver uses it.
+     *
+     * Both of those read the *absence* of a string as an answer, so an empty console satisfies the first and
+     * fails the second while saying nothing about resolution at all — hence the console is asserted non-empty
+     * first, and the failure names [ContainerRunOutput.timedOut] so an exhausted budget is distinguishable from
+     * a resolver that answered. The budget is generous for the same reason
+     * [capturesConsoleAndNonZeroExitFromARealContainer]'s is: this container exits in milliseconds and the time
+     * goes on the daemon's create, start and log-attach calls, which on a loaded host outlast a tight budget.
      */
     @Test
     fun theContainersOwnHostnameResolvesWithoutANetwork() {
         val output = engine.run(
             busyboxSpec("""wget -q -T 1 -O - "http://${'$'}(hostname):1/" 2>&1"""),
             readyPattern = Regex("this-never-appears"),
-            timeout = Duration.ofSeconds(30)
+            timeout = Duration.ofMinutes(2)
         )
         val console = output.lines.joinToString("\n")
 
+        Assertions.assertTrue(
+            console.isNotEmpty(),
+            "the probe printed nothing, so neither assertion below is evidence about name resolution " +
+                "(timedOut=${output.timedOut}, exit=${output.exitCode})"
+        )
         Assertions.assertFalse(
             console.contains("bad address"),
             "the container's own hostname must resolve — the boot's first log4j call is getLocalHost(): $console"

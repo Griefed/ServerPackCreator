@@ -51,36 +51,46 @@ import java.util.concurrent.Executors
  * The browser-tab icon ships *inside* the jar and is served from there, keeping the promise the rest of the
  * page already keeps: nothing here reaches out to an external asset.
  *
- * @param store The verdicts to render; read live on each request so the table reflects the running grind.
- * @param requestedPort The port to bind (0 = pick a free one; read it back from [port] after [start]).
- * @param host The interface to bind; loopback by default so the report isn't exposed beyond the box.
- * @param fallbackLists Supplies the lists `/as-properties` publishes alongside the grinder's findings, read
- *                      per request so a refreshed list is served without a restart. `null` serves the
- *                      grinder's own findings only — the report server stays constructible without SPC.
- * @param consoleRules Supplies the operator's console rules, so `/status` can report how many loaded and what
- *        could not be. Reporting the errors is what stops a typo silently disabling an operator's rules —
- *        the loader deliberately keeps the last good set, which would otherwise hide the breakage entirely.
- * @param crashLogs The kept consoles of crashed boots, linked from the table and served by name. `null`
- *                  simply offers no links, so the report stays constructible without a log store.
- * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
- *                re-verification is visible rather than inferred from the logs.
- * @param reportCacheMaxAge How long a whole-store derivation may be reused after the store has moved on, so
- *        a busy grind cannot force it to be redone per request. [java.time.Duration.ZERO] serves a strictly
- *        live report and pays the full cost every time something is recorded.
  * @author Griefed
  */
 class ReportServer(
+    /** The verdicts to render; read live on each request so the table reflects the running grind. */
     private val store: VerdictStore,
+    /** The port to bind (0 = pick a free one; read it back from [port] after [start]). */
     requestedPort: Int = 8757,
+    /** The interface to bind; loopback by default so the report isn't exposed beyond the box. */
     host: String = "127.0.0.1",
     private val status: GrinderStatus? = null,
     private val cursors: CursorStore? = null,
     private val cacheRoot: File? = null,
+    /**
+     * Supplies the lists `/as-properties` publishes alongside the grinder's findings, read per request so a
+     * refreshed list is served without a restart. `null` serves the grinder's own findings only — the report
+     * server stays constructible without SPC.
+     */
     private val fallbackLists: (() -> FallbackLists)? = null,
+    /**
+     * The kept consoles of crashed boots, linked from the table and served by name. `null` simply offers no
+     * links, so the report stays constructible without a log store.
+     */
     private val crashLogs: BootLogStore? = null,
+    /**
+     * Supplies the operator's console rules, so `/status` can report how many loaded and what could not be.
+     * Reporting the errors is what stops a typo silently disabling an operator's rules — the loader
+     * deliberately keeps the last good set, which would otherwise hide the breakage entirely.
+     */
     private val consoleRules: (() -> ConsoleRuleSet)? = null,
+    /**
+     * The immediate re-grind queue, reported as a backlog count on `/status` so a queued re-verification is
+     * visible rather than inferred from the logs.
+     */
     private val requeue: RequeueStore? = null,
     private val httpThreads: Int = DEFAULT_HTTP_THREADS,
+    /**
+     * How long a whole-store derivation may be reused after the store has moved on, so a busy grind cannot
+     * force it to be redone per request. [java.time.Duration.ZERO] serves a strictly live report and pays the
+     * full cost every time something is recorded.
+     */
     reportCacheMaxAge: Duration = VerdictSnapshotCache.DEFAULT_MAX_AGE
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

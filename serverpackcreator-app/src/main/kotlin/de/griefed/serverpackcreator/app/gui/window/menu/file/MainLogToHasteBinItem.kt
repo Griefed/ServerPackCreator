@@ -54,6 +54,8 @@ class MainLogToHasteBinItem(
     }
 
     /**
+     * Uploads ServerPackCreator's main log to HasteBin and offers the resulting link.
+     *
      * @author Griefed
      */
     private fun uploadLog() {

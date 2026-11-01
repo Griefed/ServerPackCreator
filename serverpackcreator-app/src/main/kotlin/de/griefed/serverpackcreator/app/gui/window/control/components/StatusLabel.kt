@@ -41,6 +41,8 @@ class StatusLabel(text: String, private val transparency: Int = 255) : JLabel(te
     }
 
     /**
+     * Re-reads the label colour from the look-and-feel, so the status text follows a theme change.
+     *
      * @author Griefed
      */
     private fun updateColour() {

@@ -21,7 +21,9 @@ package de.griefed.serverpackcreator.api.utilities.common
 
 /**
  * match the given string against all regular expressions in this list.
- * @return true if any match was found, false otherwise.
+ *
+ * Returns true if any match was found, false otherwise.
+ *
  * @author Griefed
  */
 fun List<Regex>.matchAll(string: String): Boolean {
@@ -40,7 +42,6 @@ fun List<Regex>.matchAll(string: String): Boolean {
  * Intended for building patterns out of dotted version numbers, where an unescaped `.` silently makes a pattern too
  * permissive — `1.21` would otherwise also match `1x21`.
  *
- * @return This string as a [Regex], with every dot escaped.
  * @author Griefed
  */
 fun String.toDotEscapedRegex(): Regex {

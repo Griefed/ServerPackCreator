@@ -35,8 +35,9 @@ class StringUtilities {
         /**
          * Converts a list of Strings, for example from a list, into a concatenated String.
          *
-         * @param strings List of strings that will be concatenated into one string
-         * @return Returns concatenated string that contains all provided values.
+         * [strings] — List of strings that will be concatenated into one string. Returns returns concatenated
+         * string that contains all provided values.
+         *
          * @author Griefed
          */
         fun buildString(strings: List<String>) = buildString(strings.toString())
@@ -44,8 +45,9 @@ class StringUtilities {
         /**
          * Converts a sequence of Strings, for example from a list, into a concatenated String.
          *
-         * @param args Strings that will be concatenated into one string
-         * @return Returns concatenated string that contains all provided values.
+         * [args] — Strings that will be concatenated into one string. Returns returns concatenated string that
+         * contains all provided values.
+         *
          * @author whitebear60
          * @author Griefed
          */
@@ -83,7 +85,8 @@ class StringUtilities {
          * * **&#91;**
          * * **&#93;**
          *
-         * @param text The text which you want to be made safe.
+         * [text] — The text which you want to be made safe.
+         *
          * @author Griefed
          */
         @Suppress("MemberVisibilityCanBePrivate")
@@ -125,7 +128,6 @@ class StringUtilities {
          *
          * Contrary to [pathSecureText], this method does **NOT** remove **&#47;** or **&#92;**.
          *
-         *
          * Replaced/removed are:
          * * **&#60;**
          * * **&#62;**
@@ -149,7 +151,8 @@ class StringUtilities {
          * * **&#91;**
          * * **&#93;**
          *
-         * @param text The text which you want to be made safe.
+         * [text] — The text which you want to be made safe.
+         *
          * @author Griefed
          */
         fun pathSecureTextAlternative(text: String): String {
@@ -204,8 +207,8 @@ class StringUtilities {
          * * **&#96;**
          * * **&#61;**
          *
-         * @param text The text you want to check.
-         * @return `true` if none of these characters were found.
+         * [text] — The text you want to check. Returns `true` if none of these characters were found.
+         *
          * @author Griefed
          */
         fun checkForIllegalCharacters(text: String) =
@@ -258,8 +261,8 @@ class StringUtilities {
          * * **&#96;**
          * * **&#61;**
          *
-         * @param text The text you want to check.
-         * @return `true` if none of these characters were found.
+         * [text] — The text you want to check. Returns `true` if none of these characters were found.
+         *
          * @author Griefed
          */
         fun checkForInvalidPathCharacters(text: String) =

@@ -379,11 +379,18 @@ evidence consulted occasionally, not context every session needs.
   not single letters. The one carve-out is the throwaway loop counter; it generalises only to a
   small, closed set of established Kotlin idioms whose meaning is universal and whose scope is a few
   lines. The line is "would a newcomer have to scroll up to learn what this is?" — if yes, name it.
-- **Documentation — comment everything:** every function, method and exported constant carries a
-  doc comment — unexported ones too. State briefly WHAT it's for and HOW it achieves it, not a
-  restatement of the signature. One or two sentences is the target; needing more is a sign the unit
-  is doing too much (KISS). Keep comments truthful as code changes — a stale comment is worse than
-  none.
+- **Documentation — as little as possible, as much as necessary.** Document at the **class, method or
+  function level**. Add an **inline** comment only where it explains complex logic, non-obvious
+  behaviour, an assumption, a constraint, a side effect, or a design decision that cannot readily be
+  inferred from the code. Before writing a comment, ask whether an experienced developer could
+  reasonably infer it from the code — if yes, omit it. Prefer clear naming and simple structure over
+  explanatory prose. Never restate self-explanatory code, and never add a redundant, obvious or purely
+  descriptive comment. Where a doc comment *is* warranted, state briefly WHAT the unit is for and HOW
+  it achieves it; one or two sentences is the target, and needing more is a sign the unit is doing too
+  much (KISS). Preserve existing documentation that carries meaning; remove or update what is
+  redundant, misleading or outdated whenever you touch the code — a stale comment is worse than none.
+  **This supersedes the former "comment everything" rule**, which required a doc comment on every
+  function, method and exported constant including unexported ones.
 - **Documentation describes the present tense — Griefed's call, 2026-10-02.** A doc comment says what the
   code is and does, for a reader who has never seen any other version of it. It does not say what the code
   *used to* be, which CI run made it change, what an earlier comment got wrong, or why today's shape is
@@ -408,18 +415,33 @@ evidence consulted occasionally, not context every session needs.
   not — it is the enabling change. Keep it to the declaration being documented, and verify the obvious: parameter
   names, types, order and defaults must survive untouched. The alternative, a class-level `@param` block, leaves the
   properties themselves undocumented as far as dokka is concerned.
-- **A doc that only restates the signature is barely better than none — but silence is worse.** For a pure accessor
-  over a well-named field there is often nothing to add, and dokka flags the omission either way. Put the shared
-  meaning where it belongs: `ServerPackConfigTab`'s accessors were labels until the *interface* doc explained that
-  they read live tab state rather than the saved configuration, which is the fact every one of them depends on.
-  Prefer one honest paragraph on the type over forty restatements on its members.
+- **A doc that only restates the signature is omitted, not written.** For a pure accessor over a well-named
+  field there is usually nothing to add, so add nothing. Put the shared meaning where it belongs instead:
+  `ServerPackConfigTab`'s accessors were labels until the *interface* doc explained that they read live tab
+  state rather than the saved configuration, which is the fact every one of them depends on. One honest
+  paragraph on the type beats forty restatements on its members — and beats forty silences too, because the
+  paragraph is the part a reader cannot infer.
+  - **The build agrees: `reportUndocumented` is `false` in
+    `buildSrc/src/main/kotlin/serverpackcreator.dokka-conventions.gradle.kts`.** It warns for every public,
+    protected or package-visible declaration without KDoc, which is the opposite of this rule, so a doc
+    deliberately left off no longer costs a dokka warning. Do not set it back to `true` without changing
+    the policy above first — the two have to say the same thing.
 - **Errors:** always handle, never ignore with `_` unless intentional (comment why).
 
 ## Definition of done (per change)
 
 1. Tests written first and green (`./gradlew :<module>:test`).
-2. Doc comments per **## Conventions** on every new/changed unit.
-3. No new compiler warnings; stale comments updated.
+2. Documentation per **## Conventions** — as little as possible, as much as necessary; no restatements.
+3. No new compiler warnings; stale comments updated. **Measure with `--rerun-tasks`, or the number is
+   about Gradle's cache rather than the code** — an UP-TO-DATE Kotlin compile does not run the compiler, so
+   a grep for `w:` returns zero whatever the source says. That is how a "zero warnings, none at all"
+   reading reached `claude-docs/REFACTOR-AUDIT.md`. The honest baseline on `77fdd27d6`, from
+   `./gradlew :serverpackcreator-{api,app,clientside,grinder}:compileKotlin --rerun-tasks`, is **40**: 31
+   `Deprecated in Java` (the `Locale(String)` constructors, Jackson's `fields()`/`readTree(URL)`,
+   night-config's `valueMap()`), 3 unchecked casts in drag-and-drop handlers, 4 `@OptIn` delicate-API
+   notices for `CoroutineStart.ATOMIC`, 1 redundant conversion. Several are library-driven and move on a
+   dependency bump without a source change, which is the reason to compare against a number that was taken
+   the same way.
 4. CLAUDE.md "Refactor state" (and the relevant module `CLAUDE.md`) updated when an architectural
    step lands. Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`, not here.
 
@@ -430,19 +452,19 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-10-12).** Counts are a snapshot and go stale — re-derive them from
+**Current status (2026-10-23).** Counts are a snapshot and go stale — re-derive them from
 `<module>/build/test-results/test/*.xml` after a run rather than trusting the column:
 
 | Module         | Tests         | State — detail and landmines live in the module's own `CLAUDE.md` |
 |----------------|---------------|------------------------------------------------------------------|
-| api            | 504           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
-| clientside     | 680           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
-| app            | 234           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
+| api            | 542           | Phase 1 complete. → `serverpackcreator-api/CLAUDE.md` |
+| clientside     | 681           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
+| app            | 242           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
 | plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | plugin-selfextract | 17            | Wraps every generated pack in a self-extracting `.bsx` and `.cmd`; the `.cmd` is pinned but has never been run. → `serverpackcreator-plugin-selfextract/CLAUDE.md` |
 | plugin-servertest | 112 (1 skip)  | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
-| web-frontend   | 38 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
+| web-frontend   | 44 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
 | grinder        | 543 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;

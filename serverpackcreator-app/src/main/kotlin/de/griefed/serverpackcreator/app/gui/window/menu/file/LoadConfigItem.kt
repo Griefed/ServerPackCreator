@@ -37,6 +37,8 @@ class LoadConfigItem(
     }
 
     /**
+     * Opens a configuration file into a new tab.
+     *
      * @author Griefed
      */
     private fun loadConfigFile() {

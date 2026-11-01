@@ -41,18 +41,19 @@ import java.nio.file.Paths
  * operations. Running your model through the checks also ensures that the default script settings
  * are present and set according to your pack's environment.
  *
- * @param apiProperties Base settings of SPC used just about everywhere.
- * @param versionMeta   Meta used for Minecraft and modloader version checks and verification.
- * @param utilities     Common utilities used all across SPC.
- * @param apiPlugins    Addons and extensions added by external addons which can add additional checks to a given
- * configuration check.
- *
  * @author Griefed
  */
 class ConfigurationHandler(
+    /** Meta used for Minecraft and modloader version checks and verification. */
     private val versionMeta: VersionMeta,
+    /** Base settings of SPC used just about everywhere. */
     private val apiProperties: ApiProperties,
+    /** Common utilities used all across SPC. */
     private val utilities: Utilities,
+    /**
+     * Addons and extensions added by external addons which can add additional checks to a given configuration
+     * check.
+     */
     private val apiPlugins: ApiPlugins
 ) {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
@@ -82,13 +83,11 @@ class ConfigurationHandler(
          *
          * A failure is logged loudly rather than added to the config errors: an unavailable scanner is a
          * problem with *this installation*, not with the user's modpack, and must not block their build.
-         *
-         * @param destination The modpack directory to scan.
-         * @param scan        The scan to run; defaults to the real Nekodetector.
-         * @return The scanner's findings, or an empty list when it could not run.
          */
         internal fun nekodetectorFindings(
+            /** The modpack directory to scan. */
             destination: Path,
+            /** The scan to run; defaults to the real Nekodetector. */
             scan: (Path) -> List<String> = { SecurityScans.scanUsingNekodetector(it) }
         ): List<String> = try {
             scan(destination)
@@ -185,16 +184,13 @@ class ConfigurationHandler(
      * will not be created. In order to find out which check failed, the user has to check their
      * serverpackcreator.log in the logs-directory.
      *
-     * @param configFile         The configuration file to check. Must either be an existing file to
-     * load a configuration from or null if you want to use the passed
-     * configuration model.
-     * @param packConfig Instance of a configuration of a modpack. Can be used to further
-     * display or use any information within, as it may be changed or
-     * otherwise altered by this method.
-     * @param configCheck Contains all encountered errors during the check of the passed configuration.
-     * @param quietCheck         Whether the configuration should be printed to the console and logs.
-     * Pass false to quietly check the configuration.
-     * @return `false` if the configuration has passed all tests.
+     * [configFile] — The configuration file to check. Must either be an existing file to load a configuration from
+     * or null if you want to use the passed configuration model. [packConfig] — Instance of a configuration of a
+     * modpack. Can be used to further display or use any information within, as it may be changed or otherwise
+     * altered by this method. [configCheck] — Contains all encountered errors during the check of the passed
+     * configuration. [quietCheck] — Whether the configuration should be printed to the console and logs. Pass
+     * false to quietly check the configuration.
+     *
      * @author Griefed
      */
     fun checkConfiguration(configFile: File, packConfig: PackConfig = PackConfig(), configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck {
@@ -236,13 +232,12 @@ class ConfigurationHandler(
      * The passed [packConfig] can be used to further display or use any information within, as it may be changed or otherwise
      * altered by this method.
      *
-     * @param packConfig Instance of a configuration of a modpack. Can be used to further
-     * display or use any information within, as it may be changed or
-     * otherwise altered by this method.
-     * @param configCheck Contains all encountered errors during the check of the passed configuration.
-     * @param quietCheck         Whether the configuration should be printed to the console and logs.
-     * Pass false to quietly check the configuration.
-     * @return `false` if all checks are passed.
+     * [packConfig] — Instance of a configuration of a modpack. Can be used to further display or use any
+     * information within, as it may be changed or otherwise altered by this method. [configCheck] — Contains all
+     * encountered errors during the check of the passed configuration. [quietCheck] — Whether the configuration
+     * should be printed to the console and logs. Pass false to quietly check the configuration. Returns `false` if
+     * all checks are passed.
+     *
      * @author Griefed
      */
     fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck =
@@ -254,13 +249,12 @@ class ConfigurationHandler(
      * `internal` and not part of the published surface: it exists so a test can observe *what* gets
      * scanned, which is not otherwise visible — the scanner reports findings, never its target, and a
      * scan of the wrong path is indistinguishable from a clean one.
-     *
-     * @param scan The scan to run over the modpack; defaults to the real Nekodetector.
      */
     internal fun checkConfiguration(
         packConfig: PackConfig,
         configCheck: ConfigCheck,
         quietCheck: Boolean,
+        /** The scan to run over the modpack; defaults to the real Nekodetector. */
         scan: (Path) -> List<String>
     ): ConfigCheck {
         // The single choke point every validating caller passes through -- CLI, interactive shell, web and
@@ -408,8 +402,8 @@ class ConfigurationHandler(
      * Sanitize any and all links in a given instance of [PackConfig] modpack-directory,
      * server-icon path, server-properties path, Java path and copy-directories entries.
      *
-     * @param packConfig Instance of [PackConfig] in which to sanitize links to
-     * their respective destinations.
+     * [packConfig] — Instance of [PackConfig] in which to sanitize links to their respective destinations.
+     *
      * @author Griefed
      */
     fun sanitizeLinks(packConfig: PackConfig) {
@@ -475,10 +469,10 @@ class ConfigurationHandler(
      * ServerPackCreator will treat it as the user being fine with the default files and return the
      * corresponding boolean.
      *
-     * @param iconOrPropertiesPath The path to the custom server-icon.png or server.properties file to
-     * check.
-     * @return `true` if the file exists or an empty String was passed, false if a file was
-     * specified, but the file was not found.
+     * [iconOrPropertiesPath] — The path to the custom server-icon.png or server.properties file to check. Returns
+     * `true` if the file exists or an empty String was passed, false if a file was specified, but the file was not
+     * found.
+     *
      * @author Griefed
      */
     fun checkIconAndProperties(iconOrPropertiesPath: String) =
@@ -490,10 +484,10 @@ class ConfigurationHandler(
      * `true` path to Java executable/binary, Minecraft version, modloader and modloader
      * version.
      *
-     * @param packConfig An instance of [PackConfig] which contains the
-     * configuration of the modpack.
-     * @param configCheck Contains all encountered errors during the check of the passed configuration.
-     * @return `true` if an error is found during configuration check.
+     * [packConfig] — An instance of [PackConfig] which contains the configuration of the modpack. [configCheck] —
+     * Contains all encountered errors during the check of the passed configuration. Returns `true` if an error is
+     * found during configuration check.
+     *
      * @author Griefed
      */
     fun isDir(packConfig: PackConfig, configCheck: ConfigCheck): ConfigCheck {
@@ -512,10 +506,9 @@ class ConfigurationHandler(
      * If any of `manifest.json`, `minecraftinstance.json` or `config.json` are
      * available, gather as much information from them as possible.
      *
-     * @param packConfig Instance of [PackConfig] with a server pack
-     * configuration.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return `false` when no errors were encountered.
+     * [packConfig] — Instance of [PackConfig] with a server pack configuration. [configCheck] — Collection of
+     * encountered errors, if any, for convenient result-checks. Returns `false` when no errors were encountered.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -575,14 +568,13 @@ class ConfigurationHandler(
      * Reads the modpack directory from [packConfig] at call time rather than from a value captured
      * earlier: for a ZIP source `modpackDir` names the archive until [isZip] has extracted it and
      * repointed the field, and a scan of a `.zip` is silently a scan of nothing.
-     *
-     * @param packConfig  The configuration whose modpack is scanned.
-     * @param configCheck Collection the findings are added to.
-     * @param scan        The scan to run; defaults to the real Nekodetector.
      */
     internal fun scanModpackForInfections(
+        /** The configuration whose modpack is scanned. */
         packConfig: PackConfig,
+        /** Collection the findings are added to. */
         configCheck: ConfigCheck,
+        /** The scan to run; defaults to the real Nekodetector. */
         scan: (Path) -> List<String> = { SecurityScans.scanUsingNekodetector(it) }
     ): ConfigCheck {
         val modpack = File(packConfig.modpackDir)
@@ -608,7 +600,8 @@ class ConfigurationHandler(
      * [PackConfig] to
      * [.printConfigurationModel]
      *
-     * @param packConfig Instance of [PackConfig] to print to console and logs.
+     * [packConfig] — Instance of [PackConfig] to print to console and logs.
+     *
      * @author Griefed
      */
     fun printConfigurationModel(packConfig: PackConfig) = printConfigurationModel(
@@ -632,8 +625,8 @@ class ConfigurationHandler(
     /**
      * Print all encountered errors to logs.
      *
-     * @param encounteredErrors A list of all errors which were encountered during a configuration
-     * check.
+     * [encounteredErrors] — A list of all errors which were encountered during a configuration check.
+     *
      * @author Griefed
      */
     fun printEncounteredErrors(encounteredErrors: List<String>) {
@@ -649,7 +642,6 @@ class ConfigurationHandler(
      * Update the script settings and ensure the default keys, with values gathered from the passed
      * [PackConfig], are present:
      *
-     *
      *  1. `SPC_SERVERPACKCREATOR_VERSION_SPC` : `ServerPackCreator version with which the scripts were created`
      *  1. `SPC_MINECRAFT_VERSION_SPC` : `Minecraft version of the modpack`
     ` *
@@ -661,8 +653,8 @@ class ConfigurationHandler(
      *  1. `SPC_FABRIC_INSTALLER_VERSION_SPC` : `Most recent version of the Fabric installer at the time of creating the scripts`
      *  1. `SPC_QUILT_INSTALLER_VERSION_SPC` : `Most recent version of the Quilt installer at the time of creating the scripts`
      *
+     * [packConfig] — Model in which to ensure the default key-value pairs are present.
      *
-     * @param packConfig Model in which to ensure the default key-value pairs are present.
      * @author Griefed
      */
     fun ensureScriptSettingsDefaults(packConfig: PackConfig) {
@@ -723,9 +715,9 @@ class ConfigurationHandler(
      * generated by this method excludes well know directories which would not be needed by a server
      * pack. If you have suggestions to this list, open a feature request issue on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose)
      *
-     * @param modpackDir The directory for which to gather a list of directories to copy to the server
-     * pack.
-     * @return Directories inside the modpack, excluding well known client-side only directories.
+     * [modpackDir] — The directory for which to gather a list of directories to copy to the server pack. Returns
+     * directories inside the modpack, excluding well known client-side only directories.
+     *
      * @author Griefed
      */
     fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
@@ -784,44 +776,43 @@ class ConfigurationHandler(
      * Should a user report an issue on GitHub and include their logs (which I hope they do....), this would also help
      * me help them. Logging is good. People should use more logging.
      *
-     * @param modpackDirectory     The used modpackDir field either from a configuration file or from
-     * configuration setup.
-     * @param clientsideMods       List of clientside-only mods to exclude from the server pack...
-     * @param inclusions      List of directories in the modpack which are to be included in the
-     * server pack.
-     * @param minecraftVer         The Minecraft version the modpack uses.
-     * @param modloader            The modloader the modpack uses.
-     * @param modloaderVersion     The version of the modloader the modpack uses.
-     * @param includeIcon          Whether to include the server-icon.png in the server pack.
-     * @param includeProperties    Whether to include the server.properties in the server pack.
-     * @param includeZip           Whether to create a zip-archive of the server pack, excluding the
-     * Minecraft server JAR according to Mojang's TOS and EULA.
-     * @param javaArgs             Java arguments to write the start-scripts with.
-     * @param serverPackSuffix     Suffix to append to name of the server pack to be generated.
-     * @param serverIconPath       The path to the custom server-icon.png to be used in the server
-     * pack.
-     * @param serverPropertiesPath The path to the custom server.properties to be used in the server
-     * pack.
-     * @param scriptSettings       Custom settings for start script creation. `KEY`s are the
-     * placeholder, `VALUE`s are the values with which the
-     * placeholders are to be replaced.
      * @author Griefed
      */
     fun printConfigurationModel(
+        /** The used modpackDir field either from a configuration file or from configuration setup. */
         modpackDirectory: String,
+        /** List of clientside-only mods to exclude from the server pack... */
         clientsideMods: List<String>,
         modsWhitelist: List<String>,
+        /** List of directories in the modpack which are to be included in the server pack. */
         inclusions: List<InclusionSpecification>,
+        /** The Minecraft version the modpack uses. */
         minecraftVer: String,
+        /** The modloader the modpack uses. */
         modloader: String,
+        /** The version of the modloader the modpack uses. */
         modloaderVersion: String,
+        /** Whether to include the server-icon.png in the server pack. */
         includeIcon: Boolean,
+        /** Whether to include the server.properties in the server pack. */
         includeProperties: Boolean,
+        /**
+         * Whether to create a zip-archive of the server pack, excluding the Minecraft server JAR according to
+         * Mojang's TOS and EULA.
+         */
         includeZip: Boolean,
+        /** Java arguments to write the start-scripts with. */
         javaArgs: String,
+        /** Suffix to append to name of the server pack to be generated. */
         serverPackSuffix: String,
+        /** The path to the custom server-icon.png to be used in the server pack. */
         serverIconPath: String,
+        /** The path to the custom server.properties to be used in the server pack. */
         serverPropertiesPath: String,
+        /**
+         * Custom settings for start script creation. `KEY`s are the placeholder, `VALUE`s are the values with
+         * which the placeholders are to be replaced.
+         */
         scriptSettings: HashMap<String, String>
     ) {
         log.info("Your configuration is:")
@@ -973,10 +964,10 @@ class ConfigurationHandler(
      * Generate a [PackConfig] from a modpack-directory, resulting in a basic server pack configuration with default
      * values, for an easy-to-use starting point of a server pack config.
      *
-     * @param modpackDirectory The directory which contains the modpack for which a server pack config should be generated.
-     * @return A [PackConfig] for the specified modpack. If no manifests were available, then this PackConfig will only
-     * contain basic values, like a list of clientside-only mods, but no detected Minecraft version, modloader, or modloader
-     * version etc.
+     * [modpackDirectory] — The directory which contains the modpack for which a server pack config should be
+     * generated. Returns a [PackConfig] for the specified modpack. If no manifests were available, then this
+     * PackConfig will only contain basic values, like a list of clientside-only mods, but no detected Minecraft
+     * version, modloader, or modloader version etc.
      *
      * @author Griefed
      */

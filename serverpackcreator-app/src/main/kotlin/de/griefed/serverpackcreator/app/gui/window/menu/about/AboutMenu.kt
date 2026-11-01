@@ -75,6 +75,8 @@ class AboutMenu(
     }
 
     /**
+     * Shows the migration messages collected during startup.
+     *
      * @author Griefed
      */
     fun displayMigrationMessages() {
@@ -82,6 +84,8 @@ class AboutMenu(
     }
 
     /**
+     * Shows the tip-of-the-day dialog.
+     *
      * @author Griefed
      */
     fun showTip() {

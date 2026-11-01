@@ -52,13 +52,15 @@ enum class ImageSupport {
  * on the wrong JDK) is the whole point: a Java-version crash would otherwise be mis-scored as a
  * clientside crash (a false HIGH).
  *
- * @param requiredJavaMajor Maps a Minecraft version to its required Java major, or `null` when unknown.
- *                          Injected (not bound to [MinecraftMeta]) so the gate is unit-testable.
- * @param bundledMajors     The Java majors the runtime image actually ships — must match the Dockerfile.
  * @author Griefed
  */
 class ImageJavaRuntimes(
+    /**
+     * Maps a Minecraft version to its required Java major, or `null` when unknown. Injected (not bound to
+     * [MinecraftMeta]) so the gate is unit-testable.
+     */
     private val requiredJavaMajor: (String) -> Int?,
+    /** The Java majors the runtime image actually ships — must match the Dockerfile. */
     private val bundledMajors: Set<Int> = setOf(8, 17, 21, 25)
 ) {
     /** True when [minecraftVersion]'s required Java major is both known and bundled in the image. */

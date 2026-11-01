@@ -37,6 +37,8 @@ class OpenIconsDirectory(private val apiProperties: ApiProperties) :
     }
 
     /**
+     * Opens the icons directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openIcon() {

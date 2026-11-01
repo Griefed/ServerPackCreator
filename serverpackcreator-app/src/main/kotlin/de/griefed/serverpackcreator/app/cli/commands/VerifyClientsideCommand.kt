@@ -49,7 +49,8 @@ import java.io.File
  * links only). Heavier and slower than `clientsidereport` — it installs and boots a server per
  * target.
  *
- * @param apiWrapper Provides generation, version-meta, scanner and download utilities.
+ * [apiWrapper] — Provides generation, version-meta, scanner and download utilities.
+ *
  * @author Griefed
  */
 @CommandLine.Command(

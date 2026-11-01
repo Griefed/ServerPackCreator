@@ -31,12 +31,11 @@ import java.net.URL
 /**
  * JSON-based utility methods for acquiring and working with JSON from files and objects.
  *
- * @param objectMapper    Used for JSON-parsing.
- *
  * @author Griefed
  */
 @Suppress("unused")
 class JsonUtilities(
+    /** Used for JSON-parsing. */
     val objectMapper: ObjectMapper = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -44,12 +43,7 @@ class JsonUtilities(
 ) {
 
     /**
-     * Check whether the text in specified child node(s) matches the specified text.
-     *
-     * @param jsonNode   The JsonNode from which to acquire the text.
-     * @param matches    The text to check for a match.
-     * @param childNodes The nested nodes in the JsonNode to acquire the text from, in order.
-     * @return `true` if the texts match.
+     * Whether the text in [jsonNode]'s nested [childNodes], read in order, matches [matches].
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -58,11 +52,7 @@ class JsonUtilities(
         getNestedText(jsonNode, *childNodes).matches(matches)
 
     /**
-     * Get the text from nested child node(s).
-     *
-     * @param jsonNode   The JsonNode from which to acquire the text from.
-     * @param childNodes The child nodes which contain the requested text, in order.
-     * @return The text from the requested child node(s).
+     * The text from [jsonNode]'s nested [childNodes], read in order.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -73,14 +63,14 @@ class JsonUtilities(
     /**
      * Get a nested element from a JsonNode.
      *
-     * @param jsonNode   The JsonNode from which to acquire the nested element.
-     * @param childNodes The nested elements, in order.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
     @Throws(NullPointerException::class)
     fun getNestedElement(
+        /** The JsonNode from which to acquire the nested element. */
         jsonNode: JsonNode,
+        /** The nested elements, in order. */
         vararg childNodes: String
     ): JsonNode {
         var child: JsonNode = jsonNode
@@ -91,12 +81,8 @@ class JsonUtilities(
     }
 
     /**
-     * Check whether the text in specified child node(s) is equal to the specified text,
-     * case-insensitive.
-     *
-     * @param jsonNode         The JsonNode from which to acquire the text.
-     * @param childNodes       The nested nodes in the JsonNode to acquire the text from, in order.
-     * @return `true` if the texts are equal, case-insensitive.
+     * Whether the text in [jsonNode]'s nested [childNodes], read in order, equals [equalsIgnoreCase],
+     * ignoring case.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -105,11 +91,7 @@ class JsonUtilities(
         getNestedText(jsonNode, *childNodes).equals(equalsIgnoreCase, ignoreCase = true)
 
     /**
-     * Check whether the text in the specified child node(s) is empty.
-     *
-     * @param jsonNode   The JsonNode from which to acquire the text.
-     * @param childNodes The nested nodes in the JsonNode to acquire the text from, in order.
-     * @return `true` if the text in the requested node is empty.
+     * Whether the text in [jsonNode]'s nested [childNodes], read in order, is empty.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -118,11 +100,7 @@ class JsonUtilities(
         getNestedText(jsonNode, *childNodes).isEmpty()
 
     /**
-     * Get the boolean value from the nested child node(s).
-     *
-     * @param jsonNode   The JsonNode from which to acquire the boolean.
-     * @param childNodes The nested nodes in the JsonNode to acquire the boolean from, in order.
-     * @return `true` or `false`, based on the boolean in the specified child node(s).
+     * The boolean value from the nested child node(s).
      * @throws JsonException        if the specified node(s) contain no boolean or the requested value
      * is not a parsable boolean value.
      * @throws NullPointerException if the requested element is not present in the JsonNode.
@@ -130,7 +108,9 @@ class JsonUtilities(
      */
     @Throws(NullPointerException::class, JsonException::class)
     fun getNestedBoolean(
+        /** The JsonNode from which to acquire the boolean. */
         jsonNode: JsonNode,
+        /** The nested nodes in the JsonNode to acquire the boolean from, in order. */
         vararg childNodes: String
     ): Boolean {
         val bool = getNestedText(jsonNode, *childNodes)
@@ -149,13 +129,8 @@ class JsonUtilities(
     }
 
     /**
-     * Get the array of texts from the nested child node(s) comma-separated text.
-     *
-     * @param jsonNode   The JsonNode from which to acquire the texts from.
-     * @param split      The character by which to split the text of the last child node into an array
-     * with.
-     * @param childNodes The nested nodes in the JsonNode to acquire the texts from, in order.
-     * @return An array of strings containing the texts from the specified node(s)
+     * The texts from [jsonNode]'s nested [childNodes], read in order, with the last node's text split
+     * into an array on [split].
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -164,12 +139,7 @@ class JsonUtilities(
         getNestedText(jsonNode, *childNodes).split(split.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
     /**
-     * Check whether a child node contains the specified text.
-     *
-     * @param jsonNode   The JsonNode from which to acquire the text for checks.
-     * @param childNodes The child node(s) from which to acquire the text for contain-checks from, in
-     * order.
-     * @return `true` if the child node contains the specified text.
+     * Whether the text in [jsonNode]'s nested [childNodes], read in order, contains [contains].
      * @throws NullPointerException if the requested element is not present in the JsonNode.
      * @author Griefed
      */
@@ -178,12 +148,8 @@ class JsonUtilities(
         getNestedText(jsonNode, *childNodes).contains(contains)
 
     /**
-     * Get a string iterator for the field names of the last specified child node in the specified
-     * JsonNode.
-     *
-     * @param childNodes The nested nodes from which to get the iterator, in order.
-     * @return A string iterator for the field names in the last requested child node in the provided
-     * JsonNode.
+     * A string iterator over the field names of the last of [jsonNode]'s nested [childNodes], read in
+     * order.
      * @throws NullPointerException if any of the specified child nodes can not be found in the provided
      * JsonNode.
      * @author Griefed
@@ -193,10 +159,7 @@ class JsonUtilities(
         getNestedElement(jsonNode, *childNodes).fieldNames()
 
     /**
-     * Acquire a [JsonNode] from the given json input-stream.
-     *
-     * @param inputStream The input-stream to read.
-     * @return JSON data from the specified file.
+     * The [JsonNode] parsed from [inputStream].
      * @throws IOException when the file could not be parsed/read into a [JsonNode].
      * @author Griefed
      */
@@ -204,10 +167,7 @@ class JsonUtilities(
     fun getJson(inputStream: InputStream) = getJson(inputStream.readText())
 
     /**
-     * Acquire a [JsonNode] from the given json string.
-     *
-     * @param string The string to read.
-     * @return JSON data from the specified file.
+     * The [JsonNode] parsed from [string].
      * @throws IOException when the file could not be parsed/read into a [JsonNode].
      * @author Griefed
      */
@@ -215,10 +175,7 @@ class JsonUtilities(
     fun getJson(string: String): JsonNode = objectMapper.readTree(string)
 
     /**
-     * Acquire a [JsonNode] from the given json file.
-     *
-     * @param file The file to read.
-     * @return JSON data from the specified file.
+     * The [JsonNode] parsed from [file].
      * @throws IOException when the file could not be parsed/read into a [JsonNode].
      * @author Griefed
      */
@@ -226,10 +183,7 @@ class JsonUtilities(
     fun getJson(file: File): JsonNode = getJson(file.readText(Charsets.UTF_8))
 
     /**
-     * Acquire a [JsonNode] from the given URL.
-     *
-     * @param url URL to the data which contains your JSON.
-     * @return JSON data from the specified file.
+     * The [JsonNode] parsed from the data at [url].
      * @throws IOException when the file could not be parsed/read into a [JsonNode].
      * @author Griefed
      */

@@ -49,7 +49,6 @@ interface NeoForgeInstance {
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an
      * [Optional]
      *
-     * @return Client wrapped in an [Optional].
      * @author Griefed
      */
     fun minecraftClient(): Optional<MinecraftClient>

@@ -1,0 +1,30 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Dev stack (with app)" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <!--
+      The `Dev stack` configuration beside this one starts the DEPENDENCIES only, because
+      docker-compose-dev.yml keeps the ServerPackCreator service behind a `profiles: [app]` key.
+      That is deliberate: the service's builder stage runs a full Gradle build inside the container,
+      so it is for testing the artifact rather than for iterating, and the application normally runs
+      from `WebService (dev stack)` with the debugger attached.
+
+      This configuration is the opt in, and the equivalent of the command BUILD.md gives for the
+      same thing. The profile is enabled through the env file rather than a Profiles field so the
+      setting lives in a tracked file every contributor gets.
+
+      Check that the first run actually started `serverpackcreator`: if only the database and
+      Mongoku come up, the IDE did not forward the env file, and the Profiles option under
+      "Modify options" (comma separated, `app`) is the direct way to set it instead.
+
+      Build policy defaults to "Only missing images", so this rebuilds on the first run and not
+      after later source changes. Set Build to "Always" in the dialog to match the command's
+      rebuild behaviour.
+    -->
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="$PROJECT_DIR$/docker/app-profile.env" />
+        <option name="sourceFilePath" value="docker/docker-compose-dev.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

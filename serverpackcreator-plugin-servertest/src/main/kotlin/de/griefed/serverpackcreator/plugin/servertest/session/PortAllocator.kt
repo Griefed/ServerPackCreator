@@ -40,16 +40,16 @@ import java.util.Random
  * port inside it is 25565 itself — registered to Minecraft, which is what is being launched — which also keeps
  * the ports easy to write a firewall rule for, as an ephemeral-range port would not be.
  *
- * @param rangeStart First port to consider; coerced into a usable range rather than rejected.
- * @param rangeEnd   Last port to consider, inclusive.
- * @param random     Source of the scan's starting offset; injectable so the scan order can be pinned.
- * @param isFree     The bind test; injectable so allocation can be tested without binding real sockets.
  * @author Griefed
  */
 class PortAllocator(
+    /** First port to consider; coerced into a usable range rather than rejected. */
     rangeStart: Int = DEFAULT_RANGE_START,
+    /** Last port to consider, inclusive. */
     rangeEnd: Int = DEFAULT_RANGE_END,
+    /** Source of the scan's starting offset; injectable so the scan order can be pinned. */
     private val random: Random = Random(),
+    /** The bind test; injectable so allocation can be tested without binding real sockets. */
     private val isFree: (Int) -> Boolean = ::isPortBindable
 ) {
 

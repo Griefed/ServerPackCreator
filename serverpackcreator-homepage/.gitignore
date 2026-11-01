@@ -38,3 +38,7 @@ yarn.lock
 # Assembled documentation -- built by docs/assemble-docs.sh, never committed.
 /docs-build/*
 !/docs-build/.gitkeep
+
+# Written by `npm run collect-downloads` before every build. Deliberately NOT committed: a
+# checked-in copy would be a second place a download total is recorded, and it would go stale.
+/src/generated/

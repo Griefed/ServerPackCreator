@@ -34,10 +34,12 @@ import java.io.File
  * and a
  * verdict's detail is read from it, so that one file stays.
  *
- * @param workDirectory The grinder's scratch root — the same one [ContainerCandidateVerifier] stages under.
  * @author Griefed
  */
-class BootWorkspaceReaper(private val workDirectory: File) {
+class BootWorkspaceReaper(
+    /** The grinder's scratch root — the same one [ContainerCandidateVerifier] stages under. */
+    private val workDirectory: File
+) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
@@ -48,9 +50,8 @@ class BootWorkspaceReaper(private val workDirectory: File) {
      * **The platform is half of the scope, not decoration.** The same slug on Modrinth and on CurseForge is two
      * candidates — verdict freshness is keyed that way for the same reason — and they are ground concurrently.
      * Reaping by slug alone deletes the other platform's pack mid-boot, which surfaces as an exit-127 boot, or as
-     * the same project reading SURVIVED on one platform and CRASHED on the other.
-     *
-     * @return Bytes freed, for the caller to log.
+     * the same project reading SURVIVED on one platform and CRASHED on the other. Returns the bytes
+     * freed, for the caller to log.
      */
     fun reap(platform: String, slug: String): Long {
         val owner = AttemptDirectory.ownerKey(platform, slug)
@@ -60,9 +61,7 @@ class BootWorkspaceReaper(private val workDirectory: File) {
     /**
      * Sweep every attempt directory found, for use at startup. A run killed mid-boot leaves staging that no
      * [reap] call will ever come for, so without this each crash leaks a pack permanently. Safe only when nothing
-     * is in flight — at startup, nothing is.
-     *
-     * @return Bytes freed, for the caller to log.
+     * is in flight — at startup, nothing is. Returns the bytes freed, for the caller to log.
      */
     fun reapAll(): Long = reapMatching("previous run") { true }
 

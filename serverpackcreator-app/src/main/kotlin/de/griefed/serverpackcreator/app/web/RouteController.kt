@@ -37,7 +37,8 @@ class RouteController {
     /**
      * Redirect /downloads to /#/downloads.
      *
-     * @return Redirects requests for /downloads to /#/downloads
+     * Redirects requests for /downloads to /#/downloads.
+     *
      * @author Griefed
      */
     @RequestMapping("/downloads")
@@ -48,7 +49,8 @@ class RouteController {
     /**
      * Redirect /about to /#/about.
      *
-     * @return Redirects requests for /about to /#/about
+     * Redirects requests for /about to /#/about.
+     *
      * @author Griefed
      */
     @RequestMapping("/about")

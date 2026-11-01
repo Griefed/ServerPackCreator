@@ -26,7 +26,6 @@
  * Rob
  *
  * #####################################################################################################################
- *
  */
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
@@ -40,18 +39,21 @@ import javax.swing.SwingUtilities
 /**
  * The ComponentResizer allows you to resize a component by dragging a border of the component.
  *
- * @param dragInsets The insets specify an area where mouseDragged events are recognized from the edge of the border
- * inwards. A value of 0 for any size will imply that the border is not resizable. Otherwise, the appropriate drag cursor
- * will appear when the mouse is inside the resizable border area.
- * @param snapSize Control how many pixels a border must be dragged before the size of the component is changed. The
- * border will snap to the size once dragging has passed the halfway mark. Dimension object allows you to separately
- * specify a horizontal and vertical snap size.
- *
  * @author Griefed
  * @author Rob Camick
  */
 class ComponentResizer(
+    /**
+     * The insets specify an area where mouseDragged events are recognized from the edge of the border inwards.
+     * A value of 0 for any size will imply that the border is not resizable. Otherwise, the appropriate drag
+     * cursor will appear when the mouse is inside the resizable border area.
+     */
     dragInsets: Insets = Insets(5, 5, 5, 5),
+    /**
+     * Control how many pixels a border must be dragged before the size of the component is changed. The border
+     * will snap to the size once dragging has passed the halfway mark. Dimension object allows you to
+     * separately specify a horizontal and vertical snap size.
+     */
     private var snapSize: Dimension = Dimension(1, 1),
 ) : MouseAdapter() {
 
@@ -86,9 +88,8 @@ class ComponentResizer(
     /**
      * Add the required listeners to the specified component
      *
-     * @param component The component the listeners are added to.
-     * @param constraint The miglayout constraints to update. Use {0} and {1} for width and height respectively, i.e.
-     * "cell 2 3 1 3,grow,w 10:{0}:,h {1}!"
+     * [component] — The component the listeners are added to. [constraint] — The miglayout constraints to update.
+     * Use {0} and {1} for width and height respectively, i.e. "cell 2 3 1 3,grow,w 10:{0}:,h {1}!".
      *
      * @author Rob Camick
      * @author Griefed
@@ -122,10 +123,6 @@ class ComponentResizer(
         }
     }
 
-    /**
-     * @author Rob Camick
-     * @author Griefed
-     */
     override fun mouseMoved(e: MouseEvent) {
         val source = getSource(e)
         val location = e.point
@@ -156,6 +153,8 @@ class ComponentResizer(
     }
 
     /**
+     * Applies a drag on a resizable border to the component's bounds.
+     *
      * @author Rob Camick
      * @author Griefed
      */
@@ -197,6 +196,8 @@ class ComponentResizer(
     }
 
     /**
+     * The scroll pane a mouse event belongs to, whether the event hit the pane itself or one of its children.
+     *
      * @author Rob Camick
      * @author Griefed
      */
@@ -208,10 +209,6 @@ class ComponentResizer(
         }
     }
 
-    /**
-     * @author Rob Camick
-     * @author Griefed
-     */
     override fun mouseEntered(e: MouseEvent) {
         if (!resizing) {
             val source = getSource(e)
@@ -219,10 +216,6 @@ class ComponentResizer(
         }
     }
 
-    /**
-     * @author Rob Camick
-     * @author Griefed
-     */
     override fun mouseExited(e: MouseEvent) {
         if (!resizing) {
             updateCursor(e, sourceCursor!!)
@@ -230,6 +223,8 @@ class ComponentResizer(
     }
 
     /**
+     * Sets the cursor on the pane the event belongs to, so the shape matches the border under the pointer.
+     *
      * @author Rob Camick
      * @author Griefed
      */
@@ -239,10 +234,6 @@ class ComponentResizer(
         e.component.cursor = cursor
     }
 
-    /**
-     * @author Rob Camick
-     * @author Griefed
-     */
     override fun mousePressed(e: MouseEvent) {
         //	The mouseMoved event continually updates this variable
         if (direction == 0) {
@@ -264,6 +255,8 @@ class ComponentResizer(
     }
 
     /**
+     * Turns autoscrolling on or off for the duration of a resize drag, which would otherwise fight the drag.
+     *
      * @author Rob Camick
      * @author Griefed
      */

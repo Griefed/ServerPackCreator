@@ -49,7 +49,8 @@ class ServerPackController @Autowired constructor(
     /**
      * Download a server pack by its ID.
      *
-     * @return Gives the requester the requested file as a download, if it was found.
+     * Gives the requester the requested file as a download, if it was found.
+     *
      * @author Griefed
      */
     @GetMapping(value = ["/download/{id:[0-9a-zA-Z]+}"], produces = ["application/zip"])
@@ -70,7 +71,7 @@ class ServerPackController @Autowired constructor(
                     .header(
                         HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()
-                            .filename("${serverPack.get().fileName}_server_pack.zip")
+                            .filename(downloadName(serverPack.get()))
                             .build().toString()
                     )
                     .contentLength(archive.get().length())
@@ -82,11 +83,23 @@ class ServerPackController @Autowired constructor(
     }
 
     /**
+     * What the browser is told to save the archive as.
+     *
+     * `ServerPack.fileName` already carries the `_server_pack.zip` suffix `zipBuilder` gave the archive,
+     * so appending another one served it as `..._server_pack.zip_server_pack.zip`. A row that never got
+     * a name falls back to its id, because the header is what the browser writes to disk and
+     * `"null_server_pack.zip"` is a real filename a user would end up with.
+     */
+    private fun downloadName(serverPack: ServerPack): String =
+        serverPack.fileName?.takeIf { it.isNotBlank() } ?: "${serverPack.id}_server_pack.zip"
+
+    /**
      * Download a server pack by the modpack and run-configuration ID.
      *
-     * @param modPackId The id of the modpack from which the server pack was generated.
-     * @param runConfigurationId The ID of the run-configuration with which the server pack was generated.
-     * @return Gives the requester the requested file as a download, if it was found.
+     * [modPackId] — The id of the modpack from which the server pack was generated. [runConfigurationId] — The ID
+     * of the run-configuration with which the server pack was generated. Returns gives the requester the requested
+     * file as a download, if it was found.
+     *
      * @author Griefed
      */
     @GetMapping(value = ["/download/{modPackId:[0-9]+}&{runConfigurationId:[0-9]+}"], produces = ["application/zip"])
@@ -156,10 +169,10 @@ class ServerPackController @Autowired constructor(
     /**
      * GET request for voting whether a server pack works or not.
      *
-     * @param id   The id of the server pack to vote for.
-     * @param vote The vote, consisting of the id of the server pack and whether the vote should be
-     * incremented or decremented. Example `42,up` or `23,down`.
-     * @return ResponseEntity OK/BadRequest/NotFound
+     * [id] — The id of the server pack to vote for. [vote] — The vote, consisting of the id of the server pack and
+     * whether the vote should be incremented or decremented. Example `42,up` or `23,down`. Returns responseEntity
+     * OK/BadRequest/NotFound.
+     *
      * @author Griefed
      */
     @GetMapping("/vote/{id:[0-9a-zA-Z]+}&{vote}")

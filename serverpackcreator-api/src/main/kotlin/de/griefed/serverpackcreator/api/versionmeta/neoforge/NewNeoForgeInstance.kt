@@ -29,7 +29,6 @@ import java.util.*
  * An instance of a complete NeoForge combination, containing a Minecraft version, related NeoForge
  * version and the URL to the server installer.
  *
- * @param minecraftMeta    The corresponding Minecraft client for this NeoForge version.
  * @throws [java.net.MalformedURLException] if the URL to the download of the Forge server installer could not be created.
  *
  * @author Griefed
@@ -38,6 +37,7 @@ import java.util.*
 class NewNeoForgeInstance(
     override val minecraftVersion: String,
     override val neoForgeVersion: String,
+    /** The corresponding Minecraft client for this NeoForge version. */
     private val minecraftMeta: MinecraftMeta
 ) : NeoForgeInstance {
 
@@ -48,7 +48,6 @@ class NewNeoForgeInstance(
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an
      * [Optional]
      *
-     * @return Client wrapped in an [Optional].
      * @author Griefed
      */
     override fun minecraftClient() = minecraftMeta.getClient(minecraftVersion)

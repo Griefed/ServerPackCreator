@@ -59,8 +59,7 @@ class ModpackManifestParser(
      * the GUI's editor does, to avoid re-parsing a multi-megabyte `minecraftinstance.json` on every
      * keystroke-pause — can ask instead of duplicating the list and drifting from it.
      *
-     * @param destination The directory the modpack lives in.
-     * @return The candidate manifest files, existing or not, most-specific launcher first.
+     * [destination] — The directory the modpack lives in.
      */
     fun manifestCandidates(destination: String): List<File> {
         val parent = File(destination).parentFile
@@ -79,9 +78,9 @@ class ModpackManifestParser(
      * Check whether various manifests from various launchers exist and use them to update our
      * ConfigurationModel and pack name.
      *
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return The name of the modpack currently being checked. `null` if the name could not be
-     * acquired.
+     * [configCheck] — Collection of encountered errors, if any, for convenient result-checks. Returns the name of
+     * the modpack currently being checked. `null` if the name could not be acquired.
+     *
      * @author Griefed
      */
     fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String? {
@@ -186,9 +185,9 @@ class ModpackManifestParser(
      * modpack. A manifest.json-file is usually created when a modpack is exported through launchers
      * like Overwolf's CurseForge or GDLauncher.
      *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param manifest           The CurseForge manifest.json-file of the modpack to read.
+     * [packConfig] — An instance containing a configuration for a modpack from which to create a server pack.
+     * [manifest] — The CurseForge manifest.json-file of the modpack to read.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -208,10 +207,10 @@ class ModpackManifestParser(
      * Acquire the modpacks name from the JSON previously acquired and stored in the
      * ConfigurationModel.
      *
-     * @param packConfig The ConfigurationModel containing the JsonNode from which to acquire
-     * the modpacks name.
-     * @param childNodes         The child nodes, in order, which contain the requested packname.
-     * @return The new name of the modpack.
+     * [packConfig] — The ConfigurationModel containing the JsonNode from which to acquire the modpacks name.
+     * [childNodes] — The child nodes, in order, which contain the requested packname. Returns the new name of the
+     * modpack.
+     *
      * @author Griefed
      */
     fun updatePackName(packConfig: PackConfig, vararg childNodes: String) = try {
@@ -237,9 +236,9 @@ class ModpackManifestParser(
      * Update the given ConfigurationModel with values gathered from the minecraftinstance.json of
      * the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
      *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param minecraftInstance  The minecraftinstance.json-file of the modpack to read.
+     * [packConfig] — An instance containing a configuration for a modpack from which to create a server pack.
+     * [minecraftInstance] — The minecraftinstance.json-file of the modpack to read.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -273,8 +272,8 @@ class ModpackManifestParser(
      *
      * Update the given ConfigurationModel with values gathered from a Modrinth `modrinth.index.json`-manifest.
      *
-     * @param packConfig The model to update.
-     * @param manifest           The manifest file.
+     * [packConfig] — The model to update. [manifest] — The manifest file.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -314,8 +313,8 @@ class ModpackManifestParser(
      *
      * Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
      *
-     * @param packConfig The model to update.
-     * @param manifest           The manifest file.
+     * [packConfig] — The model to update. [manifest] — The manifest file.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -363,9 +362,9 @@ class ModpackManifestParser(
      * Update the given ConfigurationModel with values gathered from the modpacks config.json. A
      * config.json is usually created by GDLauncher.
      *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param config             The config.json-file of the modpack to read.
+     * [packConfig] — An instance containing a configuration for a modpack from which to create a server pack.
+     * [config] — The config.json-file of the modpack to read.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -384,9 +383,8 @@ class ModpackManifestParser(
      * Update the given PackConfig with values gathered from the modpacks instance.json. An
      * instance.json is usually created by GDLauncher and located in the modpacks parent directory of the data-directory.
      *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param instance             The instance.json-file of the modpack to read.
+     * [packConfig] — An instance containing a configuration for a modpack from which to create a server pack.
+     * [instance] — The instance.json-file of the modpack to read.
      */
     @Throws(IOException::class)
     fun updateConfigModelFromGDInstanceJson(packConfig: PackConfig, instance: File) {
@@ -409,13 +407,12 @@ class ModpackManifestParser(
     /**
      * **`mmc-pack.json`**
      *
-     *
      * Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
      * mmc-pack.json is usually created by the MultiMC launcher.
      *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param mmcPack            The config.json-file of the modpack to read.
+     * [packConfig] — An instance containing a configuration for a modpack from which to create a server pack.
+     * [mmcPack] — The config.json-file of the modpack to read.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -455,7 +452,8 @@ class ModpackManifestParser(
      * Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks
      * instance.cfg, which is usually created by the MultiMC launcher.
      *
-     * @param instanceCfg The config.json-file of the modpack to read.
+     * [instanceCfg] — The config.json-file of the modpack to read.
+     *
      * @author Griefed
      */
     @Throws(IOException::class)
@@ -474,8 +472,9 @@ class ModpackManifestParser(
      * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
      * ServerPackCreator will still be able to work with the users input.
      *
-     * @param modloader Modloader String-representation to normalize.
-     * @return A normalized String of the specified modloader.
+     * [modloader] — Modloader String-representation to normalize. Returns a normalized String of the specified
+     * modloader.
+     *
      * @author Griefed
      */
     fun getModLoaderCase(modloader: String) = when {

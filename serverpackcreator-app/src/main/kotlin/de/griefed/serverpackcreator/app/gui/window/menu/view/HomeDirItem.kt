@@ -36,6 +36,8 @@ class HomeDirItem(private val apiProperties: ApiProperties) :
     }
 
     /**
+     * Opens ServerPackCreator's home directory in the system's file manager.
+     *
      * @author Griefed
      */
     private fun openHomeDir() {

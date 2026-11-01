@@ -48,12 +48,16 @@ dokka {
                 )
             )
             skipDeprecated.set(false)
-            reportUndocumented.set(true)
+            // False, because the documentation policy in the root CLAUDE.md asks for a doc
+            // comment only where a reader could not infer the same thing from the code. This flag
+            // warns for every undocumented public, protected or package-visible declaration, so
+            // leaving it on would contradict that policy on every accessor deliberately left bare.
+            reportUndocumented.set(false)
             skipEmptyPackages.set(true)
             jdkVersion.set(javaVersion.toInt())
             // Generated sources (e.g. the i18n4k `Translations` object) carry no hand-written
             // KDoc, so documenting them is neither possible nor meaningful — exclude them to keep
-            // the docs (and the reportUndocumented output) focused on first-party code.
+            // the published docs focused on first-party code.
             // `suppressGeneratedFiles` alone does not catch the i18n4k output under
             // `build/generated`, so we additionally suppress that directory by path.
             suppressGeneratedFiles.set(true)

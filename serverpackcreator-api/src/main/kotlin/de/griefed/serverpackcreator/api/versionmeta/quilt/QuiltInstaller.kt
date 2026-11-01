@@ -34,12 +34,11 @@ import java.util.Collections
 /**
  * Information about the Quilt installer.
  *
- * @param utilities Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 internal class QuiltInstaller(
     private val manifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
@@ -121,7 +120,6 @@ internal class QuiltInstaller(
     /**
      * Acquire the URL for the given Quilt version.
      *
-     * @return URL to the installer for the given Quilt version.
      * @throws MalformedURLException if the URL could not be formed.
      * @author Griefed
      */

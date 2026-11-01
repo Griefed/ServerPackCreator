@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicInteger
  * and overwrite each other. Anything read after the run can only ever see the last of them, which is
  * rarely the one the verdict rests on.
  *
- * @param root Directory the attempt directories are created under; created on demand.
  * @author Griefed
  */
 class BootArtifactWriter(private val root: File) {

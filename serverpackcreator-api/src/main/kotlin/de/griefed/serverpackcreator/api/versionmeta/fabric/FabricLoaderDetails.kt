@@ -28,7 +28,7 @@ import java.util.*
 /**
  * Acquire details for a Fabric loader of a given Minecraft and Fabric version.
  *
- * @param objectMapper Object mapper for JSON parsing.
+ * [objectMapper] — Object mapper for JSON parsing.
  *
  * @author Griefed
  */
@@ -39,7 +39,6 @@ internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
     /**
      * Get the details for a given Minecraft and Fabric version combination.
      *
-     * @return Details for a given Minecraft and Fabric version combination, wrapped in an [Optional].
      * @author Griefed
      */
     fun getDetails(

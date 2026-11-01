@@ -35,6 +35,8 @@ import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 
 /**
+ * The settings editor for the web service — database, cleanup schedules and related configuration.
+ *
  * @author Griefed
  */
 class WebserviceSettings(

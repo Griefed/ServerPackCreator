@@ -212,6 +212,47 @@ internal class GenerationConfigTest {
     }
 
     /**
+     * Pins that replacing a fallback list publishes a NEW set rather than emptying the live one.
+     *
+     * `updateFallback()` used to `clear()` and then `addAll()` on `clientsideMods` itself — the same
+     * two-step this class already pins against for the regex variants, in the one path that was not
+     * fixed with them. It is reachable at runtime: the Edit menu's *Update Default Modslist* calls it on
+     * the event dispatch thread, while a generation or a config-check tick reads the same list from a
+     * coroutine. `TreeSet` is not thread-safe, so the window is not merely a stale read — a structural
+     * modification during another thread's traversal is undefined.
+     *
+     * Identity is what is asserted, because it is the property that makes the window impossible: a
+     * reader holding the old set keeps a complete old set, and one reading the field afterwards gets a
+     * complete new one. There is no moment at which either is partial.
+     */
+    @Test
+    fun replacingAFallbackListPublishesANewSetInsteadOfEmptyingTheLiveOne() {
+        val generationConfig = GenerationConfig(PropertyStore())
+
+        val heldClientside = generationConfig.clientsideMods
+        Assertions.assertTrue(heldClientside.isNotEmpty(), "precondition: the fallback list is not empty")
+        generationConfig.replaceClientsideMods(listOf("AmbientSounds", "BetterPing"))
+
+        Assertions.assertNotSame(
+            heldClientside, generationConfig.clientsideMods,
+            "a replace must publish a new set, not rewrite the one readers are holding"
+        )
+        Assertions.assertTrue(
+            heldClientside.isNotEmpty(),
+            "the set a reader was already holding must not have been emptied underneath it"
+        )
+        Assertions.assertEquals(
+            sortedSetOf("AmbientSounds", "BetterPing"), generationConfig.clientsideMods,
+            "and the field must now hold exactly what was published"
+        )
+
+        val heldWhitelist = generationConfig.modsWhitelist
+        generationConfig.replaceModsWhitelist(listOf("Ping"))
+        Assertions.assertNotSame(heldWhitelist, generationConfig.modsWhitelist)
+        Assertions.assertEquals(sortedSetOf("Ping"), generationConfig.modsWhitelist)
+    }
+
+    /**
      * Pins that each read of the regex-variant lists yields its **own** set.
      *
      * The getter used to `clear()` and refill one shared `TreeSet` field on every access. Two problems

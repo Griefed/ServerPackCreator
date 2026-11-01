@@ -39,7 +39,7 @@ import javax.xml.parsers.ParserConfigurationException
  * `VersionMetaConfig` constants and does the whole refresh inside its constructor, so nothing about
  * *how many requests a check costs* was reachable from a test while the logic lived there.
  *
- * @param utilities Commonly used utilities across ServerPackCreator.
+ * [utilities] — Commonly used utilities across ServerPackCreator.
  */
 internal class ManifestUpdater(private val utilities: Utilities) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -57,13 +57,13 @@ internal class ManifestUpdater(private val utilities: Utilities) {
      * If it exists, it is compared to the online manifest. If the online version contains more
      * versions, the local manifest is replaced by the online one.
      *
-     * @param urlToManifest   The URL to the manifest.
-     * @param manifestType    The type of the manifest, which decides how its versions are counted.
      * @author Griefed
      */
     fun checkManifest(
         manifestToCheck: File,
+        /** The URL to the manifest. */
         urlToManifest: URL,
+        /** The type of the manifest, which decides how its versions are counted. */
         manifestType: Type
     ) {
         if (manifestToCheck.isFile) {
@@ -107,9 +107,9 @@ internal class ManifestUpdater(private val utilities: Utilities) {
                         val countOldFile = try {
                             versionsIn(oldContent, manifestType, manifestToCheck)
                         } catch (ex: Exception) {
-                            // The one manifest a host could not read used to be the one manifest it could never
-                            // replace: the comparison parses the local copy too, so a truncated one threw here
-                            // and the working download already in hand was discarded.
+                            // The comparison parses the local copy too, so an unreadable manifest throws here
+                            // and would discard the working download already in hand -- leaving the one
+                            // manifest a host cannot read as the one it can never replace.
                             log.warn("Manifest $manifestToCheck can not be parsed. Adopting the upstream copy.")
                             log.debug("Parsing the local $manifestToCheck failed.", ex)
                             UNREADABLE
@@ -161,10 +161,10 @@ internal class ManifestUpdater(private val utilities: Utilities) {
      * nests its versions under one tag, Forge keys lists by Minecraft version, the loader metadata is maven
      * metadata, and LegacyFabric publishes both shapes under one type.
      *
-     * @param content      The manifest to count, as it was read.
-     * @param manifestType The type deciding how versions are counted.
-     * @param manifest     The file the content belongs to — LegacyFabric's two shapes are told apart by name.
-     * @return The number of versions declared.
+     * [content] — The manifest to count, as it was read. [manifestType] — The type deciding how versions are
+     * counted. [manifest] — The file the content belongs to — LegacyFabric's two shapes are told apart by name.
+     * Returns the number of versions declared.
+     *
      * @throws IOException                  if JSON content can not be parsed.
      * @throws SAXException                 if XML content can not be parsed.
      * @throws InvalidTypeException         if the type does not describe a countable manifest.
@@ -203,18 +203,19 @@ internal class ManifestUpdater(private val utilities: Utilities) {
      * LegacyFabric prunes as it publishes, so a release and a removal in the same window leave the count
      * identical and the head different — and the count alone would then decline a genuine update for ever.
      *
-     * @param oldContent   The manifest currently on disk.
-     * @param newContent   The manifest the upstream answered with.
-     * @param manifestType The type of the manifest; only LegacyFabric is pruned this way.
-     * @param manifest     The file the content belongs to — only LegacyFabric's XML half is affected.
-     * @return `true` if the newest declared version differs between the two.
+     * Returns `true` if the newest declared version differs between the two.
+     *
      * @author Griefed
      */
     @Throws(SAXException::class)
     private fun legacyFabricHeadChanged(
+        /** The manifest currently on disk. */
         oldContent: String,
+        /** The manifest the upstream answered with. */
         newContent: String,
+        /** The type of the manifest; only LegacyFabric is pruned this way. */
         manifestType: Type,
+        /** The file the content belongs to — only LegacyFabric's XML half is affected. */
         manifest: File
     ): Boolean {
         if (manifestType != Type.LEGACY_FABRIC || manifest.name.endsWith(".json")) {
@@ -288,29 +289,30 @@ internal class ManifestUpdater(private val utilities: Utilities) {
     /**
      * Ensures we always have the latest manifest for version validation available.
      *
-     * @param manifestToRefresh The manifest file to update.
-     * @param content           The content to write to the new manifest.
      * @author whitebear60
      * @author Griefed
      */
     @Throws(IOException::class)
     private fun updateManifest(
+        /** The manifest file to update. */
         manifestToRefresh: File,
+        /** The content to write to the new manifest. */
         content: String
     ) = manifestToRefresh.writeTextAtomically(content)
 
     /**
      * Ensures we always have the latest manifest for version validation available.
      *
-     * @param manifestToRefresh The manifest file to update.
-     * @param urlToManifest     The URL to the file which is to be downloaded.
-     * @return `true` if the manifest was downloaded and written, `false` if it could not be fetched —
-     * which is what lets the caller report an absent manifest without a separate reachability probe.
+     * Returns `true` if the manifest was downloaded and written, `false` if it could not be fetched — which is
+     * what lets the caller report an absent manifest without a separate reachability probe.
+     *
      * @author whitebear60
      * @author Griefed
      */
     private fun updateManifest(
+        /** The manifest file to update. */
         manifestToRefresh: File,
+        /** The URL to the file which is to be downloaded. */
         urlToManifest: URL
     ): Boolean {
         return try {

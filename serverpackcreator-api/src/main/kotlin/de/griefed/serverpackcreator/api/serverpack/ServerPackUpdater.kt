@@ -39,13 +39,12 @@ import java.util.Locale
  * directory is somebody else's, and [ApiProperties.updateProtectedPaths] covers the remainder, the
  * files that came *from* ServerPackCreator and have been written to since.
  *
- * @param apiProperties Supplies the update-toggle and the protected paths.
- * @param objectMapper  Reads the previous run's manifest back.
- *
  * @author Griefed
  */
 class ServerPackUpdater(
+    /** Supplies the update-toggle and the protected paths. */
     private val apiProperties: ApiProperties,
+    /** Reads the previous run's manifest back. */
     private val objectMapper: ObjectMapper
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

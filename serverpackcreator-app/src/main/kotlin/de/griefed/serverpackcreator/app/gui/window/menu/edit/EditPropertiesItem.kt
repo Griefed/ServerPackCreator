@@ -37,6 +37,8 @@ class EditPropertiesItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     }
 
     /**
+     * Opens the selected configuration's `server.properties` in the system's text editor.
+     *
      * @author Griefed
      */
     private fun openProperties() {

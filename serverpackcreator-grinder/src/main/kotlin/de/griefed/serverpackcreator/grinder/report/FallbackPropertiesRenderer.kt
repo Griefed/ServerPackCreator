@@ -25,12 +25,12 @@ import de.griefed.serverpackcreator.grinder.GrindVerdict
 /**
  * The two lists an SPC instance refreshes from its update-URL, as the grinder currently knows them.
  *
- * @param clientsideMods The fallback clientside-only mod list, as this SPC instance holds it.
- * @param whitelist      The mod-whitelist, passed through untouched so one URL can replace the other.
  * @author Griefed
  */
 data class FallbackLists(
+    /** The fallback clientside-only mod list, as this SPC instance holds it. */
     val clientsideMods: Collection<String>,
+    /** The mod-whitelist, passed through untouched so one URL can replace the other. */
     val whitelist: Collection<String>
 )
 

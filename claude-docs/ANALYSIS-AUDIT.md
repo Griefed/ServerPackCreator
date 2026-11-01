@@ -1750,3 +1750,572 @@ A branch build is still named by its short commit and deliberately does **not** 
 0 failures, 28 skipped. `dokkaGenerateHtml` across all eight modules: **0 warnings**. 65 bash run-blocks
 parse. `misc/ci-duplication-check.py`: 3 duplicated-and-unexplained, 4 allowlisted — unchanged through
 all three iterations.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, iteration 1 of 3
+
+Subject: the ~57 commits authored since the 2026-10-12 audit (17 of the range's 74 non-merge commits
+were cleared there and are not re-examined), plus test depth across the codebase at `77fdd27d6`.
+
+## MEDIUM
+
+### M1 — `writeAtomically`'s staging cleanup is unpinned, and the comment above it makes a claim no test checks
+
+`serverpackcreator-api/src/main/kotlin/.../utilities/common/FileUtilities.kt:564-568`
+
+```kotlin
+} catch (ex: Exception) {
+    // Never leave the staging behind: it is invisible to every reader and would otherwise accumulate one
+    // per failed attempt, beside the file it failed to become.
+    temporaryFile.delete()
+    throw ex
+}
+```
+
+`AtomicTextWriteTest` has four guards and they are good ones — the destination holds the whole text, no
+staging survives a *successful* write, a failed write leaves the previous contents intact, and each write
+stages into a file of its own. None of them reaches this `delete()`.
+
+The reason is the shape of the failure the third guard provokes: it points the staging file at
+`absent-directory/manifest.json.tmp`, so `write(temporaryFile)` throws while *creating* the file. The
+staging file never exists, and `temporaryFile.delete()` is a no-op on a path that was never written.
+
+**Mutation-verified.** Replacing `temporaryFile.delete()` with a comment and running
+`:serverpackcreator-api:test --tests '*AtomicTextWriteTest*'` → **BUILD SUCCESSFUL**. The branch can be
+deleted and nothing goes red.
+
+What it costs if it rots: exactly what the comment says — one invisible `.tmp` beside every manifest and
+every cached installer, per failed attempt, forever. The grinder is the reachable case, because it runs N
+workers against one shared installer cache.
+
+**Proposed test**, which fails against the mutation and passes against the code as written: let the
+staging file be created successfully and make the *move* the thing that fails, by handing
+`writeAtomically` a staging file that the lambda writes and then making the destination path
+un-moveable-onto — e.g. a destination that is an existing **directory**. Then assert the staging file no
+longer exists:
+
+```kotlin
+@Test
+fun aStagingFileIsRemovedWhenTheMoveFails(@TempDir tempDir: File) {
+    val destination = File(tempDir, "manifest.json").apply { mkdirs() } // a directory: the move cannot land
+    val staging = File(tempDir, "staged.tmp")
+
+    Assertions.assertThrows(Exception::class.java) {
+        destination.writeAtomically(staging) { it.writeText("""{"versions":["one"]}""") }
+    }
+
+    Assertions.assertFalse(
+        staging.exists(),
+        "a staging file that was written and could not be moved must not be left beside its destination"
+    )
+}
+```
+
+### M2 — the recorded "zero compiler warnings" baseline is a measurement artifact; the real figure is 40
+
+`claude-docs/REFACTOR-AUDIT.md`, 2026-10-12 iteration 1, *Verified clean*:
+
+> **`./gradlew build` is green on `05a58f57f` with zero `w:` lines.** Not "no new warnings" — none at all.
+
+That reading cannot fail. Measured on `77fdd27d6`:
+
+| command | `w:` lines |
+|---|---|
+| `./gradlew :…api:compileKotlin :…app:compileKotlin` (tasks UP-TO-DATE) | **0** |
+| the same four modules with `--rerun-tasks` | **40** |
+
+A Kotlin compile task that is UP-TO-DATE does not run the compiler, so it emits no warnings and a grep
+for `w:` returns zero whatever the source contains. The number is a statement about Gradle's task graph,
+not about the code — the same shape as the entries this repository already records under *a check that
+cannot run must skip, never pass*.
+
+The 40 are **not** a regression from this range's work and are not individually alarming: 31 are
+`Deprecated in Java` (the `Locale(String)` constructors, Jackson's `fields()` and `readTree(URL)`,
+night-config's `valueMap()`), 3 are `Unchecked cast of 'Any!' to 'List<File>'` in drag-and-drop handlers,
+4 are `@OptIn` delicate-API notices for `CoroutineStart.ATOMIC`, 1 is a redundant conversion call. Several
+are library-driven and would appear without any source change, which is precisely why attribution needs a
+baseline that was taken honestly.
+
+**Fix: record the real number and the command that produces it**, so *"no new compiler warnings"* in the
+Definition of done has something to compare against. `--rerun-tasks` is the measurement; anything else is
+reporting the cache.
+
+## LOW
+
+### L1 — `withLineEndings` has no empty-string case
+
+`LineEndingTest` covers CRLF→LF, lone CR, mixed conventions, LF→CRLF, no-doubling, idempotence and
+text without line breaks — genuinely good depth for a function this repository has shipped two silent
+template bugs through. `""` is covered only incidentally by the no-line-breaks case. Worth one line,
+because the function is reached for every generated run-file and an empty template is a reachable state
+(an operator may empty one).
+
+## Verified clean — do not re-litigate
+
+- **`writeAtomically` is safe against the cross-filesystem `ATOMIC_MOVE` failure by construction.** The
+  default staging path is `File(absoluteFile.parentFile, "$name.<uuid>.tmp")` — same directory, therefore
+  same filesystem. All five production call sites (`ServerPackProvisioner` ×4, `ManifestUpdater` ×1) use
+  that default; none passes a staging path of its own. `AtomicMoveNotSupportedException` is an
+  `IOException`, so even a future caller that got this wrong would land on the documented contract
+  (this file untouched) rather than a surprise.
+- **`withLineEndings` is correct for every ordering.** `replace("\r\n","\n").replace('\r','\n')
+  .replace("\n", sequence)` normalises before expanding, which is what stops a CRLF source doubling into
+  `\r\r\n` and what stops a lone-CR source collapsing into one line — the two failures this repository has
+  receipts for.
+- **The dead-code deletion left no unused imports or variables.** A forced recompile of all four Kotlin
+  modules reports zero `never used`/`unused` warnings, and none of the 40 warnings is in
+  `UpdateDialogs.kt`, `GuiSettings.kt` or `GlobalSettings.kt`.
+- **Zero unresolved KDoc references** across the published module after the 267-file documentation
+  rewrite — the check that matters for a change converting `@param x` into `[x]` prose links, because a
+  dangling link is silent.
+- **No `@Test` function in the repository lacks a reachable assertion**, 2,181 scanned; the three the
+  scan flagged are all its own false positives, verified by reading. Detail in
+  `claude-docs/REFACTOR-AUDIT.md` for the same date.
+- **Suite green at the tip**: 2,205 tests, 0 failures, 28 skipped, across all eight modules.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, iteration 2 of 3
+
+Same subject. Iteration 1 covered edge cases and test depth in the range's own code; this pass went at
+the **guards themselves** — the tests that assert against *source text* — and at iteration 1's fixes.
+
+## HIGH
+
+### H1 — six source-text guards do not strip comments, and one of them passes against the defect it exists to catch
+
+`HtmlProofingTest` reads source and strips comments before matching (`withoutComments`, a local helper).
+It is the only one of the seven that does:
+
+| guard | strips comments |
+|---|---|
+| `HtmlProofingTest` | yes |
+| `FabricQuiltStepDownTest` | **no** |
+| `BootVerifierArtifactSinkTest` | **no** |
+| `VerifyClientsideArtifactSinkTest` | **no** |
+| `GrinderConfigurationTest` | **no** |
+| `ClientsideReadmeFlagsTest` | **no** |
+| `GrindTestFixtures` (`grinderMainBody`) | **no** |
+
+`FabricQuiltStepDownTest.everyLoaderLineIsWiredIntoTheStepDown` is the dangerous one, because it asserts
+with `text.contains(wiring)` — so a comment **satisfies** it:
+
+```
+serverpackcreator-grinder/src/test/.../loader/FabricQuiltStepDownTest.kt:168
+    Assertions.assertTrue(text.contains(wiring), "a loader line lost its step-down; …")
+```
+
+**Mutation-verified.** `ContainerCandidateVerifier.kt:330` was changed from
+
+```kotlin
+        "Fabric" -> LoaderStepDown.newestFirst(apiWrapper.versionMeta.fabric.loaderVersions())
+```
+
+to the identical text **in a comment**, with the live branch replaced by `"Fabric" -> emptyList()`.
+`:serverpackcreator-grinder:test --tests '*FabricQuiltStepDownTest*'` → **BUILD SUCCESSFUL**.
+
+That is precisely the defect the guard was written for. `serverpackcreator-grinder/CLAUDE.md` describes
+the step-down's absence as *"that loader has no fallback when the newest build refuses to install, which
+is the defect this fixed"*, and records that Quilt `0.31.0-beta.3` / Minecraft 1.20.6 failed to install
+with nothing to fall back to, taking every candidate wanting that tuple with it. The guard cannot see it
+come back.
+
+`BootVerifierArtifactSinkTest.onlyOneCallSiteInvokesRunPrepared` fails in the other direction — it
+*counts* `runPrepared(` occurrences, so a doc comment mentioning the call inflates the count and reports
+"found 2 call sites" about a structure that did not change. It is currently at 1 and correct, but
+`BootVerifier.kt`'s doc comments were rewritten wholesale in `25dbe12df`, which is exactly the kind of
+change that trips it.
+
+**Fix: strip comments before matching, following `HtmlProofingTest`'s own precedent.** The repository
+already has the pattern and the reasoning written down; six guards simply do not use it.
+
+## Verified clean — do not re-litigate
+
+- **Every function the range added to a main source is reachable from a test.** 15 added (9 private);
+  the one name no test mentions is `BundledJars.nonBlankStringOrNull`, a private extension covered
+  behaviourally by `aBlankRangeYieldsNoOpinion` and `aRangeThatIsNotAPlainStringYieldsNoOpinion`.
+- **`ManifestIntegrity` has real depth**, and it is the piece most likely to be shallow because its
+  failure is a startup crash: truncated JSON restored, truncated XML restored, an intact manifest left
+  byte-identical, a broken manifest with no shipped copy removed, the ETag sidecar discarded with it, and
+  the restored file asking for the full upstream copy next time. Six guards, one per side effect.
+- **No hardcoded credential** in any tracked Kotlin, Gradle, YAML or properties file under the module
+  sources, `.forgejo`, `.github` or `buildSrc`. The CurseForge key is read from the environment only, and
+  travels as an `x-api-key` header that `JdkHttpFetcher` never logs.
+- **`writeAtomically`'s staging cleanup is now pinned** — iteration 1's `aStagingFileIsRemovedWhenTheMoveFails`,
+  observed red against the mutation that deletes the branch and green against the code as written.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, iteration 3 of 3
+
+Same subject. Aimed at the two guards iteration 2 left, at ground neither earlier pass covered, and at
+both iterations' own fixes.
+
+## MEDIUM
+
+### M1 — `grinderMainBody` brace-matches over raw source, so a comment can move the end of the window
+
+`serverpackcreator-grinder/src/test/.../GrindTestFixtures.kt:113`
+
+The helper cuts `main`'s body by counting braces from its opening one, over text that still contains
+comments. A `{` or `}` inside a comment in `GrinderApplication.main` therefore shifts where the window
+closes. Its own KDoc guards the *other* direction — it asserts the window stops before the declarations
+that follow `main`, "exactly how a guard built on it would keep passing while asserting nothing" — but a
+comment can end the window early just as silently, and five guards are built on it.
+
+The same read also carries iteration 2's H1: every consumer asserts with `contains()` over the result, so
+a comment naming a wiring satisfies a guard whose code was deleted.
+
+**Both fixed by stripping comments before the brace walk.** Mutation-verified through a consumer rather
+than on the helper: `GrinderApplication.kt:283`'s `host = bindHost` was replaced by
+`host = "127.0.0.1"` with the original line left beside it as a comment, and
+`ReportBindWiringTest` → **BUILD FAILED**, where the raw-text version passed.
+
+### M2 — a commented-out `@Option` counts as a declared flag
+
+`serverpackcreator-app/src/test/.../ClientsideReadmeFlagsTest.kt:56`
+
+`declaredFlags()` scrapes `names = [...]` out of each command's source to decide which long-form options
+the CLI really accepts, and cross-checks the README against them. A commented-out `@Option` is counted,
+so the guard would call a README mention of a removed flag legitimate — the exact phantom it exists to
+find. Fixed the same way.
+
+## Verified clean — do not re-litigate
+
+- **The frontend suite passes**: 38 tests, 15 files, vitest 5.0.3. Unrun by anything else this session,
+  and not covered by the Gradle suites.
+- **Six of six source-text guards strip comments now**, up from one of seven. Three proven by mutation to
+  catch what they previously missed.
+- **Iterations 1 and 2 fixes still green**: `aStagingFileIsRemovedWhenTheMoveFails`,
+  `emptyTextIsUnchanged`, and the four guards repaired in iteration 2.
+- **`(?<!:)//.*` rather than `//.*` where the source can hold URLs.** A bare line-comment strip mangles
+  `https://…` inside a string literal into `https:`; it is harmless for the tokens the iteration-2 guards
+  match and is not harmless for `main` or the CLI commands.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 4
+
+New ground: resource lifetimes, discarded failure returns, and the skip gates. Rounds 1-3 covered
+conventions, test depth, source-text guards, secrets, boundaries and the frontend.
+
+## MEDIUM
+
+### M1 — `WebUtilities.getResponseAsString` leaks its stream on the path it documents as expected
+
+`serverpackcreator-api/src/main/kotlin/.../utilities/common/WebUtilities.kt:365`
+
+```kotlin
+@Throws(IOException::class)
+fun getResponseAsString(url: URL): String {
+    val `in` = BufferedReader(InputStreamReader(openTimedStream(url)))
+    ...
+    while (`in`.readLine().also { currentLine = it } != null) { response.append(currentLine) }
+    `in`.close()          // skipped whenever readLine() throws
+    return response.toString()
+}
+```
+
+`close()` is the last statement of the happy path, not a `finally`. The method is annotated
+`@Throws(IOException::class)` and `readLine()` over a network stream is exactly where one comes from,
+so the leak is on the path the signature advertises. What leaks is a socket and its connection, not a
+file handle.
+
+**It has zero callers inside the repository** — and that is what makes it worth fixing rather than
+deleting. `WebUtilities` is exported from `-api`, which publishes to Maven Central, so the only code
+that can reach this is an embedder's, and the compatibility policy keeps the signature for at least a
+major. Fix the body; leave the surface alone.
+
+### M2 — `JavaConfig.testJava` drains its process wrongly, prints to stdout, and leaks both on failure
+
+`serverpackcreator-api/src/main/kotlin/.../settings/JavaConfig.kt:254`
+
+```kotlin
+val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
+while (bufferedReader.readLine() != null && bufferedReader.readLine() != "null") {
+    println(bufferedReader.readLine())
+}
+bufferedReader.close()
+process.destroyForcibly()
+```
+
+Three defects in six lines:
+
+- **`readLine()` is called three times per iteration.** One line is tested for `null`, a second is
+  compared against the literal string `"null"`, and a *third* is printed — so two lines in three are
+  discarded and the printed one can itself be `null`. `java -version` emits three lines, so in practice
+  this prints the third or `null`.
+- **`println` writes to stdout from library code**, in a class that holds a logger. The four `println`s
+  in `ApiProperties` are a deliberate exception — that class *is* log4j's `ConfigurationFactory`, so
+  logging does not exist yet when they run — and this one is not in that category. It reaches the
+  console of every GUI and CLI user whose Java path is being validated.
+- **`close()` and `destroyForcibly()` are both skipped if `readLine()` throws.** The `catch (e:
+  IOException)` below logs and returns `false` without closing either, so a failing probe leaks a reader
+  *and* leaves the `java -version` process behind.
+
+The return value is unaffected by all three, which is why `JavaConfigTest.javaPathsAcceptOnlyValidInstallations`
+passes and will keep passing — it pins accept/reject, which is the contract. That is the finding: the
+contract is pinned and the body is not.
+
+## Verified clean — do not re-litigate
+
+- **`ThemeManager:222` is not a leak, checked in bytecode rather than assumed.**
+  `FlatLaf.setup(IntelliJTheme.createLaf(FileInputStream(themeFile)))` looks like a classic inline-stream
+  leak. `javap -c` on `flatlaf-3.7.2.jar` shows `IntelliJTheme(InputStream)` wrapping it in an
+  `InputStreamReader` inside try-with-resources — two `Reader.close()` call sites plus
+  `Throwable.addSuppressed` — so the `FileInputStream` is closed by the library.
+- **The other resource sites are correct**: `ServerPackProvisioner:441` uses `zip.use { }`, and
+  `ApiProperties.getXmlConfig` closes its stream explicitly.
+- **`ServerPropertiesPatch.restore` throwing cannot strand a port.** `ServerLauncher:132` calls it as
+  `runCatching { patch.restore() }` with `allocator.release(serverPort)` on the next line, so the
+  give-back completes either way. Leaving the backup behind on a failed restore is correct, not a leak —
+  its presence is the crash marker the next `borrow()` restores from.
+- **All 28 skipped tests map to documented gated integration classes**, and no new silent skip has
+  appeared: `CurseForgeCrawlLiveIT` 10, `DockerJavaContainerEngineIT` 9, `CatalogCrawlLiveIT` 3,
+  `ContainerOwnershipIT` 3, `GrinderAuditIT` 1, `ScriptTemplateMatrixIT` 1, `RealPackBootTest` 1. Each
+  appears in `serverpackcreator-grinder/CLAUDE.md`'s gate table or the servertest module's, with the
+  reason its gate is unset.
+- **The 44 discarded filesystem booleans were reviewed and are best-effort cleanup**, where a failure
+  changes nothing a caller could act on. The one with a real consequence —
+  `ManifestIntegrity.setLastModified(0)`, whose failure would strand a host on the shipped snapshot — is
+  immediately followed by the next refresh asking unconditionally anyway, and the file is already
+  restored by that point.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 5
+
+New ground: swallowed exceptions and unbounded I/O in **build logic**, which every earlier audit of this
+rule explicitly scoped itself out of.
+
+## MEDIUM
+
+### M1 — the build makes an unbounded network call, and the landmine that forbids it audited only `-api` and `-app`
+
+`buildSrc/src/main/kotlin/de/griefed/common/gradle/LicenseAgreementRenderer.kt:144`
+
+```kotlin
+if (!license.url.isNullOrBlank() && license.url.endsWith(".txt", true) && Files.maybeLicenseUrl(license.url)) {
+    try {
+        text = append(text, URI(license.url).toURL().readText() + "\n")
+    } catch (_: Exception) {}
+}
+```
+
+`URL.readText()` opens a stream with the JDK's defaults, and `serverpackcreator-api/CLAUDE.md` states
+what those are: *"The JDK's default connect- and read-timeout is infinite, so `url.openConnection()` or
+`url.openStream()` written anywhere else is a hang waiting to happen."* That landmine closed twelve call
+sites and ends by telling the next reader to *"grep for `openStream()`/`openConnection()` across `-api`
+and `-app`"* — which is exactly the blind spot: **`buildSrc` is a separate build and was never in that
+grep.**
+
+It is the only network call in `buildSrc`'s main source, and `generateLicenseReport` is on the build
+path (`build.gradle.kts:197`). A POM licence URL ending in `.txt` whose host accepts the connection and
+then never answers stalls the build with no timeout and no output — on a developer machine and on CI
+alike. The `catch` cannot help: a hang never throws.
+
+**Fix:** a bounded read local to `buildSrc`. It cannot use `-api`'s `URL.timedConnection`, because
+buildSrc is a separate build that does not depend on the modules — which is the same reason the landmine
+gives for that function existing at all.
+
+### M2 — the one silent catch in the repository with no stated reason
+
+Same line. The convention is explicit: *"**Errors:** always handle, never ignore with `_` unless
+intentional (comment why)."* Measured across every main source: **38 of 39 silent catches carry their
+reason**; this is the one that does not, and it is swallowing `Exception` — which includes the
+`IOException` the unbounded read above would produce if it ever did fail rather than hang.
+
+## Verified clean — do not re-litigate
+
+- **The convention on silent catches is being kept**, which is worth recording because the raw count
+  looks alarming. 39 `catch` blocks in main sources discard their exception; **38 state why**, including
+  the one that looks worst out of context — `ConfigCheckTimer:76` swallowing an `OutOfMemoryError`,
+  which carries three lines explaining that a pathologically large server-icon must not take the GUI
+  down with it and that the icon simply is not validated on that tick.
+- **No new silent skip, no new `!!`, no `TODO`/`FIXME`** anywhere in main sources.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 6
+
+New ground: shared mutable state and concurrency on the published surface — the defect class this
+module already carries two receipts for.
+
+## MEDIUM
+
+### M1 — `updateFallback()` empties the live clientside-mod list and refills it, on a list read from another thread
+
+`serverpackcreator-api/src/main/kotlin/.../settings/UpdateConfig.kt:146`
+
+```kotlin
+generationConfig.clientsideMods.clear()
+generationConfig.clientsideMods.addAll(newBlacklist.split(","))
+```
+
+This is the **same two-step** `GenerationConfigTest.regexVariantListsAreNotSharedBetweenReads` already
+pins against, in the one path that was not fixed when its siblings were. That guard's own doc states the
+reason: *"a caller holding an earlier result silently saw it emptied and rewritten under them, and
+because the mutation is not atomic a concurrent reader could observe the set mid-clear."*
+
+**It is reachable at runtime, not only at startup.** `UpdateDefaultModslistItem` wires
+`apiProperties.updateFallback()` to an Edit-menu `ActionListener`, so it runs on the event dispatch
+thread on a click — while `ConfigCheckTimer` validates from a coroutine every 500 ms after a keystroke
+and `ControlPanel.generate` builds a `PackConfig` on `guiProps.generationDispatcher`.
+
+`TreeSet` is not thread-safe, so the exposure is **not merely a stale read**: a structural modification
+during another thread's traversal is undefined, and the window spans a whole `split(",")` of the
+fallback list, not an instant.
+
+**Fix:** `replaceClientsideMods` / `replaceModsWhitelist` build the new set and publish it in one
+assignment to a now-`@Volatile` field, so a reader sees the old complete list or the new complete one.
+`loadFallbackModsList` / `loadFallbackWhitelist` were moved onto the same path. Pinned by
+`replacingAFallbackListPublishesANewSetInsteadOfEmptyingTheLiveOne`, which asserts **identity** —
+the property that makes the window impossible — and was verified red against restoring the two-step.
+
+Recorded in `claude-docs/API-BEHAVIOUR-CHANGES.md`: contents and declared type are unchanged, but an
+embedder holding a reference across an update now keeps the complete old set instead of watching it be
+rewritten.
+
+## Verified clean — do not re-litigate
+
+- **Returning copies from the fallback getters would have been wrong, and was checked before being
+  ruled out.** `ApiProperties.clientsideMods` / `modsWhitelist` hand out the live set by design —
+  `UpdateConfig` and `GenerationConfig.loadFallbackModsList` mutate through exactly that reference, so a
+  defensive copy would have made the fallback update a silent no-op. The fix had to be atomic
+  *publication*, not defensive copying.
+- **No caller mutates any `fallback*` set.** `fallbackDirectoriesInclusion`, `fallbackDirectoriesExclusion`,
+  `fallbackZipExclusions`, `fallbackPostInstallCleanupFiles`, `fallbackPreInstallCleanupFiles` and
+  `fallbackUpdateProtectedPaths` are handed out live but are never written through, in any module. Latent
+  exposure on published API, no active defect, and narrowing their declared types would be a
+  source-breaking change for no measured gain.
+- **`versionmeta`'s immutable-snapshot fix is intact** — ten classes publish fresh collections into
+  `@Volatile` fields, and the `@Volatile` count per file is unchanged from what the earlier work recorded.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 7
+
+New ground: equality contracts, and cross-shell consistency of the shipped start-script templates.
+
+## HIGH
+
+### H1 — `start.fish` swallows every stop request, so a fish-started pack is SIGKILLed with its world unsaved
+
+`serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/default_template.fish`
+
+The bash template traps `TERM` and forwards it to the server, and says exactly why:
+
+> *"Without this the signal dies here. A pack run under docker or systemd has this script as PID 1, and
+> the kernel discards a signal aimed at PID 1 unless a handler is installed for it — so the request is
+> lost, the stop window expires, and the server is SIGKILLed with its world unsaved."*
+
+**The fish template has no handler at all** — no `trap`, no `--on-signal`, and it runs the server in the
+*foreground*, so there is nothing to forward from. `stopServer` is the only function present in
+`default_template.sh` and absent from `default_template.fish` (18 vs 17 functions).
+
+**Reproduced, not reasoned about.** fish as PID 1 in `alpine:latest`, the template's own
+`runJavaCommand` verbatim, a stand-in server that traps `TERM` and announces it:
+
+```
+before SIGTERM:  CHILD-UP
+after  SIGTERM:  CHILD-UP          ← the child never heard it
+container still running: yes
+```
+
+`docker stop` would wait out its whole window and then SIGKILL. The recorded bash measurement for the
+same shape is *5096 ms, exit 137* against *72 ms, exit 0* once forwarding works.
+
+`start.bat` has no handler either; Windows signal semantics differ enough that it is a separate
+question. `start.ps1` likewise.
+
+### H1a — the obvious fix is wrong, and that is the finding worth keeping
+
+Four shapes were executed against a real fish in a container. **Each satisfies one half of the
+contract and breaks the other:**
+
+| shape | forwards SIGTERM | preserves the server's exit code |
+|---|---|---|
+| foreground (today's template) | **no** | yes (42) |
+| background + `wait` | **no** — fish does not dispatch `--on-signal` while blocked in `wait` | untested |
+| background + poll loop | **yes** (`CHILD-GOT-TERM`, ~1 s) | **no** — `$status` comes back `0`, not `42` |
+| background + poll + status file | untested for signal (handler did not fire) | yes (42) |
+
+The exit code is not optional: the fish template captures `$status` immediately after `runJavaCommand`
+into `server_exit_code` and exits with it, and `serverpackcreator-api/CLAUDE.md` records why — *"a
+crashed server is distinguishable from a clean shutdown by anything reading the exit code — systemd,
+Docker restart policies, CI, and the grinder's boot classifier."* A fix that forwards the signal and
+silently zeroes the exit code trades one silent defect for another.
+
+Two facts established along the way that a future session should not have to rediscover:
+
+- **fish does not run an `--on-signal` handler while blocked in `wait`.** A poll loop between commands
+  does let it fire; `wait` does not. This is why bash's trap-plus-`wait` shape does not translate.
+- **fish does not redirect a background job's stdin to `/dev/null`.** bash does, which is why the bash
+  template needs `0<&0`; the fish equivalent does not, and the console survives backgrounding
+  (`CHILD-STDIN:say hello` observed in every backgrounded shape).
+
+**Not fixed in this round, deliberately.** This is a shipped artifact in the area this repository has
+the most receipts for — *"these fail silently: a wrong branch or a mis-sliced version produces a
+plausible value, not an error"* — and no shape has yet been executed that satisfies both halves.
+Shipping one now would be the guess that convention exists to prevent. Filed as **B52** with every
+experiment and its outcome.
+
+## Verified clean — do not re-litigate
+
+- **All eight manual `equals`/`hashCode` pairs agree on their field sets** — `InclusionSpecification`,
+  `ModPack`, `ZipResponse`, `ServerPack`, `RunConfiguration`, `ErrorEntry`, `QueueEvent`, `TaskDetail`.
+  No class overrides one without the other. A first scan reported five disagreements and was a false
+  positive of its own regex, which matched `==` and not `!=`; the implementations use the
+  `if (a != other.a) return false` form.
+- **Exit-code propagation IS present in all three templates CLAUDE.md claims it for** — `.sh`, `.fish`
+  and `.ps1`. A grep for the literal `SERVER_EXIT_CODE` finds it only in bash and reads as a gap; fish
+  spells it `server_exit_code` (a lowercase local) and PowerShell `$ServerExitCode` from
+  `$LASTEXITCODE`. Three naming conventions, one behaviour. `start.bat` does not propagate it and is
+  not claimed to.
+
+---
+
+# 2026-10-21 — analysis of `9.2.1..develop`, round 8
+
+New ground: `@Suppress` annotations and the acknowledged duplicate pairs behind them, plus the
+published API spec.
+
+## Findings
+
+**None.** Every check in this round came back clean or inconclusive-by-tooling; nothing was changed.
+
+## Verified clean — do not re-litigate
+
+- **The ten `@Suppress("DuplicatedCode")` pairs have not drifted.** This is the shape with a receipt —
+  four prompt loops were copies, two carried the annotation, and *"the annotation was sitting on the copy
+  holding the worst bug."* Each acknowledged pair was extracted and diffed with the loader name
+  normalised away:
+  - `FabricLoader` vs `QuiltLoader`: differ only in a field name (`loaderManifest` / `manifest`) and two
+    blank lines.
+  - `FabricInstaller` vs `QuiltInstaller` vs `LegacyFabricInstaller`: differ only in local variable
+    names (`latestNodeChildren` / `latestChildren`, `nextInstallers` / `nextAllVersions`).
+
+    No behavioural difference in any pair.
+- **No `@Suppress` is hiding a flagged problem.** The 243 suppressions in main sources are dominated by
+  `unused` (106) and `MemberVisibilityCanBePrivate` (68); 52 of the `unused` are in `-api`, where an
+  exported symbol having no internal caller is the normal state for a published module. The two
+  self-flagging ones (`RedundantSuppression`, `RedundantNullableReturnType`) are deliberate and
+  annotated as such.
+- **The published API spec carries no stale schema references.** `Writerside/api-docs.yaml` mentions
+  `StartArgument`, `ClientMod` and `WhitelistedMod` **zero** times, and none of those classes exists in
+  the source any more — the drift an earlier audit caught has stayed fixed.
+
+## Inconclusive, and why it is recorded rather than reported as a finding
+
+A count of spec operations (44) against controller method-level mappings (46) looked like two
+undocumented endpoints. It is **not** evidence: reconstructing a Spring path means composing a
+class-level `@RequestMapping` with a method-level one and normalising the inline regex constraints
+(`{id:[0-9a-zA-Z]+}` → `{id}`), and the parser written for this got that wrong — it reported
+`/api/v2/modpacksbyserverpack/{id}` as missing from the spec when the controller's real path is
+`/api/v2/modpacks/byserverpack/{id}`, which the spec documents correctly.
+
+The repository already says what to do here instead, and it is not a hand-comparison: *"springdoc is
+wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency in
+`serverpackcreator-app/build.gradle.kts` … Regenerate it rather than patching it."* Any real answer
+about spec drift comes from a regeneration, not from parsing annotations.

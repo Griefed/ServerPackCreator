@@ -35,13 +35,12 @@ import java.util.Collections
 /**
  * Information about the LegacyFabric installer and versions.
  *
- * @param installerManifest Manifest containing information about LegacyFabric installer versions.
- * @param utilities         Commonly used utilities across ServerPackCreator.
- *
  * @author Griefed
  */
 class LegacyFabricInstaller(
+    /** Manifest containing information about LegacyFabric installer versions. */
     private val installerManifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities
 ) {
     /**
@@ -123,7 +122,6 @@ class LegacyFabricInstaller(
     /**
      * Get the URL for a specific installer version, wrapped in an Optional.
      *
-     * @return URL to the installer, for the specified version, wrapped in an Optional.
      * @throws MalformedURLException when the URL could not be created.
      * @author Griefed
      */

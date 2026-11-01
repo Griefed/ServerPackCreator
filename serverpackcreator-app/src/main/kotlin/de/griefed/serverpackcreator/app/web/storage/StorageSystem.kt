@@ -134,16 +134,10 @@ class StorageSystem(
 
     private fun cacheFile(id: String): Optional<File> {
         val mongoPair = dbStorageService.load(id)
-        return if (mongoPair.isPresent) {
-            val stored = fsStorageService.store(mongoPair.get().first, mongoPair.get().second)
-            if (stored.isPresent) {
-                Optional.of(stored.get().file.toFile())
-            } else {
-                Optional.empty()
-            }
-        } else {
-            Optional.empty()
+        if (mongoPair.isEmpty) {
+            return Optional.empty()
         }
+        return fsStorageService.cache(mongoPair.get().first, mongoPair.get().second).map { it.toFile() }
     }
 
     /**

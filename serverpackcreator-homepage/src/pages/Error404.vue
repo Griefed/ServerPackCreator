@@ -22,13 +22,12 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Error404_page',
-  data() {
-    return {}
-  }
-}
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'Error404Page'
+})
 </script>
 
 <style>

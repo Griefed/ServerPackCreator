@@ -230,7 +230,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
                 savedFile.size,
                 taskDetail.runConfiguration,
                 savedFile.id,
-                serverPackZipOld.absolutePath,
+                serverPackZipOld.name,
                 savedFile.sha256,
                 taskDetail.modpack.id!!
             )

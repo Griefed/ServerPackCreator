@@ -37,6 +37,8 @@ class DiscordItem(private val webUtilities: WebUtilities) : JMenuItem(Translatio
     }
 
     /**
+     * Opens the Discord invite in the user's browser.
+     *
      * @author Griefed
      */
     private fun openDiscord() {

@@ -34,17 +34,19 @@ import java.time.Duration
  * (start-script check, eula, spec assembly with the hardening defaults) and the result mapping — is
  * unit-testable with a fake engine; only the real [DockerJavaContainerEngine] needs a live daemon.
  *
- * @param engine    The container runtime boundary.
- * @param image     The runtime image the pack is booted in.
- * @param resources CPU/memory/pid caps per boot.
- * @param containerUser The `uid:gid` the boot runs as; must own the mounted pack or every write in it is
- *                      refused. Resolved from the host by [ContainerUser] rather than trusting the image's.
  * @author Griefed
  */
 class ContainerServerRunner(
+    /** The container runtime boundary. */
     private val engine: ContainerEngine,
+    /** The runtime image the pack is booted in. */
     private val image: String,
+    /** CPU/memory/pid caps per boot. */
     private val resources: ContainerResources = ContainerResources(),
+    /**
+     * The `uid:gid` the boot runs as; must own the mounted pack or every write in it is refused. Resolved from
+     * the host by [ContainerUser] rather than trusting the image's.
+     */
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT
 ) : ServerRunner {
 

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ServerPackCreator Addons</title>
+    <link rel="canonical" href="/#/addons">
+    <!--
+      serverpackcreator.de/addons has to be a real URL, and this SPA runs in HASH mode
+      (`vueRouterMode: 'hash'` in quasar.conf.js), so the route itself lives at /#/addons and nginx
+      would answer a bare /addons with a 404.
+
+      A static file is the right shape for that here, not an nginx rule: the LSIO base image declares
+      /config a VOLUME and seeds its site-conf onto it ONCE, so a redirect baked into the image works
+      on a fresh volume and silently does nothing on a deployment that already has one. The same
+      constraint is why /help/latest and /api/latest are symlinks rather than redirects -- see the
+      comment in docs/assemble-docs.sh. Quasar copies public/ to the site root, so this lands at
+      /addons/index.html beside them.
+
+      Belt and braces on purpose: the <script> redirects without adding a history entry, and the
+      <meta refresh> covers the case where script is blocked.
+    -->
+    <meta http-equiv="refresh" content="0; url=/#/addons">
+    <script>window.location.replace("/#/addons" + window.location.search);</script>
+  </head>
+  <body>
+    <p>Redirecting to <a href="/#/addons">the ServerPackCreator addons overview</a>.</p>
+  </body>
+</html>

@@ -37,6 +37,8 @@ class GitHubPageItem(private val webUtilities: WebUtilities) : JMenuItem(Transla
     }
 
     /**
+     * Opens the project page in the user's browser.
+     *
      * @author Griefed
      */
     private fun openPage() {

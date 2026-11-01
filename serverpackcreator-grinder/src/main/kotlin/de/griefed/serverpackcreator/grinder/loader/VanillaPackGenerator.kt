@@ -42,12 +42,12 @@ fun interface VanillaPackGenerator {
  * `BootVerifier.prepareBootPack` uses, minus any mod. Integration-only (a real `ApiWrapper`, with its
  * cached version metadata, is required); not unit-tested.
  *
- * @param apiWrapper     SPC generation + config + version metadata.
- * @param workDirectory  Scratch root; each tuple gets a fresh sub-directory.
  * @author Griefed
  */
 class ApiVanillaPackGenerator(
+    /** SPC generation + config + version metadata. */
     private val apiWrapper: ApiWrapper,
+    /** Scratch root; each tuple gets a fresh sub-directory. */
     private val workDirectory: File
 ) : VanillaPackGenerator {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

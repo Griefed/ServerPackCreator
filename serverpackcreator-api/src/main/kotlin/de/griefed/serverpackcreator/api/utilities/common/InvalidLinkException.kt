@@ -28,7 +28,8 @@ class InvalidLinkException
 /**
  * Throw new exception indicating that the specified link type is invalid.
  *
- * @param message Message indicating what exactly went wrong.
+ * [message] — Message indicating what exactly went wrong.
+ *
  * @author Griefed
  */
     (message: String) : Exception(message)

@@ -48,8 +48,9 @@ class ServerPackFile {
     /**
      * Construct a new ServerPackFile from two [File]-objects, a source and a destination.
      *
-     * @param sourceFile      The source file/directory. Usually a file/directory in a modpack.
-     * @param destinationFile The destination file/directory in the server pack.
+     * [sourceFile] — The source file/directory. Usually a file/directory in a modpack. [destinationFile] — The
+     * destination file/directory in the server pack.
+     *
      * @author Griefed
      */
     constructor(
@@ -64,8 +65,9 @@ class ServerPackFile {
     /**
      * Construct a new ServerPackFile from two [Path]-objects, a source and a destination.
      *
-     * @param sourcePath      The source file/directory. Usually a file/directory in a modpack.
-     * @param destinationPath The destination file/directory in the server pack.
+     * [sourcePath] — The source file/directory. Usually a file/directory in a modpack. [destinationPath] — The
+     * destination file/directory in the server pack.
+     *
      * @author Griefed
      */
     constructor(

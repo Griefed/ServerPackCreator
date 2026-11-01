@@ -34,36 +34,38 @@ import java.time.Duration
  * needs a Docker daemon to run. The collaborators it takes are the ones it genuinely uses; passing them
  * explicitly is what lets a test drive a pass with fakes.
  *
- * @param grinder     Grinds one candidate.
- * @param crawler     Hands out the next catalog slice and records how far it got.
- * @param requeue     The jump-the-crawl lane, drained *before* the slice on every pass.
- * @param evictUnusedInstalls Sweeps loader installs unused past [cacheRetention], returning how many went.
- *        A function rather than the `LoaderCache` itself: the loop uses exactly this one call, and taking
- *        the whole class would drag a Docker-bound installer into every test of the sweep.
- * @param verdictCount How many verdicts the store holds, for the completion line. Likewise narrowed.
- * @param status      Live activity for `/status`.
- * @param workers     Concurrent grinds per pass.
- * @param cacheRetention How long an unused loader install is kept.
- * @param betweenSweeps Pause after a pass that completed a sweep with nothing due.
- * @param whileCrawling Pause after a pass that found nothing due but has catalog left.
- * @param running     Whether to begin another pass; polled between steps so a shutdown lands promptly.
- * @param onPoolChanged Publishes the in-flight pool so the shutdown hook can stop it, and `null` when idle.
- * @param sleeper     How a pause is served. Injected so a test need not actually wait.
  * @author Griefed
  */
 internal class GrindLoop(
+    /** Grinds one candidate. */
     private val grinder: Grinder,
+    /** Hands out the next catalog slice and records how far it got. */
     private val crawler: CatalogCrawler,
+    /** The jump-the-crawl lane, drained *before* the slice on every pass. */
     private val requeue: RequeueStore,
+    /**
+     * Sweeps loader installs unused past [cacheRetention], returning how many went. A function rather than the
+     * `LoaderCache` itself: the loop uses exactly this one call, and taking the whole class would drag a
+     * Docker-bound installer into every test of the sweep.
+     */
     private val evictUnusedInstalls: (Duration) -> Int,
+    /** How many verdicts the store holds, for the completion line. Likewise narrowed. */
     private val verdictCount: () -> Int,
+    /** Live activity for `/status`. */
     private val status: GrinderStatus,
+    /** Concurrent grinds per pass. */
     private val workers: Int,
+    /** How long an unused loader install is kept. */
     private val cacheRetention: Duration,
+    /** Pause after a pass that completed a sweep with nothing due. */
     private val betweenSweeps: Duration,
+    /** Pause after a pass that found nothing due but has catalog left. */
     private val whileCrawling: Duration,
+    /** Whether to begin another pass; polled between steps so a shutdown lands promptly. */
     private val running: () -> Boolean,
+    /** Publishes the in-flight pool so the shutdown hook can stop it, and `null` when idle. */
     private val onPoolChanged: (GrindPool?) -> Unit = {},
+    /** How a pause is served. Injected so a test need not actually wait. */
     private val sleeper: (Long) -> Unit = SLEEP
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

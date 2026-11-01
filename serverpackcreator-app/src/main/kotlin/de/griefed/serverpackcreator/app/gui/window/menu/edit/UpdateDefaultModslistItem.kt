@@ -41,6 +41,8 @@ class UpdateDefaultModslistItem(
     }
 
     /**
+     * Refreshes the fallback clientside-mod list and reports whether anything changed.
+     *
      * @author Griefed
      */
     private fun updateFallbacks() {
@@ -58,6 +60,8 @@ class UpdateDefaultModslistItem(
     }
 
     /**
+     * Tells the user that the fallback clientside-mod list was updated.
+     *
      * @author Griefed
      */
     fun showFallbacksUpdatedMessage() {

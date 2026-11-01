@@ -88,6 +88,35 @@ internal class AtomicTextWriteTest {
     }
 
     /**
+     * Pins that a staging file which was written and could not be moved is removed again.
+     *
+     * The sibling failure guard provokes its failure while *creating* the staging file, so the staging
+     * never exists and the cleanup branch is never reached — removing that branch leaves the whole class
+     * green. This one lets the write succeed and makes the **move** the thing that fails, which is the only
+     * arrangement that reaches it. Without the cleanup, one invisible `.tmp` accumulates beside the file it
+     * failed to become, per failed attempt; the grinder is the reachable case, with N workers against one
+     * shared installer cache.
+     */
+    @Test
+    fun aStagingFileIsRemovedWhenTheMoveFails(@TempDir tempDir: File) {
+        val destination = File(tempDir, "manifest.json").apply { mkdirs() }
+        val staging = File(tempDir, "manifest.json.staged.tmp")
+
+        Assertions.assertThrows(Exception::class.java) {
+            destination.writeAtomically(staging) { it.writeText("""{"versions":["one"]}""") }
+        }
+
+        Assertions.assertTrue(
+            destination.isDirectory,
+            "precondition: the destination must be un-moveable-onto, or this reaches the move's success path"
+        )
+        Assertions.assertFalse(
+            staging.exists(),
+            "a staging file that was written and could not be moved must not be left beside its destination"
+        )
+    }
+
+    /**
      * Pins that each write stages into a file of its own.
      *
      * A staging name derived from the destination alone is shared by every concurrent write to it, so two

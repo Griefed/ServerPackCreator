@@ -49,28 +49,28 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * will resolve links to their files first before then correcting the given
      * ConfigurationModel.
      *
-     * @param modpackDir        Files and directories are copied into the server_pack directory inside
-     * the modpack directory.
-     * @param inclusions All directories and files therein to copy to the server pack.
-     * @param clientMods        List of clientside-only mods to exclude from the server pack.
-     * @param minecraftVersion  The Minecraft version the modpack uses.
-     * @param destination       The destination where the files should be copied to.
-     * @param modloader         The modloader used for mod sideness detection.
-     * @param isProtected       Answers, for a destination-file, whether it must be left exactly as
-     * it is. Used by an update to keep a world or a hand-edited file a running server owns, and
-     * defaults to protecting nothing.
      * @author Griefed
      */
     @JvmOverloads
     fun copyFiles(
+        /** Files and directories are copied into the server_pack directory inside the modpack directory. */
         modpackDir: String,
+        /** All directories and files therein to copy to the server pack. */
         inclusions: ArrayList<InclusionSpecification>,
+        /** List of clientside-only mods to exclude from the server pack. */
         clientMods: List<String>,
         whitelist: List<String>,
+        /** The Minecraft version the modpack uses. */
         minecraftVersion: String,
+        /** The destination where the files should be copied to. */
         destination: String,
+        /** The modloader used for mod sideness detection. */
         modloader: String,
         overwrite: Boolean,
+        /**
+         * Answers, for a destination-file, whether it must be left exactly as it is. Used by an update to keep
+         * a world or a hand-edited file a running server owns, and defaults to protecting nothing.
+         */
         isProtected: (File) -> Boolean = { false }
     ) : List<File> {
         val exclusions = mutableListOf<Regex>()
@@ -335,15 +335,14 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * file, a singular [ServerPackFile] is returned. If the source is a directory, then all
      * files in said directory are returned.
      *
-     * @param modpackDir  The modpack-directory.
-     * @param serverPackDestination The destination, normally the server pack-directory.
-     * @return List of [ServerPackFile].
      * @author Griefed
      */
     fun getExplicitFiles(
         source: String,
         destination: String,
+        /** The modpack-directory. */
         modpackDir: String,
+        /** The destination, normally the server pack-directory. */
         serverPackDestination: String
     ): MutableList<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
@@ -380,9 +379,9 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * Recursively acquire all files and directories inside the given save-directory as a list of
      * [ServerPackFile].
      *
-     * @param clientDir   Target directory in the server pack. Usually the name of the world.
-     * @param destination The destination of the server pack.
-     * @return List of [ServerPackFile] which will be included in the server pack.
+     * [clientDir] — Target directory in the server pack. Usually the name of the world. [destination] — The
+     * destination of the server pack. Returns list of [ServerPackFile] which will be included in the server pack.
+     *
      * @author Griefed
      */
     @Suppress("unused")
@@ -415,8 +414,8 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * Recursively acquire all files and directories inside the given directory as a list of
      * [ServerPackFile].
      *
-     * @param destination The server pack-directory.
-     * @return List of files and folders of the server pack.
+     * [destination] — The server pack-directory. Returns list of files and folders of the server pack.
+     *
      * @author Griefed
      */
     fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {
@@ -452,12 +451,10 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
     /**
      * Check whether the given file or directory should be excluded from the server pack.
      *
-     * @param modpackDir     The directory where the modpack resides in. Used to filter out any
-     * unwanted directories using the property `de.griefed.serverpackcreator.configuration.directories.shouldexclude`.
-     * @param exclusions     Files or directories determined by ServerPackCreator to be excluded from
-     * the server pack
-     * @return `true` if the file or directory was determined to be excluded from the server
-     * pack.
+     * [modpackDir] — The directory where the modpack resides in. Used to filter out any unwanted directories using
+     * the property `de.griefed.serverpackcreator.configuration.directories.shouldexclude`. [exclusions] — Files or
+     * directories determined by ServerPackCreator to be excluded from the server pack.
+     *
      * @author Griefed
      */
     fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean {
@@ -477,13 +474,11 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      * Walk through the specified directory and add a [ServerPackFile] for every file/folder
      * which matches the given regex.
      *
-     * @param source          The source-directory to walk through and perform regex-matches in.
-     * @param destination     The destination-directory where a matched file should be copied to,
-     * usually the server pack directory.
-     * @param regex           Regex with which to perform matches against files in the
-     * source-directory.
-     * @param serverPackFiles List of files to copy to the server pack to which any matched file will
-     * be added to.
+     * [source] — The source-directory to walk through and perform regex-matches in. [destination] — The
+     * destination-directory where a matched file should be copied to, usually the server pack directory. [regex] —
+     * Regex with which to perform matches against files in the source-directory. [serverPackFiles] — List of files
+     * to copy to the server pack to which any matched file will be added to.
+     *
      * @author Griefed
      */
     @Suppress("unused")

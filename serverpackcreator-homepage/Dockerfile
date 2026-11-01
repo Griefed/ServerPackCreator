@@ -1,7 +1,8 @@
-# A Node + Quasar toolchain image. The name is a leftover from the GitLab era and is misleading --
-# nothing about this build is GitLab CI -- but it is the image that has the toolchain, so it stays
-# until something replaces it rather than being renamed in place.
-FROM griefed/gitlab-ci-cd:2.8.0@sha256:1461ae150d5803774398cc89af820c5e4b4cca92ebd74e8a17171e386de7b56d AS builder
+# The Quasar CLI comes from this tree's own lockfile, so the builder only has to supply Node. The
+# version floor is real and is a hard exit, not a warning: @quasar/app-vite's node-version-check
+# compares against 22.22.0 and calls process.exit(1), so a base image that moves backwards breaks
+# this build with an error naming Node rather than Quasar.
+FROM node:22-bookworm-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS builder
 
 WORKDIR /tmp/serverpackcreator.de
 
@@ -12,17 +13,20 @@ WORKDIR /tmp/serverpackcreator.de
 # `.dockerignore` keeps the host's node_modules, a stale dist and the CI
 # definitions out of the context.
 COPY package.json package-lock.json ./
-RUN npm install
+# `ci`, not `install`: the lockfile is copied right above precisely so the build is reproducible.
+RUN npm ci
 
 COPY . .
-RUN quasar build
+# `npm run build`, not a bare `quasar build`: the script collects the download counts into
+# src/generated/ before invoking Quasar, and npm puts node_modules/.bin first on PATH, so the CLI
+# is the lockfile's own rather than whatever the base image happens to carry.
+RUN npm run build
 
-# Matches docker/Dockerfile.help, which has been serving the help site on this tag for a while --
-# so the `/config/www` webroot this image writes to is proven on it, not assumed. 1.22.1 was from
-# 2022. Nothing here ships an nginx site-conf (the `latest` entry points are symlinks, deliberately,
-# because /config is a VOLUME seeded once), so the site-conf path move between the two LSIO
-# generations does not reach this image.
-FROM ghcr.io/linuxserver/nginx:1.30.4@sha256:3486bc71c5983edc9e7c80713b5d762f317c4c77fb31842a40a1ce26cce9f1de
+# This tag served the help site for a while in an image of its own, so the `/config/www` webroot this
+# image writes to is proven on it, not assumed. Nothing here ships an nginx site-conf (`/api/latest`
+# is a symlink, deliberately, because /config is a VOLUME seeded once), so the site-conf path move
+# between LSIO generations does not reach this image.
+FROM ghcr.io/linuxserver/nginx:1.30.4@sha256:c6c300bd5959e340d8742359f59604f3ad21426ea905cc77e75b01345034c8c6
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 
@@ -36,12 +40,13 @@ RUN \
 
 COPY --from=builder /tmp/serverpackcreator.de/dist/spa/ /config/www
 
-# The versioned documentation, assembled BEFORE this build by `docs/assemble-docs.sh`.
+# The documentation, assembled BEFORE this build by `docs/assemble-docs.sh`.
 #
-# It cannot be assembled here: the webhelp for each version comes out of that version's published
-# `serverpackcreator-help` image, and a Dockerfile has no Docker daemon to ask. So the script runs in
-# the job, writes `docs-build/`, and this copies the result. `docs-build/.gitkeep` is committed so
-# the COPY resolves even on a checkout where the script has not been run.
+# Done in a script rather than a RUN here so it can be executed against a scratch directory and the
+# result served and clicked -- which is what `docs/assemble-docs.test.sh` and `npm test` do, and
+# what a RUN buried in a multi-stage build could not. The serving stage also has no `unzip`. So the
+# script runs in the job, writes `docs-build/`, and this copies the result. `docs-build/.gitkeep` is
+# committed so the COPY resolves even on a checkout where the script has not been run.
 COPY docs-build/ /config/www/
 
 # Fail HERE rather than serve a site whose /help and /api are 404s. A docs-less build is what you get

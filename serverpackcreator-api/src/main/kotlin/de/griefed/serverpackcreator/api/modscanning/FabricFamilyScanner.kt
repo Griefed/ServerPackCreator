@@ -33,18 +33,17 @@ import java.io.File
  * under `quilt_loader` and `minecraft`), so they are constructor parameters here rather than a second
  * copy of the logic. Dependencies are **not** shared: Fabric declares them as an object keyed by mod
  * id, Quilt as an array of either objects or bare strings, so [readDependencies] stays abstract.
- *
- * @param descriptor      Path of the descriptor inside the jar.
- * @param idPath          Path to the mod's id within the descriptor.
- * @param environmentPath Path to the declared environment within the descriptor.
- * @param objectMapper    For JSON-parsing.
- * @param utilities       Common utilities used across ServerPackCreator.
  */
 abstract class FabricFamilyScanner(
+    /** Path of the descriptor inside the jar. */
     private val descriptor: String,
+    /** Path to the mod's id within the descriptor. */
     private val idPath: Array<String>,
+    /** Path to the declared environment within the descriptor. */
     private val environmentPath: Array<String>,
+    /** For JSON-parsing. */
     private val objectMapper: ObjectMapper,
+    /** Common utilities used across ServerPackCreator. */
     protected val utilities: Utilities
 ) : JsonDescriptorScanner() {
 
@@ -57,8 +56,7 @@ abstract class FabricFamilyScanner(
      * Abstract because the two formats disagree on the shape of the block, not merely its path. A
      * descriptor declaring none must yield an empty list rather than throwing.
      *
-     * @param modConfig The parsed descriptor.
-     * @param modId     Id of the mod being read, for logging.
+     * [modConfig] — The parsed descriptor. [modId] — Id of the mod being read, for logging.
      */
     protected abstract fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency>
 
@@ -68,8 +66,7 @@ abstract class FabricFamilyScanner(
      * Open rather than abstract, and empty by default, because a descriptor without the block is the
      * common case and must not be an error. Overridden where the loader has the concept.
      *
-     * @param modConfig The parsed descriptor.
-     * @param modId     Id of the mod being read, for logging.
+     * [modConfig] — The parsed descriptor. [modId] — Id of the mod being read, for logging.
      */
     protected open fun readProvides(modConfig: JsonNode, modId: String): List<String> = emptyList()
 

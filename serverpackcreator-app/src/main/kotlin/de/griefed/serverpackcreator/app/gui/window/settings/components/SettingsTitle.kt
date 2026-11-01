@@ -24,6 +24,8 @@ import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.TabTitle
 
 /**
+ * The tab title for the settings tab.
+ *
  * @author Griefed
  */
 class SettingsTitle(guiProps: GuiProps) : TabTitle(guiProps, Translations.settings_title.toString())

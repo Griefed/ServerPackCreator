@@ -39,18 +39,18 @@ class InclusionsValidator {
      * specified a `source/file;destination/file`-combination, it is checked whether the
      * specified source-file exists on the host.
      *
-     * @param inclusions Directories, or `source/file;destination/file`-combinations, to
-     * check for existence.
-     * `source/file;destination/file`-combinations must be absolute
-     * paths to the source-file.
-     * @param modpackDir        Path to the modpack directory in which to check for existence of the
-     * passed list of directories.
-     * @return `true` if every directory was found in the modpack directory. If any single one
-     * was not found, false is returned.
+     * Returns `true` if every directory was found in the modpack directory. If any single one was not found, false
+     * is returned.
+     *
      * @author Griefed
      */
     fun checkInclusions(
+        /**
+         * Directories, or `source/file;destination/file`-combinations, to check for existence.
+         * `source/file;destination/file`-combinations must be absolute paths to the source-file.
+         */
         inclusions: MutableList<InclusionSpecification>,
+        /** Path to the modpack directory in which to check for existence of the passed list of directories. */
         modpackDir: String,
         configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true

@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 package de.griefed.example.kotlin.gui.tab
 
@@ -42,24 +41,26 @@ import javax.swing.*
  * Provide a couple of elements to globally configure the plugin and to start playing Tetris.
  *
  * Construct a new panel to add to the ServerPackCreator GUI as an additional tab.
- *
- * @param versionMeta   Instance of {@link VersionMeta} so you can work with available Minecraft,
- *                      Forge, Fabric, LegacyFabric and Quilt versions.
- * @param apiProperties Instance of {@link ApiProperties} The current configuration of
- *                      ServerPackCreator, like the default list of clientside-only mods, the
- *                      server pack directory etc.
- * @param utilities     Instance of {@link Utilities} commonly used across ServerPackCreator.
- * @param addonConfig   Addon specific configuration conveniently provided by ServerPackCreator.
- *                      This is the global configuration of the addon which provides the
- *                      ConfigPanelExtension to ServerPackCreator.
- * @param configFile    The config-file corresponding to the ID of the addon, wrapped in an
- *                      Optional.
  */
 class TetrisTab(
+    /**
+     * Instance of {@link VersionMeta} so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+     * Quilt versions.
+     */
     versionMeta: VersionMeta,
+    /**
+     * Instance of {@link ApiProperties} The current configuration of ServerPackCreator, like the default list
+     * of clientside-only mods, the server pack directory etc.
+     */
     apiProperties: ApiProperties,
+    /** Instance of {@link Utilities} commonly used across ServerPackCreator. */
     utilities: Utilities,
+    /**
+     * Addon specific configuration conveniently provided by ServerPackCreator. This is the global configuration
+     * of the addon which provides the ConfigPanelExtension to ServerPackCreator.
+     */
     addonConfig: Optional<CommentedConfig>,
+    /** The config-file corresponding to the ID of the addon, wrapped in an Optional. */
     configFile: Optional<File>
 ) : ExtensionTab(versionMeta, apiProperties, utilities, addonConfig, configFile) {
     private var ami: JTextField = JTextField()

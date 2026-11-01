@@ -48,20 +48,20 @@ class MinecraftClient {
     /**
      * Constructor using version, type and url.
      *
-     * @param version               The Minecraft version.
-     * @param type                  Either [Type.RELEASE] or [Type.SNAPSHOT].
-     * @param url                   Url to this versions manifest.
-     * @param forgeMeta             To acquire Forge instances for this client version.
-     * @param utilities             Commonly used utilities across ServerPackCreator.
-     * @param apiProperties ServerPackCreator settings.
      * @author Griefed
      */
     internal constructor(
+        /** The Minecraft version. */
         version: String,
+        /** Either [Type.RELEASE] or [Type.SNAPSHOT]. */
         type: Type,
+        /** Url to this versions manifest. */
         url: URL,
+        /** To acquire Forge instances for this client version. */
         forgeMeta: ForgeMeta,
+        /** Commonly used utilities across ServerPackCreator. */
         utilities: Utilities,
+        /** ServerPackCreator settings. */
         apiProperties: ApiProperties
     ) {
         this.apiProperties = apiProperties
@@ -79,22 +79,22 @@ class MinecraftClient {
     /**
      * Constructor using version, type, url and a [MinecraftServer].
      *
-     * @param version               The Minecraft version.
-     * @param type                  Either [Type.RELEASE] or [Type.SNAPSHOT].
-     * @param url                   Url to this versions manifest.
-     * @param server                Instance of [MinecraftServer]
-     * @param forgeMeta             To acquire Forge instances for this client version.
-     * @param utilities             Instance of commonly used utilities.
-     * @param apiProperties ServerPackCreator settings.
      * @author Griefed
      */
     internal constructor(
+        /** The Minecraft version. */
         version: String,
+        /** Either [Type.RELEASE] or [Type.SNAPSHOT]. */
         type: Type,
+        /** Url to this versions manifest. */
         url: URL,
+        /** Instance of [MinecraftServer] */
         server: MinecraftServer,
+        /** To acquire Forge instances for this client version. */
         forgeMeta: ForgeMeta,
+        /** Instance of commonly used utilities. */
         utilities: Utilities,
+        /** ServerPackCreator settings. */
         apiProperties: ApiProperties
     ) {
         this.apiProperties = apiProperties
@@ -109,7 +109,8 @@ class MinecraftClient {
     /**
      * Get the [ForgeInstance] for this client, wrapped in an [Optional].
      *
-     * @return Forge instance for this client, wrapped in an [Optional].
+     * Returns the Forge instance for this client, wrapped in an [Optional].
+     *
      * @author Griefed
      */
     fun forge() = forgeMeta.getForgeInstances(version)

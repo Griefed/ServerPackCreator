@@ -38,7 +38,6 @@ import de.griefed.serverpackcreator.api.plugins.ServerPackCreatorPlugin
  * The recipe is the one in `HELP.md` under *Fun Stuff → Self-extracting, self-contained script*, so a
  * user who wants to know what they were handed can read the chapter rather than this source.
  *
- * @param context Plugin context provided by ServerPackCreator.
  * @author Griefed
  */
 @Suppress("unused")

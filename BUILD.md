@@ -197,9 +197,9 @@ default — so the application itself runs from your IDE, with the debugger and 
 docker compose -f docker/docker-compose-dev.yml up -d
 ```
 
-That starts MongoDB and [mongo-express](http://localhost:8081) (`mexpress` / `mexpress`), and
-publishes `27017` on the host so both the IDE-run application and IntelliJ's Database tool window can
-reach it. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
+That starts MongoDB and [Mongoku](http://localhost:8081), a database browser with no login, bound to
+`127.0.0.1` so only this machine can reach it. It also publishes `27017` on the host so both the
+IDE-run application and IntelliJ Ultimate's Database tool window can reach the database directly. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
 database URI as a command-line argument:
 
 ```
@@ -222,7 +222,9 @@ docker compose -f docker/docker-compose-dev.yml --profile app up -d --build
 ```
 
 Its builder stage runs a full Gradle build inside the container, so this is for testing the artifact,
-not for iterating.
+not for iterating. The **Dev stack (with app)** run configuration in `.run/` is the same thing from
+the IDE; plain **Dev stack** is the dependencies-only path above, which is why it does not build the
+application image.
 
 **Resetting the database** is `down -v`: `init-mongo.js` runs only against an empty `/data/db`, so
 changing the credentials has no effect until the volume is gone.

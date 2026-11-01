@@ -39,6 +39,8 @@ class TipOfTheDayItem(guiProps: GuiProps, mainFrame: MainFrame): JMenuItem(Trans
     }
 
     /**
+     * Shows the tip-of-the-day dialog.
+     *
      * @author Griefed
      */
     fun showTip() {

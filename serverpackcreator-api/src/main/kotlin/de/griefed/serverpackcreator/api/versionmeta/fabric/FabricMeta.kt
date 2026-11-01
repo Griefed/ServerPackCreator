@@ -33,22 +33,21 @@ import javax.xml.parsers.ParserConfigurationException
 /**
  * Fabric meta containing information about available Quilt versions and installers.
  *
- * @param fabricManifest          Fabric manifest file.
- * @param fabricInstallerManifest Fabric-installer manifest file.
- * @param fabricIntermediaries    Fabric Intermediary instance.
- * @param objectMapper            Object mapper for JSON parsing.
- * @param utilities               Commonly used utilities across ServerPackCreator.
- * @param installerCacheDirectory The cache-directory for all installers.
- *
  * @author Griefed
  */
 @Suppress("unused")
 class FabricMeta(
+    /** Fabric manifest file. */
     fabricManifest: File,
+    /** Fabric-installer manifest file. */
     fabricInstallerManifest: File,
+    /** Fabric Intermediary instance. */
     private val fabricIntermediaries: FabricIntermediaries,
+    /** Object mapper for JSON parsing. */
     objectMapper: ObjectMapper,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
+    /** The cache-directory for all installers. */
     installerCacheDirectory: File
 ) : Meta {
     private val fabricLoader: FabricLoader = FabricLoader(fabricManifest, utilities)
@@ -66,58 +65,28 @@ class FabricMeta(
     /** Per-loader-version details, cached after first lookup so repeated queries cost nothing. */
     val loaderDetails = HashMap<String, FabricDetails>(100)
 
-    /**
-     * @author Griefed
-     */
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     override fun update() {
         fabricLoader.update()
         fabricInstaller.update()
     }
 
-    /**
-     * @author Griefed
-     */
     override fun latestLoader() = fabricLoader.latestLoaderVersion()
 
-    /**
-     * @author Griefed
-     */
     override fun releaseLoader() = fabricLoader.releaseLoaderVersion()
 
-    /**
-     * @author Griefed
-     */
     override fun latestInstaller() = fabricInstaller.latestInstallerVersion()
 
-    /**
-     * @author Griefed
-     */
     override fun releaseInstaller() = fabricInstaller.releaseInstallerVersion()
 
-    /**
-     * @author Griefed
-     */
     override fun loaderVersions() = fabricLoader.loaders
 
-    /**
-     * @author Griefed
-     */
     override fun installerVersions() = fabricInstaller.installers
 
-    /**
-     * @author Griefed
-     */
     override fun latestInstallerUrl() = fabricInstaller.latestInstallerUrl()
 
-    /**
-     * @author Griefed
-     */
     override fun releaseInstallerUrl() = fabricInstaller.releaseInstallerUrl()
 
-    /**
-     * @author Griefed
-     */
     override fun installerFor(version: String) =
         if (isInstallerUrlAvailable(version)) {
             val destination = File(installerDirectory, "$version.jar")
@@ -155,26 +124,14 @@ class FabricMeta(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun isInstallerUrlAvailable(version: String) =
         Optional.ofNullable(fabricInstaller.installerUrlMeta[version]).isPresent
 
-    /**
-     * @author Griefed
-     */
     override fun getInstallerUrl(version: String) =
         Optional.ofNullable(fabricInstaller.installerUrlMeta[version])
 
-    /**
-     * @author Griefed
-     */
     override fun isVersionValid(version: String) = fabricLoader.loaders.contains(version)
 
-    /**
-     * @author Griefed
-     */
     override fun isMinecraftSupported(minecraftVersion: String) =
         fabricIntermediaries.getIntermediary(minecraftVersion).isPresent
 
@@ -189,14 +146,12 @@ class FabricMeta(
     /**
      * Get details for a Fabric loader.
      *
-     * @param minecraftVersion Minecraft version.
-     * @param fabricVersion    Fabric version.
-     * @return Details of a Fabric loader for the given Minecraft and Fabric version, wrapped in an
-     * [Optional].
      * @author Griefed
      */
     fun getLoaderDetails(
+        /** Minecraft version. */
         minecraftVersion: String,
+        /** Fabric version. */
         fabricVersion: String
     ): Optional<FabricDetails> {
         val key = "$minecraftVersion-$fabricVersion"

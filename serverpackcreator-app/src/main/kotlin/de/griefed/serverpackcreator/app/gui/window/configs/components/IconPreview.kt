@@ -82,6 +82,8 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     }
 
     /**
+     * The given icon scaled smoothly to the requested size.
+     *
      * @author Griefed
      */
     private fun scaled(icon: ImageIcon, width: Int = 128, height: Int = 128): ImageIcon {
@@ -89,6 +91,8 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     }
 
     /**
+     * Reads the given image file and shows it, doing nothing when it is already the icon on display.
+     *
      * @author Griefed
      */
     // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
@@ -106,6 +110,8 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     }
 
     /**
+     * Shows the given icon at both preview sizes, or restores the default one when resetting.
+     *
      * @author Griefed
      */
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {

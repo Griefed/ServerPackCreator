@@ -41,10 +41,13 @@ import java.io.File
  * project replaces its log instead of adding one. That is deliberate — the unbounded-growth failure this
  * daemon already paid for (98 GB across 1750 attempt directories) came from names nothing ever reused.
  *
- * @param directory Where the logs live; created on first write.
  * @author Griefed
  */
-class BootLogStore(private val directory: File, private val budgetBytes: Long = DEFAULT_BUDGET_BYTES) {
+class BootLogStore(
+    /** Where the logs live; created on first write. */
+    private val directory: File,
+    private val budgetBytes: Long = DEFAULT_BUDGET_BYTES
+) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 

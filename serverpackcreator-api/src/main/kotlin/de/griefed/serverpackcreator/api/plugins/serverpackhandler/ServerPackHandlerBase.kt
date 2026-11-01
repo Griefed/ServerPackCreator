@@ -49,26 +49,30 @@ sealed interface ServerPackHandlerBase : ExtensionInformation {
      * `Exception` and `Error` alike and logs them against this plugin in `plugins.log`, so a hook cannot
      * fail a generation and a silent one is indistinguishable from one that did nothing.
      *
-     * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
-     * LegacyFabric and Quilt versions.
-     * @param utilities             Instance of [Utilities] commonly used across ServerPackCreator.
-     * @param apiProperties Instance of [ApiProperties] as ServerPackCreator itself uses it.
-     * @param packConfig    Instance of [PackConfig] for a given server pack.
-     * @param destination           String. The destination of the server pack.
-     * @param pluginConfig          Configuration for this plugin, conveniently provided by ServerPackCreator.
-     * @param packSpecificConfigs   Modpack and server pack specific configurations for this plugin, conveniently
-     * provided by ServerPackCreator.
      * @throws ExtensionException when an uncaught error occurs in the plugin.
      * @author Griefed
      */
     @Throws(ExtensionException::class)
     fun run(
+        /**
+         * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+         * Quilt versions.
+         */
         versionMeta: VersionMeta,
+        /** Instance of [Utilities] commonly used across ServerPackCreator. */
         utilities: Utilities,
+        /** Instance of [ApiProperties] as ServerPackCreator itself uses it. */
         apiProperties: ApiProperties,
+        /** Instance of [PackConfig] for a given server pack. */
         packConfig: PackConfig,
+        /** String. The destination of the server pack. */
         destination: String,
+        /** Configuration for this plugin, conveniently provided by ServerPackCreator. */
         pluginConfig: Optional<CommentedConfig>,
+        /**
+         * Modpack and server pack specific configurations for this plugin, conveniently provided by
+         * ServerPackCreator.
+         */
         packSpecificConfigs: ArrayList<CommentedConfig>
     )
 }

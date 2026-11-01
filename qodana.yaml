@@ -11,7 +11,7 @@ linter: jetbrains/qodana-jvm-community:2026.2
 # Inspections turned on ON TOP of qodana.recommended.
 #
 # `JUnitTestMethodWithNoAssertions` flags a @Test method that asserts nothing. A repository-wide
-# audit on 2026-09-26 scanned 2094 @Test functions and found three: the worst,
+# audit scanned 2094 @Test functions and found three: the worst,
 # ConfigurationHandlerTest.suggestInclusionsTest, called `dirs.any { … }` six times and discarded
 # every result, so it passed against an empty list. All three are fixed; this exists so a fourth
 # cannot arrive unnoticed. Runs 817 and 832 did not report any of them, which is the evidence that
@@ -88,7 +88,7 @@ exclude:
       - serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/versionmeta/VersionMeta.kt
 
   # ---------------------------------------------------------------------------------------------
-  # Style notes refused on inspection (B40, 2026-09-21). Every one of the sixteen the scan reported
+  # Style notes refused on inspection (B40). Every one of the sixteen the scan reported
   # was read at its call site; five were genuinely better applied and are FIXED in the code, and
   # these eleven are cases where the suggestion is wrong, unverifiable, or worse than what is there.
   # The report now reads zero, which is what makes a future finding legible as new without a baseline.

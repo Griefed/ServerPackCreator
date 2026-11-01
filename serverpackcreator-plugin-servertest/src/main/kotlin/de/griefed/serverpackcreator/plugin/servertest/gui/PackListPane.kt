@@ -44,13 +44,13 @@ import javax.swing.ListSelectionModel
  * here — those carry their reason in the Status column rather than being dropped, because a pack the user can
  * see in their file manager and not in this list reads as the plugin having lost it.
  *
- * @param onStart   Called with the pack to launch when Start is pressed.
- * @param onRefresh Called when the user asks for the directory to be read again.
  * @author Griefed
  */
 class PackListPane(
     availableScripts: List<StartScript>,
+    /** Called with the pack to launch when Start is pressed. */
     private val onStart: (LaunchablePack) -> Unit,
+    /** Called when the user asks for the directory to be read again. */
     private val onRefresh: () -> Unit,
     private val onScriptChanged: () -> Unit = {}
 ) : JPanel(BorderLayout()) {

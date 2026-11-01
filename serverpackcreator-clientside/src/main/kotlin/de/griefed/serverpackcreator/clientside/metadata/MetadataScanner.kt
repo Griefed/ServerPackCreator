@@ -29,7 +29,6 @@ import java.io.File
  * comes from [ModScanner.scannerFor], the same call a real generation makes, so the two cannot
  * disagree about what a jar declared.
  *
- * @param modScanner The bundle of per-loader scanners from [de.griefed.serverpackcreator.api.ApiWrapper].
  * @author Griefed
  */
 class MetadataScanner(private val modScanner: ModScanner) {

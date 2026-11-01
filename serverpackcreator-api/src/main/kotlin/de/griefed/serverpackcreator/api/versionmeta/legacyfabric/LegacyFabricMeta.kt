@@ -33,20 +33,19 @@ import javax.xml.parsers.ParserConfigurationException
 /**
  * LegacyFabric meta providing game, loader and installer version information.
  *
- * @param gameVersionsManifest      Game version manifest.
- * @param loaderVersionsManifest    Loader version manifest.
- * @param installerVersionsManifest Installer version manifest.
- * @param utilities                 Commonly used utilities across ServerPackCreator.
- * @param installerCacheDirectory   The cache-directory for all installers.
- *
  * @author Griefed
  */
 @Suppress("unused")
 class LegacyFabricMeta(
+    /** Game version manifest. */
     gameVersionsManifest: File,
+    /** Loader version manifest. */
     loaderVersionsManifest: File,
+    /** Installer version manifest. */
     installerVersionsManifest: File,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
+    /** The cache-directory for all installers. */
     installerCacheDirectory: File
 ) : Meta {
     private val gameVersions: LegacyFabricGame = LegacyFabricGame(gameVersionsManifest, utilities)
@@ -96,9 +95,6 @@ class LegacyFabricMeta(
             Optional.empty()
         }
 
-    /**
-     * @author Griefed
-     */
     override fun isInstallerUrlAvailable(version: String): Boolean =
         try {
             installerVersions.specificURL(version).isPresent
@@ -106,20 +102,11 @@ class LegacyFabricMeta(
             false
         }
 
-    /**
-     * @author Griefed
-     */
     @Throws(MalformedURLException::class)
     override fun getInstallerUrl(version: String): Optional<URL> = installerVersions.specificURL(version)
 
-    /**
-     * @author Griefed
-     */
     override fun isVersionValid(version: String): Boolean = loaderVersions.allVersions.contains(version)
 
-    /**
-     * @author Griefed
-     */
     override fun isMinecraftSupported(minecraftVersion: String): Boolean =
         gameVersions.allVersions.contains(minecraftVersion)
 

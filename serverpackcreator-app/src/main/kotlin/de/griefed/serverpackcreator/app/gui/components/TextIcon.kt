@@ -26,7 +26,6 @@
  * Rob
  *
  * #####################################################################################################################
- *
  */
 package de.griefed.serverpackcreator.app.gui.components
 
@@ -148,17 +147,16 @@ class TextIcon(
     /**
      * Paint the icons of this compound icon at the specified location
      *
-     * @param c The component to which the icon is added
-     * @param g the graphics context
-     * @param x the X coordinate of the icon's top-left corner
-     * @param y the Y coordinate of the icon's top-left corner
-     *
      * @author Rob Camick
      */
     override fun paintIcon(
+        /** The component to which the icon is added */
         c: Component,
+        /** the graphics context */
         g: Graphics,
+        /** the X coordinate of the icon's top-left corner */
         x: Int,
+        /** the Y coordinate of the icon's top-left corner */
         y: Int
     ) {
         val g2 = g.create() as Graphics2D
@@ -188,8 +186,6 @@ class TextIcon(
     /**
      * Gets the width of this icon.
      *
-     * @return the width of the icon in pixels.
-     *
      * @author Rob Camick
      */
     override fun getIconWidth(): Int {
@@ -199,17 +195,12 @@ class TextIcon(
     /**
      * Gets the height of this icon.
      *
-     * @return the height of the icon in pixels.
-     *
      * @author Rob Camick
      */
     override fun getIconHeight(): Int {
         return iconHeight
     }
 
-    /**
-     * @author Rob Camick
-     */
     override fun propertyChange(e: PropertyChangeEvent) {
         //  Handle font change when using the default font
         if (font == null) {
@@ -218,7 +209,10 @@ class TextIcon(
     }
 
     /**
+     * Whether the text of a text icon is laid out horizontally or vertically.
+     *
      * @author Rob Camick
+     * @author Griefed
      */
     enum class Layout {
         HORIZONTAL, VERTICAL

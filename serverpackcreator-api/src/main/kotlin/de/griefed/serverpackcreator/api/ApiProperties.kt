@@ -51,7 +51,9 @@ import java.util.prefs.Preferences
  * mods, default list of directories to include in a server pack, script templates, java paths and
  * much more.
  *
- * @param propertiesFile  serverpackcreator.properties-file containing settings and configurations to load the API with.
+ * [propertiesFile] — serverpackcreator.properties-file containing settings and configurations to load the API
+ * with.
+ *
  * @author Griefed
  */
 @Suppress("unused")
@@ -266,7 +268,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Whether a .exe or JAR-file was used for running ServerPackCreator.
      *
-     * @return `true` if a .exe was/is used.
      * @author Griefed
      */
     fun isExe() = jarInformation.isExe
@@ -295,7 +296,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Architecture of the operating system on which ServerPackCreator is running on.
      *
-     * @return Arch.
+     * Returns arch.
+     *
      * @author Griefed
      */
     fun getOSArch() = jarInformation.osArch
@@ -303,7 +305,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The name of the operating system on which ServerPackCreator is running on.
      *
-     * @return OS name.
      * @author Griefed
      */
     fun getOSName() = jarInformation.osName
@@ -990,11 +991,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Reload from a specific properties-file.
      *
-     * @param propertiesFile The properties-file with which to loadProperties the settings and
-     * configuration.
      * @author Griefed
      */
     fun loadProperties(
+        /** The properties-file with which to loadProperties the settings and configuration. */
         propertiesFile: File = File(serverPackCreatorProperties).absoluteFile,
         saveProps: Boolean = true
     ) {
@@ -1071,10 +1071,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * Get a property from our ApplicationProperties. If the property is not available, it is created
      * with the specified value, thus allowing subsequent calls.
      *
-     * @param key          The key of the property to acquire.
-     * @param defaultValue The default value for the specified key in case the key is not present or
-     * empty.
-     * @return The value stored in the specified key.
+     * [key] — The key of the property to acquire. [defaultValue] — The default value for the specified key in case
+     * the key is not present or empty. Returns the value stored in the specified key.
+     *
      * @author Griefed
      */
     private fun acquireProperty(key: String, defaultValue: String) =
@@ -1083,9 +1082,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Set a property in our ApplicationProperties.
      *
-     * @param key   The key in which to store the property.
-     * @param value The value to store in the specified key.
-     * @return The [value] to which the [key] was set to.
+     * [key] — The key in which to store the property. [value] — The value to store in the specified key.
+     *
      * @author Griefed
      */
     private fun defineProperty(key: String, value: String): String =
@@ -1094,13 +1092,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Get a list from our properties.
      *
-     * @param key          The key of the property which holds the comma-separated list.
-     * @param defaultValue The default value to set the property to in case it is undefined.
-     * @return The requested list.
+     * Returns the requested list.
+     *
      * @author Griefed
      */
     private fun getListProperty(
+        /** The key of the property which holds the comma-separated list. */
         key: String,
+        /** The default value to set the property to in case it is undefined. */
         defaultValue: String
     ) = store.getList(key, defaultValue)
 
@@ -1116,9 +1115,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Get an integer from our properties.
      *
-     * @param key          The key of the property which holds the comma-separated list.
-     * @param defaultValue The default value to set the property to in case it is undefined.
-     * @return The requested integer.
+     * [key] — The key of the property which holds the comma-separated list. [defaultValue] — The default value to
+     * set the property to in case it is undefined. Returns the requested integer.
+     *
      * @author Griefed
      */
     @Suppress("SameParameterValue")
@@ -1136,10 +1135,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Get a list of files from our properties, with each file having a specific prefix.
      *
-     * @param key          The key of the property which holds the comma-separated list.
-     * @param defaultValue The default value to set the property to in case it is undefined.
-     * @param filePrefix   The prefix every file should receive.
-     * @return The requested list of files.
+     * [key] — The key of the property which holds the comma-separated list. [defaultValue] — The default value to
+     * set the property to in case it is undefined. [filePrefix] — The prefix every file should receive.
+     *
      * @author Griefed
      */
     @Suppress("SameParameterValue")
@@ -1149,9 +1147,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Get a boolean from our properties.
      *
-     * @param key          The key of the property which holds the comma-separated list.
-     * @param defaultValue The default value to set the property to in case it is undefined.
-     * @return The requested integer.
+     * [key] — The key of the property which holds the comma-separated list. [defaultValue] — The default value to
+     * set the property to in case it is undefined. Returns the requested integer.
+     *
      * @author Griefed
      */
     private fun getBoolProperty(key: String, defaultValue: Boolean) =
@@ -1174,7 +1172,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Store the ApplicationProperties to disk, overwriting the existing one.
      *
-     * @param propertiesFile The file to store the properties to.
+     * [propertiesFile] — The file to store the properties to.
+     *
      * @author Griefed
      */
     fun saveProperties(propertiesFile: File) {
@@ -1195,8 +1194,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
      * subsequent start of serverpackcreator is executed using said locale.
      *
-     * @param locale The locale the user specified when they ran serverpackcreator with -lang
-     * -your_locale.
+     * [locale] — The locale the user specified when they ran serverpackcreator with -lang -your_locale.
+     *
      * @author Griefed
      */
     fun changeLocale(locale: Locale) = i18nConfig.changeLocale(locale)
@@ -1206,7 +1205,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * `de.griefed.serverpackcreator.serverpack.autodiscovery.filter` is set to
      * [ExclusionFilter.REGEX], a regex fallback list is returned.
      *
-     * @return The fallback list of clientside-only mods.
      * @author Griefed
      */
     fun clientSideMods() = generationConfig.clientSideMods()
@@ -1230,7 +1228,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Update the fallback clientside-only mod-list and whitelist from the configured update-URL.
      *
-     * @return `true` if either fallback-list was updated.
+     * Returns `true` if either fallback-list was updated.
      */
     fun updateFallback(): Boolean = updateConfig.updateFallback()
 
@@ -1279,7 +1277,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * Set the old version of ServerPackCreator used to perform necessary migrations between the old
      * and the current version.
      *
-     * @param version Old version used before upgrading to the current version.
+     * [version] — Old version used before upgrading to the current version.
+     *
      * @author Griefed
      */
     fun setOldVersion(version: String) = updateConfig.setOldVersion(version)
@@ -1288,7 +1287,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * Get the old version of ServerPackCreator used to perform necessary migrations between the old
      * and the current version.
      *
-     * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
+     * Returns the old version used before updating. Empty if this is the first run of ServerPackCreator.
      */
     fun oldVersion(): String = updateConfig.oldVersion()
 
@@ -1442,6 +1441,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     companion object {
         /**
+         * This platform's file separator, exposed for callers that build paths as plain strings.
+         *
          * @author Griefed
          */
         @JvmStatic
@@ -1473,14 +1474,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
          *
          * A blank override falls back to the default rather than being honoured: `userRoot().node("")` is the *root*
          * node, shared with every other Java application on the account.
-         *
-         * @param property    The system-property value (injectable for tests).
-         * @param environment The environment-variable value (injectable for tests).
          */
         @JvmStatic
         @JvmOverloads
         fun resolvePreferencesNode(
+            /** The system-property value (injectable for tests). */
             property: String? = System.getProperty(PREFERENCES_NODE_PROPERTY),
+            /** The environment-variable value (injectable for tests). */
             environment: String? = System.getenv(PREFERENCES_NODE_ENV)
         ): String = property?.takeIf { it.isNotBlank() }
             ?: environment?.takeIf { it.isNotBlank() }
@@ -1498,11 +1498,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * have default configs available. Should that fail, too, though, log4j is set up with its own
      * default settings.
      *
-     * @param loggerContext logger context passed from log4j itself
-     * @param source        configuration source passed from log4j itself. Attempts to overwrite it
-     * are made, but if all else fails it is used to set up logging with log4j's
-     * default config.
-     * @return Custom configuration with proper logs-directory set.
+     * [loggerContext] — logger context passed from log4j itself. [source] — configuration source passed from log4j
+     * itself. Attempts to overwrite it are made, but if all else fails it is used to set up logging with log4j's
+     * default config. Returns custom configuration with proper logs-directory set.
+     *
      * @author Griefed
      */
     override fun getConfiguration(loggerContext: LoggerContext, source: ConfigurationSource): Configuration {
@@ -1549,9 +1548,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * multiple attempts at creating a new private val log by lazy { cachedLoggerOf(this.javaClass) } using our own log4j2.xml are made
      * before the default log4j setup is used.
      *
-     * @param loggerContext logger context passed from log4j itself
-     * @param configSource  configuration source passed from
+     * [loggerContext] — logger context passed from log4j itself. [configSource] — configuration source passed from
      * [ApiProperties.getConfiguration].
+     *
      * @author Griefed
      */
     class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :

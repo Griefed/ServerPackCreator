@@ -31,17 +31,16 @@ import java.util.*
 /**
  * Minecraft meta containing information about available client- and server releases.
  *
- * @param minecraftManifest Minecraft manifest file.
- * @param injectedForgeMeta To acquire Forge instances for this [MinecraftClient] version.
- * @param utilities         Commonly used utilities across ServerPackCreator.
- * @param apiProperties     ServerPackCreator settings.
- *
  * @author Griefed
  */
 class MinecraftMeta(
+    /** Minecraft manifest file. */
     minecraftManifest: File,
+    /** To acquire Forge instances for this [MinecraftClient] version. */
     injectedForgeMeta: ForgeMeta,
+    /** Commonly used utilities across ServerPackCreator. */
     utilities: Utilities,
+    /** ServerPackCreator settings. */
     private val apiProperties: ApiProperties
 ) {
     private val minecraftClientMeta: MinecraftClientMeta = MinecraftClientMeta(
@@ -68,7 +67,6 @@ class MinecraftMeta(
     /**
      * Check whether a [MinecraftClient] is available for the specified Minecraft-version.
      *
-     * @return `true` if a [MinecraftClient] is available.
      * @author Griefed
      */
     fun isMinecraftVersionAvailable(minecraftVersion: String): Boolean {
@@ -78,8 +76,6 @@ class MinecraftMeta(
     /**
      * Get a specific Minecraft client as a [MinecraftClient] wrapped in an [Optional].
      *
-     * @param minecraftVersion Minecraft version.
-     * @return Client wrapped in an [Optional]
      * @author Griefed
      */
     fun getClient(minecraftVersion: String): Optional<MinecraftClient> {
@@ -90,7 +86,8 @@ class MinecraftMeta(
      * Get a list of all available [MinecraftClient] of the [de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE], in ascending
      * order.
      *
-     * @return Release client-list
+     * Returns the release client-list.
+     *
      * @author Griefed
      */
     fun clientReleases(): List<MinecraftClient> {
@@ -101,7 +98,8 @@ class MinecraftMeta(
      * Get a list of all available [MinecraftClient] of the [de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT], in ascending
      * order.
      *
-     * @return Snapshot client-list
+     * Returns the snapshot client-list.
+     *
      * @author Griefed
      */
     fun clientSnapshots(): List<MinecraftClient> {
@@ -140,7 +138,6 @@ class MinecraftMeta(
     /**
      * Check whether a [MinecraftServer] is available for the specified Minecraft-version.
      *
-     * @return `true` if a [MinecraftServer] is available.
      * @author Griefed
      */
     fun isServerAvailable(minecraftVersion: String): Boolean {
@@ -151,7 +148,8 @@ class MinecraftMeta(
      * Get a specific [MinecraftServer] for the specified Minecraft-version, wrapped in an
      * [Optional].
      *
-     * @return Server wrapped in an [Optional]
+     * Returns the server wrapped in an [Optional].
+     *
      * @author Griefed
      */
     fun getServer(minecraftVersion: String): Optional<MinecraftServer> {
@@ -171,7 +169,8 @@ class MinecraftMeta(
      * Get the latest [MinecraftServer] of the [de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE], wrapped in an
      * [Optional].
      *
-     * @return Server wrapped in an [Optional]
+     * Returns the server wrapped in an [Optional].
+     *
      * @author Griefed
      */
     fun latestReleaseServer(): MinecraftServer {
@@ -182,7 +181,8 @@ class MinecraftMeta(
      * Get the latest [MinecraftServer] of the [de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT], wrapped in an
      * [Optional].
      *
-     * @return Server wrapped in an [Optional]
+     * Returns the server wrapped in an [Optional].
+     *
      * @author Griefed
      */
     fun latestSnapshotServer(): MinecraftServer {
@@ -193,7 +193,8 @@ class MinecraftMeta(
      * Get a list of all available [MinecraftServer] of the [de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE], in
      * descending order.
      *
-     * @return Server-list
+     * Returns server-list.
+     *
      * @author Griefed
      */
     fun serverReleases(): List<MinecraftServer> {
@@ -204,7 +205,8 @@ class MinecraftMeta(
      * Get a list of all available [MinecraftServer] of the [de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT], in
      * descending order.
      *
-     * @return Server-list
+     * Returns server-list.
+     *
      * @author Griefed
      */
     fun serverSnapshots(): List<MinecraftServer> {

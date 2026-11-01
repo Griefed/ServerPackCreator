@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh lpr lFf">
+  <div class="index">
     <q-carousel
       animated
       v-model="slide"
@@ -14,7 +14,7 @@
       height="600px"
       style="background-color: #000000 !important;">
       <q-carousel-slide class="q-pa-none" style="word-wrap: break-word;display: block;"
-                        :name="1" img-src="~assets/serverpackcreator/powershell.webp">
+                        :name="1" img-src="~@/assets/serverpackcreator/powershell.webp">
         <div class="full-height flex flex-center" style="background-color: rgba(0, 0, 0, 0.85) !important;">
           <div class="custom-caption">
             <div class="text-h2 main_line animation_2">
@@ -28,7 +28,7 @@
         </div>
       </q-carousel-slide>
       <q-carousel-slide class="q-pa-none" style="word-break: break-all;word-wrap: break-word;display: block;"
-                        :name="2" img-src="~assets/serverpackcreator/linux.webp">
+                        :name="2" img-src="~@/assets/serverpackcreator/linux.webp">
         <div class="full-height flex flex-center" style="background-color: rgba(0, 0, 0, 0.85) !important;">
           <div class="custom-caption">
             <div class="text-h2 main_line animation_2" style="font-size:65px;">
@@ -42,7 +42,7 @@
         </div>
       </q-carousel-slide>
       <q-carousel-slide class="q-pa-none" style="word-break: break-all;word-wrap: break-word;display: block;"
-                        :name="3" img-src="~assets/serverpackcreator/macos.webp">
+                        :name="3" img-src="~@/assets/serverpackcreator/macos.webp">
         <div class="full-height flex flex-center" style="background-color: rgba(0, 0, 0, 0.85) !important;">
           <div class="custom-caption">
             <div class="text-h2 main_line animation_2" style="font-size:65px;">
@@ -134,7 +134,8 @@
           <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #ec982f">
-              <div class="text-h6 text-center">
+              <div :class="headingAnimation[3]"
+                   class="text-h6 text-center">
                 FILES
               </div>
             </q-card-section>
@@ -164,10 +165,11 @@
           </q-card>
         </div>
         <div class="col-lg-3 col-md-3 col-xs-12 col-sm-6 q-px-lg">
-          <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
+          <q-card @mouseover="hoverOver(4)" @mouseout="hoverOutTimeout(4)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #f4655f">
-              <div class="text-h6 text-center">
+              <div :class="headingAnimation[4]"
+                   class="text-h6 text-center">
                 MODLOADERS
               </div>
             </q-card-section>
@@ -199,10 +201,11 @@
           </q-card>
         </div>
         <div class="col-lg-3 col-md-3 col-xs-12 col-sm-6 q-px-lg">
-          <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
+          <q-card @mouseover="hoverOver(5)" @mouseout="hoverOutTimeout(5)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white q-pa-md" style="background: #8b3bbd">
-              <div class="text-h6 text-center">
+              <div :class="headingAnimation[5]"
+                   class="text-h6 text-center">
                 ADVANCED
               </div>
             </q-card-section>
@@ -234,10 +237,11 @@
           </q-card>
         </div>
         <div class="col-lg-3 col-md-3 col-xs-12 col-sm-6 q-px-lg">
-          <q-card @mouseover="hoverOver(3)" @mouseout="hoverOutTimeout(3)"
+          <q-card @mouseover="hoverOver(6)" @mouseout="hoverOutTimeout(6)"
                   class="my-other-card text-center box-shadow" flat bordered>
             <q-card-section class="text-white" style="background: #3b97d1">
-              <div class="text-h6 text-center">
+              <div :class="headingAnimation[6]"
+                   class="text-h6 text-center">
                 PLUGINS
               </div>
             </q-card-section>
@@ -275,7 +279,7 @@
       <div class="col-md-12 col-lg-12 col-xs-12 col-sm-12">
         <h5 class="text-center text-white">
           <a href="https://github.com/Griefed/ServerPackCreator" rel="noopener" target="_blank">
-            <q-img src="~assets/serverpackcreator.webp" alt=""/>
+            <q-img src="~@/assets/serverpackcreator.webp" alt=""/>
           </a>
           <br><br>
           <span class="text-center text-grey-4 text-h6">
@@ -302,19 +306,9 @@
             </p>
             <span>
               <q-chip color="secondary" size="xl" text-color="white">
-                <q-avatar color="primary" icon="mdi-github"/>
-                <b>GitHub Downloads:&nbsp;</b>
-                <b v-if="downloads === 0">
-                  <q-circular-progress
-                    indeterminate
-                    rounded
-                    color="lime"
-                    class="q-ma-md"
-                  />
-                </b>
-                <b v-else>
-                  {{ downloads }}
-                </b>
+                <q-avatar color="primary" icon="mdi-download"/>
+                <b>Downloads:&nbsp;</b>
+                <b>{{ downloads }}</b>
               </q-chip>
             </span>
             <span class="row flex flex-center" style="margin-top: 45px;">
@@ -348,22 +342,22 @@
           <q-flashcard :no-hover="hover" class="my-card text-center box-shadow" flat bordered>
             <q-flashcard-section transition="nudge-in" :active="active">
               <!--suppress CheckImageSize -->
-              <img src="~assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
+              <img src="~@/assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
             </q-flashcard-section>
             <q-card @mouseover="hoverOver(1)" @mouseout="hoverOutTimeout(1)" style="border: none;"
                     class="my-card text-center box-shadow" flat bordered>
               <a href="https://www.ej-technologies.com/products/install4j/overview.html" rel="noopener"
                  target="_blank">
-                <q-img src="~assets/install4j_icon.webp" alt="multi-platform installer builder"/>
-                <q-img src="~assets/install4j.webp" alt="multi-platform installer builder"/>
+                <q-img src="~@/assets/install4j_icon.webp" alt="multi-platform installer builder"/>
+                <q-img src="~@/assets/install4j.webp" alt="multi-platform installer builder"/>
               </a>
 
               <q-card-section>
                 <div class="text-overline text-orange-9">EJ TECHNOLOGIES</div>
-                <div :class="about_heading_1" :style="'color: ' + about_heading_color_1"
+                <div :class="headingAnimation[1]" :style="headingTint(1)"
                      class="about_heading_1 text-h6 q-mt-sm q-mb-xs">INSTALL4J
                 </div>
-                <div :class="about_heading_1" :style="'color: ' + about_heading_color_1"
+                <div :class="headingAnimation[1]" :style="headingTint(1)"
                      class="about_heading_1 q-mt-sm q-mb-xs">
                   <code><strong>
                     install4j is a powerful multi-platform Java installer builder that generates native installers
@@ -382,21 +376,21 @@
           <q-flashcard :no-hover="hover" class="my-card text-center box-shadow" flat bordered>
             <q-flashcard-section transition="nudge-in" :active="active">
               <!--suppress CheckImageSize -->
-              <img src="~assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
+              <img src="~@/assets/serverpackcreator/tile_blurred.webp" width=400 height=700 alt="">
             </q-flashcard-section>
             <q-card @mouseover="hoverOver(2)" @mouseout="hoverOutTimeout(2)"
-                    :style="'color: ' + about_heading_color_2" style="border: none;"
+                    :style="headingTint(2)" style="border: none;"
                     class="my-card text-center box-shadow" flat bordered>
               <a href="https://www.jetbrains.com/idea/" rel="noopener" target="_blank">
-                <q-img src="~assets/idea.png" alt=""/>
+                <q-img src="~@/assets/idea.png" alt=""/>
               </a>
 
               <q-card-section>
                 <div class="text-overline text-orange-9">JETBRAINS</div>
-                <div :class="about_heading_2" :style="'color: ' + about_heading_color_2"
+                <div :class="headingAnimation[2]" :style="headingTint(2)"
                      class="text-h6 q-mt-sm q-mb-xs">INTELLIJ IDEA
                 </div>
-                <div :class="about_heading_2" :style="'color: ' + about_heading_color_2"
+                <div :class="headingAnimation[2]" :style="headingTint(2)"
                      class="about_heading_1 q-mt-sm q-mb-xs">
                   <code><strong>
                     IntelliJ IDEA is used to develop the backend and Swing-GUI of ServerPackCreator. It's an
@@ -434,7 +428,7 @@
           <span v-for="index in 3" :key="index"  class="text-bold">
             <q-flashcard :no-hover="hover" :style="styleTop">
               <q-flashcard-section transition="nudge-in" :active="active">
-                <img :src="require(`assets/serverpackcreator/cards/${index}.png`)" width=340 height=263 alt="">
+                <img :src="cardImage(index)" width=340 height=263 alt="">
               </q-flashcard-section>
               <q-flashcard-section transition="fade-in" class="fit" :active="active">
                 <div class="fit" :style="background_style"/>
@@ -457,7 +451,7 @@
           <span v-for="index in 3" :key="index">
             <q-flashcard :no-hover="hover" :style="styleBottom">
               <q-flashcard-section transition="nudge-in" :active="active">
-                <img :src="require(`assets/serverpackcreator/cards/${index + 3}.png`)" width=340 height=263 alt="">
+                <img :src="cardImage(index + 3)" width=340 height=263 alt="">
               </q-flashcard-section>
               <q-flashcard-section transition="fade-in" class="fit" :active="active">
                 <div class="fit" :style="background_style"></div>
@@ -477,7 +471,7 @@
           <span v-for="index in 3" :key="index">
             <q-flashcard :no-hover="hover" :style="styleBottom">
               <q-flashcard-section transition="nudge-in" :active="active">
-                <img :src="require(`assets/serverpackcreator/cards/${index + 6}.png`)" width=340 height=263 alt="">
+                <img :src="cardImage(index + 6)" width=340 height=263 alt="">
               </q-flashcard-section>
               <q-flashcard-section transition="fade-in" class="fit" :active="active">
                 <div class="fit" :style="background_style"></div>
@@ -514,7 +508,7 @@
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/world-of-dragons"
                  rel="noopener" target="_blank">
                 <img :style="'margin-top:100px;border-radius:5px;border: 4px solid ' + primaryColour"
-                     src="~assets/serverpackcreator/testimonials/kreezxil.webp" width=150 height=150 alt="">
+                     src="~@/assets/serverpackcreator/testimonials/kreezxil.webp" width=150 height=150 alt="">
               </a>
               <br>
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/world-of-dragons"
@@ -544,7 +538,7 @@
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/fantasy-minecraft-fabric"
                  rel="noopener" target="_blank">
                 <img :style="'margin-top:100px;border-radius:5px;border: 4px solid ' + primaryColour"
-                     src="~assets/serverpackcreator/testimonials/fantasy_minecraft.webp" width=150 height=150 alt="">
+                     src="~@/assets/serverpackcreator/testimonials/fantasy_minecraft.webp" width=150 height=150 alt="">
               </a>
               <br>
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/fantasy-minecraft-fabric"
@@ -567,7 +561,7 @@
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/modded-oneblock-skyblock"
                  rel="noopener" target="_blank">
                 <img :style="'margin-top:100px;border-radius:5px;border: 4px solid ' + primaryColour"
-                     src="~assets/serverpackcreator/testimonials/darkly.webp" width=150 height=150 alt="">
+                     src="~@/assets/serverpackcreator/testimonials/darkly.webp" width=150 height=150 alt="">
               </a>
               <br>
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/modded-oneblock-skyblock"
@@ -589,7 +583,7 @@
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/monumental-experience"
                  rel="noopener" target="_blank">
                 <img :style="'margin-top:100px;border-radius:5px;border: 4px solid ' + primaryColour"
-                     src="~assets/serverpackcreator/testimonials/monumental-experience.webp" width=150 height=150 alt="">
+                     src="~@/assets/serverpackcreator/testimonials/monumental-experience.webp" width=150 height=150 alt="">
               </a>
               <br>
               <a style="color: #ed6b00" href="https://www.curseforge.com/minecraft/modpacks/monumental-experience"
@@ -673,16 +667,35 @@
         ServerPackCreator-website.
       </div>
     </div>
-  </q-layout>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
 import {getCssVar} from "quasar"
 import {QFlashcard, QFlashcardSection} from '@quasar/quasar-ui-qflashcard'
-import { GithubStats } from 'github-release-stats';
-import {ref} from 'vue';
+import { defineComponent, ref } from 'vue';
+import { readDownloadTotal, refreshDownloadTotal } from '@/services/downloads/downloadTotal';
 
-export default {
+/** The headings' colour while nothing is hovering them. */
+const RESTING_HEADING_COLOUR = '#f7f7f7';
+
+/**
+ * Render a total for the chip. A null total means no forge could be counted, which is a different
+ * thing from nobody having downloaded anything and must not read as zero.
+ */
+function formatDownloads(total: number | null): string {
+  return total === null ? 'many' : new Intl.NumberFormat().format(total);
+}
+
+
+// Vite has no `require`. The nine flashcard images are collected at build time and looked up by
+// number, so the template keeps the `v-for` indices it already counts with.
+const cardImages: Record<string, string> = import.meta.glob('../assets/serverpackcreator/cards/*.png', {
+  eager: true,
+  import: 'default'
+});
+
+export default defineComponent({
   name: "ServerPackCreator",
   components: {
     QFlashcard,
@@ -692,33 +705,25 @@ export default {
     return {
       slide: 1,
       reviewSlide: '1',
-      bg_color: 'rgb(0, 163, 82)',
       hover: false,
       active: false,
       primaryColour: getCssVar('primary'),
       secondaryColour: getCssVar('secondary'),
-      warningColour: getCssVar('warning'),
-      accentColour: getCssVar('accent'),
-      darkColour: getCssVar('dark '),
-      positiveColour: getCssVar('positive'),
-      negativeColour: getCssVar('negative'),
-      infoColour: getCssVar('info  '),
       background_style: 'background-color:rgba(0, 163, 82, 0.7);',
-      about_heading_1: [],
-      about_heading_2: [],
-      about_heading_3: [],
-      about_heading_color_1: '#f7f7f7',
-      about_heading_color_2: '#f7f7f7',
-      about_heading_color_3: '#f7f7f7'
+      // Keyed by the card index the hover handlers are called with. A record rather than six
+      // numbered properties because the handlers address them dynamically, which no amount of
+      // typing can express against `this`.
+      headingAnimation: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] } as Record<number, string[]>,
+      /** The heading currently under the pointer, which is the only one that may be tinted. */
+      hoveredHeading: null as number | null
     }
   },
   setup() {
-    const gh = new GithubStats('Griefed', 'ServerPackCreator');
-    let year = new Date().getFullYear();
+    // The build-time figure, so the chip is correct on first paint with no request and no spinner.
+    const baked = readDownloadTotal();
     return {
-      year,
-      gh,
-      downloads: ref(0)
+      year: new Date().getFullYear(),
+      downloads: ref(formatDownloads(baked.total))
     }
   },
   computed: {
@@ -746,26 +751,42 @@ export default {
     }
   },
   methods: {
-    hoverOver: function (index) {
-      this['about_heading_color_' + index] = this.secondaryColour;
-      this['about_heading_' + index] = ['animated', 'bounceIn'];
+    cardImage(number: number): string | undefined {
+      return cardImages[`../assets/serverpackcreator/cards/${number}.png`];
     },
-    hoverOutTimeout: function (index) {
-      this['about_heading_color_' + index] = '#f7f7f7';
+    /**
+     * The colour of a heading that tints while hovered. Only the two sponsor headings use it: they
+     * sit on the dark panel, where the accent reads. The Features Excerpt headings sit on saturated
+     * orange, salmon, purple and blue bands and keep their white, which the accent does not survive.
+     */
+    headingTint(index: number): string {
+      const colour = this.hoveredHeading === index ? this.secondaryColour : RESTING_HEADING_COLOUR;
+      return `color: ${colour}`;
+    },
+    hoverOver(index: number) {
+      this.hoveredHeading = index;
+      this.headingAnimation[index] = ['animated', 'bounceIn'];
+    },
+    hoverOutTimeout(index: number) {
+      this.hoveredHeading = null;
+      // Delayed so the bounce finishes before the heading snaps back.
       setTimeout(() => {
-        this['about_heading_' + index] = [];
+        this.headingAnimation[index] = [];
       }, 1000);
     }
   },
   mounted() {
-    this.gh.getTotalDownloads().then(count => {
-      this.downloads = count
-      console.log('Total downloads: ' + count);
-    }).catch(error => {
-      console.error(error.message);
-    });
+    // Best-effort, and at most once a day per visitor. A forge that is unreachable from a browser
+    // -- git.griefed.de sends no CORS header -- changes nothing: the baked figure already has it.
+    refreshDownloadTotal()
+      .then(snapshot => {
+        this.downloads = formatDownloads(snapshot.total);
+      })
+      .catch(() => {
+        // Keep showing the figure that is already on screen.
+      });
   }
-}
+})
 </script>
 
 <style scoped>

@@ -35,6 +35,8 @@ class SaveConfigItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     }
 
     /**
+     * Saves the selected configuration.
+     *
      * @author Griefed
      */
     private fun save() {

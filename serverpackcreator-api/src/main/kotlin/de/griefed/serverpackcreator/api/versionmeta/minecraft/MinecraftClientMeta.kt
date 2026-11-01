@@ -34,17 +34,16 @@ import java.net.URI
 /**
  * Minecraft client meta containing information about available Minecraft releases.
  *
- * @param forgeMeta         To acquire Forge instances for this [MinecraftClient] version.
- * @param minecraftManifest Minecraft manifest file.
- * @param utilities         Commonly used utilities across ServerPackCreator.
- * @param apiProperties     ServerPackCreator settings.
- *
  * @author Griefed
  */
 internal class MinecraftClientMeta(
+    /** Minecraft manifest file. */
     private val minecraftManifest: File,
+    /** To acquire Forge instances for this [MinecraftClient] version. */
     private val forgeMeta: ForgeMeta,
+    /** Commonly used utilities across ServerPackCreator. */
     private val utilities: Utilities,
+    /** ServerPackCreator settings. */
     private val apiProperties: ApiProperties
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

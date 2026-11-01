@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 package de.griefed.example.kotlin.serverpack
 
@@ -47,29 +46,30 @@ class PreZipArchive : PreZipExtension {
     private var tomlWriter: TomlWriter = TomlWriter()
 
     /**
-     * @param versionMeta         Instance of [VersionMeta] so you can work with available
-     * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-     * @param utilities           Instance of [Utilities] commonly used across
-     * ServerPackCreator.
-     * @param apiProperties       Instance of [ApiProperties] as ServerPackCreator itself uses
-     * it.
-     * @param packConfig  Instance of [PackConfig] for a given server pack.
-     * @param destination         String. The destination of the server pack.
-     * @param pluginConfig         Configuration for this addon, conveniently provided by
-     * ServerPackCreator.
-     * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
-     * conveniently provided by ServerPackCreator.
      * @throws Exception [Exception] when an uncaught error occurs in the addon.
      * @author Griefed
      */
     @Throws(Exception::class)
     override fun run(
+        /**
+         * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+         * Quilt versions.
+         */
         versionMeta: VersionMeta,
+        /** Instance of [Utilities] commonly used across ServerPackCreator. */
         utilities: Utilities,
+        /** Instance of [ApiProperties] as ServerPackCreator itself uses it. */
         apiProperties: ApiProperties,
+        /** Instance of [PackConfig] for a given server pack. */
         packConfig: PackConfig,
+        /** String. The destination of the server pack. */
         destination: String,
+        /** Configuration for this addon, conveniently provided by ServerPackCreator. */
         pluginConfig: Optional<CommentedConfig>,
+        /**
+         * Modpack and server pack specific configurations for this addon, conveniently provided by
+         * ServerPackCreator.
+         */
         packSpecificConfigs: ArrayList<CommentedConfig>
     ) {
         pluginsLog.info("I am: $name($version) by $author. $description")

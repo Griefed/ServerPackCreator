@@ -38,6 +38,8 @@ class ModloaderInstallerLogItem(
     }
 
     /**
+     * Opens the modloader-installer log in the system's text editor.
+     *
      * @author Griefed
      */
     private fun openModloaderInstallerLog() {

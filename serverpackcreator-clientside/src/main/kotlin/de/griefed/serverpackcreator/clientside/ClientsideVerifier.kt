@@ -52,22 +52,26 @@ import de.griefed.serverpackcreator.clientside.verdict.VerdictPolicy
  * decides and the metadata only declares — a self-report is the unreliable half, and is the whole reason
  * the expensive boot exists.
  *
- * @param platforms          The supported hosting platforms, tried in order via [ModPlatform.handles].
- * @param metadataScanner    Reads declared sideness out of a downloaded jar.
- * @param jarDownloader      Fetches published files for scanning; a locked file has no URL and is
- *                           reported as unverifiable rather than fetched another way.
- * @param workDirectory      Scratch directory for downloaded jars.
- * @param bootVerifierFactory When non-null, builds a [BootVerifier] for the resolved platform to add
- *                            the server-boot signal (Phase 2); when null, the report is metadata-only.
- * @param linePolicy         Which of the project's Minecraft version-lines get ground — one verdict each.
  * @author Griefed
  */
 class ClientsideVerifier(
+    /** The supported hosting platforms, tried in order via [ModPlatform.handles]. */
     private val platforms: List<ModPlatform>,
+    /** Reads declared sideness out of a downloaded jar. */
     private val metadataScanner: MetadataScanner,
+    /**
+     * Fetches published files for scanning; a locked file has no URL and is reported as unverifiable
+     * rather than fetched another way.
+     */
     private val jarDownloader: JarDownloader,
+    /** Scratch directory for downloaded jars. */
     private val workDirectory: File,
+    /**
+     * When non-null, builds a [BootVerifier] for the resolved platform to add the server-boot signal
+     * (Phase 2); when null, the report is metadata-only.
+     */
     private val bootVerifierFactory: ((ModPlatform) -> BootVerifier)? = null,
+    /** Which of the project's Minecraft version-lines get ground — one verdict each. */
     private val linePolicy: MinecraftLinePolicy = MinecraftLinePolicy()
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -274,12 +278,11 @@ class ClientsideVerifier(
          * one is the finding worth having (a mod claiming the server while calling client classes), never
          * because it can decide anything itself.
          *
-         * @param serverSide    What the platform declares of the server side.
-         * @param clientSide    What the platform declares of the client side; recorded, not decisive.
-         * @param jarScan       What reading the jar's own descriptor concluded.
-         * @param bootOutcome   The boot's outcome, or `null` when none ran.
-         * @param bootAttempted Whether a boot was even asked for. `false` is the metadata-only report verb
-         *                      and is **not** an error: nothing was prevented, so it stays INCONCLUSIVE.
+         * [serverSide] and [clientSide] are what the platform declares of each side, the client one
+         * recorded rather than decisive; [jarScan] is what reading the jar's own descriptor concluded; and
+         * [bootOutcome] is the boot's outcome, or `null` when none ran. [bootAttempted] says whether a boot
+         * was asked for at all — `false` is the metadata-only report verb and is **not** an error, since
+         * nothing was prevented, so it stays INCONCLUSIVE.
          */
         internal fun verdictOf(
             serverSide: DeclaredSupport,

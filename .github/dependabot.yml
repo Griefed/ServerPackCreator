@@ -73,8 +73,8 @@ updates:
 ###################################################
   # `directories`, not `directory: "/"` -- there has never been a Dockerfile at the repository root, so
   # the single most important pin Dependabot could have watched here (`eclipse-temurin:21-jdk-jammy` in
-  # docker/Dockerfile) was watched by nothing at all. The four files are docker/Dockerfile,
-  # docker/Dockerfile.help, and the grinder's two.
+  # docker/Dockerfile) was watched by nothing at all. The three files are docker/Dockerfile and the
+  # grinder's two.
   - package-ecosystem: "docker"
     directories:
       - "/docker"

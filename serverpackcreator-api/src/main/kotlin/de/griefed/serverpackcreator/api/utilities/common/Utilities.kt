@@ -38,13 +38,14 @@ class Utilities {
     val xmlUtilities: XmlUtilities
 
     /**
-     * @param apiProperties   API configuration of this instance.
-     * @param objectMapper    Used for JSON-parsing.
-     * @param documentBuilderFactory Used for XML-parsing.
+     * Builds the bundle from the pieces each helper needs, constructing the helpers itself.
      */
     constructor(
+        /** API configuration of this instance. */
         apiProperties: ApiProperties,
+        /** Used for JSON-parsing. */
         objectMapper: ObjectMapper,
+        /** Used for XML-parsing. */
         documentBuilderFactory: DocumentBuilderFactory
     ) {
         webUtilities = WebUtilities(apiProperties)
@@ -53,13 +54,14 @@ class Utilities {
     }
 
     /**
-     * @param webUtilities     Common Web-based-related utilities.
-     * @param jsonUtilities    Common JSON-related utilities.
-     * @param xmlUtilities     Common XML-related utilities.
+     * Builds the bundle from helpers that have already been constructed.
      */
     constructor(
+        /** Common Web-based-related utilities. */
         webUtilities: WebUtilities,
+        /** Common JSON-related utilities. */
         jsonUtilities: JsonUtilities,
+        /** Common XML-related utilities. */
         xmlUtilities: XmlUtilities
     ) {
         this.webUtilities = webUtilities

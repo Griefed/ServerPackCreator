@@ -28,12 +28,12 @@ import java.util.concurrent.ConcurrentHashMap
  * `User-Agent` is required). Modrinth uniquely declares `client_side`/`server_side`, giving a strong
  * metadata signal CurseForge cannot, and all Modrinth files are freely downloadable (never locked).
  *
- * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
- * @param objectMapper Jackson mapper for parsing the JSON responses.
  * @author Griefed
  */
 class ModrinthPlatform(
+    /** HTTP boundary, swapped for canned JSON in tests. */
     private val httpFetcher: HttpFetcher = JdkHttpFetcher(),
+    /** Jackson mapper for parsing the JSON responses. */
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ModPlatform {
 

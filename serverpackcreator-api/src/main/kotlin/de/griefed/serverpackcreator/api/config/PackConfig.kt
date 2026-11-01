@@ -372,40 +372,40 @@ open class PackConfig() {
     /**
      * Construct a new configuration model with custom values.
      *
-     * @param clientMods                List of clientside mods to exclude from the server pack.
-     * @param whitelist                 List of mods to include if present, regardless whether a match was found through [clientMods]
-     * @param copyDirs                  List of directories and/or files to include in the server pack.
-     * @param modpackDir                The path to the modpack.
-     * @param minecraftVersion          The Minecraft version the modpack uses.
-     * @param modLoader                 The modloader the modpack uses. Either `Forge`, `Fabric` or `Quilt`.
-     * @param modLoaderVersion          The modloader version the modpack uses.
-     * @param javaArgs                  JVM flags to create the start scripts with.
-     * @param serverPackSuffix          Suffix to create the server pack with.
-     * @param serverIconPath            Path to the icon to use in the server pack.
-     * @param serverPropertiesPath      Path to the server.properties to create the server pack with.
-     * @param includeServerIcon         Whether to include the server-icon.png in the server pack.
-     * @param includeServerProperties   Whether to include the server.properties in the server pack.
-     * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
-     * @param scriptSettings            Map containing key-value pairs to be used in start script creation.
-     * @param pluginsConfigs             Configuration for any and all plugins used by this configuration.
      * @author Griefed
      */
     constructor(
+        /** List of clientside mods to exclude from the server pack. */
         clientMods: List<String>,
+        /** List of mods to include if present, regardless whether a match was found through [clientMods] */
         whitelist: List<String>,
+        /** List of directories and/or files to include in the server pack. */
         copyDirs: List<InclusionSpecification>,
+        /** The path to the modpack. */
         modpackDir: String,
+        /** The Minecraft version the modpack uses. */
         minecraftVersion: String,
+        /** The modloader the modpack uses. Either `Forge`, `Fabric` or `Quilt`. */
         modLoader: String,
+        /** The modloader version the modpack uses. */
         modLoaderVersion: String,
+        /** JVM flags to create the start scripts with. */
         javaArgs: String,
+        /** Suffix to create the server pack with. */
         serverPackSuffix: String,
+        /** Path to the icon to use in the server pack. */
         serverIconPath: String,
+        /** Path to the server.properties to create the server pack with. */
         serverPropertiesPath: String,
+        /** Whether to include the server-icon.png in the server pack. */
         includeServerIcon: Boolean,
+        /** Whether to include the server.properties in the server pack. */
         includeServerProperties: Boolean,
+        /** Whether to create a ZIP-archive of the server pack. */
         includeZipCreation: Boolean,
+        /** Map containing key-value pairs to be used in start script creation. */
         scriptSettings: HashMap<String, String>,
+        /** Configuration for any and all plugins used by this configuration. */
         pluginsConfigs: HashMap<String, ArrayList<CommentedConfig>>
     ) : this() {
         this.clientMods.addAll(clientMods)
@@ -429,7 +429,8 @@ open class PackConfig() {
     /**
      * Create a new configuration model from a config file.
      *
-     * @param configFile Configuration file to load.
+     * [configFile] — Configuration file to load.
+     *
      * @throws FileNotFoundException  if the specified file can not be found.
      * @throws NoFormatFoundException if the configuration format could not be determined by
      * Night-Config.

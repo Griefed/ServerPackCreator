@@ -62,6 +62,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Rebuilds the list of selectable themes from the bundled ones and the user's own.
+     *
      * @author Griefed
      */
     fun reloadThemes() {
@@ -72,6 +74,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Writes the example theme files into the themes directory, so a user has something to start from.
+     *
      * @author Griefed
      */
     private fun provideExamples() {
@@ -144,6 +148,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Adds every bundled FlatLaf IntelliJ theme to the list.
+     *
      * @author Griefed
      */
     private fun loadIJThemes() {
@@ -239,6 +245,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * The theme with the given name, or `null` when none matches.
+     *
      * @author Griefed
      */
     fun getThemeInfo(themeInfoName: String) : ThemeInfo? {

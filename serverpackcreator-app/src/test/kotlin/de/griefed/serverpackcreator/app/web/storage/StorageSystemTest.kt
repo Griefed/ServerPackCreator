@@ -21,12 +21,15 @@ package de.griefed.serverpackcreator.app.web.storage
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
+import com.mongodb.client.gridfs.model.GridFSFile
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.springframework.data.mongodb.gridfs.GridFsOperations
+import org.springframework.data.mongodb.gridfs.GridFsResource
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.mock.web.MockMultipartFile
 import java.io.File
@@ -115,6 +118,33 @@ class StorageSystemTest {
 
         Assertions.assertFalse(root.resolve("$objectId.zip").toFile().exists())
         verify(exactly = 1) { gridFsTemplate.delete(any()) }
+    }
+
+    /**
+     * The GridFS fallback is on the download route: it runs when the filesystem copy is gone, inside the
+     * request, before a single byte reaches the client. It copied the archive out of the database and
+     * then read the whole thing a second time to SHA-256 it -- a hash `cacheFile` discards, since all it
+     * takes from the result is the path. On a multi-gigabyte pack that is an entire extra pass over the
+     * file that nobody ever asked a question of.
+     */
+    @Test
+    fun recoveringAnArchiveFromGridFsDoesNotHashItOnTheWayOut() {
+        val root = storageRoot()
+        val fileSystem = spyk(FileSystemStorageService(root, MessageDigest.getInstance("SHA-256")))
+        val gridFsFile: GridFSFile = mockk()
+        val resource: GridFsResource = mockk()
+        every { gridFsFile.objectId } returns objectId
+        every { gridFsFile.filename } returns "All The Mods 9.zip"
+        every { resource.inputStream } returns ByteArray(64) { 9 }.inputStream()
+        every { gridFsTemplate.findOne(any()) } returns gridFsFile
+        every { gridFsOperations.getResource(gridFsFile) } returns resource
+        val storage = StorageSystem(fileSystem, gridFsTemplate, gridFsOperations)
+
+        val recovered = storage.load(objectId.toString())
+
+        Assertions.assertTrue(recovered.isPresent, "the archive must still be recovered from GridFS")
+        Assertions.assertArrayEquals(ByteArray(64) { 9 }, recovered.get().readBytes())
+        verify(exactly = 0) { fileSystem.sha256Of(any()) }
     }
 
     @Test

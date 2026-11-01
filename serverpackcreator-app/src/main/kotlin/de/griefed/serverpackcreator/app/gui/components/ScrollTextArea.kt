@@ -141,6 +141,8 @@ class ScrollTextArea(
     }
 
     /**
+     * Registers a listener on the underlying document, so callers need no handle on the text area itself.
+     *
      * @author Griefed
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -185,6 +187,9 @@ class ScrollTextArea(
     override fun keyReleased(e: KeyEvent) {}
 
     /**
+     * Gives the component focus once Swing has finished laying the dialog out; an immediate request is lost to the
+     * dialog's own focus handling.
+     *
      * @author Griefed
      */
     private fun requestFocus(component: JComponent) {
@@ -196,6 +201,8 @@ class ScrollTextArea(
     }
 
     /**
+     * Asks for a literal string and selects its next occurrence.
+     *
      * @author Griefed
      */
     private fun searchDialog() {
@@ -231,6 +238,8 @@ class ScrollTextArea(
     }
 
     /**
+     * Asks for a regular expression and selects its next match.
+     *
      * @author Griefed
      */
     private fun searchRegexDialog() {
@@ -269,6 +278,8 @@ class ScrollTextArea(
     }
 
     /**
+     * Asks for a literal string and its replacement, and substitutes every occurrence.
+     *
      * @author Griefed
      */
     private fun searchAndReplace() {
@@ -287,6 +298,8 @@ class ScrollTextArea(
     }
 
     /**
+     * Asks for a regular expression and its replacement, and substitutes every match.
+     *
      * @author Griefed
      */
     private fun searchRegexAndReplace() {

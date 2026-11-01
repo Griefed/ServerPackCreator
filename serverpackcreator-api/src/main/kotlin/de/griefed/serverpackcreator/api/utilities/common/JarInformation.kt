@@ -36,8 +36,7 @@ import java.nio.file.Paths
  *  * The operating systems' version
  *  * Whether an exe is being used for running ServerPackCreator
  *
- * @param clazz The class from which to acquire information about the containing JAR-file and general location.
- *
+ * [clazz] — The class from which to acquire information about the containing JAR-file and general location.
  */
 class JarInformation(clazz: Class<*>) {
     /**

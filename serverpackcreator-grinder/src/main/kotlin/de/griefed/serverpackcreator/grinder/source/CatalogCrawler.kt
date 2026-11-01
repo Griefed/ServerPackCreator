@@ -38,15 +38,17 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  *
  * Not thread-safe by design: the daemon loop calls it once per pass, then fans the batch out to the workers.
  *
- * @param sources   The platforms to crawl, each identified by its [CandidateSource.platform].
- * @param cursors   Where crawl positions are kept (persistent in production).
- * @param batchSize How many projects to take from each source per pass — size it to what the host can
- *                  actually grind in one pass; a bigger batch sweeps the catalog faster.
  * @author Griefed
  */
 class CatalogCrawler(
+    /** The platforms to crawl, each identified by its [CandidateSource.platform]. */
     private val sources: List<CandidateSource>,
+    /** Where crawl positions are kept (persistent in production). */
     private val cursors: CursorStore,
+    /**
+     * How many projects to take from each source per pass — size it to what the host can actually grind in one
+     * pass; a bigger batch sweeps the catalog faster.
+     */
     private val batchSize: Int
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

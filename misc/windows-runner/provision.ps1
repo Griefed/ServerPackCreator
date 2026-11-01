@@ -321,10 +321,10 @@ clear the 'Turn on Script Execution' policy instead. CurrentUser is clearable wi
 Step 'Installing the Forgejo runner'
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 
-# BUILT HERE, not handed over. Forgejo publishes no Windows runner binary, so this used to be
-# cross-compiled on the Linux host and dropped on a shared drive -- a file whose version nothing
-# recorded and whose provenance nothing checked. `go build` in the guest is the same one command,
-# against a clone whose commit is logged below.
+# BUILT HERE, not handed over. Forgejo publishes no Windows runner binary, and `go build` in the guest
+# is one command against a clone whose commit is logged below. Cross-compiling on the Linux host and
+# dropping the result on a shared drive costs exactly that provenance: nothing records the binary's
+# version and nothing checks where it came from.
 Step "Building the runner from $RunnerRepo"
 $source = Join-Path $env:TEMP 'forgejo-runner-src'
 if (Test-Path $source) { Remove-Item $source -Recurse -Force }

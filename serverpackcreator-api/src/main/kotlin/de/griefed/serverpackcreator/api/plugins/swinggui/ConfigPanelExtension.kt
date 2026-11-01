@@ -44,29 +44,37 @@ interface ConfigPanelExtension : ExtensionInformation {
      * [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler] extension-points, which would then
      * download the version you specified via this here panel.
      *
-     * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,
-     * LegacyFabric and Quilt versions.
-     * @param apiProperties Instance of [ApiProperties] The current configuration of ServerPackCreator,
-     * like the default list of clientside-only mods, the server pack directory etc.
-     * @param utilities             Instance of [Utilities] commonly used across ServerPackCreator.
-     * @param serverPackConfigTab   Instance of a class implementing [ServerPackConfigTab] to give you access to the
-     * various fields inside it, like the modpack directory, selected
-     * Minecraft, modloader and modloader versions, etc.
-     * @param pluginConfig           Plugin specific configuration conveniently provided by ServerPackCreator. This is
-     * the global configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
-     * @param extensionName         The name the titled border of this ConfigPanel will get.
-     * @param pluginID              The same as the PluginId.
-     * @return A ConfigPanel allowing users to further customize their ServerPackCreator experience
-     * when using a plugin.
+     * Returns a ConfigPanel allowing users to further customize their ServerPackCreator experience when using a
+     * plugin.
+     *
      * @author Griefed
      */
     fun getPanel(
+        /**
+         * Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric, LegacyFabric and
+         * Quilt versions.
+         */
         versionMeta: VersionMeta,
+        /**
+         * Instance of [ApiProperties] The current configuration of ServerPackCreator, like the default list of
+         * clientside-only mods, the server pack directory etc.
+         */
         apiProperties: ApiProperties,
+        /** Instance of [Utilities] commonly used across ServerPackCreator. */
         utilities: Utilities,
+        /**
+         * Instance of a class implementing [ServerPackConfigTab] to give you access to the various fields
+         * inside it, like the modpack directory, selected Minecraft, modloader and modloader versions, etc.
+         */
         serverPackConfigTab: ServerPackConfigTab,
+        /**
+         * Plugin specific configuration conveniently provided by ServerPackCreator. This is the global
+         * configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.
+         */
         pluginConfig: Optional<CommentedConfig>,
+        /** The name the titled border of this ConfigPanel will get. */
         extensionName: String,
+        /** The same as the PluginId. */
         pluginID: String
     ): ExtensionConfigPanel
 }

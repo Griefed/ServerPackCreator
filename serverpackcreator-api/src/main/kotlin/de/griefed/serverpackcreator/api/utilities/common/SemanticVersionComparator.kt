@@ -71,12 +71,13 @@ class SemanticVersionComparator {
          * Compare the given new version against the given current version, depending on comparison type `EQUAL`,
          * `NEW`, or `EQUAL_OR_NEW`.
          * Checks are performed with the semantic release-formatting, e.g. 1.2.3, 2.3.4, 6.6.6
-         * @author Griefed
-         * @param currentVersion Current version to check against `newVersion`.
-         * @param newVersion New version to check against `currentVersion`.
-         * @param comparison Comparison level. Either `EQUAL`, `NEW`, or `EQUAL_OR_NEW`.
-         * @return Boolean. Returns `true` if the new version is indeed newer than the current version. Otherwise
+         *
+         * [currentVersion] — Current version to check against `newVersion`. [newVersion] — New version to check
+         * against `currentVersion`. [comparison] — Comparison level. Either `EQUAL`, `NEW`, or `EQUAL_OR_NEW`.
+         * Returns boolean. Returns `true` if the new version is indeed newer than the current version. Otherwise
          * `false`.
+         *
+         * @author Griefed
          * @throws NumberFormatException Thrown if the passed `currentVersion` or `newVersion` can not be
          * parsed into integers.
          */
@@ -130,8 +131,10 @@ class SemanticVersionComparator {
 
         /**
          * Acquire the version numbers of a semantic-formatted version.
+         *
+         * Returns list of version numbers. Major index 0, minor index 1, patch index 2.
+         *
          * @author Griefed
-         * @return List of version numbers. Major index 0, minor index 1, patch index 2.
          */
         private fun getSemantics(version: String): List<Int> {
             val semantics: MutableList<Int> = ArrayList(3)
@@ -161,21 +164,23 @@ class SemanticVersionComparator {
 
         /**
          * Compare two versions against each other and determine whether the new version is a newer semantic release version.
+         *
+         * Returns true if a new version was determined.
+         *
          * @author Griefed
-         * @param newMajor The new versions major number.
-         * @param newMinor The new versions minor number.
-         * @param newPatch The new versions patch number.
-         * @param currentMajor The old versions major number.
-         * @param currentMinor The old versions minor number.
-         * @param currentPatch The old versions patch number.
-         * @return True if a new version was determined.
          */
         private fun checkNew(
+            /** The new versions major number. */
             newMajor: Int,
+            /** The new versions minor number. */
             newMinor: Int,
+            /** The new versions patch number. */
             newPatch: Int,
+            /** The old versions major number. */
             currentMajor: Int,
+            /** The old versions minor number. */
             currentMinor: Int,
+            /** The old versions patch number. */
             currentPatch: Int
         ): Boolean {
             return if (newMajor > currentMajor) {
@@ -192,21 +197,23 @@ class SemanticVersionComparator {
         /**
          * Compare two versions against each other and determine whether the new version is a newer or the same semantic
          * release version.
+         *
+         * Returns true if a new or equal version was determined.
+         *
          * @author Griefed
-         * @param newMajor The new versions major number.
-         * @param newMinor The new versions minor number.
-         * @param newPatch The new versions patch number.
-         * @param currentMajor The old versions major number.
-         * @param currentMinor The old versions minor number.
-         * @param currentPatch The old versions patch number.
-         * @return True if a new or equal version was determined.
          */
         private fun checkNewOrEqual(
+            /** The new versions major number. */
             newMajor: Int,
+            /** The new versions minor number. */
             newMinor: Int,
+            /** The new versions patch number. */
             newPatch: Int,
+            /** The old versions major number. */
             currentMajor: Int,
+            /** The old versions minor number. */
             currentMinor: Int,
+            /** The old versions patch number. */
             currentPatch: Int
         ): Boolean {
             return if (newMajor == currentMajor && newMinor == currentMinor && newPatch == currentPatch) {
@@ -225,20 +232,19 @@ class SemanticVersionComparator {
         /**
          * Compare two versions against each other and determine whether they are the same semantic versions.
          * @author Griefed
-         * @param newMajor The new versions major number.
-         * @param newMinor The new versions minor number.
-         * @param newPatch The new versions patch number.
-         * @param currentMajor The old versions major number.
-         * @param currentMinor The old versions minor number.
-         * @param currentPatch The old versions patch number.
-         * @return True if the versions are the same.
          */
         private fun checkEqual(
+            /** The new versions major number. */
             newMajor: Int,
+            /** The new versions minor number. */
             newMinor: Int,
+            /** The new versions patch number. */
             newPatch: Int,
+            /** The old versions major number. */
             currentMajor: Int,
+            /** The old versions minor number. */
             currentMinor: Int,
+            /** The old versions patch number. */
             currentPatch: Int
         ): Boolean {
             return newMajor == currentMajor && newMinor == currentMinor && newPatch == currentPatch

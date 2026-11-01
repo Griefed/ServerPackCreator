@@ -36,6 +36,8 @@ class SaveAllConfigsItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     }
 
     /**
+     * Saves every open configuration tab.
+     *
      * @author Griefed
      */
     private fun saveAll() {

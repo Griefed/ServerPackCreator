@@ -53,9 +53,7 @@ import javax.swing.JComponent
  */
 object Tetris {
     /**
-     * The stand-alone main routine.
-     *
-     * @param args the command-line arguments
+     * The stand-alone main routine, taking the command-line arguments in [args].
      */
     @JvmStatic
     fun main(args: Array<String>?) {
@@ -138,9 +136,6 @@ object Tetris {
  *
  * Creates a new square board with the specified size. The square board will initially be empty.
  *
- * @param boardWidth  the width of the board (in squares)
- * @param boardHeight the height of the board (in squares)
- *
  * @author Per Cederberg, per@percederberg.net
  * @version 1.2
  */
@@ -180,13 +175,9 @@ internal class SquareBoard(
     }
 
     /**
-     * Checks if a specified square is empty, i.e. if it is not marked with a color. If the square is
-     * outside the board, false will be returned in all cases except when the square is directly above
-     * the board.
-     *
-     * @param x the horizontal position (0 &#60;= x &#60; width)
-     * @param y the vertical position (0 &#60;= y &#60; height)
-     * @return true if the square is emtpy, or false otherwise
+     * Whether the square at [x], [y] — `0 <= x < width`, `0 <= y < height` — is empty, i.e. not marked
+     * with a color. A square outside the board is never empty, except when it sits directly above the
+     * board.
      */
     fun isSquareEmpty(x: Int, y: Int): Boolean {
         return if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
@@ -197,11 +188,8 @@ internal class SquareBoard(
     }
 
     /**
-     * Checks if a specified line is empty, i.e. only contains empty squares. If the line is outside
-     * the board, false will always be returned.
-     *
-     * @param y the vertical position (0 &#60;= y &#60; height)
-     * @return true if the whole line is empty, or false otherwise
+     * Whether the line at [y] — `0 <= y < height` — contains only empty squares. A line outside the
+     * board is never empty.
      */
     fun isLineEmpty(y: Int): Boolean {
         if (y !in 0 until boardHeight) {
@@ -216,11 +204,8 @@ internal class SquareBoard(
     }
 
     /**
-     * Checks if a specified line is full, i.e. only contains no empty squares. If the line is outside
-     * the board, true will always be returned.
-     *
-     * @param y the vertical position (0 &#60;= y &#60; height)
-     * @return true if the whole line is full, or false otherwise
+     * Whether the line at [y] — `0 <= y < height` — contains no empty squares. A line outside the
+     * board always counts as full.
      */
     private fun isLineFull(y: Int): Boolean {
         if (y !in 0 until boardHeight) {
@@ -235,9 +220,7 @@ internal class SquareBoard(
     }
 
     /**
-     * Checks if the board contains any full lines.
-     *
-     * @return true if there are full lines on the board, or false otherwise
+     * Whether the board contains any full lines.
      */
     fun hasFullLines(): Boolean {
         for (y in boardHeight - 1 downTo 0) {
@@ -252,20 +235,14 @@ internal class SquareBoard(
      * Returns a graphical component to draw the board. The component returned will automatically be
      * updated when changes are made to this board. Multiple calls to this method will return the same
      * component, as a square board can only have a single graphical representation.
-     *
-     * @return a graphical component that draws this board
      */
     fun getComponent(): Component? {
         return component
     }
 
     /**
-     * Returns the color of an individual square on the board. If the square is empty or outside the
-     * board, null will be returned.
-     *
-     * @param x the horizontal position (0 &#60;= x &#60; width)
-     * @param y the vertical position (0 &#60;= y &#60; height)
-     * @return the square color, or null for none
+     * The color of the square at [x], [y] — `0 <= x < width`, `0 <= y < height` — or `null` when that
+     * square is empty or outside the board.
      */
     fun getSquareColor(x: Int, y: Int): Color? {
         return if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
@@ -276,13 +253,9 @@ internal class SquareBoard(
     }
 
     /**
-     * Changes the color of an individual square on the board. The square will be marked as in need of
-     * a repaint, but the graphical component will NOT be repainted until the update() method is
-     * called.
-     *
-     * @param x     the horizontal position (0 &#60;= x &#60; width)
-     * @param y     the vertical position (0 &#60;= y &#60; height)
-     * @param color the new square color, or null for empty
+     * Changes the square at [x], [y] — `0 <= x < width`, `0 <= y < height` — to [color], or to empty
+     * when it is `null`. The square is marked as in need of a repaint, but the graphical component is
+     * NOT repainted until the update() method is called.
      */
     fun setSquareColor(x: Int, y: Int, color: Color?) {
         if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
@@ -293,10 +266,9 @@ internal class SquareBoard(
     }
 
     /**
-     * Sets a message to display on the square board. This is supposed to be used when the board is
-     * not being used for active drawing, as it slows down the drawing considerably.
-     *
-     * @param message a message to display, or null to remove a previous message
+     * Sets [message] to display on the square board, or removes a previous one when it is `null`. This
+     * is supposed to be used when the board is not being used for active drawing, as it slows down the
+     * drawing considerably.
      */
     fun setMessage(message: String?) {
         this.message = message
@@ -346,10 +318,8 @@ internal class SquareBoard(
     }
 
     /**
-     * Removes a single line. All lines above are moved down one step, and a new empty line is added
-     * at the top. No repainting will be done after removing the line.
-     *
-     * @param y the vertical position (0 &#60;= y &#60; height)
+     * Removes the line at [y] — `0 <= y < height`. All lines above move down one step and a new empty
+     * line is added at the top. No repainting is done after removing the line.
      */
     private fun removeLine(y: Int) {
         var yAxis = y
@@ -444,10 +414,8 @@ internal class SquareBoard(
         }
 
         /**
-         * Adds a square to the set of squares in need of redrawing.
-         *
-         * @param x the horizontal position (0 &#60;= x &#60; width)
-         * @param y the vertical position (0 &#60;= y &#60; height)
+         * Adds the square at [x], [y] — `0 <= x < width`, `0 <= y < height` — to the set of squares in
+         * need of redrawing.
          */
         fun invalidateSquare(x: Int, y: Int) {
             if (updated) {
@@ -506,8 +474,6 @@ internal class SquareBoard(
 
         /**
          * Returns true as this component is double buffered.
-         *
-         * @return true as this component is double buffered
          */
         override fun isDoubleBuffered(): Boolean {
             return true
@@ -515,8 +481,6 @@ internal class SquareBoard(
 
         /**
          * Returns the preferred size of this component.
-         *
-         * @return the preferred component size
          */
         override fun getPreferredSize(): Dimension {
             return Dimension(width * 20, height * 20)
@@ -524,8 +488,6 @@ internal class SquareBoard(
 
         /**
          * Returns the minimum size of this component.
-         *
-         * @return the minimum component size
          */
         override fun getMinimumSize(): Dimension {
             return preferredSize
@@ -533,20 +495,15 @@ internal class SquareBoard(
 
         /**
          * Returns the maximum size of this component.
-         *
-         * @return the maximum component size
          */
         override fun getMaximumSize(): Dimension {
             return preferredSize
         }
 
         /**
-         * Returns a lighter version of the specified color. The lighter color will looked up in a
-         * hashtable, making this method fast. If the color is not found, the ligher color will be
-         * calculated and added to the lookup table for later reference.
-         *
-         * @param c the base color
-         * @return the lighter version of the color
+         * A lighter version of [c]. The lighter color is looked up in a hashtable, making this method
+         * fast; a color that is not found is calculated and added to the lookup table for later
+         * reference.
          */
         private fun getLighterColor(c: Color?): Color? {
             var lighter: Color?
@@ -559,12 +516,9 @@ internal class SquareBoard(
         }
 
         /**
-         * Returns a darker version of the specified color. The darker color will looked up in a
-         * hashtable, making this method fast. If the color is not found, the darker color will be
-         * calculated and added to the lookup table for later reference.
-         *
-         * @param c the base color
-         * @return the darker version of the color
+         * A darker version of [c]. The darker color is looked up in a hashtable, making this method
+         * fast; a color that is not found is calculated and added to the lookup table for later
+         * reference.
          */
         private fun getDarkerColor(c: Color?): Color? {
             var darker: Color?
@@ -577,10 +531,8 @@ internal class SquareBoard(
         }
 
         /**
-         * Paints this component indirectly. The painting is first done to a buffer image, that is then
-         * painted directly to the specified graphics context.
-         *
-         * @param g the graphics context to use
+         * Paints this component indirectly onto [g]. The painting is first done to a buffer image,
+         * which is then painted directly to that graphics context.
          */
         @Synchronized
         override fun paint(g: Graphics) {
@@ -608,10 +560,8 @@ internal class SquareBoard(
         }
 
         /**
-         * Paints this component directly. All the squares on the board will be painted directly to the
-         * specified graphics context.
-         *
-         * @param g the graphics context to use
+         * Paints this component directly onto [g]. All the squares on the board are painted straight to
+         * that graphics context.
          */
         private fun doPaintComponent(g: Graphics) {
 
@@ -635,11 +585,8 @@ internal class SquareBoard(
         }
 
         /**
-         * Paints a single board square. The specified position must contain a color object.
-         *
-         * @param g the graphics context to use
-         * @param x the horizontal position (0 &#60;= x &#60; width)
-         * @param y the vertical position (0 &#60; y &#60; height)
+         * Paints the single board square at [x], [y] — `0 <= x < width`, `0 < y < height` — onto [g].
+         * That position must contain a color object.
          */
         private fun paintSquare(g: Graphics, x: Int, y: Int) {
             val color = matrix[y][x]
@@ -681,10 +628,7 @@ internal class SquareBoard(
         }
 
         /**
-         * Paints a board message. The message will be drawn at the center of the component.
-         *
-         * @param g   the graphics context to use
-         * @param msg the string message
+         * Paints the board message [msg] onto [g], drawn at the center of the component.
          */
         private fun paintMessage(g: Graphics, msg: String) {
             // Find string font width
@@ -731,8 +675,8 @@ internal class SquareBoard(
  * game is started through user interaction with the graphical game component provided by this
  * class.
  *
- * @param width  the width of the square board (in positions); defaults to 10
- * @param height the height of the square board (in positions); defaults to 20
+ * [width] and [height] are the square board's size in positions, defaulting to 10 by 20.
+ *
  * @author Per Cederberg, per@percederberg.net
  * @version 1.2
  */
@@ -781,8 +725,6 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     /**
      * The current score. The score is increased for every figure that is possible to place on the
      * main board.
-     *
-     * @return the current score.
      */
     private var score = 0
 
@@ -816,8 +758,6 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     /**
      * Gets the current 'state'. One of the following:
      * STATE_GETREADY,STATE_PLAYING,STATE_PAUSED,STATE_GAMEOVER.
-     *
-     * @return the current state.
      */
     private var state = 0
 
@@ -843,35 +783,28 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     /**
      * Adds a PropertyChangeListener to this Game.
      *
-     *
      * This is the list the Events that can be fired:
-     *
      *
      * name: "state" value: new current state (int) one of those:
      * STATE_OVER,STATE_PLAYING,STATE_PAUSED when: fired when the state changes.
      *
-     *
      * name: "level" value: current level (int) when: fired when the player moves to the next
      * level.
-     *
      *
      * name: "score" value: current score (int) when: fired when the player increases his/her
      * score.
      *
-     *
      * name: "lines" value: number of 'removed' lines (int) when: fired when the player removes
      * one or more lines.
      *
-     * @param l the property change listener which is going to be notified.
+     * [l] is the property change listener which is going to be notified.
      */
     fun addPropertyChangeListener(l: PropertyChangeListener?) {
         propertyChangeSupport.addPropertyChangeListener(l)
     }
 
     /**
-     * Removes this propertyChangeListener
-     *
-     * @param l the PropertyChangeListener object to remove.
+     * Removes the PropertyChangeListener [l].
      */
     fun removePropertyChangeListener(l: PropertyChangeListener?) {
         propertyChangeSupport.removePropertyChangeListener(l)
@@ -879,24 +812,18 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
 
     /**
      * Gets the number of lines that have been removed since the game started.
-     *
-     * @return the number of removed lines.
      */
     val removedLines: Int
         get() = board.removedLines
 
     /**
      * Gets the java.awt.Component for the board.
-     *
-     * @return the gui component for the board.
      */
     val squareBoardComponent: Component?
         get() = board.getComponent()
 
     /**
      * Gets the java.awt.Component for the preview board (5x5)
-     *
-     * @return the gui component for the board.
      */
     val previewBoardComponent: Component?
         get() = previewBoard.getComponent()
@@ -1138,11 +1065,9 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     }
 
     /**
-     * Handles a keyboard event. This will result in different actions being taken, depending on the
-     * key pressed. In some cases, other events will be launched. This method is synchronized to avoid
-     * race conditions with other asynchronous events (timer and mouse).
-     *
-     * @param e the key event
+     * Handles the keyboard event [e]. Different actions are taken depending on the key pressed, and in
+     * some cases other events are launched. Synchronized to avoid race conditions with other
+     * asynchronous events (timer and mouse).
      */
     @Synchronized
     private fun handleKeyEvent(e: KeyEvent) {
@@ -1197,8 +1122,6 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
 
     /**
      * Returns a random figure. The figures come from the figures array, and will not be initialized.
-     *
-     * @return a random figure
      */
     private fun randomFigure(): Figure {
         return figures[(Math.random() * figures.size).toInt()]
@@ -1313,10 +1236,7 @@ internal object Configuration {
     private val config = Hashtable<String, String>()
 
     /**
-     * Returns a configuration parameter value.
-     *
-     * @param key the configuration parameter key
-     * @return the configuration parameter value, or null if not set
+     * The value of the configuration parameter [key], or `null` when it is not set.
      */
     fun getValue(key: String): String? {
         return if (config.containsKey(key)) {
@@ -1331,12 +1251,7 @@ internal object Configuration {
     }
 
     /**
-     * Returns a configuration parameter value. If the configuration parameter is not set, a default
-     * value will be returned instead.
-     *
-     * @param key the configuration parameter key
-     * @param def the default value to use
-     * @return the configuration parameter value, or the default value if not set
+     * The value of the configuration parameter [key], or [def] when it is not set.
      */
     fun getValue(key: String, def: String): String {
         val value = getValue(key)
@@ -1344,24 +1259,16 @@ internal object Configuration {
     }
 
     /**
-     * Sets a configuration parameter value.
-     *
-     * @param key   the configuration parameter key
-     * @param value the configuration parameter value
+     * Sets the configuration parameter [key] to [value].
      */
     fun setValue(key: String, value: String) {
         config[key] = value
     }
 
     /**
-     * Returns the color configured for the specified key. The key will be prepended with
-     * "tetris.color." and the value will be read from the system properties. The color value must be
-     * specified in hexadecimal web format, i.e. in the "#RRGGBB" format. If the default color isn't
-     * in a valid format, white will be returned.
-     *
-     * @param key the configuration parameter key
-     * @param def the default value
-     * @return the color specified in the configuration, or a default color value
+     * The color configured for [key], falling back to [def]. The key is prepended with "tetris.color."
+     * and the value read from the system properties. A color must be given in hexadecimal web format,
+     * i.e. "#RRGGBB"; white is returned when [def] is not in a valid format either.
      */
     fun getColor(key: String, def: String): Color {
         val value = getValue("tetris.color.$key", def)
@@ -1374,11 +1281,7 @@ internal object Configuration {
     }
 
     /**
-     * Parses a web color string. If the color value couldn't be parsed correctly, null will be
-     * returned.
-     *
-     * @param value the color value to parse
-     * @return the color represented by the string, or null if the string was malformed
+     * The web color string [value] parsed into a [Color], or `null` when it could not be parsed.
      */
     private fun parseColor(value: String): Color? {
         return if (!value.startsWith("#")) {
@@ -1412,7 +1315,6 @@ internal object Configuration {
  * one of seven possible constellations. The figures may be rotated in 90 degree steps and have
  * sideways and downwards movability.
  *
- *
  * Each figure instance can have two states, either attached to a square board or not. When
  * attached, all move and rotation operations are checked so that collisions do not occur with other
  * squares on the board. When not attached, any rotation can be made (and will be kept when attached
@@ -1421,7 +1323,8 @@ internal object Configuration {
  * Creates a new figure of one of the seven predefined types. The figure will not be attached to
  * any square board and default colors and orientations will be assigned.
  *
- * @param type the figure type (one of the figure constants)
+ * [type] is the figure type, one of the figure constants.
+ *
  * @throws IllegalArgumentException if the figure type specified is not recognized
  * @see .SQUARE_FIGURE
  *
@@ -1497,9 +1400,8 @@ internal class Figure(type: Int) {
     }
 
     /**
-     * Initializes the instance variables for a specified figure type.
+     * Initializes the instance variables for the figure type [type], one of the figure constants.
      *
-     * @param type the figure type (one of the figure constants)
      * @throws IllegalArgumentException if the figure type specified is not recognized
      * @see .SQUARE_FIGURE
      *
@@ -1620,9 +1522,7 @@ internal class Figure(type: Int) {
     }
 
     /**
-     * Checks if this figure is attached to a square board.
-     *
-     * @return true if the figure is already attached, or false otherwise
+     * Whether this figure is attached to a square board.
      */
     private val isAttached: Boolean
         get() = board != null
@@ -1633,15 +1533,13 @@ internal class Figure(type: Int) {
      * both cases, the squares on the new board are checked for collisions. If the squares are already
      * occupied, this method returns false and no attachment is made.
      *
-     *
      * The horizontal and vertical coordinates will be reset for the figure, when centering the
      * figure on the new board. The figure orientation (rotation) will be kept, however. If the figure
      * was previously attached to another board, it will be detached from that board before attaching
      * to the new board.
      *
-     * @param board  the square board to attach to
-     * @param center the centered position flag
-     * @return true if the figure could be attached, or false otherwise
+     * [board] is the square board to attach to and [center] the centered-position flag; `false` comes
+     * back when the figure could not be attached.
      */
     fun attach(board: SquareBoard, center: Boolean): Boolean {
         val newX: Int = board.boardWidth / 2
@@ -1697,8 +1595,6 @@ internal class Figure(type: Int) {
     /**
      * Checks if the figure is fully visible on the square board. If the figure isn't attached to a
      * board, false will be returned.
-     *
-     * @return true if the figure is fully visible, or false otherwise
      */
     val isAllVisible: Boolean
         get() {
@@ -1717,8 +1613,6 @@ internal class Figure(type: Int) {
      * Checks if the figure has landed. If this method returns true, the moveDown() or the
      * moveAllWayDown() methods should have no effect. If no square board is attached, this method
      * will return true.
-     *
-     * @return true if the figure has landed, or false otherwise
      */
     fun hasLanded(): Boolean {
         return !isAttached || !canMoveTo(xPos, yPos + 1, orientation)
@@ -1850,11 +1744,7 @@ internal class Figure(type: Int) {
     }
 
     /**
-     * Checks if a specified pair of (square) coordinates are inside the figure, or not.
-     *
-     * @param x the horizontal position
-     * @param y the vertical position
-     * @return true if the coordinates are inside the figure, or false otherwise
+     * Whether the square coordinates [x], [y] are inside the figure.
      */
     private fun isInside(x: Int, y: Int): Boolean {
         for (i in shapeX.indices) {
@@ -1866,14 +1756,8 @@ internal class Figure(type: Int) {
     }
 
     /**
-     * Checks if the figure can move to a new position. The current figure position is taken into
-     * account when checking for collisions. If a collision is detected, this method will return
-     * false.
-     *
-     * @param newX           the new horizontal position
-     * @param newY           the new vertical position
-     * @param newOrientation the new orientation (rotation)
-     * @return true if the figure can be moved, or false otherwise
+     * Whether the figure can move to [newX], [newY] at [newOrientation]. The current figure position
+     * is taken into account when checking for collisions, and a detected collision yields `false`.
      */
     private fun canMoveTo(newX: Int, newY: Int, newOrientation: Int): Boolean {
         var x: Int
@@ -1889,12 +1773,7 @@ internal class Figure(type: Int) {
     }
 
     /**
-     * Returns the relative horizontal position of a specified square. The square will be rotated
-     * according to the specified orientation.
-     *
-     * @param square      the square to rotate (0-3)
-     * @param orientation the orientation to use (0-3)
-     * @return the rotated relative horizontal position
+     * The relative horizontal position of [square] (0-3), rotated according to [orientation].
      */
     private fun getRelativeX(square: Int, orientation: Int) =
         when (orientation % 4) {
@@ -1907,12 +1786,7 @@ internal class Figure(type: Int) {
 
 
     /**
-     * Rotates the relative vertical position of a specified square. The square will be rotated
-     * according to the specified orientation.
-     *
-     * @param square      the square to rotate (0-3)
-     * @param orientation the orientation to use (0-3)
-     * @return the rotated relative vertical position
+     * The relative vertical position of [square] (0-3), rotated according to [orientation].
      */
     private fun getRelativeY(square: Int, orientation: Int) =
         when (orientation % 4) {
@@ -1925,9 +1799,7 @@ internal class Figure(type: Int) {
 
 
     /**
-     * Paints the figure on the board with the specified color.
-     *
-     * @param color the color to paint with, or null for clearing
+     * Paints the figure on the board in [color], or clears it when that is `null`.
      */
     private fun paint(color: Color?) {
         var x: Int

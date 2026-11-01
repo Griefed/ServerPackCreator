@@ -423,10 +423,10 @@ try {
     Write-Host "  warn  could not query DisableDeleteNotify: $($_.Exception.Message)"
 }
 
-# Retrim only, not the full defrag that Automatic Maintenance used to run: the image is thin and
-# fragmentation inside it is the host's business, while the freed-block list is the guest's. It is
-# cheap ONLY if domain.xml's discard_granularity override is in place -- a retrim at the default 4 KiB
-# granularity takes minutes to hours, which is the reason this was ever disabled.
+# Retrim only, never the full defrag Automatic Maintenance runs: the image is thin and fragmentation
+# inside it is the host's business, while the freed-block list is the guest's. It is cheap ONLY if
+# domain.xml's discard_granularity override is in place -- at the default 4 KiB granularity a retrim
+# takes minutes to hours, which is why it must stay disabled without that override.
 Try-Step 'weekly retrim, Sunday 03:00' {
     $retrim = New-ScheduledTaskAction -Execute 'powershell.exe' `
         -Argument '-NoProfile -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim"'

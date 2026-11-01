@@ -65,9 +65,8 @@ object GenerationNotifier {
     val subscriberCount: Int get() = subscribers.size
 
     /**
-     * Be told about every server pack generated from now on, until the returned [Subscription] is cancelled.
-     *
-     * @param onPackGenerated Handed the generated pack's directory.
+     * Be told about every server pack generated from now on, until the returned [Subscription] is
+     * cancelled. [onPackGenerated] is handed the generated pack's directory.
      */
     fun subscribe(onPackGenerated: (File) -> Unit): Subscription {
         subscribers.add(onPackGenerated)

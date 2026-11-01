@@ -7280,3 +7280,389 @@ two.** The devbuild traceback fix landed on one of two call sites; the release-s
 copies; `CI-NOTES.md` was a second, stale copy of what `claude-docs/CI-SECRETS.md` maintains. That shape
 now has five recorded instances in this repository. It is worth asking, of any fix that keys on a call
 site or a literal, which other spellings of it exist — before calling it done.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, iteration 1 of 3
+
+Range: `git log 9.2.1..develop` = **88 commits**, **74 non-merge**. **17 of those were already audited
+on 2026-10-12** as part of `9.1.0..develop` and found clean; they are ancestors of that audit's subject
+`05a58f57f` and are not re-litigated here. The genuine subject is the **~57 commits authored since**,
+plus the whole codebase as it now stands.
+
+Type distribution of the 74: 19 `fix`, 18 `docs`, 12 `deps`, 6 `build`, 5 `chore`, 4 `feat`, 4 `ci`,
+3 `refactor`, 2 `test`, 1 `improv`.
+
+## Convention compliance
+
+**All three `refactor:` commits were checked against the rule this project has broken three times —
+*`refactor:` is a claim about behaviour, not about intent*.** The test applied was whether any existing
+test's **assertion, argument or expected value** changed, with the recorded carve-out that a
+reference-only update (imports, receivers, moved paths) is not that signal:
+
+| commit | test files touched | assertion-level changes | verdict |
+|---|---|---|---|
+| `1c06536e7` split `core` into `pack`/`session` | 18 | **0** | correct label |
+| `5658f621b` organize the engine by feature | 128 | 0 — only moved paths, FQNs in `Class.forName`, KDoc links | correct label |
+| `6b8ceab19` the two `textOrNull` readers | 1 | adds a new `@Test`, changes none | see Observation below |
+
+`5658f621b` is the one worth stating explicitly: 190 files, 128 of them tests, and **not one changed
+expectation**. The diff is `clientside.BootVerifier` → `clientside.boot.BootVerifier` and nothing else.
+That is exactly the shape the carve-out was written for.
+
+**`improv` is not an unknown type.** `improv(Modscanning): Skip dependencies which declare an
+incompatibility` looked like a non-standard label; `.releaserc.yml` configures it explicitly as
+`release: patch`. Checked rather than assumed — reporting it would have been a false positive.
+
+## Findings
+
+### MEDIUM-1 — the squash boundary now lives *only* in the commit message, and the precedent it leans on no longer holds
+
+`25dbe12df docs: adopt the as-little-as-necessary documentation policy, and apply it` is a squash of
+five commits covering five goals: adopting the policy (with the `reportUndocumented` flip), removing
+dated history from comments, deleting three dormant features, inlining 1,401 block tags, and resolving
+184 `@author`-only blocks. Its subject contains the word *"and"*, which the conventions name as the
+two-commits signal.
+
+The squash was **instructed**, so the grouping is not the finding. The finding is what changed
+underneath the precedent that makes such a squash acceptable. Iteration 2 of the 2026-10-12 audit
+recorded `8f2ac90ce` as a sanctioned squash for **two** reasons: the message reproduces every
+sub-commit verbatim, **and** "the `claude-*` branches are kept as the detailed history, which is a
+recorded decision rather than an accident."
+
+Here only the first holds. `claude-documentation-policy` was deleted in the same session's cleanup, so
+the five-commit series exists nowhere — `git checkout <fix>^` cannot reach the intermediate states, and
+the four tooling defects the series caught are readable only as prose. The message does carry them,
+including the mutation that reproduced each, which is why this is MEDIUM and not HIGH.
+
+**Disposition:** not reversible now (the branch is gone and its commits are unreferenced). What is
+actionable is the rule it exposes — *a squash is acceptable while the detailed history survives
+somewhere; deleting the branch in the same breath removes the second half of that bargain.* Recorded
+for the next session rather than fixed.
+
+### LOW-1 — `CLAUDE.md`'s refactor-state counts drifted again, in the same two rows
+
+The 2026-10-12 audit raised this and corrected it. It has drifted again. Measured from
+`<module>/build/test-results/test/*.xml` after a green run on `77fdd27d6`:
+
+| Module | table says | actually |
+|---|---|---|
+| api | 504 | **540** |
+| clientside | 680 | **681** |
+
+`app` 234, `plugin-example` 3, `plugin-grinder` 75, `plugin-selfextract` 17,
+`plugin-servertest` 112 (1 skip) and `grinder` 543 (27 skip) are all correct. Whole-repository total
+**2,205**, 28 skipped, zero failures.
+
+The api row moved by 36 because four `fix(api)` commits in this range each landed with their pins.
+This is the documented exception to *cite names, not snapshots* — the table is explicitly labelled a
+snapshot — so correcting it is maintenance, not a convention fix.
+
+### LOW-2 — a test signature is split from its body by a blank line
+
+`serverpackcreator-grinder/src/test/kotlin/.../loader/CachedLoaderVersionsTest.kt:117`
+
+```kotlin
+    fun ignoresTuplesWhoseInstallNeverCompleted()
+
+    {
+```
+
+Valid Kotlin, no warning, and the only instance in 2,181 `@Test` functions. Found as a side effect of
+the no-assertion scan below, whose brace matching it broke — which is the practical cost: a structural
+scan over the test tree silently mis-reads this function.
+
+### Observation — a new pin inside a `refactor:` commit, deliberately
+
+`6b8ceab19` renames one of two `textOrNull` readers and adds `aBlankRangeYieldsNoOpinion` in the same
+commit, mixing "add tests" with "refactor". It is recorded in `serverpackcreator-clientside/CLAUDE.md`
+as deliberate and the reasoning holds: the rename is *what revealed* the blank half was unpinned —
+dropping `takeIf { it.isNotBlank() }` left all 680 tests green. The guard and the rename share one
+reason, which is the goal-grouping rule working. Not a violation; recorded so it is not re-flagged.
+
+## Verified clean — do not re-litigate
+
+- **Zero unresolved KDoc references** after a 267-file documentation rewrite.
+  `:serverpackcreator-api:dokkaGeneratePublicationHtml --rerun-tasks` → BUILD SUCCESSFUL, 0
+  `unresolved`/`cannot be resolved` warnings. This is the check that matters for that commit, because
+  it converted `@param x` tags into `[x]` prose links across 191 files and a dangling link is silent.
+- **Zero `@Test` functions without a reachable assertion**, out of **2,181** scanned across all modules,
+  counting assertions reached through same-file helpers. Three candidates were flagged and all three
+  were false positives of the scanner, each verified by reading: `ListUtilitiesTest`
+  (multi-line list literal broke brace matching), `DefaultBootRulesTest` (a `@TestFactory` whose
+  assertions live in `DynamicTest` lambdas), `CachedLoaderVersionsTest` (LOW-2 above). The defect class
+  this repository has a receipt for — `suggestInclusionsTest` — has not recurred.
+- **No new `!!`** in main sources across the range: 0 added, 1 removed.
+- **Module boundaries intact.** `serverpackcreator-api` imports no `org.springframework.web`. Its
+  `javax.swing` importers are exactly the five files the root `CLAUDE.md` sanctions — the four
+  `plugins.swinggui` types plus `ApiPlugins`, which is the carve-out as written, with nothing added.
+- **No `docs:` commit hides a code change.** Every `.kt` line added or removed by each of the 18 `docs:`
+  commits was classified; two carry non-comment lines and both are the sanctioned enabling change —
+  `7a05797f0` reshapes `data class Exited(val exitCode: Int?)` one-parameter-per-line so the parameter
+  can be documented, and `25dbe12df`'s 256 lines are 36 parameter reshapes, 210 deleted dead-code
+  bodies and 10 class-declaration openings. No semantics moved.
+- **No `TODO`/`FIXME` added** in the range, and none present in any main source.
+- **Both CI conventions checks clean** on `77fdd27d6`: `ci-env-reference-check` clean with 14
+  allowlisted, `ci-duplication-check` 103 distinct step bodies, 0 duplicated-and-unexplained, 7
+  allowlisted.
+- **The subtree import is squashed and carries no foreign ancestry.** `90e12f2d0` adds
+  `serverpackcreator-addons-overview/` as a squashed subtree; the four commits it brings are all dated
+  2026-10-19, none predates the import, and none carries a type that would mint a release — checked
+  before merging, because `.releaserc.yml` still uses a bare `tagFormat: '${version}'` and that is the
+  exact shape that put 39 website commits into an SPC changelog once already.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, iteration 2 of 3
+
+Same subject as iteration 1. That pass read the commits; this one read the **guards**, and then
+re-checked iteration 1's own fixes.
+
+## Convention compliance
+
+**No new HIGH or MEDIUM convention violations.** The three `refactor:` commits were settled in iteration
+1 and are not re-examined. The defect this pass found is behavioural — a guard that cannot fail — and is
+filed in `claude-docs/ANALYSIS-AUDIT.md` as H1, per the split the 2026-10-12 audit established.
+
+**Iteration 1's own commit obeys the conventions it was written under.** `0d8d33d6f` lands three test
+changes and two documentation corrections under one goal — *pin what the audit found and record how it
+was found*. Its message quotes the mutation that reproduced each red, which is what *pin first means
+commit first* asks of a grouped commit, and the new guard was observed red against that mutation before
+being committed green.
+
+## Findings
+
+### Observation — the repository already had the fix for H1 written down, in one place, unused
+
+`HtmlProofingTest.withoutComments` exists, carries the reasoning in its own KDoc (*"a guard that flags an
+explanation of its own rule is worse than none"*), and is the only one of seven source-text guards that
+strips comments. The other six re-derive the same question and get it wrong in both directions — one
+passes against the defect it exists to catch, one would fail against a documentation change that altered
+nothing.
+
+This is the **sixth recorded instance** of *duplicated knowledge drifting toward whichever copy is
+easier to reach*, and the first where the drift is between a solved copy and five unsolved ones rather
+than between two solved ones that disagree. The rule the earlier instances produced — *ask of any new
+lookup table which existing one already answers it* — generalises here to guards: **ask of a new
+source-text assertion which existing one already solved reading code rather than prose.**
+
+## Verified clean — do not re-litigate
+
+- **The four repaired guards still pass on unmutated code**, and `FabricQuiltStepDownTest` now **fails**
+  against the comment mutation it previously passed (`FabricQuiltStepDownTest.kt:167`). Both directions
+  were run; neither was assumed.
+- **Iteration 1's `aStagingFileIsRemovedWhenTheMoveFails` has teeth**: red against the deletion of
+  `temporaryFile.delete()`, green against the code as written.
+- **`CLAUDE.md`'s counts are correct again** as of this iteration: api 542, clientside 681, the other six
+  rows unchanged, whole repository 2,207 with 28 skipped.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, iteration 3 of 3
+
+Same subject. Third pass, aimed at what the two earlier iterations left and at their own fixes.
+
+## Findings
+
+**No convention violations in any of the three iterations.** The three `refactor:` commits were checked
+in iteration 1 against the rule this project has broken three times and all three are honestly labelled;
+the defects the passes found were behavioural and are filed in `claude-docs/ANALYSIS-AUDIT.md`.
+
+The one MEDIUM any iteration raised against the range is `25dbe12df`'s squash boundary (iteration 1,
+MEDIUM-1), which is recorded rather than fixable — the branch carrying the detailed history was deleted
+in the same session, so the boundary now lives only in the message.
+
+### Observation — the fix for iteration 2's finding was itself the shape it warns about
+
+Iteration 2 found six source-text guards not stripping comments and fixed four. The remaining two were
+fixed here, and `GrindTestFixtures.grinderMainBody` turned out to carry a **second** instance of the same
+class: it brace-matches `main`'s window over raw source, so a brace inside a comment mis-cuts the window.
+Its own KDoc anticipates the consequence — *"a window that silently ran past them is exactly how a guard
+built on it would keep passing while asserting nothing"* — and guards against running past the end, but
+not against a comment moving the end. Stripping first fixes both halves at once, and it fixes them for
+all five consumers (`ReportBindWiringTest`, `ContainerLimitsWiringTest`, `FallbackListWiringTest`,
+`ShutdownWiringTest`, `GrinderSpcEnvironmentTest`) rather than one at a time.
+
+The refinement worth carrying: the helper strips `(?<!:)//.*` rather than `//.*`, so a URL inside a
+string literal survives. `HtmlProofingTest`'s original does not need it — its token is `JOptionPane` —
+and neither do the four guards fixed in iteration 2, whose tokens contain no `//`. It matters here
+because `main` and the CLI commands do hold URLs.
+
+## Verified clean — do not re-litigate
+
+- **All six source-text guards now read code rather than prose**, and three of them were proven by
+  mutation to catch what they previously missed: `FabricQuiltStepDownTest` (iteration 2) and, here,
+  `ReportBindWiringTest` via `grinderMainBody` — the real `host = bindHost` wiring deleted with the
+  identical text left in a comment, which now fails where the raw-text version passed.
+- **The frontend suite runs and passes** — `npm test` in `serverpackcreator-web-frontend`: **38 tests
+  across 15 files**, matching the figure in `CLAUDE.md`'s table. Nothing earlier in this session had run
+  it; the JVM suite does not cover it.
+- **Both earlier iterations' fixes re-checked** and still green at the end as at the start.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 4
+
+New ground: resource lifetimes, discarded failure returns, skip gates. Convention compliance was
+settled in rounds 1-3 and is not re-examined.
+
+## Findings
+
+**No convention violations.** Round 4's two defects are behavioural and are filed in
+`claude-docs/ANALYSIS-AUDIT.md` as M1 and M2.
+
+### Observation — a contract pinned, a body unpinned, and the guard that could not tell
+
+`JavaConfig.testJava` held three defects at once — a thrice-called `readLine()` discarding two lines in
+three, a `println` to stdout from library code, and a reader plus a live process leaked whenever the
+read threw. `JavaConfigTest.javaPathsAcceptOnlyValidInstallations` has covered this path all along and
+passes before and after, because every one of the three leaves the **return value** untouched.
+
+That is not a failure of the guard. It pins accept/reject, which is the contract, and it pins it well.
+It is a reminder that *a guard on the contract says nothing about the body*, and that the way to reach
+a body whose output is a side effect is to assert on the side effect — which is what the new
+`validatingAJavaPathPrintsNothingToStandardOut` does, by capturing `System.out` rather than by grepping
+the source. Verified red against restoring the `println`.
+
+The alternative — a source-text grep for `println` — was deliberately **not** written. Round 2 and 3
+spent their findings on source-text guards reading prose as code, and adding a seventh would have been
+the same trade: it would also have needed an exemption for the four legitimate `println`s in
+`ApiProperties`, which is a list that goes stale.
+
+## Verified clean — do not re-litigate
+
+- **`ThemeManager:222` is not a leak**, established from `flatlaf-3.7.2.jar`'s bytecode rather than from
+  the shape of the call. Detail in the analysis file.
+- **No new silent skip.** All 28 skipped tests map to documented gated integration classes.
+- **The 44 discarded filesystem booleans are best-effort cleanup**, reviewed individually.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 5
+
+New ground: swallowed exceptions, and I/O in **build logic** — which every earlier audit of the
+timeout rule scoped itself out of by name.
+
+## Findings
+
+**No convention violations in the commit history.** Round 5's two defects are behavioural and are filed
+in `claude-docs/ANALYSIS-AUDIT.md` as M1 and M2. Both sit in the same two lines of `buildSrc`.
+
+### Observation — a landmine's own scope is part of the landmine
+
+`serverpackcreator-api/CLAUDE.md`'s timeout landmine is unusually careful. It names the two sanctioned
+routes, lists the two benign exceptions, and warns that an earlier version of itself *overstated* its
+coverage — *"A landmine that overstates its coverage is worse than none: the next reader trusts it and
+stops looking."* It then tells the next reader to grep `-api` and `-app`.
+
+That instruction is what left the hole. `buildSrc` is a separate build, cannot depend on the modules,
+and therefore cannot use either sanctioned route — so it is the one place guaranteed to need its own
+answer, and the one place the grep never reaches. The single network call in it was unbounded.
+
+The generalisation, which is new and worth keeping: **a rule that names where to look has told you
+where it does not apply.** The earlier instances of this family are about duplicated *knowledge*
+drifting; this is about a stated *scope* becoming a blind spot. Ask of any audit instruction which
+build, module or source set it quietly excludes.
+
+## Verified clean — do not re-litigate
+
+- **The silent-catch convention is kept, 38 of 39.** The raw count looks alarming and is not: every one
+  but the `buildSrc` line states why it discards its exception, including the `OutOfMemoryError` in
+  `ConfigCheckTimer:76`, which carries three lines explaining that a pathologically large server-icon
+  must not take the GUI down and that the icon simply is not validated on that tick.
+- **`buildSrc` now has a second test class, and it ran** — `LicenseAgreementRendererTest`, 1 test, 0
+  skipped, reached through the `jar { finalizedBy(test) }` edge that is the only thing that runs this
+  source set. Verified red against removing the two timeout assignments and green with them, so it is a
+  pin rather than a passenger.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 6
+
+New ground: shared mutable state on the published surface.
+
+## Findings
+
+**No convention violations.** Round 6's defect is behavioural and is filed in
+`claude-docs/ANALYSIS-AUDIT.md` as M1, with its embedder-visible consequence recorded in
+`claude-docs/API-BEHAVIOUR-CHANGES.md` as the compatibility policy requires.
+
+### Observation — a fix that stopped one line short of its own sibling
+
+`clientsideModsRegex` and `modsWhitelistRegex` were fixed for clear-then-refill, pinned, and documented
+in both `serverpackcreator-api/CLAUDE.md` and the guard's own KDoc. The *source* lists those two are
+derived from — `clientsideMods` and `modsWhitelist` — kept the identical pattern in `UpdateConfig`, on a
+path reachable from a menu click rather than only at startup.
+
+This is the fourth shape in this session's six rounds where a correct fix was applied to the instance in
+hand rather than to the class: the Connector placeholder keyed on one file name, the timeout landmine
+grepped `-api` and `-app`, `HtmlProofingTest.withoutComments` stayed local to one of seven guards, and
+now this. The repository's own rule for it already exists — *"When a fix keys on a file name, ask which
+other spellings of that name exist before calling it done"* — and generalises cleanly: **ask which other
+call sites share the shape, not which other names share the spelling.**
+
+## Verified clean — do not re-litigate
+
+- **The live-collection getters are deliberate and were checked before being left alone**; a defensive
+  copy would have turned the fallback update into a no-op. Detail in the analysis file.
+- **The `fallback*` sets are never written through**, in any module.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 7
+
+New ground: equality contracts and cross-shell consistency of the shipped templates.
+
+## Findings
+
+**No convention violations.** Round 7's defect is behavioural, filed in
+`claude-docs/ANALYSIS-AUDIT.md` as H1 and deferred as **B52** — the first finding in seven rounds that
+is reported rather than fixed.
+
+### Why B52 was not fixed, which is itself a convention being followed
+
+The repository's rule for this exact area is explicit: *"Shell templates, manifests and version parsing
+get their test written and observed failing FIRST. Not because the rule is different there, but because
+these fail silently — a wrong branch or a mis-sliced version produces a plausible value, not an error."*
+
+Four candidate shapes were executed against a real fish in a container, and each satisfies one half of
+the contract while breaking the other: the shape that forwards the stop signal returns `0` where the
+server exited `42`, and the shape that preserves the exit code never fires the handler. Shipping either
+would replace a silent defect with a different silent defect — in a file that goes out inside every
+generated server pack.
+
+What the round produced instead is the thing that makes the fix cheap next time: a reproducible
+one-minute harness, the two fish semantics that make bash's shape untranslatable (`--on-signal` does not
+dispatch while blocked in `wait`; fish does not send a background job's stdin to `/dev/null`), and a
+table of what each candidate does. All of it is in B52.
+
+## Verified clean — do not re-litigate
+
+- **All eight manual `equals`/`hashCode` pairs agree on their field sets.** A first scan reported five
+  disagreements and was a false positive of its own regex — it matched `==` and the implementations use
+  `if (a != other.a) return false`.
+- **Exit-code propagation is present in `.sh`, `.fish` and `.ps1`**, which is exactly what
+  `serverpackcreator-api/CLAUDE.md` claims. A grep for the literal `SERVER_EXIT_CODE` finds it only in
+  bash and reads as a gap; fish spells it `server_exit_code` and PowerShell `$ServerExitCode`. Three
+  conventions, one behaviour — do not re-report it.
+
+---
+
+# 2026-10-21 — audit of `9.2.1..develop`, round 8
+
+New ground: `@Suppress` annotations, the duplicate pairs behind them, and the published API spec.
+
+## Findings
+
+**None — no convention violations and no behavioural defects.** This is the first of the eight rounds
+to find nothing, which is the stopping condition it was run to establish.
+
+## Verified clean — do not re-litigate
+
+- **The ten acknowledged `DuplicatedCode` pairs have not drifted** — differences are local variable and
+  field names only. Detail and the per-pair diffs are in `claude-docs/ANALYSIS-AUDIT.md`.
+- **No suppression is hiding a flagged problem**; the two self-flagging ones are deliberate.
+- **`Writerside/api-docs.yaml` has zero stale schema references.**
+- **A spec-vs-controller endpoint count was inconclusive by tooling and is not a finding.** Composing
+  Spring paths by parsing annotations got a real path wrong; the repository's own instruction is to
+  regenerate the spec rather than hand-compare it.

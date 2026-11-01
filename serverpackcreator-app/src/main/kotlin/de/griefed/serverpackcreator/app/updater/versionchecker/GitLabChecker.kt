@@ -55,10 +55,12 @@ class GitLabChecker : VersionChecker {
     /**
      * Constructs a GitLab checker with the given GitLab-URL to allow for version checks as well as version and URL
      * acquisition.
-     * @author Griefed
-     * @param repositoryUrl The full /api/v4-GitLab-repository-URL you want to check. Examples:<br></br>
+     *
+     * [repositoryUrl] — The full /api/v4-GitLab-repository-URL you want to check. Examples:<br></br>
      * `https://gitlab.com/api/v4/projects/32677538/releases`<br></br>
-     * `https://git.griefed.de/api/v4/projects/63/releases`
+     * `https://git.griefed.de/api/v4/projects/63/releases`.
+     *
+     * @author Griefed
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
     constructor(repositoryUrl: String) {
@@ -68,10 +70,12 @@ class GitLabChecker : VersionChecker {
     /**
      * Constructs a GitLab checker with the given GitLab-URL to allow for version checks as well as version and URL
      * acquisition.
-     * @author Griefed
-     * @param repositoryUrl The full /api/v4-GitLab-repository-URL you want to check. Examples:<br></br>
+     *
+     * [repositoryUrl] — The full /api/v4-GitLab-repository-URL you want to check. Examples:<br></br>
      * `https://gitlab.com/api/v4/projects/32677538/releases`<br></br>
-     * `https://git.griefed.de/api/v4/projects/63/releases`
+     * `https://git.griefed.de/api/v4/projects/63/releases`.
+     *
+     * @author Griefed
      */
     constructor(repositoryUrl: URL) {
         gitLabApi = repositoryUrl
@@ -92,11 +96,12 @@ class GitLabChecker : VersionChecker {
     /**
      * Check whether an update/newer version is available for the given version. If you want to check for PreReleases, too,
      * then make sure to pass `true` for `checkForPreReleases`.
+     *
+     * [currentVersion] — The current version of the app. [checkForPreReleases] — `false` if you do not want to
+     * check for PreReleases. `true` if you want to check for PreReleases as well. Returns [Update]-instance,
+     * wrapped in an [Optional], contianing information about the available update.
+     *
      * @author Griefed
-     * @param currentVersion The current version of the app.
-     * @param checkForPreReleases `false` if you do not want to check for PreReleases. `true`
-     * if you want to check for PreReleases as well.
-     * @return [Update]-instance, wrapped in an [Optional], contianing information about the available update.
      */
     override fun check(currentVersion: String, checkForPreReleases: Boolean): Optional<Update> {
         log.debug("Current version: $currentVersion")
@@ -161,9 +166,11 @@ class GitLabChecker : VersionChecker {
 
     /**
      * Gather a list of all available versions for the given repository.
+     *
+     * Returns a list of all available versions. If an error occurred, or no versions are available, `null`
+     * is returned.
+     *
      * @author Griefed
-     * @return Returns a list of all available versions. If an error occurred, or no versions are available,
-     * `null` is returned.
      */
     public override fun allVersions(): List<String>? {
         val versions: MutableList<String> = ArrayList(1000)
@@ -185,9 +192,10 @@ class GitLabChecker : VersionChecker {
 
     /**
      * Get the latest regular release.
+     *
+     * [checkForPreRelease] — Whether to include alpha and beta releases for latest release versions.
+     *
      * @author Griefed
-     * @param checkForPreRelease Whether to include alpha and beta releases for latest release versions.
-     * @return Returns the latest regular release. If no regular release is available, `no_release` is returned.
      */
     public override fun latestVersion(checkForPreRelease: Boolean): String? {
         if (allVersions != null) {

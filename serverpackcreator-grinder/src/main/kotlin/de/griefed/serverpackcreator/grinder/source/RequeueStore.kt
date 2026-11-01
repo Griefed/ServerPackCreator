@@ -75,10 +75,12 @@ interface RequeueStore {
  * synchronised: a queue-and-drain landing in the same instant can lose or repeat an entry, and both are
  * harmless — a repeat is one extra re-verification, and a loss is re-queued by running the command again.
  *
- * @param file The JSON document backing the queue; its parent directory is created on first write.
  * @author Griefed
  */
-class JsonRequeueStore(private val file: File) : RequeueStore {
+class JsonRequeueStore(
+    /** The JSON document backing the queue; its parent directory is created on first write. */
+    private val file: File
+) : RequeueStore {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val mapper = jacksonObjectMapper()

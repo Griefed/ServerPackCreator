@@ -6,8 +6,8 @@ name: Continuous
 # workflow only on the DEFAULT BRANCH, which is `main` -- so the nightly built the RELEASED code, took
 # the `git describe` branch of the version resolver because `github.ref_name` was `main`, and
 # republished `9.2.0` as the dev build, moving the rolling `continuous` tag onto `main` until the next
-# develop push moved it back. Measured in the published release of 2026-10-07: jars named `9.2.0` under
-# the `continuous` tag, from a run whose job log reads `triggered by event: schedule`.
+# develop push moved it back -- jars named `9.2.0` under the `continuous` tag, from a run whose job log
+# reads `triggered by event: schedule`.
 #
 # A nightly rebuild of unchanged source is also no fresher than the push build it replaces, and this
 # workflow publishes rather than tests, so it could not catch dependency drift either.
