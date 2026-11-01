@@ -52,7 +52,7 @@ ktorfit = "2.7.5"
 # -plugin-example can no longer apply a plugin version that disagrees with the libraries.
 i18n4k = "0.11.2"
 nightConfig = "3.9.0"
-jackson = "2.22.3"
+jackson = "2.22.4"
 zip4j = "2.11.6"
 log4jApiKotlin = "1.5.0"
 log4j = "2.26.1"
