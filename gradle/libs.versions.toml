@@ -82,7 +82,7 @@ flapdoodleEmbedMongo = "4.33.0"
 springBoot = "4.1.1"
 # https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
 # spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
-springdoc = "3.1.1"
+springdoc = "3.2.0"
 springmockk = "5.0.1"
 
 [libraries]
