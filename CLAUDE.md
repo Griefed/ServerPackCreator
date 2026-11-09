@@ -616,6 +616,12 @@ GUI-verified. **Next (optional):** broaden component-test coverage further.
   - **The second trap:** that same policy was the only access control on an unauthenticated report bound to
     `0.0.0.0`, so the obvious `ufw allow <port>` would have ended the outage and published the verdict table
     and full CSV export in one command. Ask what a guard rail is load-bearing for before removing it.
+  - **The third rung, 2026-11-09:** the same outage recurred with the fix *present and correct in `ufw
+    status` and absent from the kernel*. `ufw status` reports `/etc/ufw/user.rules`, not the running ruleset,
+    and a stale snapshot had replaced the chain after boot. **A tool's report of its own configuration is not
+    a reading of the system it configures** — `iptables -S ufw-user-input | grep <port>` is, and `ufw reload`
+    was the entire repair. The errno is identical to a genuinely missing rule, so the documented triage sent
+    the reader to add a rule they already had.
 - **A green run and a red run of the same commit can be the same failure, and the green one is the one
   to worry about.** `921d46938` ran `test.yml` twice on 2026-10-01. Run 836 failed fourteen
   database-backed tests; run 833 was **green** — having *skipped* the same fourteen. One cause:

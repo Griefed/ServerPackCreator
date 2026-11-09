@@ -407,6 +407,26 @@ Measured on the public instance: **200 in 0.077 s / timeout / 200 in 0.003 s** �
 from the proxy (`http://172.19.0.1:1/`) also timed out rather than being refused, which is what proves the
 drop is blanket rather than aimed at 9090.
 
+**Before adding a rule, check that the rule you already have is loaded — `ufw status` cannot tell you.**
+It reads `/etc/ufw/user.rules`; the kernel may hold something else. On 2026-11-09 this outage recurred with
+the 2026-09-21 rule present and correct in `ufw status numbered` and **absent from the running ruleset**:
+
+```bash
+sudo iptables -S ufw-user-input | grep 9090     # the question `ufw status` does not answer
+```
+
+All five 9090 rules were listed by ufw and none were in the chain, which held a stale snapshot that stopped
+part-way through the file. The ufw chains existed and `INPUT` jumped to all six of them, so nothing read as
+unloaded, and the proxy's errno was `110` exactly as it is for a genuinely missing rule — **the chain dump is
+the only thing that separates the two.** `sudo ufw reload` re-applied the file and the proxy reached the
+report immediately. What replaced the ruleset after ufw had loaded it is **not established**: `ufw.service`
+is `active (exited)` and applies rules once at boot, and that host also has fail2ban, libvirt and AMP writing
+iptables, so suspect anything restoring a saved snapshot.
+
+**Check the interface name too.** A `ufw deny in on eth0 to any port 9090` matches nothing on a host whose
+public NIC is `eno1` — protection that reads as present and is not. `ip -br addr` names it, and a `[UFW
+AUDIT]` line's `IN=` field confirms which one real traffic arrives on.
+
 Allow the bridge, scoped to source **and** destination:
 
 ```bash
