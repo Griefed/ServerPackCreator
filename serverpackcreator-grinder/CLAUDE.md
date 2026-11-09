@@ -246,6 +246,20 @@ store rather than by running it:
       9090 proto tcp`. A bare `ufw allow 9090` ends the outage and publishes an unauthenticated verdict table
       and full CSV export to the internet in the same command, because `SPC_GRINDER_HOST=0.0.0.0` means the
       report already listens on the public interface and that DROP policy is the only thing in front of it.
+    - **RECURRED 2026-11-09 with the rule already in place.** Same errno, same bisect result (host→bridge
+      `200 in 0.408 s`, proxy→bridge `timeout`, proxy→peer `400 in 0.0008 s`, closed port timing out rather
+      than refusing) — but `ufw status numbered` listed the 2026-09-21 rule as `[36]` and
+      `iptables -S ufw-user-input` held **none** of the five 9090 rules. **`ufw status` reads
+      `/etc/ufw/user.rules`; it is not a reading of the kernel.** The running chain was a stale snapshot that
+      stopped part-way through the file, with the ufw chains present and jumped to from `INPUT`, so nothing
+      looked unloaded. `ufw reload` was the whole repair. So the rung above gains a third step: *"no rule for
+      this"* ≠ *"not filtering this"* ≠ **"`ufw status` says it allows this"** ≠ *"the kernel allows this"*,
+      and the check is `iptables -S ufw-user-input | grep <port>`. **What replaced the ruleset is still
+      open** — `ufw.service` is `active (exited)` since the 2026-11-07 boot, and fail2ban, libvirt and AMP
+      all write iptables on that host.
+    - **Also found: `ufw deny in on eth0 to any port 9090` matches nothing there** — the public NIC is
+      `eno1`. The unauthenticated report is kept off the internet by the `INPUT` DROP policy alone, not by
+      the explicit deny that appears to be doing it.
     Full triage in the grinder README, *Report responsiveness* → *When the proxy cannot reach a healthy
     report*.
   - **The generalisation, which is the point of keeping this:** *a symptom shared by two layers is evidence
