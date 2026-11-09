@@ -87,6 +87,173 @@ internal class GrinderClientTest {
         }
     """.trimIndent()
 
+    /** Every request URI the fixture was asked for, query included — what the paging guards assert on. */
+    private val requestedUris = mutableListOf<String>()
+
+    /** A server answering each `?page=` with its own document, so paging can be exercised end to end. */
+    private fun servingByPage(pages: Map<Int, String>): HttpServer =
+        HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
+            createContext("/") { exchange ->
+                requestedPaths += exchange.requestURI.path
+                requestedUris += exchange.requestURI.toString()
+                val asked = exchange.requestURI.query.orEmpty().split('&')
+                    .firstOrNull { it.startsWith("page=") }?.substringAfter('=')?.toIntOrNull() ?: 1
+                val bytes = (pages[asked] ?: "{}").toByteArray(StandardCharsets.UTF_8)
+                exchange.sendResponseHeaders(200, bytes.size.toLong())
+                exchange.responseBody.use { it.write(bytes) }
+            }
+            start()
+        }
+
+    /** One page of the feed, carrying the paging envelope and one minimal row per slug. */
+    private fun pageDocument(page: Int, pages: Int, vararg slugs: String, loader: String = "Fabric"): String {
+        val rows = slugs.joinToString(",") { slug ->
+            """{"platform":"Modrinth","slug":"$slug","loader":"$loader","minecraftLine":"1.20",""" +
+                """"verdict":"CONFIRMED","suggestedEntry":"$slug-","detail":"","verifiedAt":"2026-09-04T12:30:00Z"}"""
+        }
+        return """{"total":99,"matched":99,"page":$page,"pages":$pages,"verdicts":[$rows]}"""
+    }
+
+    private fun slugsOf(result: FetchResult<List<GrinderVerdict>>): List<String> =
+        (result as FetchResult.Ok).value.map { it.slug }
+
+    /**
+     * **The feed is paged, not swallowed whole.** The daemon returns every row for a bare
+     * `/verdicts.json` by documented design, which at the live store's 319,904 verdicts is a ~248 MiB
+     * document against this client's 15-second timeout — so the tab simply failed, and the one thing it
+     * must never do instead is show a truncated list a maintainer then ticks exclusions from.
+     */
+    @Test
+    fun pagesThroughTheWholeFeed() {
+        val server = servingByPage(
+            mapOf(
+                1 to pageDocument(1, 3, "creativecore", "iceberg"),
+                2 to pageDocument(2, 3, "bookshelf"),
+                3 to pageDocument(3, 3, "prism")
+            )
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(
+                listOf("creativecore", "iceberg", "bookshelf", "prism"), slugsOf(result),
+                "every page's rows must be collected, in the order the daemon served them"
+            )
+            Assertions.assertEquals(
+                listOf("/verdicts.json?size=2&page=1", "/verdicts.json?size=2&page=2", "/verdicts.json?size=2&page=3"),
+                requestedUris,
+                "each page must be asked for explicitly, and none beyond the last"
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * A daemon publishing the bare array has no envelope to page by, so one request is the whole answer.
+     * Asking for a second page would re-request the same rows for ever.
+     */
+    @Test
+    fun stopsAfterOneRequestWhenThereIsNoPagingEnvelope() {
+        val server = serving(body = """[{"slug":"creativecore","platform":"Modrinth","loader":"Fabric"}]""")
+        try {
+            val result = GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("creativecore"), slugsOf(result))
+            Assertions.assertEquals(1, requestedPaths.size, "a bare array must not be paged")
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * **A row repeated across pages is collected once.** The daemon re-derives its selection per request
+     * and a grind is recording verdicts while the client pages, so the row set shifts underneath: the same
+     * verdict can land on two pages. Keyed on the identity [GrinderVerdict] itself declares — platform,
+     * slug, loader and Minecraft line — because a duplicate row is a mod offered for ticking twice.
+     */
+    @Test
+    fun collectsARowRepeatedAcrossPagesOnlyOnce() {
+        val server = servingByPage(
+            mapOf(
+                1 to pageDocument(1, 2, "creativecore", "iceberg"),
+                2 to pageDocument(2, 2, "iceberg", "bookshelf")
+            )
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("creativecore", "iceberg", "bookshelf"), slugsOf(result))
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * The same row on a *different* loader is a different verdict, so de-duplication must not collapse it
+     * — that is the difference between "ground twice" and "ground on Fabric and on Forge".
+     */
+    @Test
+    fun keepsTheSameSlugOnADifferentLoader() {
+        val server = servingByPage(
+            mapOf(
+                1 to pageDocument(1, 2, "creativecore", loader = "Fabric"),
+                2 to pageDocument(2, 2, "creativecore", loader = "Forge")
+            )
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(
+                listOf("Fabric", "Forge"), (result as FetchResult.Ok).value.map { it.loader },
+                "loader is part of the row identity, so both must survive"
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * A page that fails part-way through is a failure, never a partial answer: a short list presented as
+     * the grinder's findings is the truncation this whole change exists to avoid.
+     */
+    @Test
+    fun reportsAFailurePartWayThroughRatherThanAPartialList() {
+        val server = servingByPage(mapOf(1 to pageDocument(1, 3, "creativecore"), 2 to "not json at all"))
+        try {
+            val result = GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertInstanceOf(
+                FetchResult.Failed::class.java, result,
+                "a broken page must not be reported as the whole feed minus that page"
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * A daemon claiming more pages than it will ever serve must stop the client, and must stop it with a
+     * *failure* — truncating silently at the ceiling would be the defect this guard exists to prevent,
+     * wearing a success.
+     */
+    @Test
+    fun refusesAFeedThatNeverEnds() {
+        val endless = (1..10).associateWith { page -> pageDocument(page, Int.MAX_VALUE, "mod$page") }
+        val server = servingByPage(endless)
+        try {
+            val result = GrinderClient(mapper, pageSize = 1, maxPages = 3).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertInstanceOf(FetchResult.Failed::class.java, result)
+            Assertions.assertEquals(
+                3, requestedPaths.size,
+                "the client must stop at its own ceiling rather than paging for ever"
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
     /** The happy path: the documented document maps onto the plugin's read model, field for field. */
     @Test
     fun readsTheDocumentedVerdictDocument() {

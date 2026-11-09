@@ -34,6 +34,8 @@ import de.griefed.serverpackcreator.grinder.source.CursorStore
 import de.griefed.serverpackcreator.grinder.source.RequeueStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.io.OutputStream
+import java.io.OutputStreamWriter
 import java.net.InetSocketAddress
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -164,7 +166,11 @@ class ReportServer(
                 snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
             exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
-            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
+            respondStreaming(exchange, "text/csv; charset=utf-8") { body ->
+                val writer = OutputStreamWriter(body, StandardCharsets.UTF_8)
+                VerdictCsvExporter.writeCsv(selection.rows, writer, preOrdered = true)
+                writer.flush()
+            }
         }
         // The same selection the table and the CSV run, through the same function -- three renderings of
         // one query cannot disagree when only one of them picks the rows. Unlike the CSV this keeps each
@@ -177,7 +183,7 @@ class ReportServer(
             val selection = VerdictSelection.select(
                 snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
-            respond(exchange, "application/json; charset=utf-8", verdictsJson(selection))
+            streamVerdicts(exchange, selection)
         }
         server.createContext("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
@@ -227,7 +233,10 @@ class ReportServer(
                 VerdictReportRenderer.toHtml(
                     VerdictSelection.select(
                         snapshots.current(),
-                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE),
+                        // Capped: the table renders into one String, so an unbounded size is a page nobody
+                        // can load. The export endpoints are where "everything" lives, and they stream.
+                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE)
+                            .forTable(),
                         // The same snapshot the renderer reads from, so the count a row is SORTED by and the
                         // links it then shows cannot disagree -- and still one listing per request.
                         logCount = { verdict -> logNamesFor(logsByOwner, verdict).size }
@@ -339,16 +348,21 @@ class ReportServer(
      * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
      * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
      */
-    private fun verdictsJson(selection: VerdictPage): String {
-        val document = linkedMapOf(
-            "total" to selection.total,
-            "matched" to selection.matched,
-            "page" to selection.page,
-            "pages" to selection.pages,
-            "verdicts" to selection.rows
-        )
-        return runCatching { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
-            .getOrElse { "{\"error\":\"verdicts unavailable\"}" }
+    private fun streamVerdicts(exchange: HttpExchange, selection: VerdictPage) {
+        respondStreaming(exchange, "application/json; charset=utf-8") { body ->
+            mapper.createGenerator(body).useDefaultPrettyPrinter().use { json ->
+                json.writeStartObject()
+                json.writeNumberField("total", selection.total)
+                json.writeNumberField("matched", selection.matched)
+                json.writeNumberField("page", selection.page)
+                json.writeNumberField("pages", selection.pages)
+                json.writeArrayFieldStart("verdicts")
+                // Row by row: the point of streaming is that no step here ever holds the whole document.
+                selection.rows.forEach { json.writeObject(it) }
+                json.writeEndArray()
+                json.writeEndObject()
+            }
+        }
     }
 
     /**
@@ -409,6 +423,25 @@ class ReportServer(
      */
     private fun respond(exchange: HttpExchange, contentType: String, body: String, status: Int = 200) =
         respondBytes(exchange, contentType, body.toByteArray(StandardCharsets.UTF_8), status)
+
+    /**
+     * Write a response whose body is produced into the stream rather than handed over complete, for the two
+     * endpoints that return every row by design.
+     *
+     * A declared length of 0 makes the JDK's server send the response chunked, which is what lets the document
+     * be written as it is produced: an unpaged export of the deployed store is ~248 MiB, and a materialised
+     * response holds that three times over — Jackson's segments, the `String` they join into, and the
+     * `ByteArray` [respond] encodes. The trade is that nothing can be retracted once the first chunk is out, so
+     * a failure part-way through truncates the document instead of being answered with an error body. That is
+     * the better failure: the predecessor wrapped serialisation in `runCatching`, which in Kotlin catches
+     * [Throwable], so heap exhaustion was swallowed and answered 200 with a 23-byte error document that reached
+     * no log at all.
+     */
+    private fun respondStreaming(exchange: HttpExchange, contentType: String, writeBody: (OutputStream) -> Unit) {
+        exchange.responseHeaders.add("Content-Type", contentType)
+        exchange.sendResponseHeaders(200, 0)
+        exchange.responseBody.use(writeBody)
+    }
 
     /**
      * Write [bytes] verbatim with the given [contentType] and [status], closing the exchange. The one endpoint

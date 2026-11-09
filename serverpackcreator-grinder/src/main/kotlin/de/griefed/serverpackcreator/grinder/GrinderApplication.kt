@@ -61,6 +61,24 @@ object GrinderApplication {
     private val log by lazy { cachedLoggerOf(GrinderApplication::class.java) }
 
     /**
+     * Run one startup step and report what it cost, so a slow boot names its own cause.
+     *
+     * Every step between `ApiWrapper.setup()` and `ReportServer.start()` is dead time before the report
+     * answers, and until this existed none of them said anything unless it had work to report: a sweep that
+     * reclaims nothing, a migration that moves nothing and a store that loads cleanly are all silent. A live
+     * daemon was measured taking **4,868 s** between its last setup line and its bind, with no line in between
+     * from any thread, which left the cause unattributable from the journal — the one place this module's own
+     * guidance sends a reader. Unconditional and at INFO, because the number is only useful when it is already
+     * there for the boot that went wrong, not for the one somebody enabled DEBUG to reproduce.
+     */
+    private inline fun <T> phase(what: String, step: () -> T): T {
+        val startedAt = System.nanoTime()
+        val result = step()
+        log.info("$what took ${(System.nanoTime() - startedAt) / 1_000_000} ms.")
+        return result
+    }
+
+    /**
      * Entry point. `--requeue <url>…`, `--requeue-before <instant>` and `--requeue-since <instant>` add work to
      * the immediate re-grind queue and exit without grinding, so they can be run against a service that is
      * already up. With project
@@ -156,7 +174,9 @@ object GrinderApplication {
             exitProcess(1)
         }
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
-        val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
+        val imageJava = phase("Reading Minecraft's required Java versions") {
+            ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
+        }
         val installer = DockerLoaderInstaller(
             engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava,
             resources = containerResources, containerUser = containerUser
@@ -182,16 +202,20 @@ object GrinderApplication {
         // names itself, which is "if none is specified, determine by grinder". `inconclusive` opts into the
         // conservative reading for a run where unfinished rules are expected.
         val consoleRules = ConsoleRuleFile(config.bootRules, config.ruleFallback)
-        val crashLogs = BootLogStore(config.bootLogs, config.bootLogBudgetBytes)
+        val crashLogs = phase("Opening the boot-log store") {
+            BootLogStore(config.bootLogs, config.bootLogBudgetBytes)
+        }
         // One-shot: the superseded crash-logs directory holds real evidence for verdicts still being
         // published, under a name that now contradicts what the store keeps.
-        crashLogs.adoptLegacy(File(base, "crash-logs"))
+        phase("Adopting the legacy crash-logs directory") { crashLogs.adoptLegacy(File(base, "crash-logs")) }
         // Re-file artifacts written before the owner carried the Minecraft line, so the consoles behind
         // verdicts that are still published stay reachable from their rows instead of being reclaimed by
         // the budget. Exact, not guessed: the attempt segment beside the owner already records the version.
-        crashLogs.migrateOwnerNames().let { moved ->
-            if (moved > 0) {
-                log.info("Re-filed $moved boot artifact(s) under their Minecraft version-line.")
+        phase("Re-filing boot artifacts under their Minecraft version-line") {
+            crashLogs.migrateOwnerNames().let { moved ->
+                if (moved > 0) {
+                    log.info("Re-filed $moved boot artifact(s) under their Minecraft version-line.")
+                }
             }
         }
         val verifier = ContainerCandidateVerifier(
@@ -207,23 +231,29 @@ object GrinderApplication {
         // running, parented by the docker daemon rather than this unit's control group, so nothing else on the
         // host will ever collect them. Safe here and only here, for the same reason as the staging sweep below:
         // nothing of ours is in flight yet, so anything wearing our label is by definition inherited.
-        engine.reapOrphans().let { reaped ->
-            if (reaped > 0) {
-                log.info("Reaped $reaped container(s) left running by a previous, killed run.")
+        phase("Reaping containers left by a previous run") {
+            engine.reapOrphans().let { reaped ->
+                if (reaped > 0) {
+                    log.info("Reaped $reaped container(s) left running by a previous, killed run.")
+                }
             }
         }
         // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
         // we inherited before adding to it. Safe here and only here: nothing is in flight yet.
-        BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->
-            if (reclaimed > 0) {
-                log.info("Reclaimed ${reclaimed / 1_048_576} MiB of staging left behind by a previous run.")
+        phase("Sweeping staging left behind by a previous run") {
+            BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->
+                if (reclaimed > 0) {
+                    log.info("Reclaimed ${reclaimed / 1_048_576} MiB of staging left behind by a previous run.")
+                }
             }
         }
         // Coalesced, not write-through: persist() serialises the whole store and is @Synchronized on the
         // grind worker's thread, so per-verdict writes serialised every worker behind a multi-megabyte
         // rewrite -- 787-1050 ms per verdict at 100k rows. The shutdown hook flushes, so only a hard
         // kill can lose verdicts, bounded to one interval and re-derived by the re-verify TTL.
-        val store = JsonVerdictStore(storeFile, flushInterval = config.storeFlush)
+        val store = phase("Loading the verdict store") {
+            JsonVerdictStore(storeFile, flushInterval = config.storeFlush)
+        }
         // Live activity record, so `/status` can answer "what is it doing right now?" (the verdict table only
         // ever answers "what has it found?").
         val status = GrinderStatus()

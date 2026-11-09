@@ -24,15 +24,17 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
 /**
- * Reclaims the per-attempt staging space once a candidate's verdicts are in, keeping only the boot logs.
+ * Reclaims the per-attempt staging space once a candidate's verdicts are in.
  *
  * Staging leaves a full server pack (with the overlaid loader libraries) plus the mod jars it downloaded under
- * `<work>/boot/<slug>-<loader>` and `<work>/verify/<slug>-<loader>`. Those directories were only ever deleted when
- * the *same* `(slug, loader)` pair is attempted again, which for a catalog sweep is never — every attempt is a new
- * pair, so without this the work tree grows without bound, measured live at **98 GB across 1750 attempt
- * directories, ~23 GB/h**. The packs are fully reproducible from the cache and the source; the `boot.log` is not,
- * and a
- * verdict's detail is read from it, so that one file stays.
+ * `<work>/boot/<attempt>` and `<work>/verify/<attempt>`. Those directories are only ever deleted when the *same*
+ * attempt is staged again, which for a catalog sweep is never — every attempt is a new tuple, so without this the
+ * work tree grows without bound, measured live at **98 GB across 1750 attempt directories, ~23 GB/h**.
+ *
+ * **Nothing is kept here, the console included.** Retention belongs to the
+ * [de.griefed.serverpackcreator.grinder.report.BootLogStore], which copies the consoles worth keeping *during*
+ * the boots and holds them to a byte budget; a second copy here is both redundant and unbounded, because a
+ * directory holding a kept file is never empty and so is never removed.
  *
  * @author Griefed
  */
@@ -65,12 +67,12 @@ class BootWorkspaceReaper(
      */
     fun reapAll(): Long = reapMatching("previous run") { true }
 
-    /** Apply [selects] to every attempt directory in both staging roots and strip the matches down to their logs. */
+    /** Apply [selects] to every attempt directory in both staging roots and reclaim the matches entirely. */
     private fun reapMatching(what: String, selects: (File) -> Boolean): Long {
         val reclaimed = STAGING_ROOTS
             .map { File(workDirectory, it) }
             .flatMap { root -> root.listFiles()?.filter { it.isDirectory && selects(it) } ?: emptyList() }
-            .sumOf { stripToLogs(it) }
+            .sumOf { reclaim(it) }
         if (reclaimed > 0) {
             log.debug("Reclaimed ${reclaimed / 1_048_576} MiB of staging for $what.")
         }
@@ -78,16 +80,15 @@ class BootWorkspaceReaper(
     }
 
     /**
-     * Delete everything in [attemptDir] except the boot log, removing the directory itself when no log was kept
-     * (the downloaded-jar scratch has none). Failures are logged and swallowed — reclaiming disk must never fail a
-     * grind, and whatever survives is retried by the next sweep.
+     * Delete [attemptDir] and everything in it, returning the bytes known to have gone. Failures are logged and
+     * swallowed — reclaiming disk must never fail a grind, and whatever survives is retried by the next sweep.
+     *
+     * Entry by entry rather than one [deleteRecursively] on the directory, so an entry that cannot be removed
+     * contributes nothing to the total instead of making the whole attempt's bytes unreportable.
      */
-    private fun stripToLogs(attemptDir: File): Long {
+    private fun reclaim(attemptDir: File): Long {
         var reclaimed = 0L
         for (entry in attemptDir.listFiles() ?: emptyArray()) {
-            if (entry.name == KEPT_LOG) {
-                continue
-            }
             val size = entry.sizeRecursively()
             if (entry.deleteRecursively()) {
                 reclaimed += size
@@ -95,8 +96,11 @@ class BootWorkspaceReaper(
                 log.warn("Could not reclaim ${entry.absolutePath}; it will be retried on the next sweep.")
             }
         }
-        if (attemptDir.listFiles()?.isEmpty() == true) {
-            attemptDir.delete()
+        // The directory itself goes too. One surviving inode per attempt IS the unbounded growth this class
+        // exists to prevent: 255,591 of them had accumulated on the live daemon by 2026-11-09, and startup
+        // walks that tree before the report server can bind.
+        if (attemptDir.listFiles()?.isEmpty() == true && !attemptDir.delete()) {
+            log.warn("Could not remove ${attemptDir.absolutePath}; it will be retried on the next sweep.")
         }
         return reclaimed
     }
@@ -110,8 +114,5 @@ class BootWorkspaceReaper(
     companion object {
         /** The two staging roots, relative to the work directory: boot packs and downloaded mod jars. */
         private val STAGING_ROOTS = listOf("boot", "verify")
-
-        /** The one file worth keeping: a verdict's detail is read from the boot console. */
-        const val KEPT_LOG = "boot.log"
     }
 }

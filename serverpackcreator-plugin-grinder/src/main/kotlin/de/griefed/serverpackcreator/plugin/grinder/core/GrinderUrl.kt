@@ -68,6 +68,15 @@ object GrinderUrl {
     /** The verdict feed of the grinder at [base], which must already be [normalise]d. */
     fun verdicts(base: String) = base + VERDICTS_PATH
 
+    /**
+     * One page of the verdict feed of the grinder at [base], which must already be [normalise]d.
+     *
+     * Asked for explicitly rather than relying on the endpoint's default, because that default is
+     * "everything": a bare call returns the whole store in one document, which the daemon streams but this
+     * client still has to receive inside one request timeout.
+     */
+    fun verdicts(base: String, page: Int, size: Int) = "${verdicts(base)}?size=$size&page=$page"
+
     /** The status document of the grinder at [base], which must already be [normalise]d. */
     fun status(base: String) = base + STATUS_PATH
 }

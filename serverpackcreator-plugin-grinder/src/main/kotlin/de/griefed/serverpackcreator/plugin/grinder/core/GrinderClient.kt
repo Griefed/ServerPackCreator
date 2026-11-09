@@ -67,27 +67,77 @@ class GrinderClient(
     /** How long a single request may take, applied to both connect and response. */
     private val timeout: Duration = Duration.ofSeconds(15),
     /** The client to send with; injectable so a test can shorten its connect timeout. */
-    private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(timeout).build()
+    private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(timeout).build(),
+    /** Rows per request when paging the feed. */
+    private val pageSize: Int = DEFAULT_PAGE_SIZE,
+    /** The most pages one [fetchVerdicts] will request; injected so a test needs no thousand round trips. */
+    private val maxPages: Int = MAX_PAGES
 ) {
 
     /**
-     * Every verdict the grinder at [baseUrl] holds, newest state included.
+     * Every verdict the grinder at [baseUrl] holds, newest state included, read a page at a time.
      *
      * The request is unfiltered on purpose: both list tabs are populated from one response, so filtering
-     * server-side would cost a second round-trip to learn the same rows.
+     * server-side would cost a second round-trip to learn the same rows. It is **paged**, though, because
+     * unfiltered is not the same as unbounded — a bare `/verdicts.json` returns the whole store by
+     * documented design, which at a deployed 319,904 verdicts is a ~248 MiB document this client has to
+     * receive inside one [timeout] and hold as a `String`. The tab simply failed.
+     *
+     * Partial results are never returned: a page that fails fails the whole call. A short list presented as
+     * the grinder's findings is worse than an error, because a maintainer ticks exclusions from it.
      */
-    fun fetchVerdicts(baseUrl: String): FetchResult<List<GrinderVerdict>> =
-        fetchTree(baseUrl, GrinderUrl::verdicts).let { result ->
-            when (result) {
-                is FetchResult.Failed -> result
-                // A wrong-shaped document is a failure, not an empty result: reported as "no verdicts
-                // found" it is indistinguishable from a grinder that has genuinely ground nothing, and
-                // that is exactly the pair an operator debugging an empty tab needs told apart.
-                is FetchResult.Ok -> readVerdicts(result.value)
-                    ?.let { FetchResult.Ok(it) }
-                    ?: FetchResult.Failed("The grinder answered with something that is not a verdict document.")
+    fun fetchVerdicts(baseUrl: String): FetchResult<List<GrinderVerdict>> {
+        // Keyed by the identity GrinderVerdict declares, because the daemon re-derives its selection per
+        // request while a grind records into it: the row set shifts under a client that pages, and the same
+        // verdict can land on two pages. A duplicate here is a mod offered for ticking twice.
+        val collected = LinkedHashMap<RowIdentity, GrinderVerdict>()
+        var page = 1
+        while (true) {
+            val result = fetchTree(baseUrl) { base -> GrinderUrl.verdicts(base, page, pageSize) }
+            val document = when (result) {
+                is FetchResult.Failed -> return result
+                is FetchResult.Ok -> result.value
             }
+            // A wrong-shaped document is a failure, not an empty result: reported as "no verdicts found"
+            // it is indistinguishable from a grinder that has genuinely ground nothing, and that is
+            // exactly the pair an operator debugging an empty tab needs told apart.
+            val rows = readVerdicts(document)
+                ?: return FetchResult.Failed("The grinder answered with something that is not a verdict document.")
+            rows.forEach { collected.putIfAbsent(RowIdentity.of(it), it) }
+
+            // No envelope means no paging to do: a daemon publishing the bare array has served everything
+            // it is going to, and asking for a second page would re-request the same rows for ever.
+            val pages = document["pages"]?.takeIf { it.isInt }?.asInt() ?: return FetchResult.Ok(collected.values.toList())
+            if (page >= pages || rows.isEmpty()) {
+                return FetchResult.Ok(collected.values.toList())
+            }
+            if (page >= maxPages) {
+                // A failure rather than what has been collected so far: stopping at the ceiling and calling
+                // it the feed is the silent truncation this whole method exists to avoid.
+                return FetchResult.Failed(
+                    "The grinder reported $pages pages of verdicts, more than this plugin will request " +
+                        "($maxPages x $pageSize rows). Narrow the grinder's store or raise the page size."
+                )
+            }
+            page++
         }
+    }
+
+    /**
+     * What makes two rows the same verdict, as [GrinderVerdict] itself defines it: a project is ground once
+     * per Minecraft line per loader, and the same slug exists on both platforms as two candidates.
+     */
+    private data class RowIdentity(
+        val platform: String,
+        val slug: String,
+        val loader: String,
+        val minecraftLine: String?
+    ) {
+        companion object {
+            fun of(verdict: GrinderVerdict) =
+                RowIdentity(verdict.platform, verdict.slug, verdict.loader, verdict.minecraftLine)
+        }
+    }
 
     /** The status document of the grinder at [baseUrl], as a tree — the Dashboard reads it field by field. */
     fun fetchStatus(baseUrl: String): FetchResult<JsonNode> = fetchTree(baseUrl, GrinderUrl::status)
@@ -168,4 +218,26 @@ class GrinderClient(
      */
     private fun JsonNode.textOrNull(field: String): String? =
         this[field]?.takeIf { it.isTextual }?.asText()
+
+    companion object {
+        /**
+         * Rows per request when paging the feed.
+         *
+         * Two thousand because the cost is split between round trips and the size of each answer: at the
+         * ~813 bytes per row the deployed store measures this is roughly 1.6 MB per request, comfortably
+         * inside the 15-second timeout on any link, while a deployed 319,904-row store still costs 160
+         * requests rather than thousands.
+         */
+        const val DEFAULT_PAGE_SIZE = 2_000
+
+        /**
+         * The most pages one [fetchVerdicts] will request before giving up.
+         *
+         * A ceiling is needed because `pages` is the daemon's own claim and this loop advances on it, so a
+         * wrong or runaway value would page for ever behind a Swing worker. Deliberately generous — at
+         * [DEFAULT_PAGE_SIZE] it is four million rows, an order of magnitude past anything observed — so
+         * that reaching it means something is wrong rather than merely large.
+         */
+        const val MAX_PAGES = 2_000
+    }
 }

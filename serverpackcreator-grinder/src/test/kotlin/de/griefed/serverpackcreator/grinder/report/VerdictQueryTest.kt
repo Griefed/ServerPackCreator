@@ -210,4 +210,47 @@ internal class VerdictQueryTest {
             "the current size must be selectable or the control disagrees with the URL"
         )
     }
+
+    /**
+     * **The table's page size is capped, `all` included.** The HTML table is rendered into a single `String`,
+     * so the page's size is the store's size: at the ~430 bytes per row this renderer measures, `size=all`
+     * against the live daemon's 319,904 verdicts is a ~137 MB document and `size=100000` a ~43 MB one. Neither
+     * is a page; both are a wedged request thread. Everything is still available in full from `/export.csv` and
+     * `/verdicts.json`, which stream.
+     */
+    @Test
+    fun theTableCapsAnUnboundedPageSize() {
+        val all = VerdictQuery.parse(QueryParams.parse("size=all"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
+        Assertions.assertEquals(VerdictQuery.MAX_TABLE_PAGE_SIZE, all.size, "size=all must be capped for the table")
+
+        val oversized = VerdictQuery.parse(QueryParams.parse("size=100000"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
+        Assertions.assertEquals(
+            VerdictQuery.MAX_TABLE_PAGE_SIZE, oversized.size,
+            "a bookmark carrying a size past the cap must be capped, not honoured"
+        )
+
+        val modest = VerdictQuery.parse(QueryParams.parse("size=500"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
+        Assertions.assertEquals(500, modest.size, "a size the table can render must be left alone")
+    }
+
+    /**
+     * Past the cap the control must stop offering what the table would then refuse to serve — a dropdown
+     * showing `all` beside a URL that was capped is the page silently disagreeing with itself, which is the
+     * failure [VerdictQuery.offeredSizes] already exists to prevent for the opposite case.
+     */
+    @Test
+    fun allIsNotOfferedOnceItCannotBeRendered() {
+        Assertions.assertFalse(
+            VerdictQuery.offeredSizes(319_904, 250).contains(null),
+            "a store past the cap must not offer 'all'; the export is the honest answer there"
+        )
+        Assertions.assertTrue(
+            VerdictQuery.offeredSizes(1_842, 250).contains(null),
+            "a store the table can render whole must still offer 'all'"
+        )
+        Assertions.assertTrue(
+            VerdictQuery.offeredSizes(319_904, 250).none { it != null && it > VerdictQuery.MAX_TABLE_PAGE_SIZE },
+            "no offered size may exceed the cap"
+        )
+    }
 }

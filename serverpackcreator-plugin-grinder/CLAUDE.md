@@ -121,6 +121,24 @@ bucket holds one feature or several before reaching for the same change here.
   ignorable rather than a parse failure the user reads as "the grinder is broken". `textOrNull` also
   exists because Jackson's `asText()` renders a null node as the string `"null"`, which would both put
   the word in a table cell and make an absent entry look tickable.
+- **`fetchVerdicts` pages the feed, and never returns a partial one** (2026-11-09). `/verdicts.json`
+  returns the whole store for a bare call by documented design, so the request grew with the daemon:
+  at a deployed **319,904 verdicts / ~248 MiB** it could not be received inside the 15-second timeout
+  at all, and the tab just failed. The loop asks for `?size=&page=`, advances on the document's own
+  `pages`, and stops where that is absent — a daemon publishing the **bare array** has no envelope to
+  page by, and asking it for page 2 would re-request the same rows for ever (`stopsAfterOneRequest…`).
+  - **Rows are de-duplicated on the identity `GrinderVerdict` declares** — platform, slug, loader and
+    Minecraft line. The daemon re-derives its selection per request and a grind records into it while the
+    client pages, so the row set shifts underneath and one verdict can land on two pages. A duplicate is
+    a mod offered for ticking twice. Loader is part of the key, so the same slug on Fabric and Forge
+    survives as two rows (`keepsTheSameSlugOnADifferentLoader`).
+  - **A page that fails fails the call.** A short list presented as the grinder's findings is worse than
+    an error, because a maintainer ticks exclusions from it. Same reason `maxPages` returns `Failed`
+    rather than what it has: truncating at a ceiling and calling it the feed is the defect wearing a
+    success.
+  - `pageSize` and `maxPages` are constructor parameters so a guard needs no thousand round trips; the
+    paging guards were landed with their seam, so their teeth were proven by mutating `fetchVerdicts`
+    back to one unpaged request — **five of the six go red**, the sixth being the over-paging guard.
 - **Nothing in `GrinderClient` throws.** It runs on a Swing worker and on the generation path, where an
   escaped exception is a dead tab or an aborted server pack. An unusable address never reaches the
   network, a non-2xx carries its status into the reason (the one fact separating "daemon down" from
@@ -170,7 +188,7 @@ demo strings). The root build copies the jar into `serverpackcreator-app/tests/p
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-grinder:test` — 69 tests. `GrinderClientTest` runs against a real
+`./gradlew :serverpackcreator-plugin-grinder:test` — 81 tests. `GrinderClientTest` runs against a real
 loopback `HttpServer` rather than a mock, the same idiom the grinder's own `ReportServerTest` uses:
 what is under test is behaviour at a socket (refused connection, a 502 from a proxy, a 200 carrying
 HTML), and a mock answers none of it honestly. `SelectionStoreTest` parses the `config.toml` this module
