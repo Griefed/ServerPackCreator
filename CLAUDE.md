@@ -461,11 +461,11 @@ evidence consulted occasionally, not context every session needs.
 | clientside     | 681           | The clientside-mod verification engine; six verdicts. → `serverpackcreator-clientside/CLAUDE.md` |
 | app            | 242           | Phase 2 largely complete; CLI verbs stay, engine extracted out. → `serverpackcreator-app/CLAUDE.md` |
 | plugin-example | 3 (from 0)    | Phase 3 complete. → `serverpackcreator-plugin-example/CLAUDE.md` |
-| plugin-grinder | 75            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
+| plugin-grinder | 81            | GUI plugin over a grinder daemon. → `serverpackcreator-plugin-grinder/CLAUDE.md` |
 | plugin-selfextract | 17            | Wraps every generated pack in a self-extracting `.bsx` and `.cmd`; the `.cmd` is pinned but has never been run. → `serverpackcreator-plugin-selfextract/CLAUDE.md` |
 | plugin-servertest | 112 (1 skip)  | Launches a generated pack through its own start scripts, in its own JVM, with its console; the skip is a real boot, run deliberately. → `serverpackcreator-plugin-servertest/CLAUDE.md` |
 | web-frontend   | 44 (from 0)   | Phase 4a-4e complete; full TS migration. → `serverpackcreator-web-frontend/CLAUDE.md` |
-| grinder        | 543 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
+| grinder        | 547 (27 skip) | Continuous boot-verification daemon. → `serverpackcreator-grinder/CLAUDE.md` |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

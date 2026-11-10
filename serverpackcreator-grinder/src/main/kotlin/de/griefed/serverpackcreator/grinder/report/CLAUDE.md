@@ -81,6 +81,18 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
     Filter a large store to a handful while a big size is set and a purely count-derived list leaves the
     `<select>` with no matching option — the browser then shows its first, and the page silently disagrees
     with its own URL. Sizes at or above the count are omitted as duplicates of `all`, not as "too big".
+  - **The table's size is capped at `MAX_TABLE_PAGE_SIZE` (5,000), `all` included, and the ladder stops
+    there.** The table renders into one `String` at ~430 bytes per row, so on the deployed store `size=all`
+    was a ~137 MB document and `size=100000` a ~43 MB one — each built whole in heap before a byte was sent,
+    on four request threads. `forTable()` applies the cap on the HTML route *only*; `/export.csv` and
+    `/verdicts.json` stay unpaged, because they stream. `offeredSizes` stops offering `all` once the match
+    count passes the cap, or the control would show a choice `forTable` then refuses to honour.
+  - **The two unpaged endpoints are streamed, not materialised.** `respondStreaming` sends a declared length
+    of 0 (chunked) and writes the document as it is produced, so the cost is a buffer rather than the
+    document three times over (Jackson's segments, the `String`, the `ByteArray`). Nothing can be retracted
+    once the first chunk is out, which is the deliberate trade: the predecessor wrapped serialisation in
+    `runCatching`, and because Kotlin's catches `Throwable`, heap exhaustion was answered **200** with a
+    23-byte `{"error":…}` body and reached no log at all.
   - **LANDMINE — bind `size` outside `buildList`.** Its `MutableList` receiver's own `size` shadows the
     property, so `toQueryString` compared the *list length* and emitted it: `size=250` became `size=0`.
     Invisible by reading; caught by `theAppliedQueryRoundTrips`.

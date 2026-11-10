@@ -58,6 +58,37 @@ internal class VerdictsJsonEndpointTest {
         record(grindVerdict("prism", "Quilt", verdict = Verdict.ERROR))
     }
 
+    /**
+     * **The unpaged endpoints must be written as they are produced, not built in heap first.**
+     *
+     * A bare `/verdicts.json` and `/export.csv` return every row by documented design, so their documents grow
+     * with the store without any bound a query can impose: the live daemon's 319,904 verdicts serialise to
+     * ~248 MiB, which a materialised response holds three times over — Jackson's segments, the `String` they are
+     * joined into, and the `ByteArray` the response is written from. On a daemon that passes no `-Xmx` that is
+     * what turns a large store into GC thrash and a 502 on *every* endpoint, including the ones that do no work.
+     * Worse, `runCatching` around the serialisation catches [Throwable], so an `OutOfMemoryError` there is
+     * swallowed and answered with a 23-byte error document that appears in no log.
+     *
+     * An absent `Content-Length` is the observable consequence: the JDK's server sends a response of declared
+     * length 0 chunked, which it can only do if the body was never sized up front.
+     */
+    @Test
+    fun theUnpagedEndpointsAreStreamedRatherThanBuiltInHeap() {
+        val server = ReportServer(populatedStore(), requestedPort = 0).start()
+        try {
+            for (path in listOf("/verdicts.json", "/export.csv")) {
+                val response = get(server.port, path)
+                Assertions.assertEquals(200, response.statusCode(), "$path must still answer")
+                Assertions.assertTrue(
+                    response.headers().firstValue("Content-Length").isEmpty,
+                    "$path declared a Content-Length, so the whole document was built in heap before it was sent"
+                )
+            }
+        } finally {
+            server.stop()
+        }
+    }
+
     /** The feed serves JSON, off the live store, carrying the paging metadata a client needs to page. */
     @Test
     fun servesEveryVerdictAsJsonWithItsPagingMetadata() {

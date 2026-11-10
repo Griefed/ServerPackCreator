@@ -43,7 +43,17 @@ object VerdictCsvExporter {
      * hand them a file that disagrees with the page it came from. An unordered call still gets the
      * highest-confidence-first default, which is what a direct `/export.csv` has always produced.
      */
-    fun toCsv(verdicts: List<GrindVerdict>, preOrdered: Boolean = false): String {
+    fun toCsv(verdicts: List<GrindVerdict>, preOrdered: Boolean = false): String =
+        StringBuilder().also { writeCsv(verdicts, it, preOrdered) }.toString()
+
+    /**
+     * Write the same document [toCsv] returns into [out], one row at a time.
+     *
+     * The streaming form exists because `/export.csv` is unpaged by design: at the live daemon's row count the
+     * joined `String` is the whole export held in heap before a byte reaches the socket, and then held a second
+     * time as the bytes it is encoded to. Written row by row the cost is a buffer, whatever the store holds.
+     */
+    fun writeCsv(verdicts: List<GrindVerdict>, out: Appendable, preOrdered: Boolean = false) {
         val ordered = if (preOrdered) {
             verdicts
         } else {
@@ -60,8 +70,11 @@ object VerdictCsvExporter {
         }
         // Cells come from the same VerdictField list the table renders from, so the two cannot describe
         // different columns -- the drift that had the CSV carrying seven fields against the table's eight.
-        val rows = ordered.map { verdict -> VerdictField.entries.map { it.text(verdict) } }
-        return (listOf(header) + rows).joinToString("\n") { fields -> fields.joinToString(",") { escape(it) } }
+        out.append(header.joinToString(",") { escape(it) })
+        for (verdict in ordered) {
+            out.append('\n')
+            out.append(VerdictField.entries.joinToString(",") { escape(it.text(verdict)) })
+        }
     }
 
     /**

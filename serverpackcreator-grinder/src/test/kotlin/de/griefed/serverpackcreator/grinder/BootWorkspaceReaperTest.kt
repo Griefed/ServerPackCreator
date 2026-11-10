@@ -30,8 +30,15 @@ import java.io.File
  * Pins reclamation of the per-attempt scratch space. Staging keeps one full server pack (plus the mod jars it
  * downloaded) per `(slug, loader)` attempted, and deleting it only when that *same* pair is retried grows the work
  * tree without bound across a catalog sweep — measured live at **98 GB across 1750 attempt directories**,
- * ~23 GB/h, which fills any host long before a sweep finishes. The logs are the part worth keeping
- * (a verdict's detail is read from them); the packs are reproducible and must go.
+ * ~23 GB/h, which fills any host long before a sweep finishes.
+ *
+ * Reclaiming all of it, the attempt directory included, is what [leavesNoAttemptDirectoryBehind] exists for.
+ * Keeping the console here as well as in the [de.griefed.serverpackcreator.grinder.report.BootLogStore] left
+ * one directory per attempt standing for ever, because a directory holding a kept file is never empty:
+ * **255,591 of them, 511,183 inodes and 2.3 GB, measured on the live daemon on 2026-11-09**, 82% of whose
+ * logs were zero bytes. Startup sweeps that tree before the report can bind, which is what grew
+ * time-to-bind from 1.1 s to 81 minutes over six weeks. The consoles worth keeping are copied into the
+ * budget-bounded log store *during* the boots, so there is nothing here left to lose.
  */
 internal class BootWorkspaceReaperTest {
 
@@ -91,8 +98,9 @@ internal class BootWorkspaceReaperTest {
                     "partial failure to characterise"
             )
             Assertions.assertEquals(
-                2048, reclaimed,
-                "only the modpack and the downloaded-jar scratch were fully removed; the serverpack must not be counted"
+                2048L + BOOT_LOG_BYTES, reclaimed,
+                "only the modpack, the console and the downloaded-jar scratch were fully removed; the " +
+                    "serverpack must not be counted"
             )
             Assertions.assertTrue(
                 File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists(),
@@ -103,19 +111,40 @@ internal class BootWorkspaceReaperTest {
         }
     }
 
-    /** The whole point: the pack goes, the diagnosis stays. */
+    /** The whole point: once a candidate's verdicts are in, its staging goes — all of it. */
     @Test
-    fun dropsThePackButKeepsTheBootLog() {
+    fun dropsTheWholeAttempt() {
         stageAttempt("jei", "Forge")
 
         reaper().reap(ModPlatforms.MODRINTH, "jei")
 
         Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists(), "the staged pack must be gone")
         Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/modpack").exists(), "the staged modpack must be gone")
-        Assertions.assertTrue(File(work, "boot/${attempt("jei", "Forge")}/boot.log").isFile, "the boot log is the evidence — keep it")
-        Assertions.assertTrue(
-            File(work, "boot/${attempt("jei", "Forge")}/boot.log").readText().contains("Done (4.2s)"),
-            "the kept log must be the original, not a truncated stand-in"
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/boot.log").exists(), "the console is kept in the log store, not here")
+    }
+
+    /**
+     * **The accumulation guard.** A reaped attempt must leave no directory standing, because one surviving
+     * inode per attempt is unbounded growth: a catalog sweep never retries the same `(platform, slug, loader,
+     * line)`, so nothing else ever removes it. Asserted on the staging *root* rather than on the attempt's own
+     * path, since that is the tree startup has to walk before the report can bind.
+     */
+    @Test
+    fun leavesNoAttemptDirectoryBehind() {
+        stageAttempt("jei", "Forge")
+        stageAttempt("sodium", "Fabric")
+
+        reaper().reapAll()
+
+        Assertions.assertEquals(
+            emptyList<String>(),
+            File(work, "boot").listFiles().orEmpty().map { it.name }.sorted(),
+            "every attempt directory must be gone, not merely emptied"
+        )
+        Assertions.assertEquals(
+            emptyList<String>(),
+            File(work, "verify").listFiles().orEmpty().map { it.name }.sorted(),
+            "the downloaded-jar scratch too"
         )
     }
 
@@ -138,7 +167,7 @@ internal class BootWorkspaceReaperTest {
 
         listOf("Forge", "NeoForge", "Fabric", "Quilt").forEach { loader ->
             Assertions.assertFalse(File(work, "boot/${attempt("jei", loader)}/serverpack").exists(), "pack for $loader survived")
-            Assertions.assertTrue(File(work, "boot/${attempt("jei", loader)}/boot.log").isFile, "log for $loader was lost")
+            Assertions.assertFalse(File(work, "boot/${attempt("jei", loader)}").exists(), "attempt directory for $loader survived")
         }
     }
 
@@ -214,8 +243,8 @@ internal class BootWorkspaceReaperTest {
 
         val reclaimed = reaper().reap(ModPlatforms.MODRINTH, "jei")
 
-        // Two 1 KiB pack files plus the 1 KiB downloaded jar; the kept log is excluded.
-        Assertions.assertEquals(3072, reclaimed)
+        // Two 1 KiB pack files, the 1 KiB downloaded jar, and the 43-byte console that is no longer exempt.
+        Assertions.assertEquals(3072L + BOOT_LOG_BYTES, reclaimed)
     }
 
     /**
@@ -232,7 +261,7 @@ internal class BootWorkspaceReaperTest {
         Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}/serverpack").exists())
         Assertions.assertFalse(File(work, "boot/${attempt("sodium", "Fabric")}/modpack").exists())
         Assertions.assertFalse(File(work, "verify/${attempt("sodium", "Fabric")}").exists())
-        Assertions.assertTrue(File(work, "boot/${attempt("jei", "Forge")}/boot.log").isFile, "logs survive a startup sweep too")
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}").exists(), "a startup sweep leaves nothing standing either")
         Assertions.assertTrue(reclaimed > 0, "a sweep that found packs must report freeing something")
     }
 
@@ -245,7 +274,7 @@ internal class BootWorkspaceReaperTest {
         Assertions.assertEquals(0, reaper.reapAll())
     }
 
-    /** Reaping twice must be harmless — the second pass simply finds the log it is meant to keep. */
+    /** Reaping twice must be harmless — the second pass simply finds nothing left to do. */
     @Test
     fun reapingAnAlreadyReapedCandidateIsHarmless() {
         stageAttempt("jei", "Forge")
@@ -254,6 +283,11 @@ internal class BootWorkspaceReaperTest {
         reaper.reap(ModPlatforms.MODRINTH, "jei")
 
         Assertions.assertEquals(0, reaper.reap(ModPlatforms.MODRINTH, "jei"), "nothing left to free the second time")
-        Assertions.assertTrue(File(work, "boot/${attempt("jei", "Forge")}/boot.log").isFile, "and the log still stands")
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}").exists(), "and nothing was resurrected")
+    }
+
+    private companion object {
+        /** Length of the console [stageAttempt] writes, so the reclaimed-bytes pin states its own arithmetic. */
+        const val BOOT_LOG_BYTES = 43
     }
 }

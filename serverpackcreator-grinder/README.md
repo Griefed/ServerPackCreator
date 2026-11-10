@@ -657,7 +657,9 @@ describes the file rather than the row.
 
 **JSON (`/verdicts.json`)** serves the same selection as the table and the CSV — same `q`, `f.<field>`,
 `sort`, `dir`, `page` and `size` parameters, and like `/export.csv` a bare call returns everything rather
-than one page. It differs from the CSV in keeping each field's own type: `stagedDependencies` arrives as an
+than one page. Both are written to the socket as they are produced rather than built in memory first, so a
+bare call is bounded by the client's patience rather than by the daemon's heap — but at a large store it is
+still a large document, so a consumer polling on a timer should ask for a `size` and page through. It differs from the CSV in keeping each field's own type: `stagedDependencies` arrives as an
 array instead of a comma-joined string, and `verifiedAt` as an ISO-8601 timestamp. The document wraps the
 rows in the paging metadata, so a consumer can tell "nothing matched" from "nothing recorded":
 

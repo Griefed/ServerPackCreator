@@ -291,14 +291,34 @@ internal data class VerdictQuery(
         return if (parts.isEmpty()) "" else "?" + parts.joinToString("&")
     }
 
+    /**
+     * This query with a page size the table can actually render — [MAX_TABLE_PAGE_SIZE] at most, and never
+     * "all".
+     *
+     * Applied by the HTML route only. `/export.csv` and `/verdicts.json` stream their documents and so stay
+     * unbounded on purpose, which is the behaviour operators script against; the table is built as a single
+     * `String`, so for it an unbounded size is a page nobody can load and a request thread nobody gets back.
+     */
+    fun forTable(): VerdictQuery = copy(size = (size ?: MAX_TABLE_PAGE_SIZE).coerceAtMost(MAX_TABLE_PAGE_SIZE))
+
     private fun encode(value: String) = URLEncoder.encode(value, StandardCharsets.UTF_8)
 
     companion object {
         /** Rows per page when nothing says otherwise — small enough to render fast, large enough to scan. */
         const val DEFAULT_PAGE_SIZE = 250
 
-        /** The ladder a reader may choose from, smallest first. `null` ("all") is always appended. */
-        val OFFERED_SIZES = listOf(100, 250, 500, 1_000, 2_000, 5_000, 10_000, 20_000, 50_000, 100_000)
+        /**
+         * The most rows the HTML table will render, however many are asked for.
+         *
+         * The table is one `String`, measured at ~430 bytes of HTML per row, so this is a ~2 MB page. The
+         * sizes it replaces were not pages: against the live daemon's 319,904 verdicts `size=100000` is ~43 MB
+         * and `size=all` ~137 MB, each built whole in heap before a byte is sent. Everything remains available
+         * in full from `/export.csv` and `/verdicts.json`, which the page links and which stream.
+         */
+        const val MAX_TABLE_PAGE_SIZE = 5_000
+
+        /** The ladder a reader may choose from, smallest first. `null` ("all") is appended where it fits. */
+        val OFFERED_SIZES = listOf(100, 250, 500, 1_000, 2_000, 5_000)
 
         /**
          * Read a query, falling back rather than failing on anything unreadable.
@@ -339,7 +359,10 @@ internal data class VerdictQuery(
         fun offeredSizes(matched: Int, current: Int?): List<Int?> {
             val justified = OFFERED_SIZES.filter { it < matched }
             val withCurrent = (justified + listOfNotNull(current)).distinct().sorted()
-            return withCurrent + listOf(null)
+            // "all" only where the table can render all of it. Past the cap the control would show a choice
+            // [forTable] then refuses to honour, which is the page disagreeing with its own URL -- the same
+            // failure the `current` clause above exists to prevent, in the other direction.
+            return if (matched <= MAX_TABLE_PAGE_SIZE) withCurrent + listOf(null) else withCurrent
         }
     }
 }

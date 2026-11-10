@@ -192,10 +192,22 @@ store rather than by running it:
     dentry cache is warm from the walk that created the tree. Reverted rather than landed: 4% is not worth
     churning this file for, which is the same verdict B30 earned.
   - **So the number that matters is ~17 s per 300K inodes of staging on a warm local SSD**, and that is the
-    scale a sweep of leftovers costs — seconds to a couple of minutes on slower storage, not hours. If a
-    restart takes longer than that, read the journal rather than guessing: the `Reclaimed N MiB of staging left
-    behind by a previous run.` line is INFO and is written *after* the sweep, so the gap between it and the
-    preceding line is the reaper's whole cost.
+    scale a sweep of leftovers costs — seconds to a couple of minutes on slower storage, not hours.
+  - **Re-confirmed 2026-11-09 against the real tree, and it held.** Replaying exactly what `reapMatching` plus
+    `stripToLogs` do over the live daemon's own 255,591 attempt directories (511,183 inodes) took **14.1 s**,
+    of which 972 ms was the single root listing. A restart of that daemon took **4,868 s** between its last
+    `ApiWrapper` line and its bind, so the reaper was **~0.3% of it** — the second time this landmine's advice
+    has outranked a plausible reading of the symptom.
+  - **LANDMINE — "read the journal rather than guessing" was not actually possible, fixed 2026-11-09.** Every
+    step in that window reported only when it had something to report: a sweep reclaiming nothing, a migration
+    moving nothing and a clean store load are all silent, and the `Reclaimed N MiB` line is gated on
+    `reclaimed > 0`. The measured 4,868 s therefore contains **no line from any thread**, which rules nothing in
+    or out. `GrinderApplication.phase` now times each step and logs it unconditionally at INFO, so the next
+    slow boot names its own cause instead of being argued about. Until a host has produced those lines, a slow
+    start is **unattributed** — the remaining candidates are `ImageJavaRuntimes.from`, the `BootLogStore`
+    migrations over ~19K artifacts, `engine.reapOrphans()` (a blocking call to the Docker socket) and a
+    JVM-level stall, and the last of those is the one that fits total silence growing with the data: the daemon
+    passes **no `-Xmx`**, so its heap is 25% of host RAM against a ~480 MB live set for a 320K-row store.
 
 - **LANDMINE — "every endpoint 502s" does NOT mean the report is wedged, and this cost two wrong diagnoses.**
   The JDK `HttpServer` hands every request to `SPC_GRINDER_HTTP_THREADS` threads (default 4, hardcoded 2
@@ -524,9 +536,8 @@ though their detail lives deeper:
   `<work>/verify/verify/<platform>-<slug>-<loader>`, and staging only ever deleted a directory when that *same*
   `(platform, slug, loader)`
   was retried — which during a catalog sweep is never. Measured 2026-07-30: **98 GB across 1750 attempt directories,
-  ~23 GB/h**, enough to fill the host inside a day. The reaper strips each finished candidate's staging down to its
-  `boot.log` (the verdict detail is read from it; the packs are reproducible), runs in a `finally` so a *thrown*
-  verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
+  ~23 GB/h**, enough to fill the host inside a day. The reaper removes each finished candidate's staging
+  **entirely**, runs in a `finally` so a *thrown* verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
   work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one **`(platform, slug)`** on purpose, and both halves matter.
   The names are built and parsed by `AttemptDirectory` in `-clientside` — one place, because the two verifiers
   that *write* the name and this reaper, which decides what to *delete* from it, used to agree only by separate
@@ -539,6 +550,17 @@ though their detail lives deeper:
   had gone), and re-checks reading INCONCLUSIVE on a file the other run had booted to a ready-line. A crash is
   the one outcome that reaches HIGH, so this manufactured false positives rather than merely losing runs.
   Directories staged before the rename match no owner and are cleared by the startup `reapAll()`.
+  **LANDMINE — the reaper kept one `boot.log` per attempt and that was itself unbounded growth, fixed
+  2026-11-09.** `stripToLogs` exempted the console and then removed the directory only
+  `if (attemptDir.listFiles()?.isEmpty() == true)` — which a kept file makes permanently false. Measured on the
+  live daemon: **255,591 attempt directories, 511,183 inodes, 2.3 GB, and 209,760 of the kept logs (82%) zero
+  bytes**, reclaiming **0** bytes per sweep and therefore logging nothing at all, since both the DEBUG line in
+  the reaper and the INFO line in `GrinderApplication` are gated on `reclaimed > 0`. It was redundant as well as
+  unbounded: `bootArtifactSink` copies every console worth keeping into the budget-bounded `BootLogStore`
+  *during* the boots, which is why `ContainerCandidateVerifier` says "nothing readable is left by the time we get
+  here" — so nothing read the staging copy, and the report has never served from it. Pinned by
+  `leavesNoAttemptDirectoryBehind`, which asserts on the staging **root** rather than one attempt's path,
+  because the tree is what startup walks.
   **Landmine — reap the identity the staging was *named* from, not the candidate's.** Directories carry
   `ProjectFiles.platform`/`slug` (the resolved report's); `ContainerCandidateVerifier.reapTarget` therefore
   prefers the report and falls back to the candidate only when the verification threw and there is no report
