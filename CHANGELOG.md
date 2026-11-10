@@ -1,3 +1,25 @@
+## [9.4.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.4.0...9.4.1) (2026-11-10)
+
+### 📦 Other
+
+* **api:** add the requested clientside-mods and reconcile both fallback lists ([197aac0](https://git.griefed.de/Griefed/ServerPackCreator/commit/197aac071a058b718baaa20aa64daa7970585934)), closes [#1279](https://git.griefed.de/Griefed/ServerPackCreator/issues/1279) [#1069](https://git.griefed.de/Griefed/ServerPackCreator/issues/1069) [#1068](https://git.griefed.de/Griefed/ServerPackCreator/issues/1068) [#1336](https://git.griefed.de/Griefed/ServerPackCreator/issues/1336)
+
+### 🔩 Dependencies
+
+* **deps:** update debian:bookworm-slim docker digest to 734a72b ([84375f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/84375f4b28ad08f7dc9794efebbbc2ccaef18138))
+* **deps:** update eclipse-temurin:22-jdk-jammy docker digest to d8e6ba4 ([21ec735](https://git.griefed.de/Griefed/ServerPackCreator/commit/21ec735729a5d4bae64ef0c1f28d1ef2b807362b))
+* **deps:** update ghcr.io/linuxserver/baseimage-ubuntu:noble docker digest to 7150f35 ([0b4fb81](https://git.griefed.de/Griefed/ServerPackCreator/commit/0b4fb81181aa7b7d25757944ebbbf74c8a9eaffb))
+* **deps:** update mongodb/mongodb-community-server:8.0.34-ubuntu2204 docker digest to 8fceb80 ([29d26ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/29d26ca46d1c738b61d878043faa38bb3fcc7752))
+* **deps:** update node.js to 5ec23b7 ([f8f6557](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8f65578e9cfa8941885b06ca70f06d1398924e1))
+
+### 🦊 CI/CD
+
+* **deps:** bump the npm_and_yarn group across 2 directories with 7 updates ([e34fa0a](https://git.griefed.de/Griefed/ServerPackCreator/commit/e34fa0a62d1ab2160286256de8a321c52a086f3b))
+
+### 🛠 Fixes
+
+* **grinder:** keep the report reachable at a 319,904-row store ([438581f](https://git.griefed.de/Griefed/ServerPackCreator/commit/438581fa447f54329df1c6ed3834e94a9bba76c4))
+
 ## [9.4.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.3.1...9.4.0) (2026-11-01)
 
 ### 📔 Docs
