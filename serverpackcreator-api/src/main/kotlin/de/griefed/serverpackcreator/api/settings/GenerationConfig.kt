@@ -415,6 +415,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "configured-",                  //https://www.curseforge.com/minecraft/mc-mods/configured
             "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
+            "continuity-",                  //https://www.curseforge.com/minecraft/mc-mods/continuity
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
