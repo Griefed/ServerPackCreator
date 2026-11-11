@@ -64,6 +64,15 @@ the "do not tidy that away, here is what it cost last time".
     `tasks.test { inputs.file(...) }` in `buildSrc/build.gradle.kts` is what makes it re-run, and the
     mutation turns it red with the line present. Any guard that reaches across a project boundary needs the
     same declaration; ask what makes its task re-run, not only what it asserts.
+  - **LANDMINE — a per-build value in a jar manifest re-runs every downstream test, and hides the landmine
+    above.** Every jar's manifest carries `Build-Timestamp` (`java-conventions`, and the four plugin build
+    scripts), so until 2026-11-11 `-api`'s jar differed on every invocation — one entry of 931,
+    `META-INF/MANIFEST.MF` — and no test task downstream of it was ever UP-TO-DATE or served from the build
+    cache. `normalization { runtimeClasspath { metaInf { ignoreAttribute("Build-Timestamp") } } }` in
+    `java-conventions` ignores it. It also made the landmine above invisible: `ClientsideReportRendererTest`'s
+    guard over `.github/scripts/clientside-verification.js` re-ran on every build *by accident*, and went
+    stale-green the moment tests could be UP-TO-DATE — measured, before its `inputs.file` was declared. A new
+    attribute that changes per build needs the same `ignoreAttribute`.
 
 - **A plugin module's jar name is decided in `serverpackcreator.plugin-conventions`, and nowhere else.**
   Every plugin jar is `<module>-<version>_experimental.jar`; the convention plugin also owns the

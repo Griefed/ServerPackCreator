@@ -140,6 +140,16 @@ tasks.clean {
     }
 }
 
+// The manifest below changes on every build, through `Build-Timestamp`, so without this a consuming module's
+// test task sees a changed runtime classpath on every invocation and is never UP-TO-DATE or served from cache.
+normalization {
+    runtimeClasspath {
+        metaInf {
+            ignoreAttribute("Build-Timestamp")
+        }
+    }
+}
+
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
