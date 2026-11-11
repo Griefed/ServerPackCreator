@@ -25,9 +25,12 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `-clientsideapply --report <json>` (insert accepted entries into the list files — pure editing, no
   staging). The commands in `cli/commands/` are thin wrappers; the first three build the engine with
   `apiWrapper.modScanner`.
-  - **Landmine — arg parsing order:** `-clientsideapply` must be checked **before** `CONFIG`/`CGEN` in
-    `CommandlineParser`, because those use `.contains()` and `--generation-config` contains `-config`
-    (would otherwise be misread as `CONFIG`). The new modes are matched with exact `==`.
+  - **Landmine — a flag is a whole argument, never a substring.** `CommandlineParser.isFlag` matches a mode's
+    flag as an entire argument (one or two leading dashes). It used to be `entry.contains(...)`, and the
+    arguments beside a flag are project links and paths: `-verifyclientside https://modrinth.com/mod/inventory-helper`
+    parsed as `-help` and exited 0 with no report, `…/auto-update` as `-update`, and `-config /packs/pack-cgen/x.conf`
+    as `-cgen`. Do not reintroduce `contains` for a new mode; `anArgumentThatOnlyContainsAFlagSelectsNothing`
+    pins it.
 - **Workflows** build the jar **from source** (the verbs aren't in any release yet) and post/update a
   sticky comment (marker `<!-- serverpackcreator-clientside-report -->`); the report embeds its data as
   a hidden `<!-- clientside-report-data … -->` JSON block the accept-workflow reads back.
