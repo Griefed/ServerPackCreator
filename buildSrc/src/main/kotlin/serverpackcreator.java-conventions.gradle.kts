@@ -140,6 +140,20 @@ tasks.clean {
     }
 }
 
+// The manifest below changes on every build (`Build-Timestamp`) and between machines (`Built-By`, `Build-Jdk`,
+// `Build-OS`), so without this a consuming module's test task sees a changed runtime classpath and is never
+// UP-TO-DATE, nor served from a cache another machine filled. The plugin build scripts write the same four.
+normalization {
+    runtimeClasspath {
+        metaInf {
+            ignoreAttribute("Build-Timestamp")
+            ignoreAttribute("Built-By")
+            ignoreAttribute("Build-Jdk")
+            ignoreAttribute("Build-OS")
+        }
+    }
+}
+
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
