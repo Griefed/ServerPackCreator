@@ -233,6 +233,91 @@ internal class ClientsideReportRendererTest {
         )
     }
 
+    private fun console(lines: Int, prefix: String = "line") = (1..lines).map { "[Server thread/INFO]: $prefix $it" }
+
+    @Test
+    fun eachBootedTargetShowsTheEndOfItsConsole() {
+        val rendered = ClientsideReportRenderer.renderMarkdown(report) { target ->
+            if (target === crashedOnNeoForge) console(500) else null
+        }
+        val lines = rendered.lines()
+
+        val summary = lines.indexOf("<details><summary>📜 NeoForge · Minecraft 1.21.1 — CRASHED · last 200 of 500 console lines</summary>")
+        Assertions.assertTrue(summary >= 0, rendered)
+        val block = lines.subList(summary, summary + lines.drop(summary).indexOf("</details>"))
+        Assertions.assertTrue("[Server thread/INFO]: line 500" in block, "the end of the console is what decided the verdict")
+        Assertions.assertTrue("[Server thread/INFO]: line 301" in block)
+        Assertions.assertFalse("[Server thread/INFO]: line 300" in block)
+        Assertions.assertTrue(lines.indexOf("### 🪵 Boot logs") in 0 until summary, rendered)
+    }
+
+    @Test
+    fun aTargetWithoutAConsoleSaysSo() {
+        val rendered = ClientsideReportRenderer.renderMarkdown(report) { target ->
+            if (target === crashedOnNeoForge) console(3) else null
+        }
+        Assertions.assertTrue("- Fabric · Minecraft 1.19.2 — no server console was recorded" in rendered.lines(), rendered)
+    }
+
+    @Test
+    fun aReportWithoutABootHasNoBootLogs() {
+        val metadataOnly = report.copy(perTarget = listOf(neverBooted))
+        Assertions.assertFalse("### 🪵 Boot logs" in ClientsideReportRenderer.renderMarkdown(metadataOnly) { console(3) })
+    }
+
+    @Test
+    fun aConsoleCannotCloseItsOwnCodeBlock() {
+        val rendered = ClientsideReportRenderer.renderMarkdown(report) { target ->
+            if (target === crashedOnNeoForge) listOf("before", "````", "after") else null
+        }
+        val lines = rendered.lines()
+        val opener = lines.first { it.endsWith("text") && it.startsWith("`") }
+        val fence = opener.removeSuffix("text")
+        Assertions.assertTrue(fence.length > 4, "a fence of $fence closes on the console's own ````")
+        Assertions.assertEquals(listOf("before", "````", "after", fence), lines.subList(lines.indexOf(opener) + 1, lines.indexOf(opener) + 5))
+    }
+
+    @Test
+    fun terminalColourCodesAndRunawayLinesAreTamed() {
+        val rendered = ClientsideReportRenderer.renderMarkdown(report) { target ->
+            if (target === crashedOnNeoForge) listOf("\u001B[32m[Server thread/INFO]: Done\u001B[0m\r", "x".repeat(5_000)) else null
+        }
+        Assertions.assertTrue("[Server thread/INFO]: Done" in rendered.lines(), rendered)
+        Assertions.assertFalse('\u001B' in rendered)
+        Assertions.assertTrue(rendered.lines().none { it.length > ClientsideReportRenderer.MAX_CONSOLE_LINE_CHARS + 1 })
+    }
+
+    /**
+     * GitHub refuses a comment over 65,536 characters, and a refused report is no report at all — including the
+     * data block the `accepted` label needs. However much the boots printed, the comment must fit.
+     */
+    @Test
+    fun hugeConsolesStillFitIntoOneComment() {
+        val rendered = ClientsideReportRenderer.renderMarkdown(report) { console(20_000, "x".repeat(150)) }
+
+        Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
+        Assertions.assertEquals(3, rendered.lines().count { it.startsWith("<details><summary>📜") }, "every booted target keeps a share")
+        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(rendered)?.groupValues?.get(1)
+        Assertions.assertEquals(listOf("examplemod-"), jacksonObjectMapper().readTree(json).path("suggestedEntries").map { it.asText() })
+    }
+
+    /**
+     * A project with a long history can exceed the limit on its own: its file names are listed in the Markdown and
+     * again in the data block. They go before anything the acceptance workflow needs.
+     */
+    @Test
+    fun aReportTooLargeOnItsOwnDropsTheFileNamesNotTheEntries() {
+        val longHistory = report.copy(fileNames = (1..3_000).map { "examplemod-neoforge-2.0.$it+1.21.1-some-long-suffix.jar" })
+        val rendered = ClientsideReportRenderer.renderMarkdown(longHistory)
+
+        Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
+        Assertions.assertTrue(rendered.lines().any { it.startsWith("_The 3000 published file-names are left out") }, rendered.take(3_000))
+        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(rendered)?.groupValues?.get(1)
+        val data = jacksonObjectMapper().readTree(json)
+        Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
+        Assertions.assertEquals("https://modrinth.com/mod/examplemod", data.path("projectUrl").asText())
+    }
+
     @Test
     fun theDataBlockIsLastAndReadsBackTheWayTheAcceptanceWorkflowReadsIt() {
         // The same expression `clientside-accept.yml` applies to the comment body.
