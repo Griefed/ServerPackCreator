@@ -5289,3 +5289,101 @@ changes `.forgejo/workflows/docs.yml` and this file, neither of which is in the 
 migration had to be verified against both build paths. The accepted cost is that the next
 `git subtree pull --squash` will conflict across ~15 files; the module's `CLAUDE.md` records that this
 directory is now the source of truth.
+
+## 2026-11-11 — no clientside-mod request had ever been booted, and five things stood behind the first one that would be (`claude-clientside-always-boot`)
+
+**What was asked for:** make the GitHub workflows for `[Clientside-mod Addition Request]` issues always boot a
+server with the submitted mod, and post the result in the issue with the logs of that run, so a developer can
+check it. Then, after the first findings came back: create the missing `verify-boot` label, page past 30
+comments when looking for the report, and give `ClientsideReportRenderer` tests.
+
+### The cause was in GitHub's own records, not in the YAML
+
+Every bot report on GitHub (#1252, #1267, #1272, #1279, #1313, #1338) read "Automated assessment
+(**metadata-only**)". Reading `clientside-boot.yml` did not explain why; asking GitHub did, in two API calls.
+For #1338 the issue's events were `assigned` 08:03:40Z, `labeled: enhancement` 08:03:42Z, and the boot
+workflow's runs were **#28 `cancelled`** (its job started and ended at 08:03:45Z, no steps) and **#29
+`skipped`**. The issue form applies the `enhancement` label, so opening an issue fires `opened` *and*
+`labeled`; `clientside-boot.yml` took both under a **workflow-level** concurrency group with
+`cancel-in-progress`, and a workflow-level group is entered before any job's `if:` is evaluated. The `labeled`
+run cancelled the boot and then skipped itself. The six runs GitHub still retains are five skipped, one
+cancelled: no boot ever completed. The metadata pass shared the sticky comment and re-ran on every `edited`, so
+a boot that did complete would have been overwritten by the next typo fix.
+
+`5a74a74d2`, which put the boot on `opened`, reasoned explicitly about `edited` cancelling a boot — and kept
+`labeled` beside `opened`. The reasoning was right about the trigger it examined.
+
+### Five more defects stood behind the boot, and only running one found them
+
+Fixing the trigger would have produced boots that reported the start script rather than the mod:
+
+1. **Every pack ran on whatever `java` was on PATH.** `start.sh` accepts only the exact
+   `RECOMMENDED_JAVA_VERSION`, and otherwise sources `install_java.sh`, whose Jabba prompt a boot fed from
+   `/dev/null` can only decline. With JDK 21 on the runner that is every line outside 1.20.5–1.21.x. The grinder
+   had solved this for its image (`PackVariables`, `ImageJavaRuntimes`); those moved into `-clientside`, and
+   the CLI now points each pack at the required JDK from `JAVA_HOME_<major>_<arch>` (`HostJavaSelection`). The
+   workflow installs 8, 16, 17 and 25 beside its 21.
+2. **That refusal was scored CRASHED.** It `exit 1`s inside the sourced script, before `start.sh`'s own
+   "Java install-script failed" can print, so no setup-abort marker matched; the exit-code rung decided. The
+   report would have shown the Jabba prompt as "server crash output".
+3. **A slug containing `-help` or `-update` hijacked the CLI.** Mode flags were matched with
+   `entry.contains(...)`, and HELP/UPDATE are checked before `-verifyclientside`, whose next argument is the
+   project link — `inventory-helper` contains `-help`. Every `*-helper` mod would have exited 0 with no report.
+4. **A boot-test that threw left an ERROR row with no reason**; the exception reached only SPC's log.
+5. **The comment had no size limit.** A 3,000-file project rendered 352,274 characters before any console was
+   added; GitHub refuses a body over 65,536, which loses the report and the data block `accepted` needs.
+
+The report rows also could not be told apart — since the grind axis became the Minecraft line, two rows share
+a loader, and #1338's table showed two identical Fabric rows — and a staging refusal read `INCONCLUSIVE` in the
+Boot column of a target that never booted.
+
+### Found on the way, each fixed in its own commit
+
+- **Acceptance could be fed forged entries, two ways.** Every sticky-comment lookup took the first comment of
+  *any* author carrying the marker — and only the first 30 comments, unpaged. And `clientside-accept.yml`
+  took the *first* data block in the comment, while the report now quotes server consoles verbatim above the
+  real one: run against accept's own regex, a console printing a forged block yields `suggestedEntries: [""]`,
+  an entry that matches every mod through `startsWith`. Lookups are now paged and bot-only, and the block read
+  is the last, which is always the renderer's. Accept uses the tested script through a sparse second checkout.
+- **`clientside-accept.yml` had the same workflow-level concurrency** as the boot workflow. With
+  `cancel-in-progress: false` it cancels nothing running, but GitHub replaces a pending run with the next one,
+  so labels applied beside `accepted` could discard it. Moved to the job.
+- **No test downstream of `-api` was ever UP-TO-DATE.** Every jar's manifest carries `Build-Timestamp`, so of
+  the `-api` jar's 931 entries exactly one, `META-INF/MANIFEST.MF`, differed between two builds, and every
+  consuming test task saw a changed classpath. Found because a new guard's input declaration seemed to make no
+  difference: it didn't, because the guard re-ran on every build regardless. With the attribute normalized
+  away, the same guard *without* its declaration goes stale-green on a script-only edit — the build-layout
+  landmine, which the timestamp had been hiding.
+
+### Verified against a real runtime
+
+`-verifyclientside https://modrinth.com/mod/continuity`, run locally with Java 17 and 25 advertised as
+`JAVA_HOME_<major>_ARM64` and SPC itself on 21, under its own Preferences node so the developer's home was
+untouched: both Fabric lines (26.3, 26.2) were staged with `JAVA=…/temurin-25.jdk/…/bin/java`, printed
+"Detected 26.3. - Java 25", and reached `Done (5.267s)!`; the two Connector-placeholder lines read
+"not booted" with their reason; the report, both consoles included, was 39,106 characters. 94 s end to end.
+
+### What remains open
+
+- **GitHub runs `issues` workflows from the default branch**, so none of this takes effect until it reaches
+  `main`. A dispatch of `clientside-verify.yml` against the branch rehearses it on a real issue first.
+- **That a job skipped by `if:` never enters its job-level concurrency group** is the property the fix relies
+  on. GitHub's docs describe job-level concurrency and that a pending member is replaced, but do not state the
+  skipped-job case in so many words; third-party reports (jonah-fleet#100) describe exactly this fix. The first
+  addition request after the merge is the confirmation: its boot run must reach its steps.
+- `actionlint` was not run on the workflows — executing the downloaded binary was blocked in this session.
+- B57 and B58 in `BACKLOG.md`.
+
+### Lessons that generalise
+
+- **A workflow-level concurrency group is entered before a job's `if:` decides anything.** A trigger that
+  fires alongside the one you meant — `labeled` with `opened`, because a form applies a label — is a second
+  run in your group, and with `cancel-in-progress` it wins. Filter by job, and hold the group on the job.
+- **A pipeline that has never reached the stage under test has not tested that stage.** Five defects sat
+  behind the first boot; each was invisible while nothing booted, and each would have made the first boot's
+  report wrong. The first real run is the test, which is why this one was made locally before any push.
+- **Ask the platform's own records before reading the code that drives it.** Two API calls — the run list and
+  the issue's event timeline — located a cause the workflow text did not show, even to the commit that reasoned
+  carefully about its triggers.
+- **A documented route that depends on configuration nobody created is not a route.** `verify-boot` was "the
+  way to re-run one by hand" and did not exist; the workflow now creates it.

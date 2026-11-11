@@ -110,6 +110,11 @@ in place with the new modes — **no existing mode's behavior changed**). All ne
   download, and the `ServerPackCreator.kt` dispatch wiring remain uncovered — booting a Minecraft
   server / launching a browser is too heavy and network-dependent for the offline unit suite, and is
   exercised by the `clientside-boot` workflow instead.
+  **Correction, 2026-11-11: that premise never held.** `clientside-boot` never completed a boot on GitHub —
+  its `opened` run was cancelled by the `labeled` run the issue form fires beside it (issue #1338: run 28
+  cancelled within a second by run 29) — so this acceptance rested on coverage that did not exist. The live
+  boot is now exercised by `clientside-verify.yml` on every addition request, and was run locally against
+  Modrinth's `continuity` before that workflow change; see `REFACTOR-LOG.md`, 2026-11-11.
 
 ## LOW
 

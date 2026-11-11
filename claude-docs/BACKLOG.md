@@ -10,7 +10,7 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 > repoints someone else's citation at the wrong item. `git log -S'B<n> —' -- claude-docs/BACKLOG.md` recovers
 > what any past ID meant, and is also how to find the highest one rather than trusting a number written here.
 
-Add the next item under a dated section, starting at **B57**.
+Add the next item under a dated section, starting at **B59**.
 
 > **FOUR IDS WERE REUSED, and they have been repaired — 2026-10-24.** The 2026-10-20 section issued B49, B50
 > and B51, all three of which the 2026-10-16 and 2026-10-17 sections already held, and B38 named two unrelated
@@ -35,6 +35,34 @@ per-line axis made the shim cost a whole Minecraft line and the placeholder was 
 see `REFACTOR-LOG.md`. **B39 and B40 are issued and gone** — the Qodana work, closed
 2026-09-21; B40 deliberately *not* by the baseline it proposed, see `REFACTOR-LOG.md`. (That pass closed a
 B38 as well; the B38 this file carried until 2026-10-24 was a second, unrelated item under the same number.)
+
+## 2026-11-11 — from making every clientside-mod request boot (`claude-clientside-always-boot`)
+
+### B57 — one target's jar-scan download can throw away the whole report
+
+**What:** `ClientsideVerifier.scanSample` runs outside any `runCatching`, and targets are assessed one after
+another, so an exception there ends `report()` — discarding every target that already booted — and
+`-verifyclientside` posts only "Could not assess …". `HttpJarDownloader.download` calls `URI.create(url)`,
+which throws on a raw space or bracket.
+
+**Why it waited:** the trigger is unverified. Whether CurseForge ever serves a `downloadUrl` with raw spaces
+(its file names do contain them, e.g. `[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar`) needs the API key, which
+the session had no copy of, and no fixture in the repository records a real `downloadUrl`. The grinder uses the
+same downloader and its store would show the failure if it were common.
+
+**To pick it up:** fetch one such file through the CurseForge API and look at `downloadUrl`. Either way, wrap
+the per-target scan so a failure becomes that row's `JarScan.ERROR` with its message in the note — the shape
+`BootTestFailureNoteTest` pins for a throwing boot.
+
+### B58 — a project whose every Minecraft line is dropped gets an empty report with no reason
+
+**What:** `BootCandidateSelector.pickGrindTargets` silently drops a line with no file that is a stable
+release, under a loader in `LOADER_PRIORITY`, with a loader build for that Minecraft. If every line drops, the
+report is an empty table and "_None could be derived_", and nothing says why.
+
+**Why it waited:** the renderer cannot say why — the report model records no dropped lines — so the fix is in
+the engine (record each dropped line and its reason, and render them), which is wider than the workflow work
+it was found during. Unmeasured how often it happens.
 
 ## 2026-10-21 — from the seven-round audit
 
