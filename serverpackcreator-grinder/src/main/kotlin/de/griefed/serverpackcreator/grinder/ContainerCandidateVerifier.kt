@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
 import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
+import de.griefed.serverpackcreator.clientside.boot.PackVariables
 import de.griefed.serverpackcreator.clientside.verdict.ClientsideReport
 import de.griefed.serverpackcreator.clientside.ClientsideVerifier
 import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
@@ -36,11 +38,9 @@ import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerServerRunner
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
-import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.loader.LoaderProvidedIds
 import de.griefed.serverpackcreator.grinder.loader.LoaderStepDown
-import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import java.io.File
 import java.util.Collections

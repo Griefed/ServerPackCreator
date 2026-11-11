@@ -24,7 +24,7 @@ to preserve, and the one a careless import silently destroys.
 | Package | What lives there | May depend on |
 |---|---|---|
 | *(root)* | the module's API and composition: `ClientsideVerifier` (the entry point), `ClientsideReportRenderer`, `ClientsideListEditor` | everything |
-| `boot` | stage a pack, run a server, keep the evidence: `BootVerifier`, `ServerRunner`/`HostProcessServerRunner`, `BootDeadline`, `SuspendAwareDeadline`, `AttemptDirectory`, `BootArtifacts`, `BootArtifactWriter`, `BootLoaderVersion` | all of the below |
+| `boot` | stage a pack, run a server, keep the evidence: `BootVerifier`, `ServerRunner`/`HostProcessServerRunner`, `BootDeadline`, `SuspendAwareDeadline`, `AttemptDirectory`, `BootArtifacts`, `BootArtifactWriter`, `BootLoaderVersion`, and the unattended-boot levers `PackVariables`/`ImageJavaRuntimes`, here rather than in the grinder so the CLI boots packs the same way | all of the below |
 | `verdict` | evidence → conclusion: `Verdict`/`PreventionCause`/`VerdictPolicy`, `BootLogClassifier`/`BootDecision`, `BootRule`, `ConsoleRules`, `ClientsideReport` | `platform` |
 | `selection` | which builds get ground: `BootCandidateSelector` (+ `GrindTarget`), `MinecraftLinePolicy`, `VersionOfFile` | `platform`, `version` |
 | `platform` | Modrinth/CurseForge and the wire: `ModPlatform`/`HttpFetcher`/`JdkHttpFetcher`, `ModrinthPlatform`, `CurseForgePlatform`, `JarDownloader`, `PlatformDependencyDemand`, and the shared model `ModFile`/`ProjectFiles`/`DeclaredSupport`/`ReleaseChannel` | `metadata` |
@@ -206,6 +206,17 @@ positive strips a working mod out of every pack built against the list.
 
 ## Engine details & landmines (durable)
 
+- **LANDMINE — a host boot runs on whatever Java the pack points at, and `start.sh` only accepts the exact
+  required major.** A different major sends it into `install_java.sh`, whose Jabba prompt a boot without a
+  terminal (`HostProcessServerRunner` feeds stdin from `/dev/null`) can only decline. So the CLI's
+  `-verifyclientside` hands `BootVerifier` a `HostJavaSelection` post-processor: it writes the required JDK into
+  `variables.txt` via `PackVariables.prepareUnattended`, choosing from the `JAVA_HOME_<major>_<arch>` variables a
+  CI runner advertises (`ImageJavaRuntimes.javaHomesIn`) plus the JVM running SPC. A major the host lacks
+  **throws**, which `BootVerifier` turns into an `ERROR` row carrying the sentence — deliberately not the
+  grinder's `minecraftAcceptable = imageJava::supports` gate, which would silently drop the whole Minecraft line
+  from a single-issue report. The refusal is also a `setup-abort` rung now, as the backstop for a pack that
+  reaches the prompt anyway. **The GitHub workflow must therefore install every major a release can need**
+  (8, 16, 17, 21, 25 — `RECOMMENDED_JAVA_VERSION` is Mojang's per-version requirement, not SPC's target).
 - **LANDMINE — `JdkHttpFetcher`'s default client is `SHARED`, one per process. Do not "fix" that back
   into a per-instance build.** It read as harmless (`HttpClient.newBuilder()…build()` as a default
   parameter) and was not: every `JdkHttpFetcher()` minted its own client, each with its own connection

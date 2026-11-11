@@ -19,7 +19,9 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `CommandlineParser` parse + `ServerPackCreator.kt` dispatch — non-interactive runs go through
   `Mode`, *not* the picocli shell): `-scan <dir> --loader <L> --minecraft <V>` (declared-sideness of
   local jars → JSON), `-clientsidereport <url> [--output <f>]` (metadata-only report),
-  `-verifyclientside <url> [--output <f>]` (metadata **+** server-boot), and
+  `-verifyclientside <url> [--output <f>]` (metadata **+** server-boot, each pack on the JDK its Minecraft
+  version requires — taken from `JAVA_HOME_<major>_<arch>` plus the running JVM, a missing one an `ERROR` row
+  naming it; see `HostJavaSelection` in `serverpackcreator-clientside/CLAUDE.md`), and
   `-clientsideapply --report <json>` (insert accepted entries into the list files — pure editing, no
   staging). The commands in `cli/commands/` are thin wrappers; the first three build the engine with
   `apiWrapper.modScanner`.

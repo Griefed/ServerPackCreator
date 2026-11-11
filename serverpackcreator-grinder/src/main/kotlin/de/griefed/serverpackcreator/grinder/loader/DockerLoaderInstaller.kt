@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
+import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
+import de.griefed.serverpackcreator.clientside.boot.PackVariables
 import de.griefed.serverpackcreator.grinder.container.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File

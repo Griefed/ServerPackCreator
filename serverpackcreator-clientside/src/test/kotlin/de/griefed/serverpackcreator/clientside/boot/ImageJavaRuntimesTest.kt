@@ -17,10 +17,11 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.grinder.loader
+package de.griefed.serverpackcreator.clientside.boot
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * Pins the image-supported-Java gate: a Minecraft version is bootable only when SPC's declared
@@ -134,5 +135,61 @@ internal class ImageJavaRuntimesTest {
         Assertions.assertFalse(runtimes.supports("99.99"), "unknown required-Java → not bootable")
         Assertions.assertNull(runtimes.javaPath("99.99"))
         Assertions.assertNull(runtimes.javaPath("26.2"), "no bundled JDK → no path")
+    }
+
+    /** A major advertised for two architectures resolves to the host's, whatever order the environment lists them in. */
+    @Test
+    fun aJdkAdvertisedForTwoArchitecturesResolvesToTheHosts() {
+        val x64First = linkedMapOf("JAVA_HOME_21_X64" to "/opt/jdk-21-x64", "JAVA_HOME_21_ARM64" to "/opt/jdk-21-arm64")
+        val arm64First = linkedMapOf("JAVA_HOME_21_ARM64" to "/opt/jdk-21-arm64", "JAVA_HOME_21_X64" to "/opt/jdk-21-x64")
+
+        for (environment in listOf(x64First, arm64First)) {
+            Assertions.assertEquals(mapOf(21 to File("/opt/jdk-21-arm64")), ImageJavaRuntimes.javaHomesIn(environment, "aarch64"))
+            Assertions.assertEquals(mapOf(21 to File("/opt/jdk-21-x64")), ImageJavaRuntimes.javaHomesIn(environment, "amd64"))
+            Assertions.assertEquals(mapOf(21 to File("/opt/jdk-21-x64")), ImageJavaRuntimes.javaHomesIn(environment, "x86_64"))
+        }
+    }
+
+    /** With only another architecture's JDK for a major, that one is still offered rather than none. */
+    @Test
+    fun aForeignArchitectureIsTheFallbackNotARefusal() {
+        Assertions.assertEquals(
+            mapOf(17 to File("/opt/jdk-17-x64")),
+            ImageJavaRuntimes.javaHomesIn(mapOf("JAVA_HOME_17_X64" to "/opt/jdk-17-x64"), "aarch64")
+        )
+    }
+
+    /**
+     * A CI runner advertises every JDK it has as `JAVA_HOME_<major>_<arch>` — GitHub's runner images do, and so
+     * does `actions/setup-java` for each version it installs. The bare `JAVA_HOME` names no major and an empty
+     * value names no JDK, so neither may claim one.
+     */
+    @Test
+    fun readsTheJdksARunnerAdvertises() {
+        val homes = ImageJavaRuntimes.javaHomesIn(
+            mapOf(
+                "JAVA_HOME_8_X64" to "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/8.0.462-8/x64",
+                "JAVA_HOME_21_ARM64" to "/opt/jdk-21",
+                "JAVA_HOME_17_X64" to "",
+                "JAVA_HOME" to "/opt/default",
+                "JAVA_HOME_X64" to "/opt/no-major",
+                "PATH" to "/usr/bin"
+            )
+        )
+        Assertions.assertEquals(
+            mapOf(8 to File("/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/8.0.462-8/x64"), 21 to File("/opt/jdk-21")),
+            homes
+        )
+    }
+
+    @Test
+    fun anInstalledJdkIsBootedFromItsOwnHome() {
+        val installed = ImageJavaRuntimes.installed(
+            requiredJavaMajor = { declaredRequiredJava[it] },
+            javaHomes = mapOf(17 to File("/jdks/17"), 21 to File("/jdks/21"))
+        )
+        Assertions.assertEquals(File(File("/jdks/17"), "bin/java").path, installed.javaPath("1.20.1"))
+        Assertions.assertEquals(ImageSupport.JDK_NOT_BUNDLED, installed.supportFor("1.12.2"), "Java 8 is not installed")
+        Assertions.assertEquals(File(File("/jdks/21"), "bin/java").path, installed.installerJavaPath())
     }
 }

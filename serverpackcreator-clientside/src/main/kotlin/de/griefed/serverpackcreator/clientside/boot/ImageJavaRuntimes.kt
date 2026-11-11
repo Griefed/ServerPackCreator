@@ -17,9 +17,10 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.grinder.loader
+package de.griefed.serverpackcreator.clientside.boot
 
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import java.io.File
 
 /**
  * Whether the runtime image can boot a given Minecraft version, and when it cannot, **why**.
@@ -44,7 +45,8 @@ enum class ImageSupport {
 
 /**
  * Decides which bundled JDK boots a given Minecraft version, and whether the runtime image can run it
- * at all. The required Java major comes from SPC's own version metadata
+ * at all — the grinder's image ([from]), or the JDKs installed on the host booting a pack ([installed]).
+ * The required Java major comes from SPC's own version metadata
  * ([MinecraftMeta.requiredJavaVersion]) — Mojang's *declared* server requirement — not a hand-rolled
  * heuristic, so it stays correct across Minecraft versioning-scheme changes. The image ships a fixed
  * JDK set ([bundledMajors], default 8/17/21/25 to match the runtime Dockerfile); a version whose required
@@ -60,11 +62,16 @@ class ImageJavaRuntimes(
      * [MinecraftMeta]) so the gate is unit-testable.
      */
     private val requiredJavaMajor: (String) -> Int?,
-    /** The Java majors the runtime image actually ships — must match the Dockerfile. */
-    private val bundledMajors: Set<Int> = setOf(8, 17, 21, 25)
+    /** The Java majors available to boot with — for the grinder's image, exactly what its Dockerfile installs. */
+    private val bundledMajors: Set<Int> = setOf(8, 17, 21, 25),
+    /** The `java` binary of a bundled major; the grinder image's `/opt/java-<major>` symlinks by default. */
+    private val javaPathFor: (Int) -> String = { major -> "/opt/java-$major/bin/java" }
 ) {
     /** True when [minecraftVersion]'s required Java major is both known and bundled in the image. */
     fun supports(minecraftVersion: String): Boolean = supportFor(minecraftVersion) == ImageSupport.SUPPORTED
+
+    /** The Java major [minecraftVersion]'s server requires, or `null` when SPC does not know it. */
+    fun requiredJava(minecraftVersion: String): Int? = requiredJavaMajor(minecraftVersion)
 
     /**
      * *Why* [minecraftVersion] can or cannot be booted here, which [supports] necessarily throws away by
@@ -81,7 +88,7 @@ class ImageJavaRuntimes(
     fun javaPath(minecraftVersion: String): String? =
         requiredJavaMajor(minecraftVersion)
             ?.takeIf { it in bundledMajors }
-            ?.let { pathFor(it) }
+            ?.let(javaPathFor)
 
     /**
      * A bundled JDK for running modloader **installers**, which can require a newer Java than the server
@@ -90,7 +97,7 @@ class ImageJavaRuntimes(
      * image ships nothing new enough. The pack's `JAVA` (the server's Java) is left untouched.
      */
     fun installerJavaPath(minimumInstallerJava: Int = MINIMUM_INSTALLER_JAVA): String? =
-        bundledMajors.filter { it >= minimumInstallerJava }.maxOrNull()?.let { pathFor(it) }
+        bundledMajors.filter { it >= minimumInstallerJava }.maxOrNull()?.let(javaPathFor)
 
     /**
      * The installer JDK **only when [minecraftVersion] actually needs one** — i.e. when the server's own
@@ -104,11 +111,7 @@ class ImageJavaRuntimes(
         return if (serverJava >= minimumInstallerJava) null else installerJavaPath(minimumInstallerJava)
     }
 
-    /** The conventional in-image path for a bundled JDK [major] (see the runtime Dockerfile's symlinks). */
-    private fun pathFor(major: Int) = "/opt/java-$major/bin/java"
-
-    /** The installer-Java floor and the factory that sources required-Java from SPC's own metadata. */
-
+    /** The installer-Java floor, and the factories for the grinder's image and for a host's installed JDKs. */
     companion object {
         /**
          * Minimum Java the modloader installers need. Set by the Quilt installer, which refuses to run on
@@ -123,8 +126,46 @@ class ImageJavaRuntimes(
          */
         fun from(minecraftMeta: MinecraftMeta, bundledMajors: Set<Int> = setOf(8, 17, 21, 25)): ImageJavaRuntimes =
             ImageJavaRuntimes(
-                requiredJavaMajor = { minecraftMeta.requiredJavaVersion(it).orElse(null)?.toIntOrNull() },
+                requiredJavaMajor = requiredJavaOf(minecraftMeta),
                 bundledMajors = bundledMajors
             )
+
+        /** The JDKs installed on a host, as their homes keyed by major, with the requirement from SPC's metadata. */
+        fun installed(minecraftMeta: MinecraftMeta, javaHomes: Map<Int, File>): ImageJavaRuntimes =
+            installed(requiredJavaOf(minecraftMeta), javaHomes)
+
+        /** The JDKs installed on a host, as their homes keyed by major. */
+        fun installed(requiredJavaMajor: (String) -> Int?, javaHomes: Map<Int, File>): ImageJavaRuntimes =
+            ImageJavaRuntimes(requiredJavaMajor, javaHomes.keys) { major -> File(javaHomes.getValue(major), "bin/java").path }
+
+        /**
+         * The JDK homes [environment] advertises as `JAVA_HOME_<major>_<arch>`, keyed by major — the convention of
+         * GitHub's runner images and of `actions/setup-java`, which sets one per version it installs. A major advertised
+         * for several architectures resolves to the one matching [hostArch] (`os.arch` spelling), else to the first by
+         * variable name, so the answer never depends on the environment's iteration order.
+         */
+        fun javaHomesIn(environment: Map<String, String>, hostArch: String = System.getProperty("os.arch")): Map<Int, File> {
+            val hostToken = ARCH_TOKENS[hostArch.lowercase()]
+            return environment.entries
+                .mapNotNull { (name, home) ->
+                    val match = ADVERTISED_JAVA_HOME.matchEntire(name) ?: return@mapNotNull null
+                    val major = match.groupValues[1].toIntOrNull()?.takeIf { home.isNotBlank() } ?: return@mapNotNull null
+                    Triple(major, match.groupValues[2].uppercase(), name to File(home))
+                }
+                .groupBy({ it.first }, { it.second to it.third })
+                .mapValues { (_, candidates) ->
+                    candidates.sortedWith(compareBy({ it.first != hostToken }, { it.second.first })).first().second.second
+                }
+        }
+
+        private val ADVERTISED_JAVA_HOME = Regex("JAVA_HOME_(\\d+)_([A-Za-z0-9]+)")
+
+        /** `os.arch` values mapped to the architecture token the runner images put in `JAVA_HOME_<major>_<arch>`. */
+        private val ARCH_TOKENS = mapOf(
+            "amd64" to "X64", "x86_64" to "X64", "aarch64" to "ARM64", "arm64" to "ARM64"
+        )
+
+        private fun requiredJavaOf(minecraftMeta: MinecraftMeta): (String) -> Int? =
+            { minecraftMeta.requiredJavaVersion(it).orElse(null)?.toIntOrNull() }
     }
 }
