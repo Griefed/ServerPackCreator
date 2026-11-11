@@ -58,12 +58,12 @@ object ClientsideReportRenderer {
         }
         builder.appendLine()
 
-        builder.appendLine("### Per-loader confidence")
-        builder.appendLine("| Loader | Suggested entry | Declared (client/server) | Jar scan | Boot | Verdict |")
-        builder.appendLine("|---|---|---|---|---|---|")
+        builder.appendLine("### Confidence per Minecraft version")
+        builder.appendLine("| Minecraft | Loader | Suggested entry | Declared (client/server) | Jar scan | Boot | Verdict |")
+        builder.appendLine("|---|---|---|---|---|---|---|")
         for (verdict in report.perTarget) {
             builder.appendLine(
-                "| ${verdict.loader} | ${code(verdict.suggestedEntry)} | " +
+                "| ${minecraftOf(verdict)} | ${verdict.loader} | ${code(verdict.suggestedEntry)} | " +
                         "${verdict.declaredClientSide} / ${verdict.declaredServerSide} | " +
                         "${verdict.jarScan} | ${bootCell(verdict)} | ${badge(verdict.verdict)} |"
             )
@@ -74,7 +74,7 @@ object ClientsideReportRenderer {
         // raises confidence but is no proof of clientside-only-ness.
         for (verdict in report.perTarget) {
             val excerpt = verdict.bootCrashExcerpt ?: continue
-            builder.appendLine("<details><summary>💥 ${verdict.loader} server crash output</summary>")
+            builder.appendLine("<details><summary>💥 ${verdict.loader} · Minecraft ${minecraftOf(verdict)} server crash output</summary>")
             builder.appendLine()
             builder.appendLine("```")
             builder.appendLine(excerpt)
@@ -105,17 +105,25 @@ object ClientsideReportRenderer {
     }
 
     /**
-     * The `Boot` cell for one loader: the result, and — when a *different* loader produced it — which one.
+     * The `Boot` cell for one row: the result, and — when a *different* loader produced it — which one.
      *
      * The other-version crash re-check samples across loaders, so a verdict can be decided by a boot that ran
      * under another loader. That is honest evidence about the mod and misleading evidence about the loader, so
-     * the cell has to say `SURVIVED (via NeoForge)` rather than let a row claim a boot it never had.
+     * the cell has to say `SURVIVED (via NeoForge)` rather than let a row claim a boot it never had. A staging
+     * refusal also carries a result (`INCONCLUSIVE`) while no server ran; only a real boot has a classifier rung
+     * in [GrindTargetVerdict.decidedBy], so its absence is what says "not booted".
      */
     private fun bootCell(verdict: GrindTargetVerdict): String {
         val result = verdict.bootResult ?: return "—"
+        if (verdict.decidedBy == null) {
+            return "not booted"
+        }
         val via = verdict.bootedLoader?.takeIf { it != verdict.loader } ?: return result.toString()
         return "$result (via $via)"
     }
+
+    /** The Minecraft version a row booted, its version-line when no exact version was chosen, or an em-dash. */
+    private fun minecraftOf(verdict: GrindTargetVerdict): String = verdict.minecraftVersion ?: verdict.minecraftLine ?: "—"
 
     /** Wrap a non-null entry in inline-code, or render an em-dash for a missing one. */
     private fun code(value: String?): String = if (value.isNullOrBlank()) "—" else "`$value`"
