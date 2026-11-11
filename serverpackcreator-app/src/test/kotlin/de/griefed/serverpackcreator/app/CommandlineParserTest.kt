@@ -35,6 +35,26 @@ internal class CommandlineParserTest {
     }
 
     /**
+     * A flag is a whole argument. A project link or a path that merely *contains* one is a value: the
+     * verification workflow passes `-verifyclientside <link>`, and `inventory-helper` contains `-help`.
+     */
+    @Test
+    fun anArgumentThatOnlyContainsAFlagSelectsNothing() {
+        for (link in listOf("https://modrinth.com/mod/inventory-helper", "https://www.curseforge.com/minecraft/mc-mods/auto-update")) {
+            val parsed = parse("-verifyclientside", link, "--output", "report.md")
+            Assertions.assertEquals(Mode.VERIFY_CLIENTSIDE, parsed.mode, link)
+            Assertions.assertEquals(link, parsed.clientsideVerifyLink.get())
+        }
+        Assertions.assertEquals(Mode.CONFIG, parse("-config", "/packs/pack-cgen/server.conf").mode)
+    }
+
+    @Test
+    fun aFlagMayBeWrittenWithTwoDashes() {
+        Assertions.assertEquals(Mode.HELP, parse("--help").mode)
+        Assertions.assertEquals(Mode.UPDATE, parse("--update").mode)
+    }
+
+    /**
      * Pins the priority ordering: HELP wins over UPDATE, UPDATE wins over CLI, and
      * WITHALLINCONFIGDIR wins over CONFIG, regardless of argument order on the commandline.
      */

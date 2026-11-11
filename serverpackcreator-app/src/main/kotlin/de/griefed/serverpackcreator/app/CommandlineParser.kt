@@ -103,8 +103,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
         /*
         * Check whether the user wants to set the home-directory
         */
-        if (argsList.any { entry -> entry.contains(Mode.HOME.argument()) }) {
-            val setupFile = pathAfter(argsList, Mode.HOME.argument())?.absoluteFile
+        if (argsList.any { entry -> isFlag(entry, Mode.HOME) }) {
+            val setupFile = pathAfter(argsList, Mode.HOME)?.absoluteFile
             if (setupFile == null) {
                 log.error("${Mode.HOME.argument()} requires the path to an existing directory.")
             } else if (!setupFile.isDirectory) {
@@ -122,7 +122,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wanted us to print the help-text.
             */
-            if (argsList.any { entry -> entry.contains(Mode.HELP.argument()) }) {
+            if (argsList.any { entry -> isFlag(entry, Mode.HELP) }) {
                 mode = Mode.HELP
                 return@run
             }
@@ -130,7 +130,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to check for update availability.
             */
-            if (argsList.any { entry -> entry.contains(Mode.UPDATE.argument()) }) {
+            if (argsList.any { entry -> isFlag(entry, Mode.UPDATE) }) {
                 mode = Mode.UPDATE
                 return@run
             }
@@ -138,7 +138,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to check for update availability.
             */
-            if (argsList.any { entry -> entry.contains(Mode.WITHALLINCONFIGDIR.argument()) }) {
+            if (argsList.any { entry -> isFlag(entry, Mode.WITHALLINCONFIGDIR) }) {
                 mode = Mode.WITHALLINCONFIGDIR
                 return@run
             }
@@ -201,8 +201,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
-            if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
-                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.CGEN.argument()))
+            if (argsList.any { entry -> isFlag(entry, Mode.CGEN) }) {
+                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.CGEN))
                 mode = Mode.CGEN
                 return@run
             }
@@ -210,9 +210,9 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to generate a specific server pack config from the commandline.
             */
-            if (argsList.any { entry -> entry.contains(Mode.CONFIG.argument()) }) {
-                serverPackConfig = Optional.ofNullable(pathAfter(argsList, Mode.CONFIG.argument()))
-                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION.argument()))
+            if (argsList.any { entry -> isFlag(entry, Mode.CONFIG) }) {
+                serverPackConfig = Optional.ofNullable(pathAfter(argsList, Mode.CONFIG))
+                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION))
                 mode = Mode.CONFIG
                 return@run
             }
@@ -220,9 +220,9 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to generate a specific server pack config from the commandline.
             */
-            if (argsList.any { entry -> entry.contains(Mode.FEELINGLUCKY.argument()) }) {
-                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.FEELINGLUCKY.argument()))
-                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION.argument()))
+            if (argsList.any { entry -> isFlag(entry, Mode.FEELINGLUCKY) }) {
+                modpackDirectory = Optional.ofNullable(pathAfter(argsList, Mode.FEELINGLUCKY))
+                serverPackDestination = Optional.ofNullable(pathAfter(argsList, Mode.DESTINATION))
                 mode = Mode.FEELINGLUCKY
                 return@run
             }
@@ -230,7 +230,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
             */
-            if (argsList.any { entry -> entry.contains(Mode.CLI.argument()) }) {
+            if (argsList.any { entry -> isFlag(entry, Mode.CLI) }) {
                 mode = Mode.CLI
                 return@run
             }
@@ -238,7 +238,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants ServerPackCreator to run as a webservice.
             */
-            if (argsList.any { entry -> entry.contains(Mode.WEB.argument()) }) {
+            if (argsList.any { entry -> isFlag(entry, Mode.WEB) }) {
                 mode = Mode.WEB
                 return@run
             }
@@ -246,7 +246,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to use ServerPackCreators GUI.
             */
-            if (argsList.any { entry -> entry.contains(Mode.GUI.argument()) } && !GraphicsEnvironment.isHeadless()) {
+            if (argsList.any { entry -> isFlag(entry, Mode.GUI) } && !GraphicsEnvironment.isHeadless()) {
                 mode = Mode.GUI
                 return@run
             }
@@ -254,8 +254,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             /*
             * Check whether the user wants to set up and prepare the environment for subsequent runs.
             */
-            if (argsList.any { entry -> entry.contains(Mode.SETUP.argument()) }) {
-                pathAfter(argsList, Mode.SETUP.argument())?.let { given ->
+            if (argsList.any { entry -> isFlag(entry, Mode.SETUP) }) {
+                pathAfter(argsList, Mode.SETUP)?.let { given ->
                     if (given.isFile) {
                         propertiesFile = given
                     } else {
@@ -280,8 +280,17 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     }
 
     /**
-     * Read the path following [flag] in [args] as a [File], or `null` when [flag] is absent or is the
-     * last word on the commandline.
+     * Whether [entry] is [mode]'s flag: a whole argument, with one or two leading dashes.
+     *
+     * Never a substring test, because the arguments around a flag are paths and project links, and those
+     * contain flags by accident — `inventory-helper` contains `-help`, `pack-cgen` contains `-cgen`.
+     */
+    private fun isFlag(entry: String, mode: Mode): Boolean =
+        entry.startsWith("-") && entry.trimStart('-') == mode.argument().trimStart('-')
+
+    /**
+     * Read the path following [mode]'s flag in [args] as a [File], or `null` when the flag is absent or is
+     * the last word on the commandline.
      *
      * Records the path as given, without asking whether it exists: a run that knows *which* path it
      * was handed can say so, whereas discarding it leaves the caller with nothing to name. Guarding
@@ -290,8 +299,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
      *
      * @author Griefed
      */
-    private fun pathAfter(args: List<String>, flag: String): File? {
-        val valueIndex = args.indexOf(flag) + 1
+    private fun pathAfter(args: List<String>, mode: Mode): File? {
+        val valueIndex = args.indexOfFirst { isFlag(it, mode) } + 1
         if (valueIndex == 0 || valueIndex >= args.size) {
             return null
         }
