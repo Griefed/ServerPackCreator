@@ -32,18 +32,27 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
     as `-cgen`. Do not reintroduce `contains` for a new mode; `anArgumentThatOnlyContainsAFlagSelectsNothing`
     pins it.
 - **Workflows** build the jar **from source** (the verbs aren't in any release yet) and post/update a
-  sticky comment (marker `<!-- serverpackcreator-clientside-report -->`); the report embeds its data as
-  a hidden `<!-- clientside-report-data … -->` JSON block the accept-workflow reads back.
-  `clientside-verify.yml` (issues opened/edited) runs the cheap metadata pass; `clientside-boot.yml`
-  (the `verify-boot` label or manual dispatch) runs the expensive per-loader boot + uploads boot logs.
-  Both are **thin callers** of the reusable `clientside-report-reusable.yml` (`workflow_call`, the only
-  difference is `boot: true/false`); the report pipeline (build jar → run verb → post sticky comment)
-  lives there once. `clientside-accept.yml` (the `accepted` label) runs `-clientsideapply` and opens a
-  PR against `develop` via `peter-evans/create-pull-request` — it stays **standalone** (a reusable
-  workflow is a separate job, so it cannot share the build job's working-tree edits with the PR step).
-  Each per-goal workflow keeps its own least-privilege `permissions` (verify/boot need only
-  `issues:write`; accept needs `contents`/`pull-requests:write`), which is why they are not collapsed
-  into one file. All need the `CURSEFORGE_API_KEY` repo secret for CurseForge links.
+  sticky comment (marker `<!-- serverpackcreator-clientside-report -->`, bot-authored comments only); the
+  report embeds its data as a hidden `<!-- clientside-report-data … -->` JSON block the accept-workflow
+  reads back. **Every addition request is booted**: `clientside-verify.yml` (issue opened; edited when the
+  edit changes the project link; the `verify-boot` label, which `resolve` creates when the repository lacks
+  it; manual dispatch) is a thin caller of the reusable
+  `clientside-report-reusable.yml`, whose `resolve` job decides whether the event earns a boot and whose
+  `report` job runs `-verifyclientside` and posts the report — each boot's console included — plus a link
+  to every log. The GitHub-side logic (that decision, the lookup, the evidence block) lives in
+  `.github/scripts/clientside-verification.js`, tested by `node --test` in Forgejo's `test.yml`.
+  - **LANDMINE — no workflow-level `concurrency` on an `issues:` workflow whose jobs filter by `if:`.** The
+    issue form applies a label, so opening an issue fires `opened` *and* `labeled`; a workflow-level group
+    is entered before any job's `if:` runs, so the `labeled` run cancelled the `opened` boot and then
+    skipped itself. That is why no addition request was ever booted (issue #1338: boot run 28 cancelled by
+    run 29 within a second). The group is on the `report` job, behind the `resolve` gate.
+  - `clientside-accept.yml` (the `accepted` label) runs `-clientsideapply` and opens a PR against `develop`
+    via `peter-evans/create-pull-request` — it stays **standalone** (a reusable workflow is a separate job,
+    so it cannot share the build job's working-tree edits with the PR step), with its own least-privilege
+    `permissions` (verify needs only `issues:write`; accept needs `contents`/`pull-requests:write`).
+  - The `report` job installs Temurin 8, 16, 17 and 25 beside the build's JDK 21, because a boot runs on
+    the exact major its Minecraft version requires (`HostJavaSelection`). CurseForge links need the
+    `CURSEFORGE_API_KEY` repo secret; without it CurseForge is not a registered platform at all.
 
 ## Web backend
 

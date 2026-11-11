@@ -24,9 +24,10 @@ every session. Operator-facing secret detail lives in `claude-docs/CI-SECRETS.md
 every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
 it exists, Forgejo ignores `.github/workflows` entirely
 ([forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203)), so anything Forgejo must do belongs
-there and nowhere else. `.github/workflows` keeps a **smoke test**, the four
-`clientside-*` workflows, which are GitHub-native (three `issues:`-triggered, one `workflow_call:`
-helper), and **`pages.yml`**; releases are created on Forgejo and mirrored outward
+there and nowhere else. `.github/workflows` keeps a **smoke test**, the three
+`clientside-*` workflows, which are GitHub-native (two `issues:`-triggered, one `workflow_call:`
+helper, with their logic in `.github/scripts/` so Forgejo's `test.yml` can execute it), and
+**`pages.yml`**; releases are created on Forgejo and mirrored outward
 by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
 **GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
 as current as the repository it mirrors into* below.
@@ -76,7 +77,7 @@ convenient here".** `pages.yml` stretches it the furthest and still passes: it r
 *and* a Gradle Dokka build, which looks exactly like the second CI `test.yml`'s header warns against — but
 GitHub Pages can only be deployed from GitHub, Forgejo has no Pages, and hosting the rendered help site
 stopped being possible when GitLab Pages went away. It also takes no secrets and gates nothing, so a red run
-costs a stale docs site. The `clientside-*` four pass for the same reason (GitHub Issues are the trigger).
+costs a stale docs site. The `clientside-*` three pass for the same reason (GitHub Issues are the trigger).
 Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can actually see it.
 
 **`pages.yml` and `docs.yml` build the same bundle for two different hosts, and four things must move

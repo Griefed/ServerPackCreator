@@ -147,9 +147,9 @@ this module, and the GitHub workflows call them):
 - `-verifyclientside <url> [--output <f>]` — metadata **and** the server-boot test (Phase 1 + 2).
 - `-clientsideapply --report <json>` — insert the accepted entries into the list files.
 
-The matching GitHub workflows (`clientside-verify`, `clientside-boot`, `clientside-accept`) run the
-metadata pass when an issue is opened, the boot pass on demand, and — once the `accepted` label is
-set — run `-clientsideapply` and open a PR against `develop` automatically.
+The matching GitHub workflows (`clientside-verify`, `clientside-accept`) run the server-boot report when
+an issue is opened — posting each boot's console with the verdicts — and, once the `accepted` label is
+set, run `-clientsideapply` and open a PR against `develop` automatically.
 
 # Package de.griefed.serverpackcreator.clientside.platform
 

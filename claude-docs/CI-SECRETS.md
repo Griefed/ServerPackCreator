@@ -96,6 +96,16 @@ rather than the release:
 `FJ_TOKEN` is therefore the one secret four separate jobs depend on — it is the first thing to check
 when a release half-happens.
 
+### GitHub: the clientside-mod workflows
+
+`.github/workflows/clientside-*.yml` run on **GitHub**, so their secret lives there (github.com → Settings →
+Secrets and variables → Actions). Every issue, label and pull-request call they make uses GitHub's own per-job
+`GITHUB_TOKEN`, scoped by each workflow's `permissions:` block.
+
+| Secret | What it is | Consumed by | Without it |
+|---|---|---|---|
+| `CURSEFORGE_API_KEY` | CurseForge Core API key (console.curseforge.com) | `clientside-report-reusable.yml`'s `report` job; `-verifyclientside` reads it from the environment | CurseForge is not a registered platform at all (`supportedPlatforms`), so every CurseForge request's report reads "No supported platform"; Modrinth requests are unaffected |
+
 ---
 
 ## Traps

@@ -1,9 +1,10 @@
 name: Clientside report (reusable)
 
-# Shared pipeline behind the two clientside *report* workflows (verify = metadata-only,
-# boot = metadata + server-boot). Builds the jar from source, runs the appropriate CLI verb against
-# the issue's project-link, and posts the result as a single (updated-in-place) issue-comment.
-# Not triggered on its own — called via `workflow_call` by clientside-verify.yml / clientside-boot.yml.
+# The pipeline behind clientside-verify.yml. `resolve` decides whether the event earns a boot; `report`
+# builds ServerPackCreator from source, boots a server with the requested mod once per Minecraft line, and
+# posts the verdicts -- with each boot's console -- as one issue-comment that later runs update in place.
+# The GitHub-side logic lives in .github/scripts/clientside-verification.js, where Forgejo's test.yml runs it.
+# Not triggered on its own.
 
 on:
   workflow_call:
@@ -12,11 +13,6 @@ on:
         description: "The issue to report on."
         required: true
         type: string
-      boot:
-        description: "Run the server-boot verb (-verifyclientside) instead of metadata-only (-clientsidereport)."
-        required: false
-        type: boolean
-        default: false
     secrets:
       CURSEFORGE_API_KEY:
         description: "CurseForge API key; required only for CurseForge links."
@@ -27,76 +23,63 @@ permissions:
   issues: write
 
 jobs:
+  # Cheap, and separate from the boot, because an `edited` event usually changes nothing a boot depends on
+  # and must then neither boot nor cancel the boot already running -- so this job holds no concurrency group.
+  resolve:
+    name: Decide whether to boot
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      verify: ${{ steps.resolve.outputs.verify }}
+      url: ${{ steps.resolve.outputs.url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Resolve the request
+        id: resolve
+        uses: actions/github-script@v9
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        with:
+          script: |
+            const verification = require('./.github/scripts/clientside-verification.js')
+            await verification.resolve({ github, context, core, issueNumber: Number(process.env.ISSUE_NUMBER) })
+
   report:
     name: Clientside report
+    needs: resolve
+    if: needs.resolve.outputs.verify == 'true'
     runs-on: ubuntu-latest
-    # Static ceiling sized for the boot case (per-loader install + boot); job-level timeout-minutes
-    # cannot take an `inputs` expression. The cheap metadata-only run finishes well under this.
-    timeout-minutes: 90
-
-    # The sticky-comment marker, declared ONCE for this file. It is also `ClientsideReportRenderer.MARKER`
-    # in serverpackcreator-clientside, which is what actually writes it into a report -- a boundary no
-    # shared constant crosses, so changing it means changing both. Two copies IN ONE FILE is what this
-    # removes, and the drift it prevented is silent: a stale copy stops matching, so every run posts a
-    # NEW comment instead of updating the existing one.
-    env:
-      REPORT_MARKER: "<!-- serverpackcreator-clientside-report -->"
+    # Above the verification step's own budget, so a step that runs out of time still uploads its logs and
+    # says so on the issue.
+    timeout-minutes: 200
+    # On this job, after `resolve`, so only a run that will boot can supersede another. A workflow-level group
+    # is entered before any job's `if:` is evaluated: the `labeled` event the issue form fires beside `opened`
+    # would cancel the boot and then skip itself.
+    concurrency:
+      group: clientside-report-${{ inputs.issue_number }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v7
 
-      # The issue-template stores the project-link in a dedicated field; grab the first
-      # Modrinth/CurseForge URL from the issue-body. Works for both the issue and dispatch triggers
-      # since the caller always passes the issue number.
-      - name: Resolve project link
-        id: link
-        uses: actions/github-script@v9
+      # Every Java a Minecraft release requires: 8 (up to 1.16), 16 (1.17), 17 (1.18 to 1.20.4) and 25 (26.x),
+      # with 21 from the next step. start.sh boots only on the exact major, and -verifyclientside picks each
+      # pack's JDK from the JAVA_HOME_<major>_<arch> variables this sets. These follow Mojang's per-version
+      # requirement, not SPC's own target, so they do not move with a Java bump (misc/Java-References.md).
+      - name: Set up the JDKs Minecraft servers need
+        uses: actions/setup-java@v6
         with:
-          script: |
-            const issueNumber = Number('${{ inputs.issue_number }}')
-            const { data: issue } = await github.rest.issues.get({
-              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
-            core.setOutput('number', String(issueNumber))
-            const match = (issue.body || '').match(/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)]+/i)
-            if (!match) {
-              core.setOutput('found', 'false')
-              return
-            }
-            core.setOutput('found', 'true')
-            core.setOutput('url', match[0])
-            // The reporter's "I told the mod developer" proof, so the verification comment can show it
-            // and the claim becomes auditable instead of a tick-box. Taken as the first URL that is not
-            // the project link, rather than by locating the field's heading: a heading match is coupled
-            // to the template's wording, and when it silently stopped matching this would accuse an
-            // honest reporter of supplying nothing. An issue form's body carries only the fields'
-            // values -- `type: markdown` blocks and `description:` text are not part of it -- so the
-            // only URLs in it are the ones the reporter typed.
-            const proof = (issue.body || '')
-              .match(/https?:\/\/[^\s)<>]+/gi)?.find(url => url !== match[0])
-            core.setOutput('proof', proof || '')
+          distribution: 'temurin'
+          java-version: |
+            8
+            16
+            17
+            25
 
-      - name: Comment that no link was found
-        if: steps.link.outputs.found != 'true'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const marker = process.env.REPORT_MARKER
-            const body = marker + '\n## 🤖 Clientside-mod verification\n\n'
-              + 'I could not find a CurseForge or Modrinth project-link in this issue. '
-              + 'Please edit the issue and add the link so I can assess the mod.'
-            const issueNumber = Number('${{ steps.link.outputs.number }}')
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
-            const existing = comments.find(c => c.body && c.body.includes(marker))
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body })
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body })
-            }
-
+      # Installed last, so it stays the default `java` that Gradle and ServerPackCreator run on.
       - name: Set up JDK 21
-        if: steps.link.outputs.found == 'true'
         uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
@@ -105,104 +88,61 @@ jobs:
           cache: 'gradle'
 
       - uses: gradle/actions/setup-gradle@v6
-        if: steps.link.outputs.found == 'true'
         with:
           gradle-version: wrapper
 
       - name: Set permissions
-        if: steps.link.outputs.found == 'true'
         run: chmod +x gradlew
 
-      # Built from source (not a release) so the CLI verbs are always present and match the current
-      # branch. Once a release ships the verbs, this can switch to a cached release-jar.
+      # Built from source (not a release) so the CLI verbs always match the current branch.
       - name: Build ServerPackCreator jar
-        if: steps.link.outputs.found == 'true'
         run: ./gradlew :serverpackcreator-app:bootJar --no-daemon
 
+      # The engine's own worst case fits: five Minecraft lines, three boots each, twelve minutes per boot.
       - name: Run clientside verification
-        if: steps.link.outputs.found == 'true'
+        timeout-minutes: 185
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-          BOOT: ${{ inputs.boot }}
-          PROJECT_URL: ${{ steps.link.outputs.url }}
+          PROJECT_URL: ${{ needs.resolve.outputs.url }}
         run: |
           mkdir -p "$GITHUB_WORKSPACE/spc-home"
           JAR=$(ls serverpackcreator-app/build/libs/serverpackcreator-app-*.jar | grep -vE 'plain|javadoc|sources' | head -n1)
           echo "Using jar: $JAR"
-          if [ "$BOOT" = "true" ]; then VERB="-verifyclientside"; else VERB="-clientsidereport"; fi
           java -jar "$JAR" \
             --home "$GITHUB_WORKSPACE/spc-home" \
-            "$VERB" "$PROJECT_URL" \
+            -verifyclientside "$PROJECT_URL" \
             --output "$GITHUB_WORKSPACE/clientside-report.md"
 
-      # `boot-evidence/` holds one directory per ATTEMPT -- console, the server's own logs and any crash
-      # report -- while `boot/<attempt>/boot.log` is one file per attempt DIRECTORY, which staging wipes
-      # before every boot and `restoreDecisiveConsole` rewrites at the end. Both are uploaded because
-      # they answer different questions: the first is what each boot did, the second is the console the
-      # published verdict actually rests on.
+      # `boot/<attempt>/boot.log` is the console each verdict rests on, survivors included; `boot-evidence/`
+      # keeps every attempt that did not survive -- console, the server's own logs, any crash report. SPC's own
+      # log holds what never reached a console: staging refusals and generation errors.
       - name: Upload boot logs
         id: boot-logs
-        if: ${{ always() && steps.link.outputs.found == 'true' && inputs.boot }}
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: clientside-boot-logs
           path: |
             spc-home/work/clientside-verify/boot-evidence/**
             spc-home/work/clientside-verify/boot/**/boot.log
+            spc-home/logs/**
           if-no-files-found: ignore
 
-      # The evidence block is assembled HERE and not in `ClientsideReportRenderer`, deliberately: a run
-      # URL and an artifact URL are facts about a CI host, and `serverpackcreator-clientside` depends on
-      # `serverpackcreator-api` alone and must not learn what GitHub is. The artifact URL also does not
-      # exist until the upload above has run, which is after the report was rendered.
+      # After a failed or timed-out verification too, so the issue says so. Not after a cancellation, which
+      # only means a newer run superseded this one and will post instead.
       - name: Post report comment
-        if: steps.link.outputs.found == 'true'
+        if: ${{ !cancelled() }}
         uses: actions/github-script@v9
         env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
           ARTIFACT_URL: ${{ steps.boot-logs.outputs.artifact-url }}
-          PROOF_URL: ${{ steps.link.outputs.proof }}
-          DID_BOOT: ${{ inputs.boot }}
         with:
           script: |
-            const fs = require('fs')
-            const marker = process.env.REPORT_MARKER
-            const issueNumber = Number('${{ steps.link.outputs.number }}')
-            let body
-            try {
-              body = fs.readFileSync(process.env.GITHUB_WORKSPACE + '/clientside-report.md', 'utf8')
-            } catch (error) {
-              body = marker + '\n## 🤖 Clientside-mod verification failed\n\n'
-                + 'No report was produced. See the workflow logs for details.'
-            }
-
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`
-              + `/actions/runs/${context.runId}`
-            const lines = ['### 🔎 Evidence', '', `- [Workflow run](${runUrl})`]
-            if (process.env.DID_BOOT === 'true') {
-              lines.push(process.env.ARTIFACT_URL
-                ? `- [Boot logs](${process.env.ARTIFACT_URL}) — one directory per boot attempt`
-                : '- Boot logs: none were produced; every attempt either survived or never started')
-            } else {
-              lines.push('- Boot logs: none — this pass read metadata and jars only, no server was booted')
-            }
-            lines.push(process.env.PROOF_URL
-              ? `- Reporter's proof they told the mod developer: ${process.env.PROOF_URL}`
-              : "- Reporter's proof they told the mod developer: **none supplied**")
-            const evidence = '\n---\n\n' + lines.join('\n') + '\n'
-
-            // Before the hidden JSON block, which `clientside-accept.yml` reads back and which stays last
-            // so the comment ends where a reader stops rather than in a wall of serialised report.
-            const dataBlock = body.indexOf('<!-- clientside-report-data')
-            body = dataBlock === -1
-              ? body + evidence
-              : body.slice(0, dataBlock) + evidence + '\n' + body.slice(dataBlock)
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
-            const existing = comments.find(c => c.body && c.body.includes(marker))
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body })
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body })
-            }
+            const verification = require('./.github/scripts/clientside-verification.js')
+            await verification.postReport({
+              github,
+              context,
+              issueNumber: Number(process.env.ISSUE_NUMBER),
+              reportFile: process.env.GITHUB_WORKSPACE + '/clientside-report.md',
+              artifactUrl: process.env.ARTIFACT_URL
+            })

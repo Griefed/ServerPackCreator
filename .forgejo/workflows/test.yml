@@ -135,6 +135,15 @@ jobs:
           python3 misc/ci-env-reference-check.py
           python3 misc/ci-duplication-check.py
 
+      # The GitHub-only clientside workflows keep their logic in .github/scripts/ so it can be executed
+      # here rather than only on a real issue. Node's built-in test runner needs no install; the version
+      # is printed first so a runner image too old for `--test` says so instead of failing obscurely.
+      - name: Test the clientside workflow scripts
+        run: |
+          set -eu
+          node --version
+          node --test .github/scripts/clientside-verification.test.js
+
       # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests live in
       # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them
       # reaps every grinder-labelled container on the daemon while this workflow's per-ref group still

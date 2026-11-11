@@ -1,36 +1,42 @@
 name: Clientside-mod verification
 
-# Phase 1 goal: on every "[Clientside-mod Addition Request]" issue, post the candidate clientside-list
-# entries and a per-loader metadata-confidence as a single (updated-in-place) comment. Cheap and
-# read-only — the actual pipeline lives in the reusable clientside-report workflow.
+# Boots a server with the requested mod on every "[Clientside-mod Addition Request]" issue and posts the
+# verdicts, with each boot's console, as one comment that later runs update in place. The pipeline lives in
+# clientside-report-reusable.yml.
+#
+# - opened: every request is booted, unasked. The form's "I have informed the developer" checkbox is
+#   self-attestation, and the point of booting is an answer that does not depend on the reporter.
+# - edited: boots again only when the edit changed the project link or made the issue a request; any other
+#   edit refreshes the report's proof line. The reusable workflow's `resolve` job decides.
+# - labeled `verify-boot`: a maintainer re-runs one by hand. So does a manual dispatch. The label is created
+#   by the `resolve` job whenever the repository lacks it, so this route cannot silently not exist.
+#
+# Deliberately no workflow-level `concurrency`. The issue form applies a label, so opening an issue also
+# fires `labeled`, and a workflow-level group is entered before any job's `if:` is evaluated: that run would
+# cancel the `opened` boot and then skip itself. The group is on the boot job, behind the `resolve` gate.
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, labeled]
   workflow_dispatch:
     inputs:
       issue_number:
-        description: "Issue number to run the metadata verification for"
+        description: "Issue number to boot-verify"
         required: true
 
 permissions:
   contents: read
   issues: write
 
-concurrency:
-  group: clientside-verify-${{ github.event.issue.number || github.event.inputs.issue_number }}
-  cancel-in-progress: true
-
 jobs:
   verify:
     name: Verify clientside-mod request
-    # A manual dispatch always runs (the operator picked the issue on purpose); the issue trigger
-    # stays gated on the addition-request title so unrelated issues don't fire the pipeline.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.issue.title, '[Clientside-mod Addition Request]')
+      github.event.label.name == 'verify-boot' ||
+      (github.event.action != 'labeled' &&
+       contains(github.event.issue.title, '[Clientside-mod Addition Request]'))
     uses: ./.github/workflows/clientside-report-reusable.yml
     with:
       issue_number: ${{ github.event.issue.number || github.event.inputs.issue_number }}
-      boot: false
     secrets: inherit

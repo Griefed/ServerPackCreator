@@ -29,11 +29,12 @@ import de.griefed.serverpackcreator.clientside.verdict.JarScan
 import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * Pins the issue comment [ClientsideReportRenderer] writes, which three consumers read without any
  * compiler between them: the reusable workflow finds the comment by [ClientsideReportRenderer.MARKER]
- * to update it in place, `clientside-accept.yml` cuts the hidden data block out with a regex, and
+ * to update it in place, `clientside-accept.yml` reads the hidden data block back (the last one), and
  * `-clientsideapply` reads `suggestedEntries` and `projectUrl` from that block.
  */
 internal class ClientsideReportRendererTest {
@@ -102,6 +103,14 @@ internal class ClientsideReportRendererTest {
 
     private val markdown = ClientsideReportRenderer.renderMarkdown(report)
     private val lines = markdown.lines()
+
+    /** The data block's JSON, read as `dataBlockIn` in `.github/scripts/clientside-verification.js` reads it: the last. */
+    private fun dataBlockOf(comment: String): String? {
+        val opener = "<!-- clientside-report-data\n"
+        val start = comment.lastIndexOf(opener).takeIf { it >= 0 } ?: return null
+        val end = comment.indexOf("\n-->", start).takeIf { it >= 0 } ?: return null
+        return comment.substring(start + opener.length, end)
+    }
 
     @Test
     fun theMarkerIsTheFirstLineSoTheWorkflowCanFindTheCommentAgain() {
@@ -297,7 +306,7 @@ internal class ClientsideReportRendererTest {
 
         Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
         Assertions.assertEquals(3, rendered.lines().count { it.startsWith("<details><summary>📜") }, "every booted target keeps a share")
-        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(rendered)?.groupValues?.get(1)
+        val json = dataBlockOf(rendered)
         Assertions.assertEquals(listOf("examplemod-"), jacksonObjectMapper().readTree(json).path("suggestedEntries").map { it.asText() })
     }
 
@@ -312,16 +321,31 @@ internal class ClientsideReportRendererTest {
 
         Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
         Assertions.assertTrue(rendered.lines().any { it.startsWith("_The 3000 published file-names are left out") }, rendered.take(3_000))
-        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(rendered)?.groupValues?.get(1)
+        val json = dataBlockOf(rendered)
         val data = jacksonObjectMapper().readTree(json)
         Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
         Assertions.assertEquals("https://modrinth.com/mod/examplemod", data.path("projectUrl").asText())
     }
 
+    /**
+     * The workflows find the comment and its data block through `.github/scripts/clientside-verification.js`,
+     * which has to spell both exactly as this renderer writes them. Nothing else checks it, and a stale copy
+     * fails silently: every run posts a new comment instead of updating the report.
+     */
+    @Test
+    fun theWorkflowScriptLooksForWhatThisRendererWrites() {
+        val script = File("../.github/scripts/clientside-verification.js")
+        Assertions.assertTrue(script.isFile, "workflow script not found at ${script.absolutePath}")
+        val text = script.readText()
+
+        Assertions.assertTrue("const REPORT_MARKER = '${ClientsideReportRenderer.MARKER}'" in text, "REPORT_MARKER")
+        Assertions.assertTrue("const DATA_BLOCK = '<!-- clientside-report-data'" in text, "DATA_BLOCK")
+        Assertions.assertTrue(lines.contains("<!-- clientside-report-data"), "the renderer's own opener moved")
+    }
+
     @Test
     fun theDataBlockIsLastAndReadsBackTheWayTheAcceptanceWorkflowReadsIt() {
-        // The same expression `clientside-accept.yml` applies to the comment body.
-        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(markdown)?.groupValues?.get(1)
+        val json = dataBlockOf(markdown)
         Assertions.assertNotNull(json, markdown)
         val data = jacksonObjectMapper().readTree(json)
         Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })

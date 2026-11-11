@@ -13,10 +13,6 @@ permissions:
   issues: write
   pull-requests: write
 
-concurrency:
-  group: clientside-accept-${{ github.event.issue.number }}
-  cancel-in-progress: false
-
 jobs:
   accept:
     name: Open clientside-list PR
@@ -24,10 +20,23 @@ jobs:
       github.event.label.name == 'accepted' &&
       contains(github.event.issue.title, '[Clientside-mod Addition Request]')
     runs-on: ubuntu-latest
+    # On the job, not the workflow: every label added to any issue starts a run here, and a workflow-level
+    # group is entered before the `if:` above is evaluated -- where a newer run replaces the pending one, so
+    # a label added alongside `accepted` could discard the acceptance waiting its turn.
+    concurrency:
+      group: clientside-accept-${{ github.event.issue.number }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7
         with:
           ref: develop
+
+      # The comment lookup and the data block's parsing, from the commit this workflow runs from -- the
+      # checkout above is `develop`, for the pull request. Second, because a checkout cleans its workspace.
+      - uses: actions/checkout@v7
+        with:
+          path: .verification
+          sparse-checkout: .github/scripts
 
       # Recover the report-JSON the verify workflow embedded in its sticky comment, so we apply the
       # exact entries a maintainer reviewed rather than re-deriving (and re-booting) them.
@@ -37,22 +46,17 @@ jobs:
         with:
           script: |
             const fs = require('fs')
-            // Written by `ClientsideReportRenderer.MARKER` in serverpackcreator-clientside and declared
-            // again in clientside-report-reusable.yml's job env. No shared constant crosses the jar/YAML
-            // boundary, so all three move together or this stops finding the comment it must read.
-            const marker = '<!-- serverpackcreator-clientside-report -->'
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number })
-            const comment = comments.find(c => c.body && c.body.includes(marker))
-            const match = comment && comment.body.match(/<!-- clientside-report-data\n([\s\S]*?)\n-->/)
-            if (!match) {
+            const verification = require('./.verification/.github/scripts/clientside-verification.js')
+            const comment = await verification.findComment(github, { ...context.repo, issueNumber: context.issue.number })
+            const json = comment && verification.dataBlockIn(comment.body)
+            if (!json) {
               core.setOutput('found', 'false')
               await github.rest.issues.createComment({
                 owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number,
                 body: 'Could not find a verification report to accept. Re-run the verification first.' })
               return
             }
-            fs.writeFileSync(process.env.GITHUB_WORKSPACE + '/clientside-report.json', match[1])
+            fs.writeFileSync(process.env.GITHUB_WORKSPACE + '/clientside-report.json', json)
             core.setOutput('found', 'true')
 
       - name: Set up JDK 21
