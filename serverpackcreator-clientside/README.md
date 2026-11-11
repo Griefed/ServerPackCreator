@@ -23,7 +23,7 @@ because the author implemented their clientside code wrong.
 |---------------------------|---------------------------------------|-------------------------------------------------------------------------------------|
 | Java 21+                  | everything                            | The installers ship their own Java runtime                                          |
 | The ServerPackCreator jar | everything                            | From the [latest release](https://github.com/Griefed/ServerPackCreator/releases)    |
-| `CURSEFORGE_API_KEY`      | CurseForge links only                 | Modrinth needs no key. CurseForge's API refuses requests without one                |
+| `CURSEFORGE_API_KEY`      | CurseForge links only                 | Modrinth needs no key. CurseForge's API refuses requests without one. Or name a file holding it in `CURSEFORGE_API_KEY_FILE`; it is deleted once read |
 | Network                   | everything                            | Resolving projects, downloading jars                                                |
 
 ```bash

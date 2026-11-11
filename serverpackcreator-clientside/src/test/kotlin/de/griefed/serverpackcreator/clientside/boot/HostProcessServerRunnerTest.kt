@@ -38,4 +38,39 @@ internal class HostProcessServerRunnerTest {
         Assertions.assertTrue(outcome is RunResult.NotStarted)
         Assertions.assertEquals("No start.sh in the generated server pack.", (outcome as RunResult.NotStarted).detail)
     }
+
+    /**
+     * The server runs a mod nobody vetted, so it must not inherit this process's credentials. The runner hands
+     * `start.sh` an allowlisted environment built from the one it was given, which the fake server prints back.
+     */
+    @Test
+    fun theServerSeesOnlyAnAllowlistedEnvironment(@TempDir packDir: File, @TempDir fakeHome: File) {
+        File(packDir, "start.sh").writeText("#!/usr/bin/env bash\nenv\necho 'Done (0.1s)! For help, type \"help\"'\n")
+        val parent = mapOf(
+            "PATH" to System.getenv("PATH"),
+            "HOME" to fakeHome.absolutePath,
+            "CURSEFORGE_API_KEY" to "secret-key",
+            "GITHUB_TOKEN" to "secret-token",
+            "ACTIONS_RUNTIME_TOKEN" to "secret-runtime"
+        )
+
+        val outcome = HostProcessServerRunner(parent).run(packDir, Duration.ofSeconds(30)) { }
+
+        val console = (outcome as RunResult.Completed).lines
+        Assertions.assertTrue("HOME=${fakeHome.absolutePath}" in console, console.joinToString("\n"))
+        Assertions.assertTrue(console.none { it.contains("secret-") }, console.joinToString("\n"))
+    }
+
+    @Test
+    fun theAllowlistKeepsWhatAServerNeedsAndNothingElse() {
+        val parent = mapOf(
+            "PATH" to "/usr/bin", "HOME" to "/home/runner", "LANG" to "C.UTF-8", "JAVA_HOME" to "/jdk",
+            "CURSEFORGE_API_KEY" to "k", "GITHUB_TOKEN" to "t", "AWS_SECRET_ACCESS_KEY" to "a"
+        )
+
+        Assertions.assertEquals(
+            mapOf("PATH" to "/usr/bin", "HOME" to "/home/runner", "LANG" to "C.UTF-8", "JAVA_HOME" to "/jdk"),
+            HostProcessServerRunner.serverEnvironment(parent)
+        )
+    }
 }

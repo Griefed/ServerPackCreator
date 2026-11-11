@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.app.cli.commands
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.clientside.boot.BootArtifactWriter
 import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.boot.ConsoleTail
 import de.griefed.serverpackcreator.clientside.boot.HostJavaSelection
 import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
 import de.griefed.serverpackcreator.clientside.ClientsideReportRenderer
@@ -47,8 +48,8 @@ import java.io.File
  * A distribution-locked CurseForge file (`allowModDistribution=false`) is **not** fetched: such a file
  * publishes no download URL. Those projects report `LOCKED` and are verified from Modrinth instead.
  *
- * The CurseForge API-key is read from the `CURSEFORGE_API_KEY` environment-variable (CurseForge
- * links only). Heavier and slower than `clientsidereport` — it installs and boots a server per
+ * The CurseForge API-key comes from `CurseForgeApiKey` (CurseForge links only); the booted servers never
+ * inherit it. Heavier and slower than `clientsidereport` — it installs and boots a server per
  * target.
  *
  * [apiWrapper] — Provides generation, version-meta, scanner and download utilities.
@@ -137,7 +138,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                     target.minecraftLine
                         ?.let { line -> BootVerifier.decisiveConsole(bootDirectory, report.platform, report.slug, target.loader, line) }
                         ?.takeIf { it.isFile }
-                        ?.readLines()
+                        ?.let { console -> ConsoleTail.lastLines(console, ClientsideReportRenderer.MAX_CONSOLE_LINES) }
                 }
             }
         } catch (ex: Exception) {

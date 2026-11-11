@@ -34,7 +34,7 @@ import java.nio.charset.StandardCharsets
  * @author Griefed
  */
 class CurseForgePlatform(
-    /** The CurseForge API-key (from the `CURSEFORGE_API_KEY` environment-variable). */
+    /** The CurseForge API-key ([CurseForgeApiKey]). */
     private val apiKey: String,
     /** HTTP boundary, swapped for canned JSON in tests. */
     private val httpFetcher: HttpFetcher = JdkHttpFetcher(),

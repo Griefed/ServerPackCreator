@@ -24,9 +24,10 @@ every session. Operator-facing secret detail lives in `claude-docs/CI-SECRETS.md
 every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
 it exists, Forgejo ignores `.github/workflows` entirely
 ([forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203)), so anything Forgejo must do belongs
-there and nowhere else. `.github/workflows` keeps a **smoke test**, the four
-`clientside-*` workflows, which are GitHub-native (three `issues:`-triggered, one `workflow_call:`
-helper), and **`pages.yml`**; releases are created on Forgejo and mirrored outward
+there and nowhere else. `.github/workflows` keeps a **smoke test**, the three
+`clientside-*` workflows, which are GitHub-native (two `issues:`-triggered, one `workflow_call:`
+helper, with their logic in `.github/scripts/` so Forgejo's `test.yml` can execute it), and
+**`pages.yml`**; releases are created on Forgejo and mirrored outward
 by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
 **GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
 as current as the repository it mirrors into* below.
@@ -76,7 +77,7 @@ convenient here".** `pages.yml` stretches it the furthest and still passes: it r
 *and* a Gradle Dokka build, which looks exactly like the second CI `test.yml`'s header warns against — but
 GitHub Pages can only be deployed from GitHub, Forgejo has no Pages, and hosting the rendered help site
 stopped being possible when GitLab Pages went away. It also takes no secrets and gates nothing, so a red run
-costs a stale docs site. The `clientside-*` four pass for the same reason (GitHub Issues are the trigger).
+costs a stale docs site. The `clientside-*` three pass for the same reason (GitHub Issues are the trigger).
 Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can actually see it.
 
 **`pages.yml` and `docs.yml` build the same bundle for two different hosts, and four things must move
@@ -108,6 +109,32 @@ GitLab's *generic package registry* and then created a release asset *link* to i
 assets to the release directly, so a consumer with a hard-coded `/packages/generic/...` URL loses it),
 and `release_job` created a release whose description merely linked changelogs on three forges (the
 Forgejo release now carries the changelog section itself).
+
+## The clientside workflows boot untrusted code, and the gate is the control
+
+`clientside-report-reusable.yml` boots a server containing whatever mod an issue names, and booting runs
+that mod's code on the GitHub runner. So **`resolve` boots only on write access** (`bootAuthorised` in
+`.github/scripts/clientside-verification.js`): a manual dispatch, the `verify-boot` label (adding a label needs
+triage), or an issue opened or link-edited by an `OWNER`/`MEMBER`/`COLLABORATOR`. Anyone else's request gets a
+comment saying it waits for the label. An outsider's later link edit needs the label removed and re-added,
+because the label approved the link it had then.
+
+**Everything else is defence in depth, not containment.** The `report` job holds a `contents: read` token,
+checks out with `persist-credentials: false`, restores the Gradle cache read-only and saves none, and gets the
+CurseForge key as a file the verification deletes before its first boot; `start.sh` inherits only an
+allowlisted environment (`HostProcessServerRunner.serverEnvironment`). The `issues: write` token lives in a
+separate `post` job that runs no mod code, and `clientside-accept.yml` (`contents: write`) restores no cache at
+all. But the hosted runner's user has passwordless `sudo`, so a determined mod can still read the runner
+process's memory, where the job's token and any secret the job references live. **Never loosen the gate on
+the strength of the hardening.** Real containment would mean booting in a job that references no secret
+(the engine resolves and boots interleaved, so that is a redesign) or in the grinder's hardened container.
+`clientside-verification.test.js` pins both the gate and the job shape (read-only token, no cache writes,
+no secret in the verification step's `env:`, credentials not persisted).
+
+**Concurrency stays per issue, and the gate is what bounds it.** A repository-wide group would serialise
+boots, but GitHub keeps only one *pending* run per group and cancels the older one, so a queue of approved
+requests would silently lose all but the newest. With boots limited to maintainers' choices, an outsider
+can no longer start up to 200-minute jobs at will; `resolve` (5 minutes) is all an opened issue costs.
 
 ## Two Forgejo behaviours that GitHub-shaped workflows get wrong
 

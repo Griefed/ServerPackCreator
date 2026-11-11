@@ -81,12 +81,13 @@ fun interface ServerRunner {
 /**
  * The default [ServerRunner]: boots the pack by spawning its `start.sh` as a host child-process,
  * streaming stdout/stderr while watching for the vanilla ready-line, and force-killing the process once
- * ready or timed out. This is the behaviour the clientside boot-verification has always used; the
- * grinder swaps in a container-backed runner for isolation and parallelism.
+ * ready or timed out. The grinder swaps in a container-backed runner for isolation and parallelism.
+ *
+ * [parentEnvironment] is the environment the server's is filtered from ([serverEnvironment]).
  *
  * @author Griefed
  */
-class HostProcessServerRunner : ServerRunner {
+class HostProcessServerRunner(private val parentEnvironment: Map<String, String> = System.getenv()) : ServerRunner {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /** The vanilla server's ready-line, watched while streaming the boot to stop early. */
@@ -105,6 +106,10 @@ class HostProcessServerRunner : ServerRunner {
             .directory(serverPack)
             .redirectErrorStream(true)
             .redirectInput(ProcessBuilder.Redirect.from(File("/dev/null")))
+            .apply {
+                environment().clear()
+                environment().putAll(serverEnvironment(parentEnvironment))
+            }
             .start()
 
         val lines = ArrayList<String>()
@@ -215,5 +220,19 @@ class HostProcessServerRunner : ServerRunner {
          */
         internal fun isStillRunning(handle: ProcessHandle): Boolean =
             handle.isAlive && handle.info().command().isPresent
+
+        /** The only variables a booted server inherits; see [serverEnvironment]. */
+        private val SERVER_ENVIRONMENT = setOf(
+            "PATH", "HOME", "USER", "LOGNAME", "SHELL", "TERM", "TMPDIR", "TZ", "LANG", "LC_ALL", "LC_CTYPE",
+            "JAVA_HOME"
+        )
+
+        /**
+         * The environment `start.sh` runs with: the allowlisted variables of [parent], nothing else. The server runs
+         * mod code nobody vetted, so whatever credentials the verifying process holds — a CurseForge key, a CI
+         * token — must not be one `System.getenv()` away from it.
+         */
+        fun serverEnvironment(parent: Map<String, String>): Map<String, String> =
+            parent.filterKeys { it in SERVER_ENVIRONMENT }
     }
 }

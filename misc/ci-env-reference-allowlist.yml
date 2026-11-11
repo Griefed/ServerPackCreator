@@ -44,5 +44,5 @@
 ".forgejo/workflows/release-generate.yml::semantic-release::Run semantic-release::CI":
   "read by semantic-release itself; without it it refuses to run outside a recognised CI"
 
-".github/workflows/clientside-report-reusable.yml::report::Run clientside verification::CURSEFORGE_API_KEY":
-  "read by the application under test -- ClientsideReportCommand and VerifyClientsideCommand take it from the environment, never from an argument"
+".github/workflows/clientside-report-reusable.yml::report::Run clientside verification::CURSEFORGE_API_KEY_FILE":
+  "read by the application under test -- CurseForgeApiKey reads the file it names and deletes it before the first boot"

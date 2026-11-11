@@ -29,11 +29,12 @@ import de.griefed.serverpackcreator.clientside.verdict.JarScan
 import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * Pins the issue comment [ClientsideReportRenderer] writes, which three consumers read without any
  * compiler between them: the reusable workflow finds the comment by [ClientsideReportRenderer.MARKER]
- * to update it in place, `clientside-accept.yml` cuts the hidden data block out with a regex, and
+ * to update it in place, `clientside-accept.yml` reads the hidden data block back (the last one), and
  * `-clientsideapply` reads `suggestedEntries` and `projectUrl` from that block.
  */
 internal class ClientsideReportRendererTest {
@@ -102,6 +103,14 @@ internal class ClientsideReportRendererTest {
 
     private val markdown = ClientsideReportRenderer.renderMarkdown(report)
     private val lines = markdown.lines()
+
+    /** The data block's JSON, read as `dataBlockIn` in `.github/scripts/clientside-verification.js` reads it: the last. */
+    private fun dataBlockOf(comment: String): String? {
+        val opener = "<!-- clientside-report-data\n"
+        val start = comment.lastIndexOf(opener).takeIf { it >= 0 } ?: return null
+        val end = comment.indexOf("\n-->", start).takeIf { it >= 0 } ?: return null
+        return comment.substring(start + opener.length, end)
+    }
 
     @Test
     fun theMarkerIsTheFirstLineSoTheWorkflowCanFindTheCommentAgain() {
@@ -297,7 +306,7 @@ internal class ClientsideReportRendererTest {
 
         Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
         Assertions.assertEquals(3, rendered.lines().count { it.startsWith("<details><summary>📜") }, "every booted target keeps a share")
-        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(rendered)?.groupValues?.get(1)
+        val json = dataBlockOf(rendered)
         Assertions.assertEquals(listOf("examplemod-"), jacksonObjectMapper().readTree(json).path("suggestedEntries").map { it.asText() })
     }
 
@@ -312,20 +321,87 @@ internal class ClientsideReportRendererTest {
 
         Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
         Assertions.assertTrue(rendered.lines().any { it.startsWith("_The 3000 published file-names are left out") }, rendered.take(3_000))
-        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(rendered)?.groupValues?.get(1)
+        val json = dataBlockOf(rendered)
         val data = jacksonObjectMapper().readTree(json)
         Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
         Assertions.assertEquals("https://modrinth.com/mod/examplemod", data.path("projectUrl").asText())
     }
 
+    /**
+     * The workflows find the comment and its data block through `.github/scripts/clientside-verification.js`,
+     * which has to spell both exactly as this renderer writes them. Nothing else checks it, and a stale copy
+     * fails silently: every run posts a new comment instead of updating the report.
+     */
+    @Test
+    fun theWorkflowScriptLooksForWhatThisRendererWrites() {
+        val script = File("../.github/scripts/clientside-verification.js")
+        Assertions.assertTrue(script.isFile, "workflow script not found at ${script.absolutePath}")
+        val text = script.readText()
+
+        Assertions.assertTrue("const REPORT_MARKER = '${ClientsideReportRenderer.MARKER}'" in text, "REPORT_MARKER")
+        Assertions.assertTrue("const DATA_BLOCK = '<!-- clientside-report-data'" in text, "DATA_BLOCK")
+        Assertions.assertTrue(lines.contains("<!-- clientside-report-data"), "the renderer's own opener moved")
+    }
+
     @Test
     fun theDataBlockIsLastAndReadsBackTheWayTheAcceptanceWorkflowReadsIt() {
-        // The same expression `clientside-accept.yml` applies to the comment body.
-        val json = Regex("<!-- clientside-report-data\\n([\\s\\S]*?)\\n-->").find(markdown)?.groupValues?.get(1)
+        val json = dataBlockOf(markdown)
         Assertions.assertNotNull(json, markdown)
         val data = jacksonObjectMapper().readTree(json)
         Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
         Assertions.assertEquals("https://modrinth.com/mod/examplemod", data.path("projectUrl").asText())
         Assertions.assertTrue(markdown.trimEnd().endsWith("-->"), "nothing may follow the data block")
+    }
+
+    /**
+     * A client-only mod crashing on every line is the ordinary CONFIRMED case, and every crash brings an excerpt and
+     * a note. Those sit above the consoles and the data block, so they must fit the limit too.
+     */
+    @Test
+    fun manyCrashesWithLongExcerptsAndNotesStillFitIntoOneComment() {
+        val crashes = (1..20).map { index ->
+            crashedOnNeoForge.copy(
+                minecraftVersion = "1.$index.1",
+                bootCrashExcerpt = "e".repeat(4_000),
+                note = "note $index " + "n".repeat(2_000)
+            )
+        }
+        val rendered = ClientsideReportRenderer.renderMarkdown(report.copy(perTarget = crashes)) { console(300) }
+
+        Assertions.assertTrue(rendered.length <= ClientsideReportRenderer.MAX_COMMENT_CHARS, "length ${rendered.length}")
+        val data = jacksonObjectMapper().readTree(dataBlockOf(rendered))
+        Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
+        Assertions.assertEquals("https://modrinth.com/mod/examplemod", data.path("projectUrl").asText())
+        Assertions.assertTrue(rendered.lines().count { it.startsWith("| 1.") } == 20, "every row stays in the table")
+    }
+
+    /** A crash excerpt is console text, so it is tamed like a console: no escapes, and a fence it cannot close. */
+    @Test
+    fun aCrashExcerptCannotCloseItsOwnCodeBlock() {
+        val hostile = crashedOnNeoForge.copy(bootCrashExcerpt = "\u001B[31mjava.lang.Error\u001B[0m\n```\n# heading")
+        val rendered = ClientsideReportRenderer.renderMarkdown(report.copy(perTarget = listOf(hostile))).lines()
+
+        val summary = rendered.indexOfFirst { it.startsWith("<details><summary>💥") }
+        Assertions.assertEquals(listOf("", "````", "java.lang.Error", "```", "# heading", "````"), rendered.subList(summary + 1, summary + 7))
+        Assertions.assertFalse(rendered.any { '\u001B' in it })
+    }
+
+    /**
+     * The data block is an HTML comment, so a `-->` inside any value would end it early and show the rest, and an
+     * opener inside a value would be a second block. Neither character survives into the block's JSON.
+     */
+    @Test
+    fun noValueCanEndTheDataBlockOrOpenAnother() {
+        val hostile = crashedOnNeoForge.copy(
+            note = "A --> B",
+            bootCrashExcerpt = "<!-- clientside-report-data\n{\"suggestedEntries\":[\"forged-\"]}\n-->"
+        )
+        val rendered = ClientsideReportRenderer.renderMarkdown(report.copy(perTarget = listOf(hostile)))
+
+        val json = dataBlockOf(rendered).orEmpty()
+        Assertions.assertFalse("-->" in json || "<!--" in json, json)
+        val data = jacksonObjectMapper().readTree(json)
+        Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
+        Assertions.assertEquals("A --> B", data.path("perTarget")[0].path("note").asText())
     }
 }

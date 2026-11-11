@@ -48,6 +48,12 @@ object ClientsideReportRenderer {
     /** The most console lines shown for one boot, however much room the comment has. */
     const val MAX_CONSOLE_LINES = 200
 
+    /** A note is cut to this length once the comment has to shed its crash excerpts to fit. */
+    const val MAX_NOTE_CHARS = 500
+
+    /** Room kept for the line counting the notes that did not fit. */
+    private const val OMITTED_NOTES_LINE_CHARS = 80
+
     /** Pretty-printing JSON writer for the embedded machine-readable report-block. */
     private val jsonWriter = jacksonObjectMapper().writerWithDefaultPrettyPrinter()
 
@@ -59,18 +65,27 @@ object ClientsideReportRenderer {
      * [consoleOf] — `null` or empty where none was recorded.
      *
      * The consoles share whatever room the rest of the comment leaves under [MAX_COMMENT_CHARS]. A report too
-     * large on its own drops its file-name list (and the crash excerpts its data block repeats) before anything
-     * the acceptance workflow reads.
+     * large on its own sheds, in order, its file-name list and the data block's excerpts and notes, then the crash
+     * excerpts above the table (the consoles show the same text), then the length of its notes -- never the
+     * table or anything the acceptance workflow reads.
      */
     fun renderMarkdown(report: ClientsideReport, consoleOf: (GrindTargetVerdict) -> List<String>? = { null }): String {
-        val head = head(report)
+        val fullHead = head(report, withExcerpts = true, noteBudget = Int.MAX_VALUE)
         val fullTail = tail(report, compact = false)
-        val tail = if (head.length + fullTail.length <= MAX_COMMENT_CHARS) fullTail else tail(report, compact = true)
+        val tail = if (fullHead.length + fullTail.length <= MAX_COMMENT_CHARS) fullTail else tail(report, compact = true)
+        val room = MAX_COMMENT_CHARS - tail.length
+        val head = fullHead.takeIf { it.length <= room }
+            ?: head(report, withExcerpts = false, noteBudget = Int.MAX_VALUE).takeIf { it.length <= room }
+            ?: head(report, withExcerpts = false, noteBudget = room - head(report, withExcerpts = false, noteBudget = 0).length)
         return head + bootLogs(report, consoleOf, MAX_COMMENT_CHARS - head.length - tail.length) + tail
     }
 
-    /** Everything above the boot logs: the marker, the entries, the table, crash excerpts and notes. */
-    private fun head(report: ClientsideReport): String {
+    /**
+     * Everything above the boot logs: the marker, the entries, the table, crash excerpts and notes. The notes take at
+     * most [noteBudget] characters; below [Int.MAX_VALUE] each is cut to [MAX_NOTE_CHARS] and those that do not fit
+     * are counted instead of shown.
+     */
+    private fun head(report: ClientsideReport, withExcerpts: Boolean, noteBudget: Int): String {
         val builder = StringBuilder()
         builder.appendLine(MARKER)
         builder.appendLine("## 🤖 Clientside-mod verification — `${report.slug}` (${report.platform})")
@@ -102,29 +117,57 @@ object ClientsideReportRenderer {
 
         // Surface the crash-output inline so a maintainer can judge *why* the server died — a crash
         // raises confidence but is no proof of clientside-only-ness.
-        for (verdict in report.perTarget) {
-            val excerpt = verdict.bootCrashExcerpt ?: continue
-            builder.appendLine("<details><summary>💥 ${verdict.loader} · Minecraft ${minecraftOf(verdict)} server crash output</summary>")
-            builder.appendLine()
-            builder.appendLine("```")
-            builder.appendLine(excerpt)
-            builder.appendLine("```")
-            builder.appendLine("</details>")
+        val crashed = report.perTarget.filter { it.bootCrashExcerpt != null }
+        if (withExcerpts) {
+            for (verdict in crashed) {
+                val excerpt = verdict.bootCrashExcerpt.orEmpty().lines().map(::printable)
+                val fence = fenceFor(excerpt)
+                builder.appendLine("<details><summary>💥 ${verdict.loader} · Minecraft ${minecraftOf(verdict)} server crash output</summary>")
+                builder.appendLine()
+                builder.appendLine(fence)
+                excerpt.forEach { builder.appendLine(it) }
+                builder.appendLine(fence)
+                builder.appendLine("</details>")
+                builder.appendLine()
+            }
+        } else if (crashed.isNotEmpty()) {
+            builder.appendLine(
+                "_The ${crashed.size} crash excerpts are left out to fit the comment's size limit; " +
+                        "each crash's console is below._"
+            )
             builder.appendLine()
         }
 
-        val notes = report.perTarget.mapNotNull { it.note }.distinct()
-        if (notes.isNotEmpty()) {
-            builder.appendLine("> [!NOTE]")
-            notes.forEach { builder.appendLine("> - $it") }
-            builder.appendLine()
-        }
+        builder.append(notes(report.perTarget.mapNotNull { it.note }.distinct(), noteBudget))
         return builder.toString()
+    }
+
+    /** The notes block within [budget] characters; see [head]. */
+    private fun notes(notes: List<String>, budget: Int): String {
+        if (notes.isEmpty()) {
+            return ""
+        }
+        val unbounded = budget == Int.MAX_VALUE
+        val builder = StringBuilder("> [!NOTE]\n")
+        var shown = 0
+        for (note in notes) {
+            val text = if (unbounded || note.length <= MAX_NOTE_CHARS) note else note.take(MAX_NOTE_CHARS) + "…"
+            val line = "> - $text\n"
+            if (!unbounded && builder.length + line.length + OMITTED_NOTES_LINE_CHARS > budget) {
+                break
+            }
+            builder.append(line)
+            shown++
+        }
+        if (shown < notes.size) {
+            builder.append("> - _${notes.size - shown} more notes left out to fit the comment's size limit._\n")
+        }
+        return builder.append("\n").toString()
     }
 
     /**
      * The file-name list and the data block, which stays last. [compact] leaves out what only makes a report
-     * large — the file names, and the crash excerpts the head already shows — and keeps every field
+     * large — the file names, and the crash excerpts and notes the head shows — and keeps every field
      * `-clientsideapply` reads.
      */
     private fun tail(report: ClientsideReport, compact: Boolean): String {
@@ -145,12 +188,14 @@ object ClientsideReportRenderer {
         builder.appendLine()
 
         val data = if (compact) {
-            report.copy(fileNames = emptyList(), perTarget = report.perTarget.map { it.copy(bootCrashExcerpt = null) })
+            report.copy(fileNames = emptyList(), perTarget = report.perTarget.map { it.copy(bootCrashExcerpt = null, note = null) })
         } else {
             report
         }
         builder.appendLine("<!-- clientside-report-data")
-        builder.appendLine(jsonWriter.writeValueAsString(data))
+        // `<` and `>` occur in JSON only inside strings, so escaping them keeps the meaning and stops any value from
+        // closing this HTML comment (`-->`) or opening a second block.
+        builder.appendLine(jsonWriter.writeValueAsString(data).replace("<", "\\u003c").replace(">", "\\u003e"))
         builder.appendLine("-->")
         return builder.toString()
     }
@@ -176,6 +221,9 @@ object ClientsideReportRenderer {
             .filter { consoles[it].isNotEmpty() }
             .sortedBy { consoleBlock(report.perTarget[it], consoles[it], minOf(MAX_CONSOLE_LINES, consoles[it].size)).length }
 
+        if (budget < header.length + missing.length + 1) {
+            return ""
+        }
         val blocks = arrayOfNulls<String>(report.perTarget.size)
         var remaining = budget - header.length - missing.length - 1
         withConsole.forEachIndexed { position, index ->
@@ -202,7 +250,7 @@ object ClientsideReportRenderer {
     /** A collapsed block holding the last [shown] of [lines]. */
     private fun consoleBlock(target: GrindTargetVerdict, lines: List<String>, shown: Int): String {
         val tail = lines.takeLast(shown)
-        val fence = "`".repeat(maxOf(3, (tail.maxOfOrNull { longestBacktickRun(it) } ?: 0) + 1))
+        val fence = fenceFor(tail)
         val extent = if (shown == lines.size) "all $shown console lines" else "last $shown of ${lines.size} console lines"
         return buildString {
             appendLine("<details><summary>📜 ${label(target)} — ${bootCell(target)} · $extent</summary>")
@@ -220,6 +268,10 @@ object ClientsideReportRenderer {
         val plain = line.replace(TERMINAL_ESCAPE, "").replace("\r", "")
         return if (plain.length > MAX_CONSOLE_LINE_CHARS) plain.take(MAX_CONSOLE_LINE_CHARS) + "…" else plain
     }
+
+    /** A code fence longer than any backtick run in [lines], so none of them can close it. */
+    private fun fenceFor(lines: List<String>): String =
+        "`".repeat(maxOf(3, (lines.maxOfOrNull { longestBacktickRun(it) } ?: 0) + 1))
 
     private fun longestBacktickRun(line: String): Int = Regex("`+").findAll(line).maxOfOrNull { it.value.length } ?: 0
 
