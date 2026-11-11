@@ -20,15 +20,15 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
+import de.griefed.serverpackcreator.clientside.boot.ImageSupport
+import de.griefed.serverpackcreator.clientside.boot.PackVariables
 import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
 import de.griefed.serverpackcreator.grinder.container.BindMount
 import de.griefed.serverpackcreator.grinder.container.ContainerSpec
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.container.PACK_MOUNT
 import de.griefed.serverpackcreator.grinder.loader.ApiVanillaPackGenerator
-import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
-import de.griefed.serverpackcreator.grinder.loader.ImageSupport
-import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.io.File

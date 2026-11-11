@@ -168,7 +168,7 @@ change to every server pack SPC produces.
 - [`HELP.md`](../HELP.md) — the `SPC_RECOMMENDED_JAVA_VERSION_SPC` placeholder docs
 - The grinder's boot image: [`serverpackcreator-grinder/docker/Dockerfile`](../serverpackcreator-grinder/docker/Dockerfile)
   installs `temurin-{8,17,21,25}-jdk` and symlinks `/opt/java-{8,17,21,25}`, and
-  [`ImageJavaRuntimes`](../serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/loader/ImageJavaRuntimes.kt)'s
+  [`ImageJavaRuntimes`](../serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/boot/ImageJavaRuntimes.kt)'s
   `bundledMajors` must list exactly the same set.
   **That pairing is hand-maintained with no build-time check** — the Dockerfile says so in a comment, and
   only `ImageJavaRuntimesTest` guards the behaviour, with its own literal sets.

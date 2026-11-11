@@ -21,8 +21,9 @@ base package's orchestration, only its domain models).
   `ContainerResources`, `BindMount`, `ContainerRunOutput`), `DockerJavaContainerEngine`,
   `ContainerServerRunner`.
 - **`grinder.loader`** — per-tuple loader install + offline pre-bake: `LoaderCache` (+ `LoaderInstaller`
-  seam), `DockerLoaderInstaller`, `VanillaPackGenerator`, `InstallLayerSnapshot`, `PackVariables`,
-  `ImageJavaRuntimes`. Depends on `grinder.container`.
+  seam), `DockerLoaderInstaller`, `VanillaPackGenerator`, `InstallLayerSnapshot`. Depends on
+  `grinder.container`. The unattended-boot levers it applies, `PackVariables` and `ImageJavaRuntimes`, live in
+  `serverpackcreator-clientside`'s `boot` package, so that the CLI's `-verifyclientside` boots packs the same way.
 - **`grinder.report`** — verdict persistence + web/CSV output: `VerdictStore` (+ `InMemoryVerdictStore`),
   `JsonVerdictStore`, `VerdictCsvExporter`, `VerdictReportRenderer`, `ReportServer`.
 - **`grinder.source`** — candidate discovery **and the crawl position**: the `CandidateSource` interface

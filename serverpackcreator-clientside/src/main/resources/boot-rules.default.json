@@ -1,7 +1,7 @@
 [
   {
     "id": "setup-abort",
-    "pattern": "(is not available for Minecraft|servers are having trouble|Something went wrong during the server installation|Java install-script failed|Java installation failed|wget or curl is required|variables\\.txt not present|Incorrect modloader specified|did not agree to Mojang's EULA)",
+    "pattern": "(is not available for Minecraft|servers are having trouble|Something went wrong during the server installation|Java install-script failed|Java installation failed|did not agree to Jabba installation|Automated Java installation can not proceed|wget or curl is required|variables\\.txt not present|Incorrect modloader specified|did not agree to Mojang's EULA)",
     "verdict": "INCONCLUSIVE",
     "note": "The install script gave up before the server started, so no mod was ever loaded. Kept specific so a genuine mod-load crash does not match.",
     "source": "CONSOLE"

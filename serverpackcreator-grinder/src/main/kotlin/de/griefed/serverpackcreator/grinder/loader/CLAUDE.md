@@ -37,7 +37,9 @@ then mount the cached tree offline.
   non-runtime files, the spike-derived design), **`PackVariables`** (the unattended-boot levers:
   eula + `WAIT_FOR_USER_INPUT=false` + a resolved `JAVA` path + `SERVERSTARTERJAR_FORCE_FETCH=false`
   *only* for offline boots), and **`ImageJavaRuntimes`** (MC→bundled-JDK + the supported-Java gate,
-  required-Java sourced authoritatively from `MinecraftMeta.requiredJavaVersion`). `DockerLoaderInstaller` /
+  required-Java sourced authoritatively from `MinecraftMeta.requiredJavaVersion`). Those two live in
+  `serverpackcreator-clientside`'s `boot` package, so that the CLI's `-verifyclientside` boots packs on a
+  host the same way. `DockerLoaderInstaller` /
   `ApiVanillaPackGenerator` themselves are integration-only (daemon + image + real `ApiWrapper`).
   **Operational note:** the bind-mounted pack must be writable by the container's uid 1000 (the install
   writes `libraries/` etc. into it) — align uids or `--user root` (Docker Desktop maps automatically).
