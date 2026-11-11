@@ -97,6 +97,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
      */
     fun verify(projectUrl: String, outputFile: File? = null) {
         val workDirectory = File(apiWrapper.apiProperties.homeDirectory, "work/clientside-verify")
+        val bootDirectory = File(workDirectory, "boot")
         // Beside `boot/`, never inside it: `stageBootPack` deletes and re-creates `boot/<attemptName>`
         // before every attempt, so evidence kept in there lives until the next boot and no longer.
         val artifactWriter = BootArtifactWriter(File(workDirectory, "boot-evidence"))
@@ -116,7 +117,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                             platform = platform,
                             httpDownloader = httpDownloader,
                             loaderVersionPolicy = LoaderVersionResolver(apiWrapper.versionMeta),
-                            workDirectory = File(workDirectory, "boot"),
+                            workDirectory = bootDirectory,
                             // A dependency this platform cannot supply may exist on the other one, and the
                             // staged file is just a jar. Empty when no CurseForge key is configured.
                             alternatePlatforms = platforms.filter { it !== platform },
@@ -131,7 +132,13 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                         )
                     }
                 )
-                ClientsideReportRenderer.renderMarkdown(verifier.report(projectUrl))
+                val report = verifier.report(projectUrl)
+                ClientsideReportRenderer.renderMarkdown(report) { target ->
+                    target.minecraftLine
+                        ?.let { line -> BootVerifier.decisiveConsole(bootDirectory, report.platform, report.slug, target.loader, line) }
+                        ?.takeIf { it.isFile }
+                        ?.readLines()
+                }
             }
         } catch (ex: Exception) {
             log.error("Clientside verification failed for $projectUrl", ex)
