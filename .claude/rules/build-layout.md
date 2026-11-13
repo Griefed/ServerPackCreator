@@ -55,8 +55,8 @@ the "do not tidy that away, here is what it cost last time".
   `BuildVersionTest` over `BuildVersion.sanitize`. It is reached only because `buildSrc/build.gradle.kts`
   finalizes `jar` with `test`; `:buildSrc:check`, `gradle.includedBuild("buildSrc")` and `-p buildSrc` are all
   dead ends on 9.8.1. What belongs there, what still belongs in a commit-message measurement, and why the edge
-  has to be `finalizedBy` rather than `dependsOn`, are in the root `CLAUDE.md` under *Build logic is verified by
-  measurement where it cannot be unit-tested* — stated once, there.
+  has to be `finalizedBy` rather than `dependsOn`, are in *Verifying build logic* at the end of this file — stated
+  once, there.
   - **LANDMINE — a test that reads a file outside its own project is UP-TO-DATE when that file changes.**
     `BuildVersionTest` reads `.forgejo/actions/resolve-version/action.yml` to check the action still
     normalises a version the way `BuildVersion` does. Gradle knows nothing about that path, so mutating the
@@ -310,8 +310,7 @@ the "do not tidy that away, here is what it cost last time".
     measured on 9.8.1: `tasks.check { dependsOn("buildSrc:check") }` is inert, `gradle.includedBuild("buildSrc")`
     does not resolve, and `./gradlew -p buildSrc check` fails in buildSrc's *settings* — it declares the foojay
     resolver with no version, which only resolves because the root build has already put it on the classpath
-    (the deliberate asymmetry `.claude/rules/build-layout.md` records under *the foojay toolchain resolver is
-    declared TWICE*). What works is `buildSrc`'s **jar**, which is built on every
+    (the deliberate asymmetry recorded above under *the foojay toolchain resolver is declared TWICE*). What works is `buildSrc`'s **jar**, which is built on every
     invocation: `tasks.jar { finalizedBy(tasks.test) }`, so `./gradlew help` runs the suite in ~3 s. It must be
     `finalizedBy` and not `dependsOn` — `kotlin-dsl` puts the jar on the test compile classpath, so
     `dependsOn` is a circular dependency and fails the build outright.
