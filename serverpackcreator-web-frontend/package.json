@@ -42,7 +42,7 @@
     "happy-dom": "21.0.4",
     "prettier": "3.9.10",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.71.1",
+    "typescript-eslint": "8.72.2",
     "vite-plugin-checker": "0.14.5",
     "vitest": "5.0.5",
     "vue-tsc": "3.3.14"
