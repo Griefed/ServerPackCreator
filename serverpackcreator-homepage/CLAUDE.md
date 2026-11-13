@@ -139,9 +139,11 @@ asset is `~@/assets/x` and in SCSS `url("@/assets/x")`.
   `Index.vue` carried this for years and was fixed on 2026-10-24; `AddonIndex.vue` and `Error404.vue`
   are plain `<div>`s and must stay that way.
 
-`@quasar/extras` is pinned at **1.18.0 on purpose**: 2.x's `exports` map has no `fontawesome-v5` or
-`mdi-v5`, both of which `quasar.config.js` requests. 1.18.0 already ships the v7 sets, so the
-rename-and-bump is available whenever someone wants it — as one change, not as a side effect.
+`@quasar/extras` 2 ships only the **v7** icon sets — its `exports` map has no `mdi-v5` or
+`fontawesome-v5` — so `quasar.config.js` requests `mdi-v7` and `fontawesome-v7`, and an icon name
+added to a template must exist in those. A request for a set the package no longer carries fails the
+build with `Rolldown failed to resolve import "@quasar/extras/<set>/<set>.css"`. Font Awesome 7 still
+accepts the short `fas`/`far`/`fab` prefixes alongside `fa-solid`/`fa-regular`/`fa-brands`.
 
 The qflashcard app extension must stay at **3.0.0 or newer**: 2.0.0-alpha.4 refuses app-vite 3
 outright (`compatibleWith('@quasar/app-vite', '^1.0.0-alpha.0')`), and its shipped
