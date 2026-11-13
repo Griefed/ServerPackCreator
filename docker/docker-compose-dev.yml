@@ -34,7 +34,7 @@ services:
     # Override the tag from an untracked `docker/.env` rather than editing this file:
     #
     #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
-    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:8fceb807014ed542cf01437d1d749ca64aadba3ac77bb4895521e72009a8a84a}
+    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:9.0.8-ubuntu2204@sha256:7ab9e334748b094ec3831c75a5e50ba62b07336b375c58744ddeb793c6ed5604}
     # Published so the IDE-run application can reach the database. Nothing in the fast loop runs
     # inside this network.
     ports:
