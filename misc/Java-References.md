@@ -99,7 +99,7 @@ These ship a JDK to a user, or tell a user which one to install. None of them re
 | AppImage JDK | [`misc/build-appimage.sh`](build-appimage.sh) | `JDK_VERSION` **and** the pinned `JDK_RELEASE`; `JDK_MAX_GLIBC` beside them is the portability floor, and `misc/AppImage-Portability.md` says what it costs to raise it |
 | install4j minimum | [`spc.install4j`](../spc.install4j) | `javaMinVersion` on `<application>` |
 | install4j bundled JRE | [`spc.install4j`](../spc.install4j) | `<jreBundles jdkProviderId="Adoptium" release="21/jdk-21.0.4+7">`; the three per-media `<jreBundle>` elements inherit it |
-| Docker build stage | [`docker/Dockerfile`](../docker/Dockerfile) | `FROM eclipse-temurin:21-jdk-jammy AS builder` |
+| Docker build stage | [`docker/Dockerfile`](../docker/Dockerfile) | `FROM eclipse-temurin:25-jdk-jammy AS builder`. **Does not move with section A:** this JDK only launches Gradle, and the Kotlin/Java target still comes from the toolchain, so it may run ahead of it — the jar it builds carries class major 65 (Java 21). Its one constraint is that Gradle supports running on it |
 | Docker runtime stage | [`docker/Dockerfile`](../docker/Dockerfile) | `openjdk-21-jdk-headless` |
 | Documented run command | [`README.md`](../README.md) | `eclipse-temurin:21-jre` |
 
