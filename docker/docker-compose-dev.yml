@@ -65,7 +65,7 @@ services:
   # The mongo-express project itself is alive, but it publishes no image of its own -- no releases
   # on `mongo-express-docker`, nothing on ghcr -- so there is no maintained build to move to.
   serverpackcreator-mongoku:
-    image: huggingface/mongoku:2.11.3@sha256:99486754b32cabd2d9c3d98318cccfdccdfb6822976f23a066d41c77d1b219c7
+    image: huggingface/mongoku:2.11.5@sha256:6ff83f0de8e82924eb3e4dd2d259ddcbce6b6700fdbf97e6e6ad5d60ca0bf053
     # Bound to the loopback address, NOT published on every interface: Mongoku has no authentication
     # of its own, where mongo-express had basic auth. That auth was `mexpress`/`mexpress` committed
     # in this file, so it kept nobody out who could read the repository; refusing the LAN entirely
