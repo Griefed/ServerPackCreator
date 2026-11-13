@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@quasar/app-vite": "3.10.3",
+    "@quasar/app-vite": "3.10.4",
     "@quasar/quasar-app-extension-qflashcard": "3.0.0",
     "@quasar/vite-plugin": "2.0.2",
     "@vitejs/plugin-vue": "6.0.10",
