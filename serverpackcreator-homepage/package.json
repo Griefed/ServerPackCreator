@@ -35,7 +35,7 @@
     "happy-dom": "21.0.4",
     "tsx": "4.23.15",
     "typescript": "5.8.3",
-    "typescript-eslint": "8.72.0",
+    "typescript-eslint": "8.72.2",
     "vite-plugin-checker": "0.14.5",
     "vitest": "5.0.5",
     "vue-tsc": "3.3.13"
