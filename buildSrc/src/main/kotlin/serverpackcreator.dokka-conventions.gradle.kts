@@ -25,9 +25,14 @@ require(projectDir.resolve("module.md").exists()) {
 
 dokka {
     moduleName = "ServerPackCreator"
+    // Both publications fail on a Dokka warning: every module documents cleanly, so a new warning (an
+    // unresolvable KDoc link, a missing classpath entry) is a regression, and -api's Javadoc is published.
+    dokkaPublications.javadoc {
+        failOnWarning.set(true)
+    }
     dokkaPublications.html {
         suppressInheritedMembers.set(true)
-        failOnWarning.set(false)
+        failOnWarning.set(true)
         outputDirectory.set(layout.buildDirectory.asFile.get().resolve("dokka"))
         includes.from("README.md")
     }
@@ -62,6 +67,9 @@ dokka {
             // `build/generated`, so we additionally suppress that directory by path.
             suppressGeneratedFiles.set(true)
             suppressedFiles.from(layout.buildDirectory.dir("generated"))
+            // Library superclasses we extend (i18n4k's MessageBundle, tipoftheday's BasicTipOfTheDayUI) have
+            // members typed with their runtime-only dependencies, which the compile classpath lacks.
+            classpath.from(configurations.named("runtimeClasspath"))
             includes.from(
                 projectDir.resolve("module.md")
             )
