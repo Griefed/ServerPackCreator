@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.api.utilities.common.XmlUtilities
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -67,6 +68,24 @@ internal class VersionMetaManifestRepairTest {
             destination
         }
 
+    /** The instance under test, whose background refresh writes into the test's `@TempDir`. */
+    private var versionMetaUnderTest: VersionMeta? = null
+
+    /**
+     * Waits out the background manifest refresh the constructor starts. It downloads into the `@TempDir`, and
+     * JUnit deletes that directory after this callback: a refresh still writing then leaves a file behind the
+     * deletion, which fails the test with `Failed to delete temp directory` on a host slow enough to lose the race.
+     */
+    @AfterEach
+    fun awaitBackgroundRefresh() {
+        versionMetaUnderTest?.let { versionMeta ->
+            Assertions.assertTrue(
+                versionMeta.awaitManifestRefresh(60_000),
+                "The background manifest refresh must finish before the temporary directory is deleted"
+            )
+        }
+    }
+
     /** A [VersionMeta] over the manifests in [directory], wired the way [ApiWrapper] wires the real one. */
     private fun versionMetaOver(manifests: Map<String, File>, cacheDirectory: File): VersionMeta {
         val apiProperties = mockk<ApiProperties>(relaxed = true)
@@ -95,7 +114,7 @@ internal class VersionMetaManifestRepairTest {
                 XmlUtilities(DocumentBuilderFactory.newInstance())
             ),
             apiProperties
-        )
+        ).also { versionMetaUnderTest = it }
     }
 
     /**
