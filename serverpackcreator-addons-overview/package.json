@@ -24,7 +24,7 @@
     "@babel/eslint-parser": "7.22.11",
     "@quasar/app-webpack": "4.4.5",
     "eslint": "8.44.0",
-    "eslint-config-prettier": "8.5.0",
+    "eslint-config-prettier": "8.10.2",
     "eslint-plugin-vue": "9.15.1",
     "eslint-webpack-plugin": "3.2.0",
     "prettier": "2.7.1"
