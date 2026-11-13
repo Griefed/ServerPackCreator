@@ -1,0 +1,681 @@
+# CI workflows: history and evidence
+
+Archived verbatim from `.claude/rules/ci-workflows.md`, which keeps only the rules, landmines and
+mechanisms. This file holds the full original wording of every passage that was condensed there, plus the
+incidents, run numbers, measurements, snapshot tables and dated decisions that produced the rules. Read it
+when a rule needs its evidence re-checked or an incident re-opened; it is a snapshot, so re-measure before
+trusting any number in it.
+
+## From: CI / release pipeline (preamble)
+
+Moved out of the root `CLAUDE.md` on 2026-08-21 so it loads when you touch a workflow rather than in
+every session. Operator-facing secret detail lives in `claude-docs/CI-SECRETS.md`.
+
+> **The `paths:` mechanism is verified** — reading a file matching a rule's globs injects that rule into
+> context mid-session, confirmed 2026-08-21 against `.claude/rules/build-layout.md` and
+> `gradle/libs.versions.toml`. This file's own globs were not exercised directly, but they are the same
+> mechanism.
+
+**CI lives in `.forgejo/workflows`. Forgejo (`git.griefed.de`) is the canonical CI and the origin of
+every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
+it exists, Forgejo ignores `.github/workflows` entirely
+([forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203)), so anything Forgejo must do belongs
+there and nowhere else. `.github/workflows` keeps a **smoke test**, the three
+`clientside-*` workflows, which are GitHub-native (two `issues:`-triggered, one `workflow_call:`
+helper, with their logic in `.github/scripts/` so Forgejo's `test.yml` can execute it), and
+**`pages.yml`**; releases are created on Forgejo and mirrored outward
+by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
+**GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
+as current as the repository it mirrors into* below.
+
+
+## From: Actions are referenced by VERSION TAG, not by commit SHA
+
+**`uses: actions/checkout@v6`, in both directories.** Of the **72** `uses:` lines in the two workflow
+directories, **63** were a 40-character SHA with a `# vX.Y.Z` comment beside it and are now the tag, the
+comment gone with them because the ref says what the comment said. The other nine were never SHAs: seven
+in the Windows app-image jobs, written as tags from the start, and two local
+`./.github/workflows/...` reusable-workflow references, which take no version at all. Re-derive the
+total with `grep -rhE '^[[:space:]]*uses:' .forgejo/workflows/ .github/workflows/ | wc -l`.
+
+**The cost is real and was accepted rather than overlooked:** a tag is mutable, so upstream can repoint
+`v6` and the next push runs different code with no commit here to blame — and in `.forgejo/workflows` a
+bare `owner/repo` resolves through the runner's default action URL, `https://data.forgejo.org`, so it also
+trusts a *mirror* to stay in step. The measurement that decided it points the other way: **every major tag
+was already AHEAD of the SHA it replaced**, so the pins had silently frozen eight actions at older releases
+— `checkout` v6 at `d23441a4` against a pin of `9f698171`, and the same for `setup-java`, `gradle/actions`,
+`cache`, `setup-node` and all three `docker/*`. Immutability nobody re-visits is staleness.
+
+**Where the resolution host comes from, since it is in no file here:** the runners' own logs, which print
+`☁️ git fetch 'https://data.forgejo.org/actions/checkout'`. The major tags were then confirmed present
+there with `git ls-remote --tags` before anything was converted — do that again before adding a *new* bare
+reference, because `data.forgejo.org` mirrors common actions and not arbitrary GitHub repositories
+(`actions/github-script` and `JetBrains/writerside-github-action`, for instance, are absent from it; both
+are used only in `.github/workflows`, where GitHub resolves them).
+
+**Dependabot watches `github-actions` at `/`, which on GitHub means `.github/workflows` only.** That
+reaches 15 of the 72 `uses:` lines; the **57** under `.forgejo/workflows` are watched by nothing, before
+and after this change. With tags they at least pick up patch releases on their own.
+
+convenient here".** `pages.yml` stretches it the furthest and still passes: it runs the Writerside builder
+*and* a Gradle Dokka build, which looks exactly like the second CI `test.yml`'s header warns against — but
+GitHub Pages can only be deployed from GitHub, Forgejo has no Pages, and hosting the rendered help site
+stopped being possible when GitLab Pages went away. It also takes no secrets and gates nothing, so a red run
+costs a stale docs site. The `clientside-*` three pass for the same reason (GitHub Issues are the trigger).
+Anything that fails this test belongs in `.forgejo/workflows`, where Forgejo can actually see it.
+
+**`spch.tree`'s Dokka entry is an ABSOLUTE URL, and it has to be.** The published help is a single-page
+app whose viewer navigates for real only when the href carries a scheme — `isExternal || /^(?:[a-z]+:)?\/\//`
+— so a relative `api/index.html` is client-side routed instead: the app pushes the URL to `/api/` and
+re-bootstraps there, asking for `api/config.json`, `api/HelpTOC.json` and `api/api-object-digest.json`,
+which exist only at the site root. All three 404 and the page dies on *"TOC data error"*. A root-absolute
+`/ServerPackCreator/api/index.html` fails the same test.
+
+**It is also PER-VERSION now, and only one of the two builds rewrites it.** The literal in `spch.tree` is
+the GitHub Pages URL, which is what `pages.yml` wants, so that workflow substitutes nothing. `docs.yml`
+replaces it with `https://serverpackcreator.de/api/<version>/index.html` before the builder runs, because
+its bundle ships in the help image and serverpackcreator.de serves a tree per version — 9.1.0's help must
+reach 9.1.0's reference, not whatever is newest. That step matches the literal and FAILS if it is absent,
+since `sed` matching nothing exits 0 and would ship the Pages link silently. A second step reads
+`HelpTOC.json` back out of the built zip, because Writerside rewrites hrefs as it builds and the source
+saying so is not evidence the output does; it SKIPS, loudly, where neither `unzip` nor `python3` is on the
+runner — `unzip` is not a given here, which is the same reason the dokka job ships a tar.gz.
+
+
+## From: Two Forgejo behaviours that GitHub-shaped workflows get wrong
+
+**LANDMINE — never give a job a `container:` of a tool image.** Forgejo Actions is act-based, and act
+runs every *JavaScript* action by exec'ing `node` **inside the job container**. GitHub's hosted runners
+inject a node binary into container jobs; act does not. So `actions/checkout`, `actions/cache`,
+`actions/upload-artifact` and `actions/download-artifact` all die with
+`exec: "node": executable file not found in $PATH`, exit 127 ([nektos/act#107](https://github.com/nektos/act/issues/107)),
+and then every later step is skipped. Verified: `command -v node` in
+`jetbrains/qodana-jvm-community:2026.2` returns nothing. Both jobs that did this failed in the wild —
+qodana.yml run 134 and docs.yml run 133.
+
+**`permissions:` does nothing on Forgejo, so there is none in this directory.** The runner warns
+*"has a permissions field, which is not supported in Forgejo and will be ignored"* once per job.
+Capability scoping there is per-job **Authorized Integrations**, configured on the instance, not in the
+workflow. This matters beyond noise: `claude-docs/WORKFLOW-AUDIT.md`'s H2 finding was "every workflow
+now has a top-level `permissions: contents: read`", and the migration was reported as carrying that
+hardening across. It did not — the blocks were inert from the first commit. `.github/workflows` keeps
+its blocks, because GitHub honours them.
+
+**Creating a branch fires `push`, not just `create` — and GitHub's guard against it is a silent no-op
+here.** `services/repository/push.go` takes the `IsNewRef()` branch and calls `notify_service.CreateRef`
+**and then** `notify_service.PushCommits`, so both events are dispatched; worse, it fills the push payload
+with `newCommit.CommitsBeforeLimit(10)`, advertising the branch's last ten commits though not one of them
+is new. Creating `alpha` or `beta` therefore started four workflows — `test`, `qodana`, `docs` and
+`release-generate` — against a branch that is byte-for-byte `main`. It was five until `docker-test`
+merged into `test`. The last of those is the
+one that matters: **semantic-release can mint a tag**, and it was running on a branch nobody had pushed
+work to yet.
+
+(`modules/structs/hook.go`) is `Ref, Before, After, CompareURL, Commits, TotalCommits, HeadCommit, Repo,
+Pusher, Sender` — GitHub's `created`/`deleted`/`forced` are absent. So `if: github.event.created == false`
+evaluates **true on every event**, meaning the job always runs and the guard silently does nothing. It
+does not fail, warn, or skip; it is simply inert, which is the worst of the three.
+
+What works is `Before`, which is `opts.OldCommitID` passed through unmutated — the local `oldCommitID`
+rewriting further down `pushUpdates` feeds only the compare URL. On a new ref it is the all-zero object
+id. The guard, **repeated verbatim in six jobs** across those five workflows (there is no workflow-level
+`if:`, and `qodana`'s `notify` needs its own copy because `always()` runs it even when the job it
+`needs` was skipped):
+
+**Verified by evaluation, not by reading.** Forgejo's own act fork (`code.forgejo.org/forgejo/act`
+v1.37.0, `pkg/exprparser`) was run over all six guards: creation of `alpha`/`beta` → `false`; creation of
+any other branch, every normal push, `workflow_dispatch`, `schedule` and `pull_request` → `true`;
+`release-generate`'s existing `RELEASE:` clause still returns `false` for a release commit. The same
+harness is what showed `github.event.created == false` returning `true` in all nine cases.
+
+**Corollary worth stating: a workflow that merely *parses* is not a workflow that runs.** Both defects
+above survived three audit iterations that validated YAML, checked action pinning, matched globs and
+verified secret names. None of that touches whether the runner can execute a step. The only test that
+finds these is a real run on the real instance.
+
+
+## From: A step output written from PowerShell needs UTF-8 with no BOM
+
+The Forgejo runner vendors act as `act/container/parse_env_file.go` (module
+`code.forgejo.org/forgejo/runner/v13`), and `ParseEnvFile` splits each line on its first `=` with **no
+encoding and no BOM handling at all** — unlike upstream nektos/act, which strips a UTF-8 BOM from the
+first line. So UTF-16LE gives the key `\xff\xfep\x00a\x00t\x00h\x00` and `-Encoding utf8` gives
+`\xef\xbb\xbfpath`, where the step meant `path`. The consuming step reads an empty string.
+
+**The step stays GREEN either way, which is the part that costs the time.** `runStepExecutor`
+(`act/runner/step.go`) records `stepResult.Conclusion` from the script's own exit code and logs
+`✅ Success`, and only *then* runs the file commands, whose error never touches `stepResult`. UTF-8+BOM
+parses as a junk key and reports nothing at all. UTF-16LE *does* error — the `\x0a\x00` line
+terminator leaves a trailing `\x00` byte as a line of its own, which has neither `=` nor `<<` — but it
+surfaces only as a log line reading `[runner]: invalid format '', expected a line with '=' or '<<'`,
+under a step the UI has already marked green. The `''` is not an empty line: it is the NUL byte, which
+renders as nothing.
+
+**Nothing in this repository passes a value between two PowerShell steps any more.** `release-build.yml`'s
+`winimage` job was the only one that did, and it is gone: both pipelines call `artifacts-reusable.yml`,
+whose Windows job passes no `-JarPath`, so there is no hand-off to encode. That is the better fix and
+the reason to prefer it -- the value that cannot be wrong is the one nobody passes. The rule above
+stands for the next step that genuinely needs a hand-off, and applies equally to `GITHUB_ENV`,
+`GITHUB_STATE` and `GITHUB_PATH`, which that one parser serves for all four.
+
+
+## From: A workflow that lives only on a branch cannot be dispatched from the UI
+
+**LANDMINE — the dispatch menu is built from the DEFAULT BRANCH, so a new workflow is unrunnable
+until it is merged.** `routers/web/repo/actions/actions.go` resolves the list with
+`ctx.Repo.GitRepo.GetBranchCommit(ctx.Repo.Repository.DefaultBranch)` and hands that commit to
+`actions.ListWorkflows`; the branch being viewed never enters into it, and there is no fallback. A
+`workflow_dispatch`-only workflow pushed on a feature branch therefore appears nowhere, which is the
+chicken-and-egg this repository hit while building a probe whose entire job was to be run before its
+branch merged.
+
+
+## From: The shared base: one definition per thing
+
+**The rule, and why it is a rule.** A release failed on 2026-10-07 because `release-build.yml`'s
+Windows job passed `-JarPath` from a step output that was silently empty, while `devbuild.yml`'s
+Windows job passes no `-JarPath` at all — one script, two invocation shapes, and only the one nobody
+rehearses was broken. The job *looked* covered because a job of the same name runs on every develop
+push. The same audit found three more of the identical shape, one of them shipping: `devbuild.yml` ran
+`./gradlew media` with no `-Pversion`, so every continuous installer was built at
+`gradle.properties`' `version=dev` **and carried two Spring Boot fat jars**, because `media` dependsOn
+`build` and Gradle wrote `serverpackcreator-app-dev.jar` beside the downloaded
+`serverpackcreator-app-<version>.jar` that `spc.install4j`'s dirEntry then shipped alongside it.
+
+**`misc/ci-duplication-check.py` enforces it**, with `misc/ci-duplication-allowlist.yml` holding the
+repeats that genuinely cannot be shared, each with its reason. The allowlist is keyed by a hash of the
+step's normalised body, so editing an exempted step turns the check red and the exemption is re-argued
+rather than inherited. It was held out of CI while its count was non-zero — a gate that is red on every
+push is not a pin, it is a broken build — and **became a gate on 2026-10-19**, the day that count first
+reached zero. It runs in `test.yml`'s *Verify the workflow conventions* step, sharing one pyyaml install
+with `ci-env-reference-check.py`, before the long build. It fails on an unexplained duplicate and on an
+allowlist entry matching no step, both checked by exit code.
+
+**That keying has one failure mode worth planning for: a sweep across every workflow re-keys every
+entry it touches, and the check then reports each affected repeat TWICE** — once as a stale entry and
+once as an unexplained duplicate, which reads like two findings and is one. The `uses:` SHA-to-tag
+conversion did this to three entries and nobody noticed, because the gate runs on no push. Re-key in
+the same commit as the sweep.
+
+
+## From: What Forgejo will and will not do, all of it checked rather than assumed
+
+- **`on.workflow_call.secrets` is a schema violation here.** A callee simply reads `secrets.X`, and the
+  caller passes `jobs.<id>.secrets: inherit`. This **differs from `.github/workflows/`**, where
+  `clientside-report-reusable.yml` declares its secrets and should keep doing so — GitHub honours it.
+  The cost is real and unavoidable: `inherit` is all-or-nothing, so a shared artifact workflow runs
+  with every publishing credential in scope. Say so wherever one is written, or someone will add a
+  publish step there *because the token is right here*.
+
+- **A multi-job reusable workflow used to report SUCCESS when an inner job failed** —
+  intermittently, and only above one job ([forgejo#6657](https://codeberg.org/forgejo/forgejo/issues/6657),
+  fixed by [runner#1081](https://code.forgejo.org/forgejo/runner/pulls/1081), verified against
+  **Runner v12.1.2**). Below that floor a broken artifact build reports green and the release ships on
+  it. **Measured on this instance, runs 987/988 and 993/994 (2026-10-09): it propagates, 4/4.** Three
+  calls were made with a Linux inner job exiting 1 and a fourth with only the *Windows* job exiting
+  1; all four calling jobs reported `failure`. `needs.<job>.result` is populated on a calling job,
+  which is what let the probe read its own verdict. Expansion, inputs, outputs and `secrets: inherit`
+  all work, and a `windows-latest` job inside a called workflow reaches the Windows runner.
+- **The runner version is in the first line of every job log** — `Runner <uuid> (version:v13.2.0)` —
+  and a Linux job also gets `FORGEJO_ACTIONS_RUNNER_VERSION`, so neither the admin page nor a host
+  login is needed to check the floor. The **Linux** runner is **v13.2.0**.
+- **The Windows runner reports `version:dev`, so the floor cannot be checked there at all.**
+  `misc/windows-runner/provision.ps1` builds it from `main` with a bare `go build`, which stamps no
+  version in, and `FORGEJO_ACTIONS_RUNNER_VERSION` is `dev` to match. Being built from `main` is an
+  argument that it is ahead of v12.1.2, not evidence, so that host was measured directly rather than
+  generalised from the Linux result — the fourth call above is why. Keep that distinction if the
+  question is ever reopened: **the Linux runners can be checked by version, the Windows one only by
+  behaviour**, and `winimage` lives inside the shared workflow from Phase 3 on.
+
+
+## From: A run has two numbers, and the web routes disagree about which one they take
+
+**LANDMINE — `/actions/runs/{run}` takes the per-repo index everywhere except the artifact download,
+which takes the instance-wide id.** Every handler under that path resolves the run with
+`GetRunByIndex` — the run page, the job view, the logs, the artifact *listing* — while
+`ArtifactsDownloadView` calls `getRunByID` (`routers/web/repo/actions/view.go`). One path, two
+identifiers, no redirect between them. Probed against this instance for one Qodana scan of
+`ad5269302`, which is run index 644 and run id 936:
+
+```
+/actions/runs/644/artifacts/qodana-report -> 404
+/actions/runs/936/artifacts/qodana-report -> 200, 2515070 bytes
+/actions/runs/644/                        -> 307 to the job view
+/actions/runs/936/                        -> 404
+```
+
+This shipped a dead link in `qodana.yml`'s Discord message until 2026-09-26, and the comment that
+caused it had the premise right and the conclusion inverted: it refused the upload action's own
+`artifact-url` output *because* that output is built from `github.context.runId`. That is exactly the
+identifier the route wants — the action logged `.../actions/runs/936/artifacts/879` in the same job,
+and it was correct. **When a forge hands you two identifiers for one object, probe the route rather
+than reasoning about which one is "the" run number.** `curl -o /dev/null -w '%{http_code}'` answers it
+anonymously in a second.
+
+
+## From: One workflow per area, and the one that cannot join them
+
+**`docker-test.yml` merged into `test.yml` as its `docker` job.** The two had identical triggers
+(`push`, `workflow_dispatch`) and identical concurrency semantics, so they were one workflow wearing
+two names — and "did the tests pass?" took two places to answer.
+
+So merging it costs one of two things, and both are already on the record above: dropping the
+repo-wide lock re-opens the interference that failed runs 947, 954 and 956 on a *different* test each
+time, and taking the lock for all of `test.yml` serialises every push — which the *Pacing* entry
+below already states was considered and rejected. Leave it where it is until Forgejo grows job-level
+concurrency.
+
+
+## From: concurrency is per-ref here, and two refs build the same commit on every push
+
+**Forgejo implements `concurrency` (since v14), and its `cancel-in-progress: false` QUEUES rather than
+doing nothing** — *"any previous invocation of any workflow in the repository with the same concurrency
+group will be executed before the newer invocation"*, with exact ordering documented as not guaranteed.
+Worth stating because a search summary of the same feature says the opposite ("no concurrency management
+will occur"), and because GitHub and Forgejo do not describe it identically. Read the
+[reference](https://forgejo.org/docs/v15.0/user/actions/reference/), not a summary.
+
+**The group in this directory is `<workflow>-${{ github.ref }}`, which is deliberate and used to have a
+cost worth knowing: a push to `develop` also built PR #678 (`develop` → `beta`) at the same commit, in
+parallel, on the same runner.** That particular doubling is gone — `pull_request:` was dropped from
+`test.yml`, `docker-test.yml` and `grinder-container-it.yml` on 2026-10-02, because every PR here is
+opened from a branch `push:` already builds — but the per-ref key still lets **two different branches**
+run side by side, which is the same collision with a rarer trigger. Two jobs, one Docker daemon, one
+filesystem. That is fine for everything that only reads
+— and it is not fine for anything that asks the daemon a global question or performs a global side effect.
+It cost `DockerJavaContainerEngineIT` three red runs in a row on 2026-09-27 (947, 954, 956), each failing a
+*different* test of the same class, which is the signature of interference rather than of a defect: a defect
+fails the same test in both jobs.
+
+**The same push also saturates the host, and that breaks every time-boxed wait in the suite at once.**
+On 2026-10-01 one push to `develop` queued **nine** runs at `17:03:00`; the runner started three heavy
+Gradle/npm builds together and the whole batch ran 2–5x its own previous day's time:
+
+| workflow | typical | 2026-10-01 |
+|---|---|---|
+| `docker-test.yml` | 13–15 min | **41.6 min** (829, 830 — buildkit's Gradle stage 616s → 1913s, npm 447s → 817s) |
+| `devbuild.yml` | ~20 min | **96.6 min** (828) |
+| `docs.yml` | ~25–31 min | **63.4 min** (832) |
+| `grinder-container-it.yml` | 5.3–8.8 min | **18.1, 23.3 min** (831, 834 — both red) |
+| `test.yml` | 12–22 min | 836 red |
+
+Nothing in the repository changed to cause it — `921d46938` touched two workflow files — and the slow
+stages are CPU-bound, not registry-bound, so this is capacity, not network. **What it breaks is
+anything with a deadline in it**: `grinder-container-it` lost four tests to 90-second fixture waits and
+one to a wall-clock assertion, and `test.yml` lost all fourteen database-backed tests because
+flapdoodle's embedded `mongod` default is a 30-second start budget. All of those budgets have since
+been raised or replaced with host-independent assertions, which is the right repository-side answer —
+a CI deadline must be sized against the pathological host, not the healthy one — but it treats the
+symptom. The cause is how much this runner is asked to do at once. **One of the two levers has been
+pulled**: `pull_request:` is gone from the three workflows that carried it, halving the batch, at the
+cost of no longer building the merge result separately and of fork PRs getting no Forgejo CI. The other
+is the runner's own job concurrency, which is host configuration; see
+`claude-docs/RUNNER-REGISTRY-CACHE.md`'s *Runner hygiene* section.
+
+
+## From: The mirror can only be as current as the repository it mirrors into
+
+**gitlab.com was dropped as an outward mirror on 2026-08-23, and no release-API change could have saved it.**
+The `Mirror to GitLab.com` step reported a bare `⚙️ [runner]: exitcode '22': failure` in 0 s — curl's
+`--fail`, meaning HTTP ≥ 400, with the body discarded by `-sf`. It had never been able to succeed since it
+was written, because its precondition was already false when the migration added it. The cause was not in
+the workflow:
+
+```
+gitlab.com/Griefed/ServerPackCreator  newest commit  071e55402  2024-04-27  "RELEASE: 5.2.1"
+                                      newest tag     5.2.1        (1397 commits behind main)
+                                      releases       5, latest 5.2.1
+```
+
+The git push-mirror to gitlab.com died with the GitLab→Forgejo migration, so that repository has not received
+a commit since April 2024. GitLab's `POST /releases` needs either an existing `tag_name` or a `ref` commit to
+mint the tag from, and **that repository has neither** — the tag names a version four major lines newer than
+anything there, and the SHA has never existed there. The step's own comment anticipated the 404 and added `ref` to fix it, which was the
+right fix for a mirror that is merely *behind* and useless for one that is *stopped*.
+
+**The concrete instance is run `222` (`9.0.0-alpha.6`), job `Mirror release outward`, and its log is the
+proof — plus a trap worth knowing.** That job mirrored **all twelve assets to GitHub successfully**, and
+only then died:
+
+```
+10:02:09Z  GitHub <- updates.xml          <- the last of 12, all fine
+10:02:11Z  ⚙️ [runner]: exitcode '22': failure
+```
+
+`22` is curl's `--fail`, and the step that produced it was `Mirror to GitLab.com`, present at that tag
+(`git show 9.0.0-alpha.6:.forgejo/workflows/release-build.yml` has it) and deleted two and a half hours
+later by *fix(ci): drop the gitlab.com release mirror, and stop curl hiding why*. So **alpha.6 needs no
+repair and the failure cannot recur** — the step is gone.
+
+**The trap: a red `mirror` job does not mean an incomplete GitHub release.** Verified for alpha.6 against
+both APIs — 12/12 assets present with matching sizes, an identical 41,275-char body including the
+VirusTotal section, `target_commitish` `f7ebba4e`, `prerelease: true`. Red CI, complete release. Check the
+release before repairing one, or you will "fix" something that was never broken. It also means the run
+list alone cannot tell these two failures apart: **`9.0.0-alpha.6` and `9.0.0-alpha.7` both show exactly
+one red job, `Mirror release outward`, attempt 1, and they failed for completely unrelated reasons** — the
+deleted GitLab step versus the stalled mirror below. Read the job log (`GET
+/api/v1/repos/{owner}/{repo}/actions/jobs/{job_id}/logs`, which works anonymously on a public repo and is
+the fastest way in) and distinguish them by exit code: `22` is the old GitLab step, `1` is the `::error::`
+the GitHub steps now emit. Note the API's run id is **not** the number in the run's URL — that is
+`index_in_repo` (`222` → id `252`, `272` → id `311`), so `/actions/runs/222` 404s.
+
+**It then happened to GitHub, on 9.0.0-alpha.7 (2026-08-23, run `272`) — so this is a class, not a
+GitLab story. This is a DIFFERENT failure from alpha.6's above, despite looking identical in the run
+list.**
+The `mirror` job died on a GitHub `422` naming three fields at once: `tag_name is not a valid tag`,
+`Published releases must have a valid tag`, and an invalid `target_commitish`. All three are one cause with
+three symptoms. GitHub did not have the release commit: `GET /commits/50fd50f37` answered `422 No commit
+found for SHA`, GitHub's `alpha` still sat on `f7ebba4e` (`RELEASE: 9.0.0-alpha.6`, 69 commits behind), and
+`pushed_at` was five hours older than the tag. With no commit there is nothing to mint the tag from, so
+`target_commitish` is rejected, and a release with no tag is rejected in turn. **Nothing was wrong with the
+workflow** — the Forgejo release was complete and correct (id 1730, 12 assets, the VirusTotal section
+present, the tag on the right commit), and `9.0.0-alpha.6` is standing proof the same code works when the
+mirror is current: its GitHub release carries `target_commitish` `f7ebba4e`, where `.1` through `.5` carry
+`main`.
+
+Note what this costs in reading time: GitHub's 422 is about `tag_name`, so it sends you to the tag, the
+changelog and the release payload — three places that were all fine. `release-build.yml` probes
+`GET /commits/${{ github.sha }}` before the POST, and treats `401`/`403` as the credential rather than
+waiting out the poll to blame the wrong thing.
+
+
+## From: Waiting for a push-mirror was the wrong half of the fix — trigger it
+
+**The probe named the cause correctly and then failed the release anyway, five times.** `Sync when new
+commits are pushed` is an **opt-in** checkbox on a Forgejo push-mirror, and without it the mirror is
+periodic on an interval that
+[defaults to 8h](https://forgejo.org/docs/v15.0/user/repo-mirror/) — so the original five-minute poll was
+waiting on something that, in the bad case, was up to ninety-six times longer than its own patience. The
+run list measures it: of the 12 release builds from `9.0.0-alpha.6` to `9.2.1`, the `mirror` job reached
+its steps 8 times and **failed 6**, and **5 of those 6 are this identical stall** — alpha.7 (run `311`),
+alpha.9 (`755`), beta.3 (`901`), 9.0.0 (`1063`) and 9.2.1 (`1411`), each 20/20 attempts of
+`422 No commit found for SHA`. The sixth is alpha.6's deleted GitLab step, above. The proof that only
+timing was ever missing: GitHub holds the `9.2.0` tag today, delivered by the mirror's own interval hours
+after the workflow had already given up on it.
+
+The poll that follows is now sized for GitHub indexing a push it has already received, not for a mirror
+that may not have run: 8 attempts at 15 s. **A poll is only honest about what it is waiting for** — the
+old 20×15 s looked like diligence and was actually a coin-flip on an 8-hour timer.
+
+**Current outward state, measured 2026-10-11 by `git ls-remote` against all three forges** (re-measure
+rather than trusting this; it is a snapshot):
+
+| ref | Forgejo | GitHub | gitlab.com |
+|---|---|---|---|
+| `main` | `894c574aa` — 9.2.1 | `894c574aa` | `c3f1ef3fd` — 9.0.0 |
+| `develop` | `d94ec0257` | `d94ec0257` | `8524c009c` — 2024-03-26 |
+| tag `9.2.1` | yes | yes | no |
+
+**So the gitlab.com entry above is stale in one direction and still right in the other.** That repository
+is no longer frozen at April 2024 — it now carries tags through `9.1.0` (2026-10-02), so refs do reach it
+— but its *branches* lag its own tags by three releases, which is a mirror that partially fails rather
+than one that is stopped. Do not invent the mechanism for that: `GET /push_mirrors` prints `last_error`
+for it, the job now does so on every release, and that is the thing to read before changing anything.
+
+**The `news` job announces the GITHUB release, and asks GitHub rather than trusting `mirror`'s
+colour.** Griefed's call, 2026-10-19: downloads are to come from GitHub, because the twelve assets are
+the bulk of what this project serves and GitHub's bandwidth is free where git.griefed.de's is not. An
+announcement sending people somewhere therefore must not precede the release being there, so `mirror`
+is in `needs:` — reversing the earlier decision, which had `news` announce the Forgejo release and
+omit `mirror` so a stalled push-mirror could not silence a complete release.
+
+**That earlier concern is still right, which is why `mirror` is in `needs:` for ORDERING ONLY and is
+absent from the job's `if:`.** The `if:` is `always()` plus explicit `success` checks on `prepare`,
+`release`, `maven` and `docker` — the four whose failure really does mean there is nothing worth
+announcing. Two reasons `mirror`'s own result is not one of them, both already on this page: a red
+`mirror` does not mean an incomplete GitHub release (9.0.0-alpha.6 uploaded all twelve assets and then
+died on a step that no longer exists, and `push_mirrors-sync` is best-effort because one dead remote
+returns 500 and masks a healthy one); and a **skipped** job cannot be re-run on its own, so a plain
+`needs: mirror` would make the documented per-job repair — fix the mirror, re-run that job alone —
+leave the announcement permanently unsendable.
+
+**The guard was evaluated, not read** -- `needs.<job>.result` in a job-level `if:` had no precedent in
+this directory, and this repository has already shipped one guard (`github.event.created`) that was
+silently inert on Forgejo. Run against Forgejo's own act fork (`code.forgejo.org/forgejo/act` v1.37.0,
+`pkg/exprparser`, which declares its module path as `github.com/nektos/act` and therefore needs a
+`replace` directive to resolve):
+
+| `needs` results | guard |
+|---|---|
+| all five `success` | **true** |
+| `mirror` **failure**, other four `success` | **true** |
+| `mirror` `skipped`, other four `success` | **true** |
+| `maven`, `release` or `docker` `failure` | false |
+| everything `cancelled` | false |
+| **empty `needs` context** | false |
+
+The last row is the one worth having: an inert context fails the guard CLOSED, so the failure direction
+is a skipped announcement rather than an announcement of nothing.
+
+The verdict is the job's first step, `Require the release to be live on GitHub`: one
+`GET /releases/tags/<version>`, no poll, failing if the release is absent or carries zero assets. It
+is deliberately not a poll — `mirror` creates the release synchronously through the release API, so a
+404 means it was never created rather than not yet visible, and the error names the job to repair.
+The step also yields the release's own `html_url`, so the message cannot link a URL assembled from a
+version string.
+
+**LANDMINE — a step's `env:` key and the name its script reads are two separate things, and a
+mismatch fails GREEN.** `81adb1b3d` (*ci(News): use different URL for release news webhook*) changed
+`secrets.WEBHOOK_URL` → `secrets.NEWS_WEBHOOK_URL` and both shell reads, and left the `env:` **key**
+as `WEBHOOK_URL`. `${NEWS_WEBHOOK_URL:-}` was then unconditionally empty, so every release printed
+*"No NEWS\_WEBHOOK\_URL configured - skipping"* and exited 0. Twelve days, no announcement, no red run.
+The tolerance is what hid it, so an absent `NEWS_WEBHOOK_URL` now **fails** the job: a secret that is
+supposed to be configured and is not is an operator error, not a supported configuration.
+`misc/ci-env-reference-check.py` pins the defect by its own shape across both workflow directories.
+
+**Repairing one is per-job, not per-workflow.** Re-running the whole run would re-execute `maven` and
+`docker` for a version already published — `closeAndReleaseSonatypeStagingRepository` plus three registries
+that reject a re-published version. Only `release` is idempotent by design. Forgejo 16.0.3 can re-run a
+single job, so repair the mirror, then re-run `mirror` alone.
+
+Three things generalise beyond GitLab:
+
+- **A mirror step's precondition is the mirror, not the API call.** Before adding or restoring one, check the
+  target actually has the ref: `curl -s https://<forge>/api/.../repository/commits?per_page=1`. Anonymous is
+  enough for a public repo, and it takes seconds.
+- **Waiting on an asynchronous dependency is a worse answer than triggering it, whenever a trigger
+  exists.** The probe above was correct, well-documented and diagnosed its own failure precisely — and it
+  still failed 5 releases, because a poll can only ever be a bet on someone else's schedule. Ask what
+  *starts* the thing being waited for before choosing how long to wait for it.
+- **`curl -sf` in CI is how a failure becomes unreadable.** `-f` sets exit 22 and `-s` throws away the body —
+  which is the only place these APIs say what is wrong. The failing run said nothing else whatsoever.
+  Every call whose failure is not deliberately tolerated now captures the status with
+  `-o file -w '%{http_code}'` and prints the body before exiting — `mirror` first, and since
+  *fix(ci): stop curl -sf hiding why a release step failed* also the `release` job's create/patch/upload,
+  the VirusTotal release-body update and the Discord post. The two `-sf` calls left in `release-build.yml`
+  are VirusTotal's own submissions, whose failures are tolerated on purpose (`|| true`, then a guard on
+  the empty id) because a scan that does not come back must not fail a release that is already published.
+
+
+## From: The release notes outgrew two limits nobody declared
+
+**LANDMINE — a release body never travels as a curl argument.** Linux caps a *single* argv entry at
+`MAX_ARG_STRLEN` = `32 * PAGE_SIZE` = **131,072 bytes**, independently of `ARG_MAX`, and `execve`
+returns `E2BIG` past it. `release-build.yml` assembled the whole release JSON — changelog section
+included — into one `-d "{...}"` word in both the `release` and `mirror` jobs, so `9.0.0-beta.1`
+(run `536`, job `Forgejo release`) died with
+
+```
+/var/run/act/workflow/create.sh: line 21: /usr/bin/curl: Argument list too long
+```
+
+and then a python `JSONDecodeError` traceback, which is the *consequence* — curl never ran, so the
+next stage in the pipeline read an empty pipe. **Read past the traceback: the parser is never the
+bug when the line above it says a binary could not be exec'd.**
+
+The jump is structural, not bad luck. A prerelease section covers one increment; a **beta or final**
+section aggregates every prerelease since the last stable tag, because that is what semantic-release
+writes:
+
+```
+9.0.0-alpha.8   changelog section  74,454 B   -d argument ~75,9xx B   released fine
+9.0.0-beta.1    changelog section 200,185 B   -d argument  201,610 B  E2BIG
+```
+
+So `9.0.0` final will be at least as large. Both POST branches now build the payload with python and
+pass `-d @<file>`; the PATCH branch had always done this, which is why only creation ever failed.
+Reproduced both shapes against the real notes in `alpine:3.20` — inlined gives exit 126 `Argument
+list too long`, `-d @file` execs curl and reaches the network with a 201,620-byte payload.
+
+**LANDMINE — GitHub caps a release body at 125,000 characters; Forgejo does not cap it at all.**
+Getting the body out of argv only moves the wall: GitHub answers `422 body is too long (maximum is
+125000 characters)`. Forgejo's `Release.Note` is a `TEXT` column that Forgejo never truncates — only
+`Title`, at 255 (`models/repo/release.go`) — and this instance is not database-limited either, since
+`9.0.0-alpha.8`'s stored body is 75,918 bytes, past MySQL `TEXT`'s 65,535. So the **canonical Forgejo
+release keeps every character and only the mirrored copy is cut**, in `Fetch release notes from
+Forgejo` (the step that exists solely to produce the GitHub-bound copy), on a line boundary so no
+markdown link is severed, with a pointer back to the Forgejo release. Measured on the real
+`9.0.0-beta.1` notes: 200,185 → 124,935 characters.
+
+**Forgejo does not enforce release-asset name uniqueness, so an unguarded re-run silently doubles the
+assets.** `CreateReleaseAttachment` (`routers/api/v1/repo/release_attachment.go`) hands the name
+straight to `UploadAttachment` with no existence check. Re-running `release` — which its own comment
+names as the ordinary repair — therefore did not fail on a duplicate, which would at least be
+visible; it attached a second copy of all twelve and reported success. Both asset loops now skip
+names the release already carries (`GET /releases/{id}/assets`).
+
+**The general rule: a payload assembled from repository content has no size you control.** Ask where
+it lands — argv, a database column, someone else's API — and put it in a file before it gets there.
+Both defects were latent from the first commit of this workflow and invisible for eight releases,
+because the input only crossed the threshold when the release channel changed.
+
+
+## From: A Gradle task without a project path runs in every project
+
+**LANDMINE — the release's `maven` job is the only place in this repo that fans a task out over all
+seven projects, so it is the only place an unpublished module can break a release.** `Publish Maven`
+ran `./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication`, and the *unqualified*
+first task means "in every project". On `9.0.0-alpha.8` (run `472`, job `Publish Maven`)
+`serverpackcreator-plugin-grinder` had no `module.md` — which `serverpackcreator.dokka-conventions`
+includes as a File in every source set — so its `dokkaGeneratePublicationJavadoc` died with
+`.../serverpackcreator-plugin-grinder/module.md (No such file or directory)` and the build stopped
+there. The job is now `:serverpackcreator-api:dokkaJavadocJar`, and the convention plugin refuses to
+configure a module that has no `module.md`, so the same mistake fails on the next `./gradlew` instead.
+
+**What the incident cost, and what it did not.** `maven` is the `needs:` of both `mirror` and `news`,
+so one unpublished module's docs skipped the GitHub mirror *and* the Discord announcement of a release
+that was otherwise complete. It cost nothing to repair: the log contains **no** `publishMavenJavaPublicationTo*`,
+`publishToSonatype` or `closeAndReleaseSonatypeStagingRepository` line at all, because the failure was in
+the job's *first* `./gradlew` invocation. Nothing reached Sonatype, GitHub Packages, GitLab or the Forgejo
+registry, so re-running `maven` alone is safe here — which is **not** the general case (see *Repairing one
+is per-job* above: those four targets reject a re-published version). Check the log for a `publish*` line
+before assuming a failed `maven` job is re-runnable.
+
+
+## From: The release pipeline's two silent killers
+
+Both bit the same run on 2026-08-22 (`release-generate.yml`, branch `alpha`). Neither is visible in the
+workflow YAML, and neither produces a wrong-looking config — only a wrong-looking release.
+
+**LANDMINE — semantic-release keeps a prerelease tag's channel in git notes, not in the tag.** The
+channel of every release is written to `refs/notes/semantic-release`; `lib/branches/get-tags.js` reads
+it and falls back to `channels = [null]` when a tag has no note. `lib/get-last-release.js` then filters
+a **prerelease** branch's tags down to those whose channels match the branch channel:
+
+```js
+(branch.type === "prerelease" && tag.channels.some((c) => isSameChannel(branch.channel, c)) && ...)
+  || !semver.prerelease(tag.version)
+```
+
+So on a remote with no `refs/notes/*`, **every `X-alpha.N` tag is invisible** and only the newest
+non-prerelease tag survives the filter. The observed symptom is a log line that looks almost right —
+`Found git tag 8.1.2 ... on branch alpha` where `9.0.0-alpha.6` was expected — followed by a version
+that restarts the prerelease counter at `.1`. Reproduced in a scratch repo both ways: no notes gives
+`8.1.2` / `9.0.0-alpha.1`, and `git notes --ref=semantic-release add -m '{"channels":["alpha"]}'` on
+`9.0.0-alpha.6` gives `9.0.0-alpha.6` / `9.0.0-alpha.7`.
+
+Two consequences worth knowing:
+
+- **`actions/checkout` does not need changing.** semantic-release runs `fetchNotes` itself before
+  resolving branches, verified against a fresh clone whose only copy of the notes was on the remote.
+  The notes must exist **on origin**; nothing about the checkout step has to fetch them.
+- **A forge migration loses them.** `refs/notes/*` is not a branch and not a tag, so a mirror, an
+  import or a `git push --all --tags` carries none of it. That is exactly how the Forgejo remote ended
+  up with 375 tags and zero notes. `claude-docs/RELEASE-TAG-REPAIR.md` has the repair.
+
+**LANDMINE — creating a release through the forge API mints the tag at the target branch, not at the
+release commit.** Forgejo (like GitHub) creates a missing tag at `target_commitish` when a release is
+created. The releases API still shows `"target_commitish": "main"` on `9.0.0-alpha.1` through `.5`, and
+all five tags sit on `main`'s tip — the `RELEASE: 8.1.2` commit `6cd6e9af3` — while the real
+`RELEASE: 9.0.0-alpha.N` commits sit on `alpha`. Comparing every remote tag against its local
+counterpart bounds the damage exactly: of 375 tags, those five mismatch, `9.0.0-alpha.6` is a ghost
+(see below), `continuous` legitimately moves because it is the rolling dev tag, and **the other 368
+match byte for byte**. Tags pushed by git are fine; tags minted by the API are not.
+
+`release-build.yml` is **not** the culprit and needs no change: its Forgejo call posts
+`{"tag_name":"$V", ...}` with no `target_commitish`, which is why `8.1.2` and `9.0.0-alpha.6` both come
+back from the API with an empty target — the tag already existed when the release was created. How
+`9.0.0-alpha.6`'s tag came to be on `6cd6e9af3` anyway is **not** recoverable from what the remote still
+holds; don't invent a mechanism for it. What *is* on the record: there is no `RELEASE: 9.0.0-alpha.6`
+commit in the history and `CHANGELOG.md` on `origin/alpha` ends at `.5`, so that release's
+`@semantic-release/git` commit never landed.
+
+The rule that follows regardless: **push the tag with git first, then create the release against a tag
+that already exists.** Passing a branch as `target_commitish` for a release that has a real commit is
+how five tags ended up 300-odd commits away from the code they name. Note the mirror job already gets
+this right for the GitHub side — it passes `target_commitish: ${{ github.sha }}` precisely because the
+tag has usually not mirrored across yet. That covers an absent **tag** only: the commit it names still has
+to be present, which is why the job now probes for it first (see above).
+
+
+## From: ghcr's 429 is a burst limiter on the host, and authenticating does not lift it
+
+**LANDMINE — a registry 429 that asks for a sub-millisecond wait is not a quota you can buy your way out
+of, and buildkit will not wait for it.** `docker-test.yml` has lost three runs to the pull of
+`ghcr.io/linuxserver/baseimage-ubuntu:noble` — 676 and 680 on 2026-09-27, 739 on 2026-09-28 — and all
+three end the same way:
+
+```
+#9 ERROR: failed to copy: httpReadSeeker: failed open: unexpected status from GET request to
+https://ghcr.io/v2/linuxserver/baseimage-ubuntu/blobs/sha256:5d9a14c0…: 429 Too Many Requests
+::error::buildx failed with: toomanyrequests: retry-after: 933.17µs, allowed: 44000/minute
+```
+
+The phase varies — 676 died resolving the *manifest*, 680 and 739 fetching a *blob* — so anything that
+touches the registry is exposed, not one request.
+
+**The first fix was wrong, and the evidence that it was wrong is in the run it shipped in.** The `Log in
+to ghcr.io when credentials are available` step was added on the premise that ghcr throttles *anonymous*
+pulls per source address and an authenticated pull is counted against the account instead. Run 739 carried
+that step, logged `Login Succeeded` and `Authenticated to ghcr.io as ***`, buildkit emitted its `[auth]
+… token for ghcr.io` vertex (absent from job 1712, which had no credentials) — and the blob GET came back
+429 anyway. Two numbers in the error say why: **44,000/minute is not an allowance one build can exhaust**,
+and **the retry-after is 933 µs**. That is a token bucket keyed on the requesting host, refilling in under
+a millisecond; an account-scoped credential is the wrong axis entirely. The login is kept — it costs one
+second and is the right thing for Docker Hub's genuine per-account quota — but it is not why the job is
+green.
+
+**What works is waiting, and the only retry a `uses:` step admits is `continue-on-error` plus a second
+copy of it.** `nick-fields/retry` and its kin run shell commands, not JavaScript actions. Verified against
+the runner's own engine rather than assumed: `pkg/runner/step.go` in `code.forgejo.org/forgejo/act` sets
+`stepResult.Outcome` to `failure` while `isContinueOnError` turns `Conclusion` back to `success`, and
+`StepResult` (`pkg/model/step_result.go`) marshals `outcome` as exactly the string an
+`if: steps.<id>.outcome == 'failure'` compares against. Both `test.yml`'s `docker` job and
+`release-build.yml` now do this; the second is the one that matters, because a 429 there costs the release its images and
+takes the `mirror` job (`needs: docker`) down with it.
+
+**One retry, not a loop.** The limiter resets in under a millisecond, so a host still limiting a minute
+later is a condition worth failing loudly on rather than grinding against. In `test.yml`'s `docker` job
+the retry is nearly free — the builder container outlives the step, so buildkit reuses whatever it already fetched.
+In `release-build.yml` it is not: `no-cache: true` means attempt two rebuilds the whole Gradle stage,
+about fifteen minutes. Pushing the same tags twice is idempotent, so that is the price of the insurance.
+
+**The standing exposure the retry does not remove:** every job on this instance pulls
+`ghcr.io/catthehacker/ubuntu:runner-latest`, the grinder pulls its own images, and `concurrency` is keyed
+per-ref, so one push routinely runs two builds of the same commit side by side against one registry from
+one address. Caching in front of the registries on the runner host is the fix that removes the cause
+rather than absorbing it — **`claude-docs/RUNNER-REGISTRY-CACHE.md`** has the configuration, the two
+constraints that decide its shape (Docker Engine's `registry-mirrors` is Docker-Hub-only; BuildKit's is
+not, and falls back to upstream — verified from `util/resolver/resolver.go`, which the buildkitd
+reference does not state), and the bridge-gateway/`INPUT policy DROP` trap that makes a mirror look like
+it simply does not work.
+
+**The workflow half has landed and no longer has to wait for the host half.** `test.yml` and
+`release-build.yml` probe each cache with `GET /v2/` and mirror only what answered, so a host with no
+caches builds against upstream exactly as before. The caches are reached by **fixed IP, not by name**,
+because jobs run inside a `docker:dind` daemon whose embedded DNS does not know the host daemon's
+containers — measured both ways on 2026-10-02 against a reproduction of the topology. `driver-opts:
+network=…` went with it, which also removes the only way that step could kill a build outright
+(`network runners_default not found`, run 797). Section 0 of that file has the topology; do not re-add
+a service name here.
+
