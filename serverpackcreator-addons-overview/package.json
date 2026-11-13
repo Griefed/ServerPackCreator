@@ -21,7 +21,7 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.22.11",
+    "@babel/eslint-parser": "7.29.13",
     "@quasar/app-webpack": "4.4.5",
     "eslint": "8.57.1",
     "eslint-config-prettier": "8.5.0",
