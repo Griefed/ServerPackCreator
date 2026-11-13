@@ -294,3 +294,33 @@ the "do not tidy that away, here is what it cost last time".
   visible immediately surfaced a real undeclared dependency (`sourcesJar` packages what
   `shipRootDocuments` writes), which had been ordering by luck.
 
+## Verifying build logic — moved from the root `CLAUDE.md`
+
+- **Build logic is verified by measurement where it cannot be unit-tested, and `buildSrc` now has a test source
+  set for the part that can be — Griefed's call, 2026-10-16.** `buildSrc/src/test/kotlin` holds JUnit 5 via
+  `libs.kotlinTestJunit5`, and it exists for **pure functions**: `BuildVersionTest` pins
+  `BuildVersion.sanitize`, the predicate that keeps a `/` in `-Pversion` from being read as a path. Task
+  wiring, a `Copy`'s inputs and a one-line filter are still NOT worth a TestKit harness, so for those — and
+  for the real-world consequence of a pure function too — the standard is unchanged: **measure the behaviour
+  before and after, and record both numbers in the commit message.**
+  - **LANDMINE — a buildSrc test does not run unless something drags it in, and `build` is not that
+    something.** Gradle 8.0 made buildSrc an included build and stopped running its lifecycle tasks from the
+    main build; a maintainer confirms that is intended, with no plan to change it
+    ([gradle#25439](https://github.com/gradle/gradle/issues/25439)). Three obvious routes are all dead ends,
+    measured on 9.8.1: `tasks.check { dependsOn("buildSrc:check") }` is inert, `gradle.includedBuild("buildSrc")`
+    does not resolve, and `./gradlew -p buildSrc check` fails in buildSrc's *settings* — it declares the foojay
+    resolver with no version, which only resolves because the root build has already put it on the classpath
+    (the deliberate asymmetry `.claude/rules/build-layout.md` records under *the foojay toolchain resolver is
+    declared TWICE*). What works is `buildSrc`'s **jar**, which is built on every
+    invocation: `tasks.jar { finalizedBy(tasks.test) }`, so `./gradlew help` runs the suite in ~3 s. It must be
+    `finalizedBy` and not `dependsOn` — `kotlin-dsl` puts the jar on the test compile classpath, so
+    `dependsOn` is a circular dependency and fails the build outright.
+  - The named *Verify the build logic* step in both `test.yml`s runs exactly that `./gradlew help`, before the
+    long build, so a broken convention plugin fails in seconds rather than after the frontend.
+  Historic measurements, from before the source set existed: `8b87057cf` did this (a planted marker plus a cached
+  manifest; the cache went 643 → 0 before the change and survived after), as did the `updateManifests` retarget (app
+  home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
+  Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
+  a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
+  outcome of the manifest work even though nothing can guard `TestHome.prepare` itself, because `ApiWrapper.setup()`
+  re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
