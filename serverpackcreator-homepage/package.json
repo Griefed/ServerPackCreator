@@ -28,7 +28,7 @@
     "@quasar/vite-plugin": "2.0.2",
     "@vitejs/plugin-vue": "6.0.10",
     "@vue/test-utils": "2.5.1",
-    "autoprefixer": "10.6.1",
+    "autoprefixer": "10.6.2",
     "eslint": "10.13.0",
     "eslint-plugin-vue": "10.11.1",
     "globals": "17.13.0",
