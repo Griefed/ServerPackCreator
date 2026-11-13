@@ -1,4 +1,7 @@
-FROM eclipse-temurin:22-jdk-jammy@sha256:d8e6ba486df17bf758888d2b1b608133d1eedca8daf69d3fc6bf78d8be81e07e AS builder
+# The JDK here must be the Gradle toolchain's major (gradle/libs.versions.toml `java`): the launcher JVM serves as
+# the toolchain only when the majors match, and otherwise Gradle downloads one from foojay on every uncached build.
+# auto-download=false below turns that drift into a build failure instead.
+FROM eclipse-temurin:21-jdk-jammy@sha256:b2711c65970c1227197c29c46e669bfdbb137524e9da0e664703a140ec25a040 AS builder
 
 ARG VERSION=dev
 
@@ -9,7 +12,7 @@ COPY / /tmp/serverpackcreator
 RUN \
   apt-get update && apt-get install dos2unix -y && \
   dos2unix gradlew && chmod +x gradlew && \
-  sh gradlew -Pversion="$VERSION" \
+  sh gradlew -Pversion="$VERSION" -Porg.gradle.java.installations.auto-download=false \
     build --info --full-stacktrace \
     -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 

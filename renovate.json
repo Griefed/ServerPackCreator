@@ -11,5 +11,13 @@
   "assignees": ["Griefed"],
   "gradle": {
     "enabled": true
-  }
+  },
+  "packageRules": [
+    {
+      "description": "The image builder's JDK must be the Gradle toolchain's major (gradle/libs.versions.toml `java`), or the build provisions a second JDK from foojay; the Dockerfile forbids that and fails instead. Raise this bound together with the toolchain.",
+      "matchFileNames": ["docker/Dockerfile"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "allowedVersions": "<22"
+    }
+  ]
 }
