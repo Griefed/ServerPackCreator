@@ -14,6 +14,11 @@
   },
   "packageRules": [
     {
+      "description": "docker/docker-compose.yml is the file users copy. A digest there freezes every copy on one build of its tag, so it carries tags only.",
+      "matchFileNames": ["docker/docker-compose.yml"],
+      "pinDigests": false
+    },
+    {
       "description": "The image builder's JDK must be the Gradle toolchain's major (gradle/libs.versions.toml `java`), or the build provisions a second JDK from foojay; the Dockerfile forbids that and fails instead. Raise this bound together with the toolchain.",
       "matchFileNames": ["docker/Dockerfile"],
       "matchPackageNames": ["eclipse-temurin"],

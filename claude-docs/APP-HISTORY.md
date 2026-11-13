@@ -138,7 +138,7 @@ numbers and figures describe the moment they were written, not the current code.
 - **LANDMINE — the dependency is not inert. `EmbeddedMongoAutoConfiguration` activates for EVERY Spring
   context on the test classpath** and throws *"Set the de.flapdoodle.mongodb.embedded.version property"*
   when it is absent. Adding it broke four tests in two classes immediately. Every `@SpringBootTest`
-  therefore opts **in** (`de.flapdoodle.mongodb.embedded.version=8.0.5`) or **out**
+  therefore opts **in** (`EmbeddedMongoAvailable.VERSION_PROPERTY`, which names the version) or **out**
   (`spring.autoconfigure.exclude=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration`).
 
 - **Two classes must stay opted out, and it is not a preference.** `DatabaseUriPropertyTest` asserts that

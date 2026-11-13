@@ -232,13 +232,17 @@ changing the credentials has no effect until the volume is gone.
 **If MongoDB will not start**, read its log. On a host kernel between 6.19.0 and 7.0.13 the image
 refuses to start, by design, over [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912).
 Docker Desktop's linuxkit kernel crosses that range — 29.7.2 shipped 7.0.12 and is affected, 29.8.2
-ships 7.0.14 and is not — so the fix is usually to update Docker Desktop. If you cannot, the compose
-file tracks the same version as the deployment one on purpose; override it per machine from an
-untracked `docker/.env` rather than editing the file:
+ships 7.0.14 and is not — so the fix is usually to update Docker Desktop. If you need another image,
+the compose file tracks the same version as the deployment one on purpose; override it per machine from
+an untracked `docker/.env` rather than editing the file:
 
 ```
-SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
+SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:<another 9.0.x tag>-ubuntu2204
 ```
+
+Stay on 9.x for an existing dev volume: a volume initialised by 9.0 has featureCompatibilityVersion
+`"9.0"`, which an 8.0 binary refuses to open. An 8.0 image needs a fresh volume (`down -v`, which deletes
+the dev database).
 
 ### Never do filesystem work in a task's configuration block
 

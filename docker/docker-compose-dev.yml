@@ -33,8 +33,13 @@ services:
     # Desktop's linuxkit kernel crosses that range, so an older Docker Desktop cannot run this.
     # Override the tag from an untracked `docker/.env` rather than editing this file:
     #
-    #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
-    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:241eb6e423b31ad576267e192a4748db1ed0e332c7c68296bb504eded1e9b632}
+    #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:<another 9.0.x tag>-ubuntu2204
+    #
+    # Stay on 9.x for the `spcdb-data` volume this file already created: a volume initialised by
+    # 9.0 has featureCompatibilityVersion "9.0", and an 8.0 binary refuses to open it. An 8.0 image
+    # needs a fresh volume (`docker compose -f docker/docker-compose-dev.yml down -v` first, which
+    # deletes the dev database).
+    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:9.0.8-ubuntu2204@sha256:7ab9e334748b094ec3831c75a5e50ba62b07336b375c58744ddeb793c6ed5604}
     # Published so the IDE-run application can reach the database. Nothing in the fast loop runs
     # inside this network.
     ports:

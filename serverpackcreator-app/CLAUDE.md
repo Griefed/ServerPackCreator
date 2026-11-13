@@ -142,7 +142,7 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `spring3x` against Boot 4 is flapdoodle issue #77 and fails on the changed Mongo autoconfiguration.
 - **LANDMINE — the dependency is not inert. `EmbeddedMongoAutoConfiguration` activates for EVERY Spring
   context on the test classpath** and throws *"Set the de.flapdoodle.mongodb.embedded.version property"*
-  when it is absent. Every `@SpringBootTest` therefore opts **in** (`de.flapdoodle.mongodb.embedded.version=8.0.5`)
+  when it is absent. Every `@SpringBootTest` therefore opts **in** (`EmbeddedMongoAvailable.VERSION_PROPERTY`; MongoDB 8.3, the newest line flapdoodle can download, while compose deploys 9.0 — see `MONGOD_VERSION`)
   or **out** (`spring.autoconfigure.exclude=de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration`).
 - **Two classes must stay opted out.** `DatabaseUriPropertyTest` asserts that the *configured* URI reaches the
   driver, and an embedded server overrides it (mongod binds its own port, the write goes there), which would

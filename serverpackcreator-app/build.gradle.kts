@@ -141,4 +141,8 @@ tasks.test {
     // and re-declaring them here only created a second copy of TestHome.prepare's mkdirs-and-.gitkeep
     // to drift out of step with it.
     systemProperty("java.util.logging.manager","org.jboss.logmanager.LogManager")
+    // MongoVersionAlignmentTest reads these; without the declaration an edit to them leaves it UP-TO-DATE.
+    inputs.file(rootProject.file("docker/docker-compose.yml"))
+    inputs.file(rootProject.file("docker/docker-compose-dev.yml"))
+    inputs.file(rootProject.file("README.md"))
 }
