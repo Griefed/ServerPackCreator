@@ -17,7 +17,7 @@
     "build": "npm run collect-downloads && quasar build"
   },
   "dependencies": {
-    "@quasar/extras": "1.18.0",
+    "@quasar/extras": "2.1.0",
     "@quasar/quasar-ui-qflashcard": "3.0.0",
     "quasar": "2.35.2"
   },
