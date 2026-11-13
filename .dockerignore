@@ -24,15 +24,18 @@ media/
 
 # Editor state, and the GitHub workflows -- which nothing in the build reads.
 #
-# `.forgejo/` is deliberately NOT here: `buildSrc/build.gradle.kts` declares
-# `.forgejo/actions/resolve-version/action.yml` as an input of `:buildSrc:test`, so excluding it
-# fails the image build outright with "Input file does not exist". Root `.gitignore` is a declared
-# input of `:serverpackcreator-api` for the same reason -- check `inputs.file(` across the build
-# before adding anything here.
+# `.forgejo/` and `.github/scripts/` are deliberately NOT here: `buildSrc/build.gradle.kts` declares
+# `.forgejo/actions/resolve-version/action.yml` as an input of `:buildSrc:test`, and
+# `serverpackcreator-clientside/build.gradle.kts` declares `.github/scripts/clientside-verification.js`
+# as an input of `:serverpackcreator-clientside:test`, whose `ClientsideReportRendererTest` reads it.
+# Excluding either fails the image build outright with "Input file does not exist". Root `.gitignore`
+# is a declared input of `:serverpackcreator-api` for the same reason -- check `inputs.file(` across
+# the build before adding anything here.
 .idea/
 .run/
 .vscode/
-.github/
+.github/*
+!.github/scripts/
 .DS_Store
 
 # Has its own context and its own .dockerignore. `docker/Dockerfile` never touches the website,
