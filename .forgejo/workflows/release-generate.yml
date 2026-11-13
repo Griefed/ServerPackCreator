@@ -45,7 +45,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '26'
 
       # semantic-release pushes the CHANGELOG commit and the tag itself, so origin has to be
       # authenticated before it runs. The credential goes in a per-host Authorization header, NOT in

@@ -295,7 +295,7 @@ jobs:
           # @quasar/app-vite's floor is a hard process.exit(1) at 22.22.0, and the image's builder
           # stage is pinned to node:22-bookworm-slim, so 22 keeps the two verified against the same
           # major rather than optimistically ahead of it.
-          node-version: '22'
+          node-version: '26'
           cache: 'npm'
           cache-dependency-path: serverpackcreator-homepage/package-lock.json
 
