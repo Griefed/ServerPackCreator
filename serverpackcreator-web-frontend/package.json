@@ -6,7 +6,7 @@
   "author": "Griefed <griefed@griefed.de>",
   "private": true,
   "type": "module",
-  "packageManager": "npm@11.16.0",
+  "packageManager": "npm@12.2.2",
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "format": "prettier --write \"**/*.{ts,js,vue,html,md,json}\" --ignore-path .gitignore",
