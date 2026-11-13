@@ -26,7 +26,7 @@ RUN npm run build
 # image writes to is proven on it, not assumed. Nothing here ships an nginx site-conf (`/api/latest`
 # is a symlink, deliberately, because /config is a VOLUME seeded once), so the site-conf path move
 # between LSIO generations does not reach this image.
-FROM ghcr.io/linuxserver/nginx:1.30.4@sha256:c6c300bd5959e340d8742359f59604f3ad21426ea905cc77e75b01345034c8c6
+FROM ghcr.io/linuxserver/nginx:1.30.6@sha256:8de00c2dd6d2d00955a2905909577986660c9c654050865de9f895b0ad97a9fa
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 
