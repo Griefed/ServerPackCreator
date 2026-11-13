@@ -41,7 +41,8 @@ exist. In `.vue` templates the asset form is `~@/assets/x`, and in SCSS it is `u
 
 ## Testing pattern (Vitest)
 
-- Stack: `vitest`, `@vue/test-utils@2`, `@pinia/testing@1`, `happy-dom`. `vitest.config.js` maps
+- Stack: `vitest`, `@vue/test-utils@2`, `happy-dom`. Store tests use a real `setActivePinia(createPinia())`,
+  not `@pinia/testing`, which is therefore not a dependency. `vitest.config.js` maps
   Quasar's `@` path alias to `src/`, matching app-vite 3, and uses happy-dom.
 - **Mock the axios boot-module, not the network:** `vi.mock('@/boot/axios')` avoids the Quasar-only
   `@quasar/app-vite` wrappers import chain. `test/stores/setting-store.test.js` is the template (pins
