@@ -27,7 +27,9 @@ import org.springframework.data.mongodb.gridfs.GridFsResource
 import org.springframework.util.FileSystemUtils
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import java.util.*
 import kotlin.io.path.listDirectoryEntries
@@ -97,21 +99,35 @@ class FileSystemStorageService(
      * Reports the path and nothing else because this runs on the download route, inside the request and
      * before any byte reaches the client: hashing the copy here is a second full pass over an archive
      * whose hash the only caller discards.
+     *
+     * Copies into a randomly named sibling and moves it onto `$id.zip` atomically, so [load] never sees a
+     * partial archive: not one a failed copy left behind, and not one a concurrent first download is still
+     * writing. The sibling's name cannot contain the id, so [load]'s legacy fallback cannot match it either.
      */
     @Throws(StorageException::class)
     fun cache(file: GridFSFile, resource: GridFsResource): Optional<Path> {
+        val id = file.objectId.toString()
+        val destinationFilePath: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
+        if (!destinationFilePath.parent.equals(rootLocation.toAbsolutePath())) {
+            // This is a security check
+            throw StorageException("Cannot store file outside current directory.")
+        }
+        var partial: Path? = null
         try {
-            val id = file.objectId.toString()
-            val destinationFilePath: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
-            if (!destinationFilePath.parent.equals(rootLocation.toAbsolutePath())) {
-                // This is a security check
-                throw StorageException("Cannot store file outside current directory.")
-            }
-            FileUtils.copyToFile(resource.inputStream, destinationFilePath.toFile())
+            partial = Files.createTempFile(destinationFilePath.parent, "gridfs-", ".part")
+            resource.inputStream.use { source -> Files.copy(source, partial, StandardCopyOption.REPLACE_EXISTING) }
+            Files.move(partial, destinationFilePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
             log.debug("Stored file to $destinationFilePath.")
             return Optional.of(destinationFilePath)
         } catch (e: IOException) {
             log.error("Error storing file: ", e)
+            partial?.let { leftover ->
+                try {
+                    Files.deleteIfExists(leftover)
+                } catch (cleanup: IOException) {
+                    log.warn("Could not remove the partial copy $leftover: ", cleanup)
+                }
+            }
             return Optional.empty()
         }
     }
@@ -119,9 +135,8 @@ class FileSystemStorageService(
     /**
      * The SHA-256 of a file, streamed a buffer at a time.
      *
-     * Reads rather than slurps: the previous `digest(file.readBytes())` materialised the whole archive
-     * as a `ByteArray`, which the shipped 5000 MB multipart limit makes an `OutOfMemoryError` outright —
-     * a Java array cannot exceed about 2 GB.
+     * Streams rather than reading the file into one `ByteArray`: the shipped 5000 MB multipart limit admits
+     * archives larger than the roughly 2 GB a Java array can hold.
      *
      * Takes a fresh digest per call, deriving only the algorithm from [messageDigestInstance]. A
      * `MessageDigest` is stateful and not thread-safe, uploads run on request threads, and two
@@ -144,12 +159,10 @@ class FileSystemStorageService(
     /**
      * The stored file for an id, empty when there is none.
      *
-     * Resolves `$id.zip`, which is the name both [store] overloads write and [delete] removes. The scan
-     * this replaced matched any entry whose whole *path* contained the id, so it returned the directory
-     * `ConfigurationHandler.isZip` extracts beside the archive as readily as the archive -- `exists()`
-     * is true for both, and the download route wrapped whichever came first in a `FileSystemResource`
-     * -- and it listed the entire storage root on every download. The fallback keeps files predating
-     * that naming readable, matching on the entry's own name and only ever on a regular file.
+     * Resolves `$id.zip`, which is the name [store] and [cache] write and [delete] removes. Never matches by
+     * path: `ConfigurationHandler.isZip` extracts each archive into a sibling directory named after it, which a
+     * path-contains-id match would return as readily as the archive. The fallback keeps files predating the
+     * `$id.zip` naming readable, matching on the entry's own name and only ever on a regular file.
      */
     fun load(id: String): Optional<File> {
         val archive = rootLocation.resolve("$id.zip").normalize().toFile()

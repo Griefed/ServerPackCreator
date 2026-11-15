@@ -173,9 +173,13 @@ Keep the return type.
 - **Spring handles `Range` itself for a `Resource` return value — do not add `ResourceRegion` code.**
   `AbstractMessageConverterMethodProcessor` sets `Accept-Ranges: bytes`, converts to regions on a `Range`
   header, answers 206 with `Content-Range` and 416 when unsatisfiable (read out of `spring-webmvc` with `javap`).
-  Pinned by `ServerPackControllerTest.aRangeRequestIsAnsweredWithThatRangeSoADownloadCanResume`. **A grep of this
+  Pinned by `ServerPackControllerTest.aRangeRequestIsAnsweredWithThatRangeSoADownloadCanResume` and, for both
+  routes, the suffix, multi-range, unsatisfiable and `HEAD` cases in `DownloadRangeTest`. **A grep of this
   repo finds none of it**, because it is the framework's — don't conclude Range support is absent. It is what
   lets a multi-gigabyte download resume.
+- **A download is counted once, not once per request.** Both routes ask `DownloadCount.isNewDownload`: a `GET`
+  without `Range`, or whose first range starts at byte 0, counts; a resume, a further segment, `HEAD` and a
+  malformed or unsatisfiable range do not. Pinned in `DownloadRangeTest`.
 - **Nothing may wrap the response stream.** There is no `ShallowEtagHeaderFilter` (it buffers the whole
   body in memory to hash it), no `server.compression.*`, and no `WebMvcConfigurer` anywhere in the module.
   Adding any of the three silently undoes the streaming the test above thinks it is guarding — the body
@@ -193,8 +197,9 @@ Keep the return type.
 `.name`, and the getter reports `File(it).name` so legacy rows holding an absolute path stop exposing the server's
 filesystem layout without rewriting stored documents. The field is serialised under `/api/v2/serverpacks/{id}`
 and used for the `Content-Disposition` header. `zipBuilder` already suffixes `_server_pack.zip`, so the controller
-must **not** re-append a suffix. The SPA overrides the name client-side with its own `download` attribute, so a
-regression here goes unreported — **a guard rail in one adapter is a reason a bug stays unreported.** Keep the
+must **not** re-append a suffix. The SPA names nothing itself (a bare `download` attribute) and shows this same
+`fileName`, so a wrong name here reaches users directly — **never add a client-side rename that would hide it: a
+guard rail in one adapter is a reason a bug stays unreported.** Keep the
 test fixture production-shaped (a real path with suffix): a fixture that cannot occur in production is not a pin.
 
 ## The web module's mod-lists are embedded, not referenced

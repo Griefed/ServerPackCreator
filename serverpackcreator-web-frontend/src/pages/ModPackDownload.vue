@@ -90,8 +90,8 @@
         <q-separator vertical />
         <q-card-actions vertical class="justify-around">
           <q-btn ref="downloadButton" size="xl" flat round color="positive" icon="download"
-                 type="a" :href="downloadHref" :download="name"
-                 @click="count = false; started = true" />
+                 type="a" :href="downloadHref" download
+                 @click="onLinkClicked" />
           <q-btn size="xl" flat round color="info" icon="share" @click="copyToClipboard(current())" />
         </q-card-actions>
       </q-card-section>
@@ -101,6 +101,9 @@
           <q-item-section>
             <q-item-label overline v-if="started">
               Downloading &mdash; your browser is saving the file.
+            </q-item-label>
+            <q-item-label overline v-else-if="failed">
+              Download failed &mdash; the server could not provide the file.
             </q-item-label>
             <q-item-label overline v-else-if="canceled">
               Download aborted...
@@ -138,7 +141,11 @@ export default defineComponent({
      * JavaScript.
      */
     downloadHref(): string {
-      return `${modpacks.defaults.baseURL ?? ''}download/${encodeURIComponent(String(this.$route.params.id))}`;
+      return `${modpacks.defaults.baseURL ?? ''}${this.downloadPath}`;
+    },
+    /** The download route relative to the boot module's `baseURL`, for the link and for the availability check. */
+    downloadPath(): string {
+      return `download/${encodeURIComponent(String(this.$route.params.id))}`;
     }
   },
   setup() {
@@ -171,6 +178,7 @@ export default defineComponent({
       versionID: ref(''),
       canceled: ref(false),
       started: ref(false),
+      failed: ref(false),
       count,
       counter
     };
@@ -193,6 +201,9 @@ export default defineComponent({
     countDownTimer() {
       if (this.counter > 0 && this.count) {
         setTimeout(() => {
+          if (!this.count) {
+            return;
+          }
           this.counter -= 1;
           this.countDownTimer();
         }, 1000);
@@ -204,18 +215,54 @@ export default defineComponent({
     /**
      * Fires the download link the countdown was counting towards. Clicks the real anchor rather than
      * fetching the archive: the browser then streams it straight to disk, with its own progress, its
-     * own resume on an interrupted transfer, and no copy of a multi-gigabyte pack in the tab.
+     * own resume on an interrupted transfer, and no copy of a multi-gigabyte pack in the tab. The browser
+     * reports a failed download only in its own download list, so the route is asked with `HEAD` first and
+     * the page claims a download only once the archive is known to be there.
      */
     startDownload() {
-      (this.$refs.downloadButton as { $el?: HTMLAnchorElement } | undefined)?.$el?.click();
-      this.started = true
+      const link = (this.$refs.downloadButton as { $el?: unknown } | undefined)?.$el;
+      if (!(link instanceof HTMLAnchorElement)) {
+        return;
+      }
+      modpacks.head(this.downloadPath).then(() => {
+        this.started = true;
+        link.click();
+      }).catch(error => this.reportUnavailable(error));
+    },
+    /**
+     * A click on the link itself, by the user or by `startDownload`. The browser is already fetching, so
+     * the availability check runs alongside and takes the "Downloading" claim back if it fails.
+     */
+    onLinkClicked() {
+      this.count = false;
+      if (this.started) {
+        return;
+      }
+      this.started = true;
+      this.failed = false;
+      modpacks.head(this.downloadPath).catch(error => this.reportUnavailable(error));
+    },
+    reportUnavailable(error: unknown) {
+      this.started = false;
+      this.failed = true;
+      this.$q.notify({
+        timeout: 5000,
+        progress: true,
+        icon: 'error',
+        color: 'negative',
+        message: 'Could not download the modpack: ' + String(error)
+      });
     }
+  },
+  /** Stops the countdown, so a page the user has left never fires its download. */
+  beforeUnmount() {
+    this.count = false;
   },
   mounted() {
     this.showTextLoading();
     modpacks.get(String(this.$route.params.id)).then(response => {
       this.dateCreated = response.data.dateCreated;
-      this.name = response.data.name.replaceAll(' ', '_');
+      this.name = response.data.name;
       this.projectID = response.data.projectID;
       this.serverPacks = response.data.serverPacks;
       this.sha256 = response.data.sha256;

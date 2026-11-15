@@ -164,13 +164,20 @@ with `startDownload()` clicking it for the five-second countdown — and never t
   an archive whose upload limit ships at **5000MB**, and the browser's download manager never sees the
   request, so nothing can resume. Pinned in both page tests by the negative — no XHR for `download/`, and
   `createObjectURL` never called.
+- **A failed download is reported on the page, through a `HEAD` on the same route.** The browser shows a
+  404/500 on an anchor only in its own download list, so `startDownload()` asks with `HEAD` before clicking
+  and a user's own click is checked alongside; a failure replaces "Downloading" with "Download failed" and a
+  notification. `HEAD` carries no body and the backend does not count it as a download
+  (`DownloadCount.isNewDownload`), so the check costs neither bytes nor a skewed counter. Pinned in both page
+  tests' "download feedback" blocks.
 - **The href comes from the boot module's `baseURL`**, so the API path is written in exactly one place
   (`src/boot/axios.ts`). Page tests must therefore include `defaults: { baseURL: ... }` in their
   `vi.mock('@/boot/axios')`.
-- **The saved filename is the server's**, from `Content-Disposition`, which wins over the `download`
-  attribute for a same-origin response. The attribute stays only as a fallback for a response without the
-  header. Do not reintroduce client-side renaming: the backend owns that name, and it was fixed to produce
-  a correct one (see `serverpackcreator-app/CLAUDE.md`).
+- **The saved filename is the server's**, from `Content-Disposition`. The anchor carries a bare `download`
+  attribute with no value, and each page shows the name the server uses — the modpack's `name` verbatim,
+  the server pack's own `fileName` — so there is no second, client-side name to disagree with the header.
+  Do not reintroduce client-side renaming: the backend owns that name (see `serverpackcreator-app/CLAUDE.md`).
+  Pinned in both page tests by the rendered name and the empty `download` attribute.
 - Testing these pages needs `mount`, not `shallowMount`, to see the anchor at all, plus the QPage
   passthrough stub this file already documents.
 - **Verified end-to-end against the real backend** (Spring Boot `-web` + MongoDB, production bundle):

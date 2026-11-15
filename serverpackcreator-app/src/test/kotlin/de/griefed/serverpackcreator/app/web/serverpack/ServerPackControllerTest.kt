@@ -75,11 +75,10 @@ internal class ServerPackControllerTest {
     }
 
     /**
-     * Until this guard, `ServerPack.fileName` held the generated archive's **absolute path** and the
-     * controller appended `_server_pack.zip` to it, so every downloader was told to save
-     * `/srv/spc/server-packs/My Pack_server_pack.zip_server_pack.zip` -- the server's filesystem layout
-     * plus a doubled suffix. It stayed green because the only fixture was a bare name no production row
-     * ever carries.
+     * A legacy row stores the generated archive's absolute path in `fileName`. The header must carry only its
+     * base name, already suffixed, so neither the server's filesystem layout nor a doubled
+     * `_server_pack.zip` reaches the downloader. The fixture is production-shaped on purpose: a bare name
+     * cannot fail this.
      */
     @Test
     fun theServedNameIsTheArchivesBaseNameNotTheServersPath(@TempDir tempDir: File) {
@@ -114,7 +113,8 @@ internal class ServerPackControllerTest {
         every { serverPackService.updateDownloadStats("serverpack1") } returns Optional.of(pack)
 
         val disposition = mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/serverpack1"))
-            .andReturn().response.getHeader("Content-Disposition")!!
+            .andReturn().response.getHeader("Content-Disposition")
+            ?: Assertions.fail<String>("the response carries no Content-Disposition header")
 
         // Asserted on the RAW header for the reason ArchiveStreamingTest records: ContentDisposition.parse
         // recovers the same filename from the escaped and the unescaped form alike, so a round-trip
@@ -140,7 +140,8 @@ internal class ServerPackControllerTest {
         every { serverPackService.updateDownloadStats("serverpack1") } returns Optional.of(pack)
 
         val disposition = mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/serverpack1"))
-            .andReturn().response.getHeader("Content-Disposition")!!
+            .andReturn().response.getHeader("Content-Disposition")
+            ?: Assertions.fail<String>("the response carries no Content-Disposition header")
 
         Assertions.assertEquals("attachment; filename=\"serverpack1_server_pack.zip\"", disposition)
     }
