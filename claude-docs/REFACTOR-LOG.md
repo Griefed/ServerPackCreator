@@ -5397,3 +5397,25 @@ commit message carries its red-first evidence.
   note, instead of ending `ClientsideVerifier.report()` and discarding every row already assessed. The trigger
   (a CurseForge `downloadUrl` with raw spaces) is still unverified, and no longer matters: whatever throws, the
   report survives. Pinned by `BootTestFailureNoteTest.aJarScanThatThrowsIsThatRowsErrorAndNamesTheFailure`.
+- **The clientside boot is gated and contained** (D-N-1, owner's call "harden + maintainer gate"; D-N-13).
+  `bootAuthorised` boots only on write access; the `report` job runs on a read-only token without persisted
+  credentials or cache writes, the CurseForge key arrives as a file `CurseForgeApiKey` deletes, `start.sh` gets
+  an allowlisted environment, posting moved to its own job, and `clientside-accept.yml` restores no cache. The
+  hosted runner's passwordless `sudo` means none of the hardening contains a determined mod — the gate is the
+  control. **Unverified on GitHub**: no run was possible from here and `actionlint` is not installed.
+- **The verification comment survives what boots print** (D-N-4/5/6): the head is budgeted, crash excerpts are
+  sanitised and fenced like consoles, `<`/`>` are escaped in the data block, and the script uses one opener.
+- **Smaller clientside fixes:** the console tail is read by seeking (D-N-9); a JDK advertised for two
+  architectures resolves to the host's (D-N-12); the Docker defaults' fallback list matches the shipped one and
+  `FallbackModsCopiesTest` holds all three copies to one set, with `-clientsideapply` editing all three (D-A-M1).
+- **Guards:** `PackageGraphTest` holds the clientside package graph to its CLAUDE.md table (A-A8);
+  `JarDownloaderRoutingTest` no longer names a package (A-A7).
+- **Grinder report:** a streamed export that fails part-way drops the connection instead of completing
+  (D-N-2), and its bodies are pinned against the whole-document renderings (D-N-15); report sections degrade
+  with a WARN and an `Error` drops the connection rather than hanging the client (D-N-8); `all` stays `all`
+  within the table cap (D-N-7); doc comments lost their incident history (D-A-L2).
+- **Plugin feed:** a shortfall against `matched` re-reads the feed once and then fails; the later copy of a
+  row wins (D-N-3). **Open:** a row deleted ahead of the paging cursor can still hide one row undetected —
+  closing it needs keyset paging on the daemon.
+- **Build:** `Built-By`, `Build-Jdk` and `Build-OS` join `Build-Timestamp` in the runtime-classpath
+  normalization, so a downstream test is UP-TO-DATE across a different `user.name` (D-N-14, measured).
