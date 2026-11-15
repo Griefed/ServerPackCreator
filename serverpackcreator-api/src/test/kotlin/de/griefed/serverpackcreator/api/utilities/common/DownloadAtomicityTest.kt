@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.utilities.common
 
+import com.sun.net.httpserver.HttpServer
 import de.griefed.serverpackcreator.api.ApiProperties
 import io.mockk.every
 import io.mockk.mockk
@@ -26,6 +27,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.URI
 
 /**
  * Pins that a download either replaces its destination completely or leaves it alone.
@@ -121,5 +125,41 @@ internal class DownloadAtomicityTest {
             emptyArray<String>(), target.list()?.sortedArray(),
             "A failed download must leave nothing at all where there was nothing before"
         )
+    }
+
+    /**
+     * Pins that a connection the server closes early is a failed download, not a complete one. The body ends
+     * at EOF either way, so only its declared `Content-Length` tells a truncated installer from a whole one,
+     * and a truncated one reported `true` would be cached and never fetched again.
+     */
+    @Test
+    fun aBodyShorterThanItsContentLengthIsNotReportedAsDownloaded(@TempDir tempDir: File) {
+        val server = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0)
+        server.createContext("/installer.jar") { exchange ->
+            exchange.sendResponseHeaders(200, 1000)
+            exchange.responseBody.write(ByteArray(500) { 7 })
+            exchange.responseBody.flush()
+            // Closing a fixed-length body short of its length drops the connection, as a server dying mid-send does.
+            runCatching { exchange.close() }
+        }
+        server.start()
+        try {
+            val target = File(tempDir, "target").apply { mkdirs() }
+            val destination = File(target, "forge-installer.jar")
+            val original = "the copy this host already had"
+            destination.writeText(original)
+            val url = URI("http://127.0.0.1:${server.address.port}/installer.jar").toURL()
+
+            val downloaded = WebUtilities(timedProperties()).downloadFile(destination, url)
+
+            Assertions.assertFalse(downloaded, "500 of 1000 declared bytes is not a download")
+            Assertions.assertEquals(original, destination.readText(), "the existing copy survives")
+            Assertions.assertArrayEquals(
+                arrayOf("forge-installer.jar"), target.list()?.sortedArray(),
+                "no staging file outlives the attempt"
+            )
+        } finally {
+            server.stop(0)
+        }
     }
 }

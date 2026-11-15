@@ -170,13 +170,15 @@
     must stay unique per call** — concurrent writers (grinder workers on a shared installer cache) would interleave
     into a shared one.
   - **`ManifestIntegrity.restoreIfUnreadable`** replaces an unparseable file with the jar's copy, or deletes it when
-    the jar has none (`mcserver/`), and deletes the `.etag` sidecar.
-  - **`VersionMeta.updateOrRepair`** wraps every meta's `update()`: on failure it repairs and retries **once**. A
-    failure that repaired nothing is **rethrown unchanged, deliberately** — the alternative is an empty meta.
+    the jar has none (`mcserver/`), and deletes the `.etag` sidecar. An absent, unshipped file is not "repaired".
+  - **`ManifestIntegrity.updateOrRepair`** wraps every meta's `update()` (`VersionMeta.updateMetas`): on failure it
+    repairs and retries **once**. A failure that repaired nothing is **rethrown unchanged, deliberately** — the
+    alternative is an empty meta. Both failure branches are pinned in `ManifestIntegrityTest`.
   **Do not add a proactive manifest scan to `setup()`** — costly every start; the repair belongs on the failure path.
   `ManifestUpdater`'s SAX catch no longer restores from the jar: it describes only the *upstream* answer.
   **`WebUtilities.downloadFile` returns *did this call write the file*,** never truncates the destination before
-  the stream opens, and keeps the existing copy on failure; callers treat `true` as "I have this artifact" and
+  the stream opens, keeps the existing copy on failure, and fails a body that misses its `Content-Length` (the JDK
+  reports a connection closed early as a plain EOF, not an error); callers treat `true` as "I have this artifact" and
   `installerFor` never re-downloads an existing file. `downloadAndReplaceFile` deletes first — that is its contract.
   `MinecraftServer.readServerJson` discards an unparseable `mcserver/<version>.json` rather than letting it read as
   "declares no required Java" forever.

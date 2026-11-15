@@ -138,7 +138,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * end in a valid filename. Any directories up to the specified file will be created.
      *
      * Returns true if **this call** wrote the file. A failure answers `false` whether or not a file is there,
-     * because every caller reads a `true` as "I now have this artifact".
+     * because every caller reads a `true` as "I now have this artifact". A body shorter or longer than the
+     * `Content-Length` the source declared is a failure too, and leaves the existing file untouched.
      *
      * @author Griefed
      */
@@ -156,12 +157,19 @@ class WebUtilities(private val apiProperties: ApiProperties) {
             // killed process would otherwise leave one to be served from cache as a complete jar ever after --
             // and a download that merely fails must not destroy the copy the host already had.
             file.writeAtomically { staging ->
-                openTimedStream(downloadURL, apiProperties.networkDownloadReadTimeout).use { url ->
-                    Channels.newChannel(url).use { channel ->
+                val connection = openTimedConnection(downloadURL, apiProperties.networkDownloadReadTimeout)
+                val declaredLength = connection.contentLengthLong
+                val received = connection.inputStream.use { body ->
+                    Channels.newChannel(body).use { channel ->
                         staging.outputStream().use { stream ->
                             stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
                         }
                     }
+                }
+                // A connection closed early ends the body at EOF without an exception, so the declared length is
+                // the only thing that tells a truncated artifact from a complete one.
+                if (declaredLength >= 0 && received != declaredLength) {
+                    throw IOException("Received $received of $declaredLength bytes from $downloadURL.")
                 }
             }
             true
@@ -356,6 +364,11 @@ class WebUtilities(private val apiProperties: ApiProperties) {
 
     /**
      * Get the response of a call to a URL as a string.
+     *
+     * Two properties an embedder must know, kept because this is published API: line breaks are **dropped**
+     * (the lines are concatenated with no separator, so `"a\nb"` reads as `"ab"`), and the body is decoded with
+     * the **platform default charset**, not the one the response declares. Read the stream from
+     * [openTimedStream] instead where either matters.
      *
      * [url] — The URL you want to get the response from.
      *

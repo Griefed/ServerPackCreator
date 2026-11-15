@@ -164,4 +164,74 @@ internal class ManifestIntegrityTest {
             "A restored snapshot must not be mistaken for an up-to-date copy by the conditional request"
         )
     }
+
+    /**
+     * A manifest that is absent and not shipped has nothing to repair: it is fetched on demand. Reporting it
+     * repaired makes [ManifestIntegrity.updateOrRepair] log a repair that never happened and retry for nothing.
+     */
+    @Test
+    fun anAbsentManifestTheJarDoesNotShipIsNotReportedRepaired(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "never-shipped-manifest.json")
+
+        Assertions.assertFalse(integrity().restoreIfUnreadable(manifest), "nothing was there to restore or remove")
+        Assertions.assertFalse(manifest.exists(), "and nothing was created")
+    }
+
+    /**
+     * A failure the manifests cannot explain is rethrown unchanged, after exactly one attempt, with every
+     * manifest untouched. Swallowing it would leave the metas answering about no data at all.
+     */
+    @Test
+    fun aFailureWhoseManifestsAllParseIsRethrownUnchanged(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "forge-manifest.json")
+        manifest.writeText(truncatedShippedManifest("forge-manifest.json", Int.MAX_VALUE))
+        val before = manifest.readBytes()
+        val failure = IllegalStateException("not the manifest's fault")
+        var attempts = 0
+
+        val thrown = Assertions.assertThrows(IllegalStateException::class.java) {
+            integrity().updateOrRepair(manifest) {
+                attempts++
+                throw failure
+            }
+        }
+
+        Assertions.assertSame(failure, thrown, "the original exception, not a wrapper or a later one")
+        Assertions.assertEquals(1, attempts, "nothing was repaired, so there is nothing to retry")
+        Assertions.assertArrayEquals(before, manifest.readBytes(), "an intact manifest is left alone")
+    }
+
+    /** A repair that does not cure the failure surfaces the retry's exception instead of hiding it. */
+    @Test
+    fun aRepairThatDoesNotHelpFailsWithTheRetrysException(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "forge-manifest.json")
+        manifest.writeText(truncatedShippedManifest("forge-manifest.json", 90_000))
+        val retryFailure = IllegalStateException("still failing after the repair")
+        var attempts = 0
+
+        val thrown = Assertions.assertThrows(IllegalStateException::class.java) {
+            integrity().updateOrRepair(manifest) {
+                attempts++
+                throw if (attempts == 1) IllegalStateException("first attempt") else retryFailure
+            }
+        }
+
+        Assertions.assertSame(retryFailure, thrown, "the retry's failure propagates")
+        Assertions.assertEquals(2, attempts, "one attempt, one repair, one retry")
+    }
+
+    /** A repair that cures the failure retries once and returns normally. */
+    @Test
+    fun aRepairThatHelpsRetriesOnceAndSucceeds(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "forge-manifest.json")
+        manifest.writeText(truncatedShippedManifest("forge-manifest.json", 90_000))
+        var attempts = 0
+
+        integrity().updateOrRepair(manifest) {
+            attempts++
+            if (attempts == 1) throw IllegalStateException("truncated")
+        }
+
+        Assertions.assertEquals(2, attempts, "one attempt, one repair, one retry")
+    }
 }

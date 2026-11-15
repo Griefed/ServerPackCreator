@@ -42,6 +42,32 @@ internal class ManifestIntegrity(private val utilities: Utilities) {
     private val shippedManifests = "de/griefed/resources/manifests"
 
     /**
+     * Run [update], and if it fails, repair whichever of [manifests] can no longer be parsed and run it once
+     * more.
+     *
+     * A manifest is seeded from the jar only when it is **absent**, so without this an unreadable one that
+     * exists is unrecoverable from inside the process: a mid-write truncation kills every start, through
+     * `ApiWrapper.setup()` and straight out of `main`, naming neither the file nor a remedy. A failure that
+     * repaired nothing is rethrown unchanged — there is no data to work with, and hiding that would leave every
+     * lookup answering about an empty meta, which is how an engine defect gets published as a statement about
+     * a mod. A retry that fails again propagates its own exception.
+     *
+     * [manifests] — The manifest files the meta is built from. [update] — Re-reads the meta from those files.
+     */
+    fun updateOrRepair(vararg manifests: File, update: () -> Unit) {
+        try {
+            update()
+        } catch (ex: Exception) {
+            val repaired = manifests.filter { restoreIfUnreadable(it) }
+            if (repaired.isEmpty()) {
+                throw ex
+            }
+            log.warn("Repaired ${repaired.joinToString { it.name }} and re-read the versions it declares.")
+            update()
+        }
+    }
+
+    /**
      * Repair [manifest] if it can no longer be parsed, reporting whether anything was done.
      *
      * A manifest the jar carries is overwritten with the shipped copy; one it does not — the per-version
@@ -53,7 +79,7 @@ internal class ManifestIntegrity(private val utilities: Utilities) {
      * rather than be told that "now" is newer than anything upstream has.
      *
      * [manifest] — The manifest to check and, if it cannot be read, repair. Returns `true` if [manifest] was
-     * restored or removed, `false` if it parses and was left alone.
+     * restored or removed, `false` if it parses and was left alone, or is absent and not shipped.
      *
      * @author Griefed
      */
@@ -62,7 +88,11 @@ internal class ManifestIntegrity(private val utilities: Utilities) {
             return false
         }
         val shipped = "$shippedManifests/${manifest.name}"
-        if (javaClass.getResource("/$shipped") != null) {
+        val isShipped = javaClass.getResource("/$shipped") != null
+        if (!isShipped && !manifest.exists()) {
+            return false
+        }
+        if (isShipped) {
             log.warn("Manifest $manifest can not be parsed. Restoring the copy shipped with ServerPackCreator.")
             JarUtilities.copyFileFromJar(shipped, manifest, true, javaClass)
         } else {

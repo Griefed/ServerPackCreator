@@ -268,43 +268,15 @@ class VersionMeta(
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     private fun updateMetas() {
-        updateOrRepair(minecraftManifest) { minecraft.update() }
-        updateOrRepair(fabricIntermediariesManifest) { fabricIntermediaries.update() }
-        updateOrRepair(fabricManifest, fabricInstallerManifest) { fabric.update() }
-        updateOrRepair(legacyFabricGameManifest, legacyFabricLoaderManifest, legacyFabricInstallerManifest) {
+        manifestIntegrity.updateOrRepair(minecraftManifest) { minecraft.update() }
+        manifestIntegrity.updateOrRepair(fabricIntermediariesManifest) { fabricIntermediaries.update() }
+        manifestIntegrity.updateOrRepair(fabricManifest, fabricInstallerManifest) { fabric.update() }
+        manifestIntegrity.updateOrRepair(legacyFabricGameManifest, legacyFabricLoaderManifest, legacyFabricInstallerManifest) {
             legacyFabric.update()
         }
-        updateOrRepair(forgeManifest) { forge.update() }
-        updateOrRepair(oldNeoForgeManifest, newNeoForgeManifest) { neoForge.update() }
-        updateOrRepair(quiltManifest, quiltInstallerManifest) { quilt.update() }
-    }
-
-    /**
-     * Run [update], and if it fails, repair whichever of [manifests] can no longer be parsed and run it once
-     * more.
-     *
-     * A manifest is seeded from the jar only when it is **absent**, so without this an unreadable one that
-     * exists is unrecoverable from inside the process: a mid-write truncation kills every start here, through
-     * `ApiWrapper.setup()` and straight out of `main`, naming neither the file nor a remedy. A failure that
-     * repaired nothing is rethrown unchanged — there is
-     * no data to work with, and hiding that would leave every lookup answering about an empty meta, which is
-     * how an engine defect gets published as a statement about a mod.
-     *
-     * [manifests] — The manifest files this meta is built from. [update] — Re-reads the meta from those files.
-     *
-     * @author Griefed
-     */
-    private fun updateOrRepair(vararg manifests: File, update: () -> Unit) {
-        try {
-            update()
-        } catch (ex: Exception) {
-            val repaired = manifests.filter { manifestIntegrity.restoreIfUnreadable(it) }
-            if (repaired.isEmpty()) {
-                throw ex
-            }
-            log.warn("Repaired ${repaired.joinToString { it.name }} and re-read the versions it declares.")
-            update()
-        }
+        manifestIntegrity.updateOrRepair(forgeManifest) { forge.update() }
+        manifestIntegrity.updateOrRepair(oldNeoForgeManifest, newNeoForgeManifest) { neoForge.update() }
+        manifestIntegrity.updateOrRepair(quiltManifest, quiltInstallerManifest) { quilt.update() }
     }
 
     init {
