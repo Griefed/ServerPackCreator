@@ -98,8 +98,8 @@ class ModDependency @JvmOverloads constructor(
     val versionConstraint: String? = null,
     /**
      * Whether the descriptor marked this dependency as one the mod can load **without** — Forge's
-     * `mandatory = false`, NeoForge's `type = "optional"` (and `"incompatible"`/`"discouraged"`, neither of
-     * which is a thing to go and fetch).
+     * `mandatory = false`, NeoForge's `type = "optional"` or `"discouraged"`. A `type = "incompatible"` entry
+     * is not a dependency and is never listed.
      *
      * Defaults to `false`, i.e. required, which is both NeoForge's own documented default for an absent
      * `type` and the safe direction: reading a required dependency as optional boots a mod without something

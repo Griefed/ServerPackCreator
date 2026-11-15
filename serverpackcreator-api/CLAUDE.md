@@ -24,8 +24,10 @@
   (`"required"` default, `"optional"`, `"incompatible"`, `"discouraged"`). `ForgeTomlScanner.isOptional` reads
   **both** and must keep doing so — `NeoForgeTomlScanner` overrides only the file name, and NeoForge on MC
   1.20.2–1.20.4 still ships `mods.toml` with `mandatory`, so a per-scanner split misses that overlap.
-  - `"incompatible"` is **not a dependency at all** (the mod must *not* be present): `getSidenessAndDependencies`
-    drops it before `ModDependency`. It also stays in `notRequiredTypes` so the Forge path never calls it required.
+  - `"incompatible"` is **not a dependency at all** (the mod must *not* be present): `ForgeTomlScanner.requirementsOf`
+    drops it before anything reads the entry, so it never becomes a `ModDependency`, never supplies the mod's
+    side (counted, an incompatible `forge` entry as the only platform entry reads as CLIENT) and never supplies
+    `minecraftConstraint` (its range is the *excluded* one). Read dependencies only through `requirementsOf`.
     `"discouraged"` still names something a pack may carry, so it survives as optional.
   - `type` has exactly ONE reader, `getType`, which trims, lowercases and reads via `toString()` (never a cast).
     Hand-written descriptors contain ` Incompatible `; a numeric `type` cast throws `ClassCastException`, which the

@@ -47,14 +47,14 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     /** NeoForge's replacement for [mandatory] in `neoforge.mods.toml`: a `type` string, default `"required"`. */
     private val dependencyType = "type"
 
-    /** A dependency in a mods.toml only to state that it is incompatible with the parent mod. **/
+    /**
+     * The `type` of an entry stating that the named mod must *not* be present. It is not a requirement of any
+     * kind, so [requirementsOf] drops it before anything reads the entry.
+     */
     private val incompatibleDependency = "incompatible"
 
-    /**
-     * The `type` values that do **not** oblige the pack to carry the dependency. `"incompatible"` is here
-     * because it means the mod must *not* be present, which is the opposite of something to go and fetch.
-     */
-    private val notRequiredTypes = setOf("optional", "incompatible", "discouraged")
+    /** The `type` values of a requirement that does **not** oblige the pack to carry the dependency. */
+    private val notRequiredTypes = setOf("optional", "discouraged")
     private val both = "BOTH"
 
     /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
@@ -107,24 +107,20 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * platform regex: `forge`/`neoforge` state a loader range, which is a different question.
      */
     private fun readMinecraftConstraint(modConfig: CommentedConfig, modId: String): String? = runCatching {
-        getMapOfDependencyLists(modConfig)[modId]
+        requirementsOf(modConfig, modId)
             ?.firstOrNull { getModId(it).equals("minecraft", ignoreCase = true) }
             ?.let { getVersionRange(it) }
     }.getOrNull()
 
     private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
-        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
+        val declaredDependencies = requirementsOf(modConfig, modId)
         val sidesForModloader = mutableListOf<Sideness>()
         val modDependencies = mutableListOf<ModDependency>()
         try {
-            val declaredDependencies = dependencies[modId]
             if (declaredDependencies != null) {
                 //check all dependencies in mod
                 for (declared in declaredDependencies) {
                     val dependencyModId = getModId(declared)
-                    if (getType(declared) == incompatibleDependency) {
-                        continue
-                    }
                     val side = getSide(declared)
                     val dependencySideness = if (side.uppercase().matches(client)) {
                         Sideness.CLIENT
@@ -164,6 +160,14 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
         }
         return Pair(sidesForModloader,modDependencies)
     }
+
+    /**
+     * The entries [modId] declares under `[[dependencies]]`, minus those of `type = "incompatible"`, or `null`
+     * when it declares none. Every reader of a mod's dependencies goes through here, so an incompatible entry
+     * can neither become a [ModDependency], nor supply the mod's side, nor its Minecraft constraint.
+     */
+    private fun requirementsOf(modConfig: CommentedConfig, modId: String): List<CommentedConfig>? =
+        getMapOfDependencyLists(modConfig)[modId]?.filterNot { getType(it) == incompatibleDependency }
 
     /**
      * Acquire the base toml-config of a mod.

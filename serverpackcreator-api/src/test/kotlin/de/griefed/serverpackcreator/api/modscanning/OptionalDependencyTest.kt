@@ -217,6 +217,67 @@ internal class OptionalDependencyTest {
     }
 
     /**
+     * An incompatible entry naming the platform says nothing about the side the mod runs on, so it must not
+     * count as the platform entry whose absence makes a mod SERVER by default. Counted, a descriptor whose only
+     * platform entry is incompatible yields no side at all, which reads as CLIENT and drops the mod from the
+     * server pack — the costly direction.
+     */
+    @Test
+    fun anIncompatiblePlatformEntryDoesNotMakeTheModClientside(@TempDir tempDir: File) {
+        val toml = """
+            modLoader="javafml"
+            loaderVersion="[4,)"
+            license="MIT"
+            [[mods]]
+            modId="picky"
+            [[dependencies.picky]]
+                modId="forge"
+                type="incompatible"
+                side="BOTH"
+            [[dependencies.picky]]
+                modId="somelib"
+                type="required"
+                side="BOTH"
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "picky.jar", "META-INF/neoforge.mods.toml", toml)
+
+        val scanned = modScanner.neoForgeTomlScanner.scan(listOf(jar)).single()
+
+        Assertions.assertEquals(Sideness.SERVER, scanned.sideness, "no platform side was declared, so SERVER")
+    }
+
+    /**
+     * An incompatible `minecraft` entry names the versions the mod must NOT run on, so its range is not the
+     * mod's Minecraft constraint. Reported as one, a consumer picking a Minecraft version would pick exactly
+     * the versions the author excluded.
+     */
+    @Test
+    fun anIncompatibleMinecraftRangeIsNotTheModsConstraint(@TempDir tempDir: File) {
+        val toml = """
+            modLoader="javafml"
+            loaderVersion="[4,)"
+            license="MIT"
+            [[mods]]
+            modId="picky"
+            [[dependencies.picky]]
+                modId="minecraft"
+                type="incompatible"
+                versionRange="[1.21.2,)"
+                side="BOTH"
+            [[dependencies.picky]]
+                modId="minecraft"
+                type="required"
+                versionRange="[1.21,1.21.2)"
+                side="BOTH"
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "picky.jar", "META-INF/neoforge.mods.toml", toml)
+
+        val scanned = modScanner.neoForgeTomlScanner.scan(listOf(jar)).single()
+
+        Assertions.assertEquals("[1.21,1.21.2)", scanned.minecraftConstraint, "the required range, not the excluded one")
+    }
+
+    /**
      * A `type` that is not a string must not cost the mod its whole descriptor. Reading it with a cast
      * throws `ClassCastException`, which the scan loop does not catch — only `NullPointerException` — so it
      * escapes `read()` and `DescriptorScanner` flattens the jar to the never-read-anything fallback: file
