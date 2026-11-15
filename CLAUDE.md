@@ -118,6 +118,16 @@ for. `BUILD.md` is the contributor-facing tour of the same ground.
 - PRs target **`develop`**; `main` is the release branch.
 - One branch per feature/fix, prefixed `claude-` when created by Claude. Group related fixes.
 - **Never push. Keep all changes local — the user pushes.**
+- **A commit's type and scope decide whether it mints an SPC release — Griefed's call, 2026-11-15.**
+  `.releaserc.yml`'s `releaseRules` map the scopes `homepage`, `ci`, `test(s)`, `docs`/`help`, `dev` and
+  `ide` to no release whatever the type, so scope the website, CI, tests, the help site, IDE run
+  configurations and the dev Docker stack (`dev`, not `docker`, which is the shipped image) accordingly.
+  Unscoped and module-scoped `fix`/`feat`/`perf` release as before.
+- **Put `#<hex>` and `owner/repo#<n>` in backticks in a commit body.** The release-notes parser reads any
+  bare `#<word ending in a digit>` as an issue and links it in `CHANGELOG.md` (`#54a896` became
+  `closes #54a896`); a closing backtick stops the match (verified against conventional-commits-parser
+  6.4.0, which semantic-release@24 resolves). A YAML config cannot filter this, because the parser escapes
+  string `issuePrefixes`.
 
 ## API compatibility policy (adopted default — Griefed may override)
 
