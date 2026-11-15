@@ -24,11 +24,11 @@ describe('Index — the download chip', () => {
     expect(chip.text()).toContain(new Intl.NumberFormat().format(189691))
     expect(chip.text()).not.toContain('undefined')
     expect(chip.text()).not.toContain('NaN')
-    // The old chip conflated loading, failure and a genuine zero into one permanent spinner.
+    // The figure is known on first paint, so a spinner here could only mean a stuck chip.
     expect(chip.find('.q-circular-progress').exists()).toBe(false)
   })
 
-  it('no longer claims the figure is GitHub-only', () => {
+  it('does not claim the figure is GitHub-only, since it counts every forge', () => {
     const wrapper = mount(Index)
 
     const chip = wrapper.findAll('.q-chip').find((c) => c.text().includes('Downloads'))
@@ -100,6 +100,26 @@ describe('Index — the Features Excerpt cards', () => {
         wrapper.findAll('.bounceIn').length,
         `card ${position + 1} should stop animating a second after the pointer leaves`,
       ).toBe(0)
+    }
+  })
+})
+
+describe('Index — the flashcard images', () => {
+  // `cardImage` looks each card up in an `import.meta.glob` of the cards directory. A wrong glob
+  // pattern or a renamed file yields undefined -- an <img> with no src -- and the build stays green.
+  it.each([1, 2, 3, 4, 5, 6, 7, 8, 9])('resolves card %i to its image', (number) => {
+    const wrapper = mount(Index)
+
+    expect(wrapper.vm.cardImage(number)).toMatch(new RegExp(`cards/${number}\\.png$`))
+  })
+
+  it('renders all nine flashcards with an image source', () => {
+    const wrapper = mount(Index)
+
+    const cardImages = wrapper.findAll('img').filter((image) => image.attributes('width') === '340')
+    expect(cardImages.length).toBe(9)
+    for (const image of cardImages) {
+      expect(image.attributes('src') ?? '').toMatch(/cards\/[1-9]\.png$/)
     }
   })
 })

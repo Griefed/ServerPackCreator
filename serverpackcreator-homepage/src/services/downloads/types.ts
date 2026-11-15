@@ -46,6 +46,14 @@ export interface DownloadReport {
   readonly countedAt: string
 }
 
+/** What `scripts/collect-downloads.ts` writes to `src/generated/download-counts.json`. */
+export interface GeneratedDownloads {
+  readonly generatedAt: string
+  /** `null` when no forge could be counted, which is not the same as zero downloads. */
+  readonly total: number | null
+  readonly platforms: readonly PlatformDownloads[]
+}
+
 /**
  * The subset of `fetch` the counters use. Injecting it is what keeps this isomorphic -- the same
  * code runs in a browser and under Node -- and what lets the tests run without a network.
@@ -55,9 +63,14 @@ export type HttpFetch = (url: string, init?: RequestInit) => Promise<Response>
 export interface CounterOptions {
   /** Defaults to `globalThis.fetch`. */
   readonly fetch?: HttpFetch
-  /** Sent as a bearer token. Raises GitHub's anonymous 60-requests-per-hour-per-IP ceiling. */
+  /**
+   * Sent as a bearer token on every request this counter makes, so it must belong to the forge being
+   * counted. Raises GitHub's anonymous 60-requests-per-hour-per-IP ceiling.
+   */
   readonly token?: string
   readonly signal?: AbortSignal
+  /** How long one request may take, body included, before it is aborted and fails. */
+  readonly timeoutMs?: number
 }
 
 /** Raised for a platform identifier this library does not implement, `'gitlab'` among them. */

@@ -1,7 +1,8 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { countAllDownloads, countPlatformDownloads } from '@/services/downloads/countDownloads'
 import { counterFor, DEFAULT_HOSTS } from '@/services/downloads/counterRegistry'
+import { REQUEST_TIMEOUT_MS } from '@/services/downloads/releasePages'
 import { UnknownPlatformError } from '@/services/downloads/types'
 import { fetchStub, release } from './fetchStub'
 
@@ -68,6 +69,70 @@ describe('countPlatformDownloads', () => {
   })
 })
 
+describe('countAllDownloads credentials', () => {
+  /** Records the authorization header each URL was requested with, answering every one. */
+  function recordingFetch() {
+    const authorization = new Map()
+    const fetch = (url, init) => {
+      authorization.set(String(url), init?.headers?.authorization)
+      return Promise.resolve(
+        new Response(JSON.stringify([release(1)]), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+    }
+    return { fetch, authorization }
+  }
+
+  const everyForge = { forgejo: 'https://git.griefed.de' }
+
+  /**
+   * A GitHub token is a credential for GitHub alone. Sent to gitea.com it discloses the token to a
+   * third party, and a Gitea or Forgejo instance may answer an unknown bearer token with 401 even on
+   * a public endpoint.
+   */
+  it('sends a GitHub token to GitHub and to no other forge', async () => {
+    const { fetch, authorization } = recordingFetch()
+
+    await countAllDownloads('Griefed', 'ServerPackCreator', {
+      fetch, hosts: everyForge, tokens: { github: 'ghp_example' }
+    })
+
+    expect(authorization.size).toBe(3)
+    for (const [url, header] of authorization) {
+      if (url.startsWith('https://api.github.com/')) {
+        expect(header, url).toBe('Bearer ghp_example')
+      } else {
+        expect(header, url).toBeUndefined()
+      }
+    }
+  })
+
+  it('sends each platform only its own token', async () => {
+    const { fetch, authorization } = recordingFetch()
+
+    await countAllDownloads('Griefed', 'ServerPackCreator', {
+      fetch, hosts: everyForge, tokens: { forgejo: 'forgejo_example' }
+    })
+
+    for (const [url, header] of authorization) {
+      expect(header, url).toBe(url.includes('git.griefed.de') ? 'Bearer forgejo_example' : undefined)
+    }
+  })
+
+  /** The single-counter `token` option has no platform, so a sweep of every forge must ignore it. */
+  it('sends no forge a token handed over without naming its platform', async () => {
+    const { fetch, authorization } = recordingFetch()
+
+    await countAllDownloads('Griefed', 'ServerPackCreator', {
+      fetch, hosts: everyForge, token: 'ghp_example'
+    })
+
+    expect([...authorization.values()].filter((header) => header !== undefined)).toEqual([])
+  })
+})
+
 describe('countAllDownloads', () => {
   it('sums the platforms that have a host and skips forgejo when none is supplied', async () => {
     const { fetch, requested } = fetchStub({
@@ -110,7 +175,7 @@ describe('countAllDownloads', () => {
       [giteaPage('https://gitea.com', 'Griefed', 'ServerPackCreator')]: { status: 502 }
     })
 
-    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch })
+    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch, retryDelayMs: 0 })
 
     expect(report.total).toBe(100)
     expect(report.platforms.map((p) => p.platform)).toEqual(['github'])
@@ -121,8 +186,7 @@ describe('countAllDownloads', () => {
 
   /**
    * The failure direction here is quiet: a forge that blips simply lowers the total, and nothing
-   * distinguishes that from a forge with fewer downloads. Observed in a real image build, where one
-   * forge dropped out and the figure was baked 6,385 short.
+   * distinguishes that from a forge with fewer downloads.
    */
   it('retries a failed platform rather than baking a silently low total', async () => {
     let giteaCalls = 0
@@ -142,7 +206,7 @@ describe('countAllDownloads', () => {
       )
     }
 
-    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch })
+    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch, retryDelayMs: 0 })
 
     expect(giteaCalls).toBe(2)
     expect(report.failures).toEqual([])
@@ -165,7 +229,7 @@ describe('countAllDownloads', () => {
       )
     }
 
-    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch })
+    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch, retryDelayMs: 0 })
 
     expect(giteaCalls).toBe(2)
     expect(report.total).toBe(4)
@@ -193,5 +257,113 @@ describe('countAllDownloads', () => {
     expect(report.total).toBe(0)
     expect(report.platforms).toEqual([])
     expect(report.failures.length).toBe(2)
+  })
+})
+
+describe('countAllDownloads timeouts', () => {
+  afterEach(() => vi.useRealTimers())
+
+  /**
+   * Fail-soft covers errors, not hangs: a forge that accepts the connection and never answers would
+   * otherwise stall the CI step and the image build until the job timeout.
+   */
+  it('records a forge that never answers as failed, within the per-request budget', async () => {
+    vi.useFakeTimers()
+    const fetch = (url, init) => {
+      if (String(url).includes('git.griefed.de')) {
+        return new Promise(() => {}) // accepts, never answers, ignores the signal
+      }
+      void init
+      return Promise.resolve(
+        new Response(JSON.stringify([release(3)]), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+    }
+
+    let settled = false
+    const counting = countAllDownloads('Griefed', 'ServerPackCreator', {
+      fetch, hosts: { forgejo: 'https://git.griefed.de' }, retryDelayMs: 0
+    }).finally(() => { settled = true })
+
+    await vi.advanceTimersByTimeAsync(2 * REQUEST_TIMEOUT_MS + 1) // two attempts
+    expect(settled).toBe(true)
+
+    const report = await counting
+    expect(report.total).toBe(6)
+    expect(report.failures.map((failure) => failure.platform)).toEqual(['forgejo'])
+    expect(report.failures[0].reason).toMatch(/did not answer within/)
+  })
+
+  it('aborts the request it gives up on, so the connection is released', async () => {
+    vi.useFakeTimers()
+    const signals = []
+    const fetch = (_url, init) => {
+      signals.push(init.signal)
+      return new Promise(() => {})
+    }
+
+    const counting = countAllDownloads('Griefed', 'ServerPackCreator', {
+      fetch, attempts: 1, timeoutMs: 1000
+    })
+    await vi.advanceTimersByTimeAsync(1001)
+    await counting
+
+    expect(signals.length).toBe(2)
+    expect(signals.every((signal) => signal.aborted)).toBe(true)
+  })
+})
+
+describe('countAllDownloads retries', () => {
+  afterEach(() => vi.useRealTimers())
+
+  /** Counts gitea.com requests, answering them with `giteaStatus`, and answers GitHub with 4. */
+  function giteaAnswering(giteaStatus) {
+    const calls = { gitea: 0 }
+    const fetch = (url) => {
+      if (String(url).includes('gitea.com')) {
+        calls.gitea += 1
+        return Promise.resolve(new Response('', { status: giteaStatus }))
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify([release(4)]), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+    }
+    return { fetch, calls }
+  }
+
+  /** A rate limit or a missing repository answers the same a second later; asking again only spends quota. */
+  it.each([403, 404, 429])('does not retry a %i, which cannot succeed on a second try', async (status) => {
+    const { fetch, calls } = giteaAnswering(status)
+
+    const report = await countAllDownloads('Griefed', 'ServerPackCreator', { fetch, retryDelayMs: 0 })
+
+    expect(calls.gitea).toBe(1)
+    expect(report.failures.map((failure) => failure.platform)).toEqual(['gitea'])
+  })
+
+  it.each([408, 500, 503])('retries a %i, which can be transient', async (status) => {
+    const { fetch, calls } = giteaAnswering(status)
+
+    await countAllDownloads('Griefed', 'ServerPackCreator', { fetch, retryDelayMs: 0 })
+
+    expect(calls.gitea).toBe(2)
+  })
+
+  it('waits before retrying, rather than asking a struggling forge again at once', async () => {
+    vi.useFakeTimers()
+    const { fetch, calls } = giteaAnswering(503)
+
+    const counting = countAllDownloads('Griefed', 'ServerPackCreator', { fetch, retryDelayMs: 2000 })
+    await vi.advanceTimersByTimeAsync(1999)
+    expect(calls.gitea).toBe(1)
+
+    await vi.advanceTimersByTimeAsync(1)
+    await counting
+    expect(calls.gitea).toBe(2)
   })
 })
