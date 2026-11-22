@@ -249,8 +249,10 @@ they pass it. A difference that has to exist is an **input**, never a second cop
 repeats that genuinely cannot be shared, each with its reason. The allowlist is keyed by a hash of the
 step's normalised body, so editing an exempted step turns the check red and the exemption is re-argued
 rather than inherited. It is a gate in `test.yml`'s *Verify the workflow conventions* step, sharing one
-pyyaml install with `ci-env-reference-check.py`, before the long build. It fails on an unexplained
-duplicate and on an allowlist entry matching no step, both checked by exit code.
+pyyaml install (hash-pinned in `misc/ci-requirements.txt`) with `ci-env-reference-check.py`, before the
+long build. Each fails on an unexplained finding and on an allowlist entry matching nothing, and the step
+runs every check before failing, so one red verdict never hides another. `misc/test_*.py` are the
+checkers' own self-tests and run in the same step.
 
 **That keying has one failure mode worth planning for: a sweep across every workflow re-keys every
 entry it touches, and the check then reports each affected repeat TWICE** — once as a stale entry and
@@ -335,6 +337,12 @@ So merging it costs one of two things: dropping the repo-wide lock re-opens cros
 (a *different* test of the same class failing each time), and taking the lock for all of `test.yml`
 serialises every push — considered and rejected (see the `concurrency` section below). Leave it where it is until Forgejo
 grows job-level concurrency.
+
+**`pinned-digests.yml` is separate because it is scheduled**, weekly: it asks the registries whether every
+digest pinned in the Dockerfiles and compose files still exists (`misc/pinned-digests-check.py`, self-tested),
+which nothing on the push path checks, and a per-push run would add registry calls to ghcr's per-host limiter.
+It asks by digest alone (`image@sha256:…`): given `image:tag@sha256:…`, `docker manifest inspect` resolves
+the tag and fails verification whenever the tag has moved, which says nothing about the digest.
 
 ## `concurrency` is per-ref here, and two refs build the same commit on every push
 
@@ -441,7 +449,9 @@ succeeded, false when any of the four failed or everything was cancelled — and
 announcement rather than an announcement of nothing. Re-evaluate it the same way after any edit.
 
 The verdict is the job's first step, `Require the release to be live on GitHub`: one
-`GET /releases/tags/<version>`, failing if the release is absent or has zero assets. Deliberately no
+`GET /releases/tags/<version>`, failing if the release is absent or lacks any asset the canonical Forgejo
+release carries (`misc/release-assets-complete.py`, self-tested; the expected set comes from Forgejo, never a
+hard-coded count). Deliberately no
 poll — `mirror` creates the release synchronously, so a 404 means never created. The step also yields
 the release's `html_url`, so the message never links a URL assembled from a version string.
 

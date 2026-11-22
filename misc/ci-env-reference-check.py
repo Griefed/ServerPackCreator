@@ -20,7 +20,11 @@ Each finding is keyed `<file>::<job>::<step>::<NAME>` and can be exempted in
 `ci-env-reference-allowlist.yml` with a reason. The common honest exemption is a name consumed by a
 TOOL rather than by the script -- `GH_TOKEN` read by the `gh` CLI, `JAVA_HOME` read by Gradle.
 
-Usage: python3 misc/ci-env-reference-check.py [--list] [path ...]
+An allowlist entry that matches no finding fails the check too (STALE ALLOWLIST ENTRY): a key whose
+step was renamed or deleted is a standing exemption that would silently cover the next step to reuse it.
+Only entries for files this run scanned are judged.
+
+Usage: python3 misc/ci-env-reference-check.py [--list] [--allowlist FILE] [path ...]
        --list prints every finding as a ready-to-paste allowlist key.
 """
 
@@ -136,9 +140,10 @@ def steps_of(document: dict):
             yield job_name, index, step, inherited
 
 
-def check(paths) -> list:
-    """Collect every finding across the given workflow/action files, as `(key, kind, detail)`."""
+def check(paths) -> tuple:
+    """Collect every finding across the given files, as `(key, kind, detail)`, plus the scanned file names."""
     findings = []
+    scanned = set()
     files = []
     for path in paths:
         path = Path(path)
@@ -156,6 +161,7 @@ def check(paths) -> list:
         except ValueError:
             # A path outside the repository -- a scratch copy under test. Report it as given.
             rel = file
+        scanned.add(str(rel))
         for job_name, index, step, inherited in steps_of(document):
             if not isinstance(step, dict):
                 continue
@@ -178,29 +184,40 @@ def check(paths) -> list:
                     continue
                 findings.append((f"{rel}::{job_name}::{label}::{name}", "UNDEFINED",
                                  f"read by the script but neither declared nor assigned"))
-    return findings
+    return findings, scanned
 
 
 def main() -> int:
-    """Report every finding not carrying an allowlist entry; exit 1 when any remain."""
-    argv = [a for a in sys.argv[1:] if a != "--list"]
-    listing = "--list" in sys.argv[1:]
-    findings = check(argv or DEFAULT_PATHS)
+    """Report every unexempted finding and every stale exemption; exit 1 when either remains."""
+    args = sys.argv[1:]
+    listing = "--list" in args
+    allowlist_path = ALLOWLIST
+    if "--allowlist" in args:
+        at = args.index("--allowlist")
+        allowlist_path = Path(args[at + 1])
+        del args[at:at + 2]
+    paths = [a for a in args if a != "--list"]
+    findings, scanned = check(paths or DEFAULT_PATHS)
     allowed = {}
-    if ALLOWLIST.exists():
-        allowed = yaml.safe_load(ALLOWLIST.read_text()) or {}
+    if allowlist_path.exists():
+        allowed = yaml.safe_load(allowlist_path.read_text()) or {}
     if listing:
         for key, kind, detail in findings:
             print(f"{key!r}: {kind} - {detail}")
         return 0
+    found = {f[0] for f in findings}
     remaining = [f for f in findings if f[0] not in allowed]
+    stale = sorted(k for k in allowed if k.split("::", 1)[0] in scanned and k not in found)
     for key, kind, detail in remaining:
         print(f"{kind}: {key}\n    {detail}")
-    if remaining:
-        print(f"\n{len(remaining)} finding(s). Fix the mismatch, or add the key to "
-              f"{ALLOWLIST.relative_to(REPO)} with the reason it is correct.")
+    for key in stale:
+        print(f"STALE ALLOWLIST ENTRY {key}\n    Nothing in the workflows has this finding any more. Remove it.")
+    matched = len(set(allowed) & found)
+    if remaining or stale:
+        print(f"\n{len(remaining)} finding(s), {len(stale)} stale allowlist entries. Fix the mismatch, or "
+              f"add or remove the key in {allowlist_path.name} with the reason.")
         return 1
-    print(f"ci-env-reference-check: clean ({len(allowed)} allowlisted)")
+    print(f"ci-env-reference-check: clean ({matched} allowlist entries matched)")
     return 0
 
 

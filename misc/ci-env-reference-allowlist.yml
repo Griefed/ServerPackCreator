@@ -23,15 +23,15 @@
   "the JUnit gate, not the script: @EnabledIfEnvironmentVariable(named = \"GRINDER_DOCKER_IT\", matches = \"1\") on DockerJavaContainerEngineIT and ContainerOwnershipIT"
 
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::GITHUB_ACTOR":
-  "read by Gradle -- buildSrc/.../serverpackcreator.publishing-conventions.gradle.kts:38"
+  "read by Gradle -- buildSrc/.../serverpackcreator.publishing-conventions.gradle.kts, the `GitHubPackages` repository's username"
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::GITHUB_TOKEN":
   "read by Gradle, the GitHub Packages repository credential, beside GITHUB_ACTOR"
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::FORGEJO_ACTOR":
-  "read by Gradle -- serverpackcreator.publishing-conventions.gradle.kts:51"
+  "read by Gradle -- serverpackcreator.publishing-conventions.gradle.kts, the `GitGriefed` repository's username"
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::FORGEJO_TOKEN":
-  "read by Gradle -- serverpackcreator.publishing-conventions.gradle.kts:52"
+  "read by Gradle -- the `GitGriefed` repository's password, beside FORGEJO_ACTOR"
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::GITLABCOM_TOKEN":
-  "read by Gradle as the gitlab.com Private-Token header -- serverpackcreator.publishing-conventions.gradle.kts:60"
+  "read by Gradle as the gitlab.com Private-Token header -- serverpackcreator.publishing-conventions.gradle.kts, the `GitLab` repository"
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::ORG_GRADLE_PROJECT_signingKey":
   "the ORG_GRADLE_PROJECT_ prefix is Gradle's own environment-to-project-property mapping; read as findProperty(\"signingKey\")"
 ".forgejo/workflows/release-build.yml::maven::Sign and publish::ORG_GRADLE_PROJECT_signingPassword":

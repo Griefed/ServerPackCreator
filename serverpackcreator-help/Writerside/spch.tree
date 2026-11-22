@@ -14,9 +14,11 @@
     <!-- The Dokka HTML for `serverpackcreator-api` is NOT a Writerside topic and cannot be one. Writerside
          has no way to host a generated file tree: `cfg/static` takes individually *referenced* files only
          (see build-profiles.xsd), and JetBrains' own WRS-1772 "Integration with Dokka" is still open. The two
-         outputs are therefore merged at PACKAGING time, in two places that must stay in step.
-         `docker/Dockerfile.help` copies Dokka to `/config/www/api/`, and `.github/workflows/pages.yml`
-         assembles the same layout for GitHub Pages.
+         outputs are therefore merged at PACKAGING time, in two places that must stay in step:
+         `serverpackcreator-homepage/docs/assemble-docs.sh` unpacks Dokka beside the help on serverpackcreator.de
+         (per version, under `api/`), and `.github/workflows/pages.yml` assembles webhelp plus `api/` for GitHub
+         Pages. The href below is the GitHub Pages URL; `.forgejo/workflows/docs.yml` rewrites it to the
+         serverpackcreator.de URL of the version being built.
 
          THE HREF MUST BE AN ABSOLUTE URL, and a relative one is not a smaller version of that — it does not
          navigate at all. The published help is a single-page app, and its viewer treats a link as a real

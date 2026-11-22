@@ -1,0 +1,23 @@
+name: Pinned image digests
+
+# Asks each registry whether the image digests pinned in the Dockerfiles and compose files still exist. A
+# registry that drops a pinned manifest breaks every build or `compose up` of that file, and nothing on the
+# push path pulls all of them, so this runs on a schedule rather than per push -- which also keeps it off
+# ghcr's per-host burst limiter while builds are running (see .claude/rules/ci-workflows.md).
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  digests:
+    name: "Pinned digests resolve"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # `docker manifest inspect` is a client-side registry call, so no daemon is involved.
+      - name: Check every pinned digest
+        run: python3 misc/pinned-digests-check.py

@@ -23,6 +23,12 @@
       "matchFileNames": ["docker/Dockerfile"],
       "matchPackageNames": ["eclipse-temurin"],
       "allowedVersions": "<22"
+    },
+    {
+      "description": "A major update says so in its subject and labels, so it is not mistaken for a routine bump.",
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["major"],
+      "commitMessageSuffix": "(major)"
     }
   ]
 }

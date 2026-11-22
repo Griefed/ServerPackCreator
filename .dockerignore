@@ -28,9 +28,9 @@ media/
 # `.forgejo/actions/resolve-version/action.yml` as an input of `:buildSrc:test`, and
 # `serverpackcreator-clientside/build.gradle.kts` declares `.github/scripts/clientside-verification.js`
 # as an input of `:serverpackcreator-clientside:test`, whose `ClientsideReportRendererTest` reads it.
-# Excluding either fails the image build outright with "Input file does not exist". Root `.gitignore`
-# is a declared input of `:serverpackcreator-api` for the same reason -- check `inputs.file(` across
-# the build before adding anything here.
+# Excluding either fails the image build outright with "Input file does not exist".
+# `misc/dockerignore-inputs-check.py` (run by test.yml) checks every declared `inputs.file(` against
+# this file, so a new exclusion that hides one fails CI before it fails an image build.
 .idea/
 .run/
 .vscode/
