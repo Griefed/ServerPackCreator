@@ -2,7 +2,8 @@ name: Clientside-mod acceptance
 
 # Phase 3: when a maintainer adds the `accepted` label to a "[Clientside-mod Addition Request]"
 # issue, turn the suggested entries from the verification-comment into a PR that adds them to the
-# official fallback-list (GenerationConfig.kt + serverpackcreator.properties), targeting develop.
+# official fallback-list (GenerationConfig.kt, serverpackcreator.properties and the Docker defaults copy),
+# targeting develop. FallbackModsCopiesTest fails the PR if the three disagree.
 
 on:
   issues:
@@ -103,13 +104,14 @@ jobs:
           add-paths: |
             serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/settings/GenerationConfig.kt
             serverpackcreator-api/src/main/resources/serverpackcreator.properties
+            docker/root/defaults/serverpackcreator.properties
           commit-message: "feat(api): add clientside-only mod(s) from #${{ github.event.issue.number }}"
           title: "Add clientside-only mod(s) — closes #${{ github.event.issue.number }}"
           body: |
             Automated from the accepted clientside-mod request #${{ github.event.issue.number }}.
 
             Adds the reviewed entries to the official fallback clientside-list
-            (`GenerationConfig.kt` + `serverpackcreator.properties`).
+            (`GenerationConfig.kt`, `serverpackcreator.properties` and the Docker defaults copy).
 
             Closes #${{ github.event.issue.number }}
           labels: enhancement

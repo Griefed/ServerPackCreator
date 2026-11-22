@@ -410,8 +410,9 @@ ships unused into server packs — cheaper than a false positive stripping a wor
   the grinder's. `deriveStem` survives for `Prepared.Ready.candidateStem`. A Quilt row's `-fabric-` sample is
   correct. `ClientsideReportRenderer` shows only `Suggested entry`, deliberately.
 - **`ClientsideListEditor`** (pure) edits `fallbackMods` in `GenerationConfig.kt` (sorted, aligned `//link`) and
-  `fallbackmodslist` in `serverpackcreator.properties`. **Landmine:** the *last* properties entry must NOT end in
-  `,\`, or it corrupts the next property.
+  `fallbackmodslist` in `serverpackcreator.properties` — the shipped one and the Docker defaults copy, which
+  `-clientsideapply` both edits. `-api`'s `FallbackModsCopiesTest` holds all three to one set. **Landmine:** the
+  *last* properties entry must NOT end in `,\`, or it corrupts the next property.
 
 ## Boot seam
 

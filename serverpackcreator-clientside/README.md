@@ -120,8 +120,9 @@ find out what to fix, and it had filled up with things nobody can fix.
 
 ## 5. Apply accepted entries to the fallback lists
 
-Once you've accepted a report, this writes the suggested name patterns into both files that ship the
-fallback list — no manual editing, no staging.
+Once you've accepted a report, this writes the suggested name patterns into every file that ships the
+fallback list — `GenerationConfig.kt`, `serverpackcreator.properties` and the Docker image's defaults copy —
+no manual editing, no staging.
 
 ```bash
 java -jar serverpackcreator.jar -clientsideapply --report report.json
@@ -132,6 +133,7 @@ java -jar serverpackcreator.jar -clientsideapply --report report.json
 | `--report <file>`            | `-r`  | yes      | The clientside-report **JSON** to read entries from                   |
 | `--generation-config <file>` |       | no       | Path to `GenerationConfig.kt`; defaults to the in-repo location       |
 | `--properties <file>`        |       | no       | Path to the `serverpackcreator.properties` holding `fallbackmodslist` |
+| `--docker-properties <file>` |       | no       | Path to the Docker image's default `serverpackcreator.properties`     |
 
 The JSON comes from the report verbs: their Markdown embeds a hidden
 `<!-- clientside-report-data … -->` block that the accept step reads back.
@@ -166,6 +168,7 @@ Every short flag has a long form, so the above can also be written out in full:
 | `-r`  | `--report`            | `clientsideapply`                      |
 |       | `--generation-config` | `clientsideapply`                      |
 |       | `--properties`        | `clientsideapply`                      |
+|       | `--docker-properties` | `clientsideapply`                      |
 
 Each command accepts `--help`.
 
