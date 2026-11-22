@@ -306,8 +306,10 @@
   **Fixture landmine:** zip4j's `addFile` with a path-in-zip writes no directory entries; use `addFolder` from a real
   tree. (`checkZipArchive` derives `mods/` from a *file* entry's name, so it works without them.)
 - **A getter must not hand out the config's own mutable state.** `GenerationConfig.clientsideModsRegex` /
-  `modsWhitelistRegex` build a fresh set via `regexVariantOf` per read (published via `ApiProperties`; the GUI reads
-  settings from a `parallelStream`). Pinned by `GenerationConfigTest.regexVariantListsAreNotSharedBetweenReads`.
+  `modsWhitelistRegex` build a fresh set via `regexVariantOf` per read, and the five directory/file lists via
+  `mergedWithStore`, which publishes the accumulated set to a `@Volatile` field in one assignment (published via
+  `ApiProperties`; the GUI reads settings from a `parallelStream`). Pinned by
+  `GenerationConfigTest.regexVariantListsAreNotSharedBetweenReads` and `directoryAndFileListsAreNotSharedBetweenReadsOrWrites`.
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
   `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
   build new call-sites on the deprecated one.

@@ -1005,96 +1005,113 @@ class GenerationConfig(private val store: PropertyStore) {
             modsWhitelist.toList()
         }
 
+    /** What [directoriesToInclude] has accumulated; replaced whole, never mutated — see [mergedWithStore]. */
+    @Volatile
+    private var directoriesIncluded: TreeSet<String> = TreeSet(fallbackDirectoriesInclusion)
+
+    /** What [postInstallCleanupFiles] has accumulated; replaced whole, never mutated. */
+    @Volatile
+    private var postInstallCleanup: TreeSet<String> = TreeSet(fallbackPostInstallCleanupFiles)
+
+    /** What [preInstallCleanupFiles] has accumulated; replaced whole, never mutated. */
+    @Volatile
+    private var preInstallCleanup: TreeSet<String> = TreeSet(fallbackPreInstallCleanupFiles)
+
+    /** What [zipArchiveExclusions] has accumulated; replaced whole, never mutated. */
+    @Volatile
+    private var zipExclusions: TreeSet<String> = TreeSet(fallbackZipExclusions)
+
     /**
-     * Directories to include in a server pack; store-entries merge with the fallback-defaults.
+     * [accumulated] merged with the store's list under [key], as a fresh set: [publish] receives one copy to
+     * keep, the caller gets another of its own.
+     *
+     * The list properties below are read during config checks and generation while other threads read or
+     * replace them, so they never `clear()` and refill a shared set: a held result would be emptied under its
+     * holder, and a concurrent reader could see the set half-filled. Same reason as [regexVariantOf].
      */
-    var directoriesToInclude = TreeSet(fallbackDirectoriesInclusion)
-        get() {
-            val entries =
-                store.getList(DIRECTORIES_MUST_INCLUDE_KEY, fallbackDirectoriesInclusion.joinToString(","))
-            field.addAll(entries)
-            return field
+    private fun mergedWithStore(
+        accumulated: TreeSet<String>,
+        key: String,
+        fallback: TreeSet<String>,
+        publish: (TreeSet<String>) -> Unit
+    ): TreeSet<String> {
+        val merged = TreeSet(accumulated).apply { addAll(store.getList(key, fallback.joinToString(","))) }
+        publish(merged)
+        return TreeSet(merged)
+    }
+
+    /**
+     * Directories to include in a server pack; store-entries merge with the fallback-defaults. Each read
+     * returns a set the caller owns.
+     */
+    var directoriesToInclude: TreeSet<String>
+        get() = mergedWithStore(directoriesIncluded, DIRECTORIES_MUST_INCLUDE_KEY, fallbackDirectoriesInclusion) {
+            directoriesIncluded = it
         }
         set(value) {
             store.setList(DIRECTORIES_MUST_INCLUDE_KEY, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
+            directoriesIncluded = TreeSet(value)
             log.info("Directories which must always be included set to: $value")
         }
 
     /**
      * Directories to exclude from a server pack; directories present in [directoriesToInclude]
-     * always win and are removed from this set.
+     * always win and are removed from this set. Each read returns a set the caller owns.
      */
-    var directoriesToExclude = TreeSet(fallbackDirectoriesExclusion)
+    var directoriesToExclude: TreeSet<String>
         get() {
-            val prop =
+            val included = directoriesToInclude
+            return TreeSet(
                 store.getList(DIRECTORIES_SHOULD_EXCLUDE_KEY, fallbackDirectoriesExclusion.joinToString(","))
-            val use = TreeSet(prop)
-            use.removeIf { entry -> directoriesToInclude.contains(entry) }
-            field.clear()
-            field.addAll(use)
-            return field
+            ).apply { removeIf { entry -> included.contains(entry) } }
         }
         set(value) {
-            val use = TreeSet<String>()
-            use.addAll(value)
-            use.removeIf { entry -> directoriesToInclude.contains(entry) }
+            val included = directoriesToInclude
+            val use = TreeSet(value).apply { removeIf { entry -> included.contains(entry) } }
             store.setList(DIRECTORIES_SHOULD_EXCLUDE_KEY, use.toList(), ",")
-            field.clear()
-            field.addAll(use)
-            log.info("Directories which must always be excluded set to: $field")
+            log.info("Directories which must always be excluded set to: $use")
         }
 
     /**
      * Files to delete after a modloader-server installation; store-entries merge with the
-     * fallback-defaults.
+     * fallback-defaults. Each read returns a set the caller owns.
      */
-    var postInstallCleanupFiles = TreeSet(fallbackPostInstallCleanupFiles)
-        get() {
-            val entries = store.getList(POST_INSTALL_CLEANUP_KEY, fallbackPostInstallCleanupFiles.joinToString(","))
-            field.addAll(entries)
-            return field
+    var postInstallCleanupFiles: TreeSet<String>
+        get() = mergedWithStore(postInstallCleanup, POST_INSTALL_CLEANUP_KEY, fallbackPostInstallCleanupFiles) {
+            postInstallCleanup = it
         }
         set(value) {
             store.setList(POST_INSTALL_CLEANUP_KEY, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
+            postInstallCleanup = TreeSet(value)
             log.info("Files to cleanup after server installation set to: $value")
         }
 
     /**
      * Files to delete before a modloader-server installation; store-entries merge with the
-     * fallback-defaults.
+     * fallback-defaults. Each read returns a set the caller owns.
      */
-    var preInstallCleanupFiles = TreeSet(fallbackPreInstallCleanupFiles)
-        get() {
-            val entries = store.getList(PRE_INSTALL_CLEANUP_KEY, fallbackPreInstallCleanupFiles.joinToString(","))
-            field.addAll(entries)
-            return field
+    var preInstallCleanupFiles: TreeSet<String>
+        get() = mergedWithStore(preInstallCleanup, PRE_INSTALL_CLEANUP_KEY, fallbackPreInstallCleanupFiles) {
+            preInstallCleanup = it
         }
         set(value) {
             store.setList(PRE_INSTALL_CLEANUP_KEY, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
+            preInstallCleanup = TreeSet(value)
             log.info("Files to cleanup before server installation set to: $value")
         }
 
     /**
      * Files to exclude from server pack ZIP-archives; store-entries merge with the
      * fallback-defaults. The placeholders MINECRAFT_VERSION, MODLOADER and MODLOADER_VERSION are
-     * replaced during generation.
+     * replaced during generation. Each read returns a set the caller owns.
      */
-    var zipArchiveExclusions = TreeSet(fallbackZipExclusions)
-        get() {
-            val entries = store.getList(ZIP_EXCLUSIONS_KEY, fallbackZipExclusions.joinToString(","))
-            field.addAll(entries)
-            return field
+    var zipArchiveExclusions: TreeSet<String>
+        get() = mergedWithStore(zipExclusions, ZIP_EXCLUSIONS_KEY, fallbackZipExclusions) {
+            zipExclusions = it
         }
         set(value) {
             store.setList(ZIP_EXCLUSIONS_KEY, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
+            zipExclusions = TreeSet(value)
             log.info("Files which must be excluded from ZIP-archives set to: $value")
         }
 

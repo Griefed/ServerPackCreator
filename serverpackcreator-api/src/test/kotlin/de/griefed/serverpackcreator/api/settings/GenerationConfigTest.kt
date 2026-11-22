@@ -282,4 +282,39 @@ internal class GenerationConfigTest {
             "A caller emptying its own copy must not empty the source"
         )
     }
+
+    /**
+     * Pins that the five directory and file lists hand each reader a set of its own. Each one is read during
+     * config checks and generation while another thread may read or replace it, so a set the config keeps
+     * refilling in place would be emptied under its holder or seen half-filled.
+     */
+    @Test
+    fun directoryAndFileListsAreNotSharedBetweenReadsOrWrites() {
+        val store = PropertyStore()
+        val generationConfig = GenerationConfig(store)
+        val lists: Map<String, Pair<() -> TreeSet<String>, (TreeSet<String>) -> Unit>> = mapOf(
+            "directoriesToInclude" to Pair({ generationConfig.directoriesToInclude }, { generationConfig.directoriesToInclude = it }),
+            "directoriesToExclude" to Pair({ generationConfig.directoriesToExclude }, { generationConfig.directoriesToExclude = it }),
+            "postInstallCleanupFiles" to Pair({ generationConfig.postInstallCleanupFiles }, { generationConfig.postInstallCleanupFiles = it }),
+            "preInstallCleanupFiles" to Pair({ generationConfig.preInstallCleanupFiles }, { generationConfig.preInstallCleanupFiles = it }),
+            "zipArchiveExclusions" to Pair({ generationConfig.zipArchiveExclusions }, { generationConfig.zipArchiveExclusions = it })
+        )
+
+        for ((name, accessors) in lists) {
+            val (read, write) = accessors
+            val held = read()
+            val heldContents = TreeSet(held)
+            Assertions.assertTrue(held.isNotEmpty(), "precondition: $name has defaults")
+
+            Assertions.assertNotSame(held, read(), "$name: each read yields its own set")
+            Assertions.assertEquals(heldContents, held, "$name: another read leaves a held set alone")
+
+            write(TreeSet(setOf("replacement-for-$name")))
+            Assertions.assertEquals(heldContents, held, "$name: a write leaves a held set alone")
+
+            val afterWrite = read()
+            afterWrite.clear()
+            Assertions.assertTrue(read().contains("replacement-for-$name"), "$name: emptying a copy leaves the source")
+        }
+    }
 }
