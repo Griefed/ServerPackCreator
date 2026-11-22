@@ -48,7 +48,8 @@ into. The workflows glob the suffix rather than repeating it, so the name stays 
 Two tasks exist that you almost certainly do not want:
 
 - **`media`** builds the native installers and needs a local install4j installation. Not part of any
-  normal loop.
+  normal loop. It packages the application jar already in `serverpackcreator-app/build/libs` and builds
+  none, so run `./gradlew -Pversion=<v> :serverpackcreator-app:bootJar` first.
 - **`updateManifests`** refreshes the Minecraft version-manifest snapshot shipped inside `-api`. Run it
   deliberately, never casually — see [the test home](#the-test-home).
 
