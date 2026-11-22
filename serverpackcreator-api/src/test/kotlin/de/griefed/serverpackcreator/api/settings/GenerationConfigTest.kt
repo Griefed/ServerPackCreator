@@ -4,6 +4,7 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
 import java.util.*
 
 /**
@@ -314,5 +315,33 @@ internal class GenerationConfigTest {
             afterWrite.clear()
             Assertions.assertTrue(read().contains("replacement-for-$name"), "$name: emptying a copy leaves the source")
         }
+    }
+
+    /**
+     * A blank entry in a directory or file list is never a name: in a cleanup list it names the server pack
+     * itself. The GUI hands the setters whatever was typed, a trailing comma included, so they drop blanks before
+     * keeping or storing anything.
+     */
+    @Test
+    fun directoryAndFileListsNeverKeepABlankEntry() {
+        val store = PropertyStore()
+        val generationConfig = GenerationConfig(store)
+        val lists: Map<String, Pair<() -> TreeSet<String>, (TreeSet<String>) -> Unit>> = mapOf(
+            "directoriesToInclude" to Pair({ generationConfig.directoriesToInclude }, { generationConfig.directoriesToInclude = it }),
+            "directoriesToExclude" to Pair({ generationConfig.directoriesToExclude }, { generationConfig.directoriesToExclude = it }),
+            "postInstallCleanupFiles" to Pair({ generationConfig.postInstallCleanupFiles }, { generationConfig.postInstallCleanupFiles = it }),
+            "preInstallCleanupFiles" to Pair({ generationConfig.preInstallCleanupFiles }, { generationConfig.preInstallCleanupFiles = it }),
+            "zipArchiveExclusions" to Pair({ generationConfig.zipArchiveExclusions }, { generationConfig.zipArchiveExclusions = it })
+        )
+
+        Assertions.assertAll(lists.map { (name, accessors) ->
+            Executable {
+                val (read, write) = accessors
+                write(TreeSet(setOf("", " ", "kept-by-$name")))
+                val current = read()
+                Assertions.assertTrue(current.contains("kept-by-$name"), "$name keeps the real entry, got $current")
+                Assertions.assertTrue(current.none { it.isBlank() }, "$name holds no blank entry, got $current")
+            }
+        })
     }
 }

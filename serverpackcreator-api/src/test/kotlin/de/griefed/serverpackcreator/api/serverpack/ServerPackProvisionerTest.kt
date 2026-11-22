@@ -341,4 +341,93 @@ internal class ServerPackProvisionerTest {
             apiProperties.isZipFileExclusionEnabled = originalEnabled
         }
     }
+
+    /**
+     * A provisioner whose pre- and post-install cleanup lists are exactly [entries], so a cleanup test
+     * never edits the shared test home's settings.
+     */
+    private fun provisionerCleaning(vararg entries: String): ServerPackProvisioner {
+        val properties = mockk<de.griefed.serverpackcreator.api.ApiProperties>()
+        every { properties.preInstallCleanupFiles } returns TreeSet(entries.toList())
+        every { properties.postInstallCleanupFiles } returns TreeSet(entries.toList())
+        return ServerPackProvisioner(properties, mockk(), mockk())
+    }
+
+    /** A server pack holding one file, beside a sibling directory the cleanup must never reach. */
+    private fun packBesideASibling(tempDir: File): Pair<File, File> {
+        val destination = File(tempDir, "pack").also { it.mkdirs() }
+        File(destination, "world.dat").writeText("a world")
+        val sibling = File(tempDir, "sibling").also { it.mkdirs() }
+        File(sibling, "keep.txt").writeText("not ours")
+        return destination to sibling
+    }
+
+    /**
+     * `File(destination, "")` is the destination itself, and cleanup deletes directories recursively, so a
+     * blank entry -- a doubled comma in the setting -- must not delete the whole server pack.
+     */
+    @Test
+    fun aBlankCleanupEntryLeavesTheServerPackInPlace(@TempDir tempDir: File) {
+        val (destination, _) = packBesideASibling(tempDir)
+        val provisioner = provisionerCleaning("", " ")
+
+        provisioner.preInstallationCleanup(destination.absolutePath)
+        provisioner.postInstallCleanup(destination.absolutePath)
+
+        Assertions.assertTrue(File(destination, "world.dat").isFile, "the server pack must survive a blank entry")
+    }
+
+    /** A cleanup entry is a path inside the server pack; one that leaves it is refused, whatever it names. */
+    @Test
+    fun aCleanupEntryLeavingTheServerPackTouchesNothingOutsideIt(@TempDir tempDir: File) {
+        val (destination, sibling) = packBesideASibling(tempDir)
+        val provisioner = provisionerCleaning("..", "../sibling", "../sibling/keep.txt", ".")
+
+        provisioner.preInstallationCleanup(destination.absolutePath)
+        provisioner.postInstallCleanup(destination.absolutePath)
+
+        Assertions.assertTrue(File(sibling, "keep.txt").isFile, "nothing outside the server pack may be deleted")
+        Assertions.assertTrue(File(destination, "world.dat").isFile, "nor the server pack itself")
+    }
+
+    /** The refusal is narrow: an entry naming something inside the server pack is still deleted. */
+    @Test
+    fun aCleanupEntryInsideTheServerPackIsStillDeleted(@TempDir tempDir: File) {
+        val (destination, _) = packBesideASibling(tempDir)
+        File(destination, "libraries/nested").mkdirs()
+        File(destination, "installer.log").writeText("leftover")
+        val provisioner = provisionerCleaning("libraries", "installer.log")
+
+        provisioner.postInstallCleanup(destination.absolutePath)
+
+        Assertions.assertFalse(File(destination, "libraries").exists())
+        Assertions.assertFalse(File(destination, "installer.log").exists())
+        Assertions.assertTrue(File(destination, "world.dat").isFile)
+    }
+
+    /** A blank ZIP exclusion names the archive's own root; it must exclude nothing, not everything. */
+    @Test
+    fun aBlankZipExclusionExcludesNothing(@TempDir tempDir: File) {
+        val originalEnabled = apiProperties.isZipFileExclusionEnabled
+        val originalExclusions = apiProperties.zipArchiveExclusions
+        try {
+            apiProperties.isZipFileExclusionEnabled = true
+            apiProperties.zipArchiveExclusions = TreeSet(listOf("", "server.jar"))
+            val destination = File(tempDir, "pack").also { it.mkdirs() }
+            File(destination, "server.jar").writeText("excluded")
+            File(destination, "mods").mkdirs()
+            File(destination, "mods/alpha.jar").writeText("a mod")
+
+            provisioner.zipBuilder("1.20.1", destination.absolutePath, "Forge", "47.4.0")
+
+            val entries = ZipFile(File(destination.absolutePath + "_server_pack.zip")).use { zip ->
+                zip.entries().toList().map { it.name }
+            }
+            Assertions.assertTrue(entries.any { it == "mods/alpha.jar" }, "the pack must still be archived, got $entries")
+            Assertions.assertTrue(entries.none { it == "server.jar" }, "the real exclusion still applies, got $entries")
+        } finally {
+            apiProperties.isZipFileExclusionEnabled = originalEnabled
+            apiProperties.zipArchiveExclusions = originalExclusions
+        }
+    }
 }

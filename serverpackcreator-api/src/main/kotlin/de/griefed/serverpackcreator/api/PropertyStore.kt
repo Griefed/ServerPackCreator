@@ -116,17 +116,12 @@ class PropertyStore {
     }
 
     /**
-     * Returns the comma-separated value of [key] as a list, dropping empty trailing entries; a
-     * value without separator yields a singleton-list. Absent keys are defined with [defaultValue].
+     * Returns the comma-separated value of [key] as a list without its blank entries, which only a doubled,
+     * leading or trailing comma produces; whitespace around a non-blank entry is kept. Absent keys are defined
+     * with [defaultValue].
      */
     fun getList(key: String, defaultValue: String): List<String> =
-        if (acquire(key, defaultValue).contains(",")) {
-            acquire(key, defaultValue)
-                .split(",")
-                .dropLastWhile { it.isEmpty() }
-        } else {
-            listOf(acquire(key, defaultValue))
-        }
+        acquire(key, defaultValue).split(",").filterNot { it.isBlank() }
 
     /**
      * Sets [key] to [values] joined by [separator].

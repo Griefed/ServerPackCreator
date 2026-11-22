@@ -1025,6 +1025,12 @@ class GenerationConfig(private val store: PropertyStore) {
     private var zipExclusions: TreeSet<String> = TreeSet(fallbackZipExclusions)
 
     /**
+     * A fresh copy of [names] without its blank entries. A blank entry is never a directory or file name, only
+     * a stray comma, and in a cleanup list it would name the server pack itself.
+     */
+    private fun withoutBlanks(names: Collection<String>): TreeSet<String> = names.filterNotTo(TreeSet()) { it.isBlank() }
+
+    /**
      * [accumulated] merged with the store's list under [key], as a fresh set: [publish] receives one copy to
      * keep, the caller gets another of its own.
      *
@@ -1052,9 +1058,10 @@ class GenerationConfig(private val store: PropertyStore) {
             directoriesIncluded = it
         }
         set(value) {
-            store.setList(DIRECTORIES_MUST_INCLUDE_KEY, value.toList(), ",")
-            directoriesIncluded = TreeSet(value)
-            log.info("Directories which must always be included set to: $value")
+            val names = withoutBlanks(value)
+            store.setList(DIRECTORIES_MUST_INCLUDE_KEY, names.toList(), ",")
+            directoriesIncluded = names
+            log.info("Directories which must always be included set to: $names")
         }
 
     /**
@@ -1070,7 +1077,7 @@ class GenerationConfig(private val store: PropertyStore) {
         }
         set(value) {
             val included = directoriesToInclude
-            val use = TreeSet(value).apply { removeIf { entry -> included.contains(entry) } }
+            val use = withoutBlanks(value).apply { removeIf { entry -> included.contains(entry) } }
             store.setList(DIRECTORIES_SHOULD_EXCLUDE_KEY, use.toList(), ",")
             log.info("Directories which must always be excluded set to: $use")
         }
@@ -1084,9 +1091,10 @@ class GenerationConfig(private val store: PropertyStore) {
             postInstallCleanup = it
         }
         set(value) {
-            store.setList(POST_INSTALL_CLEANUP_KEY, value.toList(), ",")
-            postInstallCleanup = TreeSet(value)
-            log.info("Files to cleanup after server installation set to: $value")
+            val names = withoutBlanks(value)
+            store.setList(POST_INSTALL_CLEANUP_KEY, names.toList(), ",")
+            postInstallCleanup = names
+            log.info("Files to cleanup after server installation set to: $names")
         }
 
     /**
@@ -1098,9 +1106,10 @@ class GenerationConfig(private val store: PropertyStore) {
             preInstallCleanup = it
         }
         set(value) {
-            store.setList(PRE_INSTALL_CLEANUP_KEY, value.toList(), ",")
-            preInstallCleanup = TreeSet(value)
-            log.info("Files to cleanup before server installation set to: $value")
+            val names = withoutBlanks(value)
+            store.setList(PRE_INSTALL_CLEANUP_KEY, names.toList(), ",")
+            preInstallCleanup = names
+            log.info("Files to cleanup before server installation set to: $names")
         }
 
     /**
@@ -1113,9 +1122,10 @@ class GenerationConfig(private val store: PropertyStore) {
             zipExclusions = it
         }
         set(value) {
-            store.setList(ZIP_EXCLUSIONS_KEY, value.toList(), ",")
-            zipExclusions = TreeSet(value)
-            log.info("Files which must be excluded from ZIP-archives set to: $value")
+            val names = withoutBlanks(value)
+            store.setList(ZIP_EXCLUSIONS_KEY, names.toList(), ",")
+            zipExclusions = names
+            log.info("Files which must be excluded from ZIP-archives set to: $names")
         }
 
     /**
