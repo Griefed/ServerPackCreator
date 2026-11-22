@@ -196,12 +196,16 @@
     its comment goes stale if `lineEndingFor` moves.
   - Pinned by `RunFileLineEndingsTest` (mocks `ApiProperties` rather than repointing the real template maps, which
     are backed by the shared test home) and `LineEndingTest`.
-- **LANDMINE — `variables.txt` is read by FOUR shipped templates, each with its own loader, and must be repaired
+- **LANDMINE — `variables.txt` is read by SIX shipped templates, each with its own loader, and must be repaired
   on read.** FTP ASCII mode, hosting-panel editors and Windows editors rewrite it after SPC writes it, so every
   loader strips **both** carriage returns and a leading byte-order mark — `loadVariables` in `default_template.sh`,
-  `default_template.fish`, `default_java_template.sh`, `default_java_template.fish`. The installer templates read it
-  themselves (they also run standalone), so fixing the start scripts does not cover them. Pinned by
-  `VariablesFileLoadingTest` (each template × LF/CRLF/lone-CR × mark/no-mark).
+  `default_template.fish`, `default_java_template.sh`, `default_java_template.fish`, and the one
+  `$ExternalVariables = … | ConvertFrom-StringData` statement in `default_template.ps1` and
+  `default_java_template.ps1` (`start.bat` delegates to `start.ps1`, so those are the only Windows readers). The
+  installer templates read it themselves (they also run standalone), so fixing the start scripts does not cover
+  them. Pinned by `VariablesFileLoadingTest` (each template × LF/CRLF/lone-CR × mark/no-mark).
+  - **PowerShell breaks only on lone CR**: `Get-Content -Raw` drops a BOM and `ConvertFrom-StringData` copes with
+    CRLF, but it splits on LF alone, so the first key swallows the file. The loader turns `\r\n?` into LF first.
   - **A BOM damages only the FIRST setting** (it sticks to the name, e.g. `JAVA` is silently ignored), so the
     fixture puts `JAVA` first deliberately; a comment-first fixture cannot catch it.
   - **`${settings#$'\xEF\xBB\xBF'}` in bash, `string replace -r '^\x{feff}'` in fish** — anchored, never a bare

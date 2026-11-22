@@ -770,7 +770,10 @@ if (!(Test-Path -Path $ExternalVariablesFile -PathType Leaf))
     CrashServer "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
 }
 
-$ExternalVariables = Get-Content -raw -LiteralPath $ExternalVariablesFile | ConvertFrom-StringData
+# Some editors and FTP clients save this file with old Mac-style line endings (a carriage return on its own),
+# which PowerShell would read as one single line: the first setting would swallow the whole file and every
+# other setting would be missing. Turning every kind of line ending into a plain newline first prevents that.
+$ExternalVariables = (Get-Content -raw -LiteralPath $ExternalVariablesFile) -replace '\r\n?', "`n" | ConvertFrom-StringData
 $MinecraftVersion = $ExternalVariables['MINECRAFT_VERSION']
 $ModLoader = $ExternalVariables['MODLOADER']
 $ModLoaderVersion = $ExternalVariables['MODLOADER_VERSION']
