@@ -49,7 +49,7 @@ object VerdictCsvExporter {
     /**
      * Write the same document [toCsv] returns into [out], one row at a time.
      *
-     * The streaming form exists because `/export.csv` is unpaged by design: at the live daemon's row count the
+     * The streaming form exists because `/export.csv` is unpaged by design: for a large store the
      * joined `String` is the whole export held in heap before a byte reaches the socket, and then held a second
      * time as the bytes it is encoded to. Written row by row the cost is a buffer, whatever the store holds.
      */

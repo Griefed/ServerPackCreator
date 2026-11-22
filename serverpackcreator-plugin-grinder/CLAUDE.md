@@ -130,8 +130,13 @@ bucket holds one feature or several before reaching for the same change here.
   - **Rows are de-duplicated on the identity `GrinderVerdict` declares** — platform, slug, loader and
     Minecraft line. The daemon re-derives its selection per request and a grind records into it while the
     client pages, so the row set shifts underneath and one verdict can land on two pages. A duplicate is
-    a mod offered for ticking twice. Loader is part of the key, so the same slug on Fabric and Forge
-    survives as two rows (`keepsTheSameSlugOnADifferentLoader`).
+    a mod offered for ticking twice; the **later** copy wins, being the newer state. Loader is part of the
+    key, so the same slug on Fabric and Forge survives as two rows (`keepsTheSameSlugOnADifferentLoader`).
+  - **A shift can also skip a row**, which shows as fewer rows than the last page's `matched`: the feed is
+    read once more, and a second shortfall is `Failed` (`readsTheFeedAgainWhenAMovedRowWasSkipped`). **Known
+    residual:** a row *deleted* ahead of the cursor hides one row behind it while the count still agrees.
+    Closing that needs keyset paging on the daemon (a stable identity order plus an `after=` cursor) — not
+    done; it is a change to the grinder's query unit and its wire contract.
   - **A page that fails fails the call.** A short list presented as the grinder's findings is worse than
     an error, because a maintainer ticks exclusions from it. Same reason `maxPages` returns `Failed`
     rather than what it has: truncating at a ceiling and calling it the feed is the defect wearing a

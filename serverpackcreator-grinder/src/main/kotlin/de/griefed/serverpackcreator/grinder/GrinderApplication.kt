@@ -65,12 +65,9 @@ object GrinderApplication {
      * Run one startup step and report what it cost, so a slow boot names its own cause.
      *
      * Every step between `ApiWrapper.setup()` and `ReportServer.start()` is dead time before the report
-     * answers, and until this existed none of them said anything unless it had work to report: a sweep that
-     * reclaims nothing, a migration that moves nothing and a store that loads cleanly are all silent. A live
-     * daemon was measured taking **4,868 s** between its last setup line and its bind, with no line in between
-     * from any thread, which left the cause unattributable from the journal — the one place this module's own
-     * guidance sends a reader. Unconditional and at INFO, because the number is only useful when it is already
-     * there for the boot that went wrong, not for the one somebody enabled DEBUG to reproduce.
+     * answers, and a step with no work to report (a sweep that reclaims nothing, a store that loads cleanly) is
+     * otherwise silent, which leaves a slow start unattributable from the journal. Unconditional and at INFO,
+     * because the number is only useful when it is already there for the boot that went wrong.
      */
     private inline fun <T> phase(what: String, step: () -> T): T {
         val startedAt = System.nanoTime()

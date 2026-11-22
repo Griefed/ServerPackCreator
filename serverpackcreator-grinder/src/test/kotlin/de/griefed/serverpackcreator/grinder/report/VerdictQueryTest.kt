@@ -213,15 +213,14 @@ internal class VerdictQueryTest {
 
     /**
      * **The table's page size is capped, `all` included.** The HTML table is rendered into a single `String`,
-     * so the page's size is the store's size: at the ~430 bytes per row this renderer measures, `size=all`
-     * against the live daemon's 319,904 verdicts is a ~137 MB document and `size=100000` a ~43 MB one. Neither
-     * is a page; both are a wedged request thread. Everything is still available in full from `/export.csv` and
-     * `/verdicts.json`, which stream.
+     * so an uncapped page is as large as the store. `all` keeps its meaning and carries the cap it is resolved
+     * against once the rows are counted (the two guards below pin both sides); explicit sizes are capped here.
      */
     @Test
     fun theTableCapsAnUnboundedPageSize() {
         val all = VerdictQuery.parse(QueryParams.parse("size=all"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
-        Assertions.assertEquals(VerdictQuery.MAX_TABLE_PAGE_SIZE, all.size, "size=all must be capped for the table")
+        Assertions.assertNull(all.size, "size=all stays all until the rows are counted")
+        Assertions.assertEquals(VerdictQuery.MAX_TABLE_PAGE_SIZE, all.allCap, "size=all must be capped for the table")
 
         val oversized = VerdictQuery.parse(QueryParams.parse("size=100000"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
         Assertions.assertEquals(
@@ -231,6 +230,39 @@ internal class VerdictQueryTest {
 
         val modest = VerdictQuery.parse(QueryParams.parse("size=500"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
         Assertions.assertEquals(500, modest.size, "a size the table can render must be left alone")
+    }
+
+    /**
+     * **"all" that the table can render stays "all".** Resolved after counting, so a reader choosing `all` over a
+     * few rows sees `all` selected and every link carrying `size=all` -- not `5000`, which is the page disagreeing
+     * with its own URL.
+     */
+    @Test
+    fun allWithinTheCapStaysAllOnThePageAndInItsLinks() {
+        val verdicts = (1..12).map { grindVerdict("mod$it", "Fabric") }
+        val page = VerdictSelection.select(
+            verdicts, VerdictQuery.parse(QueryParams.parse("size=all"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
+        )
+
+        Assertions.assertNull(page.query.size)
+        Assertions.assertEquals(12, page.rows.size)
+        val html = VerdictReportRenderer.toHtml(page)
+        Assertions.assertTrue("""<option value="all" selected>""" in html, "all must be the selected size")
+        Assertions.assertTrue("size=all" in html, "the page's links must carry the size in force")
+        Assertions.assertFalse("size=5000" in html, "no link may carry the cap the reader never chose")
+    }
+
+    /** Past the cap, "all" is served as one capped page, and the page says so in its query. */
+    @Test
+    fun allPastTheCapIsServedAsOneCappedPage() {
+        val verdicts = (1..VerdictQuery.MAX_TABLE_PAGE_SIZE + 1).map { grindVerdict("mod$it", "Fabric") }
+        val page = VerdictSelection.select(
+            verdicts, VerdictQuery.parse(QueryParams.parse("size=all"), VerdictQuery.DEFAULT_PAGE_SIZE).forTable()
+        )
+
+        Assertions.assertEquals(VerdictQuery.MAX_TABLE_PAGE_SIZE, page.query.size)
+        Assertions.assertEquals(VerdictQuery.MAX_TABLE_PAGE_SIZE, page.rows.size)
+        Assertions.assertEquals(2, page.pages)
     }
 
     /**

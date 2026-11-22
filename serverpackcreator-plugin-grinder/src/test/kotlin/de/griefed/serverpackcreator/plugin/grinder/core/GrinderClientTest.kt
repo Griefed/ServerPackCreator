@@ -105,13 +105,93 @@ internal class GrinderClientTest {
             start()
         }
 
-    /** One page of the feed, carrying the paging envelope and one minimal row per slug. */
-    private fun pageDocument(page: Int, pages: Int, vararg slugs: String, loader: String = "Fabric"): String {
+    /**
+     * One page of the feed, carrying the paging envelope and one minimal row per slug. [matched] is omitted unless
+     * given, as an older daemon's envelope omits it, so only the guards about it make the client check it.
+     */
+    private fun pageDocument(
+        page: Int,
+        pages: Int,
+        vararg slugs: String,
+        loader: String = "Fabric",
+        matched: Int? = null,
+        verdict: String = "CONFIRMED"
+    ): String {
         val rows = slugs.joinToString(",") { slug ->
             """{"platform":"Modrinth","slug":"$slug","loader":"$loader","minecraftLine":"1.20",""" +
-                """"verdict":"CONFIRMED","suggestedEntry":"$slug-","detail":"","verifiedAt":"2026-09-04T12:30:00Z"}"""
+                """"verdict":"$verdict","suggestedEntry":"$slug-","detail":"","verifiedAt":"2026-09-04T12:30:00Z"}"""
         }
-        return """{"total":99,"matched":99,"page":$page,"pages":$pages,"verdicts":[$rows]}"""
+        val matchedField = matched?.let { "\"matched\":$it," }.orEmpty()
+        return """{"total":99,$matchedField"page":$page,"pages":$pages,"verdicts":[$rows]}"""
+    }
+
+    /** A server answering each request with the next of [documents] in turn, whatever page it asks for. */
+    private fun servingInSequence(vararg documents: String): HttpServer =
+        HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
+            val next = java.util.concurrent.atomic.AtomicInteger()
+            createContext("/") { exchange ->
+                requestedUris += exchange.requestURI.toString()
+                val bytes = documents[minOf(next.getAndIncrement(), documents.lastIndex)].toByteArray(StandardCharsets.UTF_8)
+                exchange.sendResponseHeaders(200, bytes.size.toLong())
+                exchange.responseBody.use { it.write(bytes) }
+            }
+            start()
+        }
+
+    /**
+     * **A row the store moved past the cursor while the client paged is not silently lost.** Offset paging over a
+     * selection the daemon re-derives per request: `prism` is re-recorded and sorts to the front between page 1
+     * and page 2, so page 2 starts one row late and `prism` is on no page the client read. Fewer rows than the
+     * daemon says it matched is the tell, and the whole feed is read again.
+     */
+    @Test
+    fun readsTheFeedAgainWhenAMovedRowWasSkipped() {
+        val server = servingInSequence(
+            pageDocument(1, 2, "creativecore", "iceberg", matched = 4),
+            pageDocument(2, 2, "iceberg", "bookshelf", matched = 4),
+            pageDocument(1, 2, "prism", "creativecore", matched = 4),
+            pageDocument(2, 2, "iceberg", "bookshelf", matched = 4)
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(setOf("creativecore", "iceberg", "bookshelf", "prism"), slugsOf(result).toSet())
+            Assertions.assertEquals(4, requestedUris.size, "one complete re-read, no more")
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A store that keeps shifting under the client is a failure, never a short list presented as the feed. */
+    @Test
+    fun failsWhenTheFeedStaysShortOfWhatTheDaemonMatched() {
+        val shortPage = pageDocument(1, 1, "creativecore", matched = 2)
+        val server = servingInSequence(shortPage, shortPage)
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertTrue(result is FetchResult.Failed, "a short feed was returned as complete: $result")
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A verdict re-recorded while the client paged is shown in its newer state, the one served last. */
+    @Test
+    fun aRowSeenTwiceKeepsItsNewerCopy() {
+        val server = servingByPage(
+            mapOf(
+                1 to pageDocument(1, 2, "creativecore", verdict = "INCONCLUSIVE"),
+                2 to pageDocument(2, 2, "creativecore", verdict = "CONFIRMED")
+            )
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("CONFIRMED"), (result as FetchResult.Ok).value.map { it.verdict })
+        } finally {
+            server.stop(0)
+        }
     }
 
     private fun slugsOf(result: FetchResult<List<GrinderVerdict>>): List<String> =

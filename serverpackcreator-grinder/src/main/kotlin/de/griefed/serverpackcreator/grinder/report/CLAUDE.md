@@ -85,14 +85,18 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
     there.** The table renders into one `String` at ~430 bytes per row, so on the deployed store `size=all`
     was a ~137 MB document and `size=100000` a ~43 MB one — each built whole in heap before a byte was sent,
     on four request threads. `forTable()` applies the cap on the HTML route *only*; `/export.csv` and
-    `/verdicts.json` stay unpaged, because they stream. `offeredSizes` stops offering `all` once the match
-    count passes the cap, or the control would show a choice `forTable` then refuses to honour.
+    `/verdicts.json` stay unpaged, because they stream. **`all` is resolved after counting**
+    (`VerdictQuery.allCap`): within the cap it stays `all` — selected in the control and carried by every
+    link — and past it it becomes the cap. `offeredSizes` stops offering `all` at the same point, or the
+    control would show a choice the selection then refuses to honour.
   - **The two unpaged endpoints are streamed, not materialised.** `respondStreaming` sends a declared length
     of 0 (chunked) and writes the document as it is produced, so the cost is a buffer rather than the
     document three times over (Jackson's segments, the `String`, the `ByteArray`). Nothing can be retracted
-    once the first chunk is out, which is the deliberate trade: the predecessor wrapped serialisation in
-    `runCatching`, and because Kotlin's catches `Throwable`, heap exhaustion was answered **200** with a
-    23-byte `{"error":…}` body and reached no log at all.
+    once the first chunk is out, so **a failure part-way is logged at ERROR and the body is left unclosed**:
+    the handler rethrows, the JDK server drops the connection without the terminating chunk, and the client
+    sees an incomplete response (`StreamedExportFailureTest`). **LANDMINE — never `use {}` the body or the
+    JSON generator there**: closing on the way out writes the terminating chunk and Jackson's
+    `AUTO_CLOSE_JSON_CONTENT` writes the missing `]}`, which turns a failure into a well-formed, shorter 200.
   - **LANDMINE — bind `size` outside `buildList`.** Its `MutableList` receiver's own `size` shadows the
     property, so `toQueryString` compared the *list length* and emitted it: `size=250` became `size=0`.
     Invisible by reading; caught by `theAppliedQueryRoundTrips`.

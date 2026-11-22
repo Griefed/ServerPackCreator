@@ -29,7 +29,7 @@ import java.io.File
  * Staging leaves a full server pack (with the overlaid loader libraries) plus the mod jars it downloaded under
  * `<work>/boot/<attempt>` and `<work>/verify/<attempt>`. Those directories are only ever deleted when the *same*
  * attempt is staged again, which for a catalog sweep is never — every attempt is a new tuple, so without this the
- * work tree grows without bound, measured live at **98 GB across 1750 attempt directories, ~23 GB/h**.
+ * work tree grows without bound, by a full server pack per attempt.
  *
  * **Nothing is kept here, the console included.** Retention belongs to the
  * [de.griefed.serverpackcreator.grinder.report.BootLogStore], which copies the consoles worth keeping *during*
@@ -96,9 +96,8 @@ class BootWorkspaceReaper(
                 log.warn("Could not reclaim ${entry.absolutePath}; it will be retried on the next sweep.")
             }
         }
-        // The directory itself goes too. One surviving inode per attempt IS the unbounded growth this class
-        // exists to prevent: 255,591 of them had accumulated on the live daemon by 2026-11-09, and startup
-        // walks that tree before the report server can bind.
+        // The directory itself goes too. One surviving inode per attempt is unbounded growth, and startup walks
+        // that tree before the report server can bind.
         if (attemptDir.listFiles()?.isEmpty() == true && !attemptDir.delete()) {
             log.warn("Could not remove ${attemptDir.absolutePath}; it will be retried on the next sweep.")
         }

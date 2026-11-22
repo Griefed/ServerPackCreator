@@ -195,8 +195,12 @@ internal object QueryParams {
     fun first(params: Map<String, List<String>>, key: String): String? =
         params[key]?.firstOrNull()?.takeIf { it.isNotBlank() }
 
-    private fun decode(value: String): String? =
-        runCatching { URLDecoder.decode(value, StandardCharsets.UTF_8) }.getOrNull()
+    /** [value] percent-decoded, or `null` for a malformed escape, which falls back like any unreadable parameter. */
+    private fun decode(value: String): String? = try {
+        URLDecoder.decode(value, StandardCharsets.UTF_8)
+    } catch (_: IllegalArgumentException) {
+        null
+    }
 }
 
 /**
@@ -264,7 +268,12 @@ internal data class VerdictQuery(
     /** 1-based page, clamped to the available range when applied. */
     val page: Int = 1,
     /** Rows per page, or `null` for "all" — a real choice rather than a very large number. */
-    val size: Int? = DEFAULT_PAGE_SIZE
+    val size: Int? = DEFAULT_PAGE_SIZE,
+    /**
+     * The most rows "all" may mean, or `null` for no limit. Resolved against the match count when the query is
+     * applied, so "all" over fewer rows stays "all".
+     */
+    val allCap: Int? = null
 ) {
     /**
      * This query as a query string, defaults and empties omitted so a shared link stays readable.
@@ -292,14 +301,14 @@ internal data class VerdictQuery(
     }
 
     /**
-     * This query with a page size the table can actually render — [MAX_TABLE_PAGE_SIZE] at most, and never
-     * "all".
+     * This query with a page size the table can actually render — [MAX_TABLE_PAGE_SIZE] at most. "all" stays "all"
+     * where the match count fits under the cap and becomes the cap where it does not ([allCap]).
      *
      * Applied by the HTML route only. `/export.csv` and `/verdicts.json` stream their documents and so stay
      * unbounded on purpose, which is the behaviour operators script against; the table is built as a single
      * `String`, so for it an unbounded size is a page nobody can load and a request thread nobody gets back.
      */
-    fun forTable(): VerdictQuery = copy(size = (size ?: MAX_TABLE_PAGE_SIZE).coerceAtMost(MAX_TABLE_PAGE_SIZE))
+    fun forTable(): VerdictQuery = copy(size = size?.coerceAtMost(MAX_TABLE_PAGE_SIZE), allCap = MAX_TABLE_PAGE_SIZE)
 
     private fun encode(value: String) = URLEncoder.encode(value, StandardCharsets.UTF_8)
 
@@ -310,10 +319,9 @@ internal data class VerdictQuery(
         /**
          * The most rows the HTML table will render, however many are asked for.
          *
-         * The table is one `String`, measured at ~430 bytes of HTML per row, so this is a ~2 MB page. The
-         * sizes it replaces were not pages: against the live daemon's 319,904 verdicts `size=100000` is ~43 MB
-         * and `size=all` ~137 MB, each built whole in heap before a byte is sent. Everything remains available
-         * in full from `/export.csv` and `/verdicts.json`, which the page links and which stream.
+         * The table is one `String`, built whole in heap before a byte is sent, at roughly 430 bytes of HTML per
+         * row, so this is a page of about 2 MB. Everything remains available in full from `/export.csv` and
+         * `/verdicts.json`, which the page links and which stream.
          */
         const val MAX_TABLE_PAGE_SIZE = 5_000
 
@@ -348,8 +356,8 @@ internal data class VerdictQuery(
         }
 
         /**
-         * The page sizes worth offering for [matched] rows, always including `all` (as `null`) and always
-         * including [current].
+         * The page sizes worth offering for [matched] rows: `all` (as `null`) wherever the table can render all of
+         * them, and always [current].
          *
          * Offering 100,000 for 2,000 rows is noise. But **[current] must be in the list whatever the count
          * says**: filter a large store down to a handful while a big size is in force and a strictly
@@ -441,7 +449,9 @@ internal object VerdictSelection {
             order(matched, query, logCount)
         }
 
-        val size = query.size ?: matched.size.coerceAtLeast(1)
+        // "all" is resolved here, against the count: within the cap it stays "all", past it it is the cap.
+        val appliedSize = query.size ?: query.allCap?.takeIf { matched.size > it }
+        val size = appliedSize ?: matched.size.coerceAtLeast(1)
         val pages = if (matched.isEmpty()) 1 else ((matched.size + size - 1) / size)
         val page = query.page.coerceIn(1, pages)
         // subList, not drop/take: drop() copies everything past the offset, so page one of a 38k-row store
@@ -455,7 +465,7 @@ internal object VerdictSelection {
             matched = matched.size,
             page = page,
             pages = pages,
-            query = query.copy(page = page),
+            query = query.copy(page = page, size = appliedSize),
             choices = snapshot.choices
         )
     }

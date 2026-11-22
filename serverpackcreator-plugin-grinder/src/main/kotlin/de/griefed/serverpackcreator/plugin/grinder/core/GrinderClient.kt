@@ -75,21 +75,57 @@ class GrinderClient(
 ) {
 
     /**
-     * Every verdict the grinder at [baseUrl] holds, newest state included, read a page at a time.
+     * Every verdict the grinder at [baseUrl] holds, each in the newest state served, read a page at a time.
      *
      * The request is unfiltered on purpose: both list tabs are populated from one response, so filtering
      * server-side would cost a second round-trip to learn the same rows. It is **paged**, though, because
-     * unfiltered is not the same as unbounded — a bare `/verdicts.json` returns the whole store by
-     * documented design, which at a deployed 319,904 verdicts is a ~248 MiB document this client has to
-     * receive inside one [timeout] and hold as a `String`. The tab simply failed.
+     * a bare `/verdicts.json` returns the whole store by documented design, which can be far too large to
+     * receive inside one [timeout].
      *
-     * Partial results are never returned: a page that fails fails the whole call. A short list presented as
-     * the grinder's findings is worse than an error, because a maintainer ticks exclusions from it.
+     * Paging is by offset over a selection the daemon re-derives per request while grinds record into it, so a
+     * verdict that moves between two requests can land on two pages or on none. The first is absorbed by
+     * keying rows on their identity, the later copy winning. The second shows as fewer rows than the daemon's
+     * `matched`: the feed is then read once more, and a second shortfall fails the call rather than return a
+     * short list a maintainer would tick exclusions from. What this cannot detect is a row deleted ahead of the
+     * cursor, which hides one row behind it while the count still agrees; deletions happen only when a project
+     * is re-ground under a new key, and the next refresh shows the row again.
+     *
+     * A page that fails, or a feed past [maxPages], fails the whole call.
      */
     fun fetchVerdicts(baseUrl: String): FetchResult<List<GrinderVerdict>> {
-        // Keyed by the identity GrinderVerdict declares, because the daemon re-derives its selection per
-        // request while a grind records into it: the row set shifts under a client that pages, and the same
-        // verdict can land on two pages. A duplicate here is a mod offered for ticking twice.
+        val first = readFeed(baseUrl)
+        if (first !is FetchResult.Ok || !first.value.isShort) {
+            return first.map { it.rows }
+        }
+        return when (val second = readFeed(baseUrl)) {
+            is FetchResult.Failed -> second
+            is FetchResult.Ok -> if (second.value.isShort) {
+                FetchResult.Failed(
+                    "The grinder's verdicts changed while they were being read (${second.value.rows.size} of " +
+                        "${second.value.matched} arrived), twice. Refresh again once the grinder is less busy."
+                )
+            } else {
+                FetchResult.Ok(second.value.rows)
+            }
+        }
+    }
+
+    /** One full read of the feed: its rows, and the `matched` the last page reported, when it reported one. */
+    private data class Feed(
+        val rows: List<GrinderVerdict>,
+        val matched: Int?
+    ) {
+        /** Whether fewer rows arrived than the daemon said it matched, the sign of a row skipped by a shift. */
+        val isShort: Boolean get() = matched != null && rows.size < matched
+    }
+
+    private fun <T, R> FetchResult<T>.map(transform: (T) -> R): FetchResult<R> = when (this) {
+        is FetchResult.Ok -> FetchResult.Ok(transform(value))
+        is FetchResult.Failed -> this
+    }
+
+    /** Page through the feed once; see [fetchVerdicts]. */
+    private fun readFeed(baseUrl: String): FetchResult<Feed> {
         val collected = LinkedHashMap<RowIdentity, GrinderVerdict>()
         var page = 1
         while (true) {
@@ -103,13 +139,15 @@ class GrinderClient(
             // exactly the pair an operator debugging an empty tab needs told apart.
             val rows = readVerdicts(document)
                 ?: return FetchResult.Failed("The grinder answered with something that is not a verdict document.")
-            rows.forEach { collected.putIfAbsent(RowIdentity.of(it), it) }
+            rows.forEach { collected[RowIdentity.of(it)] = it }
+            val matched = document["matched"]?.takeIf { it.isInt }?.asInt()
 
             // No envelope means no paging to do: a daemon publishing the bare array has served everything
             // it is going to, and asking for a second page would re-request the same rows for ever.
-            val pages = document["pages"]?.takeIf { it.isInt }?.asInt() ?: return FetchResult.Ok(collected.values.toList())
+            val pages = document["pages"]?.takeIf { it.isInt }?.asInt()
+                ?: return FetchResult.Ok(Feed(collected.values.toList(), matched))
             if (page >= pages || rows.isEmpty()) {
-                return FetchResult.Ok(collected.values.toList())
+                return FetchResult.Ok(Feed(collected.values.toList(), matched))
             }
             if (page >= maxPages) {
                 // A failure rather than what has been collected so far: stopping at the ceiling and calling
@@ -223,10 +261,9 @@ class GrinderClient(
         /**
          * Rows per request when paging the feed.
          *
-         * Two thousand because the cost is split between round trips and the size of each answer: at the
-         * ~813 bytes per row the deployed store measures this is roughly 1.6 MB per request, comfortably
-         * inside the 15-second timeout on any link, while a deployed 319,904-row store still costs 160
-         * requests rather than thousands.
+         * Two thousand because the cost is split between round trips and the size of each answer: at roughly
+         * 800 bytes of JSON per row this is about 1.6 MB per request, comfortably inside the 15-second timeout,
+         * while a store of a few hundred thousand rows still costs a few hundred requests rather than thousands.
          */
         const val DEFAULT_PAGE_SIZE = 2_000
 

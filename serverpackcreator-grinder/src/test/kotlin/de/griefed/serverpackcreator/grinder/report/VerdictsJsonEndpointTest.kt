@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
@@ -62,15 +64,10 @@ internal class VerdictsJsonEndpointTest {
      * **The unpaged endpoints must be written as they are produced, not built in heap first.**
      *
      * A bare `/verdicts.json` and `/export.csv` return every row by documented design, so their documents grow
-     * with the store without any bound a query can impose: the live daemon's 319,904 verdicts serialise to
-     * ~248 MiB, which a materialised response holds three times over — Jackson's segments, the `String` they are
-     * joined into, and the `ByteArray` the response is written from. On a daemon that passes no `-Xmx` that is
-     * what turns a large store into GC thrash and a 502 on *every* endpoint, including the ones that do no work.
-     * Worse, `runCatching` around the serialisation catches [Throwable], so an `OutOfMemoryError` there is
-     * swallowed and answered with a 23-byte error document that appears in no log.
-     *
-     * An absent `Content-Length` is the observable consequence: the JDK's server sends a response of declared
-     * length 0 chunked, which it can only do if the body was never sized up front.
+     * with the store without any bound a query can impose, and a materialised response holds one three times
+     * over. An absent `Content-Length` is the transport's half: the JDK's server sends a response of declared
+     * length 0 chunked, which it can only do if the body was never sized up front. That the streamed bodies are
+     * the right documents is pinned by the two `theStreamed…` guards below.
      */
     @Test
     fun theUnpagedEndpointsAreStreamedRatherThanBuiltInHeap() {
@@ -84,6 +81,52 @@ internal class VerdictsJsonEndpointTest {
                     "$path declared a Content-Length, so the whole document was built in heap before it was sent"
                 )
             }
+        } finally {
+            server.stop()
+        }
+    }
+
+    /** Rows whose text needs quoting: a comma, a quote and a newline, in fields both renderings carry. */
+    private fun storeNeedingEscapes() = InMemoryVerdictStore().apply {
+        record(grindVerdict("comma", "Fabric", verdict = Verdict.CONFIRMED, detail = "crashed, then exited"))
+        record(grindVerdict("quote", "Forge", verdict = Verdict.CLEAR, detail = "said \"no\""))
+        record(grindVerdict("newline", "NeoForge", verdict = Verdict.INCONCLUSIVE, detail = "line one\nline two"))
+    }
+
+    /** What streams out of `/export.csv` is byte for byte what the exporter renders for the same rows. */
+    @Test
+    fun theStreamedCsvIsExactlyTheExportersRendering() {
+        val store = storeNeedingEscapes()
+        val server = ReportServer(store, requestedPort = 0).start()
+        try {
+            val expected = VerdictCsvExporter.toCsv(
+                VerdictSelection.select(store.all(), VerdictQuery.parse(emptyMap(), null)).rows, preOrdered = true
+            )
+            Assertions.assertEquals(expected, get(server.port, "/export.csv").body())
+        } finally {
+            server.stop()
+        }
+    }
+
+    /** What streams out of `/verdicts.json` is the document the same mapper writes for the same page in one go. */
+    @Test
+    fun theStreamedJsonIsTheDocumentTheMapperWritesWhole() {
+        val store = storeNeedingEscapes()
+        val server = ReportServer(store, requestedPort = 0).start()
+        try {
+            val page = VerdictSelection.select(store.all(), VerdictQuery.parse(emptyMap(), null))
+            val wireMapper = jacksonObjectMapper()
+                .registerModule(JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            val expected = wireMapper.readTree(
+                wireMapper.writeValueAsString(
+                    linkedMapOf(
+                        "total" to page.total, "matched" to page.matched, "page" to page.page, "pages" to page.pages,
+                        "verdicts" to page.rows
+                    )
+                )
+            )
+            Assertions.assertEquals(expected, wireMapper.readTree(get(server.port, "/verdicts.json").body()))
         } finally {
             server.stop()
         }
