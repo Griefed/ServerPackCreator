@@ -8,12 +8,10 @@
       from `WebService (dev stack)` with the debugger attached.
 
       This configuration is the opt in, and the equivalent of the command BUILD.md gives for the
-      same thing. The profile is enabled through the env file rather than a Profiles field so the
-      setting lives in a tracked file every contributor gets.
-
-      Check that the first run actually started `serverpackcreator`: if only the database and
-      Mongoku come up, the IDE did not forward the env file, and the Profiles option under
-      "Modify options" (comma separated, `app`) is the direct way to set it instead.
+      same thing: the Profiles setting below enables the `app` profile. It sets no env file on
+      purpose. IntelliJ hands an env file to Compose as its env-file option, which replaces Compose's
+      default lookup of `docker/.env`, so per-machine overrides such as SPC_DEV_MONGO_IMAGE would be
+      silently ignored. (XML comments cannot contain a double hyphen, hence no flag spellings here.)
 
       Build policy defaults to "Only missing images", so this rebuilds on the first run and not
       after later source changes. Set Build to "Always" in the dialog to match the command's
@@ -21,7 +19,11 @@
     -->
     <deployment type="docker-compose.yml">
       <settings>
-        <option name="envFilePath" value="$PROJECT_DIR$/docker/app-profile.env" />
+        <option name="profiles">
+          <list>
+            <option value="app" />
+          </list>
+        </option>
         <option name="sourceFilePath" value="docker/docker-compose-dev.yml" />
       </settings>
     </deployment>

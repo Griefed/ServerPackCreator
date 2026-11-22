@@ -197,9 +197,10 @@ default — so the application itself runs from your IDE, with the debugger and 
 docker compose -f docker/docker-compose-dev.yml up -d
 ```
 
-That starts MongoDB and [Mongoku](http://localhost:8081), a database browser with no login, bound to
-`127.0.0.1` so only this machine can reach it. It also publishes `27017` on the host so both the
-IDE-run application and IntelliJ Ultimate's Database tool window can reach the database directly. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
+That starts MongoDB and [Mongoku](http://127.0.0.1:8081), a database browser with no login. Open it at
+`127.0.0.1`, not `localhost`: Mongoku enables writes only for the exact origin in `MONGOKU_SERVER_ORIGIN`.
+Every port the stack publishes is bound to `127.0.0.1`, so only this machine can reach it, and the
+database's `27017` is among them so both the IDE-run application and IntelliJ Ultimate's Database tool window can reach the database directly. Then run the **WebService (dev stack)** configuration from `.run/`, which carries the
 database URI as a command-line argument:
 
 ```
