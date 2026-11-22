@@ -973,14 +973,17 @@ class GenerationConfig(private val store: PropertyStore) {
      * generation or a config-check tick reads it from a coroutine. A reader therefore sees the old list
      * or the new one, never an empty or half-filled one, and a held reference is never emptied
      * underneath its holder. Same fix, same reason, as [clientsideModsRegex] and [modsWhitelistRegex].
+     *
+     * Blank entries are dropped: under every filter but REGEX an empty entry matches every mod name, and
+     * a stored or remote list with a doubled or trailing comma produces one.
      */
     fun replaceClientsideMods(entries: Collection<String>) {
-        clientsideMods = TreeSet(entries)
+        clientsideMods = TreeSet(entries.filterNot { it.isBlank() })
     }
 
     /** Replace the mod-whitelist with [entries], in one assignment — see [replaceClientsideMods]. */
     fun replaceModsWhitelist(entries: Collection<String>) {
-        modsWhitelist = TreeSet(entries)
+        modsWhitelist = TreeSet(entries.filterNot { it.isBlank() })
     }
 
     /**

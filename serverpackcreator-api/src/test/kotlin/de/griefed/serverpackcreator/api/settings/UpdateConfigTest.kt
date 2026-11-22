@@ -82,4 +82,36 @@ internal class UpdateConfigTest {
         Assertions.assertFalse(updateConfig.updateFallback(), "Unchanged remote lists must report no update")
         Assertions.assertEquals(1, saves)
     }
+
+    /**
+     * Pins that a remote list with a trailing or doubled comma contributes no empty entry. An empty entry
+     * matches every mod name under the START, END, CONTAIN and EITHER filters, and the stored copy is read
+     * back through `PropertyStore.getList` on the next start, so both routes must agree.
+     */
+    @Test
+    fun updateFallbackIgnoresEmptyEntriesInTheRemoteLists(@TempDir tempDir: File) {
+        val store = PropertyStore()
+        val generationConfig = GenerationConfig(store)
+        val updateConfig = UpdateConfig(store, generationConfig) {}
+
+        val remoteProperties = File(tempDir, "remote.properties")
+        remoteProperties.writeText(
+            "${GenerationConfig.FALLBACK_MODS_LIST_KEY}=FreshClientMod-,,AnotherFreshMod-,\n" +
+                    "${GenerationConfig.MODS_WHITELIST_KEY}=FreshWhitelisted-,\n"
+        )
+        updateConfig.updateUrl = remoteProperties.toURI().toURL()
+
+        Assertions.assertTrue(updateConfig.updateFallback(), "precondition: the remote lists are new")
+
+        Assertions.assertEquals(
+            sortedSetOf("AnotherFreshMod-", "FreshClientMod-"), generationConfig.clientsideMods,
+            "no empty clientside entry"
+        )
+        Assertions.assertEquals(sortedSetOf("FreshWhitelisted-"), generationConfig.modsWhitelist, "no empty whitelist entry")
+
+        generationConfig.loadFallbackModsList()
+        generationConfig.loadFallbackWhitelist()
+        Assertions.assertFalse(generationConfig.clientsideMods.contains(""), "nor after re-reading the stored list")
+        Assertions.assertFalse(generationConfig.modsWhitelist.contains(""), "nor after re-reading the stored whitelist")
+    }
 }
