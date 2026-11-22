@@ -214,12 +214,11 @@ internal class GenerationConfigTest {
     /**
      * Pins that replacing a fallback list publishes a NEW set rather than emptying the live one.
      *
-     * `updateFallback()` used to `clear()` and then `addAll()` on `clientsideMods` itself — the same
-     * two-step this class already pins against for the regex variants, in the one path that was not
-     * fixed with them. It is reachable at runtime: the Edit menu's *Update Default Modslist* calls it on
-     * the event dispatch thread, while a generation or a config-check tick reads the same list from a
-     * coroutine. `TreeSet` is not thread-safe, so the window is not merely a stale read — a structural
-     * modification during another thread's traversal is undefined.
+     * The replacement is reachable while the list is being read: the Edit menu's *Update Default Modslist*
+     * calls `updateFallback()` on the event dispatch thread, while a generation or a config-check tick reads
+     * the same list from a coroutine. `TreeSet` is not thread-safe, so clearing and refilling the live set
+     * would not merely risk a stale read — a structural modification during another thread's traversal is
+     * undefined.
      *
      * Identity is what is asserted, because it is the property that makes the window impossible: a
      * reader holding the old set keeps a complete old set, and one reading the field afterwards gets a
@@ -255,11 +254,10 @@ internal class GenerationConfigTest {
     /**
      * Pins that each read of the regex-variant lists yields its **own** set.
      *
-     * The getter used to `clear()` and refill one shared `TreeSet` field on every access. Two problems
-     * with that, and the second is why this is a `fix:` rather than tidying: a caller holding an earlier
-     * result silently saw it emptied and rewritten under them, and because the mutation is not atomic a
-     * concurrent reader could observe the set mid-clear. Both `ApiProperties.clientsideModsRegex` and
-     * `modsWhitelistRegex` are published, and the GUI reads settings from a `parallelStream` walk.
+     * A getter refilling one shared set would empty and rewrite a result its caller still holds, and,
+     * the refill not being atomic, let a concurrent reader observe the set mid-clear. Both
+     * `ApiProperties.clientsideModsRegex` and `modsWhitelistRegex` are published, and the GUI reads settings
+     * from a `parallelStream` walk.
      */
     @Test
     fun regexVariantListsAreNotSharedBetweenReads() {

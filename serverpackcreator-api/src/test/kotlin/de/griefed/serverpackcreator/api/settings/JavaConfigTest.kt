@@ -2,8 +2,11 @@ package de.griefed.serverpackcreator.api.settings
 
 import de.griefed.serverpackcreator.api.PropertyStore
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 /**
  * Tests for [JavaConfig], the Java-installation settings-group. Uses the running JVM's java-binary as a
@@ -46,11 +49,9 @@ internal class JavaConfigTest {
     /**
      * Pins that validating a Java path prints nothing to stdout.
      *
-     * `testJava` drains `java -version` so the probe cannot block on a full pipe, and it used to
-     * `println` every third line of that output — reaching the console of every GUI and CLI user whose
-     * Java path was being checked, and printing the literal `null` when the third read ran past the end.
-     * The four `println`s in `ApiProperties` are the deliberate exception, because that class *is*
-     * log4j's `ConfigurationFactory` and has no logger yet; this one was not.
+     * The probe runs `java -version`, and anything it echoes reaches the console of every GUI and CLI user
+     * whose Java path is being checked. `JavaConfig` has a logger; the four `println`s in `ApiProperties` are
+     * the deliberate exception, because that class *is* log4j's `ConfigurationFactory` and has no logger yet.
      *
      * Asserted on stdout rather than by grepping the source, so it pins the behaviour rather than the
      * spelling.
@@ -137,5 +138,38 @@ internal class JavaConfigTest {
             "false",
             store.properties.getProperty(JavaConfig.SCRIPT_JAVA_AUTOUPDATE_KEY)
         )
+    }
+
+    /**
+     * Pins that a "Java" which never exits is rejected within the probe's bound, and that the probe process is
+     * gone afterwards. The check runs on the GUI's settings path, so an executable that waits on stdin or hangs
+     * must not block it, nor be left running.
+     *
+     * `yes` stands in for it: asked for `-version` it prints that word for ever, so it never exits, and as a
+     * system binary it starts at once, which a freshly written script does not reliably do on a loaded host.
+     */
+    @Test
+    fun aJavaThatNeverExitsIsRejectedAndKilled() {
+        val neverExits = listOf("/usr/bin/yes", "/bin/yes").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `yes` binary - the hanging-probe check is skipped")
+        val probePath = neverExits.canonicalPath
+        val store = PropertyStore()
+        val javaConfig = JavaConfig(store).apply { probeTimeoutMillis = 1_000 }
+
+        Assertions.assertTimeoutPreemptively(Duration.ofSeconds(30), {
+            javaConfig.javaPaths = hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to probePath)
+        }, "validating a Java path must not wait for the probed executable for ever")
+
+        Assertions.assertNull(
+            store.properties.getProperty("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17"),
+            "a probe that did not finish is not a working Java"
+        )
+        val survivors = ProcessHandle.current().descendants()
+            .filter { child -> child.info().command().map { File(it).canonicalPath == probePath }.orElse(false) }
+            .toList()
+        survivors.forEach { child -> runCatching { child.onExit().get(10, TimeUnit.SECONDS) } }
+        val alive = survivors.filter { it.isAlive }
+        alive.forEach { it.destroyForcibly() }
+        Assertions.assertTrue(alive.isEmpty(), "the probe process must not outlive the check")
     }
 }

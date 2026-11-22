@@ -25,11 +25,10 @@ import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
-import java.io.InputStreamReader
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Settings-group for Java-installations used by ServerPackCreator: the Java for
@@ -40,6 +39,12 @@ import java.util.*
 class JavaConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val checkedJavas = hashMapOf<String, Boolean>()
+
+    /**
+     * How long [testJava] waits for `<java> -version` to exit before rejecting the path. A real Java answers in
+     * well under a second; the bound exists for an executable that never exits. Internal so a test can shorten it.
+     */
+    internal var probeTimeoutMillis: Long = 10_000
 
     /** Property keys for the Java paths and the auto-update toggle. */
 
@@ -243,8 +248,12 @@ class JavaConfig(private val store: PropertyStore) {
     }
 
     /**
-     * Test for a valid Java specification by trying to run `java -version`. If the command goes
-     * through without errors, it is considered a correct specification.
+     * Test for a valid Java specification by running `<pathToJava> -version`: a path that starts and exits
+     * within [probeTimeoutMillis] is considered a correct specification.
+     *
+     * The output is discarded rather than piped, so the probe can never block on a full pipe and no stream is
+     * left to close. A probe still running at the bound is killed and rejected, and so is one that cannot be
+     * started.
      *
      * [pathToJava] — Path to the java executable/binary. Returns `true` if the specified file is a valid Java
      * executable/binary.
@@ -252,29 +261,27 @@ class JavaConfig(private val store: PropertyStore) {
      * @author Griefed
      */
     private fun testJava(pathToJava: String): Boolean {
-        var process: Process? = null
-        val testSuccessful: Boolean = try {
-            val processBuilder = ProcessBuilder(listOf(pathToJava, "-version"))
-            processBuilder.redirectErrorStream(true)
-            process = processBuilder.start()
-            // Drained one line at a time, and logged rather than printed. The output is only drained so the
-            // process cannot block on a full pipe - what is being tested is whether it starts at all.
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                var line = reader.readLine()
-                while (line != null) {
-                    log.debug("$pathToJava -version: $line")
-                    line = reader.readLine()
-                }
-            }
-            true
+        val process = try {
+            ProcessBuilder(listOf(pathToJava, "-version"))
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .start()
         } catch (e: IOException) {
-            log.error("Invalid Java specified.")
+            log.error("Invalid Java specified.", e)
+            return false
+        }
+        return try {
+            val exited = process.waitFor(probeTimeoutMillis, TimeUnit.MILLISECONDS)
+            if (!exited) {
+                log.error("$pathToJava -version did not finish within $probeTimeoutMillis ms. Invalid Java specified.")
+            }
+            exited
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
             false
         } finally {
-            // In the `finally`, because a throwing read would otherwise leave the probe process behind.
-            process?.destroyForcibly()
+            process.destroyForcibly()
         }
-        return testSuccessful
     }
 
     /**
