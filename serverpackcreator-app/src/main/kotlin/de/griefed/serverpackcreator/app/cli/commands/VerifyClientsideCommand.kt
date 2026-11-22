@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import de.griefed.serverpackcreator.clientside.boot.BootArtifactWriter
 import de.griefed.serverpackcreator.clientside.boot.BootVerifier
 import de.griefed.serverpackcreator.clientside.boot.ConsoleTail
@@ -106,7 +107,12 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
             run {
                 val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
                 val platforms = supportedPlatforms()
-                val javaRuntimes = ImageJavaRuntimes.installed(apiWrapper.versionMeta.minecraft, hostJavaHomes())
+                val packJava = packJavaSelection(
+                    apiWrapper.versionMeta.minecraft,
+                    System.getenv(),
+                    Runtime.version().feature(),
+                    File(System.getProperty("java.home"))
+                )
                 val verifier = ClientsideVerifier(
                     platforms = platforms,
                     metadataScanner = MetadataScanner(apiWrapper.modScanner),
@@ -125,7 +131,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                             // A missing JDK becomes an ERROR naming the version, where booting on the wrong
                             // Java ends in start.sh's Jabba prompt. No `minecraftAcceptable` gate, unlike the
                             // grinder: a host lacking a JDK should say so in the report, not drop the line.
-                            packPostProcessor = HostJavaSelection(javaRuntimes),
+                            packPostProcessor = packJava,
                             // Per attempt, because this is the only moment a re-check's pack still exists.
                             // A thrown sink is logged and ignored by `BootVerifier`, so a full disk cannot
                             // cost a verdict that already ran.
@@ -155,11 +161,20 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
         }
     }
 
-    /**
-     * The JDKs a boot may use: those this host advertises as `JAVA_HOME_<major>_<arch>`, plus the JVM running
-     * SPC, so a host that advertises none still boots every Minecraft version its own Java serves.
-     */
-    private fun hostJavaHomes(): Map<Int, File> =
-        mapOf(Runtime.version().feature() to File(System.getProperty("java.home"))) +
-            ImageJavaRuntimes.javaHomesIn(System.getenv())
+    companion object {
+        /**
+         * The post-processor every boot of this verb applies: it points the staged pack at the JDK its Minecraft
+         * version requires, chosen from the homes [environment] advertises as `JAVA_HOME_<major>_<arch>` plus the
+         * JVM running SPC, so a host that advertises none still boots every version its own Java serves.
+         */
+        internal fun packJavaSelection(
+            minecraftMeta: MinecraftMeta,
+            environment: Map<String, String>,
+            runningJavaMajor: Int,
+            runningJavaHome: File
+        ): HostJavaSelection {
+            val javaHomes = mapOf(runningJavaMajor to runningJavaHome) + ImageJavaRuntimes.javaHomesIn(environment)
+            return HostJavaSelection(ImageJavaRuntimes.installed(minecraftMeta, javaHomes))
+        }
+    }
 }

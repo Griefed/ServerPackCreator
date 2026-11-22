@@ -34,7 +34,8 @@ one a careless import silently destroys.
 | `version` | version and loader-compatibility arithmetic — the one cross-cutting package | nothing |
 
 - **Some imports exist only so a KDoc `[Link]` resolves** and create no bytecode dependency. Re-derive the real
-  graph from *code* references, not from the import list.
+  graph from *code* references, not from the import list. `PackageGraphTest` does exactly that and holds the
+  graph to this table (and acyclic); a new edge means changing the table in the same commit, deliberately.
 - **LANDMINE — `platform.textOrNull(field)` and `BundledJars.nonBlankStringOrNull()` are NOT duplicates. Do not
   merge them; both directions fail tests.** Keeping them separate is **Griefed's call, 2026-10-18** — treat it
   as settled. `textOrNull` must stringify non-strings (CurseForge serves `modId` as a number); the bundled one
@@ -216,7 +217,7 @@ ships unused into server packs — cheaper than a false positive stripping a wor
 
 - **`LoaderVersionPolicy`:** `preferredVersion` boots (the grinder may prefer a cached older build);
   **`latestVersion` alone drives the support gate**, and a CRASHED outcome on a non-newest build is re-booted on the
-  newest before it stands (`shouldRecheckCrash`, `reconcileRecheck`). An INCONCLUSIVE re-check never clears a crash.
+  newest before it stands (`shouldRecheckOnNewestBuild`, `reconcileRecheck`). An INCONCLUSIVE re-check never clears a crash.
 - **A loader too old for the pack is re-checked on the newest build whatever the verdict** (`LoaderVersionDemand`,
   `shouldRecheckOnNewestBuild`): a demand phrase **and** a runtime-provided loader id on one line, whole-word (or
   `forge` fires inside `forgeconfigapiport`). **Not a `BootRule`** — an operator typo must not cost containers. A

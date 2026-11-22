@@ -110,13 +110,8 @@ internal val grinderEntryPoint = File("src/main/kotlin/de/griefed/serverpackcrea
  */
 internal fun grinderMainBody(): String {
     Assertions.assertTrue(grinderEntryPoint.isFile, "entry point not found at ${grinderEntryPoint.absolutePath}")
-    // Comments are stripped BEFORE the window is cut, for two reasons: a brace inside a comment
-    // would mis-cut it, and every consumer asserts with contains() over the result - so a comment
-    // naming the wiring would satisfy a guard whose code had been deleted. `(?<!:)` keeps a URL in
-    // a string literal intact. Same reasoning as `HtmlProofingTest.withoutComments`.
-    val source = grinderEntryPoint.readText()
-        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
-        .replace(Regex("""(?<!:)//.*"""), "")
+    // Comments are stripped BEFORE the window is cut: a brace inside a comment would mis-cut it.
+    val source = withoutComments(grinderEntryPoint.readText())
     val signature = source.indexOf("fun main(args: Array<String>) {")
     Assertions.assertTrue(signature > 0, "main(args) not found — did the entry point change shape?")
 
@@ -139,3 +134,12 @@ internal fun grinderMainBody(): String {
     )
     return body
 }
+
+/**
+ * [source] with its comments removed, so a source-text guard reads code rather than prose: otherwise a comment that
+ * merely names what a guard checks satisfies it, or breaks it. `(?<!:)` keeps a URL in a string literal intact. A string
+ * literal that itself opens a block comment is not handled, and no guarded source has one.
+ */
+internal fun withoutComments(source: String): String = source
+    .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
+    .replace(Regex("""(?<!:)//.*"""), "")

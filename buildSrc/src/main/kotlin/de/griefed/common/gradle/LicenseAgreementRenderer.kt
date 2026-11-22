@@ -74,7 +74,8 @@ class LicenseAgreementRenderer(private val fileName: String = "LICENSE-AGREEMENT
         return text
     }
 
-    private fun getDependencyLicense(data: ModuleData): String {
+    /** The agreement's entry for one dependency. Internal so a test can drive the licence fetch through it. */
+    internal fun getDependencyLicense(data: ModuleData): String {
         var projectUrlDone = false
         var text = ""
         if (data.group.isNotEmpty()) {

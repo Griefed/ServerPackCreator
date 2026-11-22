@@ -92,15 +92,4 @@ internal class VerifyClientsideArtifactSinkTest {
             "the console must be read where BootVerifier leaves the decisive one, not from a path rebuilt here"
         )
     }
-
-    /**
-     * [source] with its comments removed, so this guard reads code rather than prose.
-     *
-     * Without it the assertion is satisfied — or broken — by any comment that merely *names* what it
-     * checks, which makes it blind to the deletion it exists to catch. Same helper and same reasoning as
-     * `HtmlProofingTest.withoutComments`.
-     */
-    private fun withoutComments(source: String): String = source
-        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
-        .replace(Regex("""//.*"""), "")
 }

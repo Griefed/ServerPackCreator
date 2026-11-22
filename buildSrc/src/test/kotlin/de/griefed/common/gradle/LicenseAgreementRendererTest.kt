@@ -1,9 +1,15 @@
 package de.griefed.common.gradle
 
+import com.github.jk1.license.License
+import com.github.jk1.license.ModuleData
+import com.github.jk1.license.PomData
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.net.InetAddress
+import java.net.ServerSocket
+import java.time.Duration
 
 /**
  * Pins that the licence renderer's one network read is bounded.
@@ -37,5 +43,28 @@ internal class LicenseAgreementRendererTest {
             connection.readTimeout > 0,
             "a read timeout of 0 is the JDK's 'wait for ever' — the host that accepts and says nothing"
         )
+    }
+
+    /**
+     * The renderer's licence fetch must go through [LicenseAgreementRenderer.readBounded]. Driven through the
+     * dependency entry the report actually renders, against a loopback host that accepts the connection and
+     * never answers: bounded, the entry comes back with the licence name and URL; unbounded, it never comes back.
+     */
+    @Test
+    fun aLicenceHostThatNeverAnswersCannotStallTheReport() {
+        ServerSocket(0, 1, InetAddress.getLoopbackAddress()).use { silentHost ->
+            val licenceUrl = "http://127.0.0.1:${silentHost.localPort}/LICENSE.txt"
+            val pom = PomData().apply {
+                projectUrl = "https://example.org/silent"
+                licenses = setOf(License("Silent Licence", licenceUrl))
+            }
+            val module = ModuleData("org.example", "silent", "1.0").apply { poms = setOf(pom) }
+
+            val entry = Assertions.assertTimeoutPreemptively<String>(Duration.ofSeconds(30), {
+                LicenseAgreementRenderer().getDependencyLicense(module)
+            }, "a licence host that says nothing must not stall the report")
+
+            Assertions.assertTrue(entry.contains("URL: $licenceUrl"), "the entry still names the licence URL")
+        }
     }
 }

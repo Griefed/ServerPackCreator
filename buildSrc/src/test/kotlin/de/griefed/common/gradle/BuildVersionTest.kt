@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assumptions
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -137,8 +138,7 @@ class BuildVersionTest {
         val action = File("../.forgejo/actions/resolve-version/action.yml")
         assertTrue(action.isFile, "expected the action at ${action.absolutePath}")
         val program = Regex("""sed -E '(.*?)'""").find(action.readText())?.groupValues?.get(1)
-        assertTrue(program != null, "resolve-version carries no `sed -E '...'` expression to execute")
-        return program!!
+        return assertNotNull(program, "resolve-version carries no `sed -E '...'` expression to execute")
     }
 
     /** Whether `sed` can be executed at all, so its absence becomes a skip rather than an error. */

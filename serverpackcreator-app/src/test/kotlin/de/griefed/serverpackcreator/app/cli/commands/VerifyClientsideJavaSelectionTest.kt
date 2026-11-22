@@ -19,37 +19,72 @@
  */
 package de.griefed.serverpackcreator.app.cli.commands
 
+import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.clientside.boot.BootVerifier
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Pins that `-verifyclientside` boots each pack on the Java its Minecraft version requires.
- *
- * Asserted against the source for the reason `VerifyClientsideArtifactSinkTest` gives: a run needs an
- * `ApiWrapper`, a real generation and a booting server. Losing the wiring is silent in the same way — every
- * pack would run on whatever `java` is on `PATH`, and each Minecraft line needing another major would end in
- * `start.sh`'s Jabba prompt instead of booting.
+ * Pins that `-verifyclientside` boots each pack on the Java its Minecraft version requires, by running the
+ * post-processor the verb hands every `BootVerifier` against a staged pack and reading the `JAVA=` it wrote.
+ * Uses SPC's real Minecraft metadata, from the API module's cached manifests, for the required majors.
  */
 internal class VerifyClientsideJavaSelectionTest {
 
-    private val source =
-        File("src/main/kotlin/de/griefed/serverpackcreator/app/cli/commands/VerifyClientsideCommand.kt")
+    private val minecraftMeta = ApiWrapper.api(
+        File(File("").absoluteFile.parent, "serverpackcreator-api/build/resources/test/serverpackcreator.properties")
+    ).versionMeta.minecraft
+
+    private fun stagedPack(directory: File, minecraftVersion: String): BootVerifier.Prepared.Ready {
+        val serverPack = File(directory, "serverpack").apply { mkdirs() }
+        File(serverPack, "variables.txt").writeText("JAVA=java\nJAVA_ARGS=\nWAIT_FOR_USER_INPUT=true\n")
+        return BootVerifier.Prepared.Ready(serverPack, File(directory, "boot.log"), minecraftVersion, "Forge", "47.2.0")
+    }
+
+    private fun javaOf(pack: BootVerifier.Prepared.Ready): String? =
+        File(pack.serverPack, "variables.txt").readLines().firstOrNull { it.startsWith("JAVA=") }?.removePrefix("JAVA=")
 
     @Test
-    fun everyBootedPackIsPointedAtTheJavaItsMinecraftVersionRequires() {
-        Assertions.assertTrue(source.isFile, "VerifyClientsideCommand.kt not found at ${source.absolutePath}")
-        val code = source.readText()
-            .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
-            .replace(Regex("""//.*"""), "")
+    fun aPackIsPointedAtTheJdkTheHostAdvertisesForItsMinecraftVersion(@TempDir directory: File) {
+        val selection = VerifyClientsideCommand.packJavaSelection(
+            minecraftMeta,
+            environment = mapOf("JAVA_HOME_17_X64" to "/jdks/17", "PATH" to "/usr/bin"),
+            runningJavaMajor = 21,
+            runningJavaHome = File("/jdks/21")
+        )
+        val pack = stagedPack(directory, "1.20.1")
 
-        Assertions.assertTrue(
-            Regex("""packPostProcessor\s*=\s*HostJavaSelection\(""").containsMatchIn(code),
-            "the verb's BootVerifier must apply HostJavaSelection to every staged pack"
+        selection.invoke(pack)
+
+        Assertions.assertEquals(File(File("/jdks/17"), "bin/java").path, javaOf(pack))
+    }
+
+    @Test
+    fun theRunningJvmServesTheVersionsItsMajorCovers(@TempDir directory: File) {
+        val selection = VerifyClientsideCommand.packJavaSelection(
+            minecraftMeta, environment = emptyMap(), runningJavaMajor = 21, runningJavaHome = File("/jdks/21")
         )
-        Assertions.assertTrue(
-            code.contains("ImageJavaRuntimes.javaHomesIn(System.getenv())"),
-            "the JDKs a CI runner advertises must be offered, or only the running JVM's major can boot"
+        val pack = stagedPack(directory, "1.21.1")
+
+        selection.invoke(pack)
+
+        Assertions.assertEquals(File(File("/jdks/21"), "bin/java").path, javaOf(pack))
+    }
+
+    @Test
+    fun aVersionWhoseJdkNobodyProvidesIsRefusedNamingIt(@TempDir directory: File) {
+        val selection = VerifyClientsideCommand.packJavaSelection(
+            minecraftMeta,
+            environment = mapOf("JAVA_HOME_17_X64" to "/jdks/17"),
+            runningJavaMajor = 21,
+            runningJavaHome = File("/jdks/21")
         )
+
+        val failure = assertThrows<IllegalStateException> { selection.invoke(stagedPack(directory, "1.12.2")) }
+
+        Assertions.assertTrue(failure.message.orEmpty().contains("Java 8"), failure.message)
     }
 }
