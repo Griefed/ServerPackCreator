@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.clientside.platform.ModFile
 import de.griefed.serverpackcreator.clientside.platform.ModPlatform
 import de.griefed.serverpackcreator.clientside.platform.ProjectFiles
 import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.clientside.verdict.JarScan
 import de.griefed.serverpackcreator.clientside.verdict.Verdict
 import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
 import org.junit.jupiter.api.Assertions
@@ -89,6 +90,28 @@ internal class BootTestFailureNoteTest {
 
         val row = report.perTarget.single()
         Assertions.assertEquals(Verdict.ERROR, row.verdict)
+        Assertions.assertTrue(row.note.orEmpty().contains(failure), "the note must say why: ${row.note}")
+    }
+
+    /**
+     * The jar scan runs before the boot, per target. A download that throws there costs that row its scan, never
+     * the report: the targets already assessed are not thrown away.
+     */
+    @Test
+    fun aJarScanThatThrowsIsThatRowsErrorAndNamesTheFailure(@TempDir workDir: File) {
+        val release = forgeRelease
+        Assumptions.assumeTrue(release != null, "the shipped manifest must offer a Forge-capable release")
+        val failure = "Illegal character in path at index 23: https://cdn/the mod.jar"
+
+        val report = ClientsideVerifier(
+            platforms = listOf(platform(release!!)),
+            metadataScanner = MetadataScanner(apiWrapper.modScanner),
+            jarDownloader = JarDownloader { _, _ -> throw IllegalArgumentException(failure) },
+            workDirectory = workDir
+        ).report("https://www.curseforge.com/minecraft/mc-mods/themod")
+
+        val row = report.perTarget.single()
+        Assertions.assertEquals(JarScan.ERROR, row.jarScan)
         Assertions.assertTrue(row.note.orEmpty().contains(failure), "the note must say why: ${row.note}")
     }
 }

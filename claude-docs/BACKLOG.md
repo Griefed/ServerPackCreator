@@ -38,22 +38,6 @@ B38 as well; the B38 this file carried until 2026-10-24 was a second, unrelated 
 
 ## 2026-11-11 — from making every clientside-mod request boot (`claude-clientside-always-boot`)
 
-### B57 — one target's jar-scan download can throw away the whole report
-
-**What:** `ClientsideVerifier.scanSample` runs outside any `runCatching`, and targets are assessed one after
-another, so an exception there ends `report()` — discarding every target that already booted — and
-`-verifyclientside` posts only "Could not assess …". `HttpJarDownloader.download` calls `URI.create(url)`,
-which throws on a raw space or bracket.
-
-**Why it waited:** the trigger is unverified. Whether CurseForge ever serves a `downloadUrl` with raw spaces
-(its file names do contain them, e.g. `[1.20.4] [Sinytra] Hybrid Aquatic 1.4.4.jar`) needs the API key, which
-the session had no copy of, and no fixture in the repository records a real `downloadUrl`. The grinder uses the
-same downloader and its store would show the failure if it were common.
-
-**To pick it up:** fetch one such file through the CurseForge API and look at `downloadUrl`. Either way, wrap
-the per-target scan so a failure becomes that row's `JarScan.ERROR` with its message in the note — the shape
-`BootTestFailureNoteTest` pins for a throwing boot.
-
 ### B58 — a project whose every Minecraft line is dropped gets an empty report with no reason
 
 **What:** `BootCandidateSelector.pickGrindTargets` silently drops a line with no file that is a stable

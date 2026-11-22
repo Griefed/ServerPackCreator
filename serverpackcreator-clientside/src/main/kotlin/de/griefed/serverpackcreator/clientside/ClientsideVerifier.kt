@@ -179,9 +179,16 @@ class ClientsideVerifier(
         // an old build was re-published (the aether row that prompted this).
         val sample = target.file
 
-        val jarScan = when {
-            sample.locked -> JarScan.DEFERRED
-            else -> scanSample(sample, target, project)
+        // A throwing scan costs this row its scan and says why; it must not end `report()` and discard the rows
+        // already assessed.
+        val (jarScan, scanFailure) = when {
+            sample.locked -> JarScan.DEFERRED to null
+            else -> try {
+                scanSample(sample, target, project) to null
+            } catch (ex: Exception) {
+                log.warn("Jar-scan for $loader / Minecraft ${target.minecraftLine} failed", ex)
+                JarScan.ERROR to "The jar-scan failed: ${ex.message ?: ex.javaClass.simpleName}"
+            }
         }
 
         // The boot needs the metadata verdict too: a crash that *contradicts* a declared server support is
@@ -230,7 +237,7 @@ class ClientsideVerifier(
                 // same precedence `sampleFile` and `bootedLoader` follow: report what ran, and where nothing
                 // ran, report what it was going to be.
                 minecraftVersion = bootOutcome?.minecraftVersion ?: target.minecraftVersion,
-                note = listOfNotNull(note, bootOutcome?.detail, bootFailure).joinToString(" ").ifBlank { null }
+                note = listOfNotNull(note, scanFailure, bootOutcome?.detail, bootFailure).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail
         )

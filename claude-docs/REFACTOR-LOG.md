@@ -5387,3 +5387,13 @@ untouched: both Fabric lines (26.3, 26.2) were staged with `JAVA=…/temurin-25.
   carefully about its triggers.
 - **A documented route that depends on configuration nobody created is not a route.** `verify-boot` was "the
   way to re-run one by hand" and did not exist; the workflow now creates it.
+
+## 2026-11-22 — fixing the 2026-11-15 audit's clientside, grinder and workflow findings (`claude-fix-clientside`)
+
+Findings from `REFACTOR-AUDIT.md` / `ANALYSIS-AUDIT.md` (sections dated 2026-11-15), one commit per goal; each
+commit message carries its red-first evidence.
+
+- **B57 closed** (audit D-A-M2): a jar-scan that throws is that row's `JarScan.ERROR` with the failure in its
+  note, instead of ending `ClientsideVerifier.report()` and discarding every row already assessed. The trigger
+  (a CurseForge `downloadUrl` with raw spaces) is still unverified, and no longer matters: whatever throws, the
+  report survives. Pinned by `BootTestFailureNoteTest.aJarScanThatThrowsIsThatRowsErrorAndNamesTheFailure`.
