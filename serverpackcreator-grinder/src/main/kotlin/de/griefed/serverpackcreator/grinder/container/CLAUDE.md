@@ -138,9 +138,15 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   generated pack and therefore Griefed's call, not a drive-by.
 
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
-  inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
-  the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
-  against a real Docker daemon.
+  inspect exit → force-remove). **Not unit-tested against docker** (needs a live daemon) — that is the
+  whole reason the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change
+  it, verify against a real Docker daemon. The one exception is a daemon that does not answer, which
+  `UnansweredLivenessPollTest` and `ExitCodeInspectFailureTest` drive through a scripted client.
+  - **An unanswered liveness inspect is "unknown", never "stopped".** Reading it as stopped ended the wait,
+    stopped and removed a still-booting container, and classified a truncated console. The poll loop keeps
+    going within the boot budget; `MAX_UNANSWERED_POLLS` (60, ≥ 30 s) unanswered *in a row* abandon the boot
+    by **throwing**, which `ClientsideVerifier` turns into an `ERROR` row naming the daemon — a host defect,
+    never a verdict about the mod. If the budget runs out mid-streak the boot reads `TIMED_OUT` (INCONCLUSIVE).
 
 **Shutdown drain.** `DockerJavaContainerEngine` is `AutoCloseable` and force-removes the containers it
 still owns, because `run`'s per-run `finally` never executes when the JVM is torn down mid-boot;
