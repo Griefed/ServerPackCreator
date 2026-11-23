@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.clientside.boot.PackVariables
 import de.griefed.serverpackcreator.clientside.verdict.ClientsideReport
 import de.griefed.serverpackcreator.clientside.ClientsideVerifier
 import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
+import de.griefed.serverpackcreator.clientside.platform.CurseForgeApiKey
 import de.griefed.serverpackcreator.clientside.platform.HttpJarDownloader
 import de.griefed.serverpackcreator.clientside.metadata.LearnedModIds
 import de.griefed.serverpackcreator.clientside.version.LoaderVersionResolver
@@ -75,8 +76,8 @@ class ContainerCandidateVerifier(
     private val bootTimeout: Duration = Duration.ofMinutes(15),
     /** CPU/memory/pid caps per mod-boot container. */
     private val resources: ContainerResources = ContainerResources(),
-    /** CurseForge key (CF resolution); Modrinth needs none. */
-    private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
+    /** CurseForge key (CF resolution); Modrinth needs none. The default honours `CURSEFORGE_API_KEY_FILE`. */
+    private val curseForgeApiKey: String? = CurseForgeApiKey.fromEnvironment,
     /**
      * The `uid:gid` every boot container runs as; must own the staged pack, or the mod-boot cannot write into
      * it. Resolved from the host by `ContainerUser`.
@@ -91,7 +92,13 @@ class ContainerCandidateVerifier(
      */
     private val learnedModIds: LearnedModIds = LearnedModIds(),
     /** Which Minecraft version-lines of a project are ground — one verdict each. */
-    private val minecraftLines: MinecraftLinePolicy = MinecraftLinePolicy()
+    private val minecraftLines: MinecraftLinePolicy = MinecraftLinePolicy(),
+    /**
+     * Keep a Minecraft line whose JDK the image lacks as an ERROR row naming the missing Java, as
+     * `-verifyclientside` does, instead of dropping it at selection. Off for the daemon: an ERROR it can never fix
+     * would be re-ground every sweep.
+     */
+    private val keepUnbootableLines: Boolean = false
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -236,6 +243,30 @@ class ContainerCandidateVerifier(
          */
         internal fun reapTarget(candidate: GrindCandidate, report: ClientsideReport?): Pair<String, String> =
             report?.let { it.platform to it.slug } ?: (candidate.platform to candidate.slug)
+
+
+        /**
+         * Which Minecraft lines selection may pick: those the image can boot, or every line when
+         * [keepUnbootableLines] is set, leaving [bundledJavaPath] to turn an unbootable one into an ERROR row.
+         */
+        internal fun minecraftGate(imageJava: ImageJavaRuntimes, keepUnbootableLines: Boolean): (String) -> Boolean =
+            if (keepUnbootableLines) { _ -> true } else imageJava::supports
+
+        /**
+         * The image's `java` for [minecraftVersion], or a throw naming why there is none. Thrown from the pack
+         * post-processor, before any loader install, so `BootVerifier` reports it as an ERROR carrying this message.
+         */
+        internal fun bundledJavaPath(imageJava: ImageJavaRuntimes, minecraftVersion: String): String {
+            imageJava.javaPath(minecraftVersion)?.let { return it }
+            val major = imageJava.requiredJava(minecraftVersion)
+                ?: throw IllegalStateException(
+                    "SPC does not know which Java Minecraft $minecraftVersion requires, so no server was booted for it."
+                )
+            throw IllegalStateException(
+                "Minecraft $minecraftVersion requires Java $major, which the grinder's runtime image does not bundle, " +
+                    "so no server was booted for it."
+            )
+        }
     }
 
     /** Run the actual verification, leaving the staging cleanup to [verify]. */
@@ -269,7 +300,7 @@ class ContainerCandidateVerifier(
                         loaderProvides = LoaderProvidedIds(loaderCache)::of,
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources, containerUser),
                         packPostProcessor = ::overlayLoaderInstall,
-                        minecraftAcceptable = imageJava::supports,
+                        minecraftAcceptable = minecraftGate(imageJava, keepUnbootableLines),
                         bootTimeout = bootTimeout,
                         consoleRules = consoleRules,
                         learnedModIds = learnedModIds,
@@ -292,8 +323,7 @@ class ContainerCandidateVerifier(
      * [BootVerifier] reports it INCONCLUSIVE rather than booting a pack that would need network.
      */
     private fun overlayLoaderInstall(pack: BootVerifier.Prepared.Ready) {
-        val javaPath = imageJava.javaPath(pack.minecraftVersion)
-            ?: throw IllegalStateException("No bundled JDK for Minecraft ${pack.minecraftVersion}")
+        val javaPath = bundledJavaPath(imageJava, pack.minecraftVersion)
         val base = installedBase(loaderCache, pack.loader, pack.loaderVersion, pack.minecraftVersion)
         copyInstallLayer(base, pack.serverPack)
         PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true, installerJavaPath = imageJava.installerJavaPathFor(pack.minecraftVersion))

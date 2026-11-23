@@ -220,6 +220,8 @@ object GrinderApplication {
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
             resources = containerResources, containerUser = containerUser, crashLogs = crashLogs,
             consoleRules = consoleRules::current,
+            // The key the CurseForge source below uses, so the two cannot disagree about whether CurseForge exists.
+            curseForgeApiKey = config.curseForgeApiKey,
             // Shared across every grind and backed by a file, so what one candidate's jars prove about a
             // mod id survives both the next candidate and the next restart.
             learnedModIds = JsonLearnedModIds(config.learnedIds).ids,
