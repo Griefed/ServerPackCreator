@@ -25,6 +25,7 @@ import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
 import de.griefed.serverpackcreator.clientside.boot.BootDeadline
 import de.griefed.serverpackcreator.clientside.boot.SuspendAwareDeadline
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * transport) to create a hardened container from a [ContainerSpec], stream its console while watching
  * for the ready-line, stop it once ready or timed out, read its exit code, and force-remove it.
  *
- * Not unit-tested — it needs a live daemon — which is exactly why the orchestration that *can* be
+ * Not unit-tested beyond a failing-daemon proxy — it needs a live daemon — which is exactly why the orchestration that *can* be
  * tested lives in [ContainerServerRunner] behind the [ContainerEngine] seam. This class is the thin,
  * imperative docker-java translation only.
  *
@@ -321,9 +322,16 @@ class DockerJavaContainerEngine(
     private fun isRunning(containerId: String): Boolean =
         runCatching { client.inspectContainerCmd(containerId).exec().state.running == true }.getOrDefault(false)
 
-    /** The container's exit code, or `null` if it is unavailable (still running / not found). */
-    private fun exitCodeOf(containerId: String): Int? =
-        runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
+    /**
+     * The container's exit code, or `null` when the daemon reports none or cannot be asked. A `null` reads as
+     * INCONCLUSIVE in `BootLogClassifier` even for a boot that exited non-zero, so a failed inspect is logged
+     * with its cause rather than passed off as a boot that ended without one.
+     */
+    internal fun exitCodeOf(containerId: String): Int? =
+        orNullLogged(
+            log.delegate,
+            "Could not read the exit code of container $containerId; the boot is classified without one"
+        ) { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }
 
     /** The poll interval, the ownership labels, the bounded shutdown wait and the Docker client factory. */
     companion object {
