@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Files
 
 /**
  * Pins reclamation of the per-attempt scratch space. Staging keeps one full server pack (plus the mod jars it
@@ -234,6 +235,25 @@ internal class BootWorkspaceReaperTest {
             File(work, "boot/${attempt("creativecore", "Fabric", ModPlatforms.MODRINTH)}/serverpack").exists(),
             "the finished candidate is still reaped"
         )
+    }
+
+    /**
+     * The booted mod wrote into the serverpack, so a link there is its own: reclaiming must remove the link and
+     * neither descend into nor count what it points at, or a mod deletes any directory the daemon can write.
+     */
+    @Test
+    fun aLinkAModPlantedInItsPackIsRemovedWithoutTouchingItsTarget(@TempDir outside: File) {
+        stageAttempt("jei", "Forge", packBytes = 1024)
+        val precious = File(outside, "precious.bin").apply { writeBytes(ByteArray(5000)) }
+        val link = File(work, "boot/${attempt("jei", "Forge")}/serverpack/world").toPath()
+        val planted = runCatching { Files.createSymbolicLink(link, outside.toPath()) }
+        Assumptions.assumeTrue(planted.isSuccess, "this OS refuses symbolic links: ${planted.exceptionOrNull()}")
+
+        val reclaimed = reaper().reap(ModPlatforms.MODRINTH, "jei")
+
+        Assertions.assertFalse(File(work, "boot/${attempt("jei", "Forge")}").exists(), "positive control: the attempt is gone")
+        Assertions.assertTrue(precious.isFile, "reclaiming followed the mod's link and deleted a file outside the pack")
+        Assertions.assertEquals(3072L + BOOT_LOG_BYTES, reclaimed, "nothing behind the link is counted as reclaimed")
     }
 
     /** Reports what it freed, so the daemon can log reclamation instead of the operator guessing. */

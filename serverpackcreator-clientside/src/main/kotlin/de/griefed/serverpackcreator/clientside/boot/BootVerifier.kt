@@ -1276,7 +1276,14 @@ class BootVerifier(
                 cause = PreventionCause.UPSTREAM_UNAVAILABLE
             )
 
-        val attemptDir = File(workDirectory, attemptDirName).apply { deleteRecursively() }
+        val attemptDir = File(workDirectory, attemptDirName)
+        // A previous boot wrote into this tree. Staging into what survived could write through a link it left.
+        if (!ModWritableTree.deleteRecursively(attemptDir)) {
+            return Prepared.Failed(
+                "Could not clear the previous attempt's staging at ${attemptDir.absolutePath}.",
+                cause = PreventionCause.HOST
+            )
+        }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
         val unsatisfied = mutableMapOf<String, UnmetReason>()

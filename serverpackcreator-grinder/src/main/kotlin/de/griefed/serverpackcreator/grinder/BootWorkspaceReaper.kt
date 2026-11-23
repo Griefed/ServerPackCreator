@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.ModWritableTree
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -83,14 +84,15 @@ class BootWorkspaceReaper(
      * Delete [attemptDir] and everything in it, returning the bytes known to have gone. Failures are logged and
      * swallowed — reclaiming disk must never fail a grind, and whatever survives is retried by the next sweep.
      *
-     * Entry by entry rather than one [deleteRecursively] on the directory, so an entry that cannot be removed
-     * contributes nothing to the total instead of making the whole attempt's bytes unreportable.
+     * Entry by entry rather than one delete of the directory, so an entry that cannot be removed contributes
+     * nothing to the total instead of making the whole attempt's bytes unreportable. The serverpack was written
+     * by the booted mod, so sizing and deleting go through [ModWritableTree] and never follow a link it planted.
      */
     private fun reclaim(attemptDir: File): Long {
         var reclaimed = 0L
         for (entry in attemptDir.listFiles() ?: emptyArray()) {
-            val size = entry.sizeRecursively()
-            if (entry.deleteRecursively()) {
+            val size = ModWritableTree.sizeOf(entry)
+            if (ModWritableTree.deleteRecursively(entry)) {
                 reclaimed += size
             } else {
                 log.warn("Could not reclaim ${entry.absolutePath}; it will be retried on the next sweep.")
@@ -103,10 +105,6 @@ class BootWorkspaceReaper(
         }
         return reclaimed
     }
-
-    /** Total size of a file, or of every file beneath a directory. */
-    private fun File.sizeRecursively(): Long =
-        if (isDirectory) walkTopDown().filter { it.isFile }.sumOf { it.length() } else length()
 
     /** The staging-directory layout constants the reaper matches on. */
 

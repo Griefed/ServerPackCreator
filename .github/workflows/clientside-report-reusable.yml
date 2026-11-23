@@ -154,7 +154,8 @@ jobs:
         if: ${{ always() }}
         run: rm -f "$RUNNER_TEMP/curseforge-api-key"
 
-      # `boot/<attempt>/boot.log` is the console each verdict rests on, survivors included; `boot-evidence/`
+      # `boot/<attempt>/boot.log` is the console each verdict rests on, survivors included. One level deep only:
+      # the booted mod writes `boot/<attempt>/serverpack/`, so nothing it plants there may match. `boot-evidence/`
       # keeps every attempt that did not survive -- console, the server's own logs, any crash report. SPC's own
       # log holds what never reached a console: staging refusals and generation errors.
       - name: Upload boot logs
@@ -165,7 +166,7 @@ jobs:
           name: clientside-boot-logs
           path: |
             spc-home/work/clientside-verify/boot-evidence/**
-            spc-home/work/clientside-verify/boot/**/boot.log
+            spc-home/work/clientside-verify/boot/*/boot.log
             spc-home/logs/**
           if-no-files-found: ignore
 

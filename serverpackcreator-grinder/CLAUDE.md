@@ -282,6 +282,10 @@ though their detail lives deeper:
   suffix rather than prefix-match (`jei` vs `jei-extras`), and keep the platform, because **the same slug on
   Modrinth and CurseForge is two candidates ground in parallel** — a bare-slug reap deletes the other's pack
   mid-boot and manufactures false crashes.
+  **Landmine — the serverpack being reaped was written by the booted mod**, so sizing and deleting go through
+  `-clientside`'s `ModWritableTree`, which removes a planted link as a link (pinned by
+  `aLinkAModPlantedInItsPackIsRemovedWithoutTouchingItsTarget`). The install pack, the loader cache and its
+  overlay never hold mod output — `File.copyTo` materialises any link as a regular file on the way into the cache.
   **Landmine — reap the identity the staging was *named* from:** `ContainerCandidateVerifier.reapTarget` prefers
   the resolved report's `ProjectFiles.platform`/`slug` (candidate only when verification threw); the two can
   disagree, and the wrong one leaks a pack per attempt.

@@ -205,6 +205,14 @@ ships unused into server packs — cheaper than a false positive stripping a wor
   console, `logs/` and `crash-reports/` separately; `BootArtifacts.worthKeeping` (anything but SURVIVED) is shared
   by CLI and grinder. Capped by a **seeking** tail read, never `readText`-then-trim; everything found is listed in
   `index.txt`.
+  - **LANDMINE — a booted pack is attacker-controlled, so host code never follows a link out of it.** The mod
+    writes freely into `serverpack/` (bind-mounted read-write in the grinder, a host process in the CLI), and a
+    link it plants there reaches any file the verifier can read or delete. Read, walk, size and delete a
+    mod-writable tree **only through `ModWritableTree`** — never `File.isFile`/`readText`/`walkTopDown` or
+    Kotlin's `File.deleteRecursively`, all of which follow links (measured: `deleteRecursively` emptied a
+    symlinked directory outside the pack). A refused link is logged at WARN and named in `index.txt`.
+    `stageBootPack` refuses (`HOST`) when the previous attempt cannot be fully cleared, since staging into the
+    remainder could write through a surviving link. `PackSymlinksAreNeverFollowedTest` pins all of it.
   - **LANDMINE — the hook fires per *attempt*, at exactly one call site** (private `BootVerifier.boot`,
     `onlyOneCallSiteInvokesRunPrepared`); staging wipes the attempt directory between attempts.
   - **The CLI sink writes `<work>/boot-evidence`, a SIBLING of `boot/`** (which is recreated per attempt), as
