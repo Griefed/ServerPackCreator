@@ -129,7 +129,7 @@ inject a node binary into container jobs; act does not. So `actions/checkout`, `
 and then every later step is skipped. Tool images such as `jetbrains/qodana-jvm-community` ship no node.
 
 Run the tool as a `docker run` from an ordinary `runs-on: ubuntu-latest` job instead: the runner image
-(`ghcr.io/catthehacker/ubuntu:act-22.04`) has node, and the tool image needs to supply nothing but the
+(`ghcr.io/catthehacker/ubuntu:runner-latest`, Ubuntu 24.04 as of 2026-11; set in the runner's config, not here) has node, and the tool image needs to supply nothing but the
 tool. Two things to carry over each time — the tool image's own path conventions (Qodana wants
 `/data/project`, `/data/cache`, `/data/results`, `/data/report`; its `WorkingDir` is `/data/project`),
 and ownership: these images run as uid 0, so `chown -R "$(id -u):$(id -g)"` the outputs or
