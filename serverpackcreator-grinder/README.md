@@ -140,7 +140,8 @@ f=$(mktemp) && curl -fsSL https://git.griefed.de/griefed/serverpackcreator/raw/b
 **Every run after that is the same command without `--bootstrap`** — that is the upgrade path, and
 re-fetching each time means the deploy logic is updated along with the code it deploys. Add
 `--skip-image` once the runtime image exists; it is the difference between a two-minute update and a
-ten-minute one.
+ten-minute one. Leave it off for an update that changes `docker/Dockerfile` (the bundled JDKs, for one), or the
+grinder runs against an image that lacks what it expects.
 
 Docker and JDK 21+ must already be present. The script checks both and names the command to fix
 them, but it deliberately installs no packages — on Debian/Ubuntu the one-time step is

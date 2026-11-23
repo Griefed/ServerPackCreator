@@ -172,12 +172,10 @@ change to every server pack SPC produces.
   [`ImageJavaRuntimes`](../serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/boot/ImageJavaRuntimes.kt)'s
   `IMAGE_BUNDLED_MAJORS` must list exactly the same set. `RuntimeImageJdkSetTest` (grinder) fails the build when
   the Dockerfile's links and that constant disagree.
-- The clientside-mod verification's boot JDKs:
-  [`clientside-report-reusable.yml`](../.github/workflows/clientside-report-reusable.yml)'s *Set up the JDKs
-  Minecraft servers need* installs Temurin 8, 16, 17 and 25, beside its section-B `Set up JDK 21`, and
-  `-verifyclientside` boots each pack on whichever of them its Minecraft version requires
-  (`HostJavaSelection`, reading the `JAVA_HOME_<major>_<arch>` variables `setup-java` sets). A Minecraft release that requires a new major
-  needs it added to that step, or its rows read "requires Java N, which this host does not provide".
+- The clientside-mod verification's boot JDKs are the grinder image's: `clientside-report-reusable.yml` builds
+  that image and boots through the grinder's `--clientside-report`, so a Minecraft release that requires a new
+  major needs it in the Dockerfile and `IMAGE_BUNDLED_MAJORS` (the item above), or its rows read "requires Java N,
+  which the grinder's runtime image does not bundle". The workflow's only `setup-java` is the section-B JDK 21.
 
 The grinder image's `ENV JAVA=/opt/java-21` and `ENV PATH=/opt/java-21/bin:...` are the *default* for a
 boot, also a Minecraft-driven choice rather than SPC's target.

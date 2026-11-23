@@ -348,7 +348,7 @@ Java — **no Java download**, which keeps mod boots runnable under `--network n
 **Host prerequisites:** the download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`), not
 in the boot container, so the box running the grinder needs:
 - **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when the key is
-  present (Modrinth needs no key).
+  present (Modrinth needs no key). `--clientside-report` also takes `CURSEFORGE_API_KEY_FILE` (read once, deleted).
 - **No browser, and no Playwright.** Distribution-locked CurseForge files (`allowModDistribution=false`,
   `downloadUrl=null`) are **not obtainable** — the author opted out. Such a candidate is reported unverifiable
   with a refusal naming the lock. Do not reintroduce a browser route; detail in

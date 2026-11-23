@@ -34,18 +34,22 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
     Never compare an argument to `Mode.argument()` directly. Arguments beside a flag are links and paths, so a
     `contains` match selects the wrong mode (`…/inventory-helper` reads as `-help`, `…/pack-cgen/…` as `-cgen`).
     Never use `contains` for a new mode; `anArgumentThatOnlyContainsAFlagSelectsNothing` pins it.
-- **Workflows** build the jar **from source** (the verbs aren't in any release yet) and post/update a
+- **Workflows** build **from source** (the verbs aren't in any release yet) and post/update a
   sticky comment (marker `<!-- serverpackcreator-clientside-report -->`, bot-authored comments only); the
   report embeds its data as a hidden `<!-- clientside-report-data … -->` JSON block the accept-workflow
-  reads back. **A boot runs the requested mod's code on the runner, so it needs write access**: an issue
+  reads back. **A boot runs the requested mod's code, so it needs write access**: an issue
   opened or link-edited by an OWNER/MEMBER/COLLABORATOR, the `verify-boot` label (which `resolve` creates when
   the repository lacks it), or a manual dispatch — anyone else's request is told it waits for the label
   (`bootAuthorised`). `clientside-verify.yml` is a thin caller of the reusable
   `clientside-report-reusable.yml`, whose `resolve` job decides whether the event earns a boot and whose
-  `report` job runs `-verifyclientside` on a read-only token, with no persisted credentials, no cache writes
-  and the CurseForge key handed over in a file it deletes; a separate `post` job posts the report — each
-  boot's console included — plus a link to every log. `.claude/rules/ci-workflows.md` has why that is
-  defence in depth and the gate is the control. The GitHub-side logic (that decision, the lookup, the evidence block) lives in
+  `report` job boots through the **grinder's** `--clientside-report` (`serverpackcreator-grinder`, README §3), so
+  the mod runs in the grinder's network-less, capability-less container rather than on the runner, on a read-only
+  token, with no persisted credentials, no cache writes and the CurseForge key handed over in a file the grinder
+  deletes; a separate `post` job posts the report — each boot's console included — plus a link to every log. The
+  report is rendered by the same `ClientsideReportRenderer`, so the accept-workflow reads it unchanged.
+  **`-verifyclientside` is not what CI runs any more**; it stays for local use and still boots on the host.
+  `.claude/rules/ci-workflows.md` has what the container contains, what it does not, and why the gate stays the
+  control. The GitHub-side logic (that decision, the lookup, the evidence block) lives in
   `.github/scripts/clientside-verification.js`, tested by `node --test` in Forgejo's `test.yml`.
   - **LANDMINE — no workflow-level `concurrency` on an `issues:` workflow whose jobs filter by `if:`.** The
     issue form applies a label, so opening an issue fires `opened` *and* `labeled`; a workflow-level group is
@@ -55,11 +59,10 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
     via `peter-evans/create-pull-request` — it stays **standalone** (a reusable workflow is a separate job,
     so it cannot share the build job's working-tree edits with the PR step), with its own least-privilege
     `permissions` (verify needs only `issues:write`; accept needs `contents`/`pull-requests:write`).
-  - The `report` job installs Temurin 8, 16, 17 and 25 beside the build's JDK 21, because a boot runs on
-    the exact major its Minecraft version requires (`HostJavaSelection`). CurseForge links need the
-    `CURSEFORGE_API_KEY` repo secret; without it CurseForge is not a registered platform at all. The job never
-    puts the secret in the verification step's `env:` — it writes it to `CURSEFORGE_API_KEY_FILE`, which
-    `CurseForgeApiKey` reads once and deletes.
+  - The `report` job installs only the JDK 21 Gradle and the grinder run on; servers boot on the runtime image's
+    JDKs (8, 16, 17, 21, 25). CurseForge links need the `CURSEFORGE_API_KEY` repo secret; without it CurseForge
+    is not a registered platform at all. The job never puts the secret in the verification step's `env:` — it
+    writes it to `CURSEFORGE_API_KEY_FILE`, which `CurseForgeApiKey` reads once and deletes.
 
 ## Web backend
 

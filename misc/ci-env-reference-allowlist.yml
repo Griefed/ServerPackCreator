@@ -45,4 +45,6 @@
   "read by semantic-release itself; without it it refuses to run outside a recognised CI"
 
 ".github/workflows/clientside-report-reusable.yml::report::Run clientside verification::CURSEFORGE_API_KEY_FILE":
-  "read by the application under test -- CurseForgeApiKey reads the file it names and deletes it before the first boot"
+  "read by the grinder -- CurseForgeApiKey.fromEnvironment reads the file it names and deletes it before the first boot"
+".github/workflows/clientside-report-reusable.yml::report::Run clientside verification::SPC_GRINDER_HOME":
+  "read by the grinder -- GrinderConfiguration.from's `home`, under which work, cache, boot-logs and logs land"

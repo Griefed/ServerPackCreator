@@ -129,14 +129,16 @@ ships unused into server packs — cheaper than a false positive stripping a wor
   terminal-less boot (stdin `/dev/null`) can only decline. `-verifyclientside` passes a `HostJavaSelection`
   post-processor writing the JDK into `variables.txt` (`PackVariables.prepareUnattended`), chosen from
   `JAVA_HOME_<major>_<arch>` (`ImageJavaRuntimes.javaHomesIn`) plus the running JVM. A missing major **throws** →
-  `ERROR` row (deliberately not the grinder's `minecraftAcceptable` gate, which silently drops the line). The
-  prompt refusal is also a `setup-abort` rung. **The GitHub workflow must install every major a release can need**
-  (8, 16, 17, 21, 25 — Mojang's per-version requirement, not SPC's target).
+  `ERROR` row (deliberately not the grinder daemon's `minecraftAcceptable` gate, which silently drops the line; the
+  grinder's `--clientside-report` keeps it as an ERROR row too). The prompt refusal is also a `setup-abort` rung.
+  The GitHub workflow does not boot on the host: it runs the grinder's `--clientside-report`, whose JDKs are the
+  runtime image's (`ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS`).
 - **LANDMINE — a host boot runs mod code nobody vetted, so `start.sh` gets an allowlisted environment**
   (`HostProcessServerRunner.serverEnvironment`: `PATH`, `HOME`, locale, `JAVA_HOME` and a few more). Never pass
   the parent's environment through; a variable a server genuinely needs goes on the allowlist, by name.
   `CurseForgeApiKey` reads `CURSEFORGE_API_KEY_FILE` once and deletes it, so the GitHub workflow keeps the key
-  out of every environment while servers run — read it lazily (`fromEnvironment`), never per call.
+  out of every environment while servers run — read it lazily (`fromEnvironment`), never per call. The grinder's
+  `ContainerCandidateVerifier` defaults to it as well.
 - **LANDMINE — `JdkHttpFetcher`'s default client is `SHARED`, one per process; never make it per-instance** (each
   client owns a pool and a `SelectorManager` thread, and `supportedPlatforms()` builds fresh platforms per
   candidate). Safe because the CurseForge key is a per-request header. `JdkHttpFetcherClientSharingTest` pins it by

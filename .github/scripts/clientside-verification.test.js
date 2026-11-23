@@ -377,3 +377,28 @@ test('the caller caps the boot pipeline at a read-only cache token whatever trig
   const verify = jobIn('clientside-verify.yml', 'verify')
   assert.match(verify, /\n {4}cache-mode: read\n/)
 })
+
+// The mod boots in the grinder's hardened container (`--network none`, every capability dropped, no
+// environment), so it cannot read the runner's memory, its token or the CurseForge key, and cannot use sudo.
+test('the job that boots mods boots them in the grinder\'s container, never on the runner', () => {
+  const report = jobIn('clientside-report-reusable.yml', 'report')
+  assert.match(report, /docker build -t spc-grinder-runtime:latest serverpackcreator-grinder\/docker\n/)
+  assert.match(report, /:serverpackcreator-grinder:installDist/)
+  const verification = report.slice(report.indexOf('- name: Run clientside verification'))
+  const step = verification.slice(0, verification.indexOf('\n      - '))
+  assert.match(step, /--clientside-report "\$PROJECT_URL"/)
+  assert.match(step, /CURSEFORGE_API_KEY_FILE: /)
+  assert.doesNotMatch(report, /verifyclientside|bootJar/, 'no host boot may remain')
+  assert.equal((report.match(/uses: actions\/setup-java@/g) || []).length, 1, 'only the JDK Gradle and the grinder run on')
+  assert.match(report, /- name: Remove the CurseForge key file\n {8}if: \$\{\{ always\(\) \}\}/)
+})
+
+// Everything under the staged pack was writable by the mod; only what BootLogStore copied out of it, and the
+// grinder's own log, may leave the job.
+test('the boot logs uploaded are the boot-log store and the grinder\'s log, nothing a mod wrote in place', () => {
+  const report = jobIn('clientside-report-reusable.yml', 'report')
+  const upload = report.slice(report.indexOf('- name: Upload boot logs'))
+  const paths = upload.slice(upload.indexOf('path: |') + 'path: |'.length, upload.indexOf('if-no-files-found'))
+    .split('\n').map(line => line.trim()).filter(Boolean)
+  assert.deepEqual(paths, ['grinder-home/boot-logs/**', 'grinder-home/logs/**'])
+})

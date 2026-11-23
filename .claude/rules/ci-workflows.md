@@ -102,20 +102,38 @@ triage), or an issue opened or link-edited by an `OWNER`/`MEMBER`/`COLLABORATOR`
 comment saying it waits for the label. An outsider's later link edit needs the label removed and re-added,
 because the label approved the link it had then.
 
-**Everything else is defence in depth, not containment.** The `report` job holds a `contents: read` token,
-checks out with `persist-credentials: false`, restores the Gradle cache read-only and saves none, and gets the
-CurseForge key as a file the verification deletes before its first boot; `start.sh` inherits only an
-allowlisted environment (`HostProcessServerRunner.serverEnvironment`). The `issues: write` token lives in a
-separate `post` job that runs no mod code, and `clientside-accept.yml` (`contents: write`) restores no cache at
-all. But the hosted runner's user has passwordless `sudo`, so a determined mod can still read the runner
-process's memory, where the job's token and any secret the job references live. **Never loosen the gate on
-the strength of the hardening.** Real containment would mean booting in a job that references no secret
-(the engine resolves and boots interleaved, so that is a redesign) or in the grinder's hardened container.
-`clientside-verification.test.js` pins both the gate and the job shape (read-only token, no cache writes,
-no secret in the verification step's `env:`, credentials not persisted, the `cache-mode` keys below).
+**The mod boots in the grinder's hardened container, which is the containment.** The `report` job builds the
+grinder (`installDist`) and its runtime image (`docker build`, ~2 GB, published nowhere), then runs
+`--clientside-report` (`ClientsideReportRun`): downloads and metadata scans on the host, the loader installed
+once per tuple in a networked container from a vanilla pack with no mod in it, and every boot of the requested mod
+in a container with `--network none`, every capability dropped, `no-new-privileges`, a non-root user, no
+environment, resource caps, and only the staged pack mounted. From inside it the mod cannot reach the runner
+process's memory (the job token, `ACTIONS_RUNTIME_TOKEN`, the CurseForge key in the grinder's JVM), cannot `sudo`,
+and has no network. `clientside-verification.test.js` pins that the job boots this way and that no
+`-verifyclientside` host boot remains.
+
+**What is still not contained, so the gate stays the control:**
+
+- **Host-side handling of attacker-supplied files.** The grinder JVM, which holds the key and runs beside the job's
+  tokens, downloads the mod's jars and parses them (zip, TOML/JSON descriptors, nested jars) to scan and stage
+  them. No mod code runs there, but a parser defect reachable from a crafted jar would run on the runner.
+- **What the container gives a boot.** A kernel or container-runtime escape is outside this design; the
+  runner's user is in the `docker` group, so an escape is root on the runner. The mounted pack is writable,
+  so anything read back from it on the host must not follow links out of it — `BootArtifacts`' copy into the
+  boot-log store is what the upload reads, and only the boot-log store and the grinder's log are uploaded.
+- **The loader install has network**, for the loader's own download; it boots a vanilla pack, never the mod.
+
+The rest is defence in depth around that: a `contents: read` token, `persist-credentials: false`, a Gradle cache
+restored read-only and saved nowhere, the CurseForge key handed over as a file the grinder deletes before its first
+boot, and the `issues: write` token in a separate `post` job that runs no mod code; `clientside-accept.yml`
+(`contents: write`) restores no cache at all. **Never loosen the gate on the strength of the container.**
+`clientside-verification.test.js` pins the gate and the job shape (read-only token, no cache writes, no secret in
+the verification step's `env:`, credentials not persisted, the container boot, the upload paths, the `cache-mode`
+keys below). `-verifyclientside` still exists for local use and still boots on the host.
 
 **The Actions cache is the one place a boot could reach a trusted build, and the cache TOKEN is what closes
-it.** Reading the runner's memory yields `ACTIONS_RUNTIME_TOKEN`, and with it a mod can call the cache service
+it.** Whatever reaches the runner's memory — an escape from the container, or a parser defect on the host —
+yields `ACTIONS_RUNTIME_TOKEN`, and with it a mod can call the cache service
 directly and save any key it likes into the default branch's scope. `test.yml` and `pages.yml` run on `push`
 to `main` and restore from that scope (setup-java's `cache: 'gradle'` and setup-gradle, which falls back to
 the newest entry for the same runner OS), and `pages.yml` deploys what it builds to the public site. Three
@@ -142,7 +160,7 @@ ever stop enforcing `cache-mode`.
 **Concurrency stays per issue, and the gate is what bounds it.** A repository-wide group would serialise
 boots, but GitHub keeps only one *pending* run per group and cancels the older one, so a queue of approved
 requests would silently lose all but the newest. With boots limited to maintainers' choices, an outsider
-can no longer start up to 200-minute jobs at will; `resolve` (5 minutes) is all an opened issue costs.
+can no longer start up to 260-minute jobs at will; `resolve` (5 minutes) is all an opened issue costs.
 
 ## Two Forgejo behaviours that GitHub-shaped workflows get wrong
 

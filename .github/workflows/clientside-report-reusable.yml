@@ -1,17 +1,19 @@
 name: Clientside report (reusable)
 
 # The pipeline behind clientside-verify.yml. `resolve` decides whether the event earns a boot; `report`
-# builds ServerPackCreator from source and boots a server with the requested mod once per Minecraft line;
-# `post` posts the verdicts -- with each boot's console -- as one issue-comment that later runs update in place.
+# builds the grinder from source and boots a server with the requested mod once per Minecraft line, inside
+# the grinder's runtime container; `post` posts the verdicts -- with each boot's console -- as one
+# issue-comment that later runs update in place.
 #
-# A boot runs the requested mod's code on the runner, so it is gated and contained:
+# A boot runs the requested mod's code, so it is gated and contained:
 # - `resolve` boots only on a maintainer's say-so (`bootAuthorised` in the script below).
-# - `report` holds a read-only token that is not persisted into the checkout, a cache token that cannot save
-#   (`cache-mode: read`, also capped by the caller), and keeps
-#   the CurseForge key out of every environment while servers run (see the key's two steps).
+# - `report` boots the mod in the grinder's container: `--network none`, every capability dropped,
+#   `no-new-privileges`, a non-root user, no environment, and only the staged pack mounted. The runner's
+#   memory, token, sudo and the CurseForge key are outside it. The job also holds a read-only token that is
+#   not persisted into the checkout and a cache token that cannot save (`cache-mode: read`, also capped by
+#   the caller), and hands the key over in a file the grinder deletes on reading it.
 # - `post`, which needs `issues: write`, runs no mod code.
-# The runner user can `sudo`, so none of that contains a determined mod: the gate is the control, the rest
-# removes what was reachable without trying. See .claude/rules/ci-workflows.md.
+# See .claude/rules/ci-workflows.md for what is contained and what is not.
 # The GitHub-side logic lives in .github/scripts/clientside-verification.js, where Forgejo's test.yml runs it.
 # Not triggered on its own.
 
@@ -65,9 +67,9 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.verify == 'true'
     runs-on: ubuntu-latest
-    # Above the verification step's own budget, so a step that runs out of time still uploads its logs and
-    # says so on the issue.
-    timeout-minutes: 200
+    # Above the image build's and the verification step's budgets combined, so a step that runs out of time
+    # still uploads its logs and says so on the issue.
+    timeout-minutes: 260
     # On this job, after `resolve`, so only a run that will boot can supersede another. A workflow-level group
     # is entered before any job's `if:` is evaluated: the `labeled` event the issue form fires beside `opened`
     # would cancel the boot and then skip itself. Per issue; the gate in `resolve` is what bounds how many
@@ -87,21 +89,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Every Java a Minecraft release requires: 8 (up to 1.16), 16 (1.17), 17 (1.18 to 1.20.4) and 25 (26.x),
-      # with 21 from the next step. start.sh boots only on the exact major, and -verifyclientside picks each
-      # pack's JDK from the JAVA_HOME_<major>_<arch> variables this sets. These follow Mojang's per-version
-      # requirement, not SPC's own target, so they do not move with a Java bump (misc/Java-References.md).
-      - name: Set up the JDKs Minecraft servers need
-        uses: actions/setup-java@v6
-        with:
-          distribution: 'temurin'
-          java-version: |
-            8
-            16
-            17
-            25
-
-      # Installed last, so it stays the default `java` that Gradle and ServerPackCreator run on.
+      # The JDK Gradle and the grinder run on. Servers boot on the JDKs inside the runtime image.
       - name: Set up JDK 21
         uses: actions/setup-java@v6
         with:
@@ -119,11 +107,17 @@ jobs:
       - name: Set permissions
         run: chmod +x gradlew
 
-      # Built from source (not a release) so the CLI verbs always match the current branch.
-      - name: Build ServerPackCreator jar
-        run: ./gradlew :serverpackcreator-app:bootJar --no-daemon
+      # Built from source (not a release) so the grinder always matches the current branch.
+      - name: Build the grinder
+        run: ./gradlew :serverpackcreator-grinder:installDist --no-daemon
 
-      # The key reaches the verification as a file, which it reads and deletes before its first boot
+      # The image every loader install and mod boot runs in, built here because it is published nowhere. No
+      # buildx cache: the job's cache token cannot save, by design.
+      - name: Build the grinder's runtime image
+        timeout-minutes: 30
+        run: docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
+
+      # The key reaches the grinder as a file, which it reads and deletes before its first boot
       # (`CurseForgeApiKey`), so no process environment holds it while a server runs. An absent secret writes
       # no file and CurseForge is simply not offered.
       - name: Hand the CurseForge key over in a file
@@ -135,29 +129,27 @@ jobs:
             printf '%s' "$CURSEFORGE_API_KEY" > "$RUNNER_TEMP/curseforge-api-key"
           fi
 
-      # The engine's own worst case fits: five Minecraft lines, three boots each, twelve minutes per boot.
+      # Five Minecraft lines, three boots each at twelve minutes, plus a loader install per line, which the
+      # one-off networked install container runs from a vanilla pack without the mod.
       - name: Run clientside verification
-        timeout-minutes: 185
+        timeout-minutes: 215
         env:
           CURSEFORGE_API_KEY_FILE: ${{ runner.temp }}/curseforge-api-key
+          SPC_GRINDER_HOME: ${{ github.workspace }}/grinder-home
           PROJECT_URL: ${{ needs.resolve.outputs.url }}
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/spc-home"
-          JAR=$(ls serverpackcreator-app/build/libs/serverpackcreator-app-*.jar | grep -vE 'plain|javadoc|sources' | head -n1)
-          echo "Using jar: $JAR"
-          java -jar "$JAR" \
-            --home "$GITHUB_WORKSPACE/spc-home" \
-            -verifyclientside "$PROJECT_URL" \
+          serverpackcreator-grinder/build/install/serverpackcreator-grinder/bin/serverpackcreator-grinder \
+            --clientside-report "$PROJECT_URL" \
             --output "$GITHUB_WORKSPACE/clientside-report.md"
 
       - name: Remove the CurseForge key file
         if: ${{ always() }}
         run: rm -f "$RUNNER_TEMP/curseforge-api-key"
 
-      # `boot/<attempt>/boot.log` is the console each verdict rests on, survivors included. One level deep only:
-      # the booted mod writes `boot/<attempt>/serverpack/`, so nothing it plants there may match. `boot-evidence/`
-      # keeps every attempt that did not survive -- console, the server's own logs, any crash report. SPC's own
-      # log holds what never reached a console: staging refusals and generation errors.
+      # `boot-logs/` is the grinder's boot-log store: every attempt that did not survive -- console, the
+      # server's own logs, any crash report -- copied out of the staged pack. Nothing else from the pack leaves
+      # the job: the mod could write anything there. The grinder's own log holds what never reached a console:
+      # staging refusals, loader installs and generation errors.
       - name: Upload boot logs
         id: boot-logs
         if: ${{ !cancelled() }}
@@ -165,9 +157,8 @@ jobs:
         with:
           name: clientside-boot-logs
           path: |
-            spc-home/work/clientside-verify/boot-evidence/**
-            spc-home/work/clientside-verify/boot/*/boot.log
-            spc-home/logs/**
+            grinder-home/boot-logs/**
+            grinder-home/logs/**
           if-no-files-found: ignore
 
       - name: Upload the report

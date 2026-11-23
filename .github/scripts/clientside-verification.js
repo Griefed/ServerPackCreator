@@ -60,8 +60,8 @@ const AWAITING_APPROVAL_BODY = `${REPORT_MARKER}\n## 🤖 Clientside-mod verific
   `by adding the \`${RERUN_LABEL.name}\` label. The report will replace this comment.\n`
 
 /**
- * Whether this event may boot the requested mod. Booting runs code nobody has vetted on the runner, so it takes
- * someone with write access: a manual dispatch, the re-run label (adding a label needs triage access), or a request
+ * Whether this event may boot the requested mod. Booting runs code nobody has vetted, in a container on the runner
+ * whose escape would reach the runner, so it takes someone with write access: a manual dispatch, the re-run label (adding a label needs triage access), or a request
  * whose author already holds that access. An opened or edited request from anyone else waits for the label --
  * including an edit to a request a maintainer approved earlier, because the label approved the link it had then.
  */
