@@ -158,6 +158,9 @@ test('the evidence block goes before the hidden data block, which stays last', (
   assert.ok(body.trimEnd().endsWith('-->'))
   assert.ok(body.includes('[Workflow run](https://run)'))
   assert.ok(body.includes('(https://artifact)'))
+  // The archive holds what the boot-log store kept: the attempts that did not survive, and the grinder's log.
+  assert.ok(body.includes('every attempt that did not survive'))
+  assert.ok(!body.includes('every boot attempt'))
   assert.ok(body.includes(`${verification.PROOF_LINE} ${PROOF}`))
 })
 

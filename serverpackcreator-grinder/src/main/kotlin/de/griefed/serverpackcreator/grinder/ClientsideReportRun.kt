@@ -139,9 +139,12 @@ class ClientsideReportRun(
             }.run(projectUrl, output)
         }
 
-        /** Where this mode keeps the evidence behind the consoles it shows: the boot-log store, which `BootArtifacts.worthKeeping` fills. */
+        /**
+         * Where the evidence behind the shown consoles is, for the issue reader: the boot-log store, which
+         * `BootArtifacts.worthKeeping` fills and the workflow uploads as the evidence block's **All logs** archive.
+         */
         const val EVIDENCE_NOTE = "Every attempt that did not survive keeps its full console, with the server's own " +
-            "logs and crash reports, in the grinder's boot-log store (`SPC_GRINDER_BOOT_LOGS`)."
+            "logs and crash reports, in the **All logs** archive linked under Evidence below."
 
         /** `BootVerifier`'s default budget, which `-verifyclientside` boots with. */
         private val CLI_BOOT_TIMEOUT: Duration = Duration.ofMinutes(12)

@@ -122,8 +122,8 @@ function proofLine(proof) {
 function evidenceBlock({ runUrl, artifactUrl, proof }) {
   const lines = ['### 🔎 Evidence', '', `- [Workflow run](${runUrl})`]
   lines.push(artifactUrl
-    ? `- [All logs](${artifactUrl}) — every boot attempt's console, the servers' own logs and crash reports, ` +
-      "and ServerPackCreator's log (GitHub sign-in required)"
+    ? `- [All logs](${artifactUrl}) — the full console, the server's own logs and crash reports of every attempt ` +
+      "that did not survive, and the grinder's log (GitHub sign-in required)"
     : '- All logs: none were produced')
   lines.push(proofLine(proof))
   return `\n---\n\n${lines.join('\n')}\n`

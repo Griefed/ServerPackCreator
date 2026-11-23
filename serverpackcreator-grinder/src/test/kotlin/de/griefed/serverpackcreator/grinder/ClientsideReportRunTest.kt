@@ -81,6 +81,10 @@ internal class ClientsideReportRunTest {
         Assertions.assertTrue(markdown.startsWith(ClientsideReportRenderer.MARKER), "the sticky-comment marker comes first")
         Assertions.assertTrue("Done (4.2s)!" in markdown, "each boot's console is part of the report")
         Assertions.assertTrue(ClientsideReportRun.EVIDENCE_NOTE in markdown, "and says where the rest of the evidence is")
+        Assertions.assertTrue(
+            "**All logs**" in ClientsideReportRun.EVIDENCE_NOTE,
+            "an issue reader is pointed at the evidence block's archive link, not at a grinder setting"
+        )
         val dataBlock = markdown.lastIndexOf("<!-- clientside-report-data")
         Assertions.assertTrue(dataBlock > 0, "the accept-workflow reads the hidden data block")
         Assertions.assertTrue(
