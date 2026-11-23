@@ -3365,3 +3365,29 @@ by subject, because subjects survive a rewrite and hashes do not.
 | `f7ea11a84` | deps(deps): update dependency prettier to v2.8.8 | deps(deps): update dependency prettier to v2.8.8 |
 | `fa9bd0f14` | deps(deps): update dependency vue to v3.5.45 | deps(deps): update dependency vue to v3.5.45 |
 | `fb1275db2` | fix(docker): every MongoDB reference agrees with the 9.0.8 deployment, and the tests say why they differ | deps(deps): update mongodb/mongodb-community-server docker tag to v9 |
+
+# 2026-11-23 — the follow-up's decisions, implemented
+
+Griefed chose to implement four of the follow-up's recommendations. Each is listed by commit subject; the
+per-goal detail and red-first evidence are on the named kept branch.
+
+- **D-N-1 residual, cache poisoning:** closed by `fix(ci): a booted mod's cache token cannot save, whatever started the boot` (`claude-b1-cache`).
+  - Since 2026-06-26 GitHub already issues `issues` runs a cache token that cannot save to the default branch. The gap was a manually dispatched boot, which is a trusted trigger.
+  - `cache-mode: read` on the calling job and on `report`, and `cache-mode: none` on `clientside-accept`, restrict the token itself, so a token read out of memory is restricted too.
+  - Still open, for the container-boot decision: the CurseForge key and the `contents: read` token can be read from memory with sudo, and the runtime token can replace the run's own `clientside-report` artifact.
+- **D-N-3 gap, paging:** closed by `fix(grinder,plugin-grinder): a paged verdict read finishes on the snapshot it started from` (`claude-b2-paging`).
+  - Every page carries the snapshot's version, and the daemon keeps up to 8 snapshots for 60 s after their last use.
+  - The client pins pages 2..n to page 1's version, and restarts on `410 Gone` or on a changed version, at most 3 times.
+  - What remains: a pinned read evicted on all three attempts fails rather than returning a list.
+- **D-N-8, the result-changing `runCatching` sites** (`claude-b3-runcatching`):
+  - `feat(api): orNullLogged, a logged null that swallows only what it may` adds the shared helper. It catches `Exception` only, restores the interrupt flag and rethrows a cancellation.
+  - `exitCodeOf`, checked against `VerdictPolicy`: the published verdict could not change, but the per-boot reading could, so the failure is now logged.
+  - The re-grind queue: an unreadable file is set aside, and `add()` counts only what was saved.
+  - servertest: a failed `server.properties` give-back tells the user where the original is.
+  - `isRunning`: an unanswered liveness inspect no longer ends a boot. After 60 unanswered polls in a row the boot is abandoned as `ERROR`.
+  - The 14 sites that should only log remain open.
+- **Commit-body links:** enforced by `ci: fail a push whose commit message would mislink an issue in the release notes` (`claude-b5-link-lint`).
+  - The checker ports conventional-commits-parser 6.4.0's reference extraction, and agrees with the real parser on all 7,700 commit messages.
+  - It runs over each push's own range, so already-pushed history never keeps CI red.
+  - Its one finding on `origin/main..develop` was reworded before the next push.
+- **Found while implementing:** `fix(ci): the .dockerignore input check does not read another checkout's build scripts`. It is the nested-worktree defect `KDocAttachmentTest` had.
