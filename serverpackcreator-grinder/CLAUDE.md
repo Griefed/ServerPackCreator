@@ -54,6 +54,23 @@ file small enough to stay useful. Read the one for the subsystem you are touchin
   makes catalog coverage impossible. **Failed verifications deliberately don't count as work** — on a broken
   host every candidate fails, and counting that would race the cursor through the catalog unverified.
 
+## `--clientside-report`: one project, one report, exit
+
+`ClientsideReportRun` is the GitHub clientside workflow's boot path: `ContainerCandidateVerifier.verifyWithConsoles`
+once, rendered by `ClientsideReportRenderer` exactly as `-verifyclientside` renders, written to `--output`, exit
+`0`/`1`/`2` (verified / failure note written / bad arguments). Operator half: README §3.
+
+- **It records nothing and reaps nothing.** No verdict store, cursor, requeue store or report server, and no
+  `reapOrphans`/`reapAll` — on a host running the daemon those would stop the daemon's containers or sweep its
+  staging. `theClientsideReportRunsAfterTheClaimsAndRecordsNothing` reads `main` and the class for exactly that.
+- **It branches off `main` after the two SPC claims**, because it boots an `ApiWrapper` and logs.
+- **It keeps unbootable lines** (`keepUnbootableLines = true`): a line whose JDK the image lacks is an ERROR row
+  naming the Java, as the CLI reports it; the daemon drops such lines, since it could never fix the ERROR.
+- **Consoles are read before the reap** (`decisiveConsoles`, from `<work>/verify/boot/<attempt>/boot.log`, which
+  sits beside the mounted `serverpack/`, never inside it). Everything else a boot left is reclaimed in
+  `verify`'s `finally`; the boot-log store keeps what did not survive.
+- **The CLI's boot budget (12 min) and default line policy**, so its report reads like `-verifyclientside`'s.
+
 ## Operator-facing logging (three surfaces, all live)
 
 *Operator-facing documentation for these lives in `README.md` §7 — keep the two in step.*

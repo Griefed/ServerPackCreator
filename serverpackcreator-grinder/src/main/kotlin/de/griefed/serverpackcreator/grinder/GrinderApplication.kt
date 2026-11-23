@@ -79,7 +79,8 @@ object GrinderApplication {
     /**
      * Entry point. `--requeue <url>…`, `--requeue-before <instant>` and `--requeue-since <instant>` add work to
      * the immediate re-grind queue and exit without grinding, so they can be run against a service that is
-     * already up. With project
+     * already up. `--clientside-report <url> --output <file>` verifies one project, writes its clientside report
+     * and exits ([ClientsideReportRun]). With project
      * URLs as [args] it grinds exactly those once and exits; with none it runs
      * continuously, taking the next catalogue slice each pass and persisting verdicts and crawl position after every
      * step so a restart resumes mid-catalogue. Everything else is read from the environment — see README §5.
@@ -111,6 +112,15 @@ object GrinderApplication {
         // daemon runs on -- and gets remembered in the Preferences node for every run after it.
         claimSpcPreferencesNode()
         pinSpcHomeDirectory(base)
+        // Verify one project, write its clientside report and exit: after the claims, because it boots an
+        // ApiWrapper and logs; before everything below, because it records nothing and serves nothing.
+        if (args.firstOrNull() == ClientsideReportRun.FLAG) {
+            val request = ClientsideReportRun.parse(args) ?: run {
+                System.err.println(ClientsideReportRun.USAGE)
+                exitProcess(2)
+            }
+            exitProcess(ClientsideReportRun.execute(config, base, request.first, request.second))
+        }
 
         val image = config.image
         val workDir = config.work.apply { mkdirs() }

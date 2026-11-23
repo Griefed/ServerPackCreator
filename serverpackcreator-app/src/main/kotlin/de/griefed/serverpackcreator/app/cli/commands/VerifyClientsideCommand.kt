@@ -149,8 +149,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
             }
         } catch (ex: Exception) {
             log.error("Clientside verification failed for $projectUrl", ex)
-            "${ClientsideReportRenderer.MARKER}\n## 🤖 Clientside-mod verification failed\n\n" +
-                    "Could not assess `$projectUrl`: ${ex.message}\n"
+            ClientsideReportRenderer.renderFailure(projectUrl, ex.message)
         }
         if (outputFile != null) {
             outputFile.parentFile?.mkdirs()

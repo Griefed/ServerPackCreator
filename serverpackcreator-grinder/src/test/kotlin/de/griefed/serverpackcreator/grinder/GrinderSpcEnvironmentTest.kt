@@ -140,6 +140,42 @@ internal class GrinderSpcEnvironmentTest {
     }
 
     /**
+     * **`--clientside-report` runs after the claims and before anything that records or serves.**
+     *
+     * It boots an `ApiWrapper` and logs, so the claims must come first, exactly as for the daemon; and it is a
+     * one-off that must leave no trace in the daemon's state, so it branches off before the verdict store, the
+     * cursor, the report server and the orphan reap exist. The helper is read as well, because `main`'s body cannot
+     * see what the helper builds.
+     */
+    @Test
+    fun theClientsideReportRunsAfterTheClaimsAndRecordsNothing() {
+        val body = grinderMainBody()
+        val branch = body.indexOf("ClientsideReportRun.FLAG")
+        Assertions.assertTrue(branch > 0, "main() no longer routes --clientside-report to ClientsideReportRun")
+        for (claim in listOf("claimSpcPreferencesNode()", "pinSpcHomeDirectory(")) {
+            Assertions.assertTrue(
+                body.indexOf(claim) in 1 until branch,
+                "$claim must come before the --clientside-report branch: it boots an ApiWrapper and logs"
+            )
+        }
+        // From the claims on: the --requeue branch above them opens a verdict store of its own, and exits.
+        val afterClaims = body.indexOf("pinSpcHomeDirectory(")
+        for (daemonOnly in listOf("JsonVerdictStore(", "JsonCursorStore(", "ReportServer(", "reapOrphans(", "log.")) {
+            Assertions.assertTrue(
+                branch < body.indexOf(daemonOnly, afterClaims),
+                "the --clientside-report branch must leave main before $daemonOnly"
+            )
+        }
+
+        val helper = withoutComments(
+            File("src/main/kotlin/de/griefed/serverpackcreator/grinder/ClientsideReportRun.kt").readText()
+        )
+        for (daemonOnly in listOf("VerdictStore", "CursorStore", "RequeueStore", "ReportServer", "reapOrphans", "reapAll")) {
+            Assertions.assertFalse(daemonOnly in helper, "ClientsideReportRun must not touch $daemonOnly")
+        }
+    }
+
+    /**
      * Both claims must precede every `log` use in `main`, since the first one builds an `ApiProperties`.
      *
      * The window is `main`'s own body, closing brace included in the arithmetic. Scanning to end-of-file instead

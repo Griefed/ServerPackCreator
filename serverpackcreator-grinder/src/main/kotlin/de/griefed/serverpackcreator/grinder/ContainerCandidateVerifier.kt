@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
 import de.griefed.serverpackcreator.clientside.boot.BootVerifier
+import de.griefed.serverpackcreator.clientside.boot.ConsoleTail
+import de.griefed.serverpackcreator.clientside.ClientsideReportRenderer
 import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
 import de.griefed.serverpackcreator.clientside.boot.PackVariables
 import de.griefed.serverpackcreator.clientside.verdict.ClientsideReport
@@ -104,7 +106,15 @@ class ContainerCandidateVerifier(
     private val reaper = BootWorkspaceReaper(workDirectory)
 
 
-    override fun verify(candidate: GrindCandidate): ClientsideReport {
+    override fun verify(candidate: GrindCandidate): ClientsideReport = verifyReading(candidate, readConsoles = false).report
+
+    /**
+     * [verify], plus each target's decisive console, read from staging before the reap removes it — the consoles
+     * the clientside report shows, read the way `-verifyclientside` reads its own staging.
+     */
+    fun verifyWithConsoles(candidate: GrindCandidate): ConsoledReport = verifyReading(candidate, readConsoles = true)
+
+    private fun verifyReading(candidate: GrindCandidate, readConsoles: Boolean): ConsoledReport {
         var resolved: ClientsideReport? = null
         // Per invocation, never a field: ONE verifier instance serves every GrindPool worker, so a shared
         // collection would let one candidate's prune delete the logs another had just written -- the same
@@ -130,7 +140,7 @@ class ContainerCandidateVerifier(
                     }
                 store.enforceBudget()
             }
-            return report
+            return ConsoledReport(report, if (readConsoles) decisiveConsoles(File(workDirectory, "boot"), report) else emptyMap())
         } finally {
             // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
             // behind, and the reaper keeps the boot logs the failure will have to be diagnosed from.
@@ -243,6 +253,20 @@ class ContainerCandidateVerifier(
          */
         internal fun reapTarget(candidate: GrindCandidate, report: ClientsideReport?): Pair<String, String> =
             report?.let { it.platform to it.slug } ?: (candidate.platform to candidate.slug)
+
+        /**
+         * The tail of each target's decisive console under [bootRoot], keyed as [ConsoledReport.consoles] is. A
+         * target with no console on disk is absent. The file lives beside the mounted pack, never inside it, so the
+         * booted mod cannot have replaced it.
+         */
+        internal fun decisiveConsoles(bootRoot: File, report: ClientsideReport): Map<Pair<String, String>, List<String>> =
+            report.perTarget.mapNotNull { target ->
+                val line = target.minecraftLine ?: return@mapNotNull null
+                BootVerifier.decisiveConsole(bootRoot, report.platform, report.slug, target.loader, line)
+                    .takeIf { it.isFile }
+                    ?.let { ConsoleTail.lastLines(it, ClientsideReportRenderer.MAX_CONSOLE_LINES) }
+                    ?.let { (target.loader to line) to it }
+            }.toMap()
 
 
         /**

@@ -90,8 +90,7 @@ class ClientsideReportCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
             ClientsideReportRenderer.renderMarkdown(verifier.report(projectUrl))
         } catch (ex: Exception) {
             log.error("Clientside report failed for $projectUrl", ex)
-            "${ClientsideReportRenderer.MARKER}\n## 🤖 Clientside-mod verification failed\n\n" +
-                    "Could not assess `$projectUrl`: ${ex.message}\n"
+            ClientsideReportRenderer.renderFailure(projectUrl, ex.message)
         }
         if (outputFile != null) {
             outputFile.parentFile?.mkdirs()

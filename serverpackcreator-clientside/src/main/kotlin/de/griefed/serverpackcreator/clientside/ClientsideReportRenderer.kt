@@ -45,6 +45,10 @@ object ClientsideReportRenderer {
     /** A console line is cut to this length, so one runaway line cannot take a boot's whole share. */
     const val MAX_CONSOLE_LINE_CHARS = 400
 
+    /** Where `-verifyclientside` keeps every attempt's evidence, as the boot-log section tells the reader. */
+    const val CLI_EVIDENCE_NOTE = "Every attempt's full console, with the server's own logs and crash reports, is kept " +
+        "under `work/clientside-verify/` in ServerPackCreator's home."
+
     /** The most console lines shown for one boot, however much room the comment has. */
     const val MAX_CONSOLE_LINES = 200
 
@@ -62,14 +66,18 @@ object ClientsideReportRenderer {
 
     /**
      * Build the full Markdown comment for [report], with the end of each target's server console from
-     * [consoleOf] — `null` or empty where none was recorded.
+     * [consoleOf] — `null` or empty where none was recorded — and [evidenceNote] saying where the rest is kept.
      *
      * The consoles share whatever room the rest of the comment leaves under [MAX_COMMENT_CHARS]. A report too
      * large on its own sheds, in order, its file-name list and the data block's excerpts and notes, then the crash
      * excerpts above the table (the consoles show the same text), then the length of its notes -- never the
      * table or anything the acceptance workflow reads.
      */
-    fun renderMarkdown(report: ClientsideReport, consoleOf: (GrindTargetVerdict) -> List<String>? = { null }): String {
+    fun renderMarkdown(
+        report: ClientsideReport,
+        evidenceNote: String = CLI_EVIDENCE_NOTE,
+        consoleOf: (GrindTargetVerdict) -> List<String>? = { null }
+    ): String {
         val fullHead = head(report, withExcerpts = true, noteBudget = Int.MAX_VALUE)
         val fullTail = tail(report, compact = false)
         val tail = if (fullHead.length + fullTail.length <= MAX_COMMENT_CHARS) fullTail else tail(report, compact = true)
@@ -77,8 +85,15 @@ object ClientsideReportRenderer {
         val head = fullHead.takeIf { it.length <= room }
             ?: head(report, withExcerpts = false, noteBudget = Int.MAX_VALUE).takeIf { it.length <= room }
             ?: head(report, withExcerpts = false, noteBudget = room - head(report, withExcerpts = false, noteBudget = 0).length)
-        return head + bootLogs(report, consoleOf, MAX_COMMENT_CHARS - head.length - tail.length) + tail
+        return head + bootLogs(report, consoleOf, evidenceNote, MAX_COMMENT_CHARS - head.length - tail.length) + tail
     }
+
+    /**
+     * The comment for a verification that produced no report: the [MARKER], so it still replaces the sticky comment,
+     * and [reason]. The CLI's report verbs and the grinder's `--clientside-report` all write it.
+     */
+    fun renderFailure(projectUrl: String, reason: String?): String =
+        "$MARKER\n## 🤖 Clientside-mod verification failed\n\nCould not assess `$projectUrl`: $reason\n"
 
     /**
      * Everything above the boot logs: the marker, the entries, the table, crash excerpts and notes. The notes take at
@@ -207,14 +222,18 @@ object ClientsideReportRenderer {
      * The budget is shared by water-filling: the shortest consoles take what they need first and leave the rest
      * to the long ones, so one chatty boot cannot crowd out another.
      */
-    private fun bootLogs(report: ClientsideReport, consoleOf: (GrindTargetVerdict) -> List<String>?, budget: Int): String {
+    private fun bootLogs(
+        report: ClientsideReport,
+        consoleOf: (GrindTargetVerdict) -> List<String>?,
+        evidenceNote: String,
+        budget: Int
+    ): String {
         if (report.perTarget.none { it.bootResult != null }) {
             return ""
         }
         val consoles = report.perTarget.map { target -> consoleOf(target).orEmpty().map(::printable) }
         val header = "### 🪵 Boot logs\n\nThe end of each server's console — the output its verdict was read from. " +
-                "Every attempt's full console, with the server's own logs and crash reports, is kept under " +
-                "`work/clientside-verify/` in ServerPackCreator's home.\n\n"
+                "$evidenceNote\n\n"
         val missing = report.perTarget.indices.filter { consoles[it].isEmpty() }
             .joinToString("") { "- ${label(report.perTarget[it])} — no server console was recorded\n" }
         val withConsole = report.perTarget.indices
