@@ -145,13 +145,15 @@ internal class JavaConfigTest {
      * gone afterwards. The check runs on the GUI's settings path, so an executable that waits on stdin or hangs
      * must not block it, nor be left running.
      *
-     * `yes` stands in for it: asked for `-version` it prints that word for ever, so it never exits, and as a
-     * system binary it starts at once, which a freshly written script does not reliably do on a loaded host.
+     * `grep` stands in for it: it reads `-version` as `-v -e rsion` and then waits on its standard input, which
+     * the probe leaves open, so it never exits on GNU or BSD alike; and as a system binary it starts at once,
+     * which a freshly written script does not reliably do on a loaded host. (`yes` hangs only on BSD: GNU `yes`
+     * rejects `-version` and exits.)
      */
     @Test
     fun aJavaThatNeverExitsIsRejectedAndKilled() {
-        val neverExits = listOf("/usr/bin/yes", "/bin/yes").map(::File).firstOrNull { it.canExecute() }
-            ?: Assumptions.abort("no `yes` binary - the hanging-probe check is skipped")
+        val neverExits = listOf("/usr/bin/grep", "/bin/grep").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `grep` binary - the hanging-probe check is skipped")
         val probePath = neverExits.canonicalPath
         val store = PropertyStore()
         val javaConfig = JavaConfig(store).apply { probeTimeoutMillis = 1_000 }
