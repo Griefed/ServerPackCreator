@@ -132,11 +132,29 @@ bucket holds one feature or several before reaching for the same change here.
     client pages, so the row set shifts underneath and one verdict can land on two pages. A duplicate is
     a mod offered for ticking twice; the **later** copy wins, being the newer state. Loader is part of the
     key, so the same slug on Fabric and Forge survives as two rows (`keepsTheSameSlugOnADifferentLoader`).
-  - **A shift can also skip a row**, which shows as fewer rows than the last page's `matched`: the feed is
-    read once more, and a second shortfall is `Failed` (`readsTheFeedAgainWhenAMovedRowWasSkipped`). **Known
-    residual:** a row *deleted* ahead of the cursor hides one row behind it while the count still agrees.
-    Closing that needs keyset paging on the daemon (a stable identity order plus an `after=` cursor) — not
-    done; it is a change to the grinder's query unit and its wire contract.
+  - **A versioned feed is read from one snapshot or not at all.** Each page carries the `version` of the
+    daemon snapshot it was cut from (opaque; compared, never ordered), and every page after the first sends
+    page 1's back as `version=`, so the daemon answers the whole read from that snapshot
+    (`pinsEveryPageAfterTheFirstToPageOnesVersion`). Two things abandon the read and start over at page 1, up to
+    `MAX_READ_ATTEMPTS` (3) reads, then `Failed` naming the instability: a `410 Gone` on a pinned page — the
+    daemon evicted the snapshot (`restartsWhenThePinnedSnapshotIsGone`) — and a page whose version still differs
+    from page 1's (`restartsTheReadWhenTheFeedVersionChangesBetweenPages`). A 410 on page 1 is not an eviction,
+    since page 1 is never pinned; it fails like any other status. The version check is the only defence that sees
+    a key removed ahead of the cursor while another is added behind it — `matched` stays put while a row slides
+    past unread — and appearing or vanishing mid-read counts as a change, being a daemon restarted under the
+    read (`aVersionAppearingMidReadIsAChange`, `aVersionVanishingMidReadIsAChange`). An unversioned page 1 sends
+    no `version=` at all, so a daemon that predates the field is asked exactly what it always was.
+  - **An unversioned feed (an older daemon) gets the shortfall check instead**: fewer rows than the last
+    page's `matched` reads the feed once more, and a second shortfall is `Failed`
+    (`readsTheFeedAgainWhenAMovedRowWasSkipped`). It cannot see the remove-ahead/add-behind skip above. It
+    also runs on versioned feeds, where a completed read is never short, so there it is a free backstop.
+  - **What can still exhaust the attempts.** Against a pinning daemon, a busy grind no longer can: pinned pages
+    are served from the retained snapshot however much is recorded. Eviction mid-read needs either a gap of
+    more than 60 s between two pages (the client's own request timeout is 15 s) or eight other snapshots served
+    on the daemon between two pages — plausible only with `SPC_GRINDER_REPORT_CACHE_SECONDS=0` and other readers
+    hammering it — three reads running. A daemon that stamped `version` but ignored `version=` would put the
+    old race back (a read outlasting `SPC_GRINDER_REPORT_CACHE_SECONDS` during a grind restarts); the version
+    check is what keeps such a daemon's reads exact, at the price of those restarts.
   - **A page that fails fails the call.** A short list presented as the grinder's findings is worse than
     an error, because a maintainer ticks exclusions from it. Same reason `maxPages` returns `Failed`
     rather than what it has: truncating at a ceiling and calling it the feed is the defect wearing a
@@ -193,7 +211,7 @@ demo strings). The root build copies the jar into `serverpackcreator-app/tests/p
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-grinder:test` — 81 tests. `GrinderClientTest` runs against a real
+`./gradlew :serverpackcreator-plugin-grinder:test`. `GrinderClientTest` runs against a real
 loopback `HttpServer` rather than a mock, the same idiom the grinder's own `ReportServerTest` uses:
 what is under test is behaviour at a socket (refused connection, a 502 from a proxy, a 200 carrying
 HTML), and a mock answers none of it honestly. `SelectionStoreTest` parses the `config.toml` this module

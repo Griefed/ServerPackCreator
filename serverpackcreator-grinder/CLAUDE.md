@@ -204,7 +204,9 @@ though their detail lives deeper:
 - **`/verdicts.json` is the machine-readable feed for the SPC grinder plugin.** `VerdictField`, `VerdictQuery`
   and `VerdictSelection` are `internal`, so the selection travels over the wire. It serialises `GrindVerdict`
   itself (so `stagedDependencies` stays an array), shares `VerdictSelection.select` with `/` and `/export.csv`,
-  and is unpaged by default like the CSV. Detail and the shared-mapper landmine: `grinder/report/CLAUDE.md`.
+  and is unpaged by default like the CSV. Each page carries the `version` of the snapshot it was cut from, and
+  `?version=` pins a page to a retained snapshot (`410 Gone` once evicted), so a paged read is exact. Detail,
+  retention bounds and the shared-mapper landmine: `grinder/report/CLAUDE.md`.
 - **`/as-properties` publishes the fallback clientside list, and only `Verdict.CONFIRMED` may ever reach it.**
   `ClientsideVerifier.verdictOf` reaches CONFIRMED only from a rung `BootDecision.decisive` marks, so the gate
   asks once — asking twice would let the two drift.

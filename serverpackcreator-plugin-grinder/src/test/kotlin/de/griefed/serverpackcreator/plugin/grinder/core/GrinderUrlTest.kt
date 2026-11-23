@@ -80,4 +80,16 @@ internal class GrinderUrlTest {
         Assertions.assertEquals("http://localhost:8757/verdicts.json", GrinderUrl.verdicts("http://localhost:8757"))
         Assertions.assertEquals("http://localhost:8757/status", GrinderUrl.status("http://localhost:8757"))
     }
+
+    /** A page pinned to a snapshot carries its version; an unpinned one carries no `version` parameter at all. */
+    @Test
+    fun pinsAPageOnlyWhenGivenAVersion() {
+        Assertions.assertEquals(
+            "http://localhost:8757/verdicts.json?size=2&page=3", GrinderUrl.verdicts("http://localhost:8757", 3, 2)
+        )
+        Assertions.assertEquals(
+            "http://localhost:8757/verdicts.json?size=2&page=3&version=42",
+            GrinderUrl.verdicts("http://localhost:8757", 3, 2, 42L)
+        )
+    }
 }

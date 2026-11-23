@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -30,6 +31,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -118,15 +120,17 @@ internal class VerdictsJsonEndpointTest {
             val wireMapper = jacksonObjectMapper()
                 .registerModule(JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            val actual = wireMapper.readTree(get(server.port, "/verdicts.json").body())
+            // The snapshot's version is the cache's own counter, pinned by the two version guards below.
             val expected = wireMapper.readTree(
                 wireMapper.writeValueAsString(
                     linkedMapOf(
                         "total" to page.total, "matched" to page.matched, "page" to page.page, "pages" to page.pages,
-                        "verdicts" to page.rows
+                        "version" to versionOf(actual), "verdicts" to page.rows
                     )
                 )
             )
-            Assertions.assertEquals(expected, wireMapper.readTree(get(server.port, "/verdicts.json").body()))
+            Assertions.assertEquals(expected, actual)
         } finally {
             server.stop()
         }
@@ -291,6 +295,131 @@ internal class VerdictsJsonEndpointTest {
                 paged,
                 "paging must slice the same ordering the unpaged call returns"
             )
+        } finally {
+            server.stop()
+        }
+    }
+
+    /** The `version` of a page, failing with the whole document when it carries none. */
+    private fun versionOf(document: JsonNode): Long {
+        val version = document["version"]
+        Assertions.assertTrue(
+            version != null && version.isIntegralNumber,
+            "the page carries no integral version, so a paging client cannot tell its pages apart: $document"
+        )
+        return version.asLong()
+    }
+
+    /**
+     * **Every page names the snapshot it was cut from, and that name moves when the rows do.** Offset paging
+     * over a store a grind records into can shift a row past a client's cursor while `matched` stays put —
+     * one key removed ahead of the cursor, one added behind it — so the count cannot reveal the skip. Equal
+     * versions across a client's pages are what tells it every page was sliced from the same rows.
+     */
+    @Test
+    fun carriesTheVersionOfTheSnapshotEachPageWasCutFrom() {
+        val store = populatedStore()
+        val server = ReportServer(store, requestedPort = 0, reportCacheMaxAge = Duration.ZERO).start()
+        try {
+            val first = versionOf(mapper.readTree(get(server.port, "/verdicts.json?size=2&page=1").body()))
+            val second = versionOf(mapper.readTree(get(server.port, "/verdicts.json?size=2&page=2").body()))
+            Assertions.assertEquals(first, second, "nothing was recorded between the two pages")
+
+            store.record(grindVerdict("sodium", "Fabric", verdict = Verdict.CONFIRMED))
+
+            val after = versionOf(mapper.readTree(get(server.port, "/verdicts.json?size=2&page=2").body()))
+            Assertions.assertNotEquals(first, after, "a verdict was recorded, yet the page claims the same rows")
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * **The version is the snapshot's, not the store's.** Inside the coalescing window a page is cut from the
+     * held snapshot although the store has moved on; the store's counter would then name rows the page does not
+     * contain, and send a client restarting over a feed that never changed under it.
+     *
+     * Uses the default window and the real clock, as `theDefaultWindowCoalescesRatherThanRebuildingPerVerdict`
+     * does: two requests milliseconds apart are inside any usable window.
+     */
+    @Test
+    fun aPageCutFromTheHeldSnapshotCarriesThatSnapshotsVersion() {
+        val store = populatedStore()
+        val server = ReportServer(store, requestedPort = 0).start()
+        try {
+            val first = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=1").body())
+
+            store.record(grindVerdict("sodium", "Fabric", verdict = Verdict.CONFIRMED))
+
+            val second = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=2").body())
+            Assertions.assertEquals(4, second["matched"].asInt(), "the second page was not cut from the held snapshot")
+            Assertions.assertEquals(
+                versionOf(first), versionOf(second),
+                "both pages were cut from one snapshot, so they must carry one version"
+            )
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * **A page asked for with `version=` is cut from the snapshot that version names, whatever was recorded since.**
+     * Without it, a read that outlasts the coalescing window during a grind sees a new version and restarts,
+     * possibly every time; pinned, it reads one snapshot from first page to last.
+     */
+    @Test
+    fun servesAPinnedPageFromTheSnapshotItsVersionNames() {
+        val store = populatedStore()
+        val server = ReportServer(store, requestedPort = 0, reportCacheMaxAge = Duration.ZERO).start()
+        try {
+            val unpinned = mapper.readTree(get(server.port, "/verdicts.json").body())["verdicts"].map { it["slug"].asText() }
+            val first = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=1").body())
+            val version = versionOf(first)
+
+            store.record(grindVerdict("aaa-sorts-first", "Fabric", verdict = Verdict.CONFIRMED))
+
+            val second = mapper.readTree(get(server.port, "/verdicts.json?size=2&page=2&version=$version").body())
+            Assertions.assertEquals(version, versionOf(second), "the pinned page came from another snapshot")
+            Assertions.assertEquals(4, second["matched"].asInt(), "the pinned page counted rows recorded after it")
+            Assertions.assertEquals(
+                unpinned,
+                first["verdicts"].map { it["slug"].asText() } + second["verdicts"].map { it["slug"].asText() },
+                "the two pages must partition the snapshot the read started from"
+            )
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * **A version no longer retained is answered `410 Gone`, distinctly from every other outcome.** The client must
+     * be able to tell "start over" apart from "the daemon is broken" and from a page of a different snapshot, so
+     * the daemon never quietly substitutes the current snapshot for an evicted one.
+     */
+    @Test
+    fun answersGoneForAVersionNoLongerRetained() {
+        val server = ReportServer(populatedStore(), requestedPort = 0, reportCacheMaxAge = Duration.ZERO).start()
+        try {
+            val response = get(server.port, "/verdicts.json?size=2&page=2&version=12345")
+
+            Assertions.assertEquals(410, response.statusCode(), response.body())
+            val body = mapper.readTree(response.body())
+            Assertions.assertEquals(12345L, body["version"]?.asLong(), "the answer must name the version it refused")
+            Assertions.assertTrue(body["error"]?.isTextual == true, "the answer must say why: ${response.body()}")
+        } finally {
+            server.stop()
+        }
+    }
+
+    /** A `version=` that is not a number is ignored like any unreadable parameter: the current snapshot answers. */
+    @Test
+    fun anUnreadableVersionFallsBackToTheCurrentSnapshot() {
+        val server = ReportServer(populatedStore(), requestedPort = 0).start()
+        try {
+            val response = get(server.port, "/verdicts.json?size=2&page=1&version=banana")
+
+            Assertions.assertEquals(200, response.statusCode())
+            versionOf(mapper.readTree(response.body()))
         } finally {
             server.stop()
         }

@@ -73,9 +73,11 @@ object GrinderUrl {
      *
      * Asked for explicitly rather than relying on the endpoint's default, because that default is
      * "everything": a bare call returns the whole store in one document, which the daemon streams but this
-     * client still has to receive inside one request timeout.
+     * client still has to receive inside one request timeout. A [version] pins the page to the daemon snapshot
+     * that version names, so every page of one read is cut from the same rows.
      */
-    fun verdicts(base: String, page: Int, size: Int) = "${verdicts(base)}?size=$size&page=$page"
+    fun verdicts(base: String, page: Int, size: Int, version: Long? = null) =
+        "${verdicts(base)}?size=$size&page=$page" + version?.let { "&version=$it" }.orEmpty()
 
     /** The status document of the grinder at [base], which must already be [normalise]d. */
     fun status(base: String) = base + STATUS_PATH

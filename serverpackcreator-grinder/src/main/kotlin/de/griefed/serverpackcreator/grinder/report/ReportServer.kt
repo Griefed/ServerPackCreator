@@ -183,10 +183,26 @@ class ReportServer(
         // `defaultSize = null` matches /export.csv: a bare call returns everything. The paging metadata
         // still travels, so a client that does ask for a page knows where in the set it landed.
         route("/verdicts.json") { exchange ->
-            val selection = VerdictSelection.select(
-                snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
-            )
-            streamVerdicts(exchange, selection)
+            val params = QueryParams.parse(exchange.requestURI.rawQuery)
+            // `version=` pins a paged read to the snapshot its first page came from. An unreadable one is ignored
+            // like any other parameter; an evicted one is refused, never answered from a different snapshot.
+            val pinned = QueryParams.first(params, "version")?.toLongOrNull()
+            val snapshot = if (pinned == null) snapshots.current() else snapshots.pinned(pinned)
+            if (snapshot == null) {
+                respond(
+                    exchange, "application/json; charset=utf-8",
+                    mapper.writeValueAsString(
+                        linkedMapOf(
+                            "error" to "This snapshot is no longer retained; read the feed again from page 1.",
+                            "version" to pinned
+                        )
+                    ),
+                    status = 410
+                )
+                return@route
+            }
+            val selection = VerdictSelection.select(snapshot, VerdictQuery.parse(params, null))
+            streamVerdicts(exchange, selection, snapshot.version)
         }
         route("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
@@ -372,9 +388,12 @@ class ReportServer(
     /**
      * One page of the verdict feed: the rows themselves plus where in the set they sit. `total` is the
      * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
-     * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
+     * "nothing recorded" — two states an operator debugging an empty tab needs told apart. `version` names the
+     * snapshot the page was cut from: a client whose pages disagree on it has read across a change, which
+     * offset paging cannot otherwise reveal, since a key removed ahead of its cursor and one added behind it
+     * leave `matched` unchanged while a row slides past unread.
      */
-    private fun streamVerdicts(exchange: HttpExchange, selection: VerdictPage) {
+    private fun streamVerdicts(exchange: HttpExchange, selection: VerdictPage, version: Long) {
         respondStreaming(exchange, "application/json; charset=utf-8") { body ->
             // Closed only once the document is complete: closing a generator mid-document would write the missing
             // `]}` (AUTO_CLOSE_JSON_CONTENT) and close the body (AUTO_CLOSE_TARGET), turning a failure into a
@@ -387,6 +406,7 @@ class ReportServer(
             json.writeNumberField("matched", selection.matched)
             json.writeNumberField("page", selection.page)
             json.writeNumberField("pages", selection.pages)
+            json.writeNumberField("version", version)
             json.writeArrayFieldStart("verdicts")
             // Row by row: the point of streaming is that no step here ever holds the whole document.
             selection.rows.forEach { json.writeObject(it) }

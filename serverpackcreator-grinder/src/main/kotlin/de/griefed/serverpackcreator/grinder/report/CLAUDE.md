@@ -154,8 +154,28 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
   a timestamp is whatever `ScanDate` rendered. The JSON route serialises `GrindVerdict` itself, so an
   array stays an array. Same query parameters as the table and the CSV, and `defaultSize = null` so a bare
   call is unpaged exactly as `/export.csv` is; the rows arrive inside
-  `{total, matched, page, pages, verdicts}`, so a consumer can tell *nothing matched* from *nothing
+  `{total, matched, page, pages, version, verdicts}`, so a consumer can tell *nothing matched* from *nothing
   recorded*. **This is what the ServerPackCreator grinder plugin reads.**
+  - **`version` is the snapshot's, never `VerdictStore.version`.** It names the `VerdictSnapshot` the page was
+    cut from, so a paging client that sees two values knows its pages span a change — the one skip offset
+    paging cannot otherwise reveal, since a key removed ahead of the cursor and one added behind it leave
+    `matched` unchanged. `VerdictSnapshotCache` stamps each build from a counter of its own, seeded from the
+    wall clock so a restart never reissues a value: the store's counter is read *before* the rows, so two
+    concurrent builds straddling a record would hold different rows under one store version
+    (`snapshotsHoldingDifferentRowsNeverShareAVersion`), and inside the coalescing window it names rows the
+    held snapshot does not contain (`aPageCutFromTheHeldSnapshotCarriesThatSnapshotsVersion`). Additive:
+    a consumer that ignores it reads exactly what it read before, and the table and CSV do not carry it.
+  - **`?version=<v>` pins a page to that snapshot** (`VerdictSnapshotCache.pinned`), so a paged read is exact
+    however long it takes; an evicted version is `410 Gone` with `{error, version}`, **never** answered from
+    another snapshot (`answersGoneForAVersionNoLongerRetained`). An unparseable `version=` is ignored like any
+    unreadable parameter. Retention is LRU by last served, bounded by `DEFAULT_RETAINED_COUNT` (8) and
+    `DEFAULT_RETAINED_IDLE` (60 s) — constants, not knobs: the idle bound only has to outlast one page request
+    (the plugin's timeout is 15 s), and the count is the memory bound (~2.6 MB of references per snapshot at
+    320k rows, estimated in the constant's KDoc). `retain` runs on **every** snapshot `current()` serves, held
+    ones included — an idle daemon reuses a snapshot older than the idle time, and page 2 must find the version
+    page 1 reported (`servingTheHeldSnapshotRetainsItAgain`). Pinned pages never build, so only unpinned
+    requests can push a read's snapshot out; with `SPC_GRINDER_REPORT_CACHE_SECONDS=0` each of those rebuilds
+    when the store moved, which is the one setting under which eviction mid-read becomes plausible.
   - **LANDMINE — the mapper is shared with `/status` and needs `JavaTimeModule`.** `ReportServer`'s was a
     bare `jacksonObjectMapper()`, which writes an `Instant` as `{"epochSecond":…,"nano":…}` — parseable,
     but not a timestamp any client recognises, and not what `JsonVerdictStore` writes to disk. It now

@@ -115,14 +115,259 @@ internal class GrinderClientTest {
         vararg slugs: String,
         loader: String = "Fabric",
         matched: Int? = null,
-        verdict: String = "CONFIRMED"
+        verdict: String = "CONFIRMED",
+        version: Long? = null
     ): String {
         val rows = slugs.joinToString(",") { slug ->
             """{"platform":"Modrinth","slug":"$slug","loader":"$loader","minecraftLine":"1.20",""" +
                 """"verdict":"$verdict","suggestedEntry":"$slug-","detail":"","verifiedAt":"2026-09-04T12:30:00Z"}"""
         }
         val matchedField = matched?.let { "\"matched\":$it," }.orEmpty()
-        return """{"total":99,$matchedField"page":$page,"pages":$pages,"verdicts":[$rows]}"""
+        val versionField = version?.let { "\"version\":$it," }.orEmpty()
+        return """{"total":99,$matchedField$versionField"page":$page,"pages":$pages,"verdicts":[$rows]}"""
+    }
+
+    /**
+     * **A key removed ahead of the cursor is not silently lost.** Between page 1 and page 2, `alpha` is
+     * superseded by `echo` under a new key — one row out ahead of the cursor, one in behind it — so page 2 starts
+     * one row late, `charlie` is on no page the client read, and `matched` still says 4: the count cannot see it.
+     * The changed `version` can, and the read starts over from page 1, against the one snapshot.
+     */
+    @Test
+    fun restartsTheReadWhenTheFeedVersionChangesBetweenPages() {
+        val server = servingInSequence(
+            pageDocument(1, 2, "alpha", "bravo", matched = 4, version = 7),
+            pageDocument(2, 2, "delta", "echo", matched = 4, version = 8),
+            pageDocument(1, 2, "bravo", "charlie", matched = 4, version = 8),
+            pageDocument(2, 2, "delta", "echo", matched = 4, version = 8)
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(
+                listOf("bravo", "charlie", "delta", "echo"), slugsOf(result),
+                "every row of the one snapshot exactly once, and nothing from the read that was abandoned"
+            )
+            Assertions.assertEquals(4, requestedUris.size, "one abandoned read of two pages, one complete one")
+            Assertions.assertEquals("/verdicts.json?size=2&page=1", requestedUris[2], "the restart begins at page 1")
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A feed whose version never holds still across a read is a failure, never a list stitched across changes. */
+    @Test
+    fun failsWhenTheFeedVersionKeepsChangingOnEveryAttempt() {
+        var version = 0L
+        val documents = (1..GrinderClient.MAX_READ_ATTEMPTS).flatMap {
+            listOf(
+                pageDocument(1, 2, "alpha", "bravo", matched = 4, version = ++version),
+                pageDocument(2, 2, "charlie", "delta", matched = 4, version = ++version)
+            )
+        }
+        val server = servingInSequence(*documents.toTypedArray())
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertTrue(result is FetchResult.Failed, "a feed read across changes was returned: $result")
+            Assertions.assertTrue(
+                (result as FetchResult.Failed).reason.contains("changed while they were being read"),
+                "the reason must name the instability: ${result.reason}"
+            )
+            Assertions.assertEquals(
+                2 * GrinderClient.MAX_READ_ATTEMPTS, requestedUris.size, "a bounded number of attempts, no more"
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A server answering each request with the next of [answers] — a status and a body — whatever is asked. */
+    private fun servingAnswers(vararg answers: Pair<Int, String>): HttpServer =
+        HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
+            val next = java.util.concurrent.atomic.AtomicInteger()
+            createContext("/") { exchange ->
+                requestedUris += exchange.requestURI.toString()
+                val (status, body) = answers[minOf(next.getAndIncrement(), answers.lastIndex)]
+                val bytes = body.toByteArray(StandardCharsets.UTF_8)
+                exchange.sendResponseHeaders(status, bytes.size.toLong())
+                exchange.responseBody.use { it.write(bytes) }
+            }
+            start()
+        }
+
+    private val gone = 410 to """{"error":"This snapshot is no longer retained","version":7}"""
+
+    /**
+     * **Every page after the first is pinned to page 1's snapshot.** Page 1 asks for whatever is current; each later
+     * page sends its `version`, so a daemon that retains snapshots answers the whole read from one of them however
+     * much a grind records meanwhile, and no restart is needed.
+     */
+    @Test
+    fun pinsEveryPageAfterTheFirstToPageOnesVersion() {
+        val server = servingByPage(
+            mapOf(
+                1 to pageDocument(1, 3, "alpha", matched = 3, version = 42),
+                2 to pageDocument(2, 3, "bravo", matched = 3, version = 42),
+                3 to pageDocument(3, 3, "charlie", matched = 3, version = 42)
+            )
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("alpha", "bravo", "charlie"), slugsOf(result))
+            Assertions.assertEquals(
+                listOf(
+                    "/verdicts.json?size=1&page=1",
+                    "/verdicts.json?size=1&page=2&version=42",
+                    "/verdicts.json?size=1&page=3&version=42"
+                ),
+                requestedUris
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A daemon that sends no version gets no `version=`: there is nothing to pin to. */
+    @Test
+    fun pinsNothingForAnUnversionedFeed() {
+        val server = servingByPage(
+            mapOf(1 to pageDocument(1, 2, "alpha"), 2 to pageDocument(2, 2, "bravo"))
+        )
+        try {
+            GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("/verdicts.json?size=1&page=1", "/verdicts.json?size=1&page=2"), requestedUris)
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * **An evicted snapshot restarts the read rather than failing it.** The daemon answers `410 Gone` for a version
+     * it no longer retains; the read starts over at page 1 and is pinned to the new snapshot.
+     */
+    @Test
+    fun restartsWhenThePinnedSnapshotIsGone() {
+        val server = servingAnswers(
+            200 to pageDocument(1, 2, "alpha", "bravo", matched = 4, version = 7),
+            gone,
+            200 to pageDocument(1, 2, "bravo", "charlie", matched = 4, version = 8),
+            200 to pageDocument(2, 2, "delta", "echo", matched = 4, version = 8)
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("bravo", "charlie", "delta", "echo"), slugsOf(result))
+            Assertions.assertEquals(
+                listOf(
+                    "/verdicts.json?size=2&page=1",
+                    "/verdicts.json?size=2&page=2&version=7",
+                    "/verdicts.json?size=2&page=1",
+                    "/verdicts.json?size=2&page=2&version=8"
+                ),
+                requestedUris
+            )
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** Eviction on every attempt is bounded like any other instability, and ends in the same failure. */
+    @Test
+    fun failsWhenThePinnedSnapshotIsGoneOnEveryAttempt() {
+        val documents = (1..GrinderClient.MAX_READ_ATTEMPTS).flatMap {
+            listOf(200 to pageDocument(1, 2, "alpha", matched = 2, version = 7), gone)
+        }
+        val server = servingAnswers(*documents.toTypedArray())
+        try {
+            val result = GrinderClient(mapper, pageSize = 1).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertTrue(
+                (result as? FetchResult.Failed)?.reason?.contains("changed while they were being read") == true,
+                "expected the instability failure: $result"
+            )
+            Assertions.assertEquals(2 * GrinderClient.MAX_READ_ATTEMPTS, requestedUris.size)
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** Page 1 carries no `version=`, so a 410 there is not an eviction: it is whatever answered, and a failure. */
+    @Test
+    fun aGoneFirstPageIsAFailureRatherThanARestart() {
+        val server = servingAnswers(gone)
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertTrue(
+                (result as? FetchResult.Failed)?.reason?.contains("HTTP 410") == true, "expected the status: $result"
+            )
+            Assertions.assertEquals(1, requestedUris.size, "one request, no restart loop")
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /**
+     * A version appearing mid-read is a daemon upgraded or restarted under the read, and the rows on either side
+     * of it are no more continuous than a changed number's.
+     */
+    @Test
+    fun aVersionAppearingMidReadIsAChange() {
+        val server = servingInSequence(
+            pageDocument(1, 2, "alpha", "bravo", matched = 4),
+            pageDocument(2, 2, "delta", "echo", matched = 4, version = 5),
+            pageDocument(1, 2, "bravo", "charlie", matched = 4, version = 5),
+            pageDocument(2, 2, "delta", "echo", matched = 4, version = 5)
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("bravo", "charlie", "delta", "echo"), slugsOf(result))
+            Assertions.assertEquals(4, requestedUris.size)
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A version vanishing mid-read is a daemon downgraded or replaced under the read: also a change. */
+    @Test
+    fun aVersionVanishingMidReadIsAChange() {
+        val server = servingInSequence(
+            pageDocument(1, 2, "alpha", "bravo", matched = 4, version = 5),
+            pageDocument(2, 2, "delta", "echo", matched = 4),
+            pageDocument(1, 2, "bravo", "charlie", matched = 4),
+            pageDocument(2, 2, "delta", "echo", matched = 4)
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("bravo", "charlie", "delta", "echo"), slugsOf(result))
+            Assertions.assertEquals(4, requestedUris.size)
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    /** A version that holds still across the read costs nothing: one pass, no restart. */
+    @Test
+    fun readsAVersionedFeedThatHoldsStillOnce() {
+        val server = servingByPage(
+            mapOf(
+                1 to pageDocument(1, 2, "alpha", "bravo", matched = 3, version = 42),
+                2 to pageDocument(2, 2, "charlie", matched = 3, version = 42)
+            )
+        )
+        try {
+            val result = GrinderClient(mapper, pageSize = 2).fetchVerdicts(server.baseUrl())
+
+            Assertions.assertEquals(listOf("alpha", "bravo", "charlie"), slugsOf(result))
+            Assertions.assertEquals(2, requestedUris.size, "an unchanged version must not restart the read")
+        } finally {
+            server.stop(0)
+        }
     }
 
     /** A server answering each request with the next of [documents] in turn, whatever page it asks for. */

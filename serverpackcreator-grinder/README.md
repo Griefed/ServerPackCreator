@@ -684,8 +684,18 @@ array instead of a comma-joined string, and `verifiedAt` as an ISO-8601 timestam
 rows in the paging metadata, so a consumer can tell "nothing matched" from "nothing recorded":
 
 ```json
-{ "total": 1483, "matched": 91, "page": 1, "pages": 1, "verdicts": [ … ] }
+{ "total": 1483, "matched": 91, "page": 1, "pages": 1, "version": 1763890000123, "verdicts": [ … ] }
 ```
+
+`version` names the snapshot the page was cut from. It is opaque — compare it, never do arithmetic on it. A
+consumer paging through the feed should send page 1's `version` back with every later page
+(`?size=2000&page=2&version=…`): the daemon then cuts that page from the same snapshot, whatever has been
+recorded since, so the read is exact. It keeps the eight snapshots served most recently, each for 60 seconds
+after it was last served, so a read in progress keeps its own. A page asking for a version no longer kept is
+answered `410 Gone` with `{"error": …, "version": …}` — start over from page 1. A `version` that is not a number
+is ignored. Without `version=` a page is cut from the current snapshot, and a consumer should still check that
+every page carries page 1's `version`: if one does not, the store changed between the requests, and a row may
+have slid past the cursor without `matched` changing.
 
 This is the endpoint the ServerPackCreator grinder plugin reads. Use `/export.csv` for a spreadsheet and
 `/verdicts.json` for anything that parses the result.
