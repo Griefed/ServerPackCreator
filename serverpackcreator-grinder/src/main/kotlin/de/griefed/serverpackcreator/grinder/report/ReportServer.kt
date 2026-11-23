@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
 import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
@@ -260,7 +261,7 @@ class ReportServer(
      * this endpoint is polled unattended, and an error there is an error in somebody's log forever.
      */
     private fun fallbackProperties(): String {
-        val lists = fallbackLists?.let { source -> orNullLogged("The fallback lists") { source() } }
+        val lists = fallbackLists?.let { source -> sectionOrNull("The fallback lists") { source() } }
             ?: FallbackLists(emptyList(), emptyList())
         // Through the snapshot, not store.all(): this was the one endpoint the cache never covered, and it is
         // the one polled unattended by every SPC instance in the wild -- so it was a whole-store copy per
@@ -426,7 +427,7 @@ class ReportServer(
                 )
             },
             "crawl" to cursors?.let { store ->
-                orNullLogged("The crawl position") {
+                sectionOrNull("The crawl position") {
                     ModPlatforms.known.associateWith { platform ->
                         val cursor = store.cursor(platform)
                         linkedMapOf("offset" to cursor.offset, "sweeps" to cursor.sweeps, "partition" to cursor.partition)
@@ -434,26 +435,19 @@ class ReportServer(
                 }
             },
             "loaderCache" to cacheRoot?.let { root ->
-                orNullLogged("The loader cache") {
+                sectionOrNull("The loader cache") {
                     val tuples = root.walkTopDown().maxDepth(4).count { it.name == LoaderCache.MARKER }
                     linkedMapOf("installedTuples" to tuples, "path" to root.absolutePath)
                 }
             }
         )
-        return orNullLogged("The status document") { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
+        return sectionOrNull("The status document") { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
             ?: "{\"error\":\"status unavailable\"}"
     }
 
-    /**
-     * [block]'s result, or `null` with a WARN naming [what] when it throws an [Exception] -- how a report section
-     * degrades. An [Error] propagates: heap exhaustion is not a thinner answer.
-     */
-    private inline fun <T> orNullLogged(what: String, block: () -> T): T? = try {
-        block()
-    } catch (ex: Exception) {
-        log.warn("$what is unavailable; the report answers without it", ex)
-        null
-    }
+    /** How a report section degrades: [block]'s result, or `null` with a WARN naming [what] (see [orNullLogged]). */
+    private inline fun <T> sectionOrNull(what: String, block: () -> T): T? =
+        orNullLogged(log.delegate, "$what is unavailable; the report answers without it", block)
 
     /**
      * Write [body] with the given [contentType] and [status] (200 unless a route says otherwise, which only
