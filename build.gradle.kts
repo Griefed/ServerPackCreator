@@ -231,11 +231,14 @@ tasks.register<Install4jTask>("media") {
     // file is generated and gitignored, so this edge is what puts it on disk before install4j reads it.
     dependsOn(tasks.named("generateLicenseReport"))
     // The launchers find their jar by scanning that directory, so exactly one application jar may be in it:
-    // none ships an installer that cannot start, two leave the choice to scan order.
+    // none ships an installer that cannot start, two leave the choice to scan order. Classifier jars are not
+    // application jars: CI's `gradle-jars` artifact carries the `-javadoc` jar beside the boot jar, and
+    // Spring Boot's JarLauncher starts from the jar holding its own class, which only the boot jar does.
     val applicationLibs = file("serverpackcreator-app/build/libs")
+    val classifierJars = listOf("-plain.jar", "-javadoc.jar", "-sources.jar")
     doFirst {
         val applicationJars = applicationLibs.listFiles { jar ->
-            jar.name.endsWith(".jar") && !jar.name.endsWith("-plain.jar")
+            jar.name.endsWith(".jar") && classifierJars.none { jar.name.endsWith(it) }
         }.orEmpty().map { it.name }.sorted()
         check(applicationJars.size == 1) {
             "media packages $applicationLibs as it finds it and expects exactly one application jar there, " +
