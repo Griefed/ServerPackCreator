@@ -38,24 +38,27 @@ services:
       - ./logs:/app/serverpackcreator/logs
 
   serverpackcreatordb:
-    # MongoDB 9.0, Griefed's call. The application's database tests still run 8.0, because the embedded
-    # server they use cannot provision 9.x yet (EmbeddedMongoAvailable.MONGOD_VERSION); the 9.0 evidence is
+    # MongoDB 9.0, Griefed's call. The application's database tests run the 8.3 line, the newest the
+    # embedded server they use can provision (EmbeddedMongoAvailable.MONGOD_VERSION); the 9.0 evidence is
     # a manual boot against this image. A new major is a deliberate upgrade, not a tag bump.
     #
     # UPGRADING AN EXISTING 8.0 DEPLOYMENT: 9.0 opens an 8.0 data volume in place only if its
     # featureCompatibilityVersion is "8.0". Check it on the old container before switching the image:
     #   mongosh -u <DB_ROOT_USERNAME> -p --eval 'db.adminCommand({getParameter: 1, featureCompatibilityVersion: 1})'
     # and raise it first if it is lower (MongoDB's "Upgrade a Standalone to 9.0" guide). 9.0 does not raise
-    # it on its own, so a rollback to 8.0 stays possible until you run setFeatureCompatibilityVersion "9.0".
+    # it on its own, so a rollback to 8.0 stays possible until you run
+    #   db.adminCommand({setFeatureCompatibilityVersion: "9.0", confirm: true})
+    # which fails without `confirm: true`.
     # A volume CREATED by 9.0 starts at "9.0" and cannot be opened by 8.0. Older than 8.0: upgrade to 8.0 first.
     #
     # On a host kernel in the range 6.19.0 - 7.0.13 this image refuses to start, with
     # "MongoDB cannot start: Linux kernel versions 6.19.0 through 7.0.13 have a known
     # incompatibility" (https://jira.mongodb.org/browse/SERVER-121912 -- upstream TCMalloc
-    # violates the rseq ABI). Docker Desktop's linuxkit kernel is currently inside that range, so
-    # the database will not come up there. That is the guard working: the releases without it
-    # start and then crash. Run the container on a 7.0.14+ or pre-6.19 kernel rather than
-    # downgrading to an unguarded image.
+    # violates the rseq ABI). Docker Desktop's linuxkit kernel crossed that range (7.0.12 in 29.7.2,
+    # 7.0.14 in 29.8.2), so on an older Docker Desktop the database will not come up; `uname -r` in any
+    # container shows the kernel. That is the guard working: the releases without it start and then
+    # crash. Run the container on a 7.0.14+ or pre-6.19 kernel rather than downgrading to an unguarded
+    # image.
     image: mongodb/mongodb-community-server:9.0.8-ubuntu2204
     container_name: serverpackcreatordb
     restart: unless-stopped
