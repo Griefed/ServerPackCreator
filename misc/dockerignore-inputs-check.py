@@ -71,7 +71,12 @@ def declared_inputs(root: Path) -> list:
     """`(task path, repository-relative input path)` for every `inputs.file(...)` in a build script."""
     found = []
     for script in sorted(root.rglob("build.gradle.kts")):
-        if any(part in ("node_modules", "build") for part in script.relative_to(root).parts):
+        relative = script.relative_to(root)
+        if any(part in ("node_modules", "build") for part in relative.parts):
+            continue
+        # A directory with its own `.git` is another checkout (a git worktree under .claude/worktrees, say),
+        # whose build scripts are not this build's.
+        if any((root.joinpath(*relative.parts[:depth]) / ".git").exists() for depth in range(1, len(relative.parts))):
             continue
         module_dir = script.parent
         project = module_dir.relative_to(root).as_posix()

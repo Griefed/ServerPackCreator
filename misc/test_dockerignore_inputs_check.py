@@ -70,6 +70,21 @@ class DeclaredInputs(unittest.TestCase):
                  (":serverpackcreator-app:test", "docker/docker-compose.yml")],
                 sorted(module.declared_inputs(tmp)))
 
+    def test_a_nested_checkout_is_not_read_as_part_of_this_build(self):
+        # A git worktree under the repository (an agent's, under .claude/worktrees) carries its own build
+        # scripts; they belong to another checkout, so their inputs are not this build's.
+        with tempfile.TemporaryDirectory() as name:
+            tmp = Path(name)
+            self.write_repo(tmp, "")
+            nested = tmp / ".claude" / "worktrees" / "agent" / "serverpackcreator-app"
+            nested.mkdir(parents=True)
+            (nested.parent / ".git").write_text("gitdir: /elsewhere\n")
+            (nested / "build.gradle.kts").write_text('tasks.test { inputs.file(file("x.yml")) }\n')
+            self.assertEqual(
+                [(":buildSrc:test", ".forgejo/actions/resolve-version/action.yml"),
+                 (":serverpackcreator-app:test", "docker/docker-compose.yml")],
+                sorted(module.declared_inputs(tmp)))
+
     def test_an_excluded_input_of_a_task_the_image_build_runs_is_a_finding(self):
         with tempfile.TemporaryDirectory() as name:
             tmp = Path(name)
