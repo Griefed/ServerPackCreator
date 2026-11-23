@@ -532,6 +532,25 @@ already carries (`GET /releases/{id}/assets`) — keep that guard.
 **The general rule: a payload assembled from repository content has no size you control.** Ask where
 it lands — argv, a database column, someone else's API — and put it in a file before it gets there.
 
+**A commit message's references become `closes` lines, so `test.yml` checks what each push adds.**
+`misc/commit-body-reference-check.py` ports conventional-commits-parser 6.4.0's extraction and fails on any
+reference but a plain `#<digits>` (the rule is in the root `CLAUDE.md`'s backtick bullet). It runs in the
+*Verify the workflow conventions* step over the push's own range, and the range is the design decision:
+
+- **`before..sha`**, so an offender fails the push that introduced it and the push that merges it into
+  `main` — the one whose release notes it pollutes — and nothing after. A range over other branches'
+  commits (`--not --branches`) would spare the merge into `main`, but it also lets a commit pushed on two
+  refs at once be excluded by both runs and checked by neither.
+- **On a new ref `before` is the all-zero id** (see *Creating a branch fires `push`* above), and the ten
+  commits Forgejo sends are not new, so the range is the pushed commits no other branch holds. A force
+  push's old tip is fetched by id first; if the server will not serve it, the same fallback applies.
+- **`workflow_dispatch` has no `before`**, and the check says it skipped rather than guessing a range.
+- **History comes from a separate `--filter=tree:0 --bare` clone in `RUNNER_TEMP`** (every commit, no
+  trees: about 4 MB and a second on this instance, which honours the filter), not from deepening the
+  workspace checkout, whose depth-1 state the rest of the job keeps. The clone is anonymous, which works
+  because the repository is public; a private one would need the token passed to it. The checker refuses
+  a shallow repository, where every commit past the boundary would look new.
+
 ## A Gradle task without a project path runs in every project
 
 **LANDMINE — the release's `maven` job is the only place in this repo that could fan a task out over

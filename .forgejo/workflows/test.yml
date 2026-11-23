@@ -116,6 +116,16 @@ jobs:
       # `dockerignore-inputs-check.py` fails when `.dockerignore` keeps a declared Gradle task input out of
       # docker/Dockerfile's build context, which fails the image build with "Input file does not exist".
       #
+      # `commit-body-reference-check.py` fails when a pushed commit's message holds a reference the release
+      # notes would link as an issue that is not one -- a bare `#54a896`, `owner/repo#12`, `Class#member`.
+      # It checks only what THIS push added: `before..sha`, or, when `before` is the all-zero id of a new
+      # branch, the pushed commits no other branch holds. So an offender fails the push that introduced it
+      # and the one that merges it into `main` (the push whose release notes it would actually pollute),
+      # and no push after that; a workflow_dispatch run (no `before`) skips the check with a message. It
+      # reads history from a commits-only clone (`--filter=tree:0`, a few megabytes, anonymous because the
+      # repository is public) in RUNNER_TEMP, which leaves the depth-1 workspace checkout every other step
+      # uses untouched.
+      #
       # The `misc/test_*.py` self-tests run first: they pin the checkers' own exclusions, which the real
       # workflows exercise only by accident.
       #
@@ -126,6 +136,8 @@ jobs:
       # the reason the flag is otherwise frightening: the "system" is a job container that is destroyed
       # when the job ends. The version and hashes come from `misc/ci-requirements.txt`.
       - name: Verify the workflow conventions
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
           set -u
           python3 -c 'import yaml' 2>/dev/null \
@@ -137,6 +149,17 @@ jobs:
           python3 misc/ci-env-reference-check.py || rc=1
           python3 misc/ci-duplication-check.py || rc=1
           python3 misc/dockerignore-inputs-check.py || rc=1
+          if git clone --quiet --bare --filter=tree:0 --no-tags \
+               "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$RUNNER_TEMP/history.git"; then
+            # A force push's old tip is on no branch any more; asking for it by id keeps the range exact.
+            git --git-dir "$RUNNER_TEMP/history.git" fetch --quiet --filter=tree:0 origin "$PUSH_BEFORE" \
+              2>/dev/null || true
+            python3 misc/commit-body-reference-check.py --git-dir "$RUNNER_TEMP/history.git" \
+              --push "$PUSH_BEFORE" "$GITHUB_SHA" "$GITHUB_REF_NAME" || rc=1
+          else
+            echo "::error::could not clone the history commit-body-reference-check reads"
+            rc=1
+          fi
           exit $rc
 
       # The GitHub-only clientside workflows keep their logic in .github/scripts/ so it can be executed

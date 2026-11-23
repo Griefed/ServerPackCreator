@@ -124,10 +124,12 @@ for. `BUILD.md` is the contributor-facing tour of the same ground.
   configurations and the dev Docker stack (`dev`, not `docker`, which is the shipped image) accordingly.
   Unscoped and module-scoped `fix`/`feat`/`perf` release as before.
 - **Put `#<hex>` and `owner/repo#<n>` in backticks in a commit body.** The release-notes parser reads any
-  bare `#<word ending in a digit>` as an issue and links it in `CHANGELOG.md` (`#54a896` became
-  `closes #54a896`); a closing backtick stops the match (verified against conventional-commits-parser
-  6.4.0, which semantic-release@24 resolves). A YAML config cannot filter this, because the parser escapes
-  string `issuePrefixes`.
+  bare `[prefix]#<word>` followed by whitespace, a line end or `,;)]` as an issue and links it in
+  `CHANGELOG.md` (`#54a896` became `closes #54a896`), fenced code blocks included; a closing backtick
+  directly after the token stops the match (verified against conventional-commits-parser 6.4.0, which
+  semantic-release@24 resolves). The subject is linked even inside backticks, so reword it there. A YAML
+  config cannot filter this, because the parser escapes string `issuePrefixes`.
+  `misc/commit-body-reference-check.py` fails a push in `test.yml` that adds such a reference.
 
 ## API compatibility policy (adopted default — Griefed may override)
 
