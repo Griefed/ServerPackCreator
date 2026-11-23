@@ -6,7 +6,8 @@ name: Clientside report (reusable)
 #
 # A boot runs the requested mod's code on the runner, so it is gated and contained:
 # - `resolve` boots only on a maintainer's say-so (`bootAuthorised` in the script below).
-# - `report` holds a read-only token that is not persisted into the checkout, never writes a cache, and keeps
+# - `report` holds a read-only token that is not persisted into the checkout, a cache token that cannot save
+#   (`cache-mode: read`, also capped by the caller), and keeps
 #   the CurseForge key out of every environment while servers run (see the key's two steps).
 # - `post`, which needs `issues: write`, runs no mod code.
 # The runner user can `sudo`, so none of that contains a determined mod: the gate is the control, the rest
@@ -74,6 +75,9 @@ jobs:
     concurrency:
       group: clientside-report-${{ inputs.issue_number }}
       cancel-in-progress: true
+    # The job's cache token itself cannot save, so neither can a mod that reads it out of the runner's memory.
+    # `cache-read-only` below only stops setup-gradle's own save.
+    cache-mode: read
     permissions:
       contents: read
     outputs:

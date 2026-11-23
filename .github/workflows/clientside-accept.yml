@@ -27,6 +27,9 @@ jobs:
     concurrency:
       group: clientside-accept-${{ github.event.issue.number }}
       cancel-in-progress: false
+    # This job can write to the repository, so its cache token can neither restore nor save; `cache-disabled`
+    # below only keeps setup-gradle from trying.
+    cache-mode: none
     steps:
       - uses: actions/checkout@v7
         with:

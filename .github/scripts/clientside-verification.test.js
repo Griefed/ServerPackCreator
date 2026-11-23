@@ -356,6 +356,7 @@ test('the job that boots mods holds no write token, writes no cache and has no k
   assert.doesNotMatch(report, /issues: write|pull-requests: write|contents: write/)
   assert.doesNotMatch(report, /cache: 'gradle'/)
   assert.match(report, /cache-read-only: true/)
+  assert.match(report, /\n {4}cache-mode: read\n/)
   assert.ok(checkoutsIn(report).length >= 1)
   checkoutsIn(report).forEach(checkout => assert.match(checkout, /persist-credentials: false/))
   const verification = report.slice(report.indexOf('- name: Run clientside verification'))
@@ -366,5 +367,13 @@ test('the job that can write to the repository restores no cache a boot could ha
   const accept = jobIn('clientside-accept.yml', 'accept')
   assert.doesNotMatch(accept, /cache: 'gradle'/)
   assert.match(accept, /cache-disabled: true/)
+  assert.match(accept, /\n {4}cache-mode: none\n/)
   checkoutsIn(accept).forEach(checkout => assert.match(checkout, /persist-credentials: false/))
+})
+
+// A manual dispatch is a trusted trigger, whose default cache token may write to the default branch's
+// scope; the cap on the calling job is what keeps a dispatched boot read-only too.
+test('the caller caps the boot pipeline at a read-only cache token whatever triggered it', () => {
+  const verify = jobIn('clientside-verify.yml', 'verify')
+  assert.match(verify, /\n {4}cache-mode: read\n/)
 })

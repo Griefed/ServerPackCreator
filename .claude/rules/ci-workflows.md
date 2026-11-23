@@ -112,7 +112,32 @@ process's memory, where the job's token and any secret the job references live. 
 the strength of the hardening.** Real containment would mean booting in a job that references no secret
 (the engine resolves and boots interleaved, so that is a redesign) or in the grinder's hardened container.
 `clientside-verification.test.js` pins both the gate and the job shape (read-only token, no cache writes,
-no secret in the verification step's `env:`, credentials not persisted).
+no secret in the verification step's `env:`, credentials not persisted, the `cache-mode` keys below).
+
+**The Actions cache is the one place a boot could reach a trusted build, and the cache TOKEN is what closes
+it.** Reading the runner's memory yields `ACTIONS_RUNTIME_TOKEN`, and with it a mod can call the cache service
+directly and save any key it likes into the default branch's scope. `test.yml` and `pages.yml` run on `push`
+to `main` and restore from that scope (setup-java's `cache: 'gradle'` and setup-gradle, which falls back to
+the newest entry for the same runner OS), and `pages.yml` deploys what it builds to the public site. Three
+things stand in the way, all enforced on GitHub's side rather than by an action:
+
+- **An `issues` run's cache token is read-only for the default branch's scope by default.** Only `push`,
+  `workflow_dispatch`, `repository_dispatch`, `delete`, `registry_package`, `page_build` and `schedule` may
+  save there
+  ([dependency caching: low-trust triggers](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching#cache-access-for-low-trust-workflow-triggers)).
+- **A manual dispatch is a trusted trigger, so `clientside-verify.yml`'s calling job declares
+  `cache-mode: read`**, which caps every job of the called workflow whatever started it, and the `report` job
+  repeats it for itself. `cache-mode` is enforced with scoped cache tokens, so the token in memory cannot save
+  ([`cache-mode`](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching#controlling-cache-access-with-cache-mode)).
+  setup-gradle's `cache-read-only: true` is not this control: it only stops that action's own save.
+- **`clientside-accept.yml` declares `cache-mode: none`**, beside setup-gradle's `cache-disabled: true`, so
+  the job that can write to the repository restores nothing even if an entry were planted.
+
+**Never declare a write-capable `cache-mode` in any clientside workflow**: it is the documented way to opt
+back into the poisoning path. Changing cache *keys* in the trusted workflows is no defence, because a stolen
+token can save under any key, a predicted exact one included. Disabling restores in `test.yml` and
+`pages.yml` would also close it, at the cost of every build's warm cache, and is the fallback should GitHub
+ever stop enforcing `cache-mode`.
 
 **Concurrency stays per issue, and the gate is what bounds it.** A repository-wide group would serialise
 boots, but GitHub keeps only one *pending* run per group and cancels the older one, so a queue of approved

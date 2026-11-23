@@ -40,6 +40,10 @@ jobs:
       (github.event.action != 'labeled' &&
        contains(github.event.issue.title, '[Clientside-mod Addition Request]'))
     uses: ./.github/workflows/clientside-report-reusable.yml
+    # Caps every job of the called workflow at a cache token that cannot save. An `issues` run already gets one
+    # by default, but a manual dispatch is a trusted trigger whose token could write entries into the default
+    # branch's scope -- which test.yml and pages.yml restore -- and a booted mod can read that token.
+    cache-mode: read
     with:
       issue_number: ${{ github.event.issue.number || github.event.inputs.issue_number }}
     secrets: inherit
