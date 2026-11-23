@@ -33,10 +33,18 @@ RUN set -eux; \
 # covers the current release Minecraft 26.2 (java-runtime-epsilon); the Java-26 snapshots are skipped
 # by the release-gate, so 26 is deliberately not bundled. To extend coverage to a newer Minecraft, add
 # its JDK below AND to ImageJavaRuntimes.bundledMajors.
+#
+# The dearmored keyring is checked against the fingerprint Adoptium publishes at
+# https://adoptium.net/installation/gpg-verification/ before apt reads it: it must hold exactly one primary key,
+# and it must be that one. A key rotation fails the build here rather than being trusted silently.
+ARG ADOPTIUM_KEY_FINGERPRINT=3B04D753C9050D9A5D343F39843C48A565F8F04B
 RUN set -eux; \
     mkdir -p /etc/apt/keyrings; \
     curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public \
         | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg; \
+    test "$(gpg --show-keys --with-colons /etc/apt/keyrings/adoptium.gpg \
+        | awk -F: '$1 == "pub" { keys++ } $1 == "fpr" && !seen { primary = $10; seen = 1 } END { print keys ":" primary }')" \
+        = "1:${ADOPTIUM_KEY_FINGERPRINT}"; \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" \
         > /etc/apt/sources.list.d/adoptium.list; \
     apt-get update; \
