@@ -141,6 +141,26 @@ internal class JavaConfigTest {
     }
 
     /**
+     * Pins that an executable which exits at once but unsuccessfully is not a Java. A real `java -version` exits 0;
+     * anything else that merely starts and stops -- a wrapper failing on its arguments, GNU `yes`, `false` -- has
+     * said nothing about being a Java. `/usr/bin/false` exits 1 whatever it is given, on GNU and BSD alike.
+     */
+    @Test
+    fun anExecutableThatExitsUnsuccessfullyIsNotAJava() {
+        val failsAtOnce = listOf("/usr/bin/false", "/bin/false").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `false` binary - the exit-code check is skipped")
+        val store = PropertyStore()
+        val javaConfig = JavaConfig(store)
+
+        javaConfig.javaPaths = hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to failsAtOnce.canonicalPath)
+
+        Assertions.assertNull(
+            store.properties.getProperty("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17"),
+            "an executable whose -version exits non-zero is not a working Java"
+        )
+    }
+
+    /**
      * Pins that a "Java" which never exits is rejected within the probe's bound, and that the probe process is
      * gone afterwards. The check runs on the GUI's settings path, so an executable that waits on stdin or hangs
      * must not block it, nor be left running.

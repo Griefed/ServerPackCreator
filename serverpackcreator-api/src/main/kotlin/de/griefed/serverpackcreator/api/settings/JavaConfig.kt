@@ -249,7 +249,8 @@ class JavaConfig(private val store: PropertyStore) {
 
     /**
      * Test for a valid Java specification by running `<pathToJava> -version`: a path that starts and exits
-     * within [probeTimeoutMillis] is considered a correct specification.
+     * successfully (code 0) within [probeTimeoutMillis] is considered a correct specification. An executable that
+     * merely starts and stops has said nothing about being a Java, so a non-zero exit is rejected.
      *
      * The output is discarded rather than piped, so the probe can never block on a full pipe and no stream is
      * left to close. A probe still running at the bound is killed and rejected, and so is one that cannot be
@@ -272,10 +273,19 @@ class JavaConfig(private val store: PropertyStore) {
         }
         return try {
             val exited = process.waitFor(probeTimeoutMillis, TimeUnit.MILLISECONDS)
-            if (!exited) {
-                log.error("$pathToJava -version did not finish within $probeTimeoutMillis ms. Invalid Java specified.")
+            when {
+                !exited -> {
+                    log.error("$pathToJava -version did not finish within $probeTimeoutMillis ms. Invalid Java specified.")
+                    false
+                }
+
+                process.exitValue() != 0 -> {
+                    log.error("$pathToJava -version exited with code ${process.exitValue()}. Invalid Java specified.")
+                    false
+                }
+
+                else -> true
             }
-            exited
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
             false
