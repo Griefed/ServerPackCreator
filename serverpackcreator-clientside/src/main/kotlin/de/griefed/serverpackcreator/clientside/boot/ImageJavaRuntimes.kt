@@ -49,7 +49,7 @@ enum class ImageSupport {
  * The required Java major comes from SPC's own version metadata
  * ([MinecraftMeta.requiredJavaVersion]) — Mojang's *declared* server requirement — not a hand-rolled
  * heuristic, so it stays correct across Minecraft versioning-scheme changes. The image ships a fixed
- * JDK set ([bundledMajors], default 8/17/21/25 to match the runtime Dockerfile); a version whose required
+ * JDK set ([bundledMajors], default [IMAGE_BUNDLED_MAJORS]); a version whose required
  * Java isn't bundled is reported **unsupported** so the grinder skips it. Skipping (rather than booting
  * on the wrong JDK) is the whole point: a Java-version crash would otherwise be mis-scored as a
  * clientside crash (a false HIGH).
@@ -63,7 +63,7 @@ class ImageJavaRuntimes(
      */
     private val requiredJavaMajor: (String) -> Int?,
     /** The Java majors available to boot with — for the grinder's image, exactly what its Dockerfile installs. */
-    private val bundledMajors: Set<Int> = setOf(8, 17, 21, 25),
+    private val bundledMajors: Set<Int> = IMAGE_BUNDLED_MAJORS,
     /** The `java` binary of a bundled major; the grinder image's `/opt/java-<major>` symlinks by default. */
     private val javaPathFor: (Int) -> String = { major -> "/opt/java-$major/bin/java" }
 ) {
@@ -121,10 +121,16 @@ class ImageJavaRuntimes(
         const val MINIMUM_INSTALLER_JAVA = 17
 
         /**
+         * The Java majors the grinder's runtime image installs as `/opt/java-<major>`. `serverpackcreator-grinder`'s
+         * `RuntimeImageJdkSetTest` holds `docker/Dockerfile` to exactly this set.
+         */
+        val IMAGE_BUNDLED_MAJORS: Set<Int> = setOf(8, 16, 17, 21, 25)
+
+        /**
          * Build from SPC's version metadata: the required Java comes straight from Mojang's server
          * manifest via [MinecraftMeta.requiredJavaVersion] (a stringified major), parsed to an Int.
          */
-        fun from(minecraftMeta: MinecraftMeta, bundledMajors: Set<Int> = setOf(8, 17, 21, 25)): ImageJavaRuntimes =
+        fun from(minecraftMeta: MinecraftMeta, bundledMajors: Set<Int> = IMAGE_BUNDLED_MAJORS): ImageJavaRuntimes =
             ImageJavaRuntimes(
                 requiredJavaMajor = requiredJavaOf(minecraftMeta),
                 bundledMajors = bundledMajors

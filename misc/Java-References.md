@@ -167,17 +167,16 @@ change to every server pack SPC produces.
   and the GUI/view-model code that reads it
 - [`HELP.md`](../HELP.md) — the `SPC_RECOMMENDED_JAVA_VERSION_SPC` placeholder docs
 - The grinder's boot image: [`serverpackcreator-grinder/docker/Dockerfile`](../serverpackcreator-grinder/docker/Dockerfile)
-  installs `temurin-{8,17,21,25}-jdk` and symlinks `/opt/java-{8,17,21,25}`, and
+  installs `temurin-{8,17,21,25}-jdk` plus Azul's `zulu16-ca-jdk-headless` (Minecraft 1.17/1.17.1 require 16,
+  and Adoptium has no bookworm Temurin 16) and symlinks `/opt/java-{8,16,17,21,25}`, and
   [`ImageJavaRuntimes`](../serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/boot/ImageJavaRuntimes.kt)'s
-  `bundledMajors` must list exactly the same set.
-  **That pairing is hand-maintained with no build-time check** — the Dockerfile says so in a comment, and
-  only `ImageJavaRuntimesTest` guards the behaviour, with its own literal sets.
+  `IMAGE_BUNDLED_MAJORS` must list exactly the same set. `RuntimeImageJdkSetTest` (grinder) fails the build when
+  the Dockerfile's links and that constant disagree.
 - The clientside-mod verification's boot JDKs:
   [`clientside-report-reusable.yml`](../.github/workflows/clientside-report-reusable.yml)'s *Set up the JDKs
   Minecraft servers need* installs Temurin 8, 16, 17 and 25, beside its section-B `Set up JDK 21`, and
   `-verifyclientside` boots each pack on whichever of them its Minecraft version requires
-  (`HostJavaSelection`, reading the `JAVA_HOME_<major>_<arch>` variables `setup-java` sets). 16 is here and
-  not in the grinder's set because Minecraft 1.17 requires it. A Minecraft release that requires a new major
+  (`HostJavaSelection`, reading the `JAVA_HOME_<major>_<arch>` variables `setup-java` sets). A Minecraft release that requires a new major
   needs it added to that step, or its rows read "requires Java N, which this host does not provide".
 
 The grinder image's `ENV JAVA=/opt/java-21` and `ENV PATH=/opt/java-21/bin:...` are the *default* for a

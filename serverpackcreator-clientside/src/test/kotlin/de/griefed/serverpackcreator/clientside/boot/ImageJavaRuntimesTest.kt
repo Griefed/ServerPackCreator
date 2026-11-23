@@ -100,6 +100,24 @@ internal class ImageJavaRuntimesTest {
     }
 
     /**
+     * Minecraft 1.17 and 1.17.1 declare Java 16 in their server manifests, and `start.sh` accepts only the exact
+     * major, so the shipped image set must carry 16 or those lines can never be booted. Asked through the
+     * defaults, because the defaults are what the grinder and the clientside report run on.
+     */
+    @Test
+    fun theShippedImageSetBootsMinecraft117OnJava16() {
+        val shipped = ImageJavaRuntimes(requiredJavaMajor = mapOf("1.17" to 16, "1.17.1" to 16)::get)
+
+        Assertions.assertEquals(ImageSupport.SUPPORTED, shipped.supportFor("1.17"))
+        Assertions.assertEquals("/opt/java-16/bin/java", shipped.javaPath("1.17.1"))
+        Assertions.assertEquals(
+            "/opt/java-25/bin/java", shipped.installerJavaPathFor("1.17"),
+            "a Java 16 server is below the installer floor, so the newest bundled JDK runs the installer"
+        )
+        Assertions.assertEquals(setOf(8, 16, 17, 21, 25), ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS)
+    }
+
+    /**
      * The installer JDK is independent of the server's: modloader installers can need a newer Java than
      * the Minecraft they install (Quilt's needs 17+ while 1.16.1 runs on 8), so this picks the newest
      * bundled major at or above the minimum — and reports nothing when the image ships nothing new enough.

@@ -73,15 +73,17 @@ on the host is touched, and no mod ever gets network access.
 ## 2. Build the runtime image (once)
 
 The container that boots the packs. It carries the shell tooling SPC's `start.sh` needs plus Temurin JDK
-**8, 17, 21 and 25**, so a pack always boots on the Java its Minecraft version actually requires — with no
+**8, 17, 21 and 25** and Azul Zulu JDK **16** (Minecraft 1.17 and 1.17.1), so a pack always boots on the Java its Minecraft version actually requires — with no
 Java download, which is what keeps mod-boots runnable offline.
 
 ```bash
 docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 ```
 
-Rebuild it whenever a new Minecraft release needs a newer JDK. See [`docker/README.md`](docker/README.md);
-the bundled JDK set must stay in step with `ImageJavaRuntimes.bundledMajors`.
+Rebuild it whenever you update the grinder, and whenever a new Minecraft release needs a newer JDK: a grinder
+newer than its image expects JDKs the image lacks (an image built before Java 16 was added fails every 1.17 and
+1.17.1 boot; rebuilt, the daemon grinds the 1.17 lines its line policy selects instead of skipping them). See [`docker/README.md`](docker/README.md); the
+bundled JDK set must stay in step with `ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS`.
 
 ---
 
