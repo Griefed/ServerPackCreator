@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.plugin.servertest.session
 
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.pack.ServerPropertiesPatch
 import de.griefed.serverpackcreator.plugin.servertest.pack.StartScript
@@ -87,6 +89,8 @@ class ServerLauncher(
     }
 ) {
 
+    private val log: Logger = LogManager.getLogger("AddonsLogger")
+
     /**
      * Take everything [pack] needs and build its session, or refuse and take nothing.
      *
@@ -124,23 +128,28 @@ class ServerLauncher(
         val rconPort = if (patch.rconEnabled()) allocator.allocate() else null
 
         val givenBack = AtomicBoolean(false)
-        val giveBack = {
+        // Returns what the user must be told when the borrowed file could not be returned, `null` otherwise.
+        val giveBack: () -> String? = {
             // Guarded because it is reachable twice: from the session's close callback, and from the
             // failure path below when the borrow itself fails before any session exists. Releasing twice
             // would hand a live server's port to the next pack.
             if (givenBack.compareAndSet(false, true)) {
-                runCatching { patch.restore() }
+                val unrestored = restoreOrExplain(patch)
                 allocator.release(serverPort)
                 rconPort?.let(allocator::release)
+                unrestored
+            } else {
+                null
             }
         }
 
         try {
             patch.borrow(serverPort, rconPort)
         } catch (ex: Exception) {
-            giveBack()
+            val unrestored = giveBack()
             return LaunchOutcome.Refused(
-                "Could not set the port in ${pack.name}'s ${ServerPropertiesPatch.PROPERTIES_NAME}: ${ex.message}"
+                "Could not set the port in ${pack.name}'s ${ServerPropertiesPatch.PROPERTIES_NAME}: ${ex.message}" +
+                    unrestored?.let { "\n\n$it" }.orEmpty()
             )
         }
 
@@ -151,7 +160,7 @@ class ServerLauncher(
         val closed = AtomicBoolean(false)
         val session = sessionFor(pack.directory, selection.command, onLine, onState) {
             if (closed.compareAndSet(false, true)) {
-                giveBack()
+                giveBack()?.let(onLine)
                 registry.unregister(pack.directory)
                 onClosed()
             }
@@ -160,10 +169,29 @@ class ServerLauncher(
         // Registered before it is handed back, so a second Start pressed in the same instant is refused
         // rather than racing into a second server over the same world.
         if (!registry.register(pack.directory, session)) {
-            giveBack()
-            return LaunchOutcome.Refused("${pack.name} is already running.")
+            val unrestored = giveBack()
+            return LaunchOutcome.Refused(
+                "${pack.name} is already running." + unrestored?.let { "\n\n$it" }.orEmpty()
+            )
         }
 
         return LaunchOutcome.Started(session, serverPort)
     }
+
+    /**
+     * Return the borrowed `server.properties`, or log at ERROR and return the sentence a user needs to put it
+     * back by hand: which file still holds the borrowed port, and where the original is. The backup stays where
+     * it is, so the next launch of this pack also restores it before borrowing again.
+     */
+    private fun restoreOrExplain(patch: ServerPropertiesPatch): String? =
+        try {
+            patch.restore()
+            null
+        } catch (ex: Exception) {
+            val explanation = "Could not give back ${patch.propertiesFile.absolutePath}: ${ex.message}. It still " +
+                    "carries this test's port. Your original is at ${patch.backupFile.absolutePath}; copy it over " +
+                    "${patch.propertiesFile.name}, or start this pack here again, which restores it first."
+            log.error(explanation, ex)
+            explanation
+        }
 }

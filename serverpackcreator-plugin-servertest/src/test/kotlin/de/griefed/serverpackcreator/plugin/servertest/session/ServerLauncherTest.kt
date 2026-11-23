@@ -19,10 +19,17 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.session
 
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.LogEvent
+import org.apache.logging.log4j.core.Logger
+import org.apache.logging.log4j.core.appender.AbstractAppender
+import org.apache.logging.log4j.core.config.Property
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.util.Collections
 import java.util.Random
 import de.griefed.serverpackcreator.plugin.servertest.pack.LaunchablePack
 import de.griefed.serverpackcreator.plugin.servertest.pack.ServerPropertiesPatch
@@ -187,6 +194,68 @@ internal class ServerLauncherTest {
             "The user's properties must come back exactly."
         )
         Assertions.assertEquals(31000, allocator.allocate(), "The port must be released once, and be reusable.")
+    }
+
+    /**
+     * A borrow that cannot be returned leaves the user's `server.properties` on the borrowed port, with the
+     * original sitting in a backup only this plugin knows the name of. The user has to be told where it is, in
+     * the console they are looking at and in the log, or their real port is silently gone.
+     */
+    @Test
+    fun aRestoreThatFailsTellsTheUserWhereTheirOriginalIs(@TempDir packDir: File) {
+        val properties = File(packDir, ServerPropertiesPatch.PROPERTIES_NAME).apply { writeText("server-port=25565\n") }
+        val backup = File(packDir, ServerPropertiesPatch.BACKUP_NAME)
+        val allocator = allocator()
+        val consoleLines = mutableListOf<String>()
+        var wiredClose: (() -> Unit)? = null
+        val launcher = ServerLauncher(
+            allocator,
+            SessionRegistry(),
+            { ServerPropertiesPatch(it) },
+            { directory, command, onLine, onState, onClosed ->
+                wiredClose = onClosed
+                ServerSession(directory, command, onLine, onState, onClosed)
+            }
+        )
+        launcher.launch(packAt(packDir), shellScript, { consoleLines.add(it) }, {}, {})
+        // A real filesystem condition: something now occupies the path the restore has to write back to, so the
+        // copy cannot replace it -- as a file locked by another program or a permissions change would.
+        properties.delete()
+        File(properties, "occupied").apply { parentFile.mkdirs() }.writeText("")
+
+        val errors = capturingErrorsOf("AddonsLogger") { requireNotNull(wiredClose).invoke() }
+
+        Assertions.assertTrue(backup.isFile, "the original must still be there to be restored by hand")
+        Assertions.assertTrue(
+            consoleLines.any { it.contains(backup.absolutePath) && it.contains(properties.absolutePath) },
+            "the console must name the backup and the file it belongs over: $consoleLines"
+        )
+        Assertions.assertTrue(
+            errors.any { it.message.formattedMessage.contains(backup.absolutePath) && it.thrown != null },
+            "the log must carry the backup's location and the cause at ERROR"
+        )
+        Assertions.assertEquals(31000, allocator.allocate(), "the port is still given back")
+    }
+
+    /** The ERROR events [logger] records while [block] runs. */
+    private fun capturingErrorsOf(logger: String, block: () -> Unit): List<LogEvent> {
+        val target = LogManager.getLogger(logger) as Logger
+        val events = Collections.synchronizedList(mutableListOf<LogEvent>())
+        val appender = object : AbstractAppender("capture", null, null, true, Property.EMPTY_ARRAY) {
+            override fun append(event: LogEvent) {
+                if (event.level == Level.ERROR) {
+                    events.add(event.toImmutable())
+                }
+            }
+        }.apply { start() }
+        target.addAppender(appender)
+        try {
+            block()
+        } finally {
+            target.removeAppender(appender)
+            appender.stop()
+        }
+        return events.toList()
     }
 
     /**
