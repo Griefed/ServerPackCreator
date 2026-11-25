@@ -4,6 +4,7 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -193,5 +194,35 @@ internal class JavaConfigTest {
         val alive = survivors.filter { it.isAlive }
         alive.forEach { it.destroyForcibly() }
         Assertions.assertTrue(alive.isEmpty(), "the probe process must not outlive the check")
+    }
+
+    /**
+     * Pins that a hung probe takes what it started down with it. A Java path is often a wrapper — a shim, a
+     * version manager, a script — and killing only the wrapper leaves its child running once the check has
+     * rejected it. The stand-in starts a `sleep`, records its pid, and waits on it.
+     */
+    @Test
+    fun aJavaThatNeverExitsIsKilledWithEverythingItStarted(@TempDir dir: File) {
+        val shell = listOf("/bin/sh", "/usr/bin/sh").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `sh` - the process-tree check is skipped")
+        val pidFile = File(dir, "child.pid")
+        val wrapper = File(dir, "java").apply {
+            writeText("#!${shell.path}\nsleep 300 &\necho \$! > '${pidFile.path}'\nwait\n")
+            setExecutable(true)
+        }
+        val store = PropertyStore()
+        val javaConfig = JavaConfig(store).apply { probeTimeoutMillis = 3_000 }
+
+        javaConfig.javaPaths = hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to wrapper.path)
+
+        val pid = pidFile.takeIf { it.isFile }?.readText()?.trim()?.toLongOrNull()
+            ?: Assumptions.abort("the stand-in did not start within the probe's bound on this host")
+        val child = ProcessHandle.of(pid).orElse(null)
+        try {
+            child?.onExit()?.runCatching { get(10, TimeUnit.SECONDS) }
+            Assertions.assertFalse(child?.isAlive ?: false, "the probe's child must not outlive the check")
+        } finally {
+            child?.destroyForcibly()
+        }
     }
 }

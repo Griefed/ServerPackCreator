@@ -290,7 +290,11 @@ class JavaConfig(private val store: PropertyStore) {
             Thread.currentThread().interrupt()
             false
         } finally {
+            // A Java path is often a wrapper (a shim, a version manager); its children are collected before
+            // the wrapper dies, because once it is gone they are re-parented and no longer its descendants.
+            val started = process.toHandle().descendants().toList()
             process.destroyForcibly()
+            started.forEach { it.destroyForcibly() }
         }
     }
 
