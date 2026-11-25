@@ -127,7 +127,8 @@ class GenerationConfig(private val store: PropertyStore) {
         listOf(
             "Ping-Wheel-",
             "appleskin-",
-            "thulium-"
+            "thulium-",
+            "Bad-Wither-No-Cookie-Reloaded-"
         )
     )
 
