@@ -19,7 +19,7 @@
   "dependencies": {
     "@quasar/extras": "2.1.0",
     "@quasar/quasar-ui-qflashcard": "3.0.0",
-    "quasar": "2.35.3"
+    "quasar": "2.35.6"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
