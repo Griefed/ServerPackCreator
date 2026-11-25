@@ -48,6 +48,10 @@ internal class CapturedLog : AbstractAppender("capture", null, null, true, Prope
         events.add(event.toImmutable())
     }
 
+    /** The formatted messages recorded at [level], in order. */
+    fun messagesAt(level: Level): List<String> =
+        synchronized(events) { events.filter { it.level == level }.map { it.message.formattedMessage } }
+
     /** Whether an event at [level] carrying an exception was recorded. */
     fun hasThrowableAt(level: Level): Boolean = synchronized(events) { events.any { it.level == level && it.thrown != null } }
 }

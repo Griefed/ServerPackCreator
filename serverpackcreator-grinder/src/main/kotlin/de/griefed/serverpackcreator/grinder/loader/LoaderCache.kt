@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
@@ -121,9 +122,11 @@ class LoaderCache(
     }
 
     /** The template digest recorded in a completion [marker], or `null` for a marker written before it existed. */
-    private fun recordedProvenance(marker: File): String? = runCatching {
+    private fun recordedProvenance(marker: File): String? = orNullLogged(
+        log.delegate, "Could not read the template provenance from ${marker.absolutePath}; treating it as unrecorded."
+    ) {
         marker.readLines().firstOrNull { it.startsWith("$TEMPLATES_KEY=") }?.removePrefix("$TEMPLATES_KEY=")
-    }.getOrNull()
+    }
 
     /**
      * Say once — not per tuple — that pre-provenance installs are being trusted, so an operator who changes a
@@ -226,9 +229,12 @@ class LoaderCache(
     }
 
     /** The raw `loaderVersion` a completion marker recorded, or `null` when it is unreadable. */
-    private fun recordedVersion(marker: File): String? = runCatching {
+    private fun recordedVersion(marker: File): String? = orNullLogged(
+        log.delegate,
+        "Could not read the loader version from ${marker.absolutePath}; the install is not offered for reuse."
+    ) {
         marker.readLines().firstOrNull { it.startsWith("loaderVersion=") }?.removePrefix("loaderVersion=")
-    }.getOrNull()
+    }
 
     /**
      * Delete every cached tuple that has not been *used* within [retention], returning how many went. A

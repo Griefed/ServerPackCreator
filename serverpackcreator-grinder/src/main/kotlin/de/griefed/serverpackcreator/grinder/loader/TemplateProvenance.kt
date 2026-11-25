@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.security.MessageDigest
 
@@ -32,6 +34,7 @@ import java.security.MessageDigest
  * @author Griefed
  */
 object TemplateProvenance {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * A content digest over [templates], or `null` when none of them can be read. Sorted by absolute path first, so
@@ -48,7 +51,10 @@ object TemplateProvenance {
         }
         val digest = MessageDigest.getInstance("SHA-256")
         for (template in readable) {
-            val bytes = runCatching { template.readBytes() }.getOrNull() ?: continue
+            val bytes = orNullLogged(
+                log.delegate,
+                "Could not read start-script template ${template.absolutePath}; the template digest leaves it out."
+            ) { template.readBytes() } ?: continue
             digest.update(template.name.toByteArray())
             digest.update(bytes)
         }
