@@ -57,7 +57,7 @@ zip4j = "2.11.6"
 log4jApiKotlin = "1.5.0"
 log4j = "2.26.1"
 pf4j = "3.16.1"
-bouncycastle = "1.86"
+bouncycastle = "1.87"
 mslinks = "1.2"
 # Resolved from jitpack; published nowhere else.
 nekodetector = "Version-1.1-pre"
