@@ -3393,3 +3393,139 @@ per-goal detail and red-first evidence are on the named kept branch.
   - It runs over each push's own range, so already-pushed history never keeps CI red.
   - Its one finding on `origin/main..develop` was reworded before the next push.
 - **Found while implementing:** `fix(ci): the .dockerignore input check does not read another checkout's build scripts`. It is the nested-worktree defect `KDocAttachmentTest` had.
+
+# 2026-11-25 — analysis of fdbbe5f57..develop (44 commits)
+
+Range `fdbbe5f57..ed4a25338`: everything since the 2026-11-15 analysis (the remediation fixes, the B work, the
+symlink fix, the contained clientside boot, the log-only sites). Items recorded as decided or accepted in the
+2026-11-22/23 sections (the B1 residuals among them) are not re-reported. Each finding is CONFIRMED (executed, or
+read off code with no room for another reading) or PLAUSIBLE (the defect is real in code; whether it bites depends
+on something outside the repository).
+
+## HIGH
+
+None.
+
+## MEDIUM
+
+- **AN-1 — CONFIRMED (executed) — `JavaConfig.testJava` leaks the descendants of a probed executable that times out.**
+  `serverpackcreator-api/.../settings/JavaConfig.kt`, `testJava`'s `finally { process.destroyForcibly() }`.
+  `Process.destroyForcibly` ends only the direct child. A Java path that is a launcher or wrapper script (an
+  sdkman/asdf shim, a `java` wrapper) and hangs leaves its own children running after the probe gives up.
+  Reproduced with the exact `ProcessBuilder` shape `testJava` uses against a script that backgrounds `sleep 300`
+  and waits: after the timeout and `destroyForcibly`, `childAliveAfterDestroy=true`.
+  "can no longer leak the probed executable" (`fix(api): validating a Java path can no longer hang on, or leak,
+  the probed executable`) therefore holds for the executable, not for what it started.
+  - Fix: collect `process.descendants()` **before** destroying (an orphan stops being a descendant), destroy
+    them, then the process — the same order `HostProcessServerRunner.destroyTree` uses.
+  - Pin: a `JavaConfigTest` case whose fake `java` backgrounds `sleep`, writes the child's PID to a file and
+    `wait`s; assert `testJava` rejects it and `ProcessHandle.of(pid)` is no longer alive. Red against today's code.
+
+## LOW
+
+- **AN-2 — CONFIRMED (code) — a project link can break out of the failure comment's code span.**
+  `ClientsideReportRenderer.renderFailure` writes ``Could not assess `$projectUrl` ``; the link comes from
+  `.github/scripts/clientside-verification.js`'s `PROJECT_LINK` (`/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)]+/i`),
+  which admits backticks. `https://modrinth.com/mod/x`@someone`` closes the span and puts a live mention or link
+  in the bot's comment. Reaching the failure path needs a maintainer-approved boot, hence LOW.
+  - Fix: narrow `PROJECT_LINK`'s tail to URL characters (`[\w\-./?=&%#~+]+`) — it also stops a trailing
+    `` ` `` or `>` from becoming part of the slug — and render the link in `renderFailure` with a fence-style
+    span longer than any backtick run (the renderer already has `fenceFor` for consoles).
+  - Pins: a node test that `projectLinkIn('https://modrinth.com/mod/x`@a`')` is `https://modrinth.com/mod/x`;
+    a renderer test that a URL containing a backtick stays inside its span.
+- **AN-3 — PLAUSIBLE — the suggested-entries and published-file-names blocks use a fixed ```` ``` ```` fence.**
+  `ClientsideReportRenderer` (the `Suggested clientside-list entries` block and `All N published file-names`)
+  fences with three backticks, while consoles go through `fenceFor`. File names are chosen by whoever uploaded the
+  mod; a name containing ```` ``` ```` would close the block early. Whether Modrinth/CurseForge accept such a
+  name was not checked.
+  - Fix: `fenceFor` for both blocks — one rule for every fenced block of outside text.
+  - Pin: a report whose `fileNames` hold ```` a```b.jar ```` renders a fence of four backticks.
+- **AN-4 — CONFIRMED (code), PLAUSIBLE (impact) — a range probe and the download after it count twice.**
+  `DownloadCount.isNewDownload` counts any `GET` whose first range starts at byte 0, so a client probing with
+  `Range: bytes=0-0` and then requesting `bytes=0-` is two downloads. Counting only full-start ranges that cover
+  more than the first byte would stop that, at the price of possibly not counting a segmented download whose
+  first segment is tiny. A product decision, not a defect to fix blind.
+- **AN-5 — CONFIRMED — stale JDK list.** `serverpackcreator-grinder/src/main/kotlin/.../grinder/loader/CLAUDE.md`
+  ("Offline-boot levers") still names `/opt/java-{8,17,21,25}`; the image links `/opt/java-16` too since
+  `fix(grinder): boot Minecraft 1.17 and 1.17.1 on the Java 16 their manifests require`. Everything else naming the
+  set (`ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS`, the grinder README, `misc/Java-References.md`, the Dockerfile) is
+  current.
+- **AN-6 — PLAUSIBLE (evidence, not a defect) — Forgejo's test job does not run as root, so the root-skipping
+  guards run there.** The job image `ghcr.io/catthehacker/ubuntu:runner-latest` (amd64) declares
+  `"User": "runner"` in its image config (read from ghcr's registry API: index → amd64 manifest → config blob), and
+  act starts the job container as the image's user unless the runner's config passes `--user`, which nothing in
+  this repository can show. So the five grinder guards that make a file unreadable
+  (`BookkeepingFailuresAreLoggedTest`, `BootLogStoreTest`'s new case) very likely execute in CI rather than skip.
+  - Cheap way to make it a fact rather than an inference: print `id -u` in `test.yml`'s build step, or assert in
+    the job that the guard ran (the skipped count in the test-results XML).
+
+## Verified clean — do not re-litigate
+
+- **`ModWritableTree`**: reads refuse a link at the listed directory and at the file, and resolve-outside-root is
+  refused; `openForReading` uses `NOFOLLOW_LINKS`; `deleteRecursively`/`sizeOf` walk without `FOLLOW_LINKS`, a
+  symlinked root is deleted as a link. Intermediate-component swaps between listing and open would need a process
+  still running in the pack after the boot ended; the container path has none.
+- **The project link never reaches a shell unquoted**: `clientside-report-reusable.yml` hands it to the grinder as
+  `PROJECT_URL` through `env:` and `"$PROJECT_URL"`, so a `$(…)` or `;` in an issue's link is inert.
+- **A forged data block cannot win**: `dataBlockIn` takes the real (last) block; a console line or excerpt carrying
+  `<!-- clientside-report-data` is pinned in `clientside-verification.test.js`, and the URL path cannot contain the
+  whitespace a block needs.
+- **`/verdicts.json?version=`** parses with `toLongOrNull` (garbage → current snapshot), and retention is bounded
+  by count (8) and idle time (60 s), so an unauthenticated caller can pin at most eight snapshots alive.
+- **`GrinderClient.readFeed`**: a 410 only abandons a *pinned* page; version appearing/vanishing mid-read restarts;
+  bounded by `MAX_READ_ATTEMPTS`; never returns a partial feed.
+- **`JsonRequeueStore`**: an unreadable file is moved aside before anything can be written over it, and `add`
+  refuses (returns 0, logs ERROR) when it cannot be; writes are temp-then-atomic-move with the temp cleaned up.
+- **`LiveInstallLog`**: catches `IOException` per line and reports the first only; open/close through
+  `orNullLogged`; an unopenable console never fails the install.
+- **Homepage download counter**: a token is sent only to its own platform's host (`optionsFor` drops it for the
+  others); no paging URL taken from a response is followed to another host.
+- **Runtime image**: both apt keyrings are checked against the published fingerprint, exactly one primary key,
+  before apt reads them; every base image is digest-pinned.
+- **Unused imports**: none in the 101 Kotlin files the range adds or modifies (each import's simple name or alias
+  searched in the file body).
+
+# 2026-11-25 — remediation of the 2026-11-25 audit and analysis
+
+Each finding of the two 2026-11-25 sections, and what closed it. Commits are named by subject.
+
+## B1: what the container boot closed (A-L1)
+
+- The 2026-11-23 sections list as "still open, for the container-boot decision" that the CurseForge key and the
+  `contents: read` token can be read from memory with sudo, and that the runtime token can replace the run's own
+  report artifact. **Closed for the mod's code** by `feat(ci): boot the clientside verification's mod inside the
+  grinder's container` (with `feat(grinder): write one project's clientside report from the container boot path`):
+  the mod now boots in the grinder's network-less, capability-less, non-root container and cannot reach the runner
+  process's memory, `sudo` or the network.
+- **First real run:** GitHub run 45239798218, a manual dispatch from `develop` on 2026-11-23 against a throwaway
+  issue (modmenu, Modrinth). Green in 9 minutes; the runtime image built in 1 m 38 s; four Fabric boots
+  (Minecraft 26.3, 26.2, 1.21.11, 1.20.6) SURVIVED on the right JDKs (25, 25, 21, 21); every console shows
+  "Failed to request yggdrasil public key", i.e. no network inside the container. The `clientside-boot-logs`
+  artifact held only the grinder's own log (no key, nothing from the pack; no `boot-logs/`, since every boot
+  survived). The comment's two inaccurate sentences were fixed by `fix(ci): the clientside report says where its
+  boot logs really are`.
+- **What stays open is stated where it is enforced**, in `.claude/rules/ci-workflows.md` ("What is still not
+  contained"): host-side parsing of the mod's jars in the JVM that holds the key, a container escape landing in
+  the `docker` group, and the networked loader-install container. The gate remains the control.
+
+## Findings and their fixes
+
+| Id | Fixed by | Red first |
+|---|---|---|
+| A-L2 | `fix(clientside): resolving a mod-written file's real path no longer swallows an Error` | no — `toRealPath` cannot be made to throw an `Error` without a test-only seam; stated in the commit |
+| A-L3 | `test(clientside): the boot-failure note test skips on a missing Forge release without a null assertion` | n/a, test-only; no assertion changed |
+| A-L4 | `fix(web): a server pack without a run configuration no longer fails three routes` — the same `!!` defect also sat in `ModPackController.requestGeneration` and `AmountStatsService.stats` (the public stats endpoint), fixed in the same commit | yes, three pins, each `NullPointerException` |
+| AN-1 | `fix(api): a Java check that hangs no longer leaves what the probed path started running` | yes, "the probe's child must not outlive the check" |
+| AN-2, AN-3 | `fix(clientside): text an issue author or uploader chose can no longer break out of the report's code` — also a `\|` in a table cell, which split the row | yes, three renderer pins and one node pin |
+| AN-5 | `docs(grinder): the offline-boot levers name the image's JDK set by its source, not a copy of it` | n/a |
+
+## Not changed, deliberately
+
+- **A-L5 (scope honesty of two pushed commits):** record only; both are on origin, and rewording them would
+  rewrite pushed history for a label.
+- **AN-4 (`bytes=0-0` probe followed by `bytes=0-` counts twice):** a product decision, left to Griefed. Not
+  counting it risks not counting a segmented download whose first segment is tiny.
+- **AN-6 (do the root-skipping grinder guards run in CI?):** GitHub `Test` runs `./gradlew build` as the non-root
+  `runner` user, so the five guards run there. Forgejo's job image `ghcr.io/catthehacker/ubuntu:runner-latest`
+  declares `"User": "runner"`; whether this instance's runner overrides it with `--user` is not visible from the
+  repository. The skip count in a Forgejo run's grinder test results settles it.

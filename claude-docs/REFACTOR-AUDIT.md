@@ -8662,3 +8662,124 @@ per-goal detail and red-first evidence are on the named kept branch.
   - It runs over each push's own range, so already-pushed history never keeps CI red.
   - Its one finding on `origin/main..develop` was reworded before the next push.
 - **Found while implementing:** `fix(ci): the .dockerignore input check does not read another checkout's build scripts`. It is the nested-worktree defect `KDocAttachmentTest` had.
+
+# 2026-11-25 — audit of `fdbbe5f57..develop` (44 commits)
+
+The range runs from `fix(api): an incompatible dependency entry no longer decides a mod's side or Minecraft range`
+to `docs(servertest): the module context names the one opt-in test instead of a test count`. It is everything
+on `develop` since the 2026-11-15 audit: the remediation's goal-grouped fixes, the follow-up decisions (B1 cache,
+B2 paging, B3, B5), the symlink fix, the B1 container boot and the B3 log-only sites. The rules applied are the
+repository's own (one commit per goal, red-first evidence quoted in a grouped commit, honest type and scope
+against `.releaserc.yml`, present-tense docs, subjects rather than hashes, no new `!!`). Items the 2026-11-22/23
+sections record as decided are not re-reported.
+
+## HIGH
+
+None. No `refactor:` commit in the range; every behaviour change is typed `fix`/`feat`; no module boundary
+moved; the one addition to the published `-api` (`orNullLogged`) is the placement Griefed chose on 2026-11-23,
+and the Java exit-code change has its `API-BEHAVIOUR-CHANGES.md` row.
+
+## MEDIUM
+
+None.
+
+## LOW
+
+- **A-L1 — the audit logs stop before the B1 container boot.** The 2026-11-23 "implemented" section still lists,
+  under D-N-1, "the CurseForge key and the `contents: read` token can be read from memory with sudo" as open
+  for the container-boot decision. That decision was taken and implemented by
+  `fix(clientside,grinder): a mod's symlinks in its server pack are never followed by the verifier`,
+  `fix(grinder): check the Adoptium repository key's fingerprint before apt trusts it`,
+  `fix(grinder): boot Minecraft 1.17 and 1.17.1 on the Java 16 their manifests require`,
+  `feat(grinder): let the container verifier report unbootable lines and take a key file`,
+  `feat(grinder): write one project's clientside report from the container boot path`,
+  `feat(ci): boot the clientside verification's mod inside the grinder's container` and
+  `fix(ci): the clientside report says where its boot logs really are`, and none of them is recorded in either
+  audit log. Rule: document what you verify. Fix: append the closure, the first real run (GitHub run
+  45239798218: four Fabric boots, no network inside the container, artifact holding only the grinder's log) and
+  the residuals `.claude/rules/ci-workflows.md` names, to both logs.
+- **A-L2 — a new `runCatching` after the helper that replaces it.** `ModWritableTree.kt:73` (from the symlink
+  fix) partitions files with `runCatching { it.toRealPath().startsWith(rootReal) }.getOrDefault(false)`, which
+  catches `Throwable`, the class D-N-8 diagnosed. The outcome is fail-safe (an unresolvable path counts as
+  outside the pack and is not followed), so no verdict changes; an `Error` is still swallowed. Fix: catch
+  `IOException` (and `SecurityException`) explicitly.
+- **A-L3 — new `!!` in test code.** `BootTestFailureNoteTest.kt:76` and `:107` (from
+  `fix(clientside): a jar-scan that throws costs its row, not the whole report (B57)`) use `release!!`. The
+  rule's letter is "refactored code"; its intent is explicit nullability. Fix: `checkNotNull(release)`.
+- **A-L4 — a touched line kept its `!!`.** `ServerPackController.kt:132` (from
+  `fix(web): an archive download is complete, counted once, named by the server, and its failure shown`)
+  rewrote `downloadServerPack(serverpack.id!!)` into `downloadServerPack(serverpack.id!!, range, method)`. The
+  `!!` predates the range; the Boy-Scout rule would have removed it on the touched line. Fix: resolve the id
+  with an explicit not-found answer, as the other branch of that method does for a missing pack.
+- **A-L5 — two scope calls worth stating, both already pushed and left as they are.**
+  `fix(ci): the clientside report says where its boot logs really are` edits grinder main source
+  (`ClientsideReportRun.EVIDENCE_NOTE`) under a non-releasing scope; the body justifies it (only the GitHub
+  workflow renders that text), and it is correct. `fix(build): media's one-jar guard ignores the javadoc and
+  sources jars CI restores beside the app` mints a patch for a guard whose effect is CI-only; `build` is a
+  releasing scope by `.releaserc.yml`, and the shipped artifacts do not change, so `fix(ci)` would have been the
+  closer label. Recorded, not to be reworded (pushed history).
+
+## Verified clean — do not re-litigate
+
+- **Red-first evidence:** every `fix`/`feat` commit with a test in the range quotes its red failure in the body.
+  The ones without a test say what was measured instead: the media guard (CI's failing jar shape reproduced
+  before and after, install4j local, plus a two-application-jar case that must still fail), the Adoptium
+  fingerprint (the same awk run over the live Adoptium key, over Azul's key, which fails the comparison, and over
+  a concatenation of both); the rest are documentation.
+- **Goal grouping:** subjects with two clauses (`… report unbootable lines and take a key file`, the
+  remediation's grouped fixes) each serve one goal stated in the body; no grab-bag commit.
+- **`refactor:` honesty:** no `refactor:` commits in the range. `LiveInstallLog` and `copyToClipboard` were
+  extracted inside `fix` commits whose bodies say the extraction exists to execute the site in a test.
+- **New `var`s and `Throwable` catches in main sources of the post-2026-11-23 commits:** none, apart from A-L2
+  and a shutdown hook's `runCatching { engine.close() }` in `ClientsideReportRun`, which is correct there.
+- **Commit-body references:** `misc/commit-body-reference-check.py` is clean over the range.
+- **`CurseForgeApiKey.fromEnvironment` is a `lazy`**, so the key file is read and deleted once per JVM and every
+  later reader (`supportedPlatforms`, `ContainerCandidateVerifier`) gets the cached key, not `null`.
+- **The five `setReadable(false)` guards of the log-only fix skip under root**, but GitHub's `Test` workflow runs
+  the full `./gradlew build` as the non-root `runner` user, so CI does execute them. Whether Forgejo's job runs
+  as root was not checked (its job logs need a sign-in).
+
+# 2026-11-25 — remediation of the 2026-11-25 audit and analysis
+
+Each finding of the two 2026-11-25 sections, and what closed it. Commits are named by subject.
+
+## B1: what the container boot closed (A-L1)
+
+- The 2026-11-23 sections list as "still open, for the container-boot decision" that the CurseForge key and the
+  `contents: read` token can be read from memory with sudo, and that the runtime token can replace the run's own
+  report artifact. **Closed for the mod's code** by `feat(ci): boot the clientside verification's mod inside the
+  grinder's container` (with `feat(grinder): write one project's clientside report from the container boot path`):
+  the mod now boots in the grinder's network-less, capability-less, non-root container and cannot reach the runner
+  process's memory, `sudo` or the network.
+- **First real run:** GitHub run 45239798218, a manual dispatch from `develop` on 2026-11-23 against a throwaway
+  issue (modmenu, Modrinth). Green in 9 minutes; the runtime image built in 1 m 38 s; four Fabric boots
+  (Minecraft 26.3, 26.2, 1.21.11, 1.20.6) SURVIVED on the right JDKs (25, 25, 21, 21); every console shows
+  "Failed to request yggdrasil public key", i.e. no network inside the container. The `clientside-boot-logs`
+  artifact held only the grinder's own log (no key, nothing from the pack; no `boot-logs/`, since every boot
+  survived). The comment's two inaccurate sentences were fixed by `fix(ci): the clientside report says where its
+  boot logs really are`.
+- **What stays open is stated where it is enforced**, in `.claude/rules/ci-workflows.md` ("What is still not
+  contained"): host-side parsing of the mod's jars in the JVM that holds the key, a container escape landing in
+  the `docker` group, and the networked loader-install container. The gate remains the control.
+
+## Findings and their fixes
+
+| Id | Fixed by | Red first |
+|---|---|---|
+| A-L2 | `fix(clientside): resolving a mod-written file's real path no longer swallows an Error` | no — `toRealPath` cannot be made to throw an `Error` without a test-only seam; stated in the commit |
+| A-L3 | `test(clientside): the boot-failure note test skips on a missing Forge release without a null assertion` | n/a, test-only; no assertion changed |
+| A-L4 | `fix(web): a server pack without a run configuration no longer fails three routes` — the same `!!` defect also sat in `ModPackController.requestGeneration` and `AmountStatsService.stats` (the public stats endpoint), fixed in the same commit | yes, three pins, each `NullPointerException` |
+| AN-1 | `fix(api): a Java check that hangs no longer leaves what the probed path started running` | yes, "the probe's child must not outlive the check" |
+| AN-2, AN-3 | `fix(clientside): text an issue author or uploader chose can no longer break out of the report's code` — also a `\|` in a table cell, which split the row | yes, three renderer pins and one node pin |
+| AN-5 | `docs(grinder): the offline-boot levers name the image's JDK set by its source, not a copy of it` | n/a |
+
+## Not changed, deliberately
+
+- **A-L5 (scope honesty of two pushed commits):** record only; both are on origin, and rewording them would
+  rewrite pushed history for a label.
+- **AN-4 (`bytes=0-0` probe followed by `bytes=0-` counts twice):** a product decision, left to Griefed. Not
+  counting it risks not counting a segmented download whose first segment is tiny.
+- **AN-6 (do the root-skipping grinder guards run in CI?):** GitHub `Test` runs `./gradlew build` as the non-root
+  `runner` user, so the five guards run there. Forgejo's job image `ghcr.io/catthehacker/ubuntu:runner-latest`
+  declares `"User": "runner"`; whether this instance's runner overrides it with `--user` is not visible from the
+  repository. The skip count in a Forgejo run's grinder test results settles it.
