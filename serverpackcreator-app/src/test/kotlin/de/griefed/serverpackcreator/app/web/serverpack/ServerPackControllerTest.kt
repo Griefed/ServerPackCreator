@@ -220,6 +220,32 @@ internal class ServerPackControllerTest {
     }
 
     /**
+     * A modpack can hold a server pack whose run-configuration is unset; looking another pack up by its
+     * run-configuration must skip it rather than fail the request.
+     */
+    @Test
+    fun aServerPackWithoutARunConfigurationDoesNotBreakTheLookupOfAnother(@TempDir tempDir: File) {
+        val archive = File(tempDir, "pack.zip")
+        archive.writeText("zip-content")
+        val runConfiguration = RunConfiguration()
+        assignEntityId(runConfiguration, "55")
+        val pack = serverPack("serverpack1")
+        pack.runConfiguration = runConfiguration
+        val modpack = ModPack()
+        assignEntityId(modpack, "77")
+        modpack.serverPacks.add(serverPack("unconfigured"))
+        modpack.serverPacks.add(pack)
+        every { modpackService.getModpack("77") } returns Optional.of(modpack)
+        every { serverPackService.getServerPack("serverpack1") } returns Optional.of(pack)
+        every { serverPackService.getServerPackArchive(pack) } returns Optional.of(archive)
+        every { serverPackService.updateDownloadStats("serverpack1") } returns Optional.of(pack)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/77&55"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/77&56"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    /**
      * Pins that all server packs are served as a JSON-list and a single server pack by ID returns
      * 200, while an unknown ID returns 404.
      */

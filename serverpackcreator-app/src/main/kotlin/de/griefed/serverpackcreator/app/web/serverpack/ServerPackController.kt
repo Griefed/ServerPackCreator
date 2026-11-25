@@ -120,16 +120,11 @@ class ServerPackController @Autowired constructor(
         if (modpack.isEmpty) {
             return ResponseEntity.notFound().build()
         }
-        var serverpack: ServerPack? = null
-        for (pack in modpack.get().serverPacks) {
-            if (pack.runConfiguration!!.id == runConfigurationId) {
-                serverpack = pack
-            }
-        }
-        if (serverpack == null) {
-            return ResponseEntity.notFound().build()
-        }
-        return downloadServerPack(serverpack.id!!, range, method)
+        val serverPackId = modpack.get().serverPacks
+            .lastOrNull { it.runConfiguration?.id == runConfigurationId }
+            ?.id
+            ?: return ResponseEntity.notFound().build()
+        return downloadServerPack(serverPackId, range, method)
     }
 
     /**
