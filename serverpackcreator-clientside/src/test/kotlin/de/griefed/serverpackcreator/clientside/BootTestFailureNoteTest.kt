@@ -68,12 +68,11 @@ internal class BootTestFailureNoteTest {
 
     @Test
     fun aBootTestThatThrowsNamesTheFailureInItsNote(@TempDir workDir: File) {
-        val release = forgeRelease
-        Assumptions.assumeTrue(release != null, "the shipped manifest must offer a Forge-capable release")
+        val release = forgeRelease ?: Assumptions.abort("the shipped manifest must offer a Forge-capable release")
         val failure = "Illegal character in path at index 23: https://cdn/the mod.jar"
 
         val report = ClientsideVerifier(
-            platforms = listOf(platform(release!!)),
+            platforms = listOf(platform(release)),
             metadataScanner = MetadataScanner(apiWrapper.modScanner),
             jarDownloader = JarDownloader { _, _ -> null },
             workDirectory = workDir,
@@ -99,12 +98,11 @@ internal class BootTestFailureNoteTest {
      */
     @Test
     fun aJarScanThatThrowsIsThatRowsErrorAndNamesTheFailure(@TempDir workDir: File) {
-        val release = forgeRelease
-        Assumptions.assumeTrue(release != null, "the shipped manifest must offer a Forge-capable release")
+        val release = forgeRelease ?: Assumptions.abort("the shipped manifest must offer a Forge-capable release")
         val failure = "Illegal character in path at index 23: https://cdn/the mod.jar"
 
         val report = ClientsideVerifier(
-            platforms = listOf(platform(release!!)),
+            platforms = listOf(platform(release)),
             metadataScanner = MetadataScanner(apiWrapper.modScanner),
             jarDownloader = JarDownloader { _, _ -> throw IllegalArgumentException(failure) },
             workDirectory = workDir
