@@ -219,10 +219,20 @@ internal class JavaConfigTest {
             ?: Assumptions.abort("the stand-in did not start within the probe's bound on this host")
         val child = ProcessHandle.of(pid).orElse(null)
         try {
-            child?.onExit()?.runCatching { get(10, TimeUnit.SECONDS) }
-            Assertions.assertFalse(child?.isAlive ?: false, "the probe's child must not outlive the check")
+            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+            while (child != null && isStillRunning(child) && System.nanoTime() < deadline) {
+                Thread.sleep(100)
+            }
+            Assertions.assertFalse(child != null && isStillRunning(child), "the probe's child must not outlive the check")
         } finally {
             child?.destroyForcibly()
         }
     }
+
+    /**
+     * Running, not merely `isAlive`: the killed child is an orphan, and in a container whose PID 1 reaps nothing
+     * (a CI job container) it stays an unreaped zombie for good, which `isAlive` still reports as alive. A zombie
+     * has no command line, so that is what tells it from a process still running.
+     */
+    private fun isStillRunning(process: ProcessHandle): Boolean = process.isAlive && process.info().command().isPresent
 }
