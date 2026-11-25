@@ -86,12 +86,8 @@ constraints.
   costs one fetch of its `mcserver/<version>.json`. The snapshot **no longer lags its own parent
   manifest** — the release named in `minecraft-manifest.json`'s `latest.release` now has a matching
   `mcserver/<version>.json`, which is the check worth re-running rather than trusting a file count. That was the open
-  deferral B25, closed as a side effect of the `updateManifests` retarget. The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
-- `./gradlew :serverpackcreator-app:test` — app suite.
-- `./gradlew :<module>:koverHtmlReport` / `koverXmlReport` — coverage (Kover), report under
-  `<module>/build/reports/kover/`.
-- Frontend: `npm install && npx quasar dev` in `serverpackcreator-web-frontend/` (dev server),
-  `npx quasar build` for production build, `npm test` (Vitest).
+    deferral B25, closed as a side effect of the `updateManifests` retarget. The test home is wiped before each run
+  **except** `manifests/`, so that cache persists and accumulates.
 - Run the app locally: `./gradlew :serverpackcreator-app:bootRun` (GUI by default; CLI/web via args,
   **not `:run`** — `-app` applies the Spring Boot plugin, not `application`, so `run` does not exist there;
   `:serverpackcreator-grinder:run` does, because the grinder applies `application`; see `Mode.kt` /
@@ -151,15 +147,15 @@ evidence consulted occasionally, not context every session needs.
 
 ## Conventions
 
+> The incidents and measurements behind these rules are in `claude-docs/CONVENTIONS-HISTORY.md`. Read it when a
+> rule's reason is unclear, or before re-opening one.
+
 - **"Make it work, make it right, make it fast." — Kent Beck.** A more detailed variation often cited is
   *"First, make it. Then, make it work. Lastly, if you can, make it pretty."* The sequence exists to head
   off perfectionism and analysis paralysis: functionality comes before form, and the core logic has to be
   solid before anyone spends effort on readability or speed.
   - **Avoiding premature optimization.** Knuth's "root of all evil" — you cannot predict bottlenecks
-    without a working system to measure. This project has the receipts: B30 was a real 121,492-byte
-    saving per startup that bought **~0 ms**, because the twelve manifest checks run concurrently and the
-    slowest one gated the batch. Measured, it was the wrong thing to optimise; the right one (B31, taking
-    the refresh off the startup path) was ~392 ms and only visible once something was running.
+    without a working system to measure.
   - **Managing technical debt.** Shortcuts may be taken first, but the bargain is that you come back and
     polish. Many developers argue "fix it later" is a myth, and that is the risk this convention set
     exists to contain — which is why `claude-docs/BACKLOG.md` demands a *stated reason* per deferral and
@@ -177,38 +173,25 @@ evidence consulted occasionally, not context every session needs.
 - **A published verdict must rest on decisive evidence, and the report must say which rung produced it.**
   `CRASHED` is reachable both from a marker no broken harness can fabricate and from a bare non-zero exit that
   means only *"nothing recognised why"* — and until `BootDecision` those were indistinguishable downstream, so
-  the grinder published both alike. Measured against the live daemon on 2026-08-31: **27 of 43 published
-  `HIGH` verdicts rested on no decisive evidence**, and one poisoned loader-cache entry (`NeoForge 21.11.45 /
-  MC 1.21.11`) had produced identical failures across all **90** boots against it — a library mod and a
-  server-side building mod among them. Two lessons generalise beyond the grinder: **a verdict that cannot name
+  the grinder published both alike. Two lessons generalise beyond the grinder: **a verdict that cannot name
   its own evidence cannot be audited**, and **an environment defect looks exactly like a subject defect unless
   something distinguishes them**.
-- **Question the requirement before you optimise the cost of meeting it.** On 2026-09-02 a circuit breaker
-  was designed, pinned with 189 lines of guards, implemented, wired through two modules and documented — and
-  deleted 34 minutes later, when Griefed asked whether the thing it protected was needed at all. It was not:
-  the route it bounded existed only to circumvent CurseForge's distribution opt-out, had stopped working
-  entirely, served under 1% of candidates, and cost 192.9 MB in every artifact. Every commit in that sequence
-  was correctly shaped, which is exactly why the shaping did not save it. The evidence to ask the prior
-  question was already in hand. This is Knuth's rule one level up: *measure before optimising* presumes the
+- **Question the requirement before you optimise the cost of meeting it.**
+  This is Knuth's rule one level up: *measure before optimising* presumes the
   thing should exist, so establish that first — "should this code exist?" is cheaper to answer than "how do I
   make its failure cheap?", and one of the two answers deletes the other's work.
 
-- **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
-  defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
-  hashes killed by a rebase, a landmine still describing a flaw that had been fixed, a line number shifted
-  by the very commit that cited it, and suite counts left behind by the tests that were just added. **It
-  recurred on 2026-09-01:** that rebase killed 13 more hashes in `claude-docs/REFACTOR-AUDIT.md`, five of
-  which are now reachable from no ref at all and will stop resolving entirely once gc runs. That file cites
-  hashes at volume, so it is the guaranteed casualty of every history rewrite — write subjects there the
-  first time. Prefer the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash),
+- **Cite names, not snapshots.**
+  A fact quoted in prose goes stale the moment the code moves, and `claude-docs/REFACTOR-AUDIT.md`, which cites
+    hashes at volume, is the guaranteed casualty of every history rewrite — write subjects there the first time.
+  Prefer the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash),
   the **symbol name** over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a
   number genuinely earns its place — a measurement, a byte count — say what produced it, so a reader can
   re-run it instead of trusting it.
 
 - **Fix bugs when you find them and read before you advise.** A defect noticed in passing gets surfaced
   and fixed in its own commit, never deferred as "out of scope"; a claim about this codebase gets checked
-  against the code or the docs first. (The other two bullets that used to sit here — the principles list and
-  the git workflow — are stated in the header and in **## Branching & git workflow**.)
+  against the code or the docs first.
 
 ### Module boundaries (architecture — SOLID / MVC)
 
@@ -255,9 +238,7 @@ evidence consulted occasionally, not context every session needs.
   - **It is worth the most where the first attempt was wrong.** A feature plus the four repairs its
     own audit then found is **one** commit, because the repairs were never separately true — nothing
     shipped in between. The history should show the feature that works, not a broken one followed by
-    apologies. Measured instance: `CI-NOTES.md` was written by one commit of a session and deleted by
-    a later one in the same session, so the atomic history recorded a 156-line file arriving and
-    leaving; grouped, it never existed.
+    apologies.
   - **This does not license a grab-bag.** "Everything I did today" is not a goal. If the commit message
     needs the word *"and"* between two unrelated clauses, it is two commits — `fix(ci): the continuous
     build's GitHub half still prints the traceback` stayed separate from the homepage work for exactly
@@ -280,11 +261,7 @@ evidence consulted occasionally, not context every session needs.
 - **Shell templates, manifests and version parsing get their test written and observed failing FIRST.**
   Not because the rule is different there, but because these fail *silently* — a wrong branch or a
   mis-sliced version produces a plausible value, not an error — so they get verified by hand and pinned
-  afterwards, if at all. Two audits found three instances (`28a786b58` NeoForge mapping, no test;
-  `2e16bf0c8` fish `--no-empty`, test five commits later; `1a55797df` Fabric fall-through, whose guard
-  asserted *ordering* and stayed green while the behaviour was still broken). The cost is measurable:
-  the Forge launcher-era bug wasted **24 boots** before anything noticed, and 820 NeoForge versions were
-  mis-attributed to one Minecraft release.
+  afterwards, if at all.
 - **A test that only asserts shape is not a pin.** Prefer *executing* the unit — `ScriptTemplateContentTest`
   extracts a shell function and runs it — over asserting substring positions or that a symbol exists. And
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
@@ -302,20 +279,11 @@ evidence consulted occasionally, not context every session needs.
   ```
 
   Every failure is either a regression or a deliberate change; every *compile* error is a signature change,
-  which is a finding in itself and must be enumerated rather than worked around. Done for this branch
-  (`claude-docs/REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
-  uncompilable — one adapted by adding two constructor arguments and *no* assertion edits (7 guards green), one
-  legitimately unadaptable because it asserted behaviour the branch removed. Also check *which* changed classes
+  which is a finding in itself and must be enumerated rather than worked around. Also check *which* changed classes
   the base's tests actually name, so the residual risk is stated rather than assumed; a class-name grep
   under-reports, since `QuiltPackScanner` is exercised only through `ModScannerSidenessTest`.
 - **What only a real runtime can answer, ask a real runtime.** Anything whose point is what an external system
   does — an index, a data migration, a REST response shape — is not verified by a mocked test, however good.
-  Iteration 7 ran the actual `bootJar` in `-web` mode against MongoDB 8.0.5 in Docker, seeded with pre-branch
-  shaped documents, and that is what confirmed the `sha256` index really exists, the migration really converts
-  legacy documents and really skips already-migrated ones, and `/api/v2/runconfigs/all` really returns the
-  documented shape. It also surfaced what was filed at the time as B33 — the web application
-    writing to MongoDB's default `test` database instead of the configured one, which no test could have caught, and
-    which the Spring Boot 4 property-key fix has since closed. Cost: about fifteen minutes.
 - **Build logic is verified by measurement where it cannot be unit-tested, and `buildSrc` has a test source
   set for its pure functions** — the rule, and the landmine that `./gradlew build` does not run
   buildSrc's tests, are in `.claude/rules/build-layout.md` (loads when you touch `buildSrc/` or a build script).
@@ -328,18 +296,12 @@ evidence consulted occasionally, not context every session needs.
   server, red` sub-commit verbatim along with the two mutations that fail against it. A grouped commit
   that merely asserts "tests added" has thrown the evidence away, which is the thing this rule exists to
   prevent. In-session verification with no written trace is not a substitute: it leaves no evidence, and
-  it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
-  commits of that day's plan (`2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`,
-  `1f92f585c`, `5caa6833f`) bundled guard and change, so nobody can check out `2a9a03473^` and watch the pin
-  go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
-  keep and everything to reconstruct later.
+  it is exactly what silently passed twice above.
 - **Run the pin before you commit it red, and read *why* it failed.** Committing a guard red is only
-  evidence if the red is the missing implementation. Twice on 2026-09-01 it was not: a fixture omitted a
-  collaborator, so four asserted field paths could not have resolved even against correct code; and a Kotlin
-  `${'$'}` escape produced the literal `...-v${'$'}version`, so the guard asserted a string no implementation
-  would ever return. Both were fixed in the very commit that was supposed to turn them green, which quietly
-  undoes the boundary the previous rule exists to create — `git checkout <fix>^` then shows a failure that is
-  partly the guard's own fault. One run before `git commit` distinguishes the two, and costs seconds.
+  evidence if the red is the missing implementation. A fixture missing a collaborator, or an escape
+  producing a string no implementation returns, makes a red that is the guard's own fault, and fixing it in the
+    commit meant to turn it green undoes the boundary the previous rule exists to create. One run before `git commit`
+  distinguishes the two, and costs seconds.
 
 - **`refactor:` is a claim about behaviour, not about intent.** Use it only when behaviour is preserved; label
   a behaviour change `fix:` or `feat:` however tidy it looks. If an **existing** test's *assertion, argument or
@@ -348,16 +310,7 @@ evidence consulted occasionally, not context every session needs.
   imports and receivers in its tests, and Strangler-Fig moves are exactly what the conventions ask for — so
   `- Old.isSuspendGap(gap, poll)` / `+ New.isSuspendGap(gap, poll)`, with every assertion byte-identical, stays a
   `refactor:`. Judge the diff, not the file list: if no expectation changed, the test did not change in the sense
-  this rule means. (Written after the rule's first draft flagged `b6b778b82`, a clean cross-module move, as
-  mislabelled — a convention that cries wolf on legitimate refactors gets ignored wholesale.) Three commits got
-  this wrong: `5f138ef8a` (`refactor(app)`) moved four call-sites onto a *resolved* Preferences node, changing where
-  any host with its own node reads and writes, and had to edit `CommandlineParserTest`; `7815d5960`
-  (`refactor(api)`) added an operator-editable template path plus a delete-watcher branch in `-app`; `358675fbf`
-  (`refactor(ci)`) stopped 13 of the pipeline's 20 jobs from starting a dind service, cutting ~34 s off each. All
-  three described the change honestly in the body — only the type lied. **`358675fbf` also shows why the label is
-  worth getting right the first time:** it was audited only after being merged into `develop` and `alpha`, at which
-  point the honest remedy is this entry, because the alternative is force-pushing two shared branches. The rule is
-  cheap before the merge and unfixable after it.
+  this rule means.
 
 ### Kotlin idioms
 
@@ -401,9 +354,8 @@ evidence consulted occasionally, not context every session needs.
     from the others by name.
 - **Documenting a single-line constructor means reshaping it, and that reshape is in scope.** Per-parameter KDoc
   cannot attach to a parameter sharing a line with others, so `data class X(val a: A, val b: B)` has to become one
-  parameter per line before each can be documented. Four declarations were reshaped that way on 2026-07-31
-  (`ContainerRunOutput`, `CatalogCursor`, `Exclusion`, `Dependency`); an audit flagged it as scope creep, which it is
-  not — it is the enabling change. Keep it to the declaration being documented, and verify the obvious: parameter
+    parameter per line before each can be documented. Keep it to the declaration being documented, and verify the
+  obvious: parameter
   names, types, order and defaults must survive untouched. The alternative, a class-level `@param` block, leaves the
   properties themselves undocumented as far as dokka is concerned.
 - **A doc that only restates the signature is omitted, not written.** For a pure accessor over a well-named
@@ -425,14 +377,10 @@ evidence consulted occasionally, not context every session needs.
 2. Documentation per **## Conventions** — as little as possible, as much as necessary; no restatements.
 3. No new compiler warnings; stale comments updated. **Measure with `--rerun-tasks`, or the number is
    about Gradle's cache rather than the code** — an UP-TO-DATE Kotlin compile does not run the compiler, so
-   a grep for `w:` returns zero whatever the source says. That is how a "zero warnings, none at all"
-   reading reached `claude-docs/REFACTOR-AUDIT.md`. The honest baseline on `77fdd27d6`, from
-   `./gradlew :serverpackcreator-{api,app,clientside,grinder}:compileKotlin --rerun-tasks`, is **40**: 31
-   `Deprecated in Java` (the `Locale(String)` constructors, Jackson's `fields()`/`readTree(URL)`,
-   night-config's `valueMap()`), 3 unchecked casts in drag-and-drop handlers, 4 `@OptIn` delicate-API
-   notices for `CoroutineStart.ATOMIC`, 1 redundant conversion. Several are library-driven and move on a
-   dependency bump without a source change, which is the reason to compare against a number that was taken
-   the same way.
+   a grep for `w:` returns zero whatever the source says. Take the baseline with
+   `./gradlew :serverpackcreator-{api,app,clientside,grinder}:compileKotlin --rerun-tasks` on the base commit
+   and compare against that: several warnings are library-driven and move on a dependency bump without a
+   source change.
 4. `claude-docs/REFACTOR-STATE.md` (and the relevant module `CLAUDE.md`) updated when an architectural
    step lands. Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`, not here.
 
