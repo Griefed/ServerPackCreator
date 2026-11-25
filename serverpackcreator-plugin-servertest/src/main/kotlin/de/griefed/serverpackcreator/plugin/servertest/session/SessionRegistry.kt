@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.session
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.io.File
 
 /**
@@ -39,6 +41,8 @@ import java.io.File
  * @author Griefed
  */
 class SessionRegistry {
+
+    private val log: Logger = LogManager.getLogger("AddonsLogger")
 
     /** Live sessions by pack directory. Synchronized: sessions end on their own reader threads. */
     private val sessions = mutableMapOf<String, ServerSession>()
@@ -85,8 +89,12 @@ class SessionRegistry {
      */
     @Synchronized
     fun killAll() {
-        for (session in sessions.values.toList()) {
-            runCatching { session.kill() }
+        for ((packDirectory, session) in sessions.toList()) {
+            try {
+                session.kill()
+            } catch (ex: Exception) {
+                log.warn("Could not kill the server of $packDirectory at shutdown; it may still be running.", ex)
+            }
         }
         sessions.clear()
     }
