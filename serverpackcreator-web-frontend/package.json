@@ -34,7 +34,7 @@
     "@vitejs/plugin-vue": "6.0.10",
     "@vue/eslint-config-prettier": "10.2.0",
     "@vue/test-utils": "2.5.1",
-    "autoprefixer": "10.6.2",
+    "autoprefixer": "10.7.0",
     "eslint": "10.14.0",
     "eslint-plugin-vue": "10.12.1",
     "globals": "17.14.0",
