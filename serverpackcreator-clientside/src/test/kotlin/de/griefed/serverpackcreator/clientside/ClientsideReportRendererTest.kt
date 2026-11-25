@@ -404,4 +404,34 @@ internal class ClientsideReportRendererTest {
         Assertions.assertEquals(listOf("examplemod-"), data.path("suggestedEntries").map { it.asText() })
         Assertions.assertEquals("A --> B", data.path("perTarget")[0].path("note").asText())
     }
+
+    /**
+     * The link comes from the issue body and the names from whoever uploaded the mod, so neither may close the
+     * span or block it is shown in: a backtick in them would turn the rest into live Markdown, mentions included.
+     */
+    @Test
+    fun aBacktickInTheProjectLinkCannotEndItsSpan() {
+        val failure = ClientsideReportRenderer.renderFailure("https://modrinth.com/mod/x`@someone", "unreachable")
+        Assertions.assertTrue("``https://modrinth.com/mod/x`@someone``" in failure, failure)
+    }
+
+    @Test
+    fun anUploadedNameCarryingAFenceCannotCloseTheBlockItIsListedIn() {
+        val hostile = "examplemod-```-1.0.jar"
+        val rendered = ClientsideReportRenderer.renderMarkdown(
+            report.copy(suggestedEntries = listOf("examplemod-```-"), fileNames = listOf(hostile))
+        ).lines()
+        val entries = rendered.indexOf("### Suggested clientside-list entries")
+        Assertions.assertEquals(listOf("````", "examplemod-```-", "````"), rendered.subList(entries + 1, entries + 4))
+        val name = rendered.indexOf(hostile)
+        Assertions.assertEquals("````", rendered[name - 1], "the file-name block opens with a longer fence")
+        Assertions.assertEquals("````", rendered[name + 1], "and closes with it")
+    }
+
+    @Test
+    fun anUploadedEntryCannotEndItsTableCellSpanOrSplitTheRow() {
+        val hostile = crashedOnNeoForge.copy(suggestedEntry = "x`|y-")
+        val rendered = ClientsideReportRenderer.renderMarkdown(report.copy(perTarget = listOf(hostile)))
+        Assertions.assertTrue("``x`\\|y-``" in rendered, rendered)
+    }
 }

@@ -93,7 +93,7 @@ object ClientsideReportRenderer {
      * and [reason]. The CLI's report verbs and the grinder's `--clientside-report` all write it.
      */
     fun renderFailure(projectUrl: String, reason: String?): String =
-        "$MARKER\n## 🤖 Clientside-mod verification failed\n\nCould not assess `$projectUrl`: $reason\n"
+        "$MARKER\n## 🤖 Clientside-mod verification failed\n\nCould not assess ${inlineCode(projectUrl)}: $reason\n"
 
     /**
      * Everything above the boot logs: the marker, the entries, the table, crash excerpts and notes. The notes take at
@@ -103,7 +103,7 @@ object ClientsideReportRenderer {
     private fun head(report: ClientsideReport, withExcerpts: Boolean, noteBudget: Int): String {
         val builder = StringBuilder()
         builder.appendLine(MARKER)
-        builder.appendLine("## 🤖 Clientside-mod verification — `${report.slug}` (${report.platform})")
+        builder.appendLine("## 🤖 Clientside-mod verification — ${inlineCode(report.slug)} (${report.platform})")
         builder.appendLine()
         builder.appendLine("Automated assessment (**${report.phase}**). A maintainer should review the evidence below, correct the entries if needed, then add the `accepted` label to open a PR.")
         builder.appendLine()
@@ -112,9 +112,10 @@ object ClientsideReportRenderer {
         if (report.suggestedEntries.isEmpty()) {
             builder.appendLine("_None could be derived — see the file-names below and add an entry manually._")
         } else {
-            builder.appendLine("```")
+            val fence = fenceFor(report.suggestedEntries)
+            builder.appendLine(fence)
             report.suggestedEntries.forEach { builder.appendLine(it) }
-            builder.appendLine("```")
+            builder.appendLine(fence)
         }
         builder.appendLine()
 
@@ -195,9 +196,10 @@ object ClientsideReportRenderer {
         } else {
             builder.appendLine("<details><summary>All ${report.fileNames.size} published file-names</summary>")
             builder.appendLine()
-            builder.appendLine("```")
+            val fence = fenceFor(report.fileNames)
+            builder.appendLine(fence)
             report.fileNames.forEach { builder.appendLine(it) }
-            builder.appendLine("```")
+            builder.appendLine(fence)
             builder.appendLine("</details>")
         }
         builder.appendLine()
@@ -318,8 +320,19 @@ object ClientsideReportRenderer {
     /** The Minecraft version a row booted, its version-line when no exact version was chosen, or an em-dash. */
     private fun minecraftOf(verdict: GrindTargetVerdict): String = verdict.minecraftVersion ?: verdict.minecraftLine ?: "—"
 
-    /** Wrap a non-null entry in inline-code, or render an em-dash for a missing one. */
-    private fun code(value: String?): String = if (value.isNullOrBlank()) "—" else "`$value`"
+    /** A table cell's inline-code for [value], with `|` escaped so it cannot split the row, or an em-dash for a missing one. */
+    private fun code(value: String?): String = if (value.isNullOrBlank()) "—" else inlineCode(value.replace("|", "\\|"))
+
+    /**
+     * [value] as inline code, delimited by a backtick run longer than any inside it, so text an issue author or
+     * uploader chose cannot end the span; padded with a space where it starts or ends with a backtick, as
+     * CommonMark requires.
+     */
+    private fun inlineCode(value: String): String {
+        val ticks = "`".repeat(longestBacktickRun(value) + 1)
+        val pad = if (value.startsWith("`") || value.endsWith("`")) " " else ""
+        return "$ticks$pad$value$pad$ticks"
+    }
 
     /**
      * Decorate a verdict with an emoji so a maintainer can triage at a glance.

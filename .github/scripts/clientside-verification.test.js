@@ -96,6 +96,8 @@ test('the project link is the first CurseForge or Modrinth URL in the body', () 
   assert.equal(verification.projectLinkIn(issueBody()), PROJECT)
   assert.equal(verification.projectLinkIn(issueBody({ project: 'https://modrinth.com/mod/sodium' })), 'https://modrinth.com/mod/sodium')
   assert.equal(verification.projectLinkIn('no link at all'), null)
+  // A backtick ends the link, so the rest of the issue body cannot ride along into the bot's code span.
+  assert.equal(verification.projectLinkIn('see https://modrinth.com/mod/x`@someone` thanks'), 'https://modrinth.com/mod/x')
   assert.equal(verification.projectLinkIn(null), null)
 })
 

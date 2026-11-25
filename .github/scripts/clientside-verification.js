@@ -44,7 +44,7 @@ const RERUN_LABEL = {
  */
 const TRUSTED_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR'])
 
-const PROJECT_LINK =/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)]+/i
+const PROJECT_LINK =/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)`<>]+/i
 const ANY_LINK = /https?:\/\/[^\s)<>]+/gi
 
 const NO_LINK_BODY = `${REPORT_MARKER}\n## 🤖 Clientside-mod verification\n\n` +
