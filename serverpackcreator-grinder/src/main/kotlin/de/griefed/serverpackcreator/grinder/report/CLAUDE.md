@@ -85,14 +85,18 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
     there.** The table renders into one `String` at ~430 bytes per row, so on the deployed store `size=all`
     was a ~137 MB document and `size=100000` a ~43 MB one — each built whole in heap before a byte was sent,
     on four request threads. `forTable()` applies the cap on the HTML route *only*; `/export.csv` and
-    `/verdicts.json` stay unpaged, because they stream. `offeredSizes` stops offering `all` once the match
-    count passes the cap, or the control would show a choice `forTable` then refuses to honour.
+    `/verdicts.json` stay unpaged, because they stream. **`all` is resolved after counting**
+    (`VerdictQuery.allCap`): within the cap it stays `all` — selected in the control and carried by every
+    link — and past it it becomes the cap. `offeredSizes` stops offering `all` at the same point, or the
+    control would show a choice the selection then refuses to honour.
   - **The two unpaged endpoints are streamed, not materialised.** `respondStreaming` sends a declared length
     of 0 (chunked) and writes the document as it is produced, so the cost is a buffer rather than the
     document three times over (Jackson's segments, the `String`, the `ByteArray`). Nothing can be retracted
-    once the first chunk is out, which is the deliberate trade: the predecessor wrapped serialisation in
-    `runCatching`, and because Kotlin's catches `Throwable`, heap exhaustion was answered **200** with a
-    23-byte `{"error":…}` body and reached no log at all.
+    once the first chunk is out, so **a failure part-way is logged at ERROR and the body is left unclosed**:
+    the handler rethrows, the JDK server drops the connection without the terminating chunk, and the client
+    sees an incomplete response (`StreamedExportFailureTest`). **LANDMINE — never `use {}` the body or the
+    JSON generator there**: closing on the way out writes the terminating chunk and Jackson's
+    `AUTO_CLOSE_JSON_CONTENT` writes the missing `]}`, which turns a failure into a well-formed, shorter 200.
   - **LANDMINE — bind `size` outside `buildList`.** Its `MutableList` receiver's own `size` shadows the
     property, so `toQueryString` compared the *list length* and emitted it: `size=250` became `size=0`.
     Invisible by reading; caught by `theAppliedQueryRoundTrips`.
@@ -150,8 +154,28 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
   a timestamp is whatever `ScanDate` rendered. The JSON route serialises `GrindVerdict` itself, so an
   array stays an array. Same query parameters as the table and the CSV, and `defaultSize = null` so a bare
   call is unpaged exactly as `/export.csv` is; the rows arrive inside
-  `{total, matched, page, pages, verdicts}`, so a consumer can tell *nothing matched* from *nothing
+  `{total, matched, page, pages, version, verdicts}`, so a consumer can tell *nothing matched* from *nothing
   recorded*. **This is what the ServerPackCreator grinder plugin reads.**
+  - **`version` is the snapshot's, never `VerdictStore.version`.** It names the `VerdictSnapshot` the page was
+    cut from, so a paging client that sees two values knows its pages span a change — the one skip offset
+    paging cannot otherwise reveal, since a key removed ahead of the cursor and one added behind it leave
+    `matched` unchanged. `VerdictSnapshotCache` stamps each build from a counter of its own, seeded from the
+    wall clock so a restart never reissues a value: the store's counter is read *before* the rows, so two
+    concurrent builds straddling a record would hold different rows under one store version
+    (`snapshotsHoldingDifferentRowsNeverShareAVersion`), and inside the coalescing window it names rows the
+    held snapshot does not contain (`aPageCutFromTheHeldSnapshotCarriesThatSnapshotsVersion`). Additive:
+    a consumer that ignores it reads exactly what it read before, and the table and CSV do not carry it.
+  - **`?version=<v>` pins a page to that snapshot** (`VerdictSnapshotCache.pinned`), so a paged read is exact
+    however long it takes; an evicted version is `410 Gone` with `{error, version}`, **never** answered from
+    another snapshot (`answersGoneForAVersionNoLongerRetained`). An unparseable `version=` is ignored like any
+    unreadable parameter. Retention is LRU by last served, bounded by `DEFAULT_RETAINED_COUNT` (8) and
+    `DEFAULT_RETAINED_IDLE` (60 s) — constants, not knobs: the idle bound only has to outlast one page request
+    (the plugin's timeout is 15 s), and the count is the memory bound (~2.6 MB of references per snapshot at
+    320k rows, estimated in the constant's KDoc). `retain` runs on **every** snapshot `current()` serves, held
+    ones included — an idle daemon reuses a snapshot older than the idle time, and page 2 must find the version
+    page 1 reported (`servingTheHeldSnapshotRetainsItAgain`). Pinned pages never build, so only unpinned
+    requests can push a read's snapshot out; with `SPC_GRINDER_REPORT_CACHE_SECONDS=0` each of those rebuilds
+    when the store moved, which is the one setting under which eviction mid-read becomes plausible.
   - **LANDMINE — the mapper is shared with `/status` and needs `JavaTimeModule`.** `ReportServer`'s was a
     bare `jacksonObjectMapper()`, which writes an `Instant` as `{"epochSecond":…,"nano":…}` — parseable,
     but not a timestamp any client recognises, and not what `JsonVerdictStore` writes to disk. It now

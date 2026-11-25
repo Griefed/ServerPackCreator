@@ -19,13 +19,25 @@
  */
 package de.griefed.serverpackcreator.app.web.storage
 
+import com.mongodb.client.gridfs.model.GridFSFile
+import io.mockk.every
+import io.mockk.mockk
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.springframework.data.mongodb.gridfs.GridFsResource
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.nio.file.Path
 import java.security.MessageDigest
+import java.util.Optional
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
+import kotlin.io.path.listDirectoryEntries
 
 /**
  * Characterization of [FileSystemStorageService]: what it names, what it hashes, what it reports and
@@ -161,5 +173,105 @@ class FileSystemStorageServiceTest {
 
         Assertions.assertTrue(root.toFile().exists())
         Assertions.assertEquals(0, root.toFile().listFiles()!!.size)
+    }
+
+    /** A GridFS file and resource pair whose content stream is [content]. */
+    private fun gridFsPair(objectId: ObjectId, content: InputStream): Pair<GridFSFile, GridFsResource> {
+        val gridFsFile: GridFSFile = mockk()
+        val resource: GridFsResource = mockk()
+        every { gridFsFile.objectId } returns objectId
+        every { resource.inputStream } returns content
+        return gridFsFile to resource
+    }
+
+    /** Records whether it was closed, so a test can assert the GridFS download stream is released. */
+    private class ClosingAwareStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+        var closed = false
+
+        override fun close() {
+            closed = true
+            super.close()
+        }
+    }
+
+    @Test
+    fun recoveringFromGridFsWritesTheWholeArchiveAndClosesTheStream() {
+        val objectId = ObjectId()
+        val content = ClosingAwareStream(ByteArray(64) { it.toByte() })
+        val (gridFsFile, resource) = gridFsPair(objectId, content)
+        val storage = service()
+
+        val cached = storage.cache(gridFsFile, resource).get()
+
+        Assertions.assertArrayEquals(ByteArray(64) { it.toByte() }, cached.toFile().readBytes())
+        Assertions.assertEquals(cached.toFile(), storage.load(objectId.toString()).get())
+        Assertions.assertTrue(content.closed, "the GridFS download stream must be closed")
+    }
+
+    /**
+     * A recovery that fails mid-copy must leave nothing `load` would serve: a partial `$id.zip` would be taken
+     * by its fast path and served, truncated, from then on.
+     */
+    @Test
+    fun aRecoveryThatFailsMidCopyLeavesNothingBehindToServe() {
+        val objectId = ObjectId()
+        val failing = object : InputStream() {
+            private var served = 0
+            override fun read(): Int {
+                if (served == 32) throw IOException("connection to GridFS lost")
+                served++
+                return 7
+            }
+        }
+        val (gridFsFile, resource) = gridFsPair(objectId, failing)
+        val root = tempDir.resolve("storage").also { it.createDirectories() }
+        val storage = service(root)
+
+        Assertions.assertTrue(storage.cache(gridFsFile, resource).isEmpty)
+        Assertions.assertTrue(storage.load(objectId.toString()).isEmpty)
+        Assertions.assertEquals(emptyList<Path>(), root.listDirectoryEntries())
+    }
+
+    /**
+     * While one request is still copying an archive out of GridFS, a concurrent request must not find a
+     * half-written file under the id.
+     */
+    @Test
+    fun aRecoveryInProgressIsInvisibleToLoad() {
+        val objectId = ObjectId()
+        val halfWritten = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val stalling = object : InputStream() {
+            private var served = 0
+            override fun read(): Int {
+                val single = ByteArray(1)
+                return if (read(single, 0, 1) == -1) -1 else single[0].toInt()
+            }
+
+            override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+                if (served == 64) return -1
+                if (served == 32) {
+                    halfWritten.countDown()
+                    release.await(10, TimeUnit.SECONDS)
+                }
+                val count = minOf(length, 32 - served % 32)
+                buffer.fill(7, offset, offset + count)
+                served += count
+                return count
+            }
+        }
+        val (gridFsFile, resource) = gridFsPair(objectId, stalling)
+        val storage = service()
+        var recovered: Optional<Path> = Optional.empty()
+        val copier = Thread { recovered = storage.cache(gridFsFile, resource) }
+
+        copier.start()
+        Assertions.assertTrue(halfWritten.await(10, TimeUnit.SECONDS))
+        val seenMidCopy = storage.load(objectId.toString())
+        release.countDown()
+        copier.join(10_000)
+
+        Assertions.assertTrue(seenMidCopy.isEmpty, "a half-written archive was visible to load: $seenMidCopy")
+        Assertions.assertEquals(64L, recovered.get().toFile().length())
     }
 }

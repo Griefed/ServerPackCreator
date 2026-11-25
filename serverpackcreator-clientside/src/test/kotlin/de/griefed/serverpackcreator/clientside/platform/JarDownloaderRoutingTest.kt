@@ -21,6 +21,10 @@ package de.griefed.serverpackcreator.clientside.platform
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.name
+import kotlin.io.path.toPath
 
 /**
  * Pins that there is exactly **one** download route, and that a distribution-locked file is reported rather
@@ -38,6 +42,15 @@ import java.io.File
 internal class JarDownloaderRoutingTest {
 
     private val http = JarDownloader { _, _ -> File("http") }
+
+    /**
+     * Every class file name this module's main output holds, found by walking the directory [JarDownloader] was
+     * loaded from. No package is named, so a move cannot leave the guards asking about a package nothing lives in.
+     */
+    private val mainClassFiles: List<String> by lazy {
+        val root: Path = JarDownloader::class.java.protectionDomain.codeSource.location.toURI().toPath()
+        Files.walk(root).use { paths -> paths.map { it.name }.filter { it.endsWith(".class") }.toList() }
+    }
 
     private fun file(downloadUrl: String?) =
         ModFile("mod.jar", setOf("Forge"), setOf("1.20.1"), downloadUrl, "page", emptyList())
@@ -57,21 +70,25 @@ internal class JarDownloaderRoutingTest {
     fun aLockedFileIsRecognisedAndHasNoBrowserFallback() {
         Assertions.assertTrue(file(downloadUrl = null).locked, "no downloadUrl still means distribution-locked")
 
-        Assertions.assertThrows(ClassNotFoundException::class.java, {
-            Class.forName("de.griefed.serverpackcreator.clientside.platform.BrowserDownloader")
-        }, "the headless-browser downloader must be gone, not merely unused")
+        Assertions.assertTrue("JarDownloader.class" in mainClassFiles, "the walk must see this module's classes")
+        Assertions.assertEquals(
+            emptyList<String>(),
+            mainClassFiles.filter { it.startsWith("BrowserDownloader") },
+            "the headless-browser downloader must be gone, not merely unused"
+        )
     }
 
     /**
      * There is no `selectDownloader` any more — one route means nothing to select between.
      *
      * The file now declares no top-level function at all, so Kotlin emits **no** `JarDownloaderKt` facade;
-     * the class being absent is therefore a stronger result than an empty method list, and both count.
+     * the class being absent is therefore a stronger result than an empty method list, and both count. The facade is
+     * looked up in [JarDownloader]'s own package, wherever that is.
      */
     @Test
     fun noRoutingHelperSurvives() {
         val facade = runCatching {
-            Class.forName("de.griefed.serverpackcreator.clientside.platform.JarDownloaderKt")
+            Class.forName("${JarDownloader::class.java.packageName}.JarDownloaderKt")
         }.getOrNull()
 
         val router = facade?.declaredMethods?.map { it.name }?.filter {

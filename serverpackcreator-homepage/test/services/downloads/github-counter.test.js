@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { GitHubDownloadCounter, GITHUB_PAGE_SIZE } from '@/services/downloads/GitHubDownloadCounter'
+import { MAX_PAGES } from '@/services/downloads/releasePages'
 import { fetchStub, release } from './fetchStub'
 
 const reference = {
@@ -58,6 +59,17 @@ describe('GitHubDownloadCounter', () => {
     await new GitHubDownloadCounter().count(reference, { fetch })
 
     expect(requested.length).toBe(1)
+  })
+
+  it('fails after a bounded number of pages when the Link header points back at itself', async () => {
+    const first = `${endpoint}?per_page=${GITHUB_PAGE_SIZE}&page=1`
+    const { fetch, requested } = fetchStub({
+      [first]: { body: [release(1)], link: `<${first}>; rel="next"` }
+    })
+
+    await expect(new GitHubDownloadCounter().count(reference, { fetch }))
+      .rejects.toThrow(/more than \d+ pages/)
+    expect(requested.length).toBe(MAX_PAGES)
   })
 
   it('sends a bearer token when one is supplied, since anonymous is 60 requests an hour', async () => {

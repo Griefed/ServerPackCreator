@@ -74,7 +74,7 @@
 ### 🚀 Features
 
 * **dev:** a run configuration for the opt-in app profile ([6438e17](https://git.griefed.de/Griefed/ServerPackCreator/commit/6438e17fe54c8f072ce32d244f939a44bb5d2974))
-* **homepage:** count downloads across GitHub, Gitea and Forgejo without github-release-stats ([109b06b](https://git.griefed.de/Griefed/ServerPackCreator/commit/109b06bdb116d8edbcd4d2379b1bb0c0c7bc133d)), closes [gitlab-org/gitlab#327317](https://git.griefed.de/gitlab-org/gitlab/issues/327317)
+* **homepage:** count downloads across GitHub, Gitea and Forgejo without github-release-stats ([109b06b](https://git.griefed.de/Griefed/ServerPackCreator/commit/109b06bdb116d8edbcd4d2379b1bb0c0c7bc133d))
 * **homepage:** list the four plugins that actually ship, and rework the header ([bb9d42b](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb9d42b1ca9972691942521a5f17b9909407edb7))
 * **homepage:** serve the addons overview at /addons, as a page rather than a project ([0fb39f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fb39f24cb9ccaa92d19d1a7950e064c216d61a3))
 
@@ -93,7 +93,7 @@
 * **docker:** the dev stack's database browser was a deprecated image, two years unbuilt ([92d0049](https://git.griefed.de/Griefed/ServerPackCreator/commit/92d0049c759c76c58fdd35644cfee7590b7be4ea))
 * **grinder:** the hostname guard read an empty console as a resolved name ([97fca09](https://git.griefed.de/Griefed/ServerPackCreator/commit/97fca093a015d73296e1cfe502a56199162a2156))
 * **homepage:** pin and repair the SPA before migrating its build ([3f0f223](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f0f2232b448c3f49e8d00729c2bf6ad36e775ca))
-* **homepage:** the Features Excerpt headings keep their white on hover ([db025e5](https://git.griefed.de/Griefed/ServerPackCreator/commit/db025e5313b1abf59e974fa5a7585208069af141)), closes [#54a896](https://git.griefed.de/Griefed/ServerPackCreator/issues/54a896) [#ec982f](https://git.griefed.de/Griefed/ServerPackCreator/issues/ec982f) [#f4655f](https://git.griefed.de/Griefed/ServerPackCreator/issues/f4655f) [#9c27b0](https://git.griefed.de/Griefed/ServerPackCreator/issues/9c27b0) [#3b97d1](https://git.griefed.de/Griefed/ServerPackCreator/issues/3b97d1) [#54a896](https://git.griefed.de/Griefed/ServerPackCreator/issues/54a896) [#f7f7f7](https://git.griefed.de/Griefed/ServerPackCreator/issues/f7f7f7)
+* **homepage:** the Features Excerpt headings keep their white on hover ([db025e5](https://git.griefed.de/Griefed/ServerPackCreator/commit/db025e5313b1abf59e974fa5a7585208069af141))
 * **web:** stream webservice downloads, and repair what that uncovered ([8e224d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/8e224d62e3354feb9bf3d5da91f0c0e5fb3961d9))
 
 ## [9.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.3.0...9.3.1) (2026-10-18)
@@ -2133,7 +2133,7 @@
 
 ### 👀 Reverts
 
-* Disable jNeedle scans to prevent deadlocks ([f0186a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0186a7de858dbcaa83548f67c2795ae29d33caa)), closes [/github.com/KosmX/jneedle/discussions/49#discussioncomment-10450234](https://git.griefed.de/Griefed//github.com/KosmX/jneedle/discussions/49/issues/discussioncomment-10450234)
+* Disable jNeedle scans to prevent deadlocks ([f0186a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0186a7de858dbcaa83548f67c2795ae29d33caa))
 
 
 ### 📦 Other
@@ -4480,7 +4480,7 @@
 * **CI:** Please, OSSRH-job, work this time. ([0783330](https://git.griefed.de/Griefed/ServerPackCreator/commit/078333043acff0d3776386473a814d6074fa8353))
 * **CI:** Whoops. Use Powershell-syntax in Windows job to split version ([b846291](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8462919ce0cb37d0245da5bbfe601b2714cc1dc))
 * **CI:** Whoops. Use Powershell-syntax in Windows job to split version ([5e9d849](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e9d849e528895b775c8c84ffe45f25f481f5e94))
-* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://github.com/Griefed/ServerPackCreator/issues/462)
 * **Quilt:** Ensure server installation is run in the server pack ([28c2ba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/28c2ba716b02eb29f0ddf4e07212c5e67e847be9))
 * **Windows Links:** Integrate DmitriiShamrikov/mslinks directly and add missing CLSIDs in order to resolve Windows Links correctly ([c8a4076](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8a4076c3e79b3cd817a1244c6df1d244b46e530))
 
@@ -5096,7 +5096,7 @@
 * **CI:** Please, OSSRH-job, work this time. ([0783330](https://git.griefed.de/Griefed/ServerPackCreator/commit/078333043acff0d3776386473a814d6074fa8353))
 * **CI:** Whoops. Use Powershell-syntax in Windows job to split version ([b846291](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8462919ce0cb37d0245da5bbfe601b2714cc1dc))
 * **CI:** Whoops. Use Powershell-syntax in Windows job to split version ([5e9d849](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e9d849e528895b775c8c84ffe45f25f481f5e94))
-* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://github.com/Griefed/ServerPackCreator/issues/462)
 * **Quilt:** Ensure server installation is run in the server pack ([28c2ba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/28c2ba716b02eb29f0ddf4e07212c5e67e847be9))
 * **Windows Links:** Integrate DmitriiShamrikov/mslinks directly and add missing CLSIDs in order to resolve Windows Links correctly ([c8a4076](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8a4076c3e79b3cd817a1244c6df1d244b46e530))
 
@@ -5495,7 +5495,7 @@
 
 ### 🛠 Fixes
 
-* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://github.com/Griefed/ServerPackCreator/issues/462)
 
 ## [5.0.0-alpha.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.18...5.0.0-alpha.19) (2023-07-11)
 
@@ -5891,7 +5891,7 @@
 
 ### 🛠 Fixes
 
-* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([280522d](https://git.griefed.de/Griefed/ServerPackCreator/commit/280522dc9d96a3c7fac0e6190ed9bcddf6255330)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([280522d](https://git.griefed.de/Griefed/ServerPackCreator/commit/280522dc9d96a3c7fac0e6190ed9bcddf6255330)), closes [GH#462](https://github.com/Griefed/ServerPackCreator/issues/462)
 
 ## [4.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.4...4.1.5) (2023-06-10)
 
@@ -5949,7 +5949,7 @@
 
 ### 🛠 Fixes
 
-* **GH#460:** Source JAVA_ARGS from variables in ps1. Thanks to @Frontear for the report! ([b810ec0](https://git.griefed.de/Griefed/ServerPackCreator/commit/b810ec083181782684a84282d2ec47af18f3b402)), closes [GH#460](https://git.griefed.de/Griefed/GH/issues/460)
+* **GH#460:** Source JAVA_ARGS from variables in ps1. Thanks to @Frontear for the report! ([b810ec0](https://git.griefed.de/Griefed/ServerPackCreator/commit/b810ec083181782684a84282d2ec47af18f3b402)), closes [GH#460](https://github.com/Griefed/ServerPackCreator/issues/460)
 
 ## [4.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.1...4.1.2) (2023-04-30)
 
@@ -5982,7 +5982,7 @@
 
 ### 🛠 Fixes
 
-* **GH#458:** Persistently load and store properties ([c60d13f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c60d13f1bccd2a8155b2eb9722299d0a332f501f)), closes [GH#458](https://git.griefed.de/Griefed/GH/issues/458)
+* **GH#458:** Persistently load and store properties ([c60d13f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c60d13f1bccd2a8155b2eb9722299d0a332f501f)), closes [GH#458](https://github.com/Griefed/ServerPackCreator/issues/458)
 
 ## [4.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.4...4.0.5) (2023-04-08)
 
@@ -8093,8 +8093,8 @@
 * Refactor lang keys to better reflect where they're used. Add more lang keys for logging. Improve wording. Fix some minor typos. ([9553557](https://git.griefed.de/Griefed/ServerPackCreator/commit/9553557d40a129194c3b2fd478b83805f35b0805))
 * Refactor tailers to run in threads. ServerPackCreator can still become unresponsive if you resize during zip-creation, after a Forge server was installed, though..... ([d4c986e](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4c986eaa2451989420fa9785fab6f86523c8755))
 * Remove elements starting with ! from list instead of avoiding them with an ugly if-statement ([b8c84e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8c84e1294d7e8feebd34a0da202f8dc60d02d78))
-* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
-* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0))
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9))
 * Remove/extract commonly used fields and methods. Make sure our database is always present. Other. ([859ede1](https://git.griefed.de/Griefed/ServerPackCreator/commit/859ede176db6ae995c72405b95c584de298300ef))
 * Remove/extract commonly used fields and methods. Work towards webservice ([abf0135](https://git.griefed.de/Griefed/ServerPackCreator/commit/abf01355447f0c3a0af4af97d1cac259ddc113fd))
 * Remove/extract commonly used fields/methods ([1f40517](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f405176a505bfcb5932493f94924bf45e2ade19))
@@ -8984,8 +8984,8 @@
 * Refactor lang keys to better reflect where they're used. Add more lang keys for logging. Improve wording. Fix some minor typos. ([9553557](https://git.griefed.de/Griefed/ServerPackCreator/commit/9553557d40a129194c3b2fd478b83805f35b0805))
 * Refactor tailers to run in threads. ServerPackCreator can still become unresponsive if you resize during zip-creation, after a Forge server was installed, though..... ([d4c986e](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4c986eaa2451989420fa9785fab6f86523c8755))
 * Remove elements starting with ! from list instead of avoiding them with an ugly if-statement ([b8c84e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8c84e1294d7e8feebd34a0da202f8dc60d02d78))
-* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
-* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0))
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9))
 * Remove/extract commonly used fields and methods. Make sure our database is always present. Other. ([859ede1](https://git.griefed.de/Griefed/ServerPackCreator/commit/859ede176db6ae995c72405b95c584de298300ef))
 * Remove/extract commonly used fields and methods. Work towards webservice ([abf0135](https://git.griefed.de/Griefed/ServerPackCreator/commit/abf01355447f0c3a0af4af97d1cac259ddc113fd))
 * Remove/extract commonly used fields/methods ([1f40517](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f405176a505bfcb5932493f94924bf45e2ade19))
@@ -10394,8 +10394,8 @@
 
 * Move ObjectMapper init to getter like in ConfigurationHandler ([d73ebd4](https://git.griefed.de/Griefed/ServerPackCreator/commit/d73ebd40e3a77dc512bd4f542eb5780fa9663a3a))
 * Move ObjectMapper init to getter like in ConfigurationHandler ([ac955c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac955c520f434fba1dedaf0299213f6b85489709))
-* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
-* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9)), closes [/github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692](https://git.griefed.de/Griefed//github.com/Griefed/ServerPackCreator/issues/62/issues/issuecomment-901382692)
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([3638e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/3638e22dd96cea72ec86d22f7c16d335eefa9bf0))
+* Remove preparations for 1.12 and older clientside autodetection. See https://github.com/Griefed/ServerPackCreator/issues/62#issuecomment-901382692 ([4977ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4977ae7f01db82b79b1af0057e505877e4307ad9))
 
 
 ### 📔 Docs

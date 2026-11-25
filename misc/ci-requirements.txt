@@ -1,0 +1,8 @@
+# What `test.yml`'s "Verify the workflow conventions" step installs, version- and hash-pinned
+# (`pip install --require-hashes`). Hashes from https://pypi.org/pypi/PyYAML/6.0.3/json: the CPython 3.12
+# manylinux wheels for x86_64 and aarch64 (the runner image's Python), and the sdist as the fallback for any
+# other interpreter. A version bump replaces all three.
+pyyaml==6.0.3 \
+    --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc \
+    --hash=sha256:9149cad251584d5fb4981be1ecde53a1ca46c891a79788c0df828d2f166bda28 \
+    --hash=sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f

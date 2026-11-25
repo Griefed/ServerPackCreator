@@ -97,43 +97,79 @@ jobs:
       - name: Verify the build logic
         run: ./gradlew help
 
-      # Seconds, and before the long build, for the same reason as the step above. TWO checks, one
-      # step, because both parse the workflows with pyyaml and the install below is the expensive half
-      # -- running them separately would pay for it twice and put two near-identical preambles in a
-      # file whose whole point is that steps are not written twice.
+      # Seconds, and before the long build, for the same reason as the step above. The checks share one
+      # step because they share the pyyaml install; each runs whatever the one before it concluded, and the
+      # step fails at the end if any did, so a red check never hides the next one's verdict.
       #
       # `ci-env-reference-check.py` compares each workflow step's `env:` keys against the names its
-      # script actually reads, in both directions. The defect it pins went green for twelve days and
-      # cost every release its Discord announcement, because `WEBHOOK_URL:` was declared and
-      # `$NEWS_WEBHOOK_URL` was read and a shell resolves an undefined name to the empty string.
+      # script actually reads, in both directions: a shell resolves an undefined name to the empty
+      # string, so a declared `WEBHOOK_URL:` beside a read `$NEWS_WEBHOOK_URL` fails GREEN.
       #
       # `ci-duplication-check.py` fails when a step is written twice without a reason. It is a gate
       # only because its count is zero -- the condition `.claude/rules/ci-workflows.md` records for
       # promoting one, because a check that is red on every push is not a pin, it is a broken build.
-      # It fails on an unexplained duplicate AND on an
-      # allowlist entry matching no step, both verified by exit code rather than assumed; the second
-      # direction is the one that matters here, because the allowlist is keyed by a hash of the step
-      # body, so a sweep that edits every workflow silently un-exempts everything it touches. That is
-      # how three entries went stale unnoticed while nothing ran this.
       #
-      # LANDMINE -- `pip3 install` on this runner image FAILS, and the install is needed. pyyaml is not
-      # in the standard library (every other python in these workflows gets by on `json` alone) and
-      # `ghcr.io/catthehacker/ubuntu:runner-latest` does not carry it, so the install is not optional;
-      # but that image is Ubuntu with Python 3.12.3 and pip 24.0, where a plain install is refused with
-      # `error: externally-managed-environment` under PEP 668. `--break-system-packages` is what the
-      # refusal itself names, and it is safe here for the reason the flag is otherwise frightening:
-      # the "system" is a job container that is destroyed when the job ends.
+      # Both also fail on an allowlist entry that matches nothing. The duplication allowlist is keyed by
+      # a hash of the step body and the env one by step name, so an edit that renames or rewrites a step
+      # leaves its exemption standing for whatever reuses the key next.
       #
-      # Measured in that exact image rather than reasoned about, after this step turned the build red
-      # on its first real run: `import yaml` -> ModuleNotFoundError, then the install below -> pyyaml
-      # 6.0.3, then the check runs clean against this repository.
+      # `dockerignore-inputs-check.py` fails when `.dockerignore` keeps a declared Gradle task input out of
+      # docker/Dockerfile's build context, which fails the image build with "Input file does not exist".
+      #
+      # `commit-body-reference-check.py` fails when a pushed commit's message holds a reference the release
+      # notes would link as an issue that is not one -- a bare `#54a896`, `owner/repo#12`, `Class#member`.
+      # It checks only what THIS push added: `before..sha`, or, when `before` is the all-zero id of a new
+      # branch, the pushed commits no other branch holds. So an offender fails the push that introduced it
+      # and the one that merges it into `main` (the push whose release notes it would actually pollute),
+      # and no push after that; a workflow_dispatch run (no `before`) skips the check with a message. It
+      # reads history from a commits-only clone (`--filter=tree:0`, a few megabytes, anonymous because the
+      # repository is public) in RUNNER_TEMP, which leaves the depth-1 workspace checkout every other step
+      # uses untouched.
+      #
+      # The `misc/test_*.py` self-tests run first: they pin the checkers' own exclusions, which the real
+      # workflows exercise only by accident.
+      #
+      # LANDMINE -- a plain `pip3 install` on this runner image FAILS, and the install is needed. pyyaml
+      # is not in the standard library and `ghcr.io/catthehacker/ubuntu:runner-latest` does not carry it,
+      # and that image's pip refuses a system install with `error: externally-managed-environment`
+      # (PEP 668). `--break-system-packages` is what the refusal itself names, and it is safe here for
+      # the reason the flag is otherwise frightening: the "system" is a job container that is destroyed
+      # when the job ends. The version and hashes come from `misc/ci-requirements.txt`.
       - name: Verify the workflow conventions
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          set -u
+          python3 -c 'import yaml' 2>/dev/null \
+            || pip3 install --quiet --disable-pip-version-check --break-system-packages \
+                 --require-hashes -r misc/ci-requirements.txt \
+            || exit 1
+          rc=0
+          python3 -B -m unittest discover -s misc -p 'test_*.py' || rc=1
+          python3 misc/ci-env-reference-check.py || rc=1
+          python3 misc/ci-duplication-check.py || rc=1
+          python3 misc/dockerignore-inputs-check.py || rc=1
+          if git clone --quiet --bare --filter=tree:0 --no-tags \
+               "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$RUNNER_TEMP/history.git"; then
+            # A force push's old tip is on no branch any more; asking for it by id keeps the range exact.
+            git --git-dir "$RUNNER_TEMP/history.git" fetch --quiet --filter=tree:0 origin "$PUSH_BEFORE" \
+              2>/dev/null || true
+            python3 misc/commit-body-reference-check.py --git-dir "$RUNNER_TEMP/history.git" \
+              --push "$PUSH_BEFORE" "$GITHUB_SHA" "$GITHUB_REF_NAME" || rc=1
+          else
+            echo "::error::could not clone the history commit-body-reference-check reads"
+            rc=1
+          fi
+          exit $rc
+
+      # The GitHub-only clientside workflows keep their logic in .github/scripts/ so it can be executed
+      # here rather than only on a real issue. Node's built-in test runner needs no install; the version
+      # is printed first so a runner image too old for `--test` says so instead of failing obscurely.
+      - name: Test the clientside workflow scripts
         run: |
           set -eu
-          python3 -c 'import yaml' 2>/dev/null \
-            || pip3 install --quiet --disable-pip-version-check --break-system-packages pyyaml
-          python3 misc/ci-env-reference-check.py
-          python3 misc/ci-duplication-check.py
+          node --version
+          node --test .github/scripts/clientside-verification.test.js
 
       # GRINDER_DOCKER_IT is NOT set here, deliberately. The grinder's container tests live in
       # `grinder-container-it.yml`, which holds a repository-wide concurrency lock, because one of them

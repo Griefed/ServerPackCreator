@@ -27,4 +27,10 @@ describe('releasesEndpoint', () => {
       'https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases'
     )
   })
+
+  it('encodes owner and repository, so neither can reshape the path or add a query', () => {
+    expect(releasesEndpoint({
+      platform: 'gitea', host: 'https://gitea.com', owner: 'some one', repository: 'repo?x=1#y'
+    })).toBe('https://gitea.com/api/v1/repos/some%20one/repo%3Fx%3D1%23y/releases')
+  })
 })

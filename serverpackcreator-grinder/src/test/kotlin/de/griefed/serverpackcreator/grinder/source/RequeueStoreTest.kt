@@ -115,6 +115,34 @@ internal class RequeueStoreTest {
         Assertions.assertTrue(store().drain().isEmpty())
     }
 
+    /**
+     * Reading an unreadable queue as empty is only safe if the next [JsonRequeueStore.add] cannot overwrite it:
+     * the file holds re-grinds an operator queued, and replacing it with one new entry loses every one of them.
+     */
+    @Test
+    fun anUnreadableQueueIsSetAsideBeforeAnAddCanOverwriteIt() {
+        val damaged = "[{\"projectUrl\":\"https://modrinth.com/mod/jei\", truncated"
+        File(home, "requeue.json").writeText(damaged)
+
+        val added = store().add(listOf(candidate("creativecore")))
+
+        val preserved = home.listFiles { file -> file.name.startsWith("requeue.json.unreadable-") }.orEmpty()
+        Assertions.assertEquals(1, preserved.size, "the unreadable queue must be kept beside the new one")
+        Assertions.assertEquals(damaged, preserved.single().readText(), "kept byte for byte, for a human to recover")
+        Assertions.assertEquals(1, added)
+        Assertions.assertEquals(listOf("creativecore"), store().drain().map { it.slug })
+    }
+
+    /** The count is what the operator is told was queued, so it must be what reached the disk. */
+    @Test
+    fun addCountsOnlyWhatWasPersisted() {
+        // A regular file where the queue's directory has to be: the write cannot happen, on any filesystem.
+        val blocker = File(home, "not-a-directory").apply { writeText("") }
+        val store = JsonRequeueStore(File(blocker, "requeue.json"))
+
+        Assertions.assertEquals(0, store.add(listOf(candidate("creativecore"))), "nothing was saved, so nothing was queued")
+    }
+
     /** Nothing queued is the normal case, and it must cost nothing and create nothing. */
     @Test
     fun anAbsentQueueIsEmpty() {

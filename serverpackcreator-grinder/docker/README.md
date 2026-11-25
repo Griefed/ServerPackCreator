@@ -24,21 +24,29 @@ So the **ServerStarterJar is Forge/NeoForge only** — the other loaders never t
 
 ## Java per Minecraft version
 
-A single JDK can't boot every Minecraft version. The image bundles Temurin **8, 17, 21, 25** at stable
-paths (`/opt/java-8|17|21|25`) and the grinder sets `$JAVA` (via the pack's `variables.txt`) to the right
+A single JDK can't boot every Minecraft version. The image bundles Temurin **8, 17, 21, 25** and Azul Zulu
+**16** at stable paths (`/opt/java-8|16|17|21|25`) and the grinder sets `$JAVA` (via the pack's `variables.txt`) to the right
 one — resolved from SPC's own declared required-Java (`MinecraftMeta.requiredJavaVersion`), so **no Java
 is ever downloaded**, which is what lets the actual mod-boots run under `--network none`:
 
 | Minecraft | Java |
 |---|---|
 | ≤ 1.16.5 | 8 |
-| 1.17 – 1.20.4 | 17 |
+| 1.17 – 1.17.1 | 16 |
+| 1.18 – 1.20.4 | 17 |
 | 1.20.5 – 1.21.x | 21 |
 | 26.2 (current release) | 25 |
 
-The bundled set **must mirror `ImageJavaRuntimes.bundledMajors`** — a Minecraft version whose required
-Java isn't bundled is skipped, never booted on the wrong JDK. Java 26 (snapshots only) is not bundled;
-the release-gate skips snapshots.
+The bundled set **must mirror `ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS`** (`RuntimeImageJdkSetTest` compares it
+with the Dockerfile's `/opt/java-<major>` links) — a Minecraft version whose required Java isn't bundled is
+skipped, never booted on the wrong JDK. Java 26 (snapshots only) is not bundled; the release-gate skips
+snapshots. Java 16 comes from Azul because Adoptium publishes no Temurin 16 package for bookworm. Both
+repository keys are checked against their vendors' published fingerprints during the build.
+
+**Upgrading a running grinder:** an image built before Java 16 was added has no `/opt/java-16`, while a
+grinder built from a newer checkout believes it does, so every 1.17/1.17.1 boot fails on a missing `java`.
+Rebuild the image (below) whenever you update the grinder; once rebuilt, the daemon starts grinding the
+1.17 lines its line policy selects instead of skipping them.
 
 ## Build
 
@@ -67,7 +75,7 @@ docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker     
 docker build -t spc-grinder-templates:latest -f serverpackcreator-grinder/docker/Dockerfile.templates serverpackcreator-grinder/docker
 ```
 
-Verified: `fish 3.6.0`, `pwsh 7.4.6`, JDK 8/17/21/25 + bash intact, non-root uid 1000, ~2.48 GB.
+Verified (before Java 16 was added): `fish 3.6.0`, `pwsh 7.4.6`, JDK 8/17/21/25 + bash intact, non-root uid 1000, ~2.48 GB.
 
 ## Network: the `--network none` relationship
 
@@ -79,10 +87,11 @@ run with network — that defeats the isolation (see `serverpackcreator-grinder/
 
 ## Known limitations (draft)
 
-- **Size:** 4 bundled JDKs make this a large image (~2.08 GB, verified). A leaner variant could ship only JDK 21
+- **Size:** 5 bundled JDKs make this a large image (~2.08 GB measured with four; Zulu 16 headless adds
+  roughly 290 MB installed, per its packages' `Installed-Size`). A leaner variant could ship only JDK 21
   and let the pack's `install_java.sh` fetch others during pre-bake (more pre-bake network, larger
   cache) — a deliberate tradeoff, not done here.
 - **uid alignment:** runs as `1000:1000`; the host-side bind-mounted pack dir must be writable by that
   uid (matches `ContainerServerRunner`'s `--user` default).
-- **arch:** the Temurin install paths are resolved by glob, so amd64/arm64 both work; the bundled JDK
+- **arch:** the Temurin and Zulu install paths are resolved by glob, so amd64/arm64 both work; the bundled JDK
   set assumes one of those two.

@@ -2,7 +2,7 @@
 # version floor is real and is a hard exit, not a warning: @quasar/app-vite's node-version-check
 # compares against 22.22.0 and calls process.exit(1), so a base image that moves backwards breaks
 # this build with an error naming Node rather than Quasar.
-FROM node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS builder
+FROM node:26-bookworm-slim@sha256:5df79989ed685e09f0a98019db4cebfb22fb9df1a53c0161664a011f7ff6b0f1 AS builder
 
 WORKDIR /tmp/serverpackcreator.de
 
@@ -26,7 +26,7 @@ RUN npm run build
 # image writes to is proven on it, not assumed. Nothing here ships an nginx site-conf (`/api/latest`
 # is a symlink, deliberately, because /config is a VOLUME seeded once), so the site-conf path move
 # between LSIO generations does not reach this image.
-FROM ghcr.io/linuxserver/nginx:1.30.4@sha256:c6c300bd5959e340d8742359f59604f3ad21426ea905cc77e75b01345034c8c6
+FROM ghcr.io/linuxserver/nginx:1.30.6@sha256:8de00c2dd6d2d00955a2905909577986660c9c654050865de9f895b0ad97a9fa
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
 

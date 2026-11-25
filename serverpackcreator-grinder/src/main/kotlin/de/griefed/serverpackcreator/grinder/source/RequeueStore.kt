@@ -49,7 +49,8 @@ import java.time.Instant
  */
 interface RequeueStore {
     /**
-     * Queue [candidates], skipping any already waiting, and return how many were newly added.
+     * Queue [candidates], skipping any already waiting, and return how many were newly added **and saved** —
+     * `0` when the queue could not be written, because the count is what an operator is told was queued.
      *
      * Identity is the platform plus the project's own id where one is known, falling back to the slug: a slug
      * is a mutable display name, so a project queued under its old name and again under its new one is one
@@ -68,7 +69,9 @@ interface RequeueStore {
  * File-backed [RequeueStore]. On disk because **the tool that queues and the daemon that drains are different
  * processes**: an operator queues work against a service that is already running, so an in-memory queue would
  * be empty in the one process that matters. A corrupt or half-written file reads as empty and is logged,
- * never thrown — a hand-edited queue must not stop the service starting.
+ * never thrown — a hand-edited queue must not stop the service starting — and is first moved aside to
+ * `<name>.unreadable-<epoch>`, so the next [add] cannot overwrite the re-grinds it holds. Moved rather than
+ * copied: the queue is read on every `/status` poll, and a copy per read would fill the directory.
  *
  * Writes replace the file atomically where the filesystem allows it, so a daemon draining while an operator
  * queues sees one state or the other and never a truncated document. The two processes are not otherwise
@@ -87,18 +90,24 @@ class JsonRequeueStore(
 
     @Synchronized
     override fun add(candidates: Collection<GrindCandidate>): Int {
-        val waiting = read()
+        val waiting = read() ?: run {
+            log.error(
+                "Not queueing ${candidates.size} project(s): the unreadable re-grind queue ${file.absolutePath} " +
+                    "could not be set aside, and writing would destroy it."
+            )
+            return 0
+        }
         val known = waiting.mapTo(HashSet()) { it.requeueKey() }
         val fresh = candidates.filter { known.add(it.requeueKey()) }
-        if (fresh.isNotEmpty()) {
-            write(waiting + fresh)
+        if (fresh.isEmpty() || !write(waiting + fresh)) {
+            return 0
         }
         return fresh.size
     }
 
     @Synchronized
     override fun drain(): List<GrindCandidate> {
-        val waiting = read()
+        val waiting = read().orEmpty()
         if (waiting.isNotEmpty()) {
             write(emptyList())
         }
@@ -106,23 +115,40 @@ class JsonRequeueStore(
     }
 
     @Synchronized
-    override fun pending(): Int = read().size
+    override fun pending(): Int = read()?.size ?: 0
 
-    /** Read the queue, treating anything unreadable as empty so a bad file cannot stop a grind. */
-    private fun read(): List<GrindCandidate> {
+    /**
+     * Read the queue. An unreadable file reads as empty once it has been moved aside; `null` means it is
+     * unreadable **and still in place**, so nothing may be written over it.
+     */
+    private fun read(): List<GrindCandidate>? {
         if (!file.isFile) {
             return emptyList()
         }
-        return runCatching { mapper.readValue<List<GrindCandidate>>(file) }
-            .getOrElse {
-                log.warn("Could not read the re-grind queue ${file.absolutePath}; treating it as empty: ${it.message}")
-                emptyList()
-            }
+        return try {
+            mapper.readValue<List<GrindCandidate>>(file)
+        } catch (ex: Exception) {
+            log.warn("Could not read the re-grind queue ${file.absolutePath}; treating it as empty: ${ex.message}")
+            if (setAsideUnreadable()) emptyList() else null
+        }
     }
 
-    /** Persist [candidates], replacing the file atomically where the filesystem supports it. */
-    private fun write(candidates: List<GrindCandidate>) {
-        runCatching {
+    /** Move the unreadable queue to a sibling named after this moment, so its entries can still be recovered. */
+    private fun setAsideUnreadable(): Boolean {
+        val backup = File(file.parentFile, "${file.name}.unreadable-${System.currentTimeMillis()}")
+        return try {
+            Files.move(file.toPath(), backup.toPath())
+            log.warn("Preserved the unreadable re-grind queue at ${backup.absolutePath}")
+            true
+        } catch (ex: Exception) {
+            log.error("Could not preserve the unreadable re-grind queue ${file.absolutePath}: ${ex.message}")
+            false
+        }
+    }
+
+    /** Persist [candidates], replacing the file atomically where the filesystem supports it; `false` if it failed. */
+    private fun write(candidates: List<GrindCandidate>): Boolean =
+        try {
             file.parentFile?.mkdirs()
             val temporary = File.createTempFile("requeue", ".json", file.parentFile)
             try {
@@ -139,8 +165,11 @@ class JsonRequeueStore(
                 // more file in a directory nothing sweeps -- the queue is operator state, not scratch.
                 temporary.delete()
             }
-        }.onFailure { log.warn("Could not persist the re-grind queue ${file.absolutePath}: ${it.message}") }
-    }
+            true
+        } catch (ex: Exception) {
+            log.warn("Could not persist the re-grind queue ${file.absolutePath}: ${ex.message}")
+            false
+        }
 
     /** Platform plus the project's stable id, or its slug when the id is unknown. */
     private fun GrindCandidate.requeueKey(): String = "$platform/${projectId ?: slug}"

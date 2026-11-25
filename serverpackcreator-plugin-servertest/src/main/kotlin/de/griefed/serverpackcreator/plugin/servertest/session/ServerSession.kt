@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.plugin.servertest.session
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.io.File
 import java.io.IOException
 import java.io.Writer
@@ -69,6 +71,11 @@ class ServerSession(
 
     /** Guards [onClosed] so a session that is stopped, killed and then exits still gives its port back once. */
     private val closed = AtomicBoolean(false)
+
+    /** Set by the first line the listener failed to take, so that failure is logged once. */
+    private val listenerFailed = AtomicBoolean(false)
+
+    private val log: Logger = LogManager.getLogger("AddonsLogger")
 
     /** The current state, also pushed to [onState] on every change. */
     @Volatile
@@ -215,15 +222,36 @@ class ServerSession(
         onState(next)
     }
 
-    /** Hand a console line to the listener without letting a throwing listener kill the reader thread. */
+    /**
+     * Hand a console line to the listener without letting a throwing listener kill the reader thread. The first
+     * failure is logged; later ones are not, so a broken listener cannot flood the log once per line.
+     */
     private fun emit(line: String) {
-        runCatching { onLine(line) }
+        try {
+            onLine(line)
+        } catch (ex: Exception) {
+            if (listenerFailed.compareAndSet(false, true)) {
+                log.warn(
+                    "The console of ${workingDirectory.absolutePath} failed to show a line; " +
+                        "later lines may be missing too.",
+                    ex
+                )
+            }
+        }
     }
 
     /** Run [onClosed] the first time only, whatever path the session ended by. */
     private fun close() {
         if (closed.compareAndSet(false, true)) {
-            runCatching { onClosed() }
+            try {
+                onClosed()
+            } catch (ex: Exception) {
+                log.warn(
+                    "Closing the session for ${workingDirectory.absolutePath} failed; its port or server.properties " +
+                        "may not have been given back.",
+                    ex
+                )
+            }
         }
     }
 

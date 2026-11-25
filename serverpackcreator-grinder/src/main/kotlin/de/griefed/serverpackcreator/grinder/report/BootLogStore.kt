@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.report
 import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
 import de.griefed.serverpackcreator.clientside.selection.BootCandidateSelector
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -168,7 +169,9 @@ class BootLogStore(
             log.warn("Refusing a crash-log name that escapes the store: '$name'.")
             return null
         }
-        return runCatching { candidate.takeIf { it.isFile }?.readText() }.getOrNull()
+        return orNullLogged(log.delegate, "Could not read the kept boot log '$name'; answering as if it were absent.") {
+            candidate.takeIf { it.isFile }?.readText()
+        }
     }
 
     /**

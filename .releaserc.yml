@@ -63,6 +63,25 @@ analyzeCommits:
         release: patch
       - type: deps      # Dependency changes/updates/downgrades
         release: false
+      # Scopes that never ship in a ServerPackCreator artifact: the website, the help site, CI, tests and
+      # developer tooling (IDE run configurations, the dev Docker stack). The tag format is bare, so every
+      # commit on a release branch counts as SPC's, and without these a `feat(homepage)` mints an SPC minor.
+      # They must stay BELOW the type rules: commit-analyzer keeps a later match whose release type ranks
+      # higher, and `false` outranks `patch`/`minor` there (lib/compare-release-types.js) but cannot undo a
+      # `major`, which ends the analysis on the spot -- so `breaking`/`milestone` still release. Scopes are
+      # micromatch globs and case-sensitive, hence the capitalised spellings the history uses. A multi-scope
+      # commit such as `fix(ci,docker)` matches none of these and releases, which is intended: it touches
+      # something that ships.
+      - scope: '{homepage,Homepage}'
+        release: false
+      - scope: '{ci,CI}'
+        release: false
+      - scope: '{test,tests,Tests}'
+        release: false
+      - scope: '{docs,help}'
+        release: false
+      - scope: '{dev,ide}'
+        release: false
 
 # Responsible for generating the content of the release note.
 # If multiple plugins with a generateNotes step are defined,

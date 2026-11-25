@@ -1,0 +1,50 @@
+/* Copyright (C) 2026 Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.clientside.platform
+
+import java.io.File
+
+/**
+ * The CurseForge API key the host hands this process: the file named by [FILE_VARIABLE] when that is set, else
+ * [VARIABLE]. The file is deleted once read, so a host that boots untrusted servers (the GitHub clientside
+ * workflow) can keep the key out of every process environment and off the disk while they run.
+ */
+object CurseForgeApiKey {
+    /** The variable holding the key itself. */
+    const val VARIABLE = "CURSEFORGE_API_KEY"
+
+    /** The variable naming a file that holds the key. */
+    const val FILE_VARIABLE = "CURSEFORGE_API_KEY_FILE"
+
+    /** The key from this process's environment, read once: the file it may name exists only until then. */
+    val fromEnvironment: String? by lazy { from(System.getenv()) }
+
+    /** The key [environment] hands over, deleting a key file after reading it; blank or absent is no key. */
+    fun from(environment: Map<String, String>): String? {
+        val key = environment[FILE_VARIABLE]?.let { path ->
+            val keyFile = File(path)
+            if (!keyFile.isFile) {
+                return null
+            }
+            keyFile.readText().also { keyFile.delete() }
+        } ?: environment[VARIABLE]
+        return key?.trim()?.takeIf { it.isNotEmpty() }
+    }
+}

@@ -22,9 +22,11 @@ package de.griefed.serverpackcreator.plugin.servertest.gui
 import de.griefed.serverpackcreator.plugin.servertest.pack.PackVariables
 import de.griefed.serverpackcreator.plugin.servertest.session.ServerSession
 import de.griefed.serverpackcreator.plugin.servertest.session.SessionState
+import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
@@ -167,9 +169,7 @@ class ConsolePane(
 
     /** Put the connection address on the clipboard, so it can be pasted into a client's server list. */
     private fun copyAddress() {
-        runCatching {
-            Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(connectAddress), null)
-        }
+        copyToClipboard(connectAddress)
     }
 
     /**
@@ -249,5 +249,20 @@ class ConsolePane(
          * off its maximum, which reads as the server having gone quiet.
          */
         const val AT_BOTTOM_SLACK = 16
+    }
+}
+
+/**
+ * Put [text] on the [clipboard]. A clipboard another application holds, or none at all, is not an error worth
+ * interrupting the user for. [clipboard] is a parameter only so a failing one can be executed in a test.
+ */
+internal fun copyToClipboard(
+    text: String,
+    clipboard: () -> Clipboard = { Toolkit.getDefaultToolkit().systemClipboard }
+) {
+    try {
+        clipboard().setContents(StringSelection(text), null)
+    } catch (ex: Exception) {
+        LogManager.getLogger("AddonsLogger").warn("Could not copy $text to the clipboard.", ex)
     }
 }

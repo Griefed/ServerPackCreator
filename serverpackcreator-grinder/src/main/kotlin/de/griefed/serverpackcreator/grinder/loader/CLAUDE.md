@@ -37,7 +37,9 @@ then mount the cached tree offline.
   non-runtime files, the spike-derived design), **`PackVariables`** (the unattended-boot levers:
   eula + `WAIT_FOR_USER_INPUT=false` + a resolved `JAVA` path + `SERVERSTARTERJAR_FORCE_FETCH=false`
   *only* for offline boots), and **`ImageJavaRuntimes`** (MC→bundled-JDK + the supported-Java gate,
-  required-Java sourced authoritatively from `MinecraftMeta.requiredJavaVersion`). `DockerLoaderInstaller` /
+  required-Java sourced authoritatively from `MinecraftMeta.requiredJavaVersion`). Those two live in
+  `serverpackcreator-clientside`'s `boot` package, so that the CLI's `-verifyclientside` boots packs on a
+  host the same way. `DockerLoaderInstaller` /
   `ApiVanillaPackGenerator` themselves are integration-only (daemon + image + real `ApiWrapper`).
   **Operational note:** the bind-mounted pack must be writable by the container's uid 1000 (the install
   writes `libraries/` etc. into it) — align uids or `--user root` (Docker Desktop maps automatically).
@@ -48,21 +50,23 @@ The grinder picks the *newest* Minecraft release, and one JDK cannot boot every 
 **`ImageJavaRuntimes`** sources the required Java major **authoritatively** from
 `MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared `javaVersion.majorVersion` — scheme-proof, no
 hand-rolled heuristic) and exposes `supports(mc)` (required Java known *and* in `bundledMajors`, default
-**8/17/21/25**, which **must mirror the Dockerfile**) plus `javaPath(mc)`. `BootVerifier` takes an injected
+`IMAGE_BUNDLED_MAJORS` = **8/16/17/21/25**, which **must mirror the Dockerfile** — `RuntimeImageJdkSetTest`
+compares them) plus `javaPath(mc)`. `BootVerifier` takes an injected
 `minecraftAcceptable` predicate (accept-all for the host CLI; `imageJava::supports` from
 `ContainerCandidateVerifier`), AND-ed into candidate selection — so a version whose JDK the image lacks is
 **never selected**, never booted on the wrong JDK, and **never mis-scored as a clientside crash (false
 HIGH)**. Deliberately *not* `SKIP_JAVA_CHECK`. Java **26** is intentionally not bundled: it appears only on
 snapshots, which the release gate already skips.
 **To extend coverage** to a future release, add its JDK to the Dockerfile *and* to
-`ImageJavaRuntimes.bundledMajors` — the two are the single coupled source of truth.
+`ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS` — the two are the single coupled source of truth.
 
 **Loader / Java facts (durable — drive the runtime image):** SPC's generated `start.sh` is
 *self-contained* — it installs the modloader + Minecraft server itself at first boot, so the image is
 **loader-agnostic** (no per-loader logic). The **`ServerStarterJar` (neoforged) is Forge/NeoForge
 only**; Fabric uses `fabric-installer`/`fabric-server-launch(er).jar`, Quilt the `quilt-installer`,
 LegacyFabric its own installer. A single JDK can't boot every Minecraft version (8 for the oldest,
-through 21 for 1.20.5+ and **25** for the current release 26.2), so the image bundles Temurin 8/17/21/25
+16 for 1.17/1.17.1, through 21 for 1.20.5+ and **25** for the current release 26.2), so the image bundles
+Temurin 8/17/21/25 plus Azul Zulu 16
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
 The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
@@ -96,7 +100,8 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
   `default_template.sh`):** `WAIT_FOR_USER_INPUT=false` (else it blocks on a `read`),
   `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
   and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
-  bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
+  bundled per-MC JDK, `/opt/java-<major>`: the set `ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS` names and
+  `RuntimeImageJdkSetTest` holds the Dockerfile to.
 - **`USE_SSJ` is deliberately NOT set on generated packs — the templates decide.** They bypass the
   ServerStarterJar themselves for exactly the Minecraft versions it cannot launch (`forgeNeedsItsOwnArgfile`;
   the full range and its measurements are the SSJ landmine in `serverpackcreator-api/CLAUDE.md`). Setting the

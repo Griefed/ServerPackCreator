@@ -19,10 +19,12 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
 import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
@@ -34,6 +36,7 @@ import de.griefed.serverpackcreator.grinder.source.CursorStore
 import de.griefed.serverpackcreator.grinder.source.RequeueStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.io.IOException
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.net.InetSocketAddress
@@ -155,7 +158,7 @@ class ReportServer(
     /** Register the routes, start serving on a small thread pool, and return `this` for chaining. */
     fun start(): ReportServer {
         // Longest-prefix match means /export.csv wins for that path; everything else renders the table.
-        server.createContext("/export.csv") { exchange ->
+        route("/export.csv") { exchange ->
             // The SAME selection the table runs, so the two cannot disagree -- they agree because they
             // share this function, not because two renderers were kept in step. `defaultSize = null` keeps a
             // bare /export.csv exporting everything, which is the documented behaviour operators script.
@@ -179,47 +182,63 @@ class ReportServer(
         //
         // `defaultSize = null` matches /export.csv: a bare call returns everything. The paging metadata
         // still travels, so a client that does ask for a page knows where in the set it landed.
-        server.createContext("/verdicts.json") { exchange ->
-            val selection = VerdictSelection.select(
-                snapshots.current(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
-            )
-            streamVerdicts(exchange, selection)
+        route("/verdicts.json") { exchange ->
+            val params = QueryParams.parse(exchange.requestURI.rawQuery)
+            // `version=` pins a paged read to the snapshot its first page came from. An unreadable one is ignored
+            // like any other parameter; an evicted one is refused, never answered from a different snapshot.
+            val pinned = QueryParams.first(params, "version")?.toLongOrNull()
+            val snapshot = if (pinned == null) snapshots.current() else snapshots.pinned(pinned)
+            if (snapshot == null) {
+                respond(
+                    exchange, "application/json; charset=utf-8",
+                    mapper.writeValueAsString(
+                        linkedMapOf(
+                            "error" to "This snapshot is no longer retained; read the feed again from page 1.",
+                            "version" to pinned
+                        )
+                    ),
+                    status = 410
+                )
+                return@route
+            }
+            val selection = VerdictSelection.select(snapshot, VerdictQuery.parse(params, null))
+            streamVerdicts(exchange, selection, snapshot.version)
         }
-        server.createContext("/as-properties") { exchange ->
+        route("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
         }
-        server.createContext("/status") { exchange ->
+        route("/status") { exchange ->
             respond(exchange, "application/json; charset=utf-8", statusJson())
         }
         // The same document, rendered for a human and polled by the page itself. A second route rather than
         // content negotiation on /status: that endpoint is scripted against, and handing a machine reader HTML
         // because an Accept header looked browser-shaped would break the thing it exists for.
-        server.createContext("/dashboard") { exchange ->
+        route("/dashboard") { exchange ->
             respond(exchange, "text/html; charset=utf-8", StatusDashboardRenderer.toHtml())
         }
         // Both spellings need their own context: the pages link `/favicon.png`, while a browser asks for
         // `/favicon.ico` unprompted on every endpoint that is not HTML (the plain-text crash consoles). Without
         // a context of its own, either request falls through to `/` and gets the verdict table as its icon.
         for (iconPath in listOf("/favicon.ico", "/favicon.png")) {
-            server.createContext(iconPath) { exchange -> respondFavicon(exchange) }
+            route(iconPath) { exchange -> respondFavicon(exchange) }
         }
         // Longest-prefix match again: each index is its own context, so the singular route cannot swallow it.
         // /crash-log(s) are kept as aliases of the /boot-log(s) that superseded them: both are documented, and
         // an operator who has used this report has the old ones bookmarked. Removing a documented endpoint
         // costs a user something and buys nothing.
-        server.createContext("/crash-logs") { exchange ->
+        route("/crash-logs") { exchange ->
             respond(exchange, "text/html; charset=utf-8", crashLogIndex())
         }
-        server.createContext("/boot-logs") { exchange ->
+        route("/boot-logs") { exchange ->
             respond(exchange, "text/html; charset=utf-8", crashLogIndex())
         }
-        server.createContext("/boot-log") { exchange ->
+        route("/boot-log") { exchange ->
             serveBootLog(exchange)
         }
-        server.createContext("/crash-log") { exchange ->
+        route("/crash-log") { exchange ->
             serveBootLog(exchange)
         }
-        server.createContext("/") { exchange ->
+        route("/") { exchange ->
             // One directory listing per *request*, not per row: `namesFor` lists the store every time it is
             // asked, and the table renders every verdict, so asking per row would be a listing per row.
             // Grouping on the owner prefix is safe because a tuple's own name cannot contain the separator —
@@ -258,7 +277,7 @@ class ReportServer(
      * this endpoint is polled unattended, and an error there is an error in somebody's log forever.
      */
     private fun fallbackProperties(): String {
-        val lists = fallbackLists?.let { source -> runCatching { source() }.getOrNull() }
+        val lists = fallbackLists?.let { source -> sectionOrNull("The fallback lists") { source() } }
             ?: FallbackLists(emptyList(), emptyList())
         // Through the snapshot, not store.all(): this was the one endpoint the cache never covered, and it is
         // the one polled unattended by every SPC instance in the wild -- so it was a whole-store copy per
@@ -334,8 +353,31 @@ class ReportServer(
         rawQuery?.split('&')
             ?.firstOrNull { it.substringBefore('=') == key }
             ?.substringAfter('=', "")
-            ?.let { runCatching { URLDecoder.decode(it, StandardCharsets.UTF_8) }.getOrNull() }
+            ?.let {
+                try {
+                    URLDecoder.decode(it, StandardCharsets.UTF_8)
+                } catch (_: IllegalArgumentException) {
+                    // A malformed escape is a bad query, answered 404 below; nothing to log.
+                    null
+                }
+            }
             ?.ifEmpty { null }
+
+    /**
+     * Register [handler] under [path]. The JDK server drops the connection when a handler throws an [Exception],
+     * but an [Error] escapes it, kills the request thread and leaves the client waiting for ever; so an [Error] is
+     * logged and rethrown as an [IOException], which the server answers by dropping the connection.
+     */
+    private fun route(path: String, handler: (HttpExchange) -> Unit) {
+        server.createContext(path) { exchange ->
+            try {
+                handler(exchange)
+            } catch (error: Error) {
+                log.error("Serving ${exchange.requestURI} failed", error)
+                throw IOException("Serving ${exchange.requestURI} failed", error)
+            }
+        }
+    }
 
     /** Stop serving and shut the thread pool down. */
     fun stop() {
@@ -346,22 +388,31 @@ class ReportServer(
     /**
      * One page of the verdict feed: the rows themselves plus where in the set they sit. `total` is the
      * whole store and `matched` what the query selected, so a client can tell "nothing matched" from
-     * "nothing recorded" — two states an operator debugging an empty tab needs told apart.
+     * "nothing recorded" — two states an operator debugging an empty tab needs told apart. `version` names the
+     * snapshot the page was cut from: a client whose pages disagree on it has read across a change, which
+     * offset paging cannot otherwise reveal, since a key removed ahead of its cursor and one added behind it
+     * leave `matched` unchanged while a row slides past unread.
      */
-    private fun streamVerdicts(exchange: HttpExchange, selection: VerdictPage) {
+    private fun streamVerdicts(exchange: HttpExchange, selection: VerdictPage, version: Long) {
         respondStreaming(exchange, "application/json; charset=utf-8") { body ->
-            mapper.createGenerator(body).useDefaultPrettyPrinter().use { json ->
-                json.writeStartObject()
-                json.writeNumberField("total", selection.total)
-                json.writeNumberField("matched", selection.matched)
-                json.writeNumberField("page", selection.page)
-                json.writeNumberField("pages", selection.pages)
-                json.writeArrayFieldStart("verdicts")
-                // Row by row: the point of streaming is that no step here ever holds the whole document.
-                selection.rows.forEach { json.writeObject(it) }
-                json.writeEndArray()
-                json.writeEndObject()
-            }
+            // Closed only once the document is complete: closing a generator mid-document would write the missing
+            // `]}` (AUTO_CLOSE_JSON_CONTENT) and close the body (AUTO_CLOSE_TARGET), turning a failure into a
+            // well-formed, shorter answer.
+            val json = mapper.createGenerator(body).useDefaultPrettyPrinter()
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+            json.writeStartObject()
+            json.writeNumberField("total", selection.total)
+            json.writeNumberField("matched", selection.matched)
+            json.writeNumberField("page", selection.page)
+            json.writeNumberField("pages", selection.pages)
+            json.writeNumberField("version", version)
+            json.writeArrayFieldStart("verdicts")
+            // Row by row: the point of streaming is that no step here ever holds the whole document.
+            selection.rows.forEach { json.writeObject(it) }
+            json.writeEndArray()
+            json.writeEndObject()
+            json.close()
         }
     }
 
@@ -396,21 +447,27 @@ class ReportServer(
                 )
             },
             "crawl" to cursors?.let { store ->
-                ModPlatforms.known.associateWith { platform ->
-                    val cursor = store.cursor(platform)
-                    linkedMapOf("offset" to cursor.offset, "sweeps" to cursor.sweeps, "partition" to cursor.partition)
+                sectionOrNull("The crawl position") {
+                    ModPlatforms.known.associateWith { platform ->
+                        val cursor = store.cursor(platform)
+                        linkedMapOf("offset" to cursor.offset, "sweeps" to cursor.sweeps, "partition" to cursor.partition)
+                    }
                 }
             },
             "loaderCache" to cacheRoot?.let { root ->
-                runCatching {
+                sectionOrNull("The loader cache") {
                     val tuples = root.walkTopDown().maxDepth(4).count { it.name == LoaderCache.MARKER }
                     linkedMapOf("installedTuples" to tuples, "path" to root.absolutePath)
-                }.getOrNull()
+                }
             }
         )
-        return runCatching { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
-            .getOrElse { "{\"error\":\"status unavailable\"}" }
+        return sectionOrNull("The status document") { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
+            ?: "{\"error\":\"status unavailable\"}"
     }
+
+    /** How a report section degrades: [block]'s result, or `null` with a WARN naming [what] (see [orNullLogged]). */
+    private inline fun <T> sectionOrNull(what: String, block: () -> T): T? =
+        orNullLogged(log.delegate, "$what is unavailable; the report answers without it", block)
 
     /**
      * Write [body] with the given [contentType] and [status] (200 unless a route says otherwise, which only
@@ -428,19 +485,22 @@ class ReportServer(
      * Write a response whose body is produced into the stream rather than handed over complete, for the two
      * endpoints that return every row by design.
      *
-     * A declared length of 0 makes the JDK's server send the response chunked, which is what lets the document
-     * be written as it is produced: an unpaged export of the deployed store is ~248 MiB, and a materialised
-     * response holds that three times over — Jackson's segments, the `String` they join into, and the
-     * `ByteArray` [respond] encodes. The trade is that nothing can be retracted once the first chunk is out, so
-     * a failure part-way through truncates the document instead of being answered with an error body. That is
-     * the better failure: the predecessor wrapped serialisation in `runCatching`, which in Kotlin catches
-     * [Throwable], so heap exhaustion was swallowed and answered 200 with a 23-byte error document that reached
-     * no log at all.
+     * A declared length of 0 makes the JDK's server send the response chunked, so the document is written as it
+     * is produced rather than held in heap; the unpaged exports grow with the store. The 200 is committed before
+     * the first row, so a failure part-way cannot become an error status. Instead it is logged at ERROR and the
+     * body is never closed: the handler rethrows, the server drops the connection without the terminating chunk,
+     * and the client sees an incomplete response rather than a well-formed shorter one.
      */
     private fun respondStreaming(exchange: HttpExchange, contentType: String, writeBody: (OutputStream) -> Unit) {
         exchange.responseHeaders.add("Content-Type", contentType)
         exchange.sendResponseHeaders(200, 0)
-        exchange.responseBody.use(writeBody)
+        try {
+            writeBody(exchange.responseBody)
+        } catch (ex: Exception) {
+            log.error("Streaming ${exchange.requestURI} failed part-way; the response is left incomplete", ex)
+            throw ex
+        }
+        exchange.responseBody.close()
     }
 
     /**

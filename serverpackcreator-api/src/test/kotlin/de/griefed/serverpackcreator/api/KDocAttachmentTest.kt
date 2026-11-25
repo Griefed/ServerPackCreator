@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.api
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
@@ -102,13 +103,16 @@ internal class KDocAttachmentTest {
         return found
     }
 
+    /** The Kotlin files under [root] that this convention governs, skipping any nested checkout (a directory with its own `.git`). */
+    private fun governedSources(root: File): List<File> = root.walkTopDown()
+        .onEnter { it == root || (it.name !in ignoredDirectories && !File(it, ".git").exists()) }
+        .filter { it.isFile && (it.extension == "kt" || it.extension == "kts") }
+        .toList()
+
     @Test
     fun noKDocBlockIsOrphanedFromItsDeclaration() {
         val root = repositoryRoot()
-        val sources = root.walkTopDown()
-            .onEnter { it.name !in ignoredDirectories }
-            .filter { it.isFile && (it.extension == "kt" || it.extension == "kts") }
-            .toList()
+        val sources = governedSources(root)
 
         Assertions.assertTrue(
             sources.size > 100,
@@ -123,5 +127,19 @@ internal class KDocAttachmentTest {
                 "dokka drops them -- move each one onto the declaration it was written for, or delete it " +
                 "if the block below already says what it said:\n" + orphans.joinToString("\n")
         )
+    }
+
+    /**
+     * A directory below the root carrying its own `.git` is another checkout — a Claude Code agent worktree under
+     * `.claude/worktrees/`, or a clone — holding another branch's files, which this repository's convention does
+     * not govern and which would otherwise be reported twice or for the wrong branch.
+     */
+    @Test
+    fun aNestedCheckoutIsNotScanned(@TempDir root: File) {
+        File(root, "own/Kept.kt").apply { parentFile.mkdirs(); writeText("class Kept\n") }
+        val nested = File(root, ".claude/worktrees/agent/Nested.kt").apply { parentFile.mkdirs(); writeText("class Nested\n") }
+        File(nested.parentFile, ".git").writeText("gitdir: /elsewhere\n")
+
+        Assertions.assertEquals(listOf("own/Kept.kt"), governedSources(root).map { it.relativeTo(root).invariantSeparatorsPath })
     }
 }

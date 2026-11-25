@@ -1276,7 +1276,14 @@ class BootVerifier(
                 cause = PreventionCause.UPSTREAM_UNAVAILABLE
             )
 
-        val attemptDir = File(workDirectory, attemptDirName).apply { deleteRecursively() }
+        val attemptDir = File(workDirectory, attemptDirName)
+        // A previous boot wrote into this tree. Staging into what survived could write through a link it left.
+        if (!ModWritableTree.deleteRecursively(attemptDir)) {
+            return Prepared.Failed(
+                "Could not clear the previous attempt's staging at ${attemptDir.absolutePath}.",
+                cause = PreventionCause.HOST
+            )
+        }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
         val unsatisfied = mutableMapOf<String, UnmetReason>()
@@ -1317,7 +1324,7 @@ class BootVerifier(
             )
 
         return Prepared.Ready(
-            serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
+            serverPack, File(attemptDir, CONSOLE_FILE), minecraftVersion, loader, loaderVersion,
             injectedDependencies = injected.toList(),
             candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName)),
             bootedFile = mainFile.fileName
@@ -1516,6 +1523,17 @@ class BootVerifier(
      * itself needs an `ApiWrapper` and a running server.
      */
     companion object {
+        /** The file in an attempt directory that each boot streams its server console into. */
+        const val CONSOLE_FILE = "boot.log"
+
+        /**
+         * The console a target's verdict rests on. Every attempt for `(platform, slug, loader, line)` stages into
+         * one directory under [workDirectory], and `restoreDecisiveConsole` leaves the decided attempt's console
+         * there once `verify` returns.
+         */
+        fun decisiveConsole(workDirectory: File, platform: String, slug: String, loader: String, minecraftLine: String): File =
+            File(File(workDirectory, AttemptDirectory.nameFor(platform, slug, loader, minecraftLine)), CONSOLE_FILE)
+
         /**
          * Why a candidate jar could not be staged, phrased so a reader can tell a *permanent* refusal from a
          * transient one. A [ModFile.locked] file is CurseForge's `allowModDistribution=false`: the author

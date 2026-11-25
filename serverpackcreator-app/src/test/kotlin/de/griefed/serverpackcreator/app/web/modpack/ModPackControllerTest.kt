@@ -175,6 +175,38 @@ internal class ModPackControllerTest {
     }
 
     /**
+     * A server pack whose run-configuration reference no longer resolves cannot be the one requested, and
+     * must not fail the check for a pack that already exists.
+     */
+    @Test
+    fun aServerPackWithoutARunConfigurationDoesNotBreakTheExistingPackCheck() {
+        val modpack = modPack("modpack1")
+        val existingConfig = runConfig("runconfig1")
+        val unresolved = ServerPack(0, null, null, "orphan", null, "modpack1")
+        assignEntityId(unresolved, "orphan1")
+        val serverPack = ServerPack(0, existingConfig, null, "test", null, "modpack1")
+        assignEntityId(serverPack, "serverpack1")
+        modpack.serverPacks.add(unresolved)
+        modpack.serverPacks.add(serverPack)
+        every { modpackService.getModpack("modpack1") } returns Optional.of(modpack)
+        every {
+            runConfigurationService.createRunConfig("1.20.1", "Forge", "47.2.0", "", "", "")
+        } returns existingConfig
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/modpacks/generate")
+                .param("modPackID", "modpack1")
+                .param("minecraftVersion", "1.20.1")
+                .param("modloader", "Forge")
+                .param("modloaderVersion", "47.2.0")
+                .param("startArgs", "")
+                .param("clientMods", "")
+                .param("whiteListMods", "")
+        )
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.serverPackId").value("serverpack1"))
+    }
+
+    /**
      * Pins the happy generation-path: a new run-configuration queues a generation-task.
      */
     @Test

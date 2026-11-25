@@ -10,7 +10,7 @@ const GITHUB_DOT_COM_API = 'https://api.github.com'
  */
 export function releasesEndpoint(reference: RepositoryReference): string {
   const { platform, host, owner, repository } = reference
-  const path = `repos/${owner}/${repository}/releases`
+  const path = `repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/releases`
 
   if (platform === 'github') {
     // GitHub Enterprise serves the same API from `/api/v3` on the instance's own origin.

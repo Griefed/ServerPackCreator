@@ -33,7 +33,10 @@ Function Global:RunJavaInstallation
         exit 1
     }
 
-    $ExternalVariables = Get-Content -raw -LiteralPath $ExternalVariablesFile | ConvertFrom-StringData
+    # Some editors and FTP clients save this file with old Mac-style line endings (a carriage return on its own),
+    # which PowerShell would read as one single line: the first setting would swallow the whole file and every
+    # other setting would be missing. Turning every kind of line ending into a plain newline first prevents that.
+    $ExternalVariables = (Get-Content -raw -LiteralPath $ExternalVariablesFile) -replace '\r\n?', "`n" | ConvertFrom-StringData
     $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
     $JabbaInstallURL = $ExternalVariables['JABBA_INSTALL_URL_PS']
     $JDKVendor = $ExternalVariables['JDK_VENDOR']

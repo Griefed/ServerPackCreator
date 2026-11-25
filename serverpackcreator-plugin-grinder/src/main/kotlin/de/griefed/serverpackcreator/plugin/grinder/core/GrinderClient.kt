@@ -75,41 +75,122 @@ class GrinderClient(
 ) {
 
     /**
-     * Every verdict the grinder at [baseUrl] holds, newest state included, read a page at a time.
+     * Every verdict the grinder at [baseUrl] holds, each in the newest state served, read a page at a time.
      *
      * The request is unfiltered on purpose: both list tabs are populated from one response, so filtering
      * server-side would cost a second round-trip to learn the same rows. It is **paged**, though, because
-     * unfiltered is not the same as unbounded — a bare `/verdicts.json` returns the whole store by
-     * documented design, which at a deployed 319,904 verdicts is a ~248 MiB document this client has to
-     * receive inside one [timeout] and hold as a `String`. The tab simply failed.
+     * a bare `/verdicts.json` returns the whole store by documented design, which can be far too large to
+     * receive inside one [timeout].
      *
-     * Partial results are never returned: a page that fails fails the whole call. A short list presented as
-     * the grinder's findings is worse than an error, because a maintainer ticks exclusions from it.
+     * Paging is by offset over a selection the daemon re-derives while grinds record into it, so a verdict that
+     * moves between two requests can land on two pages or on none. A daemon that stamps each page with the
+     * `version` of the snapshot it was cut from makes this exact: every page after the first asks for page 1's
+     * version, and a daemon that retains snapshots answers the whole read from that one. When it no longer
+     * retains it (`410 Gone`), or a page still carries a different version — a daemon that ignores the pin — the
+     * read starts over from page 1, at most [MAX_READ_ATTEMPTS] times, after which the call fails rather than
+     * return rows stitched across changes.
+     *
+     * An older daemon sends no version, and two weaker defences cover it. A row landing on two pages is
+     * absorbed by keying rows on their identity, the later copy winning. A row landing on none shows as fewer
+     * rows than the daemon's `matched`: the feed is then read once more, and a second shortfall fails the call
+     * rather than return a short list a maintainer would tick exclusions from. What that cannot detect is a key
+     * removed ahead of the cursor while another is added behind it, which hides one row while the count still
+     * agrees — the case only the version closes. A versioned read that completes is never short, so the
+     * shortfall check stays as a backstop that costs nothing.
+     *
+     * A page that fails, or a feed past [maxPages], fails the whole call.
      */
     fun fetchVerdicts(baseUrl: String): FetchResult<List<GrinderVerdict>> {
-        // Keyed by the identity GrinderVerdict declares, because the daemon re-derives its selection per
-        // request while a grind records into it: the row set shifts under a client that pages, and the same
-        // verdict can land on two pages. A duplicate here is a mod offered for ticking twice.
+        val first = readConsistentFeed(baseUrl)
+        if (first !is FetchResult.Ok || !first.value.isShort) {
+            return first.map { it.rows }
+        }
+        return when (val second = readConsistentFeed(baseUrl)) {
+            is FetchResult.Failed -> second
+            is FetchResult.Ok -> if (second.value.isShort) {
+                FetchResult.Failed(
+                    "The grinder's verdicts changed while they were being read (${second.value.rows.size} of " +
+                        "${second.value.matched} arrived), twice. Refresh again once the grinder is less busy."
+                )
+            } else {
+                FetchResult.Ok(second.value.rows)
+            }
+        }
+    }
+
+    /** One full read of the feed: its rows, and the `matched` the last page reported, when it reported one. */
+    private data class Feed(
+        val rows: List<GrinderVerdict>,
+        val matched: Int?
+    ) {
+        /** Whether fewer rows arrived than the daemon said it matched, the sign of a row skipped by a shift. */
+        val isShort: Boolean get() = matched != null && rows.size < matched
+    }
+
+    private fun <T, R> FetchResult<T>.map(transform: (T) -> R): FetchResult<R> = when (this) {
+        is FetchResult.Ok -> FetchResult.Ok(transform(value))
+        is FetchResult.Failed -> this
+    }
+
+    /** Read the feed until one read completes within a single `version`; see [fetchVerdicts]. */
+    private fun readConsistentFeed(baseUrl: String): FetchResult<Feed> {
+        repeat(MAX_READ_ATTEMPTS) {
+            when (val read = readFeed(baseUrl)) {
+                is FetchResult.Failed -> return read
+                is FetchResult.Ok -> read.value?.let { return FetchResult.Ok(it) }
+            }
+        }
+        return FetchResult.Failed(
+            "The grinder's verdicts changed while they were being read, on each of $MAX_READ_ATTEMPTS attempts. " +
+                "Refresh again once the grinder is less busy."
+        )
+    }
+
+    /**
+     * Page through the feed once; see [fetchVerdicts]. Every page after the first asks for page 1's `version`.
+     * `null` means the read cannot finish on one snapshot — the daemon no longer retains it (`410 Gone`), or a
+     * page carried a different version — so the rows collected so far are abandoned.
+     */
+    private fun readFeed(baseUrl: String): FetchResult<Feed?> {
         val collected = LinkedHashMap<RowIdentity, GrinderVerdict>()
+        var firstVersion: Long? = null
         var page = 1
         while (true) {
-            val result = fetchTree(baseUrl) { base -> GrinderUrl.verdicts(base, page, pageSize) }
-            val document = when (result) {
-                is FetchResult.Failed -> return result
-                is FetchResult.Ok -> result.value
+            val pinnedTo = firstVersion
+            val answer = when (val sent = send(baseUrl) { base -> GrinderUrl.verdicts(base, page, pageSize, pinnedTo) }) {
+                is FetchResult.Failed -> return sent
+                is FetchResult.Ok -> sent.value
+            }
+            // Only a pinned request can be told its snapshot is gone; a 410 on page 1 came from something else.
+            if (pinnedTo != null && answer.status == HTTP_GONE) {
+                return FetchResult.Ok(null)
+            }
+            val document = when (val parsed = parse(answer)) {
+                is FetchResult.Failed -> return parsed
+                is FetchResult.Ok -> parsed.value
             }
             // A wrong-shaped document is a failure, not an empty result: reported as "no verdicts found"
             // it is indistinguishable from a grinder that has genuinely ground nothing, and that is
             // exactly the pair an operator debugging an empty tab needs told apart.
             val rows = readVerdicts(document)
                 ?: return FetchResult.Failed("The grinder answered with something that is not a verdict document.")
-            rows.forEach { collected.putIfAbsent(RowIdentity.of(it), it) }
+            // Compared as nullable on purpose: a version appearing or vanishing mid-read is a daemon restarted
+            // under the client, and its rows are no more continuous than a changed number's.
+            val version = document["version"]?.takeIf { it.isIntegralNumber }?.asLong()
+            if (page == 1) {
+                firstVersion = version
+            } else if (version != firstVersion) {
+                return FetchResult.Ok(null)
+            }
+            rows.forEach { collected[RowIdentity.of(it)] = it }
+            val matched = document["matched"]?.takeIf { it.isInt }?.asInt()
 
             // No envelope means no paging to do: a daemon publishing the bare array has served everything
             // it is going to, and asking for a second page would re-request the same rows for ever.
-            val pages = document["pages"]?.takeIf { it.isInt }?.asInt() ?: return FetchResult.Ok(collected.values.toList())
+            val pages = document["pages"]?.takeIf { it.isInt }?.asInt()
+                ?: return FetchResult.Ok(Feed(collected.values.toList(), matched))
             if (page >= pages || rows.isEmpty()) {
-                return FetchResult.Ok(collected.values.toList())
+                return FetchResult.Ok(Feed(collected.values.toList(), matched))
             }
             if (page >= maxPages) {
                 // A failure rather than what has been collected so far: stopping at the ceiling and calling
@@ -147,7 +228,21 @@ class GrinderClient(
      * an unusable address and an unparseable body ends up as a [FetchResult.Failed] carrying a reason;
      * nothing escapes as an exception.
      */
-    private fun fetchTree(baseUrl: String, endpoint: (String) -> String): FetchResult<JsonNode> {
+    private fun fetchTree(baseUrl: String, endpoint: (String) -> String): FetchResult<JsonNode> =
+        when (val answer = send(baseUrl, endpoint)) {
+            is FetchResult.Failed -> answer
+            is FetchResult.Ok -> parse(answer.value)
+        }
+
+    /** What came back from one GET, before its status is judged — [readFeed] treats a 410 differently. */
+    private class Answer(
+        val target: String,
+        val status: Int,
+        val body: String
+    )
+
+    /** One GET to the [endpoint] of the grinder at [baseUrl]; only an unusable address or a transport failure fails. */
+    private fun send(baseUrl: String, endpoint: (String) -> String): FetchResult<Answer> {
         val base = GrinderUrl.normalise(baseUrl)
             ?: return FetchResult.Failed("No usable grinder URL configured. Set one in the Settings tab.")
         val target = endpoint(base)
@@ -158,19 +253,27 @@ class GrinderClient(
                 .GET()
                 .build()
             val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() !in 200..299) {
-                // The status is the one fact that tells an operator whether the daemon is down, the path
-                // is wrong, or something in front of it answered instead.
-                FetchResult.Failed("$target answered HTTP ${response.statusCode()}.")
-            } else {
-                FetchResult.Ok(objectMapper.readTree(response.body()))
-            }
+            FetchResult.Ok(Answer(target, response.statusCode(), response.body()))
         } catch (ex: InterruptedException) {
             // Restoring the flag matters: this runs on a SwingWorker, whose cancellation is an interrupt.
             Thread.currentThread().interrupt()
             FetchResult.Failed("Request to $target was interrupted.")
         } catch (ex: Exception) {
             FetchResult.Failed("Could not read $target: ${ex.message ?: ex.javaClass.simpleName}")
+        }
+    }
+
+    /** [answer]'s body as a tree, or the failure its status or an unparseable body amounts to. */
+    private fun parse(answer: Answer): FetchResult<JsonNode> {
+        if (answer.status !in 200..299) {
+            // The status is the one fact that tells an operator whether the daemon is down, the path
+            // is wrong, or something in front of it answered instead.
+            return FetchResult.Failed("${answer.target} answered HTTP ${answer.status}.")
+        }
+        return try {
+            FetchResult.Ok(objectMapper.readTree(answer.body))
+        } catch (ex: Exception) {
+            FetchResult.Failed("Could not read ${answer.target}: ${ex.message ?: ex.javaClass.simpleName}")
         }
     }
 
@@ -223,10 +326,9 @@ class GrinderClient(
         /**
          * Rows per request when paging the feed.
          *
-         * Two thousand because the cost is split between round trips and the size of each answer: at the
-         * ~813 bytes per row the deployed store measures this is roughly 1.6 MB per request, comfortably
-         * inside the 15-second timeout on any link, while a deployed 319,904-row store still costs 160
-         * requests rather than thousands.
+         * Two thousand because the cost is split between round trips and the size of each answer: at roughly
+         * 800 bytes of JSON per row this is about 1.6 MB per request, comfortably inside the 15-second timeout,
+         * while a store of a few hundred thousand rows still costs a few hundred requests rather than thousands.
          */
         const val DEFAULT_PAGE_SIZE = 2_000
 
@@ -239,5 +341,15 @@ class GrinderClient(
          * that reaching it means something is wrong rather than merely large.
          */
         const val MAX_PAGES = 2_000
+
+        /**
+         * How many reads one [fetchVerdicts] makes of a feed it cannot finish on one snapshot before it fails.
+         * Each abandoned read costs up to a whole feed of requests, so the bound is small: a daemon evicting or
+         * replacing the snapshot under every read is reported as busy rather than retried behind a Swing worker.
+         */
+        const val MAX_READ_ATTEMPTS = 3
+
+        /** What the daemon answers a page pinned to a snapshot it no longer retains. */
+        private const val HTTP_GONE = 410
     }
 }

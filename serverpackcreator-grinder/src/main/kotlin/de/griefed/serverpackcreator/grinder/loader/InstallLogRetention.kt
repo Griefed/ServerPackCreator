@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
 /**
@@ -35,6 +37,7 @@ import java.io.File
  * @author Griefed
  */
 object InstallLogRetention {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * Read the console of the attempt that is about to be wiped, or `null` when there was none. Call *before*
@@ -42,7 +45,11 @@ object InstallLogRetention {
      */
     fun preserve(tupleDirectory: File): String? =
         File(tupleDirectory, INSTALL_LOG).takeIf { it.isFile }?.let { logFile ->
-            runCatching { logFile.readText() }.getOrNull()
+            orNullLogged(
+                log.delegate, "Could not read the previous install console ${logFile.absolutePath}; it is lost."
+            ) {
+                logFile.readText()
+            }
         }
 
     /**
@@ -52,6 +59,11 @@ object InstallLogRetention {
      */
     fun writePrevious(tupleDirectory: File, previousConsole: String?) {
         val console = previousConsole ?: return
-        runCatching { File(tupleDirectory, "$INSTALL_LOG.previous").writeText(console) }
+        val previous = File(tupleDirectory, "$INSTALL_LOG.previous")
+        orNullLogged(
+            log.delegate, "Could not write the previous install console to ${previous.absolutePath}; it is lost."
+        ) {
+            previous.writeText(console)
+        }
     }
 }

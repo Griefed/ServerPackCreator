@@ -29,10 +29,15 @@ import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.api.utilities.common.XmlUtilities
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.IOException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
@@ -67,6 +72,47 @@ internal class VersionMetaManifestRepairTest {
             destination
         }
 
+    /** The instance under test, whose background refresh writes into the test's `@TempDir`. */
+    private var versionMetaUnderTest: VersionMeta? = null
+
+    /**
+     * Held closed, every upstream request of the background refresh blocks; tests that do not hold it release
+     * it in [awaitBackgroundRefresh], so the refresh finishes without touching the network.
+     */
+    private val upstream = CountDownLatch(1)
+
+    /**
+     * An offline [WebUtilities]: both sanctioned openers wait for [upstream] and then fail as an unreachable
+     * host does, which the refresh treats as "keep the manifest on disk". Every network call in this module
+     * goes through one of the two, so nothing reaches the network.
+     */
+    private fun offlineWebUtilities(apiProperties: ApiProperties): WebUtilities =
+        spyk(WebUtilities(apiProperties)).also { webUtilities ->
+            every { webUtilities.openTimedConnection(any(), any()) } answers { unreachable() }
+            every { webUtilities.openTimedStream(any(), any()) } answers { unreachable() }
+        }
+
+    /** Blocks until [upstream] opens, then fails the way an unreachable host does. */
+    private fun unreachable(): Nothing {
+        upstream.await(60, TimeUnit.SECONDS)
+        throw IOException("offline")
+    }
+
+    /**
+     * Waits out the background manifest refresh the constructor starts. It writes into the `@TempDir`, which
+     * JUnit deletes after this callback, so a refresh still running would race the deletion.
+     */
+    @AfterEach
+    fun awaitBackgroundRefresh() {
+        upstream.countDown()
+        versionMetaUnderTest?.let { versionMeta ->
+            Assertions.assertTrue(
+                versionMeta.awaitManifestRefresh(60_000),
+                "The background manifest refresh must finish before the temporary directory is deleted"
+            )
+        }
+    }
+
     /** A [VersionMeta] over the manifests in [directory], wired the way [ApiWrapper] wires the real one. */
     private fun versionMetaOver(manifests: Map<String, File>, cacheDirectory: File): VersionMeta {
         val apiProperties = mockk<ApiProperties>(relaxed = true)
@@ -90,12 +136,12 @@ internal class VersionMetaManifestRepairTest {
             manifests.getValue("legacy-fabric-installer-manifest.xml"),
             objectMapper(),
             Utilities(
-                WebUtilities(apiProperties),
+                offlineWebUtilities(apiProperties),
                 JsonUtilities(objectMapper()),
                 XmlUtilities(DocumentBuilderFactory.newInstance())
             ),
             apiProperties
-        )
+        ).also { versionMetaUnderTest = it }
     }
 
     /**
@@ -136,5 +182,21 @@ internal class VersionMetaManifestRepairTest {
             versionMeta.neoForge.supportedMinecraftVersions().isNotEmpty(),
             "The repaired manifest must have been re-read, not merely rewritten"
         )
+    }
+
+    /**
+     * [VersionMeta.awaitManifestRefresh] answers whether the background refresh has finished: `false` while it
+     * is still waiting on upstream, `true` once upstream has answered.
+     */
+    @Test
+    fun awaitingTheRefreshReportsWhetherItFinished(@TempDir tempDir: File) {
+        val manifests = seedManifests(File(tempDir, "manifests").apply { mkdirs() })
+        val versionMeta = versionMetaOver(manifests, File(tempDir, "cache").apply { mkdirs() })
+
+        Assertions.assertFalse(versionMeta.awaitManifestRefresh(200), "upstream has not answered yet")
+
+        upstream.countDown()
+
+        Assertions.assertTrue(versionMeta.awaitManifestRefresh(60_000), "upstream answered, so the refresh is done")
     }
 }

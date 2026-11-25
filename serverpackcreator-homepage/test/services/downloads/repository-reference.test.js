@@ -44,4 +44,19 @@ describe('parseRepositoryUrl', () => {
   ])('rejects %s', (_label, url) => {
     expect(() => parseRepositoryUrl('github', url)).toThrow(RepositoryUrlError)
   })
+
+  /** Decoded here because releasesEndpoint encodes, and encoding twice would request `%2520`. */
+  it('decodes percent-escaped segments', () => {
+    const reference = parseRepositoryUrl('gitea', 'https://git.example.com/some%20one/their-repo')
+    expect(reference.owner).toBe('some one')
+  })
+
+  /**
+   * A known limitation, pinned so it is not mistaken for support: an instance served under a path
+   * prefix cannot be told apart from a deeper repository path, so the first two segments win.
+   */
+  it('reads the first two path segments, so an instance under a path prefix is mis-parsed', () => {
+    const reference = parseRepositoryUrl('gitea', 'https://example.com/git/Griefed/ServerPackCreator')
+    expect(reference).toMatchObject({ host: 'https://example.com', owner: 'git', repository: 'Griefed' })
+  })
 })

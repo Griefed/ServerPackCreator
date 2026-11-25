@@ -777,7 +777,7 @@ export default defineComponent({
   },
   mounted() {
     // Best-effort, and at most once a day per visitor. A forge that is unreachable from a browser
-    // -- git.griefed.de sends no CORS header -- changes nothing: the baked figure already has it.
+    // -- git.griefed.de sends no CORS header -- keeps the figure the build counted for it.
     refreshDownloadTotal()
       .then(snapshot => {
         this.downloads = formatDownloads(snapshot.total);

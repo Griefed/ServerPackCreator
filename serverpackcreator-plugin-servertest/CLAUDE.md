@@ -233,8 +233,8 @@ user to a five-second countdown rather than ending the session, and Force stop i
 
 ## Testing
 
-`./gradlew :serverpackcreator-plugin-servertest:test` — 110 tests, of which 109 run by default; the
-skip is `RealPackBootTest`, which boots a real server and is switched on deliberately (below).
+`./gradlew :serverpackcreator-plugin-servertest:test` — every test runs by default except
+`RealPackBootTest`, which boots a real server and is switched on deliberately (below).
 
 - **`core` is tested against real processes, not mocks.** What is under test is process behaviour — does
   a typed line reach the child's stdin, does output arrive while the process runs, does killing the

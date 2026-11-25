@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.clientside.boot
 import java.io.File
-import java.io.RandomAccessFile
+import java.nio.ByteBuffer
 import de.griefed.serverpackcreator.clientside.verdict.BootResult
 
 /**
@@ -31,7 +31,8 @@ import de.griefed.serverpackcreator.clientside.verdict.BootResult
  *
  * Pure apart from reading the pack it is handed, so it is unit-testable without a container, and it
  * lives here rather than in the grinder so the CLI verb and the daemon cannot disagree about which
- * boots are worth keeping.
+ * boots are worth keeping. The booted mod could write anything into that pack, so it is read only
+ * through [ModWritableTree], which never follows a symbolic link out of it.
  *
  * @author Griefed
  */
@@ -78,15 +79,14 @@ object BootArtifacts {
     /**
      * Collect [serverPack]'s evidence together with [console]. Files are taken newest-first and capped at
      * [MAX_ARTIFACTS]; whatever existed is named in an [INDEX_NAME] entry either way, so a reader can tell
-     * "there was nothing else" from "we chose not to keep it". Returns empty when there is nothing to say,
-     * rather than an index announcing its own emptiness.
+     * "there was nothing else" from "we chose not to keep it"; a refused symbolic link is named there too.
+     * Returns empty when there is nothing to say, rather than an index announcing its own emptiness.
      */
     fun collect(serverPack: File, console: String?): List<Artifact> {
-        val found = evidenceDirectories.flatMap { directory ->
-            File(serverPack, directory).listFiles().orEmpty()
-                .filter { it.isFile }
-                .map { directory to it }
-        }.sortedByDescending { (_, file) -> file.lastModified() }
+        val listings = evidenceDirectories.associateWith { ModWritableTree.regularFilesIn(serverPack, it) }
+        val found = listings.flatMap { (directory, listing) -> listing.files.map { directory to it } }
+            .sortedByDescending { (_, file) -> file.lastModified() }
+        val refused = listings.values.flatMap { it.refused }.map { it.relativeTo(serverPack).invariantSeparatorsPath }
 
         val (readable, archived) = found.partition { (_, file) ->
             archiveSuffixes.none { file.name.endsWith(it, ignoreCase = true) }
@@ -94,7 +94,7 @@ object BootArtifacts {
         val kept = readable.take(MAX_ARTIFACTS)
         val dropped = readable.drop(MAX_ARTIFACTS)
 
-        if (console == null && found.isEmpty()) {
+        if (console == null && found.isEmpty() && refused.isEmpty()) {
             return emptyList()
         }
 
@@ -103,8 +103,8 @@ object BootArtifacts {
         for ((directory, file) in kept) {
             artifacts.add(readCapped("$directory-${file.name}", file))
         }
-        if (found.isNotEmpty()) {
-            artifacts.add(Artifact(INDEX_NAME, indexOf(kept, dropped, archived), truncated = false))
+        if (found.isNotEmpty() || refused.isNotEmpty()) {
+            artifacts.add(Artifact(INDEX_NAME, indexOf(kept, dropped, archived, refused), truncated = false))
         }
         return artifacts
     }
@@ -116,12 +116,14 @@ object BootArtifacts {
     private fun indexOf(
         kept: List<Pair<String, File>>,
         dropped: List<Pair<String, File>>,
-        archived: List<Pair<String, File>>
+        archived: List<Pair<String, File>>,
+        refused: List<String>
     ): String = buildString {
-        appendLine("Files found in the staged pack (${kept.size} kept, ${dropped.size + archived.size} not kept):")
+        appendLine("Files found in the staged pack (${kept.size} kept, ${dropped.size + archived.size + refused.size} not kept):")
         kept.forEach { (directory, file) -> appendLine("  kept      $directory/${file.name} (${file.length()} bytes)") }
         dropped.forEach { (directory, file) -> appendLine("  not kept  $directory/${file.name} — beyond the $MAX_ARTIFACTS-file cap") }
         archived.forEach { (directory, file) -> appendLine("  not kept  $directory/${file.name} — a rotated archive is not read") }
+        refused.forEach { path -> appendLine("  not kept  $path — a symbolic link, never followed out of the pack") }
     }
 
     /**
@@ -130,15 +132,17 @@ object BootArtifacts {
      * An unreadable file becomes an artifact stating so, since the failure to read it is itself evidence.
      */
     private fun readCapped(name: String, file: File): Artifact = runCatching {
-        if (file.length() <= MAX_BYTES_PER_ARTIFACT) {
-            return@runCatching Artifact(name, file.readText(), truncated = false)
+        ModWritableTree.openForReading(file).use { channel ->
+            val size = channel.size()
+            val truncated = size > MAX_BYTES_PER_ARTIFACT
+            val buffer = ByteBuffer.allocate(if (truncated) MAX_BYTES_PER_ARTIFACT else size.toInt())
+            channel.position(size - buffer.capacity())
+            while (buffer.hasRemaining()) {
+                if (channel.read(buffer) < 0) break
+            }
+            val text = String(buffer.array(), 0, buffer.position(), Charsets.UTF_8)
+            Artifact(name, if (truncated) TRUNCATION_NOTICE + text else text, truncated)
         }
-        val tail = ByteArray(MAX_BYTES_PER_ARTIFACT)
-        RandomAccessFile(file, "r").use { handle ->
-            handle.seek(file.length() - MAX_BYTES_PER_ARTIFACT)
-            handle.readFully(tail)
-        }
-        Artifact(name, TRUNCATION_NOTICE + String(tail, Charsets.UTF_8), truncated = true)
     }.getOrElse { failure ->
         Artifact(name, "[could not be read: ${failure.message}]", truncated = false)
     }

@@ -2319,3 +2319,1213 @@ The repository already says what to do here instead, and it is not a hand-compar
 wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency in
 `serverpackcreator-app/build.gradle.kts` … Regenerate it rather than patching it."* Any real answer
 about spec drift comes from a regeneration, not from parsing annotations.
+
+# 2026-11-15 — analysis of `8239cb6e9..develop` (198 commits, 155 non-merge)
+
+Range `8239cb6e9149ff0710a1243bdac1e3e8261f96d1..develop` at `069c13d69`: 198 commits, 155 non-merge,
+2026-10-12 to 2026-11-15. Reviewed by five parallel read-only reviewers, one per date slice, static only (no
+Gradle, npm or Docker runs); slices A and B fell inside the 2026-10-21 rounds' scope and were checked against
+them rather than re-reviewed. Commit grouping is judged against the repo's current rule, "One commit per GOAL,
+not per edit — Griefed's call, 2026-10-12", which supersedes the command's "one concern per commit" wording.
+Slice E covers this session's own commits and every dependency bump.
+
+Slices: **A** 2026-10-12..10-18, c18d38cb7..08b8549f9 (in the 2026-10-21 rounds' scope; re-checked against them); **B** 2026-10-19..10-21, f5c9e819d..97fca093a (in the 2026-10-21 rounds' scope; re-checked against them); **C** 2026-10-23..10-24, 8e224d62e..db025e531 (first review); **D** 2026-10-29..11-11, 4782e4012..f6085c414 (first review); **E** 2026-11-13..11-15 non-dependency commits, plus every dependency commit in the range (first review).
+
+## Findings by severity (index; full text per slice below)
+
+Two findings appear in two slices: **A-A2** and **E-N1** (MongoDB 9.0.8 deployed while docs and the embedded
+test server stay on 8.0), and **C-AN-11** and slice E's stale `docs.yml` node comment. Severities for slice E,
+and for the few slice-C entries without a label, were assigned by the coordinator from each reviewer's own
+ranking.
+
+### HIGH
+
+- **C-AN-1** — the GitHub PAT is sent as a bearer token to gitea.com and git.griefed.de
+- **D-N-1** — Any issue opener's chosen mod runs as arbitrary code on the GitHub runner, with the job's secret, a persisted token and a writable cache in reach.
+
+### MEDIUM
+
+- **B-N-2** — Bug (consistency): `updateFallback` parses the list with a raw `split(",")`, while `PropertyStore.getList` drops trailing empties
+- **B-N-1** — Bug (concurrency, published API): the clear-then-refill shape d2108dedc removed from `clientsideMods`/`modsWhitelist` survives in five sibling properties, two of them on the READ path
+- **A-A1** — the dev stack publishes MongoDB on every interface, with a root password committed in the file.
+- **A-A2** — the deployment compose file says "stay on MongoDB 8.0" and runs 9.0; the README says 8.0.34; the suite tests 8.0.5.
+- **A-A3** — the configuration-cache problem `4bdd0aa64` filed as "ours, origin unknown" is very probably `-app`'s `processResources.doFirst`.
+- **A-A4** — `VersionMeta.updateOrRepair`'s two failure branches are unpinned.
+- **A-A5** — `downloadFile` accepts a truncated HTTP body as a complete artifact.
+- **B-N-3** — Bug (CI): the news job's asset check accepts a partially uploaded GitHub release
+- **B-N-4** — Shallow pin: two of d5d979624's three fixes, and 9f9495975's call site, are unpinned
+- **B-N-9** — Stale docs left by the docs-site rework
+- **C-AN-2** — the browser refresh replaces the complete baked total with one that is missing Forgejo
+- **C-AN-3** — Gitea paging hard-codes the instance cap, and pagination has no bound at all
+- **C-AN-4** — the collector has no timeout
+- **C-AN-5** — the GridFS fallback leaks its stream and can permanently serve a truncated archive
+- **C-AN-6** — resumes and segmented downloads inflate the download counter
+- **C-AN-7** — SHALLOW TESTS: Range edge cases are documented but not pinned
+- **C-AN-9** — Mongoku's origin does not match the URL the docs give
+- **D-N-2** — A streamed export that fails part-way still arrives as a complete 200, and the JSON one is even well-formed.
+- **D-N-3** — Paging a store that changes during the fetch can silently skip rows, and the KDoc claims it cannot.
+- **D-N-4** — The comment's head is not budgeted, so a many-crash report can still exceed GitHub's 65,536-character limit.
+- **E-N1** — Consistency/coverage: production MongoDB 9.0.8 vs a test suite on 8.0.5.
+- **E-N2** — Bug risk: the dev-stack fallback is now a downgrade across a major version on a shared volume.
+- **E-N4** — Consistency regression: Renovate re-pins the user-facing compose file, undoing `7471aab2c`.
+- **E-N5** — Supply chain / reproducibility: the Docker image build now downloads a JDK at build time.
+- **E-N8** — Test depth: `48ce85cac` fixes the race only for this class, and the test still uses the real network.
+
+### LOW–MEDIUM
+
+- **C-AN-8** — a failed download is now silent in the SPA
+- **C-AN-10** — `Dev stack (with app)` probably drops the developer's `docker/.env` overrides
+- **D-N-5** — `withEvidence` and `dataBlockIn` disagree on what the data-block opener is.
+
+### LOW
+
+- **B-N-10** — Duplicated knowledge: da99bab5c fixed the comment-stripping class by copying the regex into each guard, in two dialects
+- **B-N-7** — Error handling (CI): the two convention checks share one `set -eu` step, so a red env check hides the duplication check's verdict
+- **A-A6** — the "four readers of `variables.txt`" sweep missed the two PowerShell readers.
+- **A-A7** — `JarDownloaderRoutingTest` still hard-codes package names.
+- **A-A8** — the clientside package graph's acyclicity is documented as "the property to preserve", and nothing checks it.
+- **A-A9** — `"incompatible"` in `notRequiredTypes` is unreachable, and two docs claim a path that does not exist.
+- **A-A10** — `media` depends on a root `build` that builds nothing.
+- **B-N-5** — Missing timeout: `JavaConfig.testJava` blocks until the probed executable closes stdout
+- **B-N-6** — Test coverage gap: the env-reference checker has no self-test for its four learned exclusions
+- **B-N-8** — Security (LOW): unpinned PyPI install on every CI build
+- **B-N-11** — `WebUtilities.getResponseAsString` silently drops line breaks and uses the platform charset
+- **C-AN-11** — STALE DOC: the node-version comment no longer matches the value
+- **C-AN-12** — a fresh checkout cannot `quasar dev` or type-check without running the collector first
+- **C-AN-13** — the SPA still renames downloads client-side
+- **C-AN-14** — MISSING TEST: the flashcard images (the B49 symptom)
+- **C-AN-15** — MISSING TEST: the homepage route table
+- **C-AN-16** — the sponsors probe
+- **C-AN-17** — nothing checks that pinned digests still exist
+- **C-AN-18** — download-counter details
+- **D-N-6** — Crash excerpts skip the console sanitising, and any `-->` in a JSON value shows the data block.
+- **D-N-7** — The table never selects "all"; its doc still says it is always offered.
+- **D-N-8** — Remaining `runCatching` calls still swallow `Throwable`, the defect class `438581fa4` diagnosed.
+- **D-N-9** — The report reads each whole console file to keep 200 lines.
+- **D-N-10** — `-lang` as the last argument crashes the parser.
+- **D-N-11** — Two flag-matching rules now coexist in one parser.
+- **D-N-12** — A JDK advertised for two architectures resolves arbitrarily.
+- **D-N-13** — An issue opener can tie up Actions concurrency with long boots.
+- **D-N-14** — Build-cache hits across machines are still defeated by other per-machine manifest attributes.
+- **D-N-15** — The streaming guard checks a header, not the body.
+- **E-N3** — Missing edge case: an in-place upgrade of an existing 8.0 deployment was never exercised.
+- **E-N6** — Unused dependency: `@pinia/testing`.
+- **E-N7** — Consistency: the homepage stays on `quasar` 2.35.2 while web-frontend moved to 2.35.3.
+- **E-N9** — Missing guard: `.dockerignore` versus declared Gradle inputs.
+- **E-N10** — Release path not exercised: semantic-release on Node 26.
+- **E-N11** — Gradle wrapper integrity (predates the slice, surfaced by `7913de669`).
+- **E-N12** — Gate opportunity after `9fa73aee3`.
+- **E-N13** — Minor: majors hidden behind ordinary-looking subjects.
+
+## Coordinator verification of reviewer claims
+
+- **C-AN-1 confirmed in code.** `serverpackcreator-homepage/scripts/collect-downloads.ts` passes `GITHUB_TOKEN`
+  (`.forgejo/workflows/docs.yml` sets it from `secrets.GH_TOKEN`) into `countAllDownloads`, which hands the same
+  options to every counter; `GiteaDownloadCounter` passes them to `fetchReleasePage`, and `releasePages.ts` adds
+  `authorization: Bearer <token>` whenever a token is set. The PAT therefore reaches gitea.com and git.griefed.de
+  on every homepage build.
+- **D-N-1 confirmed in the workflow, cache step inferred.** `clientside-verify.yml` runs on
+  `issues: [opened, edited, labeled]` and calls `clientside-report-reusable.yml`, whose report job boots the
+  requested mod with `CURSEFORGE_API_KEY` in its environment after a default `actions/checkout@v7` (credentials
+  persisted; job token `contents: read`, `issues: write`) and an unconfigured `gradle/actions/setup-gradle@v6`;
+  `clientside-accept.yml` (`contents: write`, `pull-requests: write`) runs the same Gradle action. The
+  cache-poisoning path rests on that action's documented default of writing the cache from the default branch.
+
+## Slice A — 2026-10-12..10-18, c18d38cb7..08b8549f9 (in the 2026-10-21 rounds' scope; re-checked against them)
+
+**A1 — Security — the dev stack publishes MongoDB on every interface, with a root password committed in the file.**
+- Where: `docker/docker-compose-dev.yml:40-44` (`- "27017:27017"`, `MONGO_INITDB_ROOT_USERNAME: root`, `MONGO_INITDB_ROOT_PASSWORD: 1234567890`), the same password at `:81` and `:113`, and the same URI in `.run/WebService (dev stack).run.xml`.
+- Introduced by `ff9b20fa2`. Before it, `git show ff9b20fa2^:docker/docker-compose-dev.yml` published no database port.
+- Evidence: `92d0049c7 fix(docker): the dev stack's database browser was a deprecated image, two years unbuilt` (2026-10-23) bound Mongoku to `127.0.0.1:8081` because the only auth there was credentials committed in the file, "so it excluded nobody who could read the repository; refusing the LAN is the stronger guarantee". Exactly the same reasoning applies to `27017`, which was left on `0.0.0.0`. On Linux, Docker's published ports bypass ufw/firewalld INPUT rules. The fix went to the one instance in hand and not to the whole class — the shape this repo has already recorded four times.
+- Remedy: `- "127.0.0.1:27017:27017"`. The IDE-run app and IDEA's Database window both connect to `localhost`, so nothing loses access. Also consider the dev app's `8080:8080` at `:128-129`.
+- Test: a cheap parse-the-YAML check (Kotlin test or a step beside `ci-env-reference-check.py`) asserting every `ports:` entry in `docker/docker-compose-dev.yml` starts with `127.0.0.1:`. Observe it red against the current file.
+
+**A2 — Stale doc / untested runtime — the deployment compose file says "stay on MongoDB 8.0" and runs 9.0; the README says 8.0.34; the suite tests 8.0.5.**
+- Where: `docker/docker-compose.yml:41-43` (comment from `7471aab2c`: *"Stay on the 8.0 line … 8.3 and 9.0 images exist and are a deliberate, separate upgrade"*) vs `:52` `mongodb-community-server:9.0.8-ubuntu2204@sha256:…`; `README.md:661` `8.0.34-ubuntu2204`; `docker/docker-compose-dev.yml:37` default `9.0.8`, with `:36` suggesting an override to `8.0.5`; `serverpackcreator-app/src/test/kotlin/.../web/integration/EmbeddedMongoAvailable.kt:72` `MONGOD_VERSION = "8.0.5"`.
+- Evidence: `e9f1f6396 deps(deps): update mongodb/mongodb-community-server docker tag to v9` (2026-11-13) crossed the major that the comment forbids. `renovate.json` has no `packageRules`, so the comment was the only "guard" and Renovate cannot read it. Memory notes "Mongo 9" as an accepted item of that batch, so the upgrade may be intended. If it is, the comment, the README sample and the tested version are all now wrong. If it is not, the compose file is. Either way the three disagree.
+- Secondary: the dev override hint (`SPC_DEV_MONGO_IMAGE=…8.0.5`) points at a major *downgrade*. A data volume initialised by 9.0 will not start under an 8.0 binary (featureCompatibilityVersion) — unverified against these exact images, but this is MongoDB's documented upgrade/downgrade rule.
+- Remedy (for Griefed to choose): either (a) accept 9.0: update the comment, `README.md:661`, `BUILD.md:240` and the dev hint, and decide whether `MONGOD_VERSION` follows (flapdoodle must support it); or (b) hold 8.0: add a Renovate `packageRules` entry with `matchPackageNames: ["mongodb/mongodb-community-server"]`, `allowedVersions: "<8.1"`, and revert the image.
+- Test: a check that the major.minor in the compose files' Mongo tag equals `EmbeddedMongoAvailable.MONGOD_VERSION`'s major.minor. That makes "tested against what we ship" mechanical rather than a comment.
+
+**A3 — Build / config cache — the configuration-cache problem `4bdd0aa64` filed as "ours, origin unknown" is very probably `-app`'s `processResources.doFirst`.**
+- Where: `serverpackcreator-app/build.gradle.kts:108-118`: `doFirst { val notice = rootDir.resolve(…); check(…) { "… ${notice.relativeTo(rootDir)} …" } }`. Documented as unexplained in `.claude/rules/build-layout.md`'s configuration-cache bullet (*"`:serverpackcreator-app:processResources` holding one, which is ours and is new since 2026-09-26 … worth a `git log -S`"*).
+- Evidence: `git log -S'last thing standing'` → `1bcc0340f fix(build): stop tracking the generated third-party licence notice` (2026-10-11). That date sits inside the 2026-09-26 .. 2026-10-16 window the doc names. `rootDir` inside a task action of a build script resolves through the script's `Project` receiver at execution time, which is the classic "task action references Project" configuration-cache problem. **Unverified**: confirming it needs `./gradlew build --configuration-cache --dry-run`, which this review was not allowed to run.
+- Remedy: capture outside the action, e.g. `val notice = rootDir.resolve("…")` (and a precomputed relative string) at configuration time, then `doFirst { check(notice.isFile && notice.length() > 0) { … } }`. Re-measure, and update build-layout.md's 11/3 figure either way.
+- Test: the measurement itself (problem count before/after) in the commit message, per the "build logic verified by measurement" rule.
+
+**A4 — Test depth — `VersionMeta.updateOrRepair`'s two failure branches are unpinned.**
+- Where: `serverpackcreator-api/src/main/kotlin/.../versionmeta/VersionMeta.kt:297-308`; `serverpackcreator-api/src/test/kotlin/.../versionmeta/VersionMetaManifestRepairTest.kt` has two tests (`aTruncatedForgeManifestIsRepairedInsteadOfKillingStartup`, `aTruncatedNeoForgeManifestIsRepairedInsteadOfKillingStartup`), both on the success path.
+- Issue: the KDoc and `serverpackcreator-api/CLAUDE.md` both call the rethrow *"deliberately"* load-bearing (*"the alternative is an empty meta"*), yet no test reaches `if (repaired.isEmpty()) throw ex`. A mutation that swallows `ex` (or returns without retrying) would keep both tests green. The second branch — repair succeeded but the retried `update()` throws again — is also untested.
+- Related edge: `ManifestIntegrity.restoreIfUnreadable` (`ManifestIntegrity.kt`) treats an **absent** file as unreadable (`!manifest.isFile → false`). For a name the jar does not ship, it then "deletes" a file that does not exist and returns `true`. `updateOrRepair` therefore logs `Repaired <name> …` and retries over a file that was never there. The behaviour is harmless and the log is misleading. `ManifestIntegrityTest` has no absent-file case.
+- Tests to add:
+  1. `aFailureWhoseManifestsAllParseIsRethrownUnchanged`: manifests intact, a meta whose `update()` throws `IllegalStateException("x")` → `assertThrows` the same instance (`assertSame`), and every manifest byte-identical afterwards.
+  2. `aRepairThatDoesNotHelpFailsWithTheRetrysException`: truncate the manifest, make the retried `update()` throw too → the exception propagates and is not swallowed.
+  3. `ManifestIntegrityTest.anAbsentManifestTheJarDoesNotShipIsNotReportedRepaired` → decide the contract (probably `false`), pin it, observe red against today's code.
+
+**A5 — Potential bug (unverified) / test depth — `downloadFile` accepts a truncated HTTP body as a complete artifact.**
+- Where: `serverpackcreator-api/src/main/kotlin/.../utilities/common/WebUtilities.kt:145-172` (`84ccf4d19`).
+- Issue: `84ccf4d19` closed "a killed one cached as complete" for a killed *process*. A connection the server closes early is a separate route to the same outcome. `transferFrom(channel, 0, Long.MAX_VALUE)` stops at EOF and returns a count nobody checks, and the result is compared with neither `Content-Length` nor any checksum. If the JDK's stream reports a short fixed-length body as EOF instead of throwing, the partial file is moved into place and `true` is returned. Per `serverpackcreator-api/CLAUDE.md`, *"callers treat `true` as 'I have this artifact' and `installerFor` never re-downloads an existing file"*, so a truncated installer would be cached permanently (the grinder's shared installer cache is the reachable case). **Unverified** whether `HttpURLConnection` throws ("Premature EOF") or returns -1 for a short `Content-Length` body on JDK 21. `DownloadAtomicityTest`'s four tests use no HTTP server, so the question is open in the suite too.
+- Test to add: `aBodyShorterThanItsContentLengthIsNotReportedAsDownloaded`. Use a `com.sun.net.httpserver.HttpServer` on loopback that sends `Content-Length: 1000`, writes 500 bytes and closes, with an existing destination holding known bytes. Assert `downloadFile` returns `false`, the destination is byte-identical, and no `*.tmp` sibling remains. If it goes green as written, the JDK throws and the finding closes. If it goes red, compare `transferFrom`'s count with `contentLengthLong` when that is ≥ 0 and throw `IOException` on mismatch inside the `writeAtomically` lambda.
+
+**A6 — Consistency / coverage — the "four readers of `variables.txt`" sweep missed the two PowerShell readers.**
+- Where: `serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/default_template.ps1:773` and `default_java_template.ps1:36` (`Get-Content -raw … | ConvertFrom-StringData`). `start.bat` delegates to `start.ps1` (`default_template.bat:33-38`), so PowerShell is the only Windows reader.
+- Evidence: `7680f7e8c`'s subject is *"line endings and invisible characters can no longer break a server pack"*, and its message says the four sh/fish readers were *"Found by grepping for the other readers before calling it done"*. The `.ps1` readers are not mentioned anywhere in the message or in `serverpackcreator-api/CLAUDE.md`'s `variables.txt` landmine ("read by FOUR shipped templates"). `VariablesFileLoadingTest` covers sh and fish only.
+- Likely outcome by case: BOM is handled (`Get-Content` detects it); CRLF very probably too (`ConvertFrom-StringData` trims each line); **lone CR is unverified**. If the cmdlet splits only on `\n`, a lone-CR file reads as one key holding the rest of the file, and every other setting silently disappears.
+- Test to add: extend `VariablesFileLoadingTest` with the two `.ps1` loaders × {LF, CRLF, lone CR} × {BOM, none}, run through `TemplateInterpreterRunner` (pwsh locally or in a container, `--platform linux/amd64`). Check success positively with markers, per the pwsh-on-aarch64 landmine. At minimum, the landmine text should say the ps1 readers were considered and why they are exempt.
+
+**A7 — Shallow guard that will be weakened again — `JarDownloaderRoutingTest` still hard-codes package names.**
+- Where: `serverpackcreator-clientside/src/test/kotlin/.../platform/JarDownloaderRoutingTest.kt:61` and `:74` (`Class.forName("de.griefed.serverpackcreator.clientside.platform.BrowserDownloader")`, `…platform.JarDownloaderKt`).
+- Evidence: `5658f621b`'s message records that the package move left both strings naming the old flat package, so each guard "went on asking about a package the class could never appear in — still green, and green for ever". The fix re-typed the new literal, so the next move recreates the defect.
+- Remedy/test: derive the package from the subject, e.g. `JarDownloader::class.java.packageName + ".BrowserDownloader"`. To prove it: move `JarDownloader` in a scratch worktree and confirm the guard still targets its package.
+
+**A8 — Missing guard — the clientside package graph's acyclicity is documented as "the property to preserve", and nothing checks it.**
+- Where: `serverpackcreator-clientside/CLAUDE.md` § Package layout: *"The package graph is acyclic — that is the property to preserve, and the one a careless import silently destroys."*
+- Verified today: the **code-level** graph is acyclic and matches the table. The **import** graph is not: `version` imports `boot.BootVerifier`, `selection.BootCandidateSelector`, `metadata.JarSelfDeclaration` and `platform.ModFile`; `platform` imports `verdict.Verdict`; `selection` imports `boot.BootVerifier`; `metadata` imports `selection.BootCandidateSelector`; `dependency` imports `verdict.BootResult`. All of these are KDoc-only (zero non-comment uses, checked file by file), as the CLAUDE.md caveat says. So a reviewer cannot use the import list, and the property is enforced by nobody.
+- Test to add: `PackageGraphIsAcyclicTest`. For each main file, collect `clientside.<pkg>.<Type>` references outside `import` lines and comments (reuse `HtmlProofingTest.withoutComments`'s `(?<!:)//.*` stripping), build the package graph, and assert no cycle plus the "May depend on" table. Observe it red by adding a real `version → boot` reference in a scratch edit.
+
+**A9 — Documentation accuracy — `"incompatible"` in `notRequiredTypes` is unreachable, and two docs claim a path that does not exist.**
+- Where: `ForgeTomlScanner.kt:53-57` (KDoc: *"`incompatible` is here because it means the mod must not be present"*) and `serverpackcreator-api/CLAUDE.md` (*"It also stays in `notRequiredTypes` so the Forge path never calls it required"*).
+- Evidence: `isOptional` is `private` and has exactly one call site, `ForgeTomlScanner.kt:142`, which is reached only after the `continue` at `:125-127` has dropped every `type == "incompatible"` entry. There is no separate "Forge path". The entry is defensive dead data, harmless, but the docs give a reason that cannot happen.
+- Remedy: either drop `"incompatible"` from the set (it cannot be observed, so behaviour is unchanged), or keep it and reword both docs to "kept so `isOptional` stays correct on its own if the drop is ever removed". Prefer the first: one statement in one place.
+
+**A10 — Build footgun — `media` depends on a root `build` that builds nothing.**
+- Where: `build.gradle.kts:227-244` (`dependsOn(tasks.build, tasks.named("generateLicenseReport"))`); explained in `.forgejo/workflows/artifacts-reusable.yml:332-344` (comments from `b7ca73e58`/`57eadb9b7`).
+- Issue: the workflow comment states it plainly — *"nothing here builds the application it installs"*. CI is safe because it restores `gradle-jars` first. `./gradlew media` on a clean local checkout still runs with no app jar in `serverpackcreator-app/build/libs`, and whatever install4j then does is not guarded. `dependsOn(tasks.build)` also reads as if it built the app, which is how the previous "two fat jars" defect in `b7ca73e58`'s message came about.
+- Remedy: make `media` fail fast in `doFirst` when `serverpackcreator-app/build/libs` holds no `*.jar` other than `*-plain.jar` (and more than one, which is the scan-order hazard), and drop the inert `tasks.build` edge. Capture the directory outside the action (see A3).
+
+---
+
+## Slice B — 2026-10-19..10-21, f5c9e819d..97fca093a (in the 2026-10-21 rounds' scope; re-checked against them)
+
+**N-1 — Bug (concurrency, published API): the clear-then-refill shape d2108dedc removed from
+`clientsideMods`/`modsWhitelist` survives in five sibling properties, two of them on the READ path**
+- `serverpackcreator-api/.../settings/GenerationConfig.kt:1029-1038`: the `directoriesToExclude`
+  getter runs `field.clear(); field.addAll(use)` on every read. `:1011-1016`
+  (`directoriesToInclude`), `:1053-1057` (`postInstallCleanupFiles`), `:1070-…`
+  (`preInstallCleanupFiles`) and `:1088-…` (`zipArchiveExclusions`) do `field.addAll(...)` on read, and
+  every one of their setters does `field.clear(); field.addAll(value)` on the live `TreeSet`.
+- Evidence of concurrent readers: `ConfigurationHandler.kt:745` iterates
+  `apiProperties.directoriesToExclude` (`ApiProperties.kt:371-374` delegates straight through) during
+  config checks. Those checks run from `ConfigCheckTimer` coroutines and generation in the GUI, and
+  concurrently per request in `-app`'s web mode (`SettingsController.kt:56` reads the same property).
+  A reader iterating while another read clears the set gets a `ConcurrentModificationException`, or an
+  empty window in which no directory is excluded.
+- Why the earlier rounds missed it: round 6 "verified clean" covers only the `fallback*` sets (never
+  written through) and the regex variants. These are different fields.
+- Fix: same shape as d2108dedc. Build a fresh `TreeSet` and assign it to a `@Volatile` field, or return
+  a fresh set from the getter (as `updateProtectedPaths` at `:1248-1251` already does). Record the
+  change in `API-BEHAVIOUR-CHANGES.md`.
+- Tests: (a) `aReadOfDirectoriesToExcludeDoesNotMutateASetAnotherReaderHolds`: hold the result of one
+  read, read again, `assertSame`/`assertNotSame` per the chosen design, and assert the held set is
+  unchanged. (b) A stress test with two threads, one iterating `directoriesToExclude` and one reading
+  it, over N iterations with no CME. Weaker than (a), so add it only alongside (a).
+
+**N-2 — Bug (consistency): `updateFallback` parses the list with a raw `split(",")`, while
+`PropertyStore.getList` drops trailing empties**
+- `UpdateConfig.kt:146` and `:155` (`newBlacklist.split(",")`, touched by d2108dedc) versus
+  `PropertyStore.kt:122-129` (`.dropLastWhile { it.isEmpty() }`).
+- Effect: a remote list ending in `,` puts `""` into the live `clientsideMods` until restart. Under
+  `ExclusionFilter.START`/`END`/`CONTAIN`/`EITHER`, `ModListCompiler.FilterMatcher.matches`
+  (`ModListCompiler.kt:116-121`) answers `true` for an empty entry against every mod name. Whether that
+  reaches generation depends on whether the fallback list feeds the exclusion set (**unverified**:
+  I did not trace `clientsideMods` into `compileModList`). After a restart the same stored value is read
+  through `getList`, so the defect is visible only in the session that performed the update. That makes
+  it hard to notice.
+- Test: `updateFallback` against a loopback properties server answering `…clientside=a,b,` should give
+  `clientsideMods == sortedSetOf("a","b")`. Also `a,,b` and an empty value. Better: route both parsers
+  through one function.
+
+**N-3 — Bug (CI): the news job's asset check accepts a partially uploaded GitHub release**
+(5d1b96270)
+- `.forgejo/workflows/release-build.yml:669-676`: fails only on `COUNT -eq 0`. The mirror upload loop
+  (`:511-525`) exits on the first failed upload, so a release holding 1 to 11 of its 12 assets passes.
+  The step's own comment calls a release "carrying none … a half-finished mirror", but a release
+  carrying some is just as half-finished. With `mirror` in `needs:` for ordering only (`if:` ignores its
+  result, by design), this check is the only gate. A mirror that died mid-loop therefore leads to an
+  announcement that sends users to an incomplete GitHub release.
+- Fix: compare against the Forgejo release's asset count. That is a public GET on
+  `$SERVER_URL/api/v1/repos/$REPOSITORY/releases/tags/$VERSION` and needs no token. An alternative is an
+  expected count passed as a `mirror` output.
+- Test (CI-level, executable via a fixture JSON): run the step body with `gh-release.json` holding 5
+  assets and an expected count of 12, and expect exit 1.
+
+**N-4 — Shallow pin: two of d5d979624's three fixes, and 9f9495975's call site, are unpinned**
+- d5d979624 pins only the `println` (`JavaConfigTest.validatingAJavaPathPrintsNothingToStandardOut`).
+  The `use {}` close, the `finally { destroyForcibly() }` in `JavaConfig.testJava`, and the whole
+  `WebUtilities.getResponseAsString` rewrite (zero callers, zero tests) can each be reverted with
+  everything green. The message is honest about what it pins, so this is depth, not a false claim.
+- 9f9495975: `LicenseAgreementRendererTest.theLicenceReadCarriesBothTimeouts` exercises
+  `readBounded` directly. Reverting the call site at `LicenseAgreementRenderer.kt:145` to
+  `URI(license.url).toURL().readText()` leaves the test green. This is the grinder CLAUDE.md's recorded
+  defect class: "a correct unit no caller reaches … pin the decision through the call the daemon
+  actually makes".
+- Tests: (a) `getResponseAsString` against a loopback `HttpServer` that writes half a body and then
+  resets. Assert `IOException` and that the server observes the connection closed. (b) `testJava` with a
+  `pathToJava` script that prints a line and then sleeps: assert it returns and that the child is dead
+  afterwards (`ProcessHandle.allProcesses()` filtered by command). (c) Drive the renderer's licence path
+  with a `file:` URL through a seam, or assert via a fake `URLConnection` factory that `readBounded` is
+  the route.
+
+**N-5 — Missing timeout: `JavaConfig.testJava` blocks until the probed executable closes stdout**
+- `JavaConfig.kt` `testJava`: reads to EOF with no bound. A configured "Java" path that never exits (a
+  wrapper waiting on stdin, a hung binary) blocks the validating thread indefinitely. That thread is the
+  GUI settings path. Pre-existing, and the d5d979624 rewrite kept it.
+- Fix: `process.waitFor(timeout)` on a drained stream, or a drain thread plus `waitFor(5, SECONDS)`, then
+  `destroyForcibly`.
+- Test: a temp script `#!/bin/sh\nsleep 600` returns `false` (or `true`, per the chosen contract) within
+  the bound.
+
+**N-6 — Test coverage gap: the env-reference checker has no self-test for its four learned exclusions**
+(f5c9e819d)
+- `misc/ci-env-reference-check.py`: its message documents four false-positive classes it learned
+  (quoted heredoc bodies, mid-line assignments, single-quoted strings and `${{ }}`, PowerShell
+  `$env:`). Nothing pins them, and the gate runs only against the real workflows, so a regex regression
+  shows up as a red build about the wrong thing, or as silence.
+- Also unhandled (latent, no current instance): job- or workflow-level `env:` keys are never checked for
+  UNUSED (only step `env`); `defaults.run.shell` is ignored, so a pwsh-default job would be scanned as
+  bash and `$env:NAME` would read as a reference to `env`; `RUNTIME_PREFIXES` exempts `GITHUB_*`/
+  `FORGEJO_*` only from UNDEFINED, which is right, but a misspelt `GITHUB_TOKNE` read is never reported.
+- Tests: a `misc/ci-env-reference-check.test.sh` (the pattern `assemble-docs.test.sh` set) feeding six
+  small workflow fixtures and expecting the six verdicts. One of them should reproduce the original
+  `WEBHOOK_URL`/`NEWS_WEBHOOK_URL` defect, so the checker's own teeth are pinned outside git history.
+
+**N-7 — Error handling (CI): the two convention checks share one `set -eu` step, so a red env check
+hides the duplication check's verdict** (84422876d)
+- `.forgejo/workflows/test.yml:130-136`: if `ci-env-reference-check.py` exits 1, `ci-duplication-check.py`
+  never runs. Someone fixing the first finding learns about the second only on the next push.
+- Fix: `rc=0; python3 a.py || rc=1; python3 b.py || rc=1; exit $rc`. That keeps one step and one pyyaml
+  install.
+
+**N-8 — Security (LOW): unpinned PyPI install on every CI build** (5860bcaec)
+- `.forgejo/workflows/test.yml:133-134`: `pip3 install --break-system-packages pyyaml` with no version
+  and no hash, in the `build` job, which is not a secret-bearing step (checked: no `env:` secrets on it).
+  The supply-chain exposure is small but needless. Remedy: `pyyaml==6.0.3`, the version 5860bcaec
+  measured.
+
+**N-9 — Stale docs left by the docs-site rework** (3d6b8dc2c, 0fe3d5731)
+- `serverpackcreator-help/Writerside/spch.tree:17-19`: says the Dokka merge happens "in two places that
+  must stay in step: `docker/Dockerfile.help` … and `.github/workflows/pages.yml`". 3d6b8dc2c deleted
+  `docker/Dockerfile.help`. The second half now lives in `serverpackcreator-homepage/docs/assemble-docs.sh`,
+  and the comment does not say so.
+- `.github/workflows/pages.yml:128-130`: "`spch.tree` links to `api/index.html` RELATIVE to the site
+  root, which is what makes one link serve both this deployment … and the container's (`/api/`)". 3d6b8dc2c
+  edited this very comment and left the claim. The href is absolute
+  (`spch.tree:46`, `https://griefed.github.io/ServerPackCreator/api/index.html`, made absolute by
+  `fix(docs): the help site's Dokka link must be absolute, or it never navigates`, 2026-10-03), and the
+  "container" deployment no longer exists. `docs.yml:157-165` rewrites it to
+  `https://serverpackcreator.de/api/latest/index.html`.
+- Remedy: point both comments at `assemble-docs.sh` and at the absolute-href rewrite in `docs.yml`.
+
+**N-10 — Duplicated knowledge: da99bab5c fixed the comment-stripping class by copying the regex into each
+guard, in two dialects**
+- `git grep '//\.\*' -- '*/src/test/*'` finds 8 copies at develop: `ClientsideReadmeFlagsTest.kt:60` and
+  `GrindTestFixtures.kt:119` (`(?<!:)//.*`); `VerifyClientsideArtifactSinkTest.kt:105`,
+  `VerifyClientsideJavaSelectionTest.kt:44` (added after the slice), `BootVerifierArtifactSinkTest.kt:144`,
+  `GrinderConfigurationTest.kt:172`, `FabricQuiltStepDownTest.kt:191` and `HtmlProofingTest.kt:179`
+  (`//.*`).
+- The commit's own message calls this "the sixth recorded instance of duplicated knowledge drifting",
+  and the fix produced six more copies with a dialect split already in place. A new guard copies
+  whichever it finds first. The `/\*.*?\*/` half also eats code when a string literal contains `/*`
+  (for example a glob `"mods/*.jar"`). No guarded source has one today (checked
+  `GrinderApplication.kt` and `app/cli/commands/*.kt`), so this is latent.
+- Remedy: one shared test-fixture function per module (or one in a shared test source) using the `(?<!:)`
+  form. Test: feed it `val u = "https://x"; /* c */ val g = "a/*b" // t` and assert the output.
+
+**N-11 — `WebUtilities.getResponseAsString` silently drops line breaks and uses the platform charset**
+(touched by d5d979624, behaviour preserved)
+- `WebUtilities.kt` `getResponseAsString`: `response.append(currentLine)` with no separator, and
+  `InputStreamReader(stream)` with no charset. Preserving this was correct for a fix commit on published
+  API, but no doc says so, and an embedder reading a multi-line body gets it concatenated.
+- Remedy: document both on the KDoc. Do not change behaviour (published API; the
+  `API-BEHAVIOUR-CHANGES.md` policy applies).
+- Test: a characterization test pinning `"a\nb"` → `"ab"`, so a later "fix" is a visible behaviour
+  change.
+
+---
+
+## Slice C — 2026-10-23..10-24, 8e224d62e..db025e531 (first review)
+
+**AN-1 — SECURITY (HIGH): the GitHub PAT is sent as a bearer token to gitea.com and git.griefed.de**
+- `serverpackcreator-homepage/scripts/collect-downloads.ts` passes `token: process.env.GITHUB_TOKEN` into `countAllDownloads`.
+  `countDownloads.ts` (`countOnce`) hands the same `options` to every counter, and `src/services/downloads/releasePages.ts:30–31` adds
+  `authorization: Bearer <token>` to **every** request, whatever the host. CI sets `GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}` on the
+  *Collect the download counts* step (`.forgejo/workflows/docs.yml`, homepage-build). The allowlist note (`misc/ci-env-reference-allowlist.yml:13`) shows
+  the intent was GitHub only. So every CI homepage build discloses `GH_TOKEN` (a classic PAT with `read:user`, used for sponsors) to gitea.com, a third party.
+- Probable second effect (unverified at runtime): Gitea and Forgejo typically answer an unrecognised bearer token with 401 even on public
+  endpoints. If so, both forges fail in CI whenever the token is present, and the baked total silently drops ~14.9k. That is the exact
+  "silently low total" the retry was added for, and the retry cannot fix it.
+- Introduced by `109b06bdb`; open at develop. The only token test (`test/services/downloads/github-counter.test.js:63`) covers GitHub alone.
+- Tests to add: (a) `countAllDownloads(..., { token, fetch })` with all three hosts. Assert that `init.headers.authorization` is present only on
+  `https://api.github.com/...` URLs and absent on gitea/forgejo URLs. (b) A per-platform token map
+  (`tokens: { github: '…' }`), if that is how it gets fixed.
+
+**AN-2 — BUG (MEDIUM): the browser refresh replaces the complete baked total with one that is missing Forgejo**
+- `src/services/downloads/downloadTotal.ts`, `refreshDownloadTotal`. The figure is stale 24 h after the build (`MAX_AGE_MS`). The browser cannot
+  reach git.griefed.de (no CORS, as documented), so `report.platforms` holds github + gitea, `length > 0`, and
+  `refreshed = { total: github+gitea }` is written to localStorage. Its `generatedAt` is newer than the baked one, so `readDownloadTotal` then
+  prefers it. Every visitor 24 h after a build sees a total ~8.5k lower than the build counted, and it persists.
+- The documentation says the opposite: `src/pages/Index.vue:779–780` ("A forge that is unreachable from a browser … changes nothing: the
+  baked figure already has it") and `serverpackcreator-homepage/CLAUDE.md` ("Nothing breaks without it; the baked figure already includes
+  Forgejo"). Both claims are false against the code. Each visit also spends two CORS-failing Forgejo requests (the retry).
+- Tests to add: stale snapshot, fetch rejecting for `git.griefed.de` and answering for the others. Assert `snapshot.total >= BAKED.total`,
+  or better, that a failed platform keeps its baked per-platform figure (`generated.platforms` is already in the JSON). Also: a refresh that
+  yields fewer platforms than the baked report must not be cached as newer.
+
+**AN-3 — BUG (MEDIUM): Gitea paging hard-codes the instance cap, and pagination has no bound at all**
+- `src/services/downloads/GiteaDownloadCounter.ts`: `GITEA_PAGE_SIZE = 50`, and the loop stops on `releases.length < 50`. `MAX_RESPONSE_ITEMS`
+  is per-instance configuration (50 is only the default). On an instance capped lower, page 1 comes back with e.g. 30 and the counter stops
+  after one page, reproducing the silent undercount the module's own LANDMINE warns about for `per_page`. The library is advertised as usable
+  against any instance (`countPlatformDownloads(url)`).
+- Neither counter has a page ceiling. A server that ignores `page`, or a cyclic `Link` header (`GitHubDownloadCounter.ts`, `nextPage`), loops forever.
+- Tests to add: (a) an instance answering 30 per page across 3 pages. Expect all pages read, using `X-Total-Count` (which Gitea sends on list
+  endpoints; unverified for Forgejo's releases route) or "continue until an empty page". (b) A stub that always returns a full page must
+  terminate with a failure after N pages. (c) A `Link` that points at itself must terminate.
+
+**AN-4 — MISSING ERROR HANDLING (MEDIUM): the collector has no timeout**
+- `scripts/collect-downloads.ts` passes no `signal`, and `fetchReleasePage` uses one only if supplied. The collector is "fail-soft" for errors,
+  but a forge that accepts the connection and never answers stalls the CI step and the Docker build until the job timeout. Fail-soft does not cover hangs.
+- Test to add: a fetch stub that never resolves plus an `AbortSignal.timeout`-style default. Expect the platform to land in `failures`
+  within the budget, using fake timers.
+
+**AN-5 — BUG (MEDIUM): the GridFS fallback leaks its stream and can permanently serve a truncated archive**
+- `serverpackcreator-app/.../web/storage/FileSystemStorageService.kt`, `cache` (renamed from `store(GridFSFile,…)` in `8e224d62e`):
+  `FileUtils.copyToFile(resource.inputStream, destination)`. commons-io's `copyToFile(InputStream, File)` leaves the source stream **open**
+  (`copyInputStreamToFile` is the closing variant), so every GridFS recovery leaks a GridFS download stream. This bug predates the slice, but the
+  commit rewrote this function, so "fix bugs when you find them" applies.
+- It writes straight to the final `${id}.zip`. An `IOException` mid-copy leaves a partial file, and from then on `load` takes the
+  `archive.isFile` fast path and serves the truncated file with a matching `Content-Length`, forever. Two concurrent first downloads of the
+  same GridFS-only pack race: request B can see A's half-written file as `isFile` and stream it.
+- Remedy: `resource.inputStream.use { }`, copy to a temp file in the same directory, then `Files.move(…, ATOMIC_MOVE)`.
+- Tests to add: (a) a `resource.inputStream` that throws after N bytes. Assert that `load(id)` then returns empty or recovers again, never the
+  partial file. (b) Verify the stream is closed (spy `close()`). (c) Two threads recovering the same id both receive the full bytes.
+
+**AN-6 — BUG (MEDIUM): resumes and segmented downloads inflate the download counter**
+- `ServerPackController.kt:65` (`updateDownloadStats(id)`) and `ModPackController.kt:69` run on every GET, including `Range` requests.
+  `8e224d62e` deliberately made downloads resumable (an anchor plus pinned 206 support), so a download manager fetching 8 segments, or a
+  resumed transfer, now counts 2–8 downloads.
+- Tests to add: a `Range: bytes=10-19` request leaves the counter unchanged (`verify(exactly = 0) { serverPackService.updateDownloadStats(any()) }`),
+  while `bytes=0-` or no Range increments it once. The same for the modpack route (`ArchiveStreamingTest`).
+
+**AN-7 — SHALLOW TESTS: Range edge cases are documented but not pinned**
+- `serverpackcreator-app/CLAUDE.md` (the "download route streams" section) claims 416 on an unsatisfiable range. Only the single-range happy
+  path is pinned (`ServerPackControllerTest.aRangeRequestIsAnsweredWithThatRangeSoADownloadCanResume`).
+- Tests to add: `bytes=100-` on a 64-byte archive → 416 with `Content-Range: bytes */64`; suffix `bytes=-10` → the last 10 bytes;
+  multi-range `bytes=0-1,5-6` → `multipart/byteranges`; `Content-Length == 10` on the 206 (the controller sets the full length explicitly, so it is
+  worth asserting the converter overrides it); `HEAD` → no body and no stats increment; and the same on the modpack route.
+
+**AN-8 — MISSING ERROR HANDLING (LOW–MEDIUM): a failed download is now silent in the SPA**
+- `serverpackcreator-web-frontend/src/pages/{ModPack,ServerPack}Download.vue`. The removed `downloadWithAxios` showed `$q.notify` on failure.
+  The anchor hands a 404/500 to the browser, which shows only "Failed – file wasn't available", while the page says "Downloading — your
+  browser is saving the file". The commit message does not mention this behaviour loss.
+- `startDownload()` sets `started = true` even when `$refs.downloadButton?.$el` is missing and nothing was clicked.
+- Tests to add: with fake timers, after 5 s the countdown clicks the anchor (spy `HTMLAnchorElement.prototype.click`) and shows the
+  "Downloading" label; the cancel button stops the click; no "Downloading" claim when the ref is absent.
+
+**AN-9 — BUG (MEDIUM, dev stack): Mongoku's origin does not match the URL the docs give**
+- `docker/docker-compose-dev.yml:87` sets `MONGOKU_SERVER_ORIGIN=http://127.0.0.1:8081`, but `BUILD.md:200` and the compose comment at `:59`
+  send developers to `http://localhost:8081`. Mongoku compares origins exactly: `src/lib/components/OriginWarning.svelte` on Mongoku
+  `master` tests `serverOrigin !== page.url.origin`, and SvelteKit's adapter-node `ORIGIN` CSRF check is exact too. Following the documented
+  link therefore gives the warning banner and refused writes, the very regression the comment says the variable prevents.
+  (Verified against Mongoku master source; the pinned 2.11.5 is assumed to match.)
+- The comment at `:69–72` ("Mongoku has no authentication of its own") is false on master: `MONGOKU_AUTH_BASIC` exists (`src/hooks.server.ts:13`,
+  README). Whether 2.11.x has it is unverified. Loopback binding is still the right call; the stated reason is wrong.
+- Remedy: point BUILD.md and the comment at `http://127.0.0.1:8081`, or set the origin to `http://localhost:8081`.
+- Test to add: none is practical in-repo. A `docker compose config` + grep consistency check between `MONGOKU_SERVER_ORIGIN` and the
+  documented URL would do.
+
+**AN-10 — BUG (LOW–MEDIUM, dev tooling): `Dev stack (with app)` probably drops the developer's `docker/.env` overrides**
+- `.run/Dev stack (with app).run.xml` sets `envFilePath=docker/app-profile.env`. With Compose, `--env-file` replaces the default `.env`
+  lookup, so `SPC_DEV_MONGO_IMAGE`, the override `docker-compose-dev.yml:34–37` tells developers to set in `docker/.env`, is silently ignored
+  under this configuration. Whether IntelliJ passes the field as `--env-file` or as process env is unverified, and the commit says so.
+- The message's premise that `envFilePath` is "the one option key this repository already proves works, in the existing `Dev stack` config"
+  is weak: that config has `envFilePath value=""` (`.run/Dev stack.run.xml:5`), which proves nothing about forwarding.
+- Remedy: use the run configuration's Profiles option instead (no env file), or document the interaction.
+
+**AN-11 — STALE DOC: the node-version comment no longer matches the value**
+- `.forgejo/workflows/docs.yml:294–298`: the comment says "the image's builder stage is pinned to node:22-bookworm-slim, so 22 keeps the two
+  verified against the same major", but the value is `'26'` (and the Dockerfile is `node:26-bookworm-slim`). The comment came from `8521241b1`;
+  the value was moved by `5dfdc6d92 deps(deps): update dependency node to v26` (outside the slice) without touching the comment.
+
+**AN-12 — DOC/UX (LOW, runtime unverified): a fresh checkout cannot `quasar dev` or type-check without running the collector first**
+- `src/services/downloads/downloadTotal.ts:1` imports `@/generated/download-counts.json`, which is gitignored (`serverpackcreator-homepage/.gitignore`).
+  `"dev": "quasar dev"` does not run `collect-downloads`, yet `serverpackcreator-homepage/CLAUDE.md` "Local development" leads with
+  `npm ci && npx quasar dev`. CI orders the collector before the type-check for exactly this reason (docs.yml comment).
+- Remedy: make `dev` (and `type-check`) depend on the collector, or ship a committed null-total fallback file under another name.
+
+**AN-13 — CONSISTENCY (LOW): the SPA still renames downloads client-side**
+- `serverpackcreator-web-frontend/CLAUDE.md` ("Downloads are the browser's") says "Do not reintroduce client-side renaming". Both pages still
+  compute `name` with the old renaming logic (`My_Cool_Pack_server_pack.zip`) and bind it as `:download`, and the characterization tests pin
+  it. It is only a fallback, because `Content-Disposition` wins, but the fallback name differs from the server's (`My Pack_server_pack.zip`).
+  Either drop the attribute value (a bare `download`) or document the fallback as intentional.
+
+**AN-14 — MISSING TEST: the flashcard images (the B49 symptom)**
+- `src/pages/Index.vue:693` (`import.meta.glob`) and `:754` (`cardImage`): a wrong glob path or a renamed file yields `undefined` and an
+  `<img>` with no `src`, and the build stays green.
+- Tests to add: `for n in 1..9: expect(wrapper.vm.cardImage(n)).toMatch(/\.png/)`; mount Index and assert 9 card `<img>` elements carry a
+  non-empty `src`.
+
+**AN-15 — MISSING TEST: the homepage route table**
+- `src/router/routes.ts`: assert `/` → Index under MainLayout, `/addons` → AddonIndex, `/nonsense` → Error404, by mounting the router with
+  memory history.
+
+**AN-16 — UNTESTED CI LOGIC (LOW): the sponsors probe**
+- `.forgejo/workflows/update-readme.yml` (`ab95db72e`): ~45 lines of inline Python decide whether README sponsors get overwritten. The six
+  canned-body checks in the message were one-off and are not committed. Extract the Python to `misc/` with a pytest over those six bodies,
+  so the next bump is checked.
+- The probe must stay "identical to the action's query", but nothing checks that drift. Pinning the action at `@v1.6.1` (`363b20354`) makes
+  the drift controllable. Whether the probe query matches v1.6.1's `src/template.ts` is unverified.
+
+**AN-17 — RECURRENCE (LOW): nothing checks that pinned digests still exist**
+- `d65c3313e` fixed a pinned mongodb digest that had stopped resolving, but added nothing to catch the next one. Renovate has re-pinned the
+  digest twice since (`29d26ca46`, `1a9be02c7`). A scheduled CI step running `docker manifest inspect` over every `@sha256:` in
+  `docker/*.yml` and the Dockerfiles would catch the next one before users do.
+
+**AN-18 — MINOR ROBUSTNESS (LOW): download-counter details**
+- `countDownloads.ts`: the retry is immediate, with no backoff, and also retries a 403 rate-limit, which cannot succeed within the same minute.
+- `apiEndpoints.ts`, `releasesEndpoint`: owner and repository are interpolated without `encodeURIComponent`.
+- `parseRepositoryUrl` keeps only the origin, so a GitHub Enterprise or Gitea instance served under a path prefix (`https://host/git/owner/repo`)
+  is mis-parsed. Worth a test that documents the limitation.
+
+## Slice D — 2026-10-29..11-11, 4782e4012..f6085c414 (first review)
+
+**N-1: HIGH (security). Any issue opener's chosen mod runs as arbitrary code on the GitHub runner, with the job's secret, a persisted token and a writable cache in reach.**
+- Commit: `46928a8a6`. It made the previously-cancelled boot actually run on every `opened`.
+- Where: `.github/workflows/clientside-report-reusable.yml:47-129` (`report` job) and `serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/boot/ServerRunner.kt:104-108`.
+- Issue: `issues: opened` from any GitHub user, with no write access needed, boots a server containing a mod the reporter picked from CurseForge or Modrinth. Booting runs that mod's code on the bare runner. Three things are reachable from it:
+  - **The secret.** `CURSEFORGE_API_KEY` sits in the step `env`, and `ProcessBuilder("bash", "start.sh")` inherits the full environment (no `environment().remove(...)`), so the Minecraft server JVM has the key.
+  - **The token.** `actions/checkout@v7` runs with default `persist-credentials: true`, so the job's `GITHUB_TOKEN` (`issues: write`) is in `.git/config` in the workspace.
+  - **The cache.** `setup-java … cache: 'gradle'` and `gradle/actions/setup-gradle` save `~/.gradle` from a default-branch run. Mod code that writes into `~/.gradle` (for example `init.d/`) can poison the cache restored by `clientside-accept.yml`, which holds `contents: write` and `pull-requests: write`, and runs `./gradlew` before `create-pull-request`. That is an escalation path to repository write. The cache-scope and save-on-success details are from the actions' documented behaviour, not re-checked here: treat that link as plausible, not demonstrated.
+- The project already treats mods this way elsewhere: the grinder runs the same workload in a no-network, no-caps, read-only container (`claude-docs/REFACTOR-LOG.md:2773`, "an untrusted JVM — an arbitrary-code execution engine"). Nothing in `CI-SECRETS.md`, `ci-workflows.md` or the clientside/app `CLAUDE.md` acknowledges that `-verifyclientside` in CI runs untrusted code on the host.
+- Remedy, in order of cost:
+  1. Set `persist-credentials: false` on the report job's checkout.
+  2. Clear the environment for the server process: `ProcessBuilder.environment()` keeps only `PATH`/`JAVA*`/`HOME`.
+  3. Have the report job neither restore nor save the Gradle cache (`cache-read-only` / no `cache:`), or build the jar in one job and boot in a second job with no cache and no secret.
+  4. Ideally boot inside the grinder's hardened container image.
+- Tests to add:
+  - A `ServerRunner` test that boots a fake `start.sh` printing `env` and asserts `CURSEFORGE_API_KEY` and `GITHUB_TOKEN` are absent.
+  - A workflow lint (in the existing `ci-env-reference-check` style) asserting that the `report` job's checkout sets `persist-credentials: false` and that no step of that job declares `cache:`.
+
+**N-2: MEDIUM (bug). A streamed export that fails part-way still arrives as a complete 200, and the JSON one is even well-formed.**
+- Commit: `438581fa4`
+- Where: `serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/report/ReportServer.kt:350-366` (`streamVerdicts`) and `:440-444` (`respondStreaming`).
+- Issue, JSON: `mapper.createGenerator(body).use { … }` runs Jackson 2.22's `close()` on exception, and `JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT` is on by default. That writes the missing `]}`. `exchange.responseBody.use(writeBody)` then closes the chunked stream normally, which writes the terminating chunk. The client receives a complete, parseable 200 whose `verdicts` array is shorter than `matched`.
+- Issue, CSV: the unflushed `OutputStreamWriter` drops its buffer and the stream is closed cleanly, which can end mid-row.
+- Why it matters: the KDoc promises "truncates the document". It is truncated, but in a way no client can detect, which is the "defect wearing a success" the same commit condemns in `GrinderClient`. `GrinderClient.fetchVerdicts` never compares rows received with `matched`.
+- Logging: the exception propagates to the JDK `HttpServer`, which (from memory of `sun.net.httpserver.ServerImpl.Exchange.run`; unverified against the exact JDK build) logs non-`Error` exceptions only at TRACE. So a mid-stream `IOException` or serializer failure still reaches no application log, the original complaint.
+- Remedy: disable `AUTO_CLOSE_JSON_CONTENT` on that generator. In `respondStreaming`, catch, log at ERROR, and abort without closing the body cleanly so the client sees an incomplete chunked response: for example call `exchange.close()` only on success and rethrow, or close the connection.
+- Tests to add:
+  - Serve a selection whose 2nd row's serialisation throws (a `GrindVerdict` subclass or mapper seam). Assert that the `java.net.http` client gets an `IOException` (or a body that fails `readTree`), and that the log appender captured an ERROR.
+  - The same for `/export.csv`.
+  - In `GrinderClientTest`: a page whose `verdicts.size` is below what `matched`/`pages` imply should produce `Failed`.
+
+**N-3: MEDIUM (bug). Paging a store that changes during the fetch can silently skip rows, and the KDoc claims it cannot.**
+- Commit: `438581fa4`
+- Where: `serverpackcreator-plugin-grinder/src/main/kotlin/de/griefed/serverpackcreator/plugin/grinder/core/GrinderClient.kt:89-127`
+- Issue: offset paging (`?size=&page=`) over a selection the daemon re-derives per request while grinding. The code de-duplicates rows that shift *forward* onto two pages, but a row inserted *before* the cursor (default order is confidence-first, so inserts land anywhere) pushes a boundary row back onto an already-fetched page. That row is never seen.
+  - The KDoc says "Partial results are never returned", which is false under concurrent writes, the exact condition the de-dup comment describes.
+  - `putIfAbsent` also keeps the *older* copy of a re-recorded verdict, contradicting "newest state included".
+- Remedy:
+  - Compare `collected.size` with the last document's `matched`. On a shortfall, refetch once or return `Failed`.
+  - Or add a snapshot or version token to `/verdicts.json` so pages come from one selection.
+  - Use `put` (last wins) if newest state is the intent.
+- Tests to add: a `servingByPage` fake whose page 2 is computed after inserting a row at index 0 (so `prism`, last on page 1, moves to page 2's head and the old page-2 head moves to page 1). Assert every slug is present, or `Failed`. A second test: a slug repeated with a newer `verifiedAt` on page 2 should yield the newer one.
+
+**N-4: MEDIUM (edge case). The comment's head is not budgeted, so a many-crash report can still exceed GitHub's 65,536-character limit.**
+- Commit: `082bc2faa`
+- Where: `serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/ClientsideReportRenderer.kt:64-69` (`renderMarkdown`) and `:98-109` (crash excerpts in `head`).
+- Issue: only the consoles and the tail are fitted to `MAX_COMMENT_CHARS`. `head` is unbounded:
+  - Each CRASHED target adds a `bootCrashExcerpt` of up to 4,000 characters (`BootLogClassifier.crashExcerpt` `maxChars = 4_000`).
+  - Notes, including the new exception-message notes from `97623aed9`, have no cap.
+  - `compact` drops excerpts only from the *data block*, never from the head.
+  - A client-only mod crashing on every target is the normal CONFIRMED case: 5 lines × 3-4 loaders × 4,000 is 60-80k from excerpts alone. When `budget` goes negative, `bootLogs` still appends its header and "left out" lines.
+  - The commit message's "drops … the crash excerpts its data block repeats" is accurate only for the data block.
+- Remedy: budget the head as well. When `head + compact tail > MAX`, drop or shorten the crash excerpts in the head (consoles already show the same text), then cap notes.
+- Test to add: a report with 20 `CRASHED` targets, each with a 4,000-character excerpt and a 2,000-character note. Assert `rendered.length <= MAX_COMMENT_CHARS` and that `dataBlockOf(rendered)` still parses with `suggestedEntries`.
+
+**N-5: LOW-MEDIUM (bug or robustness). `withEvidence` and `dataBlockIn` disagree on what the data-block opener is.**
+- Commit: `46928a8a6`
+- Where: `.github/scripts/clientside-verification.js:110-115` (`withEvidence`: `report.lastIndexOf(DATA_BLOCK)`, *without* the newline) and `:209-217` (`dataBlockIn`: `lastIndexOf(DATA_BLOCK + '\n')`).
+- Issue: the non-compact data block serialises `bootCrashExcerpt`, which is raw server-console text. A console that printed `<!-- clientside-report-data` lands inside a JSON string, where the newline is escaped as `\n`. So:
+  - `dataBlockIn` correctly skips it.
+  - `withEvidence` finds it as the *last* occurrence and splices the evidence block (with raw newlines) into the middle of the JSON string.
+  - `dataBlockIn` then returns invalid JSON, and `clientside-accept.yml` writes it, so `-clientsideapply` fails.
+- Effect: denial of acceptance, not forgery. That is the same threat model the `dataBlockIn` KDoc describes, which is why the script reads the *last* block.
+- Remedy: use one opener constant (`DATA_BLOCK + '\n'`) in both functions.
+- Test to add (node:test): a report whose data-block JSON contains `"bootCrashExcerpt": "<!-- clientside-report-data\\n{}"`. Assert `JSON.parse(dataBlockIn(withEvidence(report, evidence)))` deep-equals the original object.
+
+**N-6: LOW (consistency or bug). Crash excerpts skip the console sanitising, and any `-->` in a JSON value shows the data block.**
+- Commit: `082bc2faa`. The excerpt rendering itself predates it but was touched by `97623aed9`.
+- Where: `ClientsideReportRenderer.kt:101-108`
+- Issue:
+  - The crash excerpt uses a fixed three-backtick fence and is not passed through `printable` (no ANSI stripping, no 400-character cut). The new console blocks do both, and grow their fence past any backtick run. An excerpt containing three backticks breaks out of its fence and renders the rest of the comment as markdown.
+  - Separately, any `-->` inside a JSON string in the data block (common in mod logs, for example `A --> B`) ends the HTML comment early on GitHub, so the remaining JSON renders visibly. Parsing is unaffected because `dataBlockIn` searches for `\n-->`.
+- Remedy: route the excerpt through `printable` plus the adaptive fence. Serialise the data block with `JsonGenerator.Feature.ESCAPE_NON_ASCII`-style escaping of `>` (a custom `CharacterEscapes` for `>` as `>`).
+- Tests to add: an excerpt containing three backticks and an ANSI colour, asserting the fence and the stripping. A note containing `-->`, asserting the rendered comment contains exactly one `\n-->` after the opener, and that no `-->` appears inside the block's JSON text.
+
+**N-7: LOW (bug). The table never selects "all"; its doc still says it is always offered.**
+- Commit: `438581fa4`
+- Where:
+  - `serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/report/VerdictQuery.kt:302` (`forTable`) and `:351-366` (`offeredSizes`).
+  - `VerdictReportRenderer.kt:158-165` (`sizeSelect`).
+- Issue:
+  - `forTable()` maps `size = null` ("all") to 5,000 before rendering, so `page.query.size` is never `null` on the HTML route. `sizeSelect`'s `size == page.query.size` therefore never marks "all" as selected.
+  - A reader who picks "all" with ≤ 5,000 matches gets "5000" selected and `size=5000` in every pager link: the page disagreeing with its URL, which the comment at `:363` says this prevents.
+  - The KDoc at `:351` still says "always including `all` (as `null`)", which has been false since this commit.
+- Remedy: keep `null` when `matched <= MAX_TABLE_PAGE_SIZE` (resolve after counting, in `VerdictSelection`), or drop "all" from the table entirely. Fix the KDoc either way.
+- Test to add: render `/?size=all` against a 12-row store and assert the `<option value="all" selected>` is present and the pager links carry `size=all`.
+
+**N-8: LOW (consistency). Remaining `runCatching` calls still swallow `Throwable`, the defect class `438581fa4` diagnosed.**
+- Where: `ReportServer.kt:411` (`/status`: `runCatching { … writeValueAsString }.getOrElse { "{\"error\":\"status unavailable\"}" }`), `:261` (`fallbackLists`) and `:405`.
+- Issue: `438581fa4` diagnosed exactly this ("`runCatching` … catches Throwable, so heap exhaustion was answered 200 … reached no log") and fixed only the two endpoints it rewrote.
+- Remedy: catch `Exception` and log it at WARN with the exception.
+- Test to add: `/status` with a `cursors` store whose `cursor()` throws, asserting a log line.
+
+**N-9: LOW (performance or robustness). The report reads each whole console file to keep 200 lines.**
+- Commit: `082bc2faa`
+- Where: `serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/cli/commands/VerifyClientsideCommand.kt` (the `renderMarkdown(report) { … ?.readLines() }` lambda).
+- Issue: the renderer keeps at most 200 lines per console, but `readLines()` loads the whole file. A mod that spams its log for the 12-minute boot budget can produce hundreds of MB per attempt, times the number of targets, on a 7 GB runner. An `IOException` here also escapes `renderMarkdown` and loses the whole report.
+- Remedy: tail-read (for example `RandomAccessFile` backwards to 200 newlines, or a bounded `ArrayDeque` while streaming lines), wrapped in `runCatching` that degrades to "no console was recorded".
+- Test to add: a 50 MB console fixture, asserting that the heap delta stays bounded (or that the reader is called with a line cap), plus an unreadable console that degrades to the "no server console" line.
+
+**N-10: LOW (bug, pre-existing, in a touched file). `-lang` as the last argument crashes the parser.**
+- Commit: `e8900d1f9` touched `CommandlineParser.kt` and left it unfixed.
+- Where: `serverpackcreator-app/src/main/kotlin/de/griefed/serverpackcreator/app/CommandlineParser.kt:95-98`
+- Issue: `argsList.size >= argsList.indexOf(Mode.LANG.argument()) + 1` is always true whenever `-lang` is present. So `-lang` as the last argument indexes past the end and throws `IndexOutOfBoundsException` at startup. It should be `>`. "Fix bugs when you find them" plus Boy-Scout within the same file and goal (argument parsing).
+- Test to add: `parse("-lang")` neither throws nor sets a language.
+
+**N-11: LOW (consistency). Two flag-matching rules now coexist in one parser.**
+- Commit: `e8900d1f9`
+- Where: `CommandlineParser.kt:288-289` (`isFlag`) against `:147`, `:163`, `:176`, `:189` (`entry == Mode.X.argument()` for SCAN, CLIENTSIDE_REPORT, VERIFY_CLIENTSIDE, CLIENTSIDE_APPLY) and `optionValue` at `:316`.
+- Issue:
+  - `--help` and `--cli` are accepted but `--verifyclientside` and `--scan` are not.
+  - `isFlag` uses `trimStart('-')`, so `---help` is accepted too, although the KDoc says "one or two leading dashes".
+  - `-home` (one dash) is now accepted for `Mode.HOME("--home")`, a widening the message does not mention.
+- Remedy: route every mode through `isFlag` and bound it to one or two dashes, or document why the clientside verbs are exact-match only.
+- Tests to add: `parse("--verifyclientside", link)` (decide and pin), `parse("---help")` (is not HELP), `parse("-home", dir)`.
+
+**N-12: LOW (edge case). A JDK advertised for two architectures resolves arbitrarily.**
+- Commit: `958f33f13`
+- Where: `ImageJavaRuntimes.javaHomesIn` (`serverpackcreator-clientside/.../boot/ImageJavaRuntimes.kt`, companion)
+- Issue: `JAVA_HOME_21_X64` and `JAVA_HOME_21_ARM64` both map to major 21, and `toMap()` keeps whichever `System.getenv()` iterates last. Iteration order is unspecified. On an ARM runner with an x64 toolcache entry, the wrong-architecture JDK can be chosen.
+- Remedy: prefer the entry whose `<arch>` matches `os.arch`.
+- Test to add: both variables present with `os.arch=aarch64` should yield the ARM64 home.
+
+**N-13: LOW (abuse or DoS). An issue opener can tie up Actions concurrency with long boots.**
+- Commit: `46928a8a6`
+- Where: `.github/workflows/clientside-verify.yml`, `clientside-report-reusable.yml:52` (`timeout-minutes: 200`).
+- Issue: every `opened` request (and every edit that changes the link) starts a boot of up to 200 minutes. Concurrency is per issue, so N issues mean N parallel jobs. Any account can exhaust the repository's Actions concurrency and block the GitHub smoke `test.yml` for hours.
+- Remedy: a repository-wide concurrency cap on the boot job (for example `group: clientside-report` with `cancel-in-progress: false`, queueing), or gate first-time contributors behind `verify-boot`.
+- Test: none practical. Document the trade-off in `ci-workflows.md`.
+
+**N-14: LOW (build). Build-cache hits across machines are still defeated by other per-machine manifest attributes.**
+- Commit: `1b58d9aa2`
+- Where: `buildSrc/src/main/kotlin/serverpackcreator.java-conventions.gradle.kts:143-150` and `:156-167`.
+- Issue: only `Build-Timestamp` is ignored. `Built-By` (`user.name`), `Build-Jdk` and `Build-OS` also differ between developer machines and CI, so the message's claim that tests can now be "served from the build cache" holds for the *same* machine only. The landmine in `.claude/rules/build-layout.md` says "a new attribute that changes per build needs the same ignoreAttribute". These change per *machine*, which the landmine does not cover.
+- Remedy: ignore those three as well, or state the same-machine scope in the landmine.
+- Verification: measure with two clones under different users.
+
+**N-15: LOW (test depth). The streaming guard checks a header, not the body.**
+- Commit: `438581fa4`
+- Where: `serverpackcreator-grinder/src/test/kotlin/de/griefed/serverpackcreator/grinder/report/VerdictsJsonEndpointTest.kt` (`theUnpagedEndpointsAreStreamedRatherThanBuiltInHeap`).
+- Issue: the guard asserts only the absence of `Content-Length`, which is a shape check of the transport. Nothing asserts that the streamed `/export.csv` body is byte-identical to `VerdictCsvExporter.toCsv(rows, preOrdered = true)`, or that streamed JSON round-trips to the same document the old `writeValueAsString` produced. Other tests in the file read the JSON, but no CSV-body equality test was found.
+- Test to add: an equality test between the streamed CSV body and `toCsv` over a fixture containing a comma, a quote and a newline in a field.
+
+---
+
+## Slice E — 2026-11-13..11-15 non-dependency commits, plus every dependency commit in the range (first review)
+
+**N1 — Consistency/coverage: production MongoDB 9.0.8 vs a test suite on 8.0.5.**
+- Where: `docker/docker-compose.yml:52`, `docker/docker-compose-dev.yml:37`, `EmbeddedMongoAvailable.kt:72`.
+- Issue: every `-app` persistence test runs against embedded 8.0.5. The 9.0 compatibility evidence is one manual boot recorded in `e9f1f6396`
+  (fresh init, an empty `runconfigs/all`, index creation). Not covered: migration of legacy documents, the upload path, any query shape.
+- Tests to add: (1) a guard that parses the `image:` tag in `docker/docker-compose.yml` and asserts its major.minor equals
+  `EmbeddedMongoAvailable.MONGOD_VERSION`'s. That would have failed on `e9f1f6396`, and it is exactly the invariant the KDoc claims.
+  (2) If flapdoodle 4.33.0 supports 9.0 (unverified), run `WebPersistenceIT` with `MONGOD_VERSION = "9.0.8"`.
+
+**N2 — Bug risk: the dev-stack fallback is now a downgrade across a major version on a shared volume.**
+- Where: `docker/docker-compose-dev.yml:34-36` and `BUILD.md:240` both recommend `SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204`
+  over the same `spcdb-data` volume.
+- Issue: a volume first initialised by 9.0.8 starts at featureCompatibilityVersion 9.0. That is MongoDB's normal behaviour for a fresh deployment, unverified
+  for 9.0 specifically. 8.0.5 cannot open it. The `e9f1f6396` note *"a rollback to 8.0 stays possible"* holds only for volumes upgraded from 8.0.
+  The production compose comment also says not to downgrade to an unguarded image, and 8.0.5 is unguarded (`7471aab2c`).
+- Check to add: change the advice to "use a fresh volume (`docker compose -p spc-dev down -v`) when overriding to 8.0". Or offer a guarded 8.0.34 instead of 8.0.5.
+
+**N3 — Missing edge case: an in-place upgrade of an existing 8.0 deployment was never exercised.**
+- Where: `docker/docker-compose.yml` user deployments.
+- Issue: users who copied the earlier compose (8.0.5 / 8.0.34) and pull the new one jump 8.0 → 9.0 in place. The commit states the FCV precondition but did not
+  test it, and an operator never sees a commit message. `MONGO_INITDB_*` deprecation is also noted only in the message.
+- Check to add: boot 8.0.34 on a volume, write a run config, then switch the image to 9.0.8 and confirm startup and data. Put the FCV note in the README.
+
+**N4 — Consistency regression: Renovate re-pins the user-facing compose file, undoing `7471aab2c`.**
+- Where: `docker/docker-compose.yml:5`, `renovate.json`.
+- Issue: `7471aab2c` removed the digest from the user-copied compose file on purpose (*"the one place a digest pin is wrong"*).
+  `30f8657b9` (Renovate "pin dependencies") put digests back on both the app and mongo lines, and `3ad91b407` carried it to `9.4.1@sha256:0da94a2…`.
+  `renovate.json` has no rule to stop it, so it will recur on every pin pass.
+- Check to add: a `packageRules` entry, `{"matchFileNames": ["docker/docker-compose.yml"], "pinDigests": false}`. Then un-pin line 5, and line 52 if the
+  same reasoning applies to it.
+
+**N5 — Supply chain / reproducibility: the Docker image build now downloads a JDK at build time.**
+- Where: `docker/Dockerfile:1` (`eclipse-temurin:25`), plus the foojay resolver in both settings files.
+- Issue: Java 21 is provisioned from foojay inside the builder on every uncached build. That is a network dependency and an unpinned JDK binary for the image
+  that ships, and it runs twice (buildSrc and the main build share Gradle's toolchain store, so probably once in practice; unverified).
+  It started with `c81d17137` (Java 22, non-LTS) and continues with `bbf660ce8`.
+- Check to add: build the image with `-Dorg.gradle.java.installations.auto-download=false` (via `GRADLE_OPTS` in the RUN). The build then fails loudly
+  if the launcher JDK is not the toolchain. Alternatively, put the builder back on `21-jdk-jammy`.
+
+**N6 — Unused dependency: `@pinia/testing`.**
+- Where: `serverpackcreator-web-frontend/package.json:32`.
+- Evidence: `git grep "@pinia/testing"` matches only `package.json` and `CLAUDE.md:38`. No test imports `createTestingPinia`, and the tests use
+  `setActivePinia(createPinia())`. `c69b769eb` resolved an ERESOLVE major for a package nothing uses.
+- Remedy: remove it from devDependencies and fix `CLAUDE.md:38`.
+
+**N7 — Consistency: the homepage stays on `quasar` 2.35.2 while web-frontend moved to 2.35.3.**
+- Where: `serverpackcreator-homepage/package.json:22` (exact pin) vs `bca2e10f9`.
+- Issue: Renovate PR #758 would normally carry the exact homepage pin in the same PR. `bca2e10f9` mentions only addons-overview and web-frontend.
+  Whether a homepage hunk existed and was dropped is unverified (the PR itself was not inspected).
+- Check: open #758's diff. If it had a homepage hunk, apply it.
+
+**N8 — Test depth: `48ce85cac` fixes the race only for this class, and the test still uses the real network.**
+- Where: `serverpackcreator-api/src/test/kotlin/.../versionmeta/VersionMetaManifestRepairTest.kt:72-87,112`.
+- Issue: the class builds a real `WebUtilities`, so the background refresh really downloads. The 60 s bound is a wall-clock wait on the shared CI host,
+  which the CI rules say must be sized for the pathological host. Production `VersionMeta` exposes no cancel/close, so an embedder that discards a
+  `VersionMeta` cannot stop its refresh writing into a directory it is tearing down.
+- Tests to add: inject a fake fetcher that blocks on a latch. Assert that `awaitManifestRefresh(…)` returns `false` while it is held and `true` after release.
+  The test is then deterministic and offline, as the CLAUDE.md "API suite is offline" statement expects. Consider a `VersionMeta.close()` that cancels the refresh, with a test that no file
+  appears after `close()`.
+
+**N9 — Missing guard: `.dockerignore` versus declared Gradle inputs.**
+- Where: `.dockerignore:25-37`; inputs at `buildSrc/build.gradle.kts:49`, `serverpackcreator-api/build.gradle.kts:137`,
+  `serverpackcreator-clientside/build.gradle.kts:29`.
+- Issue: `79cdffe85` is correct; the context now keeps `.github/scripts/` and nothing else under `.github`. But this is the second time in a month that an
+  ignore line broke the image (`7c256ae8d` for `.forgejo/`), and the only safeguard is a comment.
+- Test to add: a `test.yml` step (or a `misc/` script beside the duplication check) that collects every `inputs.file(`/`file("../…")` path in `*.kts` and
+  checks it against `.dockerignore` (Docker semantics, `!` negation included). It should fail on `.github/` without `!.github/scripts/`.
+
+**N10 — Release path not exercised: semantic-release on Node 26.**
+- Where: `.forgejo/workflows/release-generate.yml:45-48,77-82`.
+- Issue: `5dfdc6d92` verified the homepage image and the two CI scripts, not semantic-release. The first run on Node 26 will be a release. `npx --yes -p
+  semantic-release@24 …` also floats four majors in the release job; that predates this slice and is a supply-chain point.
+- Check to add: a `--dry-run` invocation on Node 26 (workflow_dispatch input or a scoped `push:` probe, per ci-workflows.md).
+
+**N11 — Gradle wrapper integrity (predates the slice, surfaced by `7913de669`).**
+- Where: `gradle/wrapper/gradle-wrapper.properties`.
+- Issue: no `distributionSha256Sum`, and the 9.9.1 bump changed only `distributionUrl`. `gradle-wrapper.jar`/`gradlew` were not regenerated with
+  `./gradlew wrapper --gradle-version 9.9.1` (whether they differ from 9.8.1's is unverified).
+- Check: regenerate with `--gradle-distribution-sha256-sum` so the checksum is pinned.
+
+**N12 — Gate opportunity after `9fa73aee3`.**
+- Where: `buildSrc/src/main/kotlin/serverpackcreator.dokka-conventions.gradle.kts:30` (`failOnWarning.set(false)`, HTML publication only).
+- Issue: `-api`'s Javadoc (published to Maven Central) is now at 0 warnings, so a regression like the 2.3.0 one would show up only by reading logs.
+- Check: `failOnWarning.set(true)` on the Javadoc publication for `-api`. Or a test that runs `dokkaGeneratePublicationJavadoc` and greps for `w:`.
+  The fix itself (`classpath.from(configurations.named("runtimeClasspath"))`, line 67) is lazy and additive. I verified it applies to every source set
+  of every module using the convention.
+
+**N13 — Minor: majors hidden behind ordinary-looking subjects.**
+- `ee93fcf45` moved web-frontend `globals` 16.5.0→17.14.0, a major, under "update dependency globals to v17.14.0".
+- `be7f8f8c8` moved happy-dom 20→21, a major, with no verification.
+- Later evidence: `704c801cb` reports `npm run lint` clean in both projects, and `c938edbac` reports vitest 44/44. So no failure is suspected. This is noted for completeness.
+
+---
+
+# 2026-11-22 — remediation of the 2026-11-15 `8239cb6e9..develop` findings
+
+Fixed on five branches, one per area, each in its own worktree and merged into `develop` with `--no-ff`:
+`claude-fix-api`, `claude-fix-homepage`, `claude-fix-app`, `claude-fix-infra`, `claude-fix-clientside`. The
+branches are kept; their commits are the per-finding history. Every fix commit states that its pin was observed
+red first and quotes the red, or the mutation that reproduces it. Owner decisions (2026-11-15): commits scoped to
+the homepage, CI, tests, docs or dev tooling mint no release; issue-triggered clientside boots are hardened AND
+gated on a maintainer. Outcomes: **FIXED**, **ACCEPTED** (concerns a pushed commit's grouping, type or message,
+which only a rewrite of shared history could change; the lesson is recorded here or in CLAUDE.md), **OPEN**
+(a stated residual, with the reason).
+
+## Audit findings
+
+| Finding | Outcome | Where |
+|---|---|---|
+| A HIGH-1 — `-api` behaviour change unrecorded | FIXED | `d29dfe168` (new row, corrected row) |
+| A MEDIUM-1 — `e4844fa5e` untested, left develop red | ALREADY FIXED | `4de775286`, before this audit |
+| A LOW-1 — `d5ca59d10` grab-bag | ACCEPTED | pushed |
+| A LOW-2 — one goal in two commits, unverified claim | ACCEPTED | pushed |
+| A LOW-3 — new `!!` in `BuildVersionTest` | FIXED | `834d6df8d` |
+| B A-M1 — env-reference gate has no stale-allowlist direction | FIXED | `c11c380b1` |
+| B A-M2 — undated history in workflow comments | FIXED | `c11c380b1` (`test.yml`), `b2c7f3189` (`release-build.yml`) |
+| B A-M3 — CI/test/website commits minted releases | FIXED | `964a4bf8b` (`releaseRules`) |
+| B A-L1 — `5d1b96270` groups two reasons | ACCEPTED | pushed |
+| B A-L2 — allowlist cites line numbers | FIXED | `c11c380b1` |
+| B A-L3 — `var` in `JavaConfig.testJava` | FIXED | `9c1fe376f` |
+| B A-L4 — docs narrate the past | FIXED | `595d69772` |
+| B A-L5 — a dead module left in the tree 25 days | ACCEPTED | process; module removed by `c9cb16311` |
+| B A-L6 — squash-boundary rule never landed | FIXED | `7bb677b9f` (root CLAUDE.md) |
+| C A-M1 — `8e224d62e` groups two goals | ACCEPTED | pushed |
+| C A-M2 — website/dev commits minted 9.4.0; bogus changelog links | FIXED | `964a4bf8b` (rules, `CHANGELOG.md` cleanup, backtick convention in CLAUDE.md) |
+| C A-M3 — homepage thinly pinned before its migration | FIXED (remedy) | `717b55871` |
+| C A-L1 — history-narrating comments | FIXED | `225aae5ba`, `067db46dd`, `3a23d37b6`, `272ae96ee` |
+| C A-L2 — grouped commits without the red recorded | ACCEPTED | pushed |
+| C A-L3 — `db025e531`'s message cites a subject on no ref | ACCEPTED | the citation exists only in that pushed message; `Index.vue` holds none |
+| C A-L4 — test idiom (`stubGlobal` cleanup) | FIXED | `5592a8699` |
+| C A-L5 — two backlog items closed in one commit | ACCEPTED | pushed |
+| D A-M1 — Docker copy of the fallback list deferred without a backlog entry | FIXED | `8191ef54d` (copies equal, `FallbackModsCopiesTest`) |
+| D A-M2 — B57 deferred on an unverified trigger | FIXED | `1e65252dc` (B57 closed) |
+| D A-M3 — verb wiring pinned by grepping source | FIXED | `5bf96c698` |
+| D A-L1 — "unchanged" move that also extends the class | ACCEPTED | pushed; the clean move survives on `claude-clientside-always-boot` |
+| D A-L2 — doc comments carry incident history | FIXED | `028130cff` |
+| D A-L3 — incident narrative in the root CLAUDE.md | ALREADY FIXED | `85b9ba577` |
+| D A-L4 — `438581fa4` groups startup timing | ACCEPTED | pushed |
+| E A-M1 — `8f7bf93f2`'s message: "nothing enforces `packageManager`" is false | FIXED (fact) / ACCEPTED (message) | `7a033fa27` records that the frontend plugin installs it through Corepack |
+| E A-M2 — MongoDB 9.0.8 contradicted by docs and comments | FIXED | `fb1275db2` |
+| E A-M3 — `docs.yml` node comment contradicts its value | FIXED | `ac403993a` |
+| E A-M4 — Temurin 25 builder verified where the change cannot be seen | FIXED | `d5ef3ef9f` (builder back on 21, download disabled) |
+| E A-M5 — homepage lockfile not truly regenerated | FIXED | `de295e474` (also `rm -rf node_modules` is required; recorded) |
+| E A-L1 — `b137607af` repairs `85b9ba577` separately | ACCEPTED | pushed |
+| E A-L2 — Dokka 2.3.0 warnings fixed two days later | ACCEPTED | pushed; `9fa73aee3` fixed them, `a925a9481` now fails on any |
+| E A-L3 — addons-overview bumped minutes before deletion | ACCEPTED | pushed |
+| E A-L4 — `eeaed3672` understates its scope | ACCEPTED | pushed |
+| E A-L5 — nonexistent `shouldRecheckCrash` | FIXED | `8d7031d52` |
+| E A-L6 — stale `@pinia/testing@1` line | FIXED | `39ec2e30f` |
+
+## Analysis findings
+
+| Finding | Outcome | Where |
+|---|---|---|
+| A-A1 — dev MongoDB on every interface | FIXED | `3a23d37b6` (27017 and 8080 on 127.0.0.1, pinned) |
+| A-A2 — compose 9.0 vs README/tests 8.0 | FIXED | `fb1275db2`; the embedded test server stays 8.0.5 because flapdoodle `spring4x` 4.33.0 cannot download any 9.x — documented and pinned by `MongoVersionAlignmentTest` |
+| A-A3 — config-cache problem in `-app:processResources` | FIXED | `a3470de88` (11 problems / 3 unique → 10 / 2, both third-party) |
+| A-A4 — `updateOrRepair` failure branches unpinned | FIXED | `dde7ff495` |
+| A-A5 — truncated HTTP body accepted as complete | FIXED | `be058287a` (JDK 21 reports it as EOF; now checked against Content-Length) |
+| A-A6 — PowerShell `variables.txt` readers missed | FIXED | `8eadcf9c5` (lone CR broke both; CRLF and BOM were fine) |
+| A-A7 — routing test hard-codes package names | FIXED | `26d15a142` |
+| A-A8 — package graph acyclicity unchecked | FIXED | `b74e93e1a` |
+| A-A9 — unreachable `"incompatible"` branch, wrong docs | FIXED | `5fdb349d0`; also fixed a mod whose only platform entry was incompatible reading as CLIENT, and an excluded range returned as `minecraftConstraint` |
+| A-A10 — `media` depends on a root build that builds nothing | FIXED | `4c0232c42` |
+| B-N-1 — clear-then-refill in five `GenerationConfig` lists | FIXED | `15908d92b` |
+| B-N-2 — trailing comma injects an empty mod-list entry | FIXED | `43cae4794` (the two mod lists; `PropertyStore.getList` unchanged — see OPEN) |
+| B-N-3 — partial GitHub release announced | FIXED | `b2c7f3189` |
+| B-N-4 — reverts of three fixes stay green | FIXED | `9c1fe376f`, `1380d5f19`, `d619d4660` |
+| B-N-5 — Java probe has no timeout | FIXED | `9c1fe376f`, `da9dbadca` |
+| B-N-6 — env checker has no self-test | FIXED | `c11c380b1` |
+| B-N-7 — one `set -eu` step hides the second verdict | FIXED | `c11c380b1` |
+| B-N-8 — unpinned PyPI install | FIXED | `c11c380b1` (pyyaml 6.0.3 with hashes) |
+| B-N-9 — stale docs from the docs-site rework | FIXED | `ac403993a` |
+| B-N-10 — comment-stripping regex in 8 copies | FIXED (partly) | `53e88e050` (one helper each in `-app` and `-grinder`; the single copies in `-clientside` and `-plugin-servertest` stay rather than add a cross-module test dependency) |
+| B-N-11 — `getResponseAsString` drops line breaks | FIXED (documented, pinned; behaviour kept as recommended) | `1380d5f19` |
+| C-AN-1 — GitHub PAT sent to gitea.com and git.griefed.de | FIXED | `8be3e52f7` (tokens per platform) |
+| C-AN-2 — browser refresh drops Forgejo | FIXED | `aec8b4b11` |
+| C-AN-3 — Gitea paging cap hard-coded, no bound | FIXED | `6b05a8fa2` |
+| C-AN-4 — collector has no timeout | FIXED | `745450739` |
+| C-AN-5 — GridFS fallback can serve a truncated archive | FIXED | `815dcd103` |
+| C-AN-6 — Range requests inflate the counter | FIXED | `bc7a7d3c0` (no Range, or a first range from byte 0) |
+| C-AN-7 — Range edge cases unpinned | FIXED | `455f25d65` |
+| C-AN-8 — failed download silent in the SPA | FIXED | `0a694332e` |
+| C-AN-9 — Mongoku origin vs documented URL | FIXED | `3a23d37b6` |
+| C-AN-10 — dev-stack run configuration drops `docker/.env` | FIXED (unverified in IntelliJ) | `3a23d37b6` |
+| C-AN-11 — node comment vs value | FIXED | `ac403993a` |
+| C-AN-12 — fresh checkout cannot type-check | FIXED | `d5cd52bf0` |
+| C-AN-13 — SPA renames downloads client-side | FIXED | `46939bd45` |
+| C-AN-14, C-AN-15 — flashcard images, route table untested | FIXED | `717b55871` |
+| C-AN-16 — sponsors probe untested | FIXED | `272ae96ee` |
+| C-AN-17 — nothing checks pinned digests exist | FIXED | `4673446ef` (weekly) |
+| C-AN-18 — download-counter robustness | FIXED | `259196b3d` |
+| D-N-1 — issue opener's mod runs next to secrets | FIXED, residual OPEN | `376129b2a` (maintainer gate, key read once from a file and deleted, allowlisted boot environment, `persist-credentials: false`, read-only/disabled caches, posting in a separate job) |
+| D-N-2 — failed streamed export arrives as 200 | FIXED | `69870d68b` |
+| D-N-3 — offset paging skips rows | FIXED, gap OPEN | `d765be657` |
+| D-N-4, D-N-5, D-N-6 — comment budget, data-block opener, sanitising | FIXED | `6b505ad9f` |
+| D-N-7 — table never selects "all" | FIXED | `23089373d` (changes one existing assertion, flagged in the message) |
+| D-N-8 — `runCatching` swallows `Throwable` | FIXED (slice code), rest OPEN | `1dbe3056f` |
+| D-N-9 — whole console read to keep 200 lines | FIXED | `6997c0a18` |
+| D-N-10 — trailing `-lang` crashes the parser | FIXED | `f50b07c56` |
+| D-N-11 — two flag-matching rules | FIXED | `800a8690e` (one or two dashes, every mode) |
+| D-N-12 — dual-architecture JDK resolves arbitrarily | FIXED | `35d148ea0` |
+| D-N-13 — issue openers can tie up Actions | FIXED | `376129b2a` (the gate) |
+| D-N-14 — per-machine manifest attributes defeat the cache | FIXED | `d8021a1fa` |
+| D-N-15 — streaming guard checks a header only | FIXED | `4d5953030` |
+| E-N1, E-N2, E-N3 — MongoDB 9 vs tests, dev fallback, upgrade precondition | FIXED | `fb1275db2` (precondition documented; a real 8.0 → 9.0 upgrade not exercised) |
+| E-N4 — Renovate re-pins the user-facing compose file | FIXED | `5cc930ac6` |
+| E-N5 — image build downloads a JDK | FIXED | `d5ef3ef9f` |
+| E-N6 — unused `@pinia/testing` | FIXED | `39ec2e30f` |
+| E-N7 — homepage quasar behind web-frontend | FIXED | `5f7a77994` |
+| E-N8 — repair test races and uses the network | FIXED | `d1cd00d30` |
+| E-N9 — `.dockerignore` vs declared inputs unguarded | FIXED | `80e373bf2` |
+| E-N10 — semantic-release on Node 26 never run | FIXED | `d428d16ca` (dry run on Node 26) |
+| E-N11 — wrapper integrity | FIXED | `6f61c04bf` (checksum pinned; the jar was 9.8.1's, now 9.9.1's) |
+| E-N12 — no gate on Dokka warnings | FIXED | `a925a9481` |
+| E-N13 — majors behind ordinary subjects | FIXED | `d1b1177ff` |
+
+## Found while fixing
+
+- `5fdb349d0` — the sideness and `minecraftConstraint` defects above (`-api`, recorded in `API-BEHAVIOUR-CHANGES.md`).
+- `1dbe3056f` — narrowing `runCatching` exposed a hang: an `Error` in a report handler killed the JDK request
+  thread and left the client waiting; every route now goes through one handler that logs and drops the connection.
+- `4aace8d85` — the frontend plugin's `package-manager-specification.txt` was tracked despite the ignore rule, so
+  every `packageManager` bump left the tree dirty after a build.
+
+## Integration: what only the full build on develop showed
+
+Each branch ran its own modules' tests; the first `./gradlew build` over all five merged went red three times, and
+none was a merge conflict:
+- `baf173c77` — two download-page tests failed only under load. Pages that earlier tests left mounted kept a
+  five-second countdown running, which then clicked their link during a later test (reproduced: 2 stray clicks
+  after 6.5 real seconds). The pages now stop counting when unmounted, and every test's page is unmounted.
+- `5fb999b71` — `--docker-properties` was missing from the clientside README, and a moved test separated a KDoc
+  block from its declaration; both from `claude-fix-clientside`, whose narrower runs did not reach those guards.
+- `c81954f21` — `KDocAttachmentTest` scanned the agents' worktrees under `.claude/worktrees/` as if they were this
+  checkout; it now skips any nested checkout.
+
+After them: `./gradlew build` green, 2,377 JVM tests and 56 frontend tests, 0 failures, 0 Dokka warnings.
+
+## Still OPEN, each needing a decision
+
+- **D-N-1, residual.** On GitHub-hosted runners the runner user has passwordless sudo, so a determined mod can read
+  the runner's memory; the maintainer gate is the control that matters. Full isolation needs the engine split into
+  prepare and boot phases (boot in a job with no secret) or booting inside the grinder's hardened container.
+- **D-N-3, gap.** A row deleted ahead of the paging cursor can hide one row undetected; closing it needs keyset
+  paging in the grinder's `/verdicts.json` (a wire-format change).
+- **D-N-8, remainder.** About 90 `runCatching` calls outside the audited code in `-clientside`, `-grinder` and
+  `-plugin-grinder`.
+- **MongoDB in tests.** The embedded server stays on 8.0.5 until flapdoodle `spring4x` can download 9.x; 8.3.2 is
+  the newest it supports, or a custom download resolver.
+- **Commit-body links.** Backticking `#<hex>` is a written convention; enforcing it needs a JS release config.
+- **Published 9.4.0 notes.** The Forgejo and GitHub release bodies still carry the bogus links; only
+  `CHANGELOG.md` was cleaned.
+- **From the api stream:** a cancellable `VersionMeta` would be new published API; `PropertyStore.getList` still
+  keeps a doubled comma's empty entry for every other list setting; `JavaConfig.testJava` accepts any exit code.
+- **Unverified here:** every workflow change (no runner), the Docker image build (2 GB Docker VM), the IntelliJ
+  `profiles` XML in the dev-stack run configuration, and a real MongoDB 8.0 → 9.0 in-place upgrade.
+
+# 2026-11-22 (later) — follow-up on the remediation's OPEN list
+
+Commit subjects are quoted rather than hashes; these commits were unpushed when written.
+
+## Closed
+- **Embedded MongoDB moved from 8.0.5 to 8.3.2:** `test(app): run the database tests on MongoDB 8.3.2, the newest line flapdoodle can download`.
+  - 8.3.2 is the newest release flapdoodle 4.33.0 can download. Its `PlatformPackageResolver` resolves 8.3.2 for Ubuntu 22.04 and 24.04 x86_64 and for macOS arm64 and x86_64.
+  - Compose still deploys 9.0, so the test/production gap stays, recorded by `MongoVersionAlignmentTest`.
+  - If SERVER-121912 (MongoDB 8.x on Linux kernel 6.19+) hits the CI host, the database tests skip rather than fail.
+- **`PropertyStore.getList` kept a doubled comma's empty entry:** closed by `fix(api): list settings never hold a blank entry`.
+  - `getList` drops every blank entry, and the five directory/file list setters do the same.
+  - It is a behaviour change on published API, recorded in `API-BEHAVIOUR-CHANGES.md`.
+- **Found while researching that item, HIGH severity, in neither audit:** a blank entry in `preInstallCleanupFiles` or `postInstallCleanupFiles` deleted the whole server pack.
+  - `File(destination, "")` is the destination, and `deleteQuietly` deletes directories recursively. `..` deleted the directory holding the pack.
+  - Closed by `fix(api): a cleanup entry can never delete the server pack or anything outside it`, which skips any entry not strictly inside the pack, compared canonically.
+  - A blank ZIP exclusion was checked and found harmless, because zip4j's filter only sees entries below the root.
+
+## Assessed, decision still Griefed's
+- **D-N-1 residual.** The gate stays the control. One new observation: with sudo, a mod can also lift the job's `ACTIONS_RUNTIME_TOKEN`. Issue events run on the default-branch ref, so it could write cache entries that later default-branch GitHub workflows restore. `cache-read-only` limits setup-gradle only.
+  - Recommended next step: boot through the existing `ServerRunner` seam in the grinder's hardened container (`ContainerServerRunner`). That is preferred over a prepare/boot job split, which is an engine redesign because the re-checks interleave download and boot, and which leaves the boot job holding a runtime token.
+- **D-N-3 gap.** Recommended: put `VerdictStore.version` in the `/verdicts.json` envelope, and have `GrinderClient` restart a read whose version changes, with bounded retries. Keyset paging is the fallback. Nothing here touches `-api`.
+- **D-N-8 remainder.** The inventory counts 112 sites in main sources: 95 safe, 14 that should log, and 3 that change a result.
+  - `DockerJavaContainerEngine.exitCodeOf`: an inspect failure turns CRASHED into INCONCLUSIVE.
+  - `JsonRequeueStore.read`: an unreadable file is overwritten, losing queued re-grinds.
+  - servertest `ServerLauncher.giveBack`: a failed restore leaves the user's `server.properties` holding the borrowed port.
+  - None runs in coroutine code. Four sites swallow `InterruptedException` without restoring the interrupt flag.
+- **Commit-body links.** Recommended: a CI lint over `origin/main..HEAD`, following the `misc/*-check.py` pattern. A `release.config.js` only with a committed replay test, so that porting `releaseRules` cannot silently change what releases.
+
+# 2026-11-23 — the condensed history: where each cited commit now lives
+
+`origin/main..develop` was condensed on 2026-11-23 from 136 commits to 69: one commit per Renovate PR, each
+with the fixes to its own change folded in, and the remaining audit fixes grouped by goal. The hashes this file
+cites still resolve: the per-finding commits on the five `claude-fix-*` branches, every other replaced commit on
+`claude-develop-before-condense`. This table names the condensed commit on `develop` that now holds each one,
+by subject, because subjects survive a rewrite and hashes do not.
+
+| Cited | Its subject | Now part of |
+|---|---|---|
+| `010f29e61` | docs: keep the module CLAUDE.md files to their rules, and their history in claude-docs | docs: keep the always-loaded CLAUDE.md files to their rules, and their history in claude-docs |
+| `0165bd10b` | docs(audit): record the follow-up on the 2026-11-22 remediation's OPEN items | docs(audit): audit of 8239cb6e9..develop, its remediation, and the follow-up on what stayed open |
+| `028130cff` | docs(grinder): state the report and startup constraints in the present tense | fix(grinder): the report never passes off a failed export as complete, and logs what it degrades over |
+| `067db46dd` | docs(homepage): describe the download-chip and retry guards in the present tense | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `082bc2faa` | feat(clientside): post each boot's console in the verification report, within one comment | feat(clientside): post each boot's console in the verification report, within one comment |
+| `0a694332e` | fix(web-frontend): report a failed download on the page instead of claiming it started | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `1380d5f19` | test(api): pin getResponseAsString's connection release and its line-joining | fix(api): an absent manifest is not "repaired", and a download cut short is not complete |
+| `15908d92b` | fix(api): the five directory and file lists no longer refill a shared set | fix(api): the five directory and file lists no longer refill a shared set |
+| `17adcab88` | deps(deps): update ghcr.io/linuxserver/nginx docker tag to v1.30.6 | deps(deps): update ghcr.io/linuxserver/nginx docker tag to v1.30.6 |
+| `1a9be02c7` | deps(deps): update mongodb/mongodb-community-server:8.0.34-ubuntu2204 docker digest to 241eb6e | deps(deps): update mongodb/mongodb-community-server:8.0.34-ubuntu2204 docker digest to 241eb6e |
+| `1b58d9aa2` | fix(build): stop every jar's build timestamp from re-running every module's tests | fix(build): stop every jar's build timestamp from re-running every module's tests |
+| `1dbe3056f` | fix(grinder): the report logs what it degrades over, and no longer swallows an Error | fix(grinder): the report never passes off a failed export as complete, and logs what it degrades over |
+| `1e65252dc` | fix(clientside): a jar-scan that throws costs its row, not the whole report (B57) | fix(clientside): a jar-scan that throws costs its row, not the whole report (B57) |
+| `2060823ef` | deps(deps): update dependency autoprefixer to v10.6.2 | deps(deps): update dependency autoprefixer to v10.6.2 |
+| `2242bbf7a` | deps(deps): update dependency com.install4j:install4j-runtime to v13.1.3 | deps(deps): update dependency com.install4j:install4j-runtime to v13.1.3 |
+| `225aae5ba` | docs(web): state the download-route constraints in the present tense | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `23089373d` | fix(grinder): "all" the table can render stays "all" on the page and in its links | fix(grinder): the report never passes off a failed export as complete, and logs what it degrades over |
+| `259196b3d` | fix(homepage): retry only transient forge failures, after a delay, and encode API paths | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `26d15a142` | test(clientside): find a browser downloader wherever it lives, not in one named package | test: guards that read sources, build files and the package graph assert what they claim |
+| `272ae96ee` | fix(ci): the sponsors probe's verdict lives in a tested script | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `3449dde45` | test(app): run the database tests on MongoDB 8.3.2, the newest line flapdoodle can download | deps(deps): update mongodb/mongodb-community-server docker tag to v9 |
+| `35d148ea0` | fix(clientside): a JDK advertised for two architectures resolves to the host's | fix(clientside): boot each verification pack on the Java its Minecraft version requires |
+| `376129b2a` | fix(ci): boot a clientside request only on a maintainer's say-so, and contain what the boot can reach | fix(ci): boot a server for each clientside-mod request a maintainer approves |
+| `39ec2e30f` | chore(web-frontend): drop the unused @pinia/testing devDependency | deps(deps): lock file maintenance |
+| `3a23d37b6` | fix(dev): the dev stack listens on loopback only, and its browser and run configuration work as documented | fix(dev): the dev stack listens on loopback only, and its browser and run configuration work as documented |
+| `3a665e381` | deps(deps): update dependency @quasar/extras to v2 | deps(deps): update dependency @quasar/extras to v2 |
+| `3ad91b407` | deps(deps): update griefed/serverpackcreator docker tag to v9.4.1 | deps(deps): update griefed/serverpackcreator docker tag to v9.4.1 |
+| `41b605999` | fix(api): list settings never hold a blank entry | fix(api): a blank list entry can no longer delete the server pack |
+| `43cae4794` | fix(api): a doubled or trailing comma no longer puts an empty entry into the mod lists | fix(api): a doubled or trailing comma no longer puts an empty entry into the mod lists |
+| `455f25d65` | test(web): pin the Range edge cases both archive download routes inherit | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `4673446ef` | ci: a weekly check that every pinned image digest still exists | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `46928a8a6` | fix(ci): boot a server for every clientside-mod request | fix(ci): boot a server for each clientside-mod request a maintainer approves |
+| `46939bd45` | fix(web-frontend): show and save under the server's archive name, not a client-side one | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `4776f0ff0` | deps(deps): update dependency pinia to v4 | deps(deps): update dependency pinia to v4 |
+| `48ce85cac` | fix(api): await the background manifest refresh before the repair tests' temp dir is deleted | fix(api): await the background manifest refresh before the repair tests' temp dir is deleted |
+| `4aace8d85` | chore(build): stop tracking the frontend plugin's resolved package-manager file | fix(build): build checks no longer capture the Project, media packages exactly one jar, and the tree stays clean |
+| `4c0232c42` | fix(build): media refuses to package anything but exactly one application jar | fix(build): build checks no longer capture the Project, media packages exactly one jar, and the tree stays clean |
+| `4c5b1d8b8` | deps(deps): update dependency @babel/eslint-parser to v7.29.13 | deps(deps): update dependency @babel/eslint-parser to v7.29.13 |
+| `4d529811a` | deps(deps): update npm to v11.21.2 | deps(deps): update npm to v11.21.2 |
+| `4d5953030` | test(grinder): pin what the streamed exports contain, not only that they stream | fix(grinder): the report never passes off a failed export as complete, and logs what it degrades over |
+| `5294575a9` | deps(deps): update flatlaf to v3.8 | deps(deps): update flatlaf to v3.8 |
+| `53e88e050` | test(app,grinder): one comment-stripping helper per module instead of five copies in two dialects | test: guards that read sources, build files and the package graph assert what they claim |
+| `542200c18` | deps(deps): update node.js to e9f565d | deps(deps): update node.js to e9f565d |
+| `5592a8699` | test: undo stubbed globals in afterEach and drop two test-side !! assertions | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `574965224` | deps(deps): update dependency eslint-plugin-vue to v9.33.0 | deps(deps): update dependency eslint-plugin-vue to v9.33.0 |
+| `595d69772` | docs(api): three guard docs state their constraint instead of narrating the past | fix(api): validating a Java path can no longer hang on, or leak, the probed executable |
+| `5a5af9193` | docs(grinder): a ufw rule can be present, correct and not loaded | docs(grinder): a ufw rule can be present, correct and not loaded |
+| `5bf96c698` | test(app): pin -verifyclientside's Java selection by running it, not by grepping its source | test: guards that read sources, build files and the package graph assert what they claim |
+| `5cc930ac6` | fix(docker): the user-facing compose file carries tags only, and Renovate stops re-pinning it | deps(deps): update mongodb/mongodb-community-server docker tag to v9 |
+| `5dfdc6d92` | deps(deps): update dependency node to v26 | deps(deps): update dependency node to v26 |
+| `5f7a77994` | deps(homepage): quasar 2.35.3, matching web-frontend | deps(deps): lock file maintenance |
+| `5fb999b71` | docs(clientside): document -clientsideapply's --docker-properties, and reattach a test's KDoc | fix(docker): ship the same clientside fallback list in the image as everywhere else, and keep it so |
+| `5fdb349d0` | fix(api): an incompatible dependency entry no longer decides a mod's side or Minecraft range | fix(api): an incompatible dependency entry no longer decides a mod's side or Minecraft range |
+| `610e231d1` | fix(api): a cleanup entry can never delete the server pack or anything outside it | fix(api): a blank list entry can no longer delete the server pack |
+| `66c164898` | deps(deps): update dependency @quasar/app-vite to v3.10.4 | deps(deps): update dependency @quasar/app-vite to v3.10.4 |
+| `69870d68b` | fix(grinder): a streamed export that fails part-way no longer arrives as a complete 200 | fix(grinder): the report never passes off a failed export as complete, and logs what it degrades over |
+| `6997c0a18` | fix(clientside): read only the end of each console the report shows | fix(ci): boot a server for each clientside-mod request a maintainer approves |
+| `6b05a8fa2` | fix(homepage): page Gitea by X-Total-Count, and bound both counters' paging | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `6b505ad9f` | fix(clientside): keep the verification comment whole and under GitHub's limit whatever the boots print | fix(ci): boot a server for each clientside-mod request a maintainer approves |
+| `6e7ac4681` | deps(deps): update huggingface/mongoku docker tag to v2.11.5 | deps(deps): update huggingface/mongoku docker tag to v2.11.5 |
+| `6f61c04bf` | chore(build): pin the Gradle distribution's checksum and ship 9.9.1's own wrapper jar | deps(deps): update gradle to v9.9.1 |
+| `704c801cb` | deps(deps): update dependency eslint-plugin-vue to v10.12.1 | deps(deps): update dependency eslint-plugin-vue to v10.12.1 |
+| `717b55871` | test(homepage): pin the flashcard images and the route table | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `7241597aa` | deps(deps): update dependency eslint-config-prettier to v8.10.2 | deps(deps): update dependency eslint-config-prettier to v8.10.2 |
+| `745450739` | fix(homepage): give every download-count request a timeout | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `7913de669` | deps(deps): update gradle to v9.9.1 | deps(deps): update gradle to v9.9.1 |
+| `79cdffe85` | fix(docker): keep the clientside workflow script in the image's build context | fix(docker): keep the clientside workflow script in the image's build context |
+| `7a033fa27` | docs(web-frontend): record that the build enforces packageManager through Corepack | deps(deps): update npm to v12 |
+| `7bb677b9f` | docs: a squash must say where its detailed history survives | docs: keep the always-loaded CLAUDE.md files to their rules, and their history in claude-docs |
+| `7ea41ccb6` | deps(deps): update dependency com.github.jk1.dependency-license-report to v3.1.5 | deps(deps): update dependency com.github.jk1.dependency-license-report to v3.1.5 |
+| `800a8690e` | fix(app): match every commandline flag by one rule, with one or two dashes | fix(app): match commandline flags as whole arguments, not substrings |
+| `80e373bf2` | fix(ci): CI fails when .dockerignore hides a declared Gradle input from the image build | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `815dcd103` | fix(web): never serve a partial archive recovered from GridFS | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `8191ef54d` | fix(docker): ship the same clientside fallback list in the image as everywhere else, and keep it so | fix(docker): ship the same clientside fallback list in the image as everywhere else, and keep it so |
+| `8337054a9` | deps(deps): update dependency @intlify/unplugin-vue-i18n to v11.2.8 | deps(deps): update dependency @intlify/unplugin-vue-i18n to v11.2.8 |
+| `834d6df8d` | test(build): drop the `!!` from BuildVersionTest's sed-program lookup | test: guards that read sources, build files and the package graph assert what they claim |
+| `85b9ba577` | docs: take the refactor state and its lessons out of the always-loaded CLAUDE.md | docs: keep the always-loaded CLAUDE.md files to their rules, and their history in claude-docs |
+| `86f2f693e` | deps(deps): update dependency vitest to v5.1.0 | deps(deps): update dependency vitest to v5.1.0 |
+| `8be3e52f7` | fix(homepage): send the GitHub token to GitHub only | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `8d7031d52` | docs(clientside): name the crash re-check by the function that exists | test: guards that read sources, build files and the package graph assert what they claim |
+| `8eadcf9c5` | fix(api): the PowerShell templates read a variables.txt saved with lone carriage returns | fix(api): the PowerShell templates read a variables.txt saved with lone carriage returns |
+| `8f7bf93f2` | deps(deps): update npm to v12 | deps(deps): update npm to v12 |
+| `921215767` | docs(audit): audit and analysis of 8239cb6e9..develop | docs(audit): audit of 8239cb6e9..develop, its remediation, and the follow-up on what stayed open |
+| `94bd3cda4` | deps(deps): update dependency typescript-eslint to v8.72.2 | deps(deps): update dependency typescript-eslint to v8.72.2 |
+| `958f33f13` | fix(clientside): boot each verification pack on the Java its Minecraft version requires | fix(clientside): boot each verification pack on the Java its Minecraft version requires |
+| `964a4bf8b` | chore(release): homepage, CI, test, docs and dev-tooling scopes mint no release | chore(release): homepage, CI, test, docs and dev-tooling scopes mint no release |
+| `97623aed9` | fix(clientside): make every verification report row say what it booted, and why not | fix(clientside): make every verification report row say what it booted, and why not |
+| `9c1fe376f` | fix(api): validating a Java path can no longer hang on, or leak, the probed executable | fix(api): validating a Java path can no longer hang on, or leak, the probed executable |
+| `9fa73aee3` | fix(build): give Dokka the runtime classpath so library superclasses resolve | deps(deps): update dokka to v2.3.0 |
+| `a2dedf4ac` | deps(deps): update dependency com.install4j.gradle to v13.1.3 | deps(deps): update dependency com.install4j.gradle to v13.1.3 |
+| `a3470de88` | fix(build): keep -app's processResources check from capturing the Project | fix(build): build checks no longer capture the Project, media packages exactly one jar, and the tree stays clean |
+| `a5e2f0064` | deps(deps): update dependency typescript to v5.9.3 | deps(deps): update dependency typescript to v5.9.3 |
+| `a925a9481` | chore(build): a Dokka warning fails the build, now that there are none | deps(deps): update dokka to v2.3.0 |
+| `ac403993a` | docs(ci): the docs pipeline's comments describe the pipeline as it is | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `ad002d094` | deps(deps): update ghcr.io/linuxserver/baseimage-ubuntu:noble docker digest to f113b70 | deps(deps): update ghcr.io/linuxserver/baseimage-ubuntu:noble docker digest to f113b70 |
+| `aec8b4b11` | fix(homepage): the browser refresh keeps the build's figure for a forge it cannot reach | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `b137607af` | docs: point build-layout.md's buildSrc cross-references at the section now in that file | docs: keep the always-loaded CLAUDE.md files to their rules, and their history in claude-docs |
+| `b29978d4a` | deps(deps): update dokka to v2.3.0 | deps(deps): update dokka to v2.3.0 |
+| `b2c7f3189` | fix(ci): the release announcement requires every asset on GitHub, not just one | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `b74a66dda` | deps(deps): update dependency org.pf4j:pf4j to v3.16.1 | deps(deps): update dependency org.pf4j:pf4j to v3.16.1 |
+| `b74e93e1a` | test(clientside): hold the package graph to its documented table, and acyclic | test: guards that read sources, build files and the package graph assert what they claim |
+| `b812c109e` | deps(deps): update dependency vue-tsc to v3.3.14 | deps(deps): update dependency vue-tsc to v3.3.14 |
+| `b81bba738` | docs(audit): record the remediation of the 2026-11-15 findings | docs(audit): audit of 8239cb6e9..develop, its remediation, and the follow-up on what stayed open |
+| `baf173c77` | fix(web-frontend): a download page that is gone stops its countdown, and no test leaves one running | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `bbf660ce8` | deps(deps): update eclipse-temurin docker tag to v25 | deps(deps): update eclipse-temurin docker tag to v25 |
+| `bc7a7d3c0` | fix(web): count a resumed or segmented download once, not once per request | fix(web): an archive download is complete, counted once, named by the server, and its failure shown |
+| `bca2e10f9` | deps(deps): update dependency quasar to v2.35.3 | deps(deps): update dependency quasar to v2.35.3 |
+| `bde9a0a46` | deps(deps): update eslint monorepo | deps(deps): update eslint monorepo |
+| `be058287a` | fix(api): a download cut short is no longer reported as complete | fix(api): an absent manifest is not "repaired", and a download cut short is not complete |
+| `c11c380b1` | fix(ci): the env-reference check reports stale exemptions, and the conventions step reports every verdict | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `c69b769eb` | deps(deps): update dependency @pinia/testing to v2 | deps(deps): update dependency @pinia/testing to v2 |
+| `c81954f21` | test(api): KDocAttachmentTest no longer grades another checkout nested under the repository | test: guards that read sources, build files and the package graph assert what they claim |
+| `c938edbac` | deps(deps): lock file maintenance | deps(deps): lock file maintenance |
+| `c9cb16311` | chore: remove serverpackcreator-addons-overview | chore: remove serverpackcreator-addons-overview |
+| `d1b1177ff` | chore(renovate): a major update says so in its subject and labels | fix(ci): convention checks report every verdict, and release and probe steps verify what they claim |
+| `d1cd00d30` | test(api): the manifest-repair guard runs offline, and the refresh await is pinned | fix(api): an absent manifest is not "repaired", and a download cut short is not complete |
+| `d29dfe168` | docs: record that NeoForge incompatible dependencies left ScannedMod.dependencies | fix(api): an incompatible dependency entry no longer decides a mod's side or Minecraft range |
+| `d428d16ca` | docs(ci): record semantic-release's Node floor, verified on Node 26 by a dry run | deps(deps): update dependency node to v26 |
+| `d5cd52bf0` | fix(homepage): a checkout that never ran the collector still builds, type-checks and tests | fix(homepage): the download counters send each token only to its own forge, and survive a forge that fails |
+| `d5ef3ef9f` | fix(docker): the image builder runs the toolchain's JDK, and a mismatch fails instead of downloading one | deps(deps): update eclipse-temurin docker tag to v25 |
+| `d619d4660` | test(build): pin that the licence report's fetch goes through the bounded read | test: guards that read sources, build files and the package graph assert what they claim |
+| `d765be657` | fix(plugin-grinder): re-read the feed when a shifting store skipped a row, and keep the newer copy | fix(grinder): the report never passes off a failed export as complete, and logs what it degrades over |
+| `d8021a1fa` | fix(build): ignore the per-machine manifest attributes too, so a cache serves across machines | fix(build): stop every jar's build timestamp from re-running every module's tests |
+| `d90fdb471` | docs: record the clientside, grinder and workflow fixes from the 2026-11-15 audit | docs(audit): audit of 8239cb6e9..develop, its remediation, and the follow-up on what stayed open |
+| `da9dbadca` | test(api): the hanging-Java pin no longer depends on a script starting in time | fix(api): validating a Java path can no longer hang on, or leak, the probed executable |
+| `dde7ff495` | fix(api): an absent manifest is no longer "repaired", and the repair's failure branches are pinned | fix(api): an absent manifest is not "repaired", and a download cut short is not complete |
+| `de295e474` | deps(homepage): regenerate the lockfile from scratch, for real this time | deps(deps): lock file maintenance |
+| `dee9167c8` | chore: Add continuity to list of clientside-mods. | chore: Add continuity to list of clientside-mods. |
+| `e8900d1f9` | fix(app): match commandline flags as whole arguments, not substrings | fix(app): match commandline flags as whole arguments, not substrings |
+| `e9f1f6396` | deps(deps): update mongodb/mongodb-community-server docker tag to v9 | deps(deps): update mongodb/mongodb-community-server docker tag to v9 |
+| `ee93fcf45` | deps(deps): update dependency globals to v17.14.0 | deps(deps): update dependency globals to v17.14.0 |
+| `f50b07c56` | fix(app): a trailing -lang no longer aborts startup | fix(app): match commandline flags as whole arguments, not substrings |
+| `f6085c414` | docs: record why no clientside-mod request was ever booted, and what stood behind the first one | docs: record why no clientside-mod request was ever booted, and what stood behind the first one |
+| `f7ea11a84` | deps(deps): update dependency prettier to v2.8.8 | deps(deps): update dependency prettier to v2.8.8 |
+| `fa9bd0f14` | deps(deps): update dependency vue to v3.5.45 | deps(deps): update dependency vue to v3.5.45 |
+| `fb1275db2` | fix(docker): every MongoDB reference agrees with the 9.0.8 deployment, and the tests say why they differ | deps(deps): update mongodb/mongodb-community-server docker tag to v9 |
+
+# 2026-11-23 — the follow-up's decisions, implemented
+
+Griefed chose to implement four of the follow-up's recommendations. Each is listed by commit subject; the
+per-goal detail and red-first evidence are on the named kept branch.
+
+- **D-N-1 residual, cache poisoning:** closed by `fix(ci): a booted mod's cache token cannot save, whatever started the boot` (`claude-b1-cache`).
+  - Since 2026-06-26 GitHub already issues `issues` runs a cache token that cannot save to the default branch. The gap was a manually dispatched boot, which is a trusted trigger.
+  - `cache-mode: read` on the calling job and on `report`, and `cache-mode: none` on `clientside-accept`, restrict the token itself, so a token read out of memory is restricted too.
+  - Still open, for the container-boot decision: the CurseForge key and the `contents: read` token can be read from memory with sudo, and the runtime token can replace the run's own `clientside-report` artifact.
+- **D-N-3 gap, paging:** closed by `fix(grinder,plugin-grinder): a paged verdict read finishes on the snapshot it started from` (`claude-b2-paging`).
+  - Every page carries the snapshot's version, and the daemon keeps up to 8 snapshots for 60 s after their last use.
+  - The client pins pages 2..n to page 1's version, and restarts on `410 Gone` or on a changed version, at most 3 times.
+  - What remains: a pinned read evicted on all three attempts fails rather than returning a list.
+- **D-N-8, the result-changing `runCatching` sites** (`claude-b3-runcatching`):
+  - `feat(api): orNullLogged, a logged null that swallows only what it may` adds the shared helper. It catches `Exception` only, restores the interrupt flag and rethrows a cancellation.
+  - `exitCodeOf`, checked against `VerdictPolicy`: the published verdict could not change, but the per-boot reading could, so the failure is now logged.
+  - The re-grind queue: an unreadable file is set aside, and `add()` counts only what was saved.
+  - servertest: a failed `server.properties` give-back tells the user where the original is.
+  - `isRunning`: an unanswered liveness inspect no longer ends a boot. After 60 unanswered polls in a row the boot is abandoned as `ERROR`.
+  - The sites that should only log are closed by `fix(grinder): a lost template, marker, install console or kept boot log is logged, not silent` and `fix(servertest): a broken console, close, shutdown kill or clipboard copy is logged, not silent` (`claude-b3-log-sites`).
+    - Each now leaves a WARN naming the file or pack, and returns what it returned before. Grinder: 7 reads, writes and the live install console. Servertest: 4 sites.
+    - Two of the inventory's 14 were re-judged safe and left alone: the `-api` minecraft-constraint reads. `ForgeTomlScanner.readMinecraftConstraint` re-reads what `read()` already parsed, so it cannot fail there. `QuiltScanner`'s throws only for a mod without a `depends` block, which is normal.
+- **Commit-body links:** enforced by `ci: fail a push whose commit message would mislink an issue in the release notes` (`claude-b5-link-lint`).
+  - The checker ports conventional-commits-parser 6.4.0's reference extraction, and agrees with the real parser on all 7,700 commit messages.
+  - It runs over each push's own range, so already-pushed history never keeps CI red.
+  - Its one finding on `origin/main..develop` was reworded before the next push.
+- **Found while implementing:** `fix(ci): the .dockerignore input check does not read another checkout's build scripts`. It is the nested-worktree defect `KDocAttachmentTest` had.
+
+# 2026-11-25 — analysis of fdbbe5f57..develop (44 commits)
+
+Range `fdbbe5f57..ed4a25338`: everything since the 2026-11-15 analysis (the remediation fixes, the B work, the
+symlink fix, the contained clientside boot, the log-only sites). Items recorded as decided or accepted in the
+2026-11-22/23 sections (the B1 residuals among them) are not re-reported. Each finding is CONFIRMED (executed, or
+read off code with no room for another reading) or PLAUSIBLE (the defect is real in code; whether it bites depends
+on something outside the repository).
+
+## HIGH
+
+None.
+
+## MEDIUM
+
+- **AN-1 — CONFIRMED (executed) — `JavaConfig.testJava` leaks the descendants of a probed executable that times out.**
+  `serverpackcreator-api/.../settings/JavaConfig.kt`, `testJava`'s `finally { process.destroyForcibly() }`.
+  `Process.destroyForcibly` ends only the direct child. A Java path that is a launcher or wrapper script (an
+  sdkman/asdf shim, a `java` wrapper) and hangs leaves its own children running after the probe gives up.
+  Reproduced with the exact `ProcessBuilder` shape `testJava` uses against a script that backgrounds `sleep 300`
+  and waits: after the timeout and `destroyForcibly`, `childAliveAfterDestroy=true`.
+  "can no longer leak the probed executable" (`fix(api): validating a Java path can no longer hang on, or leak,
+  the probed executable`) therefore holds for the executable, not for what it started.
+  - Fix: collect `process.descendants()` **before** destroying (an orphan stops being a descendant), destroy
+    them, then the process — the same order `HostProcessServerRunner.destroyTree` uses.
+  - Pin: a `JavaConfigTest` case whose fake `java` backgrounds `sleep`, writes the child's PID to a file and
+    `wait`s; assert `testJava` rejects it and `ProcessHandle.of(pid)` is no longer alive. Red against today's code.
+
+## LOW
+
+- **AN-2 — CONFIRMED (code) — a project link can break out of the failure comment's code span.**
+  `ClientsideReportRenderer.renderFailure` writes ``Could not assess `$projectUrl` ``; the link comes from
+  `.github/scripts/clientside-verification.js`'s `PROJECT_LINK` (`/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)]+/i`),
+  which admits backticks. `https://modrinth.com/mod/x`@someone`` closes the span and puts a live mention or link
+  in the bot's comment. Reaching the failure path needs a maintainer-approved boot, hence LOW.
+  - Fix: narrow `PROJECT_LINK`'s tail to URL characters (`[\w\-./?=&%#~+]+`) — it also stops a trailing
+    `` ` `` or `>` from becoming part of the slug — and render the link in `renderFailure` with a fence-style
+    span longer than any backtick run (the renderer already has `fenceFor` for consoles).
+  - Pins: a node test that `projectLinkIn('https://modrinth.com/mod/x`@a`')` is `https://modrinth.com/mod/x`;
+    a renderer test that a URL containing a backtick stays inside its span.
+- **AN-3 — PLAUSIBLE — the suggested-entries and published-file-names blocks use a fixed ```` ``` ```` fence.**
+  `ClientsideReportRenderer` (the `Suggested clientside-list entries` block and `All N published file-names`)
+  fences with three backticks, while consoles go through `fenceFor`. File names are chosen by whoever uploaded the
+  mod; a name containing ```` ``` ```` would close the block early. Whether Modrinth/CurseForge accept such a
+  name was not checked.
+  - Fix: `fenceFor` for both blocks — one rule for every fenced block of outside text.
+  - Pin: a report whose `fileNames` hold ```` a```b.jar ```` renders a fence of four backticks.
+- **AN-4 — CONFIRMED (code), PLAUSIBLE (impact) — a range probe and the download after it count twice.**
+  `DownloadCount.isNewDownload` counts any `GET` whose first range starts at byte 0, so a client probing with
+  `Range: bytes=0-0` and then requesting `bytes=0-` is two downloads. Counting only full-start ranges that cover
+  more than the first byte would stop that, at the price of possibly not counting a segmented download whose
+  first segment is tiny. A product decision, not a defect to fix blind.
+- **AN-5 — CONFIRMED — stale JDK list.** `serverpackcreator-grinder/src/main/kotlin/.../grinder/loader/CLAUDE.md`
+  ("Offline-boot levers") still names `/opt/java-{8,17,21,25}`; the image links `/opt/java-16` too since
+  `fix(grinder): boot Minecraft 1.17 and 1.17.1 on the Java 16 their manifests require`. Everything else naming the
+  set (`ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS`, the grinder README, `misc/Java-References.md`, the Dockerfile) is
+  current.
+- **AN-6 — PLAUSIBLE (evidence, not a defect) — Forgejo's test job does not run as root, so the root-skipping
+  guards run there.** The job image `ghcr.io/catthehacker/ubuntu:runner-latest` (amd64) declares
+  `"User": "runner"` in its image config (read from ghcr's registry API: index → amd64 manifest → config blob), and
+  act starts the job container as the image's user unless the runner's config passes `--user`, which nothing in
+  this repository can show. So the five grinder guards that make a file unreadable
+  (`BookkeepingFailuresAreLoggedTest`, `BootLogStoreTest`'s new case) very likely execute in CI rather than skip.
+  - Cheap way to make it a fact rather than an inference: print `id -u` in `test.yml`'s build step, or assert in
+    the job that the guard ran (the skipped count in the test-results XML).
+
+## Verified clean — do not re-litigate
+
+- **`ModWritableTree`**: reads refuse a link at the listed directory and at the file, and resolve-outside-root is
+  refused; `openForReading` uses `NOFOLLOW_LINKS`; `deleteRecursively`/`sizeOf` walk without `FOLLOW_LINKS`, a
+  symlinked root is deleted as a link. Intermediate-component swaps between listing and open would need a process
+  still running in the pack after the boot ended; the container path has none.
+- **The project link never reaches a shell unquoted**: `clientside-report-reusable.yml` hands it to the grinder as
+  `PROJECT_URL` through `env:` and `"$PROJECT_URL"`, so a `$(…)` or `;` in an issue's link is inert.
+- **A forged data block cannot win**: `dataBlockIn` takes the real (last) block; a console line or excerpt carrying
+  `<!-- clientside-report-data` is pinned in `clientside-verification.test.js`, and the URL path cannot contain the
+  whitespace a block needs.
+- **`/verdicts.json?version=`** parses with `toLongOrNull` (garbage → current snapshot), and retention is bounded
+  by count (8) and idle time (60 s), so an unauthenticated caller can pin at most eight snapshots alive.
+- **`GrinderClient.readFeed`**: a 410 only abandons a *pinned* page; version appearing/vanishing mid-read restarts;
+  bounded by `MAX_READ_ATTEMPTS`; never returns a partial feed.
+- **`JsonRequeueStore`**: an unreadable file is moved aside before anything can be written over it, and `add`
+  refuses (returns 0, logs ERROR) when it cannot be; writes are temp-then-atomic-move with the temp cleaned up.
+- **`LiveInstallLog`**: catches `IOException` per line and reports the first only; open/close through
+  `orNullLogged`; an unopenable console never fails the install.
+- **Homepage download counter**: a token is sent only to its own platform's host (`optionsFor` drops it for the
+  others); no paging URL taken from a response is followed to another host.
+- **Runtime image**: both apt keyrings are checked against the published fingerprint, exactly one primary key,
+  before apt reads them; every base image is digest-pinned.
+- **Unused imports**: none in the 101 Kotlin files the range adds or modifies (each import's simple name or alias
+  searched in the file body).
+
+# 2026-11-25 — remediation of the 2026-11-25 audit and analysis
+
+Each finding of the two 2026-11-25 sections, and what closed it. Commits are named by subject.
+
+## B1: what the container boot closed (A-L1)
+
+- The 2026-11-23 sections list as "still open, for the container-boot decision" that the CurseForge key and the
+  `contents: read` token can be read from memory with sudo, and that the runtime token can replace the run's own
+  report artifact. **Closed for the mod's code** by `feat(ci): boot the clientside verification's mod inside the
+  grinder's container` (with `feat(grinder): write one project's clientside report from the container boot path`):
+  the mod now boots in the grinder's network-less, capability-less, non-root container and cannot reach the runner
+  process's memory, `sudo` or the network.
+- **First real run:** GitHub run 45239798218, a manual dispatch from `develop` on 2026-11-23 against a throwaway
+  issue (modmenu, Modrinth). Green in 9 minutes; the runtime image built in 1 m 38 s; four Fabric boots
+  (Minecraft 26.3, 26.2, 1.21.11, 1.20.6) SURVIVED on the right JDKs (25, 25, 21, 21); every console shows
+  "Failed to request yggdrasil public key", i.e. no network inside the container. The `clientside-boot-logs`
+  artifact held only the grinder's own log (no key, nothing from the pack; no `boot-logs/`, since every boot
+  survived). The comment's two inaccurate sentences were fixed by `fix(ci): the clientside report says where its
+  boot logs really are`.
+- **What stays open is stated where it is enforced**, in `.claude/rules/ci-workflows.md` ("What is still not
+  contained"): host-side parsing of the mod's jars in the JVM that holds the key, a container escape landing in
+  the `docker` group, and the networked loader-install container. The gate remains the control.
+
+## Findings and their fixes
+
+| Id | Fixed by | Red first |
+|---|---|---|
+| A-L2 | `fix(clientside): resolving a mod-written file's real path no longer swallows an Error` | no — `toRealPath` cannot be made to throw an `Error` without a test-only seam; stated in the commit |
+| A-L3 | `test(clientside): the boot-failure note test skips on a missing Forge release without a null assertion` | n/a, test-only; no assertion changed |
+| A-L4 | `fix(web): a server pack without a run configuration no longer fails three routes` — the same `!!` defect also sat in `ModPackController.requestGeneration` and `AmountStatsService.stats` (the public stats endpoint), fixed in the same commit | yes, three pins, each `NullPointerException` |
+| AN-1 | `fix(api): a Java check that hangs no longer leaves what the probed path started running` | yes, "the probe's child must not outlive the check" |
+| AN-2, AN-3 | `fix(clientside): text an issue author or uploader chose can no longer break out of the report's code` — also a `\|` in a table cell, which split the row | yes, three renderer pins and one node pin |
+| AN-5 | `docs(grinder): the offline-boot levers name the image's JDK set by its source, not a copy of it` | n/a |
+
+## Not changed, deliberately
+
+- **A-L5 (scope honesty of two pushed commits):** record only; both are on origin, and rewording them would
+  rewrite pushed history for a label.
+- **AN-4 (`bytes=0-0` probe followed by `bytes=0-` counts twice):** a product decision, left to Griefed. Not
+  counting it risks not counting a segmented download whose first segment is tiny.
+- **AN-6 (do the root-skipping grinder guards run in CI?):** GitHub `Test` runs `./gradlew build` as the non-root
+  `runner` user, so the five guards run there. Forgejo's job image `ghcr.io/catthehacker/ubuntu:runner-latest`
+  declares `"User": "runner"`; whether this instance's runner overrides it with `--user` is not visible from the
+  repository. The skip count in a Forgejo run's grinder test results settles it.

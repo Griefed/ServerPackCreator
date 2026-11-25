@@ -1,8 +1,9 @@
-import generated from '@/generated/download-counts.json'
 import {
   SERVERPACKCREATOR_HOSTS, SERVERPACKCREATOR_OWNER, SERVERPACKCREATOR_REPOSITORY
 } from '@/config/repositories'
+import { GENERATED_DOWNLOADS } from './bakedDownloads'
 import { countAllDownloads, type CountAllOptions } from './countDownloads'
+import type { DownloadReport } from './types'
 
 /** A download total and when it was counted. `null` means no forge could be reached. */
 export interface DownloadSnapshot {
@@ -24,8 +25,8 @@ export interface DownloadTotalOptions extends CountAllOptions {
 
 /** The figure baked in at build time, counted in Node where no forge is behind CORS. */
 const baked: DownloadSnapshot = {
-  total: generated.total,
-  generatedAt: generated.generatedAt
+  total: GENERATED_DOWNLOADS.total,
+  generatedAt: GENERATED_DOWNLOADS.generatedAt
 }
 
 function defaultStorage(): Pick<Storage, 'getItem' | 'setItem'> | null {
@@ -93,11 +94,26 @@ export function isStale(snapshot: DownloadSnapshot, options?: DownloadTotalOptio
 }
 
 /**
+ * The refreshed total: each forge the sweep counted contributes its fresh figure, and each forge it
+ * failed to count contributes the build's figure for that same platform and host, so a forge the
+ * browser cannot reach is carried over rather than dropped from the sum.
+ */
+function mergeWithBaked(report: DownloadReport): number {
+  const carried = report.failures.map((failure) =>
+    GENERATED_DOWNLOADS.platforms.find(
+      (bakedPlatform) =>
+        bakedPlatform.platform === failure.platform && bakedPlatform.host === failure.host
+    )?.total ?? 0
+  )
+  return report.total + carried.reduce((sum, total) => sum + total, 0)
+}
+
+/**
  * Return the current figure, refreshing it from the forges first if it has gone stale.
  *
- * A refresh costs the visitor roughly twenty requests, so it happens at most once a day. It is
- * also allowed to fail: a forge with CORS disabled -- git.griefed.de, by Forgejo's default -- is
- * simply unreachable from a browser, and the baked figure already counted it.
+ * A refresh costs the visitor roughly twenty requests, so it happens at most once a day. A forge
+ * with CORS disabled -- git.griefed.de, by Forgejo's default -- is unreachable from a browser, so
+ * its figure comes from the build (see `mergeWithBaked`).
  */
 export async function refreshDownloadTotal(
   options?: DownloadTotalOptions
@@ -118,7 +134,7 @@ export async function refreshDownloadTotal(
     return current
   }
 
-  const refreshed = { total: report.total, generatedAt: report.countedAt }
+  const refreshed = { total: mergeWithBaked(report), generatedAt: report.countedAt }
   writeCache(refreshed, options)
   return refreshed
 }

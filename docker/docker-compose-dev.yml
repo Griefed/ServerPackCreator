@@ -5,7 +5,9 @@
 # brings up only the DEPENDENCIES. ServerPackCreator itself runs from IntelliJ IDEA -- the
 # `WebService (dev stack)` run configuration in `.run/` -- so you keep the debugger and hot-swap.
 # That is why MongoDB publishes 27017: an IDE-run application, and IDEA's Database tool window,
-# reach it over the host's loopback.
+# reach it over the host's loopback. Every published port is bound to 127.0.0.1, because the
+# credentials in this file are committed: binding to every interface would hand the database to the
+# LAN, and Docker's published ports bypass host firewalls such as ufw.
 #
 # The application service is opt-in:
 #
@@ -33,12 +35,17 @@ services:
     # Desktop's linuxkit kernel crosses that range, so an older Docker Desktop cannot run this.
     # Override the tag from an untracked `docker/.env` rather than editing this file:
     #
-    #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:8.0.5-ubuntu2204
-    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:8.0.34-ubuntu2204@sha256:8fceb807014ed542cf01437d1d749ca64aadba3ac77bb4895521e72009a8a84a}
+    #   SPC_DEV_MONGO_IMAGE=mongodb/mongodb-community-server:<another 9.0.x tag>-ubuntu2204
+    #
+    # Stay on 9.x for the `spcdb-data` volume this file already created: a volume initialised by
+    # 9.0 has featureCompatibilityVersion "9.0", and an 8.0 binary refuses to open it. An 8.0 image
+    # needs a fresh volume (`docker compose -f docker/docker-compose-dev.yml down -v` first, which
+    # deletes the dev database).
+    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:9.0.8-ubuntu2204@sha256:7ab9e334748b094ec3831c75a5e50ba62b07336b375c58744ddeb793c6ed5604}
     # Published so the IDE-run application can reach the database. Nothing in the fast loop runs
     # inside this network.
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: 1234567890
@@ -56,20 +63,17 @@ services:
       retries: 12
       start_period: 10s
 
-  # Database browser at http://localhost:8081. IDEA Ultimate's Database tool window reads the same
+  # Database browser at http://127.0.0.1:8081. IDEA Ultimate's Database tool window reads the same
   # database over the published port if you prefer it -- Community Edition has no such tool, which
   # is why this stays a browser-based viewer rather than being dropped.
   #
-  # Mongoku rather than mongo-express: mongo-express's Docker Official Image is DEPRECATED and has
-  # not been rebuilt since 2024-11-21, so its newest tag ships Node 20 on Alpine 3.19, both EOL.
-  # The mongo-express project itself is alive, but it publishes no image of its own -- no releases
-  # on `mongo-express-docker`, nothing on ghcr -- so there is no maintained build to move to.
+  # Mongoku rather than mongo-express: mongo-express's Docker Official Image is deprecated and
+  # unmaintained (EOL Node and Alpine), and the project publishes no image of its own.
   serverpackcreator-mongoku:
-    image: huggingface/mongoku:2.11.3@sha256:99486754b32cabd2d9c3d98318cccfdccdfb6822976f23a066d41c77d1b219c7
-    # Bound to the loopback address, NOT published on every interface: Mongoku has no authentication
-    # of its own, where mongo-express had basic auth. That auth was `mexpress`/`mexpress` committed
-    # in this file, so it kept nobody out who could read the repository; refusing the LAN entirely
-    # is the stronger guarantee, and it costs a dev-only tool nothing.
+    image: huggingface/mongoku:2.11.5@sha256:6ff83f0de8e82924eb3e4dd2d259ddcbce6b6700fdbf97e6e6ad5d60ca0bf053
+    # Bound to the loopback address, NOT published on every interface. Mongoku can do basic auth
+    # (MONGOKU_AUTH_BASIC), but its credential would be committed in this file like the database's,
+    # so it would keep out nobody who can read the repository; refusing the LAN is the guarantee.
     ports:
       - "127.0.0.1:8081:3100"
     depends_on:
@@ -83,7 +87,9 @@ services:
       # this value and silently serves a read-only UI when they differ -- and they do differ by
       # construction here, because it listens on 3100 inside the container and is reached on 8081.
       # Left unset, the banner reads "To enable write operations, set the MONGOKU_SERVER_ORIGIN
-      # environment variable" and every write is refused. Keep it in step with the published port.
+      # environment variable" and every write is refused. The comparison is exact, host included:
+      # http://localhost:8081 is a different origin from this one, so BUILD.md and the comment above
+      # link 127.0.0.1. Keep all three in step with the published port.
       - MONGOKU_SERVER_ORIGIN=http://127.0.0.1:8081
       # No volume on purpose. Mongoku persists only its *list of servers*, to
       # MONGOKU_DATABASE_FILE ($HOME/.mongoku.db), and MONGOKU_DEFAULT_HOST re-seeds that on every
@@ -126,7 +132,7 @@ services:
       - SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED=true
       - SPC_LOG_LEVEL=DEBUG
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - modpacks:/app/serverpackcreator/modpacks
       - server-packs:/app/serverpackcreator/server-packs

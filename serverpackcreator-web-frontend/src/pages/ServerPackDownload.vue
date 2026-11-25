@@ -77,8 +77,8 @@
         <q-separator vertical />
         <q-card-actions vertical class="justify-around">
           <q-btn ref="downloadButton" size="xl" flat round color="positive" icon="download"
-                 type="a" :href="downloadHref" :download="name"
-                 @click="count = false; started = true" />
+                 type="a" :href="downloadHref" download
+                 @click="onLinkClicked" />
           <q-btn size="xl" flat round color="info" icon="share" @click="copyToClipboard(current())" />
         </q-card-actions>
       </q-card-section>
@@ -88,6 +88,9 @@
           <q-item-section>
             <q-item-label overline v-if="started">
               Downloading &mdash; your browser is saving the file.
+            </q-item-label>
+            <q-item-label overline v-else-if="failed">
+              Download failed &mdash; the server could not provide the file.
             </q-item-label>
             <q-item-label overline v-else-if="canceled">
               Download aborted...
@@ -110,7 +113,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { modpacks, serverpacks } from '@/boot/axios';
+import { serverpacks } from '@/boot/axios';
 import { date } from 'quasar';
 
 export default defineComponent({
@@ -125,7 +128,11 @@ export default defineComponent({
      * JavaScript.
      */
     downloadHref(): string {
-      return `${serverpacks.defaults.baseURL ?? ''}download/${encodeURIComponent(String(this.$route.params.id))}`;
+      return `${serverpacks.defaults.baseURL ?? ''}${this.downloadPath}`;
+    },
+    /** The download route relative to the boot module's `baseURL`, for the link and for the availability check. */
+    downloadPath(): string {
+      return `download/${encodeURIComponent(String(this.$route.params.id))}`;
     }
   },
   setup() {
@@ -155,6 +162,7 @@ export default defineComponent({
       sha256: ref(''),
       canceled: ref(false),
       started: ref(false),
+      failed: ref(false),
       count,
       counter
     };
@@ -177,6 +185,9 @@ export default defineComponent({
     countDownTimer() {
       if (this.counter > 0 && this.count) {
         setTimeout(() => {
+          if (!this.count) {
+            return;
+          }
           this.counter -= 1;
           this.countDownTimer();
         }, 1000);
@@ -188,16 +199,53 @@ export default defineComponent({
     /**
      * Fires the download link the countdown was counting towards. Clicks the real anchor rather than
      * fetching the archive: the browser then streams it straight to disk, with its own progress, its
-     * own resume on an interrupted transfer, and no copy of a multi-gigabyte pack in the tab.
+     * own resume on an interrupted transfer, and no copy of a multi-gigabyte pack in the tab. The browser
+     * reports a failed download only in its own download list, so the route is asked with `HEAD` first and
+     * the page claims a download only once the archive is known to be there.
      */
     startDownload() {
-      (this.$refs.downloadButton as { $el?: HTMLAnchorElement } | undefined)?.$el?.click();
-      this.started = true
+      const link = (this.$refs.downloadButton as { $el?: unknown } | undefined)?.$el;
+      if (!(link instanceof HTMLAnchorElement)) {
+        return;
+      }
+      serverpacks.head(this.downloadPath).then(() => {
+        this.started = true;
+        link.click();
+      }).catch(error => this.reportUnavailable(error));
+    },
+    /**
+     * A click on the link itself, by the user or by `startDownload`. The browser is already fetching, so
+     * the availability check runs alongside and takes the "Downloading" claim back if it fails.
+     */
+    onLinkClicked() {
+      this.count = false;
+      if (this.started) {
+        return;
+      }
+      this.started = true;
+      this.failed = false;
+      serverpacks.head(this.downloadPath).catch(error => this.reportUnavailable(error));
+    },
+    reportUnavailable(error: unknown) {
+      this.started = false;
+      this.failed = true;
+      this.$q.notify({
+        timeout: 5000,
+        progress: true,
+        icon: 'error',
+        color: 'negative',
+        message: 'Could not download the server pack: ' + String(error)
+      });
     }
+  },
+  /** Stops the countdown, so a page the user has left never fires its download. */
+  beforeUnmount() {
+    this.count = false;
   },
   mounted() {
     this.showTextLoading();
     serverpacks.get(String(this.$route.params.id)).then(response => {
+      this.name = response.data.fileName ?? '';
       this.size = response.data.size;
       this.downloads = response.data.downloads;
       this.confirmedWorking = response.data.confirmedWorking;
@@ -219,17 +267,6 @@ export default defineComponent({
         message: 'Could not retrieve server pack: ' + error
       });
     });
-    modpacks.get('byserverpack/' + this.$route.params.id).then(response => {
-      this.name = response.data.name.replaceAll(' ', '_').replace('.zip', '_server_pack.zip')
-    }).catch(error => {
-      this.$q.notify({
-        timeout: 5000,
-        progress: true,
-        icon: 'error',
-        color: 'negative',
-        message: 'Could not retrieve modpack: ' + error
-      });
-    })
   }
 });
 </script>

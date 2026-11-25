@@ -125,11 +125,11 @@ jobs:
             ./gradlew :serverpackcreator-api:dokkaGenerateHtml --full-stacktrace
           fi
 
-      # Webhelp at the root, Dokka at `api/` -- the layout this deployment alone uses now. `spch.tree`
-      # links to `api/index.html` RELATIVE to the site root, which is what makes one link serve both this
-      # deployment (`/ServerPackCreator/api/`, a project subpath) and the container's (`/api/`). Verified by
-      # serving the Dokka tree two levels deep: every asset on its deepest page resolves, because Dokka emits
-      # `../../../../`-style paths and no root-absolute ones.
+      # Webhelp at the root, Dokka at `api/`. `spch.tree` links to this deployment's `api/index.html` by
+      # ABSOLUTE URL, because the help viewer navigates for real only to an href with a scheme;
+      # `.forgejo/workflows/docs.yml` rewrites that URL for serverpackcreator.de. Dokka serves correctly from
+      # the project subpath (`/ServerPackCreator/api/`) because it emits `../`-relative asset paths and no
+      # root-absolute ones.
       # The `test -s`/`test -d` guards are the point of the step, and they are NOT belt-and-braces: the action
       # runs `helpbuilderinspect ... || true` and then fails only when the artifacts directory is entirely
       # EMPTY (read from its index.js at the pinned sha). A build that dies after emitting just `report.json`

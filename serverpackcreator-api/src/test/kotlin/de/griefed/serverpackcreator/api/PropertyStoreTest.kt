@@ -2,6 +2,7 @@ package de.griefed.serverpackcreator.api
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.util.*
@@ -69,6 +70,29 @@ internal class PropertyStoreTest {
         Assertions.assertEquals(listOf("lonely"), store.getList("single.key", ""))
         store.setList("joined.key", listOf("a", "b"), ",")
         Assertions.assertEquals("a,b", store.properties.getProperty("joined.key"))
+    }
+
+    /**
+     * Every list setting is a set of names, so an empty entry is never a value: it comes from a doubled, leading
+     * or trailing comma and must not reach a caller (an empty cleanup entry names the server pack itself).
+     * Whitespace around a name is kept, because it can be part of a file name.
+     */
+    @Test
+    fun listPropertiesNeverYieldABlankEntry() {
+        val store = PropertyStore()
+        val cases = linkedMapOf(
+            "a,,b" to listOf("a", "b"),
+            ",a" to listOf("a"),
+            " , " to emptyList(),
+            "" to emptyList(),
+            " a , b " to listOf(" a ", " b ")
+        )
+        Assertions.assertAll(cases.entries.mapIndexed { index, (value, expected) ->
+            Executable {
+                store.define("list.$index", value)
+                Assertions.assertEquals(expected, store.getList("list.$index", ""), "for the stored value '$value'")
+            }
+        })
     }
 
     /**

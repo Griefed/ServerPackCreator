@@ -25,6 +25,7 @@ import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
+import de.griefed.serverpackcreator.api.utilities.common.orNullLogged
 import de.griefed.serverpackcreator.clientside.boot.BootDeadline
 import de.griefed.serverpackcreator.clientside.boot.SuspendAwareDeadline
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -42,9 +43,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * transport) to create a hardened container from a [ContainerSpec], stream its console while watching
  * for the ready-line, stop it once ready or timed out, read its exit code, and force-remove it.
  *
- * Not unit-tested — it needs a live daemon — which is exactly why the orchestration that *can* be
- * tested lives in [ContainerServerRunner] behind the [ContainerEngine] seam. This class is the thin,
- * imperative docker-java translation only.
+ * Its behaviour against a real daemon needs a live one, which is why the orchestration that *can* be tested
+ * lives in [ContainerServerRunner] behind the [ContainerEngine] seam; only how it treats a daemon that does not
+ * answer is unit-tested, against a scripted docker-java client. This class is the thin, imperative docker-java
+ * translation only.
  *
  * @author Griefed
  */
@@ -55,7 +57,12 @@ class DockerJavaContainerEngine(
      * How long a container gets to exit on its own during [close] before it is killed. A parameter so a test
      * can shorten it; production always takes [SHUTDOWN_GRACE].
      */
-    private val shutdownGrace: Duration = SHUTDOWN_GRACE
+    private val shutdownGrace: Duration = SHUTDOWN_GRACE,
+    /**
+     * How many consecutive liveness polls the daemon may leave unanswered before a boot is abandoned. A parameter
+     * so a test can shorten it; production always takes [MAX_UNANSWERED_POLLS].
+     */
+    private val maxUnansweredPolls: Int = MAX_UNANSWERED_POLLS
 ) : ContainerEngine {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -149,17 +156,19 @@ class DockerJavaContainerEngine(
             }
             // The loop's own last answer, reused rather than asked again: the daemon is round-tripped once
             // per poll as it is, and a second inspect here would be a different moment in time.
-            var stillRunning = isRunning(containerId)
+            val liveness = LivenessPolls(containerId)
+            var stillRunning = liveness.stillRunning()
             while (stillRunning && !ready.get() && deadline.hasTimeLeft()) {
                 Thread.sleep(POLL_INTERVAL_MILLIS)
                 deadline.tick()
-                stillRunning = isRunning(containerId)
+                stillRunning = liveness.stillRunning()
             }
             val timedOut = BootDeadline.timedOut(ready = ready.get(), stillRunning = stillRunning)
 
             // A server that became ready stays up by design, so stop it; classification keys on the
-            // captured lines + exit code, never on liveness. Kill if a graceful stop fails.
-            if (isRunning(containerId)) {
+            // captured lines + exit code, never on liveness. Kill if a graceful stop fails. A container the
+            // daemon will not describe is stopped too: stopping an exited one is harmless, leaving a live one is not.
+            if (isRunning(containerId).getOrDefault(true)) {
                 runCatching { client.stopContainerCmd(containerId).withTimeout(10).exec() }
                     .onFailure { runCatching { client.killContainerCmd(containerId).exec() } }
             }
@@ -317,18 +326,70 @@ class DockerJavaContainerEngine(
         return hostConfig
     }
 
-    /** Whether the container is currently running, defaulting to false if it can no longer be found. */
-    private fun isRunning(containerId: String): Boolean =
-        runCatching { client.inspectContainerCmd(containerId).exec().state.running == true }.getOrDefault(false)
+    /** Whether the container is currently running, or -- logged at WARN -- the daemon's failure to say. */
+    private fun isRunning(containerId: String): Result<Boolean> =
+        try {
+            Result.success(client.inspectContainerCmd(containerId).exec().state.running == true)
+        } catch (ex: Exception) {
+            if (ex is InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw ex
+            }
+            log.warn("The Docker daemon did not say whether container $containerId is still running", ex)
+            Result.failure(ex)
+        }
 
-    /** The container's exit code, or `null` if it is unavailable (still running / not found). */
-    private fun exitCodeOf(containerId: String): Int? =
-        runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
+    /**
+     * One boot's liveness polls. An unanswered poll counts as still running, because reading it as stopped would
+     * end the wait and remove a container that is still booting, then classify its console as though it had
+     * finished. Only [maxUnansweredPolls] unanswered in a row abandon the boot, by throwing: the row then reads
+     * `ERROR` with the daemon named as the reason, never a verdict about the mod drawn from a console cut short.
+     */
+    private inner class LivenessPolls(private val containerId: String) {
+        private var unanswered = 0
+
+        /** This poll's answer; throws [IllegalStateException] once the daemon has been silent too long. */
+        fun stillRunning(): Boolean = isRunning(containerId).fold(
+            onSuccess = { running ->
+                unanswered = 0
+                running
+            },
+            onFailure = { failure ->
+                unanswered++
+                if (unanswered >= maxUnansweredPolls) {
+                    val reason = "The Docker daemon left $unanswered consecutive liveness polls of container " +
+                        "$containerId unanswered, so the boot was abandoned: ${failure.message}"
+                    log.error(reason, failure)
+                    throw IllegalStateException(reason, failure)
+                }
+                true
+            }
+        )
+    }
+
+    /**
+     * The container's exit code, or `null` when the daemon reports none or cannot be asked. A `null` reads as
+     * INCONCLUSIVE in `BootLogClassifier` even for a boot that exited non-zero, so a failed inspect is logged
+     * with its cause rather than passed off as a boot that ended without one.
+     */
+    internal fun exitCodeOf(containerId: String): Int? =
+        orNullLogged(
+            log.delegate,
+            "Could not read the exit code of container $containerId; the boot is classified without one"
+        ) { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }
 
     /** The poll interval, the ownership labels, the bounded shutdown wait and the Docker client factory. */
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * Consecutive unanswered liveness polls after which a boot is abandoned: 60 at [POLL_INTERVAL_MILLIS], i.e.
+         * at least half a minute of silence. Long enough to ride out a stalled socket or a daemon restart under
+         * `live-restore` (which keeps containers running), short against a boot budget of minutes. Counted in
+         * polls rather than wall time, so a host suspend cannot spend it; the boot budget still bounds the wait.
+         */
+        internal const val MAX_UNANSWERED_POLLS = 60
 
         /**
          * The address a container's own hostname is mapped to. Loopback, because a network-less container has

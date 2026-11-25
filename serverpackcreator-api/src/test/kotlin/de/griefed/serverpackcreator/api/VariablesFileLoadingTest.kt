@@ -21,6 +21,9 @@ package de.griefed.serverpackcreator.api
 
 import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.DONE_MARKER
 import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.FAILURE_PREFIX
+import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.POWERSHELL_ENVIRONMENT
+import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.POWERSHELL_IMAGE
+import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.POWERSHELL_PLATFORM
 import de.griefed.serverpackcreator.api.TemplateInterpreterRunner.Companion.SETUP_MARKER
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
@@ -205,6 +208,88 @@ internal class VariablesFileLoadingTest {
         """.trimMargin()
     }
 
+    /**
+     * PowerShell reads every damaged form, through the real interpreter — installed here, or a container.
+     *
+     * The PowerShell templates read `variables.txt` in one statement, `Get-Content -raw … | ConvertFrom-StringData`,
+     * at top level in the start script and inside `RunJavaInstallation` in the installer, so the statement itself
+     * is lifted out of each shipped template and run per fixture. `start.bat` delegates to `start.ps1`, which
+     * makes these the only Windows readers.
+     */
+    @Test
+    fun thePowerShellTemplatesLoadVariablesHoweverTheFileArrived() {
+        val staged = runner.stageTemplates(emptyList())
+        for (damage in DAMAGE) {
+            File(staged, "variables.${damage.label}.txt").writeBytes(variablesFile(damage))
+        }
+        for (template in POWERSHELL_TEMPLATES) {
+            runner.stageScript(staged, "$template.loader", extractPowerShellLoader(template))
+        }
+        val probe = runner.stageScript(staged, POWERSHELL_PROBE, powerShellProbe())
+
+        val outcome = runner.runLocally("pwsh", mapOf(POWERSHELL_PROBE to listOf("pwsh", "-NoProfile", "-File", probe.absolutePath)))
+            ?: runner.runInContainer(
+                image = POWERSHELL_IMAGE,
+                staged = staged,
+                platform = POWERSHELL_PLATFORM,
+                environment = POWERSHELL_ENVIRONMENT,
+                command = listOf("pwsh", "-NoProfile", "-File", "/templates/$POWERSHELL_PROBE")
+            )
+            ?: Assumptions.abort("neither pwsh nor docker is available - PowerShell variables-loading check skipped")
+
+        Assumptions.assumeTrue(
+            outcome.setUp && outcome.completed,
+            "the pwsh probe never ran to its end (${outcome.ranWith}), so it checked nothing:\n${outcome.output.take(600)}"
+        )
+        Assertions.assertTrue(
+            outcome.failures.isEmpty(),
+            "PowerShell read a value wrongly (${outcome.ranWith}):\n${outcome.output}"
+        )
+        staged.deleteRecursively()
+    }
+
+    /**
+     * A PowerShell probe that runs each template's own loader statement over every fixture and reports per
+     * value, printing [DONE_MARKER] last. Judged on its markers, never its exit code: under Rosetta pwsh can
+     * crash at teardown after printing every correct line.
+     *
+     * `JAVA_ARGS` is compared after `Trim('"')`, because the start script strips the quotes itself right after
+     * loading; the loader is only responsible for delivering the value.
+     */
+    private fun powerShellProbe(): String {
+        val d = '$'
+        val checks = expected.entries.joinToString("\n") { (key, value) ->
+            """
+            |        ${d}actual = "${d}(${d}ExternalVariables['$key'])".Trim('"')
+            |        if (${d}actual -ne '$value') { Write-Output "$FAILURE_PREFIX ${d}{template}/${d}{label}: $key is '${d}actual', expected '$value'" }
+            """.trimMargin()
+        }
+        return """
+            |${d}ErrorActionPreference = 'Stop'
+            |Write-Output '$SETUP_MARKER'
+            |foreach (${d}template in @(${POWERSHELL_TEMPLATES.joinToString(", ") { "'$it'" }})) {
+            |    ${d}loader = Get-Content -Raw -LiteralPath (Join-Path ${d}PSScriptRoot "${d}template.loader")
+            |    foreach (${d}label in @(${DAMAGE.joinToString(", ") { "'${it.label}'" }})) {
+            |        ${d}ExternalVariablesFile = Join-Path ${d}PSScriptRoot "variables.${d}label.txt"
+            |        ${d}ExternalVariables = ${d}null
+            |        try { Invoke-Expression ${d}loader } catch { Write-Output "$FAILURE_PREFIX ${d}{template}/${d}{label}: the loader threw ${d}_"; continue }
+            |$checks
+            |    }
+            |}
+            |Write-Output '$DONE_MARKER'
+        """.trimMargin() + "\n"
+    }
+
+    /** The one statement in a shipped PowerShell template that reads `variables.txt`, trimmed of its indent. */
+    private fun extractPowerShellLoader(template: String): String {
+        val loaders = templateLines(template).filter { it.trimStart().startsWith("${'$'}ExternalVariables = ") }
+        Assertions.assertEquals(
+            1, loaders.size,
+            "template $template must read variables.txt in exactly one `${'$'}ExternalVariables = ` statement - update this test"
+        )
+        return loaders.single().trim()
+    }
+
     /** Locate an executable on `PATH`, or `null` when it is not installed. */
     private fun which(executable: String): File? =
         System.getenv("PATH")?.split(File.pathSeparator)
@@ -270,6 +355,15 @@ internal class VariablesFileLoadingTest {
          * fix applied only to the start-script templates would leave half the readers unfixed.
          */
         val FISH_TEMPLATES = listOf("default_template.fish", "default_java_template.fish")
+
+        /**
+         * The PowerShell half: the start script, and the installer, which reads `variables.txt` itself for the
+         * same standalone reason as the fish and bash installers.
+         */
+        val POWERSHELL_TEMPLATES = listOf("default_template.ps1", "default_java_template.ps1")
+
+        /** The probe's file name beside the staged loaders. */
+        const val POWERSHELL_PROBE = "variables-probe.ps1"
 
         /** Carries fish in its own repositories, so the fallback needs no third-party source. */
         const val ALPINE_IMAGE = "alpine:3.20"

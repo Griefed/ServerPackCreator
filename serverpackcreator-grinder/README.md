@@ -73,15 +73,17 @@ on the host is touched, and no mod ever gets network access.
 ## 2. Build the runtime image (once)
 
 The container that boots the packs. It carries the shell tooling SPC's `start.sh` needs plus Temurin JDK
-**8, 17, 21 and 25**, so a pack always boots on the Java its Minecraft version actually requires — with no
+**8, 17, 21 and 25** and Azul Zulu JDK **16** (Minecraft 1.17 and 1.17.1), so a pack always boots on the Java its Minecraft version actually requires — with no
 Java download, which is what keeps mod-boots runnable offline.
 
 ```bash
 docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 ```
 
-Rebuild it whenever a new Minecraft release needs a newer JDK. See [`docker/README.md`](docker/README.md);
-the bundled JDK set must stay in step with `ImageJavaRuntimes.bundledMajors`.
+Rebuild it whenever you update the grinder, and whenever a new Minecraft release needs a newer JDK: a grinder
+newer than its image expects JDKs the image lacks (an image built before Java 16 was added fails every 1.17 and
+1.17.1 boot; rebuilt, the daemon grinds the 1.17 lines its line policy selects instead of skipping them). See [`docker/README.md`](docker/README.md); the
+bundled JDK set must stay in step with `ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS`.
 
 ---
 
@@ -96,6 +98,32 @@ Best first run: it proves your Docker setup end-to-end in a few minutes.
 Pass any number of project URLs. The grinder resolves each, boots it once per Minecraft version-line (see
 §5, *What gets ground*), records verdicts, then
 **keeps the report server up** until you Ctrl-C.
+
+### Write one mod's clientside report and exit
+
+```bash
+./gradlew :serverpackcreator-grinder:installDist
+SPC_GRINDER_HOME=/tmp/spc-clientside-report \
+  serverpackcreator-grinder/build/install/serverpackcreator-grinder/bin/serverpackcreator-grinder \
+  --clientside-report https://modrinth.com/mod/modmenu --output clientside-report.md
+```
+
+Verifies one project exactly as a grind does — downloads on the host, the loader installed once per tuple from a
+vanilla pack, the mod booted in the hardened `--network none` container — and writes the Markdown report the CLI's
+`-verifyclientside` writes: the same marker, table, per-boot consoles and hidden data block. It records nothing:
+no verdict store, no crawl cursor, no report server. The GitHub clientside workflow runs it.
+
+- **Exit code:** `0` when the project was verified (a report with ERROR rows included), `1` when only a failure
+  note could be written (the runtime image is missing, the link is not a Modrinth or CurseForge project, or the
+  verification threw), `2` when the arguments are not exactly `--clientside-report <link> --output <file>`. A
+  failure note is still written to `--output`, so there is always something to post.
+- **A Minecraft line the image has no JDK for is an ERROR row** naming the Java it needs, where the daemon skips
+  the line; a reader of one report should see what went unverified.
+- **CurseForge links need a key**: `CURSEFORGE_API_KEY_FILE` (a file holding the key, read once and deleted) or
+  `CURSEFORGE_API_KEY`.
+- **Give it its own `SPC_GRINDER_HOME`** on a machine that also runs the daemon. It reads the same configuration
+  (§5), and its work, loader cache and boot logs land under that home. It never reaps other containers, so it
+  cannot disturb a running daemon's boots.
 
 ---
 
@@ -112,7 +140,8 @@ f=$(mktemp) && curl -fsSL https://git.griefed.de/griefed/serverpackcreator/raw/b
 **Every run after that is the same command without `--bootstrap`** — that is the upgrade path, and
 re-fetching each time means the deploy logic is updated along with the code it deploys. Add
 `--skip-image` once the runtime image exists; it is the difference between a two-minute update and a
-ten-minute one.
+ten-minute one. Leave it off for an update that changes `docker/Dockerfile` (the bundled JDKs, for one), or the
+grinder runs against an image that lacks what it expects.
 
 Docker and JDK 21+ must already be present. The script checks both and names the command to fix
 them, but it deliberately installs no packages — on Debian/Ubuntu the one-time step is
@@ -407,6 +436,26 @@ Measured on the public instance: **200 in 0.077 s / timeout / 200 in 0.003 s** �
 from the proxy (`http://172.19.0.1:1/`) also timed out rather than being refused, which is what proves the
 drop is blanket rather than aimed at 9090.
 
+**Before adding a rule, check that the rule you already have is loaded — `ufw status` cannot tell you.**
+It reads `/etc/ufw/user.rules`; the kernel may hold something else. On 2026-11-09 this outage recurred with
+the 2026-09-21 rule present and correct in `ufw status numbered` and **absent from the running ruleset**:
+
+```bash
+sudo iptables -S ufw-user-input | grep 9090     # the question `ufw status` does not answer
+```
+
+All five 9090 rules were listed by ufw and none were in the chain, which held a stale snapshot that stopped
+part-way through the file. The ufw chains existed and `INPUT` jumped to all six of them, so nothing read as
+unloaded, and the proxy's errno was `110` exactly as it is for a genuinely missing rule — **the chain dump is
+the only thing that separates the two.** `sudo ufw reload` re-applied the file and the proxy reached the
+report immediately. What replaced the ruleset after ufw had loaded it is **not established**: `ufw.service`
+is `active (exited)` and applies rules once at boot, and that host also has fail2ban, libvirt and AMP writing
+iptables, so suspect anything restoring a saved snapshot.
+
+**Check the interface name too.** A `ufw deny in on eth0 to any port 9090` matches nothing on a host whose
+public NIC is `eno1` — protection that reads as present and is not. `ip -br addr` names it, and a `[UFW
+AUDIT]` line's `IN=` field confirms which one real traffic arrives on.
+
 Allow the bridge, scoped to source **and** destination:
 
 ```bash
@@ -664,8 +713,18 @@ array instead of a comma-joined string, and `verifiedAt` as an ISO-8601 timestam
 rows in the paging metadata, so a consumer can tell "nothing matched" from "nothing recorded":
 
 ```json
-{ "total": 1483, "matched": 91, "page": 1, "pages": 1, "verdicts": [ … ] }
+{ "total": 1483, "matched": 91, "page": 1, "pages": 1, "version": 1763890000123, "verdicts": [ … ] }
 ```
+
+`version` names the snapshot the page was cut from. It is opaque — compare it, never do arithmetic on it. A
+consumer paging through the feed should send page 1's `version` back with every later page
+(`?size=2000&page=2&version=…`): the daemon then cuts that page from the same snapshot, whatever has been
+recorded since, so the read is exact. It keeps the eight snapshots served most recently, each for 60 seconds
+after it was last served, so a read in progress keeps its own. A page asking for a version no longer kept is
+answered `410 Gone` with `{"error": …, "version": …}` — start over from page 1. A `version` that is not a number
+is ignored. Without `version=` a page is cut from the current snapshot, and a consumer should still check that
+every page carries page 1's `version`: if one does not, the store changed between the requests, and a row may
+have slid past the cursor without `matched` changing.
 
 This is the endpoint the ServerPackCreator grinder plugin reads. Use `/export.csv` for a spreadsheet and
 `/verdicts.json` for anything that parses the result.

@@ -23,6 +23,7 @@ import de.flapdoodle.embed.mongo.distribution.Versions
 import de.flapdoodle.embed.mongo.transitions.Mongod
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess
 import de.flapdoodle.embed.mongo.types.StartTimeout
+import de.flapdoodle.embed.process.distribution.Version
 import de.flapdoodle.reverse.TransitionWalker
 import de.flapdoodle.reverse.transitions.Start
 import org.junit.jupiter.api.extension.ConditionEvaluationResult
@@ -63,13 +64,16 @@ class EmbeddedMongoAvailable : ExecutionCondition {
 
     companion object {
         /**
-         * The version these tests pin against — the same line `docker/docker-compose.yml` deploys.
+         * The version these tests pin against: the newest release flapdoodle's Boot 4 integration
+         * (`de.flapdoodle.embed.mongo.spring4x`, version in `gradle/libs.versions.toml`) can download, which
+         * stops at the 8.3 line. It is NOT the line `docker/docker-compose.yml` deploys (9.0), so nothing in
+         * this suite runs against the server production uses; `MongoVersionAlignmentTest` records both lines.
          *
          * Public and `const` so the `@SpringBootTest` annotations can reference it: the probe that decides
          * whether to SKIP and the server the tests actually RUN must be the same version, or the probe
          * validates something the tests never use.
          */
-        const val MONGOD_VERSION = "8.0.5"
+        const val MONGOD_VERSION = "8.3.2"
 
         /** The property flapdoodle's autoconfiguration reads, pre-composed so no annotation spells it twice. */
         const val VERSION_PROPERTY = "de.flapdoodle.mongodb.embedded.version=" + MONGOD_VERSION
@@ -109,14 +113,9 @@ class EmbeddedMongoAvailable : ExecutionCondition {
                                 .initializedWith(StartTimeout.of(START_TIMEOUT_MILLIS))
                         )
                         .start(
-                            // Derived from MONGOD_VERSION rather than named again: flapdoodle spells
-                            // "8.0.5" as the enum constant V8_0_5, and a second literal here is how the
-                            // probe and the tests would come to validate different servers.
-                            Versions.withFeatures(
-                                de.flapdoodle.embed.mongo.distribution.Version.valueOf(
-                                    "V" + MONGOD_VERSION.replace('.', '_')
-                                )
-                            )
+                            // The same construction flapdoodle's Spring autoconfiguration applies to
+                            // VERSION_PROPERTY, so the probe starts exactly the server the tests get.
+                            Versions.withFeatures(Version.of(MONGOD_VERSION))
                         )
                 } finally {
                     running?.close()

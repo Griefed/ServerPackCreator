@@ -99,7 +99,7 @@ These ship a JDK to a user, or tell a user which one to install. None of them re
 | AppImage JDK | [`misc/build-appimage.sh`](build-appimage.sh) | `JDK_VERSION` **and** the pinned `JDK_RELEASE`; `JDK_MAX_GLIBC` beside them is the portability floor, and `misc/AppImage-Portability.md` says what it costs to raise it |
 | install4j minimum | [`spc.install4j`](../spc.install4j) | `javaMinVersion` on `<application>` |
 | install4j bundled JRE | [`spc.install4j`](../spc.install4j) | `<jreBundles jdkProviderId="Adoptium" release="21/jdk-21.0.4+7">`; the three per-media `<jreBundle>` elements inherit it |
-| Docker build stage | [`docker/Dockerfile`](../docker/Dockerfile) | `FROM eclipse-temurin:21-jdk-jammy AS builder` |
+| Docker build stage | [`docker/Dockerfile`](../docker/Dockerfile) | `FROM eclipse-temurin:21-jdk-jammy AS builder`. **Moves with section A, and must not run ahead of it.** Gradle uses the launcher JVM as the toolchain only when the majors match; with any other JDK in the image it downloads a second one from foojay on every uncached build. The build passes `-Porg.gradle.java.installations.auto-download=false`, so a mismatch fails instead, and `renovate.json` plus `.github/dependabot.yml` hold the image to the toolchain's major |
 | Docker runtime stage | [`docker/Dockerfile`](../docker/Dockerfile) | `openjdk-21-jdk-headless` |
 | Documented run command | [`README.md`](../README.md) | `eclipse-temurin:21-jre` |
 
@@ -167,11 +167,15 @@ change to every server pack SPC produces.
   and the GUI/view-model code that reads it
 - [`HELP.md`](../HELP.md) — the `SPC_RECOMMENDED_JAVA_VERSION_SPC` placeholder docs
 - The grinder's boot image: [`serverpackcreator-grinder/docker/Dockerfile`](../serverpackcreator-grinder/docker/Dockerfile)
-  installs `temurin-{8,17,21,25}-jdk` and symlinks `/opt/java-{8,17,21,25}`, and
-  [`ImageJavaRuntimes`](../serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/loader/ImageJavaRuntimes.kt)'s
-  `bundledMajors` must list exactly the same set.
-  **That pairing is hand-maintained with no build-time check** — the Dockerfile says so in a comment, and
-  only `ImageJavaRuntimesTest` guards the behaviour, with its own literal sets.
+  installs `temurin-{8,17,21,25}-jdk` plus Azul's `zulu16-ca-jdk-headless` (Minecraft 1.17/1.17.1 require 16,
+  and Adoptium has no bookworm Temurin 16) and symlinks `/opt/java-{8,16,17,21,25}`, and
+  [`ImageJavaRuntimes`](../serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/boot/ImageJavaRuntimes.kt)'s
+  `IMAGE_BUNDLED_MAJORS` must list exactly the same set. `RuntimeImageJdkSetTest` (grinder) fails the build when
+  the Dockerfile's links and that constant disagree.
+- The clientside-mod verification's boot JDKs are the grinder image's: `clientside-report-reusable.yml` builds
+  that image and boots through the grinder's `--clientside-report`, so a Minecraft release that requires a new
+  major needs it in the Dockerfile and `IMAGE_BUNDLED_MAJORS` (the item above), or its rows read "requires Java N,
+  which the grinder's runtime image does not bundle". The workflow's only `setup-java` is the section-B JDK 21.
 
 The grinder image's `ENV JAVA=/opt/java-21` and `ENV PATH=/opt/java-21/bin:...` are the *default* for a
 boot, also a Minecraft-driven choice rather than SPC's target.

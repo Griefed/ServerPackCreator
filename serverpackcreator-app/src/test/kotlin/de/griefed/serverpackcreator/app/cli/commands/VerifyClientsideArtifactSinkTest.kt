@@ -76,13 +76,20 @@ internal class VerifyClientsideArtifactSinkTest {
     }
 
     /**
-     * [source] with its comments removed, so this guard reads code rather than prose.
-     *
-     * Without it the assertion is satisfied — or broken — by any comment that merely *names* what it
-     * checks, which makes it blind to the deletion it exists to catch. Same helper and same reasoning as
-     * `HtmlProofingTest.withoutComments`.
+     * And the report must carry each target's decisive console, so the issue shows what every verdict was read
+     * from — not only a crash's excerpt. It is looked up where `restoreDecisiveConsole` leaves it.
      */
-    private fun withoutComments(source: String): String = source
-        .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
-        .replace(Regex("""//.*"""), "")
+    @Test
+    fun theReportCarriesEachTargetsDecisiveConsole() {
+        val text = withoutComments(source.readText())
+
+        Assertions.assertTrue(
+            Regex("""renderMarkdown\(\s*report\s*\)\s*\{""").containsMatchIn(text),
+            "the report must be rendered with a console lookup, or the issue gets no boot logs"
+        )
+        Assertions.assertTrue(
+            text.contains("BootVerifier.decisiveConsole("),
+            "the console must be read where BootVerifier leaves the decisive one, not from a path rebuilt here"
+        )
+    }
 }

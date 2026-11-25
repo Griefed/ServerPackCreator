@@ -83,6 +83,32 @@ internal class BootLogClassifierTest {
         }
     }
 
+    /**
+     * `start.sh` falls into `install_java.sh` whenever the `java` it runs is not the pack's
+     * `RECOMMENDED_JAVA_VERSION`. Both refusals below `exit 1` inside the *sourced* script, which ends `start.sh`
+     * before its own `crashServer "Java install-script failed"` can print — so neither reaches a marker the rule
+     * already had, and the exit code alone used to score a host without the right Java as a crash. The first is
+     * what every boot without a terminal prints, because `read` answers the Jabba prompt with an empty line.
+     */
+    @Test
+    fun aRefusedJavaInstallIsASetupAbortNotACrash() {
+        listOf(
+            listOf(
+                "Automated Java installation requires a piece of Software called 'Jabba'.",
+                "Type 'I agree' if you agree to the installation of the aforementioned software.",
+                "Response: User did not agree to Jabba installation. Aborting Java installation process."
+            ),
+            listOf(
+                "Jabba only supports systems with glibc 2.32 & 2.34 onward. You have 2.31. Automated Java installation can not proceed.",
+                "Your variables.txt says you require: temurin@21"
+            )
+        ).forEach { console ->
+            val classified = BootLogClassifier.classify(console, exitCode = 1, timedOut = false, ConsoleRuleSet.EMPTY)
+            Assertions.assertEquals(BootResult.INCONCLUSIVE, classified.result, "not a crash: $console")
+            Assertions.assertEquals(BootDecision.SETUP_ABORT, classified.decidedBy, "a setup abort: $console")
+        }
+    }
+
     @Test
     fun timeoutWithoutReadyIsInconclusive() {
         Assertions.assertEquals(

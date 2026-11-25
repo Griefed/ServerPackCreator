@@ -75,4 +75,25 @@ internal class ClientsideApplyCommandTest {
 
         Assertions.assertTrue(properties.readText().contains("    banana-,\\"))
     }
+
+    /** The Docker image's default properties carry the same list, so an accepted entry lands there too. */
+    @Test
+    fun appliesSuggestedEntriesToTheDockerDefaultsToo(@TempDir tempDir: File) {
+        val report = File(tempDir, "report.json").apply {
+            writeText("""{ "projectUrl": "https://modrinth.com/mod/banana", "suggestedEntries": ["banana-"] }""")
+        }
+        fun propertiesFile(name: String) = File(tempDir, name).apply {
+            writeText("de.griefed.serverpackcreator.configuration.fallbackmodslist=\\\n    apple-,\\\n    mango-\n")
+        }
+        val generationConfig = File(tempDir, "GenerationConfig.kt").apply {
+            writeText("class GenerationConfig {\n    private var fallbackMods = TreeSet(\n        listOf(\n            \"apple-\"\n        )\n    )\n}\n")
+        }
+        val properties = propertiesFile("spc.properties")
+        val dockerProperties = propertiesFile("docker.properties")
+
+        ClientsideApplyCommand().apply(report, generationConfig, properties, dockerProperties)
+
+        Assertions.assertEquals(properties.readText(), dockerProperties.readText())
+        Assertions.assertTrue(dockerProperties.readText().contains("    banana-,\\"))
+    }
 }

@@ -179,19 +179,29 @@ class ClientsideVerifier(
         // an old build was re-published (the aether row that prompted this).
         val sample = target.file
 
-        val jarScan = when {
-            sample.locked -> JarScan.DEFERRED
-            else -> scanSample(sample, target, project)
+        // A throwing scan costs this row its scan and says why; it must not end `report()` and discard the rows
+        // already assessed.
+        val (jarScan, scanFailure) = when {
+            sample.locked -> JarScan.DEFERRED to null
+            else -> try {
+                scanSample(sample, target, project) to null
+            } catch (ex: Exception) {
+                log.warn("Jar-scan for $loader / Minecraft ${target.minecraftLine} failed", ex)
+                JarScan.ERROR to "The jar-scan failed: ${ex.message ?: ex.javaClass.simpleName}"
+            }
         }
 
         // The boot needs the metadata verdict too: a crash that *contradicts* a declared server support is
         // re-checked against other versions of the mod before it may stand (see BootVerifier.verify).
         val declaresServer = declaresServerSupport(project.serverSide, jarScan)
-        val bootOutcome = bootVerifier?.let { verifier ->
+        val bootAttempt = bootVerifier?.let { verifier ->
             runCatching { verifier.verify(project, target, declaresServer) }
                 .onFailure { log.warn("Boot-test for $loader / Minecraft ${target.minecraftLine} failed: ${it.message}") }
-                .getOrNull()
         }
+        val bootOutcome = bootAttempt?.getOrNull()
+        // A throw leaves no outcome to carry a detail, so the row would be an ERROR with no reason at all.
+        val bootFailure = bootAttempt?.exceptionOrNull()
+            ?.let { "The boot-test failed before a verdict could be reached: ${it.message ?: it.javaClass.simpleName}" }
 
         val assessed = verdictOf(project.serverSide, project.clientSide, jarScan, bootOutcome, bootVerifier != null)
         val note = assessed.note
@@ -227,7 +237,7 @@ class ClientsideVerifier(
                 // same precedence `sampleFile` and `bootedLoader` follow: report what ran, and where nothing
                 // ran, report what it was going to be.
                 minecraftVersion = bootOutcome?.minecraftVersion ?: target.minecraftVersion,
-                note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
+                note = listOfNotNull(note, scanFailure, bootOutcome?.detail, bootFailure).joinToString(" ").ifBlank { null }
             ),
             bootDetail = bootOutcome?.detail
         )

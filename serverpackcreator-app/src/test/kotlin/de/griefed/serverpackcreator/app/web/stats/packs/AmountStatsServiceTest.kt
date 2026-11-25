@@ -126,6 +126,25 @@ internal class AmountStatsServiceTest {
         Assertions.assertTrue(stats.modloaderVersions.isEmpty())
     }
 
+    /**
+     * A server pack whose run-configuration reference no longer resolves still counts as a server pack, but
+     * has nothing to tally by; it must not fail the public stats endpoint.
+     */
+    @Test
+    fun aServerPackWithoutARunConfigurationIsLeftOutOfTheTallies() {
+        val unresolved = ServerPack(0, null, null, "pack", null, "modpack1")
+        every { serverPackRepository.findAll() } returns listOf(unresolved, serverPack("1.21.1", "Fabric", "0.16.0"))
+        every { serverPackRepository.count() } returns 2L
+        every { modpackRepository.count() } returns 1L
+        every { runConfigurationRepository.count() } returns 1L
+
+        val stats = amountStatsService.stats
+
+        Assertions.assertEquals(2, stats.serverPacks)
+        Assertions.assertEquals(mapOf("1.21.1" to 1), stats.minecraftVersions)
+        Assertions.assertEquals(mapOf("Fabric" to 1), stats.modloaders)
+    }
+
     /** A modpack, only needed to prove the modpack count is not derived from a scan. */
     @Suppress("unused")
     private fun modPack() = ModPack()

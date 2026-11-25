@@ -1,6 +1,6 @@
 import { releasesEndpoint } from './apiEndpoints'
 import {
-  emptyTally, fetchReleasePage, tallyPage, toDownloads
+  assertWithinPageBound, emptyTally, fetchReleasePage, tallyPage, toDownloads
 } from './releasePages'
 import type { ReleaseDownloadCounter } from './ReleaseDownloadCounter'
 import type {
@@ -42,7 +42,8 @@ export class GitHubDownloadCounter implements ReleaseDownloadCounter {
     let url: string | undefined =
       `${releasesEndpoint(reference)}?per_page=${GITHUB_PAGE_SIZE}&page=1`
 
-    while (url !== undefined) {
+    for (let pagesRead = 0; url !== undefined; pagesRead += 1) {
+      assertWithinPageBound(pagesRead, url)
       const { releases, response } = await fetchReleasePage(url, options, ACCEPT)
       tallyPage(tally, releases)
       url = nextPage(response)

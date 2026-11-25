@@ -462,9 +462,8 @@ class ServerPackProvisioner(
     @Suppress("unused")
     fun preInstallationCleanup(destination: String) {
         log.info("Pre server installation cleanup.")
-        var fileToDelete: File
-        for (file in apiProperties.preInstallCleanupFiles) {
-            fileToDelete = File(destination,file)
+        for (entry in apiProperties.preInstallCleanupFiles) {
+            val fileToDelete = cleanupTarget(destination, entry) ?: continue
             if (fileToDelete.deleteQuietly()) {
                 log.info("Deleted $fileToDelete")
             }
@@ -520,13 +519,28 @@ class ServerPackProvisioner(
     @Suppress("unused")
     fun postInstallCleanup(destination: String) {
         log.info("Cleanup after modloader server installation.")
-        var fileToDelete: File
-        for (file in apiProperties.postInstallCleanupFiles) {
-            fileToDelete = File(destination, file)
+        for (entry in apiProperties.postInstallCleanupFiles) {
+            val fileToDelete = cleanupTarget(destination, entry) ?: continue
             if (fileToDelete.deleteQuietly()) {
                 log.info("  Deleted $fileToDelete")
             }
         }
+    }
+
+    /**
+     * The file a cleanup [entry] names inside [destination], or `null` when it names the server pack itself or
+     * anything outside it. Cleanup deletes directories recursively, so a blank entry (`File(destination, "")` is
+     * the destination), `..`, or a link leading out would otherwise delete the whole pack or files beyond it.
+     * Compared canonically, so links are resolved before the check.
+     */
+    private fun cleanupTarget(destination: String, entry: String): File? {
+        val root = File(destination).canonicalFile
+        val target = File(root, entry).canonicalFile
+        if (target != root && target.toPath().startsWith(root.toPath())) {
+            return target
+        }
+        log.warn("Ignoring cleanup entry '$entry': it names the server pack itself or a path outside it.")
+        return null
     }
 
 

@@ -98,6 +98,7 @@ the `Notify` plugin, which `quasar.conf.js` already enables.
 
 ```
 npm ci && npx quasar dev          # dev server
+npx quasar prepare                # writes .quasar/tsconfig.json, which type-check and test:unit extend
 npm run build                     # collect-downloads, then quasar build into dist/spa
 npm run lint                      # eslint 10, flat config
 npm run type-check                # vue-tsc --noEmit
@@ -139,9 +140,11 @@ asset is `~@/assets/x` and in SCSS `url("@/assets/x")`.
   `Index.vue` carried this for years and was fixed on 2026-10-24; `AddonIndex.vue` and `Error404.vue`
   are plain `<div>`s and must stay that way.
 
-`@quasar/extras` is pinned at **1.18.0 on purpose**: 2.x's `exports` map has no `fontawesome-v5` or
-`mdi-v5`, both of which `quasar.config.js` requests. 1.18.0 already ships the v7 sets, so the
-rename-and-bump is available whenever someone wants it — as one change, not as a side effect.
+`@quasar/extras` 2 ships only the **v7** icon sets — its `exports` map has no `mdi-v5` or
+`fontawesome-v5` — so `quasar.config.js` requests `mdi-v7` and `fontawesome-v7`, and an icon name
+added to a template must exist in those. A request for a set the package no longer carries fails the
+build with `Rolldown failed to resolve import "@quasar/extras/<set>/<set>.css"`. Font Awesome 7 still
+accepts the short `fas`/`far`/`fab` prefixes alongside `fa-solid`/`fa-regular`/`fa-brands`.
 
 The qflashcard app extension must stay at **3.0.0 or newer**: 2.0.0-alpha.4 refuses app-vite 3
 outright (`compatibleWith('@quasar/app-vite', '^1.0.0-alpha.0')`), and its shipped
@@ -161,7 +164,15 @@ repositories are in `src/config/repositories.ts`, which is site configuration, n
   `DEFAULT_PAGING_NUM` — 10 on gitea.com, 30 on git.griefed.de — returning a short page with no error,
   so the counter stops early and reports a confident fraction. Measured against the live forges:
   gitea **6,385 → 907** and forgejo **8,546 → 2,008** from that one constant.
-  `test/services/downloads/gitea-counter.test.js` is the guard.
+  `test/services/downloads/gitea-counter.test.js` is the guard. The 50 is only the default
+  `MAX_RESPONSE_ITEMS`, so paging ends on `X-Total-Count` (both forges send it on the releases route,
+  checked against gitea.com and git.griefed.de) or an empty page, and falls back to "a page shorter
+  than 50" only when the header is absent. Both counters fail after `MAX_PAGES` rather than loop.
+- **A credential is keyed by platform: `countAllDownloads(…, { tokens: { github } })`, never one
+  `token` for the sweep.** `fetchReleasePage` sends a counter's token on every request it makes, so a
+  shared token would reach every forge; `CountAllOptions` has no `token` field and drops one passed
+  untyped. CI's `GITHUB_TOKEN` is a GitHub PAT and goes to `api.github.com` only.
+  `test/services/downloads/count-downloads.test.js` (*credentials*) is the guard.
 - **GitLab is not supported and must not be "added".** It publishes no release-asset download counts
   at all — `assets.links[]` carries `id, name, url, direct_asset_url, link_type` and nothing else, and
   [gitlab#327317](https://gitlab.com/gitlab-org/gitlab/-/issues/327317) has been open since 2021-04-09.
@@ -175,11 +186,19 @@ repositories are in `src/config/repositories.ts`, which is site configuration, n
   figure in the background at most once a day per visitor.
 - **`src/generated/download-counts.json` is gitignored and must stay so.** A committed copy is a second
   place a total is recorded and goes stale — the mistake `docs/versions.json` made. The collector is
-  fail-soft and always exits 0: with every forge unreachable it writes `{"total": null}` and the chip
-  renders "many", because no forge reachable is a different fact from nobody downloading anything.
+  fail-soft and always exits 0, and every request is aborted after `REQUEST_TIMEOUT_MS` (30 s), so a
+  forge that accepts the connection and never answers fails like any other. With every forge
+  unreachable it writes `{"total": null}` and the chip renders "many", because no forge reachable is
+  a different fact from nobody downloading anything.
+  The file is **optional**: `bakedDownloads.ts` reads it through `import.meta.glob`, so a checkout that
+  never ran the collector gets a null total dated at the epoch and the page counts in the browser.
 
 To let the browser refresh include Forgejo, git.griefed.de needs CORS enabled. **That is host
-configuration and is not done.** Nothing breaks without it; the baked figure already includes Forgejo.
+configuration and is not done.** Until it is, `refreshDownloadTotal()` adds the build's Forgejo figure
+to the forges it did reach — a forge the sweep fails to count keeps its baked per-platform figure,
+matched by platform and host, rather than dropping out of the total. The cost is two CORS-failing
+Forgejo requests (the retry) per daily refresh. `test/services/downloads/download-total.test.js` is
+the guard.
 
 ```ini
 [cors]

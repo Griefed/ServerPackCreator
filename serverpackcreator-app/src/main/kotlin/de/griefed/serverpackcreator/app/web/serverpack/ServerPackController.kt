@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack
 
+import de.griefed.serverpackcreator.app.web.DownloadCount
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.FileSystemResource
@@ -26,6 +27,7 @@ import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
@@ -47,22 +49,26 @@ class ServerPackController @Autowired constructor(
 ) {
 
     /**
-     * Download a server pack by its ID.
-     *
-     * Gives the requester the requested file as a download, if it was found.
+     * Download a server pack by its ID, counting the download when the request starts one ([DownloadCount]).
      *
      * @author Griefed
      */
     @GetMapping(value = ["/download/{id:[0-9a-zA-Z]+}"], produces = ["application/zip"])
     @ResponseBody
-    fun downloadServerPack(@PathVariable id: String): ResponseEntity<Resource> {
+    fun downloadServerPack(
+        @PathVariable id: String,
+        @RequestHeader(HttpHeaders.RANGE, required = false) range: String? = null,
+        method: HttpMethod = HttpMethod.GET
+    ): ResponseEntity<Resource> {
         val serverPack = serverPackService.getServerPack(id)
         return if (serverPack.isPresent) {
             val archive = serverPackService.getServerPackArchive(serverPack.get())
             if (archive.isEmpty) {
                 ResponseEntity.notFound().build()
             } else {
-                serverPackService.updateDownloadStats(id)
+                if (DownloadCount.isNewDownload(method, range, archive.get().length())) {
+                    serverPackService.updateDownloadStats(id)
+                }
                 ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType("application/zip"))
                     // Built rather than interpolated -- see ModPackController.downloadModpack. The name here
@@ -86,7 +92,7 @@ class ServerPackController @Autowired constructor(
      * What the browser is told to save the archive as.
      *
      * `ServerPack.fileName` already carries the `_server_pack.zip` suffix `zipBuilder` gave the archive,
-     * so appending another one served it as `..._server_pack.zip_server_pack.zip`. A row that never got
+     * so it is used as it is, with no suffix appended. A row that never got
      * a name falls back to its id, because the header is what the browser writes to disk and
      * `"null_server_pack.zip"` is a real filename a user would end up with.
      */
@@ -106,22 +112,19 @@ class ServerPackController @Autowired constructor(
     @ResponseBody
     fun downloadServerPack(
         @PathVariable modPackId: String,
-        @PathVariable runConfigurationId: String
+        @PathVariable runConfigurationId: String,
+        @RequestHeader(HttpHeaders.RANGE, required = false) range: String? = null,
+        method: HttpMethod = HttpMethod.GET
     ): ResponseEntity<Resource> {
         val modpack = modpackService.getModpack(modPackId)
         if (modpack.isEmpty) {
             return ResponseEntity.notFound().build()
         }
-        var serverpack: ServerPack? = null
-        for (pack in modpack.get().serverPacks) {
-            if (pack.runConfiguration!!.id == runConfigurationId) {
-                serverpack = pack
-            }
-        }
-        if (serverpack == null) {
-            return ResponseEntity.notFound().build()
-        }
-        return downloadServerPack(serverpack.id!!)
+        val serverPackId = modpack.get().serverPacks
+            .lastOrNull { it.runConfiguration?.id == runConfigurationId }
+            ?.id
+            ?: return ResponseEntity.notFound().build()
+        return downloadServerPack(serverPackId, range, method)
     }
 
     /**

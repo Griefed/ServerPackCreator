@@ -611,8 +611,7 @@ jobs:
     name: "News on Discord"
     # One job for both channels: `prepare.outputs.prerelease` chooses the wording.
     #
-    # It announces the GITHUB release, and that is a deliberate reversal of what this job used to do.
-    # Downloads are meant to come from GitHub -- the twelve assets are the bulk of what this project
+    # It announces the GITHUB release. Downloads are meant to come from GitHub -- the twelve assets are the bulk of what this project
     # serves, and every one fetched from git.griefed.de is bandwidth it pays for -- so the announcement
     # must not exist before the release people are being sent to does. Hence `mirror` in `needs:`,
     # which is the job that creates it.
@@ -643,6 +642,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      # For misc/release-assets-complete.py only.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          sparse-checkout: misc
+
       # "Is the release live on GitHub" asked of GitHub, rather than inferred from the mirror job's
       # colour. It also yields the canonical `html_url`, so the announcement links a release that is
       # known to exist instead of a URL assembled out of a version string.
@@ -651,6 +656,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           VERSION: ${{ needs.prepare.outputs.version }}
+          CANONICAL_API: ${{ github.server_url }}/api/v1/repos/${{ github.repository }}
         run: |
           set -eu
           API="https://api.github.com/repos/Griefed/ServerPackCreator"
@@ -666,12 +672,18 @@ jobs:
             exit 1
           fi
           URL="$(python3 -c 'import json;print(json.load(open("gh-release.json"))["html_url"])')"
-          COUNT="$(python3 -c 'import json;print(len(json.load(open("gh-release.json")).get("assets") or []))')"
-          # An announcement that sends people to GitHub for the download has to know the download is
-          # there. `mirror` uploads the assets AFTER creating the release, so a release carrying none
-          # is a half-finished mirror wearing the same green as a finished one.
-          if [ "$COUNT" -eq 0 ]; then
-            echo "::error::The GitHub release for $VERSION exists but carries no assets, so the mirror's upload loop did not finish. Repair and re-run 'Mirror release outward' alone, then re-run this job."
+          # An announcement that sends people to GitHub for the download has to know the WHOLE download
+          # is there. `mirror` uploads the assets one by one after creating the release and stops at the
+          # first failed upload, so a release carrying some of them is as half-finished as one carrying
+          # none. The expected set is the canonical Forgejo release's (a public GET, no token).
+          STATUS="$(curl -sS -o forgejo-release.json -w '%{http_code}' "$CANONICAL_API/releases/tags/$VERSION")"
+          if [ "$STATUS" != "200" ]; then
+            cat forgejo-release.json; echo
+            echo "::error::Forgejo answered HTTP $STATUS for release $VERSION, so the expected asset set is unknown."
+            exit 1
+          fi
+          if ! COUNT="$(python3 misc/release-assets-complete.py forgejo-release.json gh-release.json)"; then
+            echo "::error::The GitHub release for $VERSION is missing assets (listed above), so the mirror's upload loop did not finish. Repair and re-run 'Mirror release outward' alone, then re-run this job."
             exit 1
           fi
           echo "url=$URL" >> "$GITHUB_OUTPUT"

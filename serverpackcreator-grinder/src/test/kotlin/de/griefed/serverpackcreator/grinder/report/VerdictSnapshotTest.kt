@@ -6,6 +6,10 @@ import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
 
 /**
  * Pins the derivation the report caches: that it is reused while the store is unchanged, rebuilt once it
@@ -149,5 +153,54 @@ internal class VerdictSnapshotTest {
 
         Assertions.assertNotEquals(afterFirst, store.version, "a replacement changes what the report must show")
         Assertions.assertEquals(1, store.all().size, "…while leaving the row count identical")
+    }
+
+    /** A store whose first [all] parks until [release], so a test can land a record inside another build. */
+    private class ParkingStore(private val delegate: VerdictStore = InMemoryVerdictStore()) : VerdictStore {
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        private val parked = AtomicBoolean(false)
+
+        override fun record(verdict: GrindVerdict) = delegate.record(verdict)
+
+        override fun all(): List<GrindVerdict> {
+            if (parked.compareAndSet(false, true)) {
+                entered.countDown()
+                release.await(10, TimeUnit.SECONDS)
+            }
+            return delegate.all()
+        }
+
+        override val count: Int get() = delegate.count
+
+        override val version: Long get() = delegate.version
+    }
+
+    /**
+     * **Two snapshots holding different rows never share a version** — the property a paging client relies on
+     * when it treats equal versions as "same rows". The store's own counter cannot give it: the cache reads it
+     * before the rows, so a build that read the counter, then saw a record land before its rows were copied,
+     * holds newer rows under the same store version as a concurrent build that copied the older ones.
+     */
+    @Test
+    fun snapshotsHoldingDifferentRowsNeverShareAVersion() {
+        val store = ParkingStore()
+        store.record(grindVerdict(slug = "jei", loader = "Forge", verdict = Verdict.CLEAR))
+        val cache = VerdictSnapshotCache(store, maxAge = Duration.ZERO)
+
+        var slow: VerdictSnapshot? = null
+        val builder = thread { slow = cache.current() }
+        Assertions.assertTrue(store.entered.await(10, TimeUnit.SECONDS), "the parked build never started")
+        val fast = cache.current()
+        store.record(grindVerdict(slug = "create", loader = "Forge", verdict = Verdict.CLEAR))
+        store.release.countDown()
+        builder.join(10_000)
+
+        val parked = checkNotNull(slow) { "the parked build never finished" }
+        Assertions.assertNotEquals(fast.verdicts.size, parked.verdicts.size, "the fixture did not race the record")
+        Assertions.assertNotEquals(
+            fast.version, parked.version,
+            "two snapshots with different rows carry one version, so a client would merge pages across them"
+        )
     }
 }

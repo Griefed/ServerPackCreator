@@ -108,7 +108,7 @@ interface ModPlatform {
  *
  * @author Griefed
  */
-fun supportedPlatforms(curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY")): List<ModPlatform> {
+fun supportedPlatforms(curseForgeApiKey: String? = CurseForgeApiKey.fromEnvironment): List<ModPlatform> {
     val platforms = mutableListOf<ModPlatform>(ModrinthPlatform())
     if (!curseForgeApiKey.isNullOrBlank()) {
         platforms.add(CurseForgePlatform(curseForgeApiKey))

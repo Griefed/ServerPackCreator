@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
 import de.griefed.serverpackcreator.clientside.verdict.ConsoleRuleFile
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
@@ -64,12 +65,9 @@ object GrinderApplication {
      * Run one startup step and report what it cost, so a slow boot names its own cause.
      *
      * Every step between `ApiWrapper.setup()` and `ReportServer.start()` is dead time before the report
-     * answers, and until this existed none of them said anything unless it had work to report: a sweep that
-     * reclaims nothing, a migration that moves nothing and a store that loads cleanly are all silent. A live
-     * daemon was measured taking **4,868 s** between its last setup line and its bind, with no line in between
-     * from any thread, which left the cause unattributable from the journal — the one place this module's own
-     * guidance sends a reader. Unconditional and at INFO, because the number is only useful when it is already
-     * there for the boot that went wrong, not for the one somebody enabled DEBUG to reproduce.
+     * answers, and a step with no work to report (a sweep that reclaims nothing, a store that loads cleanly) is
+     * otherwise silent, which leaves a slow start unattributable from the journal. Unconditional and at INFO,
+     * because the number is only useful when it is already there for the boot that went wrong.
      */
     private inline fun <T> phase(what: String, step: () -> T): T {
         val startedAt = System.nanoTime()
@@ -81,7 +79,8 @@ object GrinderApplication {
     /**
      * Entry point. `--requeue <url>…`, `--requeue-before <instant>` and `--requeue-since <instant>` add work to
      * the immediate re-grind queue and exit without grinding, so they can be run against a service that is
-     * already up. With project
+     * already up. `--clientside-report <url> --output <file>` verifies one project, writes its clientside report
+     * and exits ([ClientsideReportRun]). With project
      * URLs as [args] it grinds exactly those once and exits; with none it runs
      * continuously, taking the next catalogue slice each pass and persisting verdicts and crawl position after every
      * step so a restart resumes mid-catalogue. Everything else is read from the environment — see README §5.
@@ -113,6 +112,15 @@ object GrinderApplication {
         // daemon runs on -- and gets remembered in the Preferences node for every run after it.
         claimSpcPreferencesNode()
         pinSpcHomeDirectory(base)
+        // Verify one project, write its clientside report and exit: after the claims, because it boots an
+        // ApiWrapper and logs; before everything below, because it records nothing and serves nothing.
+        if (args.firstOrNull() == ClientsideReportRun.FLAG) {
+            val request = ClientsideReportRun.parse(args) ?: run {
+                System.err.println(ClientsideReportRun.USAGE)
+                exitProcess(2)
+            }
+            exitProcess(ClientsideReportRun.execute(config, base, request.first, request.second))
+        }
 
         val image = config.image
         val workDir = config.work.apply { mkdirs() }
@@ -222,6 +230,8 @@ object GrinderApplication {
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
             resources = containerResources, containerUser = containerUser, crashLogs = crashLogs,
             consoleRules = consoleRules::current,
+            // The key the CurseForge source below uses, so the two cannot disagree about whether CurseForge exists.
+            curseForgeApiKey = config.curseForgeApiKey,
             // Shared across every grind and backed by a file, so what one candidate's jars prove about a
             // mod id survives both the next candidate and the next restart.
             learnedModIds = JsonLearnedModIds(config.learnedIds).ids,

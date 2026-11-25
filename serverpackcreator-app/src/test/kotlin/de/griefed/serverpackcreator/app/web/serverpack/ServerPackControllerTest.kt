@@ -75,11 +75,10 @@ internal class ServerPackControllerTest {
     }
 
     /**
-     * Until this guard, `ServerPack.fileName` held the generated archive's **absolute path** and the
-     * controller appended `_server_pack.zip` to it, so every downloader was told to save
-     * `/srv/spc/server-packs/My Pack_server_pack.zip_server_pack.zip` -- the server's filesystem layout
-     * plus a doubled suffix. It stayed green because the only fixture was a bare name no production row
-     * ever carries.
+     * A legacy row stores the generated archive's absolute path in `fileName`. The header must carry only its
+     * base name, already suffixed, so neither the server's filesystem layout nor a doubled
+     * `_server_pack.zip` reaches the downloader. The fixture is production-shaped on purpose: a bare name
+     * cannot fail this.
      */
     @Test
     fun theServedNameIsTheArchivesBaseNameNotTheServersPath(@TempDir tempDir: File) {
@@ -114,7 +113,8 @@ internal class ServerPackControllerTest {
         every { serverPackService.updateDownloadStats("serverpack1") } returns Optional.of(pack)
 
         val disposition = mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/serverpack1"))
-            .andReturn().response.getHeader("Content-Disposition")!!
+            .andReturn().response.getHeader("Content-Disposition")
+            ?: Assertions.fail<String>("the response carries no Content-Disposition header")
 
         // Asserted on the RAW header for the reason ArchiveStreamingTest records: ContentDisposition.parse
         // recovers the same filename from the escaped and the unescaped form alike, so a round-trip
@@ -140,7 +140,8 @@ internal class ServerPackControllerTest {
         every { serverPackService.updateDownloadStats("serverpack1") } returns Optional.of(pack)
 
         val disposition = mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/serverpack1"))
-            .andReturn().response.getHeader("Content-Disposition")!!
+            .andReturn().response.getHeader("Content-Disposition")
+            ?: Assertions.fail<String>("the response carries no Content-Disposition header")
 
         Assertions.assertEquals("attachment; filename=\"serverpack1_server_pack.zip\"", disposition)
     }
@@ -215,6 +216,32 @@ internal class ServerPackControllerTest {
 
         every { modpackService.getModpack("88") } returns Optional.empty()
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/88&55"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    /**
+     * A modpack can hold a server pack whose run-configuration is unset; looking another pack up by its
+     * run-configuration must skip it rather than fail the request.
+     */
+    @Test
+    fun aServerPackWithoutARunConfigurationDoesNotBreakTheLookupOfAnother(@TempDir tempDir: File) {
+        val archive = File(tempDir, "pack.zip")
+        archive.writeText("zip-content")
+        val runConfiguration = RunConfiguration()
+        assignEntityId(runConfiguration, "55")
+        val pack = serverPack("serverpack1")
+        pack.runConfiguration = runConfiguration
+        val modpack = ModPack()
+        assignEntityId(modpack, "77")
+        modpack.serverPacks.add(serverPack("unconfigured"))
+        modpack.serverPacks.add(pack)
+        every { modpackService.getModpack("77") } returns Optional.of(modpack)
+        every { serverPackService.getServerPack("serverpack1") } returns Optional.of(pack)
+        every { serverPackService.getServerPackArchive(pack) } returns Optional.of(archive)
+        every { serverPackService.updateDownloadStats("serverpack1") } returns Optional.of(pack)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/77&55"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v2/serverpacks/download/77&56"))
             .andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 

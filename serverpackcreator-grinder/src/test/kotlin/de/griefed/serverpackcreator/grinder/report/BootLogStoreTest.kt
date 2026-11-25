@@ -22,7 +22,9 @@ package de.griefed.serverpackcreator.grinder.report
 import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.boot.BootArtifacts
 import de.griefed.serverpackcreator.grinder.ModPlatforms
+import org.apache.logging.log4j.Level
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -306,5 +308,27 @@ internal class BootLogStoreTest {
     @Test
     fun anUnknownTupleHasNoLogs() {
         Assertions.assertTrue(store().namesFor(ModPlatforms.MODRINTH, "never-ground", "Forge", "1.20").isEmpty())
+    }
+
+    @Test
+    fun anUnreadableKeptLogIsNamedRatherThanReadAsAbsent() {
+        val kept = store().keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge", "1.20"),
+            attempt(),
+            artifacts(BootArtifacts.CONSOLE_NAME)
+        )
+        val name = kept.single()
+        val file = File(directory, name)
+        Assumptions.assumeTrue(file.setReadable(false), "This filesystem must honour setReadable(false)")
+        Assumptions.assumeFalse(file.canRead(), "and the process must not be able to read it anyway (not root)")
+        try {
+            val warnings = capturingLogsOf(BootLogStore::class.java) { captured ->
+                Assertions.assertNull(store().read(name))
+                captured.messagesAt(Level.WARN)
+            }
+            Assertions.assertTrue(warnings.any { name in it }, "WARN names the unreadable log: $warnings")
+        } finally {
+            file.setReadable(true)
+        }
     }
 }

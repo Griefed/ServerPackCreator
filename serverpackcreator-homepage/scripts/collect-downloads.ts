@@ -15,7 +15,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { countAllDownloads } from '../src/services/downloads/index'
+import { countAllDownloads, type GeneratedDownloads } from '../src/services/downloads/index'
 import {
   SERVERPACKCREATOR_HOSTS, SERVERPACKCREATOR_OWNER, SERVERPACKCREATOR_REPOSITORY
 } from '../src/config/repositories'
@@ -26,13 +26,14 @@ const OUTPUT = resolve(
 )
 
 async function main(): Promise<void> {
-  let payload
+  let payload: GeneratedDownloads
 
   try {
     const report = await countAllDownloads(SERVERPACKCREATOR_OWNER, SERVERPACKCREATOR_REPOSITORY, {
       hosts: SERVERPACKCREATOR_HOSTS,
-      // Raises GitHub's anonymous ceiling when CI provides one; absent is fine.
-      ...(process.env.GITHUB_TOKEN ? { token: process.env.GITHUB_TOKEN } : {})
+      // Raises GitHub's anonymous ceiling when CI provides one; absent is fine. Keyed to GitHub so
+      // the token never reaches gitea.com or git.griefed.de.
+      ...(process.env.GITHUB_TOKEN ? { tokens: { github: process.env.GITHUB_TOKEN } } : {})
     })
 
     for (const platform of report.platforms) {

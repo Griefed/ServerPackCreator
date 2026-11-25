@@ -89,3 +89,8 @@ updates:
     target-branch: "develop"
     pull-request-branch-name:
       separator: "-"
+    # docker/Dockerfile's builder JDK moves with the Gradle toolchain (gradle/libs.versions.toml `java`),
+    # never on its own: renovate.json carries the same bound, and the build fails if the two diverge.
+    ignore:
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]

@@ -35,6 +35,66 @@ internal class CommandlineParserTest {
     }
 
     /**
+     * A flag is a whole argument. A project link or a path that merely *contains* one is a value: the
+     * verification workflow passes `-verifyclientside <link>`, and `inventory-helper` contains `-help`.
+     */
+    @Test
+    fun anArgumentThatOnlyContainsAFlagSelectsNothing() {
+        for (link in listOf("https://modrinth.com/mod/inventory-helper", "https://www.curseforge.com/minecraft/mc-mods/auto-update")) {
+            val parsed = parse("-verifyclientside", link, "--output", "report.md")
+            Assertions.assertEquals(Mode.VERIFY_CLIENTSIDE, parsed.mode, link)
+            Assertions.assertEquals(link, parsed.clientsideVerifyLink.get())
+        }
+        Assertions.assertEquals(Mode.CONFIG, parse("-config", "/packs/pack-cgen/server.conf").mode)
+    }
+
+    @Test
+    fun aFlagMayBeWrittenWithTwoDashes() {
+        Assertions.assertEquals(Mode.HELP, parse("--help").mode)
+        Assertions.assertEquals(Mode.UPDATE, parse("--update").mode)
+    }
+
+    /** One matching rule for every mode: the clientside verbs and `-lang` accept two dashes like the rest. */
+    @Test
+    fun everyModeFlagAcceptsOneOrTwoDashes(@TempDir tempDir: File) {
+        val verify = parse("--verifyclientside", "https://modrinth.com/mod/sodium")
+        Assertions.assertEquals(Mode.VERIFY_CLIENTSIDE, verify.mode)
+        Assertions.assertEquals("https://modrinth.com/mod/sodium", verify.clientsideVerifyLink.get())
+
+        val report = parse("--clientsidereport", "https://modrinth.com/mod/sodium")
+        Assertions.assertEquals(Mode.CLIENTSIDE_REPORT, report.mode)
+        Assertions.assertEquals("https://modrinth.com/mod/sodium", report.clientsideLink.get())
+
+        val scan = parse("--scan", tempDir.absolutePath)
+        Assertions.assertEquals(Mode.SCAN, scan.mode)
+        Assertions.assertEquals(tempDir, scan.scanDirectory.get())
+
+        val apply = parse("--clientsideapply", "--report", "report.json")
+        Assertions.assertEquals(Mode.CLIENTSIDE_APPLY, apply.mode)
+        Assertions.assertEquals("report.json", apply.clientsideApplyReport.get())
+
+        Assertions.assertEquals("en_us", parse("--lang", "en_us", "-cli").language.toString())
+    }
+
+    /** The rule is one or two dashes, not any number: `---help` is not a flag at all. */
+    @Test
+    fun threeDashesAreNotAFlag() {
+        Assertions.assertNotEquals(Mode.HELP, parse("---help").mode)
+        Assertions.assertNotEquals(Mode.VERIFY_CLIENTSIDE, parse("---verifyclientside", "link").mode)
+    }
+
+    /** `--home` is declared with two dashes, and the shared rule accepts it with one as well. */
+    @Test
+    fun homeAcceptsOneDash(@TempDir tempDir: File) {
+        val previous = HomeDirectoryPreference.stored()
+        try {
+            Assertions.assertEquals(tempDir.absoluteFile, parse("-home", tempDir.absolutePath, "-cli").homeDir.get())
+        } finally {
+            previous?.let { HomeDirectoryPreference.store(it) }
+        }
+    }
+
+    /**
      * Pins the priority ordering: HELP wins over UPDATE, UPDATE wins over CLI, and
      * WITHALLINCONFIGDIR wins over CONFIG, regardless of argument order on the commandline.
      */
@@ -211,6 +271,13 @@ internal class CommandlineParserTest {
         val parser = parse("-lang", "en_us", "-cli")
         Assertions.assertEquals("en_us", parser.language.toString())
         Assertions.assertNull(parse("-cli").language)
+    }
+
+    /** A trailing `-lang` has no value to read: it sets no language, and must not abort startup. */
+    @Test
+    fun langAsTheLastArgumentSetsNoLanguage() {
+        val parser = Assertions.assertDoesNotThrow<CommandlineParser> { parse("-cli", "-lang") }
+        Assertions.assertNull(parser.language)
     }
 
     /**

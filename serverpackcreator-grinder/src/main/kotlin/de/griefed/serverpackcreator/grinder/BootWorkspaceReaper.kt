@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.boot.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.boot.ModWritableTree
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -29,7 +30,7 @@ import java.io.File
  * Staging leaves a full server pack (with the overlaid loader libraries) plus the mod jars it downloaded under
  * `<work>/boot/<attempt>` and `<work>/verify/<attempt>`. Those directories are only ever deleted when the *same*
  * attempt is staged again, which for a catalog sweep is never — every attempt is a new tuple, so without this the
- * work tree grows without bound, measured live at **98 GB across 1750 attempt directories, ~23 GB/h**.
+ * work tree grows without bound, by a full server pack per attempt.
  *
  * **Nothing is kept here, the console included.** Retention belongs to the
  * [de.griefed.serverpackcreator.grinder.report.BootLogStore], which copies the consoles worth keeping *during*
@@ -83,31 +84,27 @@ class BootWorkspaceReaper(
      * Delete [attemptDir] and everything in it, returning the bytes known to have gone. Failures are logged and
      * swallowed — reclaiming disk must never fail a grind, and whatever survives is retried by the next sweep.
      *
-     * Entry by entry rather than one [deleteRecursively] on the directory, so an entry that cannot be removed
-     * contributes nothing to the total instead of making the whole attempt's bytes unreportable.
+     * Entry by entry rather than one delete of the directory, so an entry that cannot be removed contributes
+     * nothing to the total instead of making the whole attempt's bytes unreportable. The serverpack was written
+     * by the booted mod, so sizing and deleting go through [ModWritableTree] and never follow a link it planted.
      */
     private fun reclaim(attemptDir: File): Long {
         var reclaimed = 0L
         for (entry in attemptDir.listFiles() ?: emptyArray()) {
-            val size = entry.sizeRecursively()
-            if (entry.deleteRecursively()) {
+            val size = ModWritableTree.sizeOf(entry)
+            if (ModWritableTree.deleteRecursively(entry)) {
                 reclaimed += size
             } else {
                 log.warn("Could not reclaim ${entry.absolutePath}; it will be retried on the next sweep.")
             }
         }
-        // The directory itself goes too. One surviving inode per attempt IS the unbounded growth this class
-        // exists to prevent: 255,591 of them had accumulated on the live daemon by 2026-11-09, and startup
-        // walks that tree before the report server can bind.
+        // The directory itself goes too. One surviving inode per attempt is unbounded growth, and startup walks
+        // that tree before the report server can bind.
         if (attemptDir.listFiles()?.isEmpty() == true && !attemptDir.delete()) {
             log.warn("Could not remove ${attemptDir.absolutePath}; it will be retried on the next sweep.")
         }
         return reclaimed
     }
-
-    /** Total size of a file, or of every file beneath a directory. */
-    private fun File.sizeRecursively(): Long =
-        if (isDirectory) walkTopDown().filter { it.isFile }.sumOf { it.length() } else length()
 
     /** The staging-directory layout constants the reaper matches on. */
 

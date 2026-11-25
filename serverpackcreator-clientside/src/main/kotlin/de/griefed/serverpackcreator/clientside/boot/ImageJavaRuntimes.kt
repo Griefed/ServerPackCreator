@@ -1,0 +1,177 @@
+/* Copyright (C) 2026 Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.clientside.boot
+
+import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import java.io.File
+
+/**
+ * Whether the runtime image can boot a given Minecraft version, and when it cannot, **why**.
+ *
+ * The two failing cases are deliberately separate. [JDK_NOT_BUNDLED] is a decision — the image ships a fixed JDK
+ * set and this version needs one outside it — so reporting the version as skipped is accurate. [REQUIREMENT_UNKNOWN]
+ * is an *absence of information*: SPC could not tell us what the version needs, which
+ * `MinecraftServer.javaVersion()` also returns when the per-version manifest is missing and its download fails.
+ * Presenting that as "not applicable" is how the newest Minecraft versions quietly dropped out of the template
+ * matrix while it still reported green.
+ */
+enum class ImageSupport {
+    /** The required Java major is known and bundled — the version can be booted. */
+    SUPPORTED,
+
+    /** The required Java major is known, but this image does not ship it. A legitimate, permanent exclusion. */
+    JDK_NOT_BUNDLED,
+
+    /** Nothing is known about the version's Java requirement. A metadata failure, not an exclusion. */
+    REQUIREMENT_UNKNOWN
+}
+
+/**
+ * Decides which bundled JDK boots a given Minecraft version, and whether the runtime image can run it
+ * at all — the grinder's image ([from]), or the JDKs installed on the host booting a pack ([installed]).
+ * The required Java major comes from SPC's own version metadata
+ * ([MinecraftMeta.requiredJavaVersion]) — Mojang's *declared* server requirement — not a hand-rolled
+ * heuristic, so it stays correct across Minecraft versioning-scheme changes. The image ships a fixed
+ * JDK set ([bundledMajors], default [IMAGE_BUNDLED_MAJORS]); a version whose required
+ * Java isn't bundled is reported **unsupported** so the grinder skips it. Skipping (rather than booting
+ * on the wrong JDK) is the whole point: a Java-version crash would otherwise be mis-scored as a
+ * clientside crash (a false HIGH).
+ *
+ * @author Griefed
+ */
+class ImageJavaRuntimes(
+    /**
+     * Maps a Minecraft version to its required Java major, or `null` when unknown. Injected (not bound to
+     * [MinecraftMeta]) so the gate is unit-testable.
+     */
+    private val requiredJavaMajor: (String) -> Int?,
+    /** The Java majors available to boot with — for the grinder's image, exactly what its Dockerfile installs. */
+    private val bundledMajors: Set<Int> = IMAGE_BUNDLED_MAJORS,
+    /** The `java` binary of a bundled major; the grinder image's `/opt/java-<major>` symlinks by default. */
+    private val javaPathFor: (Int) -> String = { major -> "/opt/java-$major/bin/java" }
+) {
+    /** True when [minecraftVersion]'s required Java major is both known and bundled in the image. */
+    fun supports(minecraftVersion: String): Boolean = supportFor(minecraftVersion) == ImageSupport.SUPPORTED
+
+    /** The Java major [minecraftVersion]'s server requires, or `null` when SPC does not know it. */
+    fun requiredJava(minecraftVersion: String): Int? = requiredJavaMajor(minecraftVersion)
+
+    /**
+     * *Why* [minecraftVersion] can or cannot be booted here, which [supports] necessarily throws away by
+     * answering a single boolean. Callers that report to a human need the distinction: a missing JDK is a
+     * permanent, honest exclusion, whereas an unknown requirement means the metadata lookup failed and any
+     * "skipped" message built from it is claiming knowledge nobody has.
+     */
+    fun supportFor(minecraftVersion: String): ImageSupport {
+        val required = requiredJavaMajor(minecraftVersion) ?: return ImageSupport.REQUIREMENT_UNKNOWN
+        return if (required in bundledMajors) ImageSupport.SUPPORTED else ImageSupport.JDK_NOT_BUNDLED
+    }
+
+    /** The in-image `java` binary path for [minecraftVersion], or `null` when its Java isn't bundled. */
+    fun javaPath(minecraftVersion: String): String? =
+        requiredJavaMajor(minecraftVersion)
+            ?.takeIf { it in bundledMajors }
+            ?.let(javaPathFor)
+
+    /**
+     * A bundled JDK for running modloader **installers**, which can require a newer Java than the server
+     * they install — the Quilt installer needs 17+ even for Minecraft 1.16.1, which itself must run on
+     * Java 8. Returns the newest bundled major that is at least [minimumInstallerJava], or `null` if the
+     * image ships nothing new enough. The pack's `JAVA` (the server's Java) is left untouched.
+     */
+    fun installerJavaPath(minimumInstallerJava: Int = MINIMUM_INSTALLER_JAVA): String? =
+        bundledMajors.filter { it >= minimumInstallerJava }.maxOrNull()?.let(javaPathFor)
+
+    /**
+     * The installer JDK **only when [minecraftVersion] actually needs one** — i.e. when the server's own
+     * Java is older than [minimumInstallerJava]. For a modern Minecraft the server JDK already satisfies
+     * every installer, so this returns `null` and the pack is left without a `JAVA_INSTALLER` entry, which
+     * is exactly what a hand-made pack looks like. Keeping the common case on the templates' plain
+     * `JAVA` fallback means that fallback stays the *exercised* path rather than dead weight.
+     */
+    fun installerJavaPathFor(minecraftVersion: String, minimumInstallerJava: Int = MINIMUM_INSTALLER_JAVA): String? {
+        val serverJava = requiredJavaMajor(minecraftVersion) ?: return null
+        return if (serverJava >= minimumInstallerJava) null else installerJavaPath(minimumInstallerJava)
+    }
+
+    /** The installer-Java floor, and the factories for the grinder's image and for a host's installed JDKs. */
+    companion object {
+        /**
+         * Minimum Java the modloader installers need. Set by the Quilt installer, which refuses to run on
+         * anything older ("Quilt Installer requires Java 17 or greater to run.") — found by booting the
+         * template matrix on Minecraft 1.16.1, whose server Java is 8.
+         */
+        const val MINIMUM_INSTALLER_JAVA = 17
+
+        /**
+         * The Java majors the grinder's runtime image installs as `/opt/java-<major>`. `serverpackcreator-grinder`'s
+         * `RuntimeImageJdkSetTest` holds `docker/Dockerfile` to exactly this set.
+         */
+        val IMAGE_BUNDLED_MAJORS: Set<Int> = setOf(8, 16, 17, 21, 25)
+
+        /**
+         * Build from SPC's version metadata: the required Java comes straight from Mojang's server
+         * manifest via [MinecraftMeta.requiredJavaVersion] (a stringified major), parsed to an Int.
+         */
+        fun from(minecraftMeta: MinecraftMeta, bundledMajors: Set<Int> = IMAGE_BUNDLED_MAJORS): ImageJavaRuntimes =
+            ImageJavaRuntimes(
+                requiredJavaMajor = requiredJavaOf(minecraftMeta),
+                bundledMajors = bundledMajors
+            )
+
+        /** The JDKs installed on a host, as their homes keyed by major, with the requirement from SPC's metadata. */
+        fun installed(minecraftMeta: MinecraftMeta, javaHomes: Map<Int, File>): ImageJavaRuntimes =
+            installed(requiredJavaOf(minecraftMeta), javaHomes)
+
+        /** The JDKs installed on a host, as their homes keyed by major. */
+        fun installed(requiredJavaMajor: (String) -> Int?, javaHomes: Map<Int, File>): ImageJavaRuntimes =
+            ImageJavaRuntimes(requiredJavaMajor, javaHomes.keys) { major -> File(javaHomes.getValue(major), "bin/java").path }
+
+        /**
+         * The JDK homes [environment] advertises as `JAVA_HOME_<major>_<arch>`, keyed by major — the convention of
+         * GitHub's runner images and of `actions/setup-java`, which sets one per version it installs. A major advertised
+         * for several architectures resolves to the one matching [hostArch] (`os.arch` spelling), else to the first by
+         * variable name, so the answer never depends on the environment's iteration order.
+         */
+        fun javaHomesIn(environment: Map<String, String>, hostArch: String = System.getProperty("os.arch")): Map<Int, File> {
+            val hostToken = ARCH_TOKENS[hostArch.lowercase()]
+            return environment.entries
+                .mapNotNull { (name, home) ->
+                    val match = ADVERTISED_JAVA_HOME.matchEntire(name) ?: return@mapNotNull null
+                    val major = match.groupValues[1].toIntOrNull()?.takeIf { home.isNotBlank() } ?: return@mapNotNull null
+                    Triple(major, match.groupValues[2].uppercase(), name to File(home))
+                }
+                .groupBy({ it.first }, { it.second to it.third })
+                .mapValues { (_, candidates) ->
+                    candidates.sortedWith(compareBy({ it.first != hostToken }, { it.second.first })).first().second.second
+                }
+        }
+
+        private val ADVERTISED_JAVA_HOME = Regex("JAVA_HOME_(\\d+)_([A-Za-z0-9]+)")
+
+        /** `os.arch` values mapped to the architecture token the runner images put in `JAVA_HOME_<major>_<arch>`. */
+        private val ARCH_TOKENS = mapOf(
+            "amd64" to "X64", "x86_64" to "X64", "aarch64" to "ARM64", "arm64" to "ARM64"
+        )
+
+        private fun requiredJavaOf(minecraftMeta: MinecraftMeta): (String) -> Int? =
+            { minecraftMeta.requiredJavaVersion(it).orElse(null)?.toIntOrNull() }
+    }
+}

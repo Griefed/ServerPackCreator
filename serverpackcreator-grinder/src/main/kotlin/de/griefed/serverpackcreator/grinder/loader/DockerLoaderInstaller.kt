@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
+import de.griefed.serverpackcreator.clientside.boot.ImageJavaRuntimes
+import de.griefed.serverpackcreator.clientside.boot.PackVariables
 import de.griefed.serverpackcreator.grinder.container.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -101,16 +103,8 @@ class DockerLoaderInstaller(
             // pack's tuple directory survives until that tuple is regenerated.
             val installLog = File(pack.parentFile ?: target, installLogName)
             log.info("Installing $loader $loaderVersion / Minecraft $minecraftVersion — live console: ${installLog.absolutePath}")
-            val liveLog = runCatching { installLog.bufferedWriter() }.getOrNull()
-            val output = try {
-                engine.run(spec, readyLine, installTimeout) { line ->
-                    runCatching {
-                        liveLog?.appendLine(line)
-                        liveLog?.flush()
-                    }
-                }
-            } finally {
-                runCatching { liveLog?.close() }
+            val output = LiveInstallLog(installLog).use { liveLog ->
+                engine.run(spec, readyLine, installTimeout) { line -> liveLog.append(line) }
             }
 
             val copied = InstallLayerSnapshot.copyInstallLayer(pack, preBoot, target)

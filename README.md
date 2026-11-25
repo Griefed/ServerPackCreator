@@ -655,10 +655,16 @@ Do note the `- ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro` in the **
 An example for this file is available at [docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
 the MongoDB with the required user, database and collection.
 
+**Upgrading from MongoDB 8.0:** the example deploys MongoDB 9.0. An existing 8.0 database
+volume opens under 9.0 in place only if its `featureCompatibilityVersion` is `"8.0"`; check it with
+`db.adminCommand({getParameter: 1, featureCompatibilityVersion: 1})` before switching the image, and follow
+MongoDB's [Upgrade a Standalone to 9.0](https://www.mongodb.com/docs/manual/release-notes/9.0-upgrade-from-8.0-standalone/)
+if it is lower. A volume created by 9.0 cannot be opened by 8.0 again.
+
 ```yaml
 services:
   serverpackcreatordb:
-    image: mongodb/mongodb-community-server:8.0.34-ubuntu2204
+    image: mongodb/mongodb-community-server:9.0.8-ubuntu2204
     container_name: serverpackcreatordb
     restart: unless-stopped
     environment:

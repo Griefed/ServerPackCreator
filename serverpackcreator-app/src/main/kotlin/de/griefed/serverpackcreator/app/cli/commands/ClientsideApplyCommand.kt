@@ -50,6 +50,8 @@ class ClientsideApplyCommand : Command {
         "serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/settings/GenerationConfig.kt"
     private val defaultProperties =
         "serverpackcreator-api/src/main/resources/serverpackcreator.properties"
+    private val defaultDockerProperties =
+        "docker/root/defaults/serverpackcreator.properties"
 
     /** The report-JSON (the block the verify-workflow embeds in its comment), supplied via option. */
     @CommandLine.Option(
@@ -73,17 +75,34 @@ class ClientsideApplyCommand : Command {
     )
     private var properties: String? = null
 
+    @CommandLine.Option(
+        names = ["--docker-properties"],
+        description = ["Path to the Docker image's default serverpackcreator.properties (defaults to the in-repo location)."],
+        required = false
+    )
+    private var dockerProperties: String? = null
+
     /** Insert an accepted report's entries into the shipped clientside list and `serverpackcreator.properties`. Pure editing — nothing is staged or committed. */
     override fun run() {
-        apply(File(report ?: return), generationConfig?.let { File(it) }, properties?.let { File(it) })
+        apply(
+            File(report ?: return),
+            generationConfig?.let { File(it) },
+            properties?.let { File(it) },
+            dockerProperties?.let { File(it) }
+        )
     }
 
     /**
      * Read the suggested entries (and the project-link used as their documenting comment) from
      * [reportFile] and insert any new ones into the fallback-list files, defaulting to their in-repo
-     * locations when [generationConfigFile]/[propertiesFile] are not given.
+     * locations when [generationConfigFile]/[propertiesFile]/[dockerPropertiesFile] are not given.
      */
-    fun apply(reportFile: File, generationConfigFile: File? = null, propertiesFile: File? = null) {
+    fun apply(
+        reportFile: File,
+        generationConfigFile: File? = null,
+        propertiesFile: File? = null,
+        dockerPropertiesFile: File? = null
+    ) {
         val report = objectMapper.readTree(reportFile.readText())
         val projectUrl = report.path("projectUrl").asText(null)
         val entries = report.path("suggestedEntries").map { Entry(it.asText(), projectUrl) }
@@ -94,6 +113,7 @@ class ClientsideApplyCommand : Command {
 
         editFile(generationConfigFile ?: File(defaultGenerationConfig)) { ClientsideListEditor.addToKotlin(it, entries) }
         editFile(propertiesFile ?: File(defaultProperties)) { ClientsideListEditor.addToProperties(it, entries) }
+        editFile(dockerPropertiesFile ?: File(defaultDockerProperties)) { ClientsideListEditor.addToProperties(it, entries) }
         println("Applied ${entries.size} entr${if (entries.size == 1) "y" else "ies"}: ${entries.joinToString(", ") { it.value }}")
     }
 

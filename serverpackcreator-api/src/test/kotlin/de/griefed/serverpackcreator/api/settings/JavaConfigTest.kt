@@ -2,8 +2,12 @@ package de.griefed.serverpackcreator.api.settings
 
 import de.griefed.serverpackcreator.api.PropertyStore
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 /**
  * Tests for [JavaConfig], the Java-installation settings-group. Uses the running JVM's java-binary as a
@@ -46,11 +50,9 @@ internal class JavaConfigTest {
     /**
      * Pins that validating a Java path prints nothing to stdout.
      *
-     * `testJava` drains `java -version` so the probe cannot block on a full pipe, and it used to
-     * `println` every third line of that output — reaching the console of every GUI and CLI user whose
-     * Java path was being checked, and printing the literal `null` when the third read ran past the end.
-     * The four `println`s in `ApiProperties` are the deliberate exception, because that class *is*
-     * log4j's `ConfigurationFactory` and has no logger yet; this one was not.
+     * The probe runs `java -version`, and anything it echoes reaches the console of every GUI and CLI user
+     * whose Java path is being checked. `JavaConfig` has a logger; the four `println`s in `ApiProperties` are
+     * the deliberate exception, because that class *is* log4j's `ConfigurationFactory` and has no logger yet.
      *
      * Asserted on stdout rather than by grepping the source, so it pins the behaviour rather than the
      * spelling.
@@ -138,4 +140,99 @@ internal class JavaConfigTest {
             store.properties.getProperty(JavaConfig.SCRIPT_JAVA_AUTOUPDATE_KEY)
         )
     }
+
+    /**
+     * Pins that an executable which exits at once but unsuccessfully is not a Java. A real `java -version` exits 0;
+     * anything else that merely starts and stops -- a wrapper failing on its arguments, GNU `yes`, `false` -- has
+     * said nothing about being a Java. `/usr/bin/false` exits 1 whatever it is given, on GNU and BSD alike.
+     */
+    @Test
+    fun anExecutableThatExitsUnsuccessfullyIsNotAJava() {
+        val failsAtOnce = listOf("/usr/bin/false", "/bin/false").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `false` binary - the exit-code check is skipped")
+        val store = PropertyStore()
+        val javaConfig = JavaConfig(store)
+
+        javaConfig.javaPaths = hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to failsAtOnce.canonicalPath)
+
+        Assertions.assertNull(
+            store.properties.getProperty("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17"),
+            "an executable whose -version exits non-zero is not a working Java"
+        )
+    }
+
+    /**
+     * Pins that a "Java" which never exits is rejected within the probe's bound, and that the probe process is
+     * gone afterwards. The check runs on the GUI's settings path, so an executable that waits on stdin or hangs
+     * must not block it, nor be left running.
+     *
+     * `grep` stands in for it: it reads `-version` as `-v -e rsion` and then waits on its standard input, which
+     * the probe leaves open, so it never exits on GNU or BSD alike; and as a system binary it starts at once,
+     * which a freshly written script does not reliably do on a loaded host. (`yes` hangs only on BSD: GNU `yes`
+     * rejects `-version` and exits.)
+     */
+    @Test
+    fun aJavaThatNeverExitsIsRejectedAndKilled() {
+        val neverExits = listOf("/usr/bin/grep", "/bin/grep").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `grep` binary - the hanging-probe check is skipped")
+        val probePath = neverExits.canonicalPath
+        val store = PropertyStore()
+        val javaConfig = JavaConfig(store).apply { probeTimeoutMillis = 1_000 }
+
+        Assertions.assertTimeoutPreemptively(Duration.ofSeconds(30), {
+            javaConfig.javaPaths = hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to probePath)
+        }, "validating a Java path must not wait for the probed executable for ever")
+
+        Assertions.assertNull(
+            store.properties.getProperty("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17"),
+            "a probe that did not finish is not a working Java"
+        )
+        val survivors = ProcessHandle.current().descendants()
+            .filter { child -> child.info().command().map { File(it).canonicalPath == probePath }.orElse(false) }
+            .toList()
+        survivors.forEach { child -> runCatching { child.onExit().get(10, TimeUnit.SECONDS) } }
+        val alive = survivors.filter { it.isAlive }
+        alive.forEach { it.destroyForcibly() }
+        Assertions.assertTrue(alive.isEmpty(), "the probe process must not outlive the check")
+    }
+
+    /**
+     * Pins that a hung probe takes what it started down with it. A Java path is often a wrapper — a shim, a
+     * version manager, a script — and killing only the wrapper leaves its child running once the check has
+     * rejected it. The stand-in starts a `sleep`, records its pid, and waits on it.
+     */
+    @Test
+    fun aJavaThatNeverExitsIsKilledWithEverythingItStarted(@TempDir dir: File) {
+        val shell = listOf("/bin/sh", "/usr/bin/sh").map(::File).firstOrNull { it.canExecute() }
+            ?: Assumptions.abort("no `sh` - the process-tree check is skipped")
+        val pidFile = File(dir, "child.pid")
+        val wrapper = File(dir, "java").apply {
+            writeText("#!${shell.path}\nsleep 300 &\necho \$! > '${pidFile.path}'\nwait\n")
+            setExecutable(true)
+        }
+        val store = PropertyStore()
+        val javaConfig = JavaConfig(store).apply { probeTimeoutMillis = 3_000 }
+
+        javaConfig.javaPaths = hashMapOf("${JavaConfig.SCRIPT_JAVA_PATHS_PREFIX}17" to wrapper.path)
+
+        val pid = pidFile.takeIf { it.isFile }?.readText()?.trim()?.toLongOrNull()
+            ?: Assumptions.abort("the stand-in did not start within the probe's bound on this host")
+        val child = ProcessHandle.of(pid).orElse(null)
+        try {
+            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+            while (child != null && isStillRunning(child) && System.nanoTime() < deadline) {
+                Thread.sleep(100)
+            }
+            Assertions.assertFalse(child != null && isStillRunning(child), "the probe's child must not outlive the check")
+        } finally {
+            child?.destroyForcibly()
+        }
+    }
+
+    /**
+     * Running, not merely `isAlive`: the killed child is an orphan, and in a container whose PID 1 reaps nothing
+     * (a CI job container) it stays an unreaped zombie for good, which `isAlive` still reports as alive. A zombie
+     * has no command line, so that is what tells it from a process still running.
+     */
+    private fun isStillRunning(process: ProcessHandle): Boolean = process.isAlive && process.info().command().isPresent
 }

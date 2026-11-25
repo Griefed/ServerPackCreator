@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.modpack
 
-import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
+import de.griefed.serverpackcreator.app.web.DownloadCount
 import de.griefed.serverpackcreator.app.web.serverpack.runconfiguration.RunConfigurationService
 import de.griefed.serverpackcreator.app.web.storage.StorageException
 import de.griefed.serverpackcreator.app.web.task.TaskDetail
@@ -31,6 +31,7 @@ import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
@@ -52,10 +53,14 @@ class ModPackController @Autowired constructor(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    /** Serve one modpack's archive, and count the download. */
+    /** Serve one modpack's archive, counting the download when the request starts one ([DownloadCount]). */
     @GetMapping("/download/{id:[0-9a-zA-Z]+}", produces = ["application/zip"])
     @ResponseBody
-    fun downloadModpack(@PathVariable id: String): ResponseEntity<Resource> {
+    fun downloadModpack(
+        @PathVariable id: String,
+        @RequestHeader(HttpHeaders.RANGE, required = false) range: String? = null,
+        method: HttpMethod = HttpMethod.GET
+    ): ResponseEntity<Resource> {
         val modpack = modpackService.getModpack(id)
         if (modpack.isEmpty) {
             log.warn("Modpack with ID $id not found")
@@ -66,7 +71,9 @@ class ModPackController @Autowired constructor(
             log.warn("No archive found for modpack with ID $id")
             return ResponseEntity.notFound().build()
         }
-        modpackService.updateDownloadStats(modpack.get())
+        if (DownloadCount.isNewDownload(method, range, modpackArchive.get().length())) {
+            modpackService.updateDownloadStats(modpack.get())
+        }
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/zip"))
             // Built rather than interpolated: the name is the upload's own filename, kept verbatim, so a
@@ -183,15 +190,11 @@ class ModPackController @Autowired constructor(
         }
         val taskDetail = TaskDetail(modpack.get())
         taskDetail.modpack.status = ModPackStatus.QUEUED
-        taskDetail.runConfiguration = runConfigurationService.createRunConfig(
+        val runConfiguration = runConfigurationService.createRunConfig(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
         )
-        var serverpack: ServerPack? = null
-        for (pack in modpack.get().serverPacks) {
-            if (pack.runConfiguration!!.id == taskDetail.runConfiguration!!.id) {
-                serverpack = pack
-            }
-        }
+        taskDetail.runConfiguration = runConfiguration
+        val serverpack = modpack.get().serverPacks.lastOrNull { it.runConfiguration?.id == runConfiguration.id }
         if (serverpack != null) {
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
                 .body(
@@ -199,7 +202,7 @@ class ModPackController @Autowired constructor(
                         message = "Server Pack already exists for the requested ModPack and RunConfiguration.",
                         success = false,
                         modPackId = modPackID,
-                        runConfigId = taskDetail.runConfiguration!!.id,
+                        runConfigId = runConfiguration.id,
                         serverPackId = serverpack.id,
                         status = ModPackStatus.GENERATED
                     )

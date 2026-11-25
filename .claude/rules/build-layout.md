@@ -55,8 +55,8 @@ the "do not tidy that away, here is what it cost last time".
   `BuildVersionTest` over `BuildVersion.sanitize`. It is reached only because `buildSrc/build.gradle.kts`
   finalizes `jar` with `test`; `:buildSrc:check`, `gradle.includedBuild("buildSrc")` and `-p buildSrc` are all
   dead ends on 9.8.1. What belongs there, what still belongs in a commit-message measurement, and why the edge
-  has to be `finalizedBy` rather than `dependsOn`, are in the root `CLAUDE.md` under *Build logic is verified by
-  measurement where it cannot be unit-tested* — stated once, there.
+  has to be `finalizedBy` rather than `dependsOn`, are in *Verifying build logic* at the end of this file — stated
+  once, there.
   - **LANDMINE — a test that reads a file outside its own project is UP-TO-DATE when that file changes.**
     `BuildVersionTest` reads `.forgejo/actions/resolve-version/action.yml` to check the action still
     normalises a version the way `BuildVersion` does. Gradle knows nothing about that path, so mutating the
@@ -64,6 +64,19 @@ the "do not tidy that away, here is what it cost last time".
     `tasks.test { inputs.file(...) }` in `buildSrc/build.gradle.kts` is what makes it re-run, and the
     mutation turns it red with the line present. Any guard that reaches across a project boundary needs the
     same declaration; ask what makes its task re-run, not only what it asserts.
+  - **LANDMINE — a per-build value in a jar manifest re-runs every downstream test, and hides the landmine
+    above.** Every jar's manifest carries `Build-Timestamp` (`java-conventions`, and the four plugin build
+    scripts), so until 2026-11-11 `-api`'s jar differed on every invocation — one entry of 931,
+    `META-INF/MANIFEST.MF` — and no test task downstream of it was ever UP-TO-DATE or served from the build
+    cache. `normalization { runtimeClasspath { metaInf { ignoreAttribute("Build-Timestamp") } } }` in
+    `java-conventions` ignores it. It also made the landmine above invisible: `ClientsideReportRendererTest`'s
+    guard over `.github/scripts/clientside-verification.js` re-ran on every build *by accident*, and went
+    stale-green the moment tests could be UP-TO-DATE — measured, before its `inputs.file` was declared. A new
+    attribute that changes per build **or per machine** needs the same `ignoreAttribute`: `Built-By`,
+    `Build-Jdk` and `Build-OS` are ignored too, because they differ between a developer's checkout and CI, so a
+    cache one filled was useless to the other. Measured by re-running `:serverpackcreator-clientside:test`
+    with `-Duser.name=somebody-else` (a different `Built-By` in `-api`'s jar): it re-executed before, and is
+    UP-TO-DATE with the four attributes ignored.
 
 - **A plugin module's jar name is decided in `serverpackcreator.plugin-conventions`, and nowhere else.**
   Every plugin jar is `<module>-<version>_experimental.jar`; the convention plugin also owns the
@@ -197,15 +210,13 @@ the "do not tidy that away, here is what it cost last time".
   (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
   Those constructs block project **isolation**, a different feature.
 
-  **Re-measured 2026-10-16 on Gradle 9.8.1: `./gradlew build --configuration-cache --dry-run` reports
-  11 problems, 3 of which seem unique.** Two are `:generateLicenseReport` holding a `Project` (jk1
-  gradle-license-report — not fixable here) and the third is **`:serverpackcreator-app:processResources`
-  holding one**, which is ours and is new since the 2026-09-26 reading of *8 problems, 2 unique, all of
-  them `generateLicenseReport`*. Nothing in the slashed-`-Pversion` work caused it — `develop` and that
-  branch were measured against each other and are identical at 11/3 — so it arrived with some change
-  between those two dates and is worth a `git log -S` over `-app`'s `processResources`.
-  `./gradlew :serverpackcreator-app:test --configuration-cache` stored an entry with no problems at all
-  in September; re-run it rather than trusting that now.
+  **Measured 2026-11-22 on Gradle 9.9.1: `./gradlew :serverpackcreator-app:processResources
+  --configuration-cache --dry-run` reports 10 problems, 2 of which seem unique, both `:generateLicenseReport`
+  holding a `Project`** (jk1 gradle-license-report — not fixable here). Nothing of ours is on the list.
+  `-app`'s `processResources.doFirst` licence-notice check resolves its file and display path at
+  configuration time for exactly this reason: reading `rootDir` inside the action captured the `Project`
+  and was the third unique problem. Any new task action must do the same — close over a `File` or a
+  `String`, never over a script property.
 
   It used to be 20 problems, 13 unique, and the entry above used to name ours: the `filter { }` in
   `processTestResources` and a `doFirst { cleanup() }` in `test`, both capturing the enclosing script,
@@ -213,9 +224,7 @@ the "do not tidy that away, here is what it cost last time".
   `TestHome.prepare(File)`, a **compiled buildSrc class** that closes over nothing but the `File` handed
   to it, and `-app`'s duplicate `doFirst` was deleted once it was shown to be redundant.
 
-  So the ceiling is `generateLicenseReport` **plus** whatever re-captured a `Project` in `-app`'s
-  `processResources`: only the first of those is third-party, which makes the second the one worth
-  chasing. Re-run the command above before believing this
+  So the ceiling is `generateLicenseReport`, which is third-party. Re-run the command above before believing this
   paragraph — it is the kind of fact that goes stale the moment a task action captures a script again.
 - **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
   that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`
@@ -285,3 +294,32 @@ the "do not tidy that away, here is what it cost last time".
   visible immediately surfaced a real undeclared dependency (`sourcesJar` packages what
   `shipRootDocuments` writes), which had been ordering by luck.
 
+## Verifying build logic — moved from the root `CLAUDE.md`
+
+- **Build logic is verified by measurement where it cannot be unit-tested, and `buildSrc` now has a test source
+  set for the part that can be — Griefed's call, 2026-10-16.** `buildSrc/src/test/kotlin` holds JUnit 5 via
+  `libs.kotlinTestJunit5`, and it exists for **pure functions**: `BuildVersionTest` pins
+  `BuildVersion.sanitize`, the predicate that keeps a `/` in `-Pversion` from being read as a path. Task
+  wiring, a `Copy`'s inputs and a one-line filter are still NOT worth a TestKit harness, so for those — and
+  for the real-world consequence of a pure function too — the standard is unchanged: **measure the behaviour
+  before and after, and record both numbers in the commit message.**
+  - **LANDMINE — a buildSrc test does not run unless something drags it in, and `build` is not that
+    something.** Gradle 8.0 made buildSrc an included build and stopped running its lifecycle tasks from the
+    main build; a maintainer confirms that is intended, with no plan to change it
+    ([gradle#25439](https://github.com/gradle/gradle/issues/25439)). Three obvious routes are all dead ends,
+    measured on 9.8.1: `tasks.check { dependsOn("buildSrc:check") }` is inert, `gradle.includedBuild("buildSrc")`
+    does not resolve, and `./gradlew -p buildSrc check` fails in buildSrc's *settings* — it declares the foojay
+    resolver with no version, which only resolves because the root build has already put it on the classpath
+    (the deliberate asymmetry recorded above under *the foojay toolchain resolver is declared TWICE*). What works is `buildSrc`'s **jar**, which is built on every
+    invocation: `tasks.jar { finalizedBy(tasks.test) }`, so `./gradlew help` runs the suite in ~3 s. It must be
+    `finalizedBy` and not `dependsOn` — `kotlin-dsl` puts the jar on the test compile classpath, so
+    `dependsOn` is a circular dependency and fails the build outright.
+  - The named *Verify the build logic* step in both `test.yml`s runs exactly that `./gradlew help`, before the
+    long build, so a broken convention plugin fails in seconds rather than after the frontend.
+  Historic measurements, from before the source set existed: `8b87057cf` did this (a planted marker plus a cached
+  manifest; the cache went 643 → 0 before the change and survived after), as did the `updateManifests` retarget (app
+  home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
+  Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
+  a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
+  outcome of the manifest work even though nothing can guard `TestHome.prepare` itself, because `ApiWrapper.setup()`
+  re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.

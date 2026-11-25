@@ -40,7 +40,7 @@ class AmountStatsService @Autowired constructor(
             val modloaderVersions = HashMap<String, Int>()
 
             for (serverPack in serverPackRepository.findAll()) {
-                val runConfig = serverPack.runConfiguration!!
+                val runConfig = serverPack.runConfiguration ?: continue
                 if (!minecraftVersions.containsKey(runConfig.minecraftVersion)) {
                     minecraftVersions[runConfig.minecraftVersion] = 1
                 } else {
