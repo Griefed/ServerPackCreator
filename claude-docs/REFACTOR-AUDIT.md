@@ -8654,7 +8654,9 @@ per-goal detail and red-first evidence are on the named kept branch.
   - The re-grind queue: an unreadable file is set aside, and `add()` counts only what was saved.
   - servertest: a failed `server.properties` give-back tells the user where the original is.
   - `isRunning`: an unanswered liveness inspect no longer ends a boot. After 60 unanswered polls in a row the boot is abandoned as `ERROR`.
-  - The 14 sites that should only log remain open.
+  - The sites that should only log are closed by `fix(grinder): a lost template, marker, install console or kept boot log is logged, not silent` and `fix(servertest): a broken console, close, shutdown kill or clipboard copy is logged, not silent` (`claude-b3-log-sites`).
+    - Each now leaves a WARN naming the file or pack, and returns what it returned before. Grinder: 7 reads, writes and the live install console. Servertest: 4 sites.
+    - Two of the inventory's 14 were re-judged safe and left alone: the `-api` minecraft-constraint reads. `ForgeTomlScanner.readMinecraftConstraint` re-reads what `read()` already parsed, so it cannot fail there. `QuiltScanner`'s throws only for a mod without a `depends` block, which is normal.
 - **Commit-body links:** enforced by `ci: fail a push whose commit message would mislink an issue in the release notes` (`claude-b5-link-lint`).
   - The checker ports conventional-commits-parser 6.4.0's reference extraction, and agrees with the real parser on all 7,700 commit messages.
   - It runs over each push's own range, so already-pushed history never keeps CI red.
