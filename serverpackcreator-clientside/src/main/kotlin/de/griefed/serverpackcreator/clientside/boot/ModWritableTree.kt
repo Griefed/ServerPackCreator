@@ -70,8 +70,17 @@ object ModWritableTree {
         val entries = dir.toFile().listFiles().orEmpty().map { it.toPath() }
         val (links, others) = entries.partition { Files.isSymbolicLink(it) }
         val files = others.filter { Files.isRegularFile(it, *noFollow) }
-        val (inside, outside) = files.partition { runCatching { it.toRealPath().startsWith(rootReal) }.getOrDefault(false) }
+        val (inside, outside) = files.partition { resolvesInside(it, rootReal) }
         return Listing(inside.map { it.toFile() }, (links + outside).map { refuse(it.toFile()) })
+    }
+
+    /** Whether [path]'s real path lies under [rootReal]; one that cannot be resolved, say because it vanished, counts as outside. */
+    private fun resolvesInside(path: Path, rootReal: Path): Boolean = try {
+        path.toRealPath().startsWith(rootReal)
+    } catch (_: IOException) {
+        false
+    } catch (_: SecurityException) {
+        false
     }
 
     /**
