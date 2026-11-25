@@ -100,7 +100,8 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
   `default_template.sh`):** `WAIT_FOR_USER_INPUT=false` (else it blocks on a `read`),
   `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
   and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
-  bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
+  bundled per-MC JDK, `/opt/java-<major>`: the set `ImageJavaRuntimes.IMAGE_BUNDLED_MAJORS` names and
+  `RuntimeImageJdkSetTest` holds the Dockerfile to.
 - **`USE_SSJ` is deliberately NOT set on generated packs — the templates decide.** They bypass the
   ServerStarterJar themselves for exactly the Minecraft versions it cannot launch (`forgeNeedsItsOwnArgfile`;
   the full range and its measurements are the SSJ landmine in `serverpackcreator-api/CLAUDE.md`). Setting the
