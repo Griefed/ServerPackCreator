@@ -651,9 +651,9 @@ The example below makes use of the `latest`-tag. However, using said tag is not 
 When setting up ServerPackCreator as a webservice for production, make sure to *not* use `latest` and instead use the tag corresponding to the, at this point, latest available release version available.
 
 You must replace `<DB_ROOT_USERNAME>` and `<DB_ROOT_PASSWORD>` accordingly.
-Do note the `- ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro` in the **serverpackcreatorb**-service.
-An example for this file is available at [docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
-the MongoDB with the required user, database and collection.
+Do note the `init-mongo` config at the bottom, which the **serverpackcreatordb**-service runs as its init-script. It
+initializes the MongoDB with the required user, database and collection, and runs only against an empty database volume.
+It is inline, so the compose file needs no other file beside it (this requires Docker Compose 2.23.1 or newer).
 
 **Upgrading from MongoDB 8.0:** the example deploys MongoDB 9.0. An existing 8.0 database
 volume opens under 9.0 in place only if its `featureCompatibilityVersion` is `"8.0"`; check it with
@@ -671,8 +671,10 @@ services:
       MONGO_INITDB_ROOT_USERNAME: <DB_ROOT_USERNAME>
       MONGO_INITDB_ROOT_PASSWORD: <DB_ROOT_PASSWORD>
       MONGO_INITDB_DATABASE: serverpackcreatordb
+    configs:
+      - source: init-mongo
+        target: /docker-entrypoint-initdb.d/init.js
     volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
       - spcdb-data:/data/db
       - spcdb-conf:/data/configdb
 
@@ -701,6 +703,22 @@ services:
 volumes:
   spcdb-data:
   spcdb-conf:
+
+configs:
+  init-mongo:
+    content: |
+      db.getSiblingDB('admin').auth(
+          process.env.MONGO_INITDB_ROOT_USERNAME,
+          process.env.MONGO_INITDB_ROOT_PASSWORD
+      );
+
+      db = db.getSiblingDB(process.env.MONGO_INITDB_DATABASE)
+      db.createCollection(process.env.MONGO_INITDB_DATABASE)
+      db.createUser({
+          user: process.env.MONGO_INITDB_ROOT_USERNAME,
+          pwd: process.env.MONGO_INITDB_ROOT_PASSWORD,
+          roles: ["readWrite"],
+      });
 ```
 
 ##### 5.2.2.1 Tweaking the docker deployment

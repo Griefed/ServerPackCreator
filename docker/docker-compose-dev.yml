@@ -17,7 +17,7 @@
 # script and the `overrides.properties` it composes from the SPC_* variables below.
 #
 # `docker/docker-compose.yml` is the deployment file users copy; this one is not. Resetting the
-# database means `down -v`, because `init-mongo.js` runs only against an empty /data/db.
+# database means `down -v`, because the `init-mongo` script runs only against an empty /data/db.
 
 # The deployment compose file uses the same service names. Without a distinct project name the two
 # fight over the same containers.
@@ -50,8 +50,10 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: 1234567890
       MONGO_INITDB_DATABASE: serverpackcreatordb
+    configs:
+      - source: init-mongo
+        target: /docker-entrypoint-initdb.d/init.js
     volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
       - spcdb-data:/data/db
       - spcdb-conf:/data/configdb
     # `depends_on` alone only orders starts, and the application treats a reachable database as
@@ -113,7 +115,7 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * *
-      # These three must match the db service's MONGO_INITDB_* above: init-mongo.js creates exactly
+      # These three must match the db service's MONGO_INITDB_* above: the `init-mongo` config creates exactly
       # one user, from MONGO_INITDB_ROOT_USERNAME/_PASSWORD, inside MONGO_INITDB_DATABASE - and a
       # connection-string's path segment doubles as its authSource.
       - SPC_DATABASE_PASSWORD=1234567890 # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
@@ -144,3 +146,23 @@ volumes:
   modpacks:
   server-packs:
   logs:
+
+# The database's init script, inline so the stack needs no file beside this one and no bind mount.
+# MongoDB runs it once, against an empty /data/db only: it creates the application's user, from
+# MONGO_INITDB_ROOT_USERNAME/_PASSWORD, inside MONGO_INITDB_DATABASE. Compose interpolates this
+# text, so a literal `$` in it must be written `$$`.
+configs:
+  init-mongo:
+    content: |
+      db.getSiblingDB('admin').auth(
+          process.env.MONGO_INITDB_ROOT_USERNAME,
+          process.env.MONGO_INITDB_ROOT_PASSWORD
+      );
+
+      db = db.getSiblingDB(process.env.MONGO_INITDB_DATABASE)
+      db.createCollection(process.env.MONGO_INITDB_DATABASE)
+      db.createUser({
+          user: process.env.MONGO_INITDB_ROOT_USERNAME,
+          pwd: process.env.MONGO_INITDB_ROOT_PASSWORD,
+          roles: ["readWrite"],
+      });

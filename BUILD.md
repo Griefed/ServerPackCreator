@@ -228,7 +228,7 @@ not for iterating. The **Dev stack (with app)** run configuration in `.run/` is 
 the IDE; plain **Dev stack** is the dependencies-only path above, which is why it does not build the
 application image.
 
-**Resetting the database** is `down -v`: `init-mongo.js` runs only against an empty `/data/db`, so
+**Resetting the database** is `down -v`: the compose file's `init-mongo` script runs only against an empty `/data/db`, so
 changing the credentials has no effect until the volume is gone.
 
 **If MongoDB will not start**, read its log. On a host kernel between 6.19.0 and 7.0.13 the image
