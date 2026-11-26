@@ -3529,3 +3529,30 @@ Each finding of the two 2026-11-25 sections, and what closed it. Commits are nam
   `runner` user, so the five guards run there. Forgejo's job image `ghcr.io/catthehacker/ubuntu:runner-latest`
   declares `"User": "runner"`; whether this instance's runner overrides it with `--user` is not visible from the
   repository. The skip count in a Forgejo run's grinder test results settles it.
+
+## 2026-11-26 — the two items left open above, and what was verified after 9.5.0
+
+- **AN-4 closed** by `fix(web): a one-byte size probe before a download is no longer counted as a download`
+  (Griefed chose to ignore the probe). A first range of exactly `bytes=0-0` no longer counts, unless the archive is
+  one byte long; a segmented download still counts once.
+- **AN-6 answered: the five unreadable-file guards run on Forgejo.** In run 1797's `Test / build` log the grinder's
+  `ContainerUser` warning names `1001:1001, the owner of /tmp/junit-…`, so the test JVM is not root; the only
+  skipped test reported is `RealPackBootTest`.
+- **Release rules, replayed** against `.releaserc.yml` with the versions `release-generate.yml` pins
+  (commit-analyzer 13.0.1, conventionalcommits preset 9.3.1, parser 6.4.0), over synthetic commits:
+  - No release: `fix(ci)`, `feat(ci)`, `feat(homepage)`, `fix(Homepage)`, `fix(dev)`, `feat(ide)`, `feat(docs)`,
+    `fix(help)`, `fix(test)`, `feat(tests)`, `deps(deps)`, `docs:`, `ci:`. Patch: `fix(api)`, `fix:`,
+    `fix(docker)`, `perf(grinder)`, and a mixed scope such as `fix(ci,api)`. Minor: `feat(clientside)`, `feat:`.
+  - **Finding for Griefed:** a conventional breaking marker does not mint a major. `feat(api)!:` is minor and a
+    `BREAKING CHANGE:` footer on `fix(api)` is patch, because commit-analyzer consults its default "breaking →
+    major" rule only when no custom rule matches, and `feat`/`fix` always match one. Only the `breaking:` and
+    `milestone:` types release a major. Nine `!` commits since August shipped inside 9.x on that basis.
+- **MongoDB 8.0 → 9.0, rehearsed locally on synthetic data** (2 GB Docker VM, kernel 7.0.14, one mongod at a time
+  with a 256 MB cache, the app on the host JVM): an 8.0.34 volume filled by the app itself (a modpack upload,
+  its generated server pack, GridFS, the `sha256` index) opened under 9.0.8 with no `E`/`F` log line, FCV still
+  `"8.0"`, identical collections, counts and indexes; the app read it back and stored a second upload. With FCV
+  `"8.0"`, 8.0.34 reopened the volume 9.0 had written (rollback is an image switch). `setFeatureCompatibilityVersion
+  "9.0"` refused without `confirm: true` and succeeded with it; FCV survived a restart and the app worked. After
+  that, 8.0.34 refused the volume with a fatal "UPGRADE PROBLEM: Found an invalid featureCompatibilityVersion
+  document" — **and exited with code 0**, so that failure does not look like a crash to anything watching exit
+  codes. A rehearsal on a production copy remains open.
