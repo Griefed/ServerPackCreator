@@ -103,6 +103,10 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   locations win). The s6 script `init-spc-config/run` composes `SPC_DATABASE_*` into that file, under `spring.mongodb.uri`; it is
   pinned by `docker/tests/init-spc-config-test.sh`, which runs the real script in the production base
   image. See `claude-docs/DOCKER-MONGO-INVESTIGATION.md`.
+- **LANDMINE — an `/api/` error must never be redirected.** `ErrorRedirect` answers the container's `/error`
+  forward: page URLs go to the SPA's `/#/error`, `/api/` URLs keep their status with a `ProblemDetail` body. A
+  redirect ends in `index.html` with a 200, and the SPA's tables bind that string as rows — an unreachable
+  database showed as "1–25 of 1179" empty entries (1179 = the size of `index.html`). Pinned by `ErrorRedirectTest`.
 - **Already MVC-layered:** controllers delegate to services (`ModPackService`, `ServerPackService`,
   `RunConfigurationService`, `EventService`, the stats services); no controller is bloated;
   scheduling isolated in `web/scheduling`. No restructuring warranted here.
