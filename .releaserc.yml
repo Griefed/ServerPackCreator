@@ -33,6 +33,9 @@ verifyConditions:
 analyzeCommits:
   - path: '@semantic-release/commit-analyzer'
     releaseRules:
+      # Only these two types release a major. A `!` after the type or a `BREAKING CHANGE:` footer does not:
+      # commit-analyzer consults its built-in breaking rule only when no rule here matches, and `feat`/`fix`
+      # always match one, so `feat(api)!:` is a minor. Kept that way on purpose (Griefed, 2026-11-26).
       - type: milestone # A milestone release marking a huge step forward in development
         release: major
       - type: breaking  # Changes that break something makes something incompatible to earlier version

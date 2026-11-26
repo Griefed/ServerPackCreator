@@ -118,7 +118,9 @@ for. `BUILD.md` is the contributor-facing tour of the same ground.
   `.releaserc.yml`'s `releaseRules` map the scopes `homepage`, `ci`, `test(s)`, `docs`/`help`, `dev` and
   `ide` to no release whatever the type, so scope the website, CI, tests, the help site, IDE run
   configurations and the dev Docker stack (`dev`, not `docker`, which is the shipped image) accordingly.
-  Unscoped and module-scoped `fix`/`feat`/`perf` release as before.
+  Unscoped and module-scoped `fix`/`feat`/`perf` release as before. **Only the `breaking:` and `milestone:`
+  types release a major** — a `!` or a `BREAKING CHANGE:` footer does not (Griefed's call, 2026-11-26), so
+  use the type when a change must mint one.
 - **Put `#<hex>` and `owner/repo#<n>` in backticks in a commit body.** The release-notes parser reads any
   bare `[prefix]#<word>` followed by whitespace, a line end or `,;)]` as an issue and links it in
   `CHANGELOG.md` (`#54a896` became `closes #54a896`), fenced code blocks included; a closing backtick
