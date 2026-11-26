@@ -29,11 +29,13 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -174,6 +176,17 @@ class DownloadRangeTest {
         assertCounted(route, expectedCount)
     }
 
+    /**
+     * `bytes=0-0` is a size probe some players and download managers send before the real request, so it does
+     * not count; but for a one-byte archive that single byte is the whole file, and that download does.
+     */
+    @Test
+    fun aOneByteProbeCountsOnlyWhenItIsTheWholeArchive() {
+        Assertions.assertFalse(DownloadCount.isNewDownload(HttpMethod.GET, "bytes=0-0", ARCHIVE_LENGTH.toLong()))
+        Assertions.assertTrue(DownloadCount.isNewDownload(HttpMethod.GET, "bytes=0-0", 1))
+        Assertions.assertTrue(DownloadCount.isNewDownload(HttpMethod.GET, "bytes=0-1", ARCHIVE_LENGTH.toLong()))
+    }
+
     @ParameterizedTest
     @EnumSource(Route::class)
     fun aHeadRequestIsNotCountedAsADownload(route: Route) {
@@ -190,6 +203,7 @@ class DownloadRangeTest {
             listOf(
                 Arguments.of(route, null, 1),
                 Arguments.of(route, "bytes=0-", 1),
+                Arguments.of(route, "bytes=0-0", 0),
                 Arguments.of(route, "bytes=0-1,5-6", 1),
                 Arguments.of(route, "bytes=10-19", 0),
                 Arguments.of(route, "bytes=32-", 0),

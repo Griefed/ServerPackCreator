@@ -30,8 +30,9 @@ object DownloadCount {
 
     /**
      * True for a `GET` without a `Range` header, or one whose first range starts at the archive's first byte —
-     * the opening request of a download manager. A `HEAD`, a resume, every further segment and a malformed or
-     * unsatisfiable range are not new downloads.
+     * the opening request of a download manager. A `HEAD`, a resume, every further segment, a malformed or
+     * unsatisfiable range and a `bytes=0-0` size probe (unless that one byte is the whole archive) are not new
+     * downloads.
      */
     fun isNewDownload(method: HttpMethod, range: String?, archiveLength: Long): Boolean {
         if (method != HttpMethod.GET) {
@@ -42,7 +43,8 @@ object DownloadCount {
         }
         return try {
             val firstRange = HttpRange.parseRanges(range).firstOrNull() ?: return true
-            firstRange.getRangeStart(archiveLength) == 0L && archiveLength > 0
+            val sizeProbe = firstRange.getRangeEnd(archiveLength) == 0L && archiveLength > 1
+            firstRange.getRangeStart(archiveLength) == 0L && archiveLength > 0 && !sizeProbe
         } catch (invalid: IllegalArgumentException) {
             // A malformed range is answered 416 by Spring, so nothing is downloaded.
             false

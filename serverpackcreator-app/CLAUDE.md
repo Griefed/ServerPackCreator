@@ -181,8 +181,9 @@ Keep the return type.
   repo finds none of it**, because it is the framework's — don't conclude Range support is absent. It is what
   lets a multi-gigabyte download resume.
 - **A download is counted once, not once per request.** Both routes ask `DownloadCount.isNewDownload`: a `GET`
-  without `Range`, or whose first range starts at byte 0, counts; a resume, a further segment, `HEAD` and a
-  malformed or unsatisfiable range do not. Pinned in `DownloadRangeTest`.
+  without `Range`, or whose first range starts at byte 0, counts; a resume, a further segment, `HEAD`, a
+  malformed or unsatisfiable range, and a `bytes=0-0` size probe do not (unless that byte is the whole archive).
+  Pinned in `DownloadRangeTest`.
 - **Nothing may wrap the response stream.** There is no `ShallowEtagHeaderFilter` (it buffers the whole
   body in memory to hash it), no `server.compression.*`, and no `WebMvcConfigurer` anywhere in the module.
   Adding any of the three silently undoes the streaming the test above thinks it is guarding — the body
