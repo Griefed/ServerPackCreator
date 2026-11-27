@@ -1,0 +1,109 @@
+# The application image, built from `docker/Dockerfile` and pushed to ghcr.io and Docker Hub. One
+# definition for both callers: `release-build.yml` pushes `<version>` (plus `latest` for a full
+# release), `devbuild.yml` pushes `<branch>-<short sha>` and `continuous`. They differ only in the
+# inputs, so the dev push rehearses the release push on every `develop` commit.
+#
+# `secrets: inherit` is all-or-nothing on Forgejo, so every publishing credential is in scope here.
+# Nothing but the image push belongs in this file.
+name: Image
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "The version the jar inside the image is built and named with (`VERSION` build arg)."
+        required: true
+        type: string
+      tags:
+        description: >-
+          Comma-separated tag NAMES, e.g. `9.3.0,latest`. Each is pushed to both registries; the
+          repository part comes from the `DOCKERHUB_USER`/`DOCKERHUB_REPO` secrets. Deciding whether
+          `latest` is among them is the caller's job.
+        required: true
+        type: string
+
+jobs:
+  image:
+    name: "Docker images"
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v7
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      # The probe and the builder it configures, as one unit. The caches are HOST configuration
+      # (claude-docs/RUNNER-REGISTRY-CACHE.md) and this is fail-soft by design: a cache that does not
+      # answer is left out of the config and that registry is pulled from upstream, because a wrong
+      # address must never be a failed build.
+      - uses: ./.forgejo/actions/registry-cache
+
+      # A composite action cannot read `secrets`, so the three values are passed in.
+      - uses: ./.forgejo/actions/registry-login
+        with:
+          dockerhub-user: ${{ secrets.DOCKERHUB_USER }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
+
+      # The tag names arrive through the environment rather than interpolated into the script.
+      - name: Compute tags
+        id: tags
+        env:
+          TAG_NAMES: ${{ inputs.tags }}
+          U: ${{ secrets.DOCKERHUB_USER }}
+          R: ${{ secrets.DOCKERHUB_REPO }}
+        run: |
+          set -eu
+          TAGS=""
+          IFS=','
+          for T in $TAG_NAMES; do
+            [ -n "$T" ] || continue
+            TAGS="${TAGS:+$TAGS,}ghcr.io/$U/$R:$T,index.docker.io/$U/$R:$T"
+          done
+          if [ -z "$TAGS" ]; then
+            echo "::error::No tag names given - refusing to build an image that would be pushed nowhere."
+            exit 1
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "Pushing: $TAGS"
+
+      # Retried for the same reason `test.yml`'s image check retries: ghcr answers a pull with
+      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips
+      # its per-source burst limiter, and buildkit will not wait. The limiter is keyed on the host, so
+      # being logged in does not lift it. On a release a single such minute would cost it its images and
+      # take the `mirror` job (`needs: docker`) with it.
+      #
+      # The retry is expensive and deliberately so: `no-cache: true` means attempt two rebuilds the whole
+      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a
+      # needless retry is time, and the cost of not having one is a release with no image.
+      - name: Build and push
+        id: buildpush
+        continue-on-error: true
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          build-args: VERSION=${{ inputs.version }}
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Wait out the registry's burst limiter
+        if: ${{ steps.buildpush.outcome == 'failure' }}
+        run: |
+          echo "The first build-and-push failed. If it was a registry 429 the limiter has long since reset; retrying once."
+          sleep 30
+
+      - name: Build and push (retry)
+        if: ${{ steps.buildpush.outcome == 'failure' }}
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          build-args: VERSION=${{ inputs.version }}
+          tags: ${{ steps.tags.outputs.tags }}

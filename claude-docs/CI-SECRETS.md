@@ -48,9 +48,9 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `SIGNING_KEY` | ASCII-armoured PGP **private** key: `gpg --armor --export-secret-keys <KEYID>`, the entire block including BEGIN/END lines and newlines | release-build |
 | `SIGNING_PASSWORD` | that key's passphrase | release-build |
 | `SONATYPE_USERNAME` / `SONATYPE_PASSWORD` | Central Portal **user token** pair — central.sonatype.com → View Account → Generate User Token. Not your portal login | release-build |
-| `DOCKERHUB_USER` | Docker Hub username, lowercase. Also the `ghcr.io` login user *and* the namespace in both tag sets — see the traps below | release-build, docs |
-| `DOCKERHUB_TOKEN` | Docker Hub → Personal access tokens, Read/Write | release-build, docs |
-| `DOCKERHUB_REPO` | image name, e.g. `serverpackcreator`. The help image's name is hardcoded in `docs.yml` and does not read this | release-build |
+| `DOCKERHUB_USER` | Docker Hub username, lowercase. Also the `ghcr.io` login user *and* the namespace in both tag sets — see the traps below | release-build, devbuild, docs |
+| `DOCKERHUB_TOKEN` | Docker Hub → Personal access tokens, Read/Write | release-build, devbuild, docs |
+| `DOCKERHUB_REPO` | image name, e.g. `serverpackcreator`. The help image's name is hardcoded in `docs.yml` and does not read this | release-build, devbuild (both through `image-reusable.yml`) |
 | `SPCUPLOAD_HOST` | SSH host for the devbuild artifact upload | devbuild |
 | `SPCUPLOAD_USERNAME` | SSH user | devbuild |
 | `SPCUPLOAD_KEY` | OpenSSH **private** key, **no passphrase** — the action cannot answer a prompt | devbuild |
@@ -73,7 +73,7 @@ Useful when you want a partial setup working rather than all of it at once.
 | `qodana.yml` | **nothing required**; `WEBHOOK_URL` optional | silently skips the Discord post without the webhook |
 | `release-generate.yml` | `FJ_ACTOR`, `FJ_TOKEN`, `GIT_USER`, `GIT_MAIL` | nothing releases — this is the workflow that cuts the version and pushes the tag |
 | `release-build.yml` | everything else | see below — several jobs fail independently |
-| `devbuild.yml` | `FJ_*`, `GH_TOKEN`, `INSTALL4J_LICENSE`, `SPCUPLOAD_*` | no nightly `continuous` build |
+| `devbuild.yml` | `FJ_*`, `GH_TOKEN`, `INSTALL4J_LICENSE`, `SPCUPLOAD_*`; `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO` for its `docker` job | no `continuous` build; without the Docker Hub three, only the `docker` job fails and the `:continuous` image goes stale |
 | `docs.yml` | `GH_TOKEN`, `DOCKERHUB_USER`, `DOCKERHUB_TOKEN` | no help image |
 | `test.yml` (its `docker` job) | **nothing required**; `GH_TOKEN` + `DOCKERHUB_USER` optional | without them the ghcr base image is pulled anonymously, and ghcr rate-limits that per source address — `429 Too Many Requests` fails the build, as it did on runs 676 and 680 |
 | `update-readme.yml` | `FJ_*`, `GH_TOKEN`, `GIT_USER`, `GIT_MAIL` | sponsors/contributors stop refreshing. A `GH_TOKEN` missing `read:user` fails the *sponsors* half only, while contributors keep updating — the preflight step is what makes that visible |
@@ -88,7 +88,7 @@ rather than the release:
 | `assets` | `INSTALL4J_LICENSE` |
 | `release` | `FJ_TOKEN` |
 | `maven` | `SIGNING_KEY`, `SIGNING_PASSWORD`, and then whichever registries you want: `FJ_*`, `GH_*`, `GITLABCOM_TOKEN`, `SONATYPE_*` |
-| `docker` | `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO`, `GH_TOKEN` (ghcr login) |
+| `docker` | `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO`, `GH_TOKEN` (ghcr login) — read inside `image-reusable.yml`, which `devbuild.yml`'s `docker` job calls too |
 | `virustotal` | `VT_API_KEY`, `FJ_TOKEN` (appends the scan links to the release) |
 | `mirror` | `GH_TOKEN`, `FJ_TOKEN` (triggers the push-mirror sync, then reads the release notes back off Forgejo). **No `GITLABCOM_TOKEN`** since 2026-08-23 — GitHub is the only forge that gets a mirrored *release*, though the sync pushes refs to every mirror the repository has |
 | `news` | `NEWS_WEBHOOK_URL` (**required** — the job fails without it) and `GH_TOKEN` (reads the GitHub release back to confirm it is live and to get its `html_url`). Announces the **GitHub** release, so it waits for `mirror` — for ordering only; `mirror`'s own result is not checked, see `.claude/rules/ci-workflows.md` |

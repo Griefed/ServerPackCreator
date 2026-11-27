@@ -648,11 +648,12 @@ right for Docker Hub's genuine per-account quota, but it is not what keeps the j
 copy gated on `if: steps.<id>.outcome == 'failure'`** (`nick-fields/retry` and kin run shell commands,
 not JavaScript actions). In the forgejo act fork, `continue-on-error` sets `outcome` to `failure` while
 turning `conclusion` back to `success` (`pkg/runner/step.go`). Both `test.yml`'s `docker` job and
-`release-build.yml` do this; the latter matters most, since a 429 there costs the release its images and
-takes `mirror` (`needs: docker`) down with it.
+`image-reusable.yml` (the published image, called by `release-build.yml` and `devbuild.yml`) do this;
+the latter matters most, since a 429 there costs a release its images and takes `mirror`
+(`needs: docker`) down with it.
 
 **One retry, not a loop** — a host still limiting a minute later should fail loudly. In `test.yml` the
-retry is nearly free (buildkit reuses what it fetched); in `release-build.yml`, `no-cache: true` makes
+retry is nearly free (buildkit reuses what it fetched); in `image-reusable.yml`, `no-cache: true` makes
 attempt two rebuild the whole Gradle stage, and pushing the same tags twice is idempotent.
 
 **The cause the retry does not remove** is many pulls from one address (every job pulls

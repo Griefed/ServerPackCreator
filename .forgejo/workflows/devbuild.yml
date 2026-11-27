@@ -1,5 +1,6 @@
 # The rolling dev build. Every push to `develop` produces the JAR, the AppImages, the Windows app-image
-# and the install4j media, and publishes them as the `continuous` release.
+# and the install4j media, and publishes them as the `continuous` release, plus the `:continuous`
+# application image.
 name: Continuous
 
 # NO `schedule:` TRIGGER, and adding one back does not do what it looks like. Forgejo runs a scheduled
@@ -71,6 +72,20 @@ jobs:
       # The `gh-releases-zsync` channel baked into the AppImages, so a dev build updates from the
       # rolling `continuous` release rather than from the newest tagged one.
       update-channel: continuous
+    secrets: inherit
+
+  # The dev image, from the definition `release-build.yml` also calls. `:continuous` ONLY: one tag that
+  # moves with every build, so dev images do not pile up in the registries, and never the version
+  # (a dispatch override such as `9.3.0` would overwrite that release's image) or `:latest`.
+  # Needs only `prepare`, not `build`: `build` queues indefinitely without a Windows runner, and the
+  # image does not depend on any of its artifacts.
+  docker:
+    name: "Docker images"
+    needs: prepare
+    uses: ./.forgejo/workflows/image-reusable.yml
+    with:
+      version: ${{ needs.prepare.outputs.version }}
+      tags: continuous
     secrets: inherit
 
   continuous:

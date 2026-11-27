@@ -35,13 +35,14 @@ de92b2337da4: >-
   that differed would not be a retry. See 3c3b829cfd54 for why the two files' retries are not shared
   with each other either.
 
-3c3b829cfd54: >-
-  release-build.yml's `Build and push` and `Build and push (retry)`. Same reason as 80fcca20e6f9. The
-  pattern is deliberately NOT shared with test.yml's `docker` job: a composite would need six pass-through
-  inputs (push, no-cache, platforms, build-args, tags, file) to share about 25 lines of shell, and the
-  two differ in what they cost -- around 30 s there against roughly fifteen minutes here -- so a change
-  made for one would be made blind to the other's consequences. Sharing it would also couple the
-  release's image push to whatever lands in test.yml's image check.
+eeb15e8da6f9: >-
+  image-reusable.yml's `Build and push` and `Build and push (retry)`, the one image push both
+  release-build.yml and devbuild.yml call. Same reason as 80fcca20e6f9. The pattern is deliberately NOT
+  shared with test.yml's `docker` job: a composite would need six pass-through inputs (push, no-cache,
+  platforms, build-args, tags, file) to share about 25 lines of shell, and the two differ in what they
+  cost -- around 30 s there against roughly fifteen minutes here -- so a change made for one would be
+  made blind to the other's consequences. Sharing it would also couple the published image push to
+  whatever lands in test.yml's image check.
 
 07c2806dc83b: >-
   update-readme.yml hashes README.md before and after rewriting it. Two invocations of one action with

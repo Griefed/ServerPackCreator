@@ -228,82 +228,17 @@ jobs:
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitLabRepository        $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishToSonatype closeAndReleaseSonatypeStagingRepository $COMMON $SKIP --info --stacktrace
 
+  # The image definition is shared with `devbuild.yml`. NO `runs-on:` -- Forgejo disables workflow
+  # expansion for a calling job that declares one. `latest` only for a full release: a prerelease must
+  # never become the default pull.
   docker:
     name: "Docker images"
     needs: prepare
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v7
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      # The probe and the builder it configures, as one unit. The caches are HOST configuration
-      # (claude-docs/RUNNER-REGISTRY-CACHE.md) and this is fail-soft by design: a cache that does not
-      # answer is left out of the config and that registry is pulled from upstream, because a wrong
-      # address must never be a failed build.
-      - uses: ./.forgejo/actions/registry-cache
-
-      # A composite action cannot read `secrets`, so the three values are passed in.
-      - uses: ./.forgejo/actions/registry-login
-        with:
-          dockerhub-user: ${{ secrets.DOCKERHUB_USER }}
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          ghcr-token: ${{ secrets.GH_TOKEN }}
-
-      # `latest` only for a full release -- a prerelease must never become the default pull, which is
-      # exactly how GitLab split `Build Docker Release` from `Build Docker PreRelease`.
-      - name: Compute tags
-        id: tags
-        run: |
-          V="${{ needs.prepare.outputs.version }}"
-          U="${{ secrets.DOCKERHUB_USER }}"; R="${{ secrets.DOCKERHUB_REPO }}"
-          TAGS="ghcr.io/$U/$R:$V,index.docker.io/$U/$R:$V"
-          if [ "${{ needs.prepare.outputs.prerelease }}" = "false" ]; then
-            TAGS="$TAGS,ghcr.io/$U/$R:latest,index.docker.io/$U/$R:latest"
-          fi
-          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
-
-      # Retried for the same reason `test.yml`'s image check retries: ghcr answers a pull with
-      # `429 Too Many Requests / retry-after: 933.17us, allowed: 44000/minute` when the runner host trips
-      # its per-source burst limiter, and buildkit will not wait. The limiter is keyed on the host, so
-      # being logged in does not lift it. Here a single such minute would cost the release its images and
-      # take the `mirror` job (`needs: docker`) with it.
-      #
-      # The retry is expensive and deliberately so: `no-cache: true` means attempt two rebuilds the whole
-      # Gradle stage, ~15 minutes. Pushing the same tags twice is idempotent, so the only cost of a
-      # needless retry is time, and the cost of not having one is a release with no image.
-      - name: Build and push
-        id: buildpush
-        continue-on-error: true
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/Dockerfile
-          platforms: linux/amd64
-          push: true
-          no-cache: true
-          build-args: VERSION=${{ needs.prepare.outputs.version }}
-          tags: ${{ steps.tags.outputs.tags }}
-
-      - name: Wait out the registry's burst limiter
-        if: ${{ steps.buildpush.outcome == 'failure' }}
-        run: |
-          echo "The first build-and-push failed. If it was a registry 429 the limiter has long since reset; retrying once."
-          sleep 30
-
-      - name: Build and push (retry)
-        if: ${{ steps.buildpush.outcome == 'failure' }}
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/Dockerfile
-          platforms: linux/amd64
-          push: true
-          no-cache: true
-          build-args: VERSION=${{ needs.prepare.outputs.version }}
-          tags: ${{ steps.tags.outputs.tags }}
+    uses: ./.forgejo/workflows/image-reusable.yml
+    with:
+      version: ${{ needs.prepare.outputs.version }}
+      tags: ${{ needs.prepare.outputs.prerelease == 'false' && format('{0},latest', needs.prepare.outputs.version) || needs.prepare.outputs.version }}
+    secrets: inherit
 
   mirror:
     name: "Mirror release outward"

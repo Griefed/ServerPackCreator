@@ -233,8 +233,8 @@ jobs:
   # Docker image build check.
   #
   # DELIBERATELY DOES NOT PUSH: the build proves the Dockerfile still builds and stops there, so no branch
-  # push publishes a public image nobody consumes. Release images are `release-build.yml`'s job. Pushing
-  # from here would be a two-line change -- `push: true` and a pair of SHA tags -- and is not wanted.
+  # push publishes a public image nobody consumes. Published images come from `image-reusable.yml`,
+  # called by `release-build.yml` for releases and by `devbuild.yml` for every `develop` push.
   docker:
     name: "Docker image"
     runs-on: ubuntu-latest
