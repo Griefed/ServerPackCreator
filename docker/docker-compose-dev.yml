@@ -41,7 +41,7 @@ services:
     # 9.0 has featureCompatibilityVersion "9.0", and an 8.0 binary refuses to open it. An 8.0 image
     # needs a fresh volume (`docker compose -f docker/docker-compose-dev.yml down -v` first, which
     # deletes the dev database).
-    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:9.0.8-ubuntu2204@sha256:f354c49227c06c42a4aeaa0b64156a01aad219150d7a33fa9c1cdaab8a5606e0}
+    image: ${SPC_DEV_MONGO_IMAGE:-mongodb/mongodb-community-server:9.0.8-ubuntu2204@sha256:69123dd671361d3f4fae966dc99f1e205a9b6a3236010843ab6bc37f488b7f17}
     # Published so the IDE-run application can reach the database. Nothing in the fast loop runs
     # inside this network.
     ports:
