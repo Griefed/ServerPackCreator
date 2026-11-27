@@ -1,7 +1,7 @@
 services:
   serverpackcreator:
     container_name: serverpackcreator
-    image: griefed/serverpackcreator:9.4.1 # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
+    image: griefed/serverpackcreator:9.5.0 # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
     restart: unless-stopped
     depends_on:
       - serverpackcreatordb
