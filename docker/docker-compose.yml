@@ -37,10 +37,6 @@ services:
       - ./logs:/app/serverpackcreator/logs
 
   serverpackcreatordb:
-    # MongoDB 9.0, Griefed's call. The application's database tests run the 8.3 line, the newest the
-    # embedded server they use can provision (EmbeddedMongoAvailable.MONGOD_VERSION); the 9.0 evidence is
-    # a manual boot against this image. A new major is a deliberate upgrade, not a tag bump.
-    #
     # UPGRADING AN EXISTING 8.0 DEPLOYMENT: 9.0 opens an 8.0 data volume in place only if its
     # featureCompatibilityVersion is "8.0". Check it on the old container before switching the image:
     #   mongosh -u <DB_ROOT_USERNAME> -p --eval 'db.adminCommand({getParameter: 1, featureCompatibilityVersion: 1})'
